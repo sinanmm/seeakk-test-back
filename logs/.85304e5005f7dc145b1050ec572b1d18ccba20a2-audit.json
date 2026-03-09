@@ -1,0 +1,15 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 14
+    },
+    "auditLog": "C:\\Users\\harsh\\OneDrive\\Desktop\\Seeakk\\backend\\logs\\.85304e5005f7dc145b1050ec572b1d18ccba20a2-audit.json",
+    "files": [
+        {
+            "date": 1773051163323,
+            "name": "C:\\Users\\harsh\\OneDrive\\Desktop\\Seeakk\\backend\\logs\\access-2026-03-09.log",
+            "hash": "d3ef6a34bf02bfbac8d383f72cc536406cc94d08a8ece77331fb34cf34f439a4"
+        }
+    ],
+    "hashType": "sha256"
+}
