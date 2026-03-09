@@ -7,6 +7,7 @@ const User = require("../../models/Auth/user");
 const { redisClient } = require("../../config/redis");
 const { sendVerificationEmail } = require("../../services/Email/emailService");
 const { trackUserDevice } = require("../../utils/deviceTracker");
+const logger = require("../../utils/logger");
 
 exports.inviteUser = async (req, res) => {
   return res.status(501).json({
@@ -30,6 +31,7 @@ exports.register = async (req, res) => {
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
+      logger.warn("Failed registration attempt - Email already exists", { email, action: 'register_failed' });
       return res.status(400).json({ message: "User already exists with this email" });
     }
 
@@ -53,7 +55,7 @@ exports.register = async (req, res) => {
       message: "Registration successful. Please check your email to verify your account.",
     });
   } catch (error) {
-    console.error("Registration error:", error);
+    logger.error("System error during user registration", { error: error.message, stack: error.stack, email: req.body.email });
     return res.status(500).json({ message: "Registration failed" });
   }
 };
@@ -72,8 +74,11 @@ exports.verifyEmail = async (req, res) => {
     });
 
     if (!user) {
+      logger.warn("Failed email verification attempt - Invalid or expired token", { token, action: 'verify_email_failed' });
       return res.status(400).json({ message: "Invalid or expired verification token" });
     }
+
+    logger.info("Email successfully verified", { userId: user._id, email: user.email, action: 'verify_email_success' });
 
     user.isEmailVerified = true;
     user.verificationToken = undefined;
@@ -111,6 +116,7 @@ exports.login = async (req, res) => {
     const user = await User.findOne({ email });
 
     if (!user) {
+      logger.warn("Failed login attempt - User not found", { email, action: 'login_failed' });
       return res.status(401).json({
         message: "Invalid credentials",
       });
@@ -137,10 +143,13 @@ exports.login = async (req, res) => {
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
+      logger.warn("Failed login attempt - Incorrect password", { email, userId: user._id, action: 'login_failed' });
       return res.status(401).json({
         message: "Invalid credentials",
       });
     }
+
+    logger.info("Successful standard login", { email, userId: user._id, action: 'login_success' });
 
     const tokens = generateTokens(user);
 
@@ -180,7 +189,7 @@ exports.googleLogin = async (req, res) => {
     try {
       payload = await verifyGoogleToken(token);
     } catch (error) {
-      console.error("verifyGoogleToken failed:", error.message);
+      logger.warn("Failed Google Login verification", { error: error.message, action: 'google_login_failed' });
       return res.status(401).json({
         message: "Invalid or expired Google token",
       });
@@ -214,6 +223,7 @@ exports.googleLogin = async (req, res) => {
       console.warn("Redis is not connected. Skipping refresh token persistence for Google login.");
     }
 
+    logger.info("Successful Google login", { email: user.email, userId: user._id, action: 'google_login_success' });
     await trackUserDevice(req, user);
 
     res.json({
@@ -253,6 +263,7 @@ exports.refreshToken = async (req, res) => {
     const storedUserId = await redisClient.get(`refresh:${tokenId}`);
 
     if (!storedUserId || storedUserId !== userId.toString()) {
+      logger.warn("Failed Refresh Token rotation - Token inactive or stolen", { userId, tokenId, action: 'refresh_token_rejected' });
       return res.status(401).json({ message: "Invalid refresh token or already consumed" });
     }
 
