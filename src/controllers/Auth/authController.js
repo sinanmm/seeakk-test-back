@@ -321,3 +321,24 @@ exports.logout = async (req, res) => {
     return res.status(500).json({ message: "Logout failed" });
   }
 };
+
+exports.getMe = async (req, res) => {
+  try {
+    // Because this route is protected by `protect` middleware, 
+    // `req.user` is already populated securely.
+    const user = req.user;
+
+    return res.status(200).json({
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        devices: user.devices,
+        isEmailVerified: user.isEmailVerified
+      }
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "Failed to fetch user profile" });
+  }
+};
