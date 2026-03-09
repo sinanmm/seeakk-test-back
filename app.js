@@ -3,6 +3,7 @@ const cors = require("cors");
 const morgan = require("morgan");
 const authRoutes = require('./src/routes/Auth/authRoutes');
 const logger = require("./src/utils/logger");
+const { globalLimiter } = require("./src/middlewares/rateLimiter");
 
 const app = express();
 
@@ -11,6 +12,9 @@ app.use(morgan("combined", { stream: logger.stream }));
 app.use(cors());
 app.use(express.json());
 
+// Apply global rate limiting to strictly restrict standard DDOS flooding
+// Protects everything mapped under /api route endpoints.
+app.use("/api/", globalLimiter);
 app.use("/api/auth", authRoutes);
 
 // test route
