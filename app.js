@@ -11,8 +11,8 @@ app.use(morgan("combined", { stream: logger.stream }));
 app.use(cors());
 app.use(express.json());
 
-
 app.use("/api/auth", authRoutes);
+
 // test route
 app.get("/", (req, res) => {
   res.send("SEEAKK CRM Backend Running 🚀");
