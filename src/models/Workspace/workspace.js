@@ -13,17 +13,17 @@ const workspaceSchema = new mongoose.Schema({
     timeZone: {
         type: String,
         required: true,
-        default: "GMT +5:30",
+        default: "UTC",
     },
     language: {
         type: String,
         required: true,
-        default: "English (US)",
+        default: "en-US",
     },
     currencyLocale: {
         type: String,
         required: true,
-        default: "India (INR)",
+        default: "USD",
     },
     loadSampleData: {
         type: Boolean,

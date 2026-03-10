@@ -157,7 +157,7 @@ exports.login = async (req, res) => {
     await trackUserDevice(req, user);
 
     return res.status(200).json({
-      user: { id: user._id, name: user.name, email: user.email, devices: user.devices },
+      user: { id: user._id, name: user.name, email: user.email, devices: user.devices, isOnboarded: user.isOnboarded },
       ...tokens
     });
   } catch (error) {
@@ -227,7 +227,7 @@ exports.googleLogin = async (req, res) => {
     await trackUserDevice(req, user);
 
     res.json({
-      user: { id: user._id, name: user.name, email: user.email, devices: user.devices },
+      user: { id: user._id, name: user.name, email: user.email, devices: user.devices, isOnboarded: user.isOnboarded },
       ...tokens
     });
 
@@ -284,7 +284,7 @@ exports.refreshToken = async (req, res) => {
     await trackUserDevice(req, user);
 
     return res.status(200).json({
-      user: { id: user._id, name: user.name, email: user.email, devices: user.devices },
+      user: { id: user._id, name: user.name, email: user.email, devices: user.devices, isOnboarded: user.isOnboarded },
       ...tokens
     });
   } catch (error) {

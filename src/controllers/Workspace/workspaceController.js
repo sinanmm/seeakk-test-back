@@ -20,9 +20,9 @@ exports.setupWorkspace = async (req, res, next) => {
         const newWorkspace = await Workspace.create({
             companyName,
             employeeCount,
-            timeZone: timeZone || "GMT +5:30",
-            language: language || "English (US)",
-            currencyLocale: currencyLocale || "India (INR)",
+            timeZone: timeZone || "UTC",
+            language: language || "en-US",
+            currencyLocale: currencyLocale || "USD",
             loadSampleData: loadSampleData || false,
             owner: req.user._id,
         });
