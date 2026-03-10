@@ -18,6 +18,16 @@ const userSchema = new mongoose.Schema({
     ref: "Role"
   },
 
+  workspace: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Workspace"
+  },
+
+  isOnboarded: {
+    type: Boolean,
+    default: false
+  },
+
   isActive: {
     type: Boolean,
     default: true
