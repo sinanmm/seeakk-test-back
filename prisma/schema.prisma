@@ -1,0 +1,87 @@
+// Seeakk CRM - Prisma Schema
+// Target: Neon PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+  engineType = "library"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Role {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  users       User[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("roles")
+}
+
+model Workspace {
+  id             String   @id @default(cuid())
+  companyName    String
+  employeeCount  String
+  timeZone       String   @default("UTC")
+  language       String   @default("en-US")
+  currencyLocale String   @default("USD")
+  loadSampleData Boolean  @default(false)
+  owner          User     @relation("WorkspaceOwner", fields: [ownerId], references: [id])
+  ownerId        String   @unique
+  users          User[]   @relation("WorkspaceMembers")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("workspaces")
+}
+
+model User {
+  id                        String     @id @default(cuid())
+  name                      String?
+  email                     String     @unique
+  password                  String?
+  googleId                  String?    @unique
+  isOnboarded               Boolean    @default(false)
+  isActive                  Boolean    @default(true)
+  isEmailVerified           Boolean    @default(false)
+  verificationToken         String?
+  verificationTokenExpires  DateTime?
+  invitationToken           String?
+  invitationExpires         DateTime?
+
+  // Relations
+  role                      Role?      @relation(fields: [roleId], references: [id])
+  roleId                    String?
+  workspace                 Workspace? @relation("WorkspaceMembers", fields: [workspaceId], references: [id])
+  workspaceId               String?
+  ownedWorkspace            Workspace? @relation("WorkspaceOwner")
+  devices                   Device[]
+
+  createdAt                 DateTime   @default(now())
+  updatedAt                 DateTime   @updatedAt
+
+  @@map("users")
+}
+
+model Device {
+  id         String   @id @default(cuid())
+  deviceId   String
+  os         String?
+  browser    String?
+  deviceType String?
+  ipAddress  String?
+  lastActive DateTime @default(now())
+
+  // Relation to User
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([userId, deviceId])
+  @@map("devices")
+}
