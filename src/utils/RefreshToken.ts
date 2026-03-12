@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
-import { IUser } from '../models/Auth/user';
+import type { User } from '../types/prisma';
 
 interface Tokens {
   accessToken: string;
@@ -8,13 +8,13 @@ interface Tokens {
   tokenId: string;
 }
 
-const generateTokens = (user: IUser): Tokens => {
+const generateTokens = (user: User): Tokens => {
   const tokenId = uuidv4();
 
   const accessToken = jwt.sign(
     {
-      userId: user._id,
-      role: user.role,
+      userId: user.id,
+      roleId: user.roleId,
     },
     process.env.JWT_SECRET as string,
     { expiresIn: '15m' }
@@ -22,7 +22,7 @@ const generateTokens = (user: IUser): Tokens => {
 
   const refreshToken = jwt.sign(
     {
-      userId: user._id,
+      userId: user.id,
       tokenId,
     },
     process.env.JWT_REFRESH_SECRET as string,

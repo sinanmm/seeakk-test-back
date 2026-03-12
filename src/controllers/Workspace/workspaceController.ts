@@ -1,7 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import Workspace from '../../models/Workspace/workspace';
-import User, { IUser } from '../../models/Auth/user';
-import Role from '../../models/Auth/role';
+import prisma from '../../config/prisma';
 import logger from '../../utils/logger';
 
 export const setupWorkspace = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
@@ -21,34 +19,41 @@ export const setupWorkspace = async (req: Request, res: Response, next: NextFunc
       return res.status(400).json({ message: 'Company Name and Employee Count are required.' });
     }
 
-    const newWorkspace = await Workspace.create({
-      companyName,
-      employeeCount,
-      timeZone: timeZone || 'UTC',
-      language: language || 'en-US',
-      currencyLocale: currencyLocale || 'USD',
-      loadSampleData: loadSampleData || false,
-      owner: user._id,
-    });
-
-    let adminRole = await Role.findOne({ name: 'admin' });
+    // 1. Find or create the admin role
+    let adminRole = await prisma.role.findUnique({ where: { name: 'admin' } });
     if (!adminRole) {
-      adminRole = await Role.create({ name: 'admin', description: 'Super Administrator' });
+      adminRole = await prisma.role.create({
+        data: { name: 'admin', description: 'Super Administrator' },
+      });
     }
 
-    const updatedUser = await User.findByIdAndUpdate(
-      user._id,
-      {
-        workspace: newWorkspace._id,
-        isOnboarded: true,
-        role: adminRole._id,
+    // 2. Create the workspace and link to the owner simultaneously
+    const newWorkspace = await prisma.workspace.create({
+      data: {
+        companyName,
+        employeeCount,
+        timeZone: timeZone || 'UTC',
+        language: language || 'en-US',
+        currencyLocale: currencyLocale || 'USD',
+        loadSampleData: loadSampleData || false,
+        ownerId: user.id,
       },
-      { new: true }
-    ).populate('role') as IUser;
+    });
+
+    // 3. Update user: assign admin role, mark as onboarded, link workspace
+    const updatedUser = await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        roleId: adminRole.id,
+        isOnboarded: true,
+        workspaceId: newWorkspace.id,
+      },
+      include: { role: true },
+    });
 
     logger.info('Workspace successfully configured', {
-      workspaceId: newWorkspace._id,
-      userId: user._id,
+      workspaceId: newWorkspace.id,
+      userId: user.id,
       action: 'workspace_setup',
     });
 
@@ -56,12 +61,12 @@ export const setupWorkspace = async (req: Request, res: Response, next: NextFunc
       message: 'Workspace successfully configured!',
       workspace: newWorkspace,
       user: {
-        id: updatedUser._id,
+        id: updatedUser.id,
         name: updatedUser.name,
         email: updatedUser.email,
         role: updatedUser.role,
         isOnboarded: updatedUser.isOnboarded,
-        workspaceId: updatedUser.workspace,
+        workspaceId: updatedUser.workspaceId,
       },
     });
   } catch (error) {

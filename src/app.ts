@@ -9,23 +9,22 @@ import { notFound, errorHandler } from './middlewares/errorMiddleware';
 
 const app = express();
 
-// middleware
+// Middleware
 app.use(morgan('combined', { stream: { write: (message: string) => logger.info(message.trim()) } }));
 app.use(cors());
 app.use(express.json());
 
-// Apply global rate limiting to strictly restrict standard DDOS flooding
-// Protects everything mapped under /api route endpoints.
+// Global rate limiting
 app.use('/api/', globalLimiter);
 app.use('/api/auth', authRoutes);
 app.use('/api/workspace', workspaceRoutes);
 
-// test route
+// Health check
 app.get('/', (req: Request, res: Response) => {
-  res.send('SEEAKK CRM Backend Running 🚀');
+  res.send('SEEAKK CRM Backend Running 🚀 (Prisma + PostgreSQL + Redis)');
 });
 
-// System global error handling boundary
+// Global error handling
 app.use(notFound);
 app.use(errorHandler);
 
