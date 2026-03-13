@@ -10,6 +10,18 @@ datasource db {
   provider = "postgresql"
 }
 
+enum TargetCycle {
+  MONTHLY
+  QUARTERLY
+  YEARLY
+  CUSTOM
+}
+
+enum ViolationType {
+  DAILY
+  MONTHLY
+}
+
 model Role {
   id          String   @id @default(cuid())
   name        String   @unique
@@ -22,46 +34,132 @@ model Role {
 }
 
 model Workspace {
-  id             String   @id @default(cuid())
+  id             String       @id @default(cuid())
   companyName    String
   employeeCount  String
-  timeZone       String   @default("UTC")
-  language       String   @default("en-US")
-  currencyLocale String   @default("USD")
-  loadSampleData Boolean  @default(false)
-  owner          User     @relation("WorkspaceOwner", fields: [ownerId], references: [id])
-  ownerId        String   @unique
-  users          User[]   @relation("WorkspaceMembers")
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  timeZone       String       @default("UTC")
+  language       String       @default("en-US")
+  currencyLocale String       @default("USD")
+  loadSampleData Boolean      @default(false)
+  owner          User         @relation("WorkspaceOwner", fields: [ownerId], references: [id])
+  ownerId        String       @unique
+  users          User[]       @relation("WorkspaceMembers")
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
 
   @@map("workspaces")
 }
 
+model Department {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  workspaceId String?
+  users       User[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([name, workspaceId])
+  @@map("departments")
+}
+
+model TargetType {
+  id          String          @id @default(cuid())
+  name        String          @unique // e.g., "Revenue", "Leads Generated"
+  description String?
+  workspaceId String?         // Optional: Global types or workspace-specific
+  settings    TargetSetting[]
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@map("target_types")
+}
+
+model TargetSetting {
+  id                   String     @id @default(cuid())
+  user                 User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId               String
+  targetType           TargetType @relation(fields: [targetTypeId], references: [id])
+  targetTypeId         String
+  cycle                TargetCycle @default(MONTHLY)
+  
+  monthlyTargetLeads   Int        @default(0)
+  dailyFollowupTarget  Int        @default(0)
+  revenueTarget        Float      @default(0)
+  
+  startDate            DateTime
+  endDate              DateTime?
+  
+  workspaceId          String
+  createdAt            DateTime   @default(now())
+  updatedAt            DateTime   @updatedAt
+
+  @@index([userId, workspaceId])
+  @@map("target_settings")
+}
+
+model TargetViolation {
+  id           String        @id @default(cuid())
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String
+  date         DateTime      @default(now())
+  type         ViolationType
+  attemptCount Int           @default(1)
+  status       String        @default("WARNING") // WARNING, FINAL_WARNING, LOCKED
+  message      String?
+  
+  workspaceId  String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@index([userId, date])
+  @@map("target_violations")
+}
+
 model User {
-  id                        String     @id @default(cuid())
-  name                      String?
-  email                     String     @unique
-  password                  String?
-  googleId                  String?    @unique
-  isOnboarded               Boolean    @default(false)
-  isActive                  Boolean    @default(true)
-  isEmailVerified           Boolean    @default(false)
-  verificationToken         String?
-  verificationTokenExpires  DateTime?
-  invitationToken           String?
-  invitationExpires         DateTime?
+  id                       String      @id @default(cuid())
+  name                     String?
+  email                    String      @unique
+  password                 String?
+  phone                    String?
+  googleId                 String?     @unique
+  isOnboarded              Boolean     @default(false)
+  isActive                 Boolean     @default(true)
+  isEmailVerified          Boolean     @default(false)
+  isLocked                 Boolean     @default(false) // Target compliance lock
+  verificationToken        String?
+  verificationTokenExpires DateTime?
+  invitationToken          String?
+  invitationExpires        DateTime?
+  deletedAt                DateTime?
 
-  // Relations
-  role                      Role?      @relation(fields: [roleId], references: [id])
-  roleId                    String?
-  workspace                 Workspace? @relation("WorkspaceMembers", fields: [workspaceId], references: [id])
-  workspaceId               String?
-  ownedWorkspace            Workspace? @relation("WorkspaceOwner")
-  devices                   Device[]
+  // Role relation
+  role                     Role?       @relation(fields: [roleId], references: [id])
+  roleId                   String?
 
-  createdAt                 DateTime   @default(now())
-  updatedAt                 DateTime   @updatedAt
+  // Workspace relation
+  workspace                Workspace?  @relation("WorkspaceMembers", fields: [workspaceId], references: [id])
+  workspaceId              String?
+  ownedWorkspace           Workspace?  @relation("WorkspaceOwner")
+
+  // Department relation
+  department               Department? @relation(fields: [departmentId], references: [id])
+  departmentId             String?
+
+  // Supervisor self-relation
+  supervisor               User?       @relation("UserSupervisor", fields: [supervisorId], references: [id])
+  supervisorId             String?
+  subordinates             User[]      @relation("UserSupervisor")
+
+  // Target relations
+  targetSettings           TargetSetting[]
+  violations               TargetViolation[]
+
+  // Devices
+  devices                  Device[]
+
+  createdAt                DateTime    @default(now())
+  updatedAt                DateTime    @updatedAt
 
   @@map("users")
 }
@@ -75,7 +173,6 @@ model Device {
   ipAddress  String?
   lastActive DateTime @default(now())
 
-  // Relation to User
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId     String
 

@@ -10,6 +10,12 @@ import { sendVerificationEmail } from '../../services/Email/emailService';
 import { trackUserDevice } from '../../utils/deviceTracker';
 import logger from '../../utils/logger';
 
+const parsePositiveInt = (value: unknown, fallback: number): number => {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed < 1) return fallback;
+  return Math.floor(parsed);
+};
+
 export const inviteUser = async (req: Request, res: Response): Promise<any> => {
   return res.status(501).json({ message: 'inviteUser is not implemented yet' });
 };
@@ -134,6 +140,12 @@ export const login = async (req: Request, res: Response): Promise<any> => {
       return res.status(403).json({ message: 'Account is inactive' });
     }
 
+    if ((user as any).isLocked) {
+      return res.status(403).json({
+        message: 'Your account has been locked due to target non-compliance. Please contact your supervisor or admin.',
+      });
+    }
+
     if (!user.isEmailVerified) {
       return res.status(403).json({ message: 'Please verify your email address to log in.' });
     }
@@ -146,9 +158,9 @@ export const login = async (req: Request, res: Response): Promise<any> => {
 
     logger.info('Login successful', { email, userId: user.id, action: 'login_success' });
 
-    const tokens = generateTokens(user);
+    const tokens = generateTokens(user as any);
     await redisClient.set(`refresh:${tokens.tokenId}`, user.id);
-    await trackUserDevice(req, user);
+    await trackUserDevice(req, user as any);
 
     return res.status(200).json({
       user: {
@@ -205,7 +217,17 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
       });
     }
 
-    const tokens = generateTokens(user);
+    if (!user.isActive) {
+      return res.status(403).json({ message: 'Account is inactive' });
+    }
+
+    if ((user as any).isLocked) {
+      return res.status(403).json({
+        message: 'Your account has been locked due to target non-compliance. Please contact your supervisor or admin.',
+      });
+    }
+
+    const tokens = generateTokens(user as any);
 
     if (redisClient?.isOpen) {
       await redisClient.set(`refresh:${tokens.tokenId}`, user.id);
@@ -214,7 +236,7 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
     }
 
     logger.info('Google login successful', { email: user.email, userId: user.id, action: 'google_login_success' });
-    await trackUserDevice(req, user);
+    await trackUserDevice(req, user as any);
 
     return res.json({
       user: {
@@ -268,9 +290,9 @@ export const refreshToken = async (req: Request, res: Response): Promise<any> =>
       return res.status(403).json({ message: 'User not found or inactive' });
     }
 
-    const tokens = generateTokens(user);
+    const tokens = generateTokens(user as any);
     await redisClient.set(`refresh:${tokens.tokenId}`, user.id);
-    await trackUserDevice(req, user);
+    await trackUserDevice(req, user as any);
 
     return res.status(200).json({
       user: {
@@ -332,5 +354,82 @@ export const getMe = async (req: Request, res: Response): Promise<any> => {
     });
   } catch (error) {
     return res.status(500).json({ message: 'Failed to fetch user profile' });
+  }
+};
+
+export const listUsers = async (req: Request, res: Response): Promise<any> => {
+  try {
+    const currentUser = req.user;
+    if (!currentUser) {
+      return res.status(401).json({ message: 'Not authorized' });
+    }
+
+    const page = parsePositiveInt(req.query.page, 1);
+    const requestedLimit = parsePositiveInt(req.query.limit, 20);
+    const limit = Math.min(requestedLimit, 100);
+    const skip = (page - 1) * limit;
+    const search = typeof req.query.search === 'string' ? req.query.search.trim() : '';
+
+    const where = {
+      ...(currentUser.workspaceId ? { workspaceId: currentUser.workspaceId } : {}),
+      ...(search
+        ? {
+            OR: [
+              { name: { contains: search, mode: 'insensitive' as const } },
+              { email: { contains: search, mode: 'insensitive' as const } },
+            ],
+          }
+        : {}),
+    };
+
+    const [total, users] = await prisma.$transaction([
+      prisma.user.count({ where }),
+      prisma.user.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          isActive: true,
+          isEmailVerified: true,
+          isOnboarded: true,
+          createdAt: true,
+          updatedAt: true,
+          role: {
+            select: {
+              id: true,
+              name: true,
+              description: true,
+            },
+          },
+          _count: {
+            select: { devices: true },
+          },
+        },
+      }),
+    ]);
+
+    const totalPages = Math.max(1, Math.ceil(total / limit));
+
+    return res.status(200).json({
+      users,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+      },
+    });
+  } catch (error: any) {
+    logger.error('Error fetching paginated users', {
+      error: error.message,
+      action: 'list_users_failed',
+    });
+    return res.status(500).json({ message: 'Failed to fetch users' });
   }
 };

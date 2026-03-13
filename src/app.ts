@@ -3,11 +3,13 @@ import cors from 'cors';
 import morgan from 'morgan';
 import authRoutes from './routes/Auth/authRoutes';
 import workspaceRoutes from './routes/Workspace/workspaceRoutes';
+import adminUserRoutes from './routes/User/adminUserRoutes';
 import logger from './utils/logger';
 import { globalLimiter } from './middlewares/rateLimiter';
 import { notFound, errorHandler } from './middlewares/errorMiddleware';
 
 const app = express();
+
 
 // Middleware
 app.use(morgan('combined', { stream: { write: (message: string) => logger.info(message.trim()) } }));
@@ -18,6 +20,7 @@ app.use(express.json());
 app.use('/api/', globalLimiter);
 app.use('/api/auth', authRoutes);
 app.use('/api/workspace', workspaceRoutes);
+app.use('/api/admin/users', adminUserRoutes);
 
 // Health check
 app.get('/', (req: Request, res: Response) => {
