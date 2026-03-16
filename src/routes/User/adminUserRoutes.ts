@@ -1,9 +1,12 @@
 import { Router } from 'express';
-import { protect, authorize } from '../../middlewares/authMiddleware';
+import { protect, authorize, checkPermission } from '../../middlewares/authMiddleware';
 import { globalLimiter } from '../../middlewares/rateLimiter';
 import * as adminUserController from '../../controllers/User/adminUserController';
 
 const router = Router();
+
+// Apply protection to all admin user routes
+router.use(protect);
 
 /**
  * All routes under /api/admin/users require:
@@ -35,19 +38,19 @@ router.get('/meta/supervisors', masterDataController.getSupervisors);
 // ─── User Management Routes ───────────────────────────────────────────
 
 // POST   /api/admin/users           — Create a user
-router.post('/', adminUserController.createUser);
+router.post('/', checkPermission('USERS_CREATE'), adminUserController.createUser);
 
 // GET    /api/admin/users           — List users (paginated + filterable)
-router.get('/', adminUserController.listUsers);
+router.get('/', checkPermission('USERS_VIEW'), adminUserController.listUsers);
 
 // GET    /api/admin/users/:id       — Get single user
-router.get('/:id', adminUserController.getUserById);
+router.get('/:id', checkPermission('USERS_VIEW'), adminUserController.getUserById);
 
 // PUT    /api/admin/users/:id       — Update user
-router.put('/:id', adminUserController.updateUser);
+router.put('/:id', checkPermission('USERS_EDIT'), adminUserController.updateUser);
 
 // DELETE /api/admin/users/:id       — Soft-delete user
-router.delete('/:id', adminUserController.deleteUser);
+router.delete('/:id', checkPermission('USERS_DELETE'), adminUserController.deleteUser);
 
 // PATCH  /api/admin/users/:id/status       — Activate / Deactivate
 router.patch('/:id/status', adminUserController.updateUserStatus);

@@ -1,0 +1,87 @@
+import { PrismaClient } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
+import * as pg from 'pg';
+import * as dotenv from 'dotenv';
+
+dotenv.config();
+
+const connectionString = process.env.DATABASE_URL;
+
+if (!connectionString) {
+  console.error('DATABASE_URL is not defined in .env file');
+  process.exit(1);
+}
+
+// Fixed: use 'pool as any' to avoid @types/pg version mismatch
+const pool = new pg.Pool({ connectionString });
+const adapter = new PrismaPg(pool as any);
+// Fixed: use 'adapter as any' to avoid PrismaClientOptions type mismatch
+const prisma = new PrismaClient({ adapter: adapter as any }) as any;
+
+const permissions = [
+  // USERS MANAGEMENT
+  { key: 'USERS_VIEW', group: 'ADMIN_MANAGEMENT', description: 'View users list' },
+  { key: 'USERS_CREATE', group: 'ADMIN_MANAGEMENT', description: 'Create new users' },
+  { key: 'USERS_EDIT', group: 'ADMIN_MANAGEMENT', description: 'Edit existing users' },
+  { key: 'USERS_DELETE', group: 'ADMIN_MANAGEMENT', description: 'Soft-delete users' },
+  { key: 'USERS_EXPORT', group: 'ADMIN_MANAGEMENT', description: 'Export users to CSV/Excel' },
+
+  // ROLES MANAGEMENT
+  { key: 'ROLES_VIEW', group: 'ADMIN_MANAGEMENT', description: 'View roles and permissions' },
+  { key: 'ROLES_CREATE', group: 'ADMIN_MANAGEMENT', description: 'Create new roles' },
+  { key: 'ROLES_EDIT', group: 'ADMIN_MANAGEMENT', description: 'Edit roles and permissions' },
+  { key: 'ROLES_DELETE', group: 'ADMIN_MANAGEMENT', description: 'Delete roles' },
+
+  // LEADS MANAGEMENT
+  { key: 'LEADS_VIEW_ALL', group: 'LEADS_MANAGEMENT', description: 'View all leads' },
+  { key: 'LEADS_VIEW_OWN', group: 'LEADS_MANAGEMENT', description: 'View only own leads' },
+  { key: 'LEADS_VIEW_TEAM', group: 'LEADS_MANAGEMENT', description: 'View team leads' },
+  { key: 'LEADS_CREATE', group: 'LEADS_MANAGEMENT', description: 'Create new leads' },
+  { key: 'LEADS_EDIT', group: 'LEADS_MANAGEMENT', description: 'Edit leads' },
+  { key: 'LEADS_DELETE', group: 'LEADS_MANAGEMENT', description: 'Delete leads' },
+  { key: 'LEADS_ASSIGN', group: 'LEADS_MANAGEMENT', description: 'Assign leads to users' },
+  { key: 'LEADS_BULK_ASSIGN', group: 'LEADS_MANAGEMENT', description: 'Bulk assign leads' },
+  { key: 'LEADS_APPROVE', group: 'LEADS_MANAGEMENT', description: 'Approve lead conversions' },
+  { key: 'LEADS_REJECT', group: 'LEADS_MANAGEMENT', description: 'Reject leads' },
+  { key: 'LEADS_CLOSE', group: 'LEADS_MANAGEMENT', description: 'Close leads' },
+  { key: 'LEADS_REOPEN', group: 'LEADS_MANAGEMENT', description: 'Reopen closed leads' },
+  { key: 'LEADS_EXPORT', group: 'LEADS_MANAGEMENT', description: 'Export leads data' },
+  { key: 'LEADS_IMPORT', group: 'LEADS_MANAGEMENT', description: 'Import leads from external files' },
+
+  // OTHER MODULES (Future proofing)
+  { key: 'FINANCE_VIEW', group: 'MASTER_CONFIGURATION', description: 'View finance records' },
+  { key: 'INVENTORY_VIEW', group: 'MASTER_CONFIGURATION', description: 'View inventory' },
+  { key: 'REPORTS_VIEW', group: 'REPORTS_ANALYTICS', description: 'View reports' },
+  { key: 'SYSTEM_CONFIG', group: 'SYSTEM_SETTINGS', description: 'Manage system settings' },
+];
+
+async function main() {
+  console.log('Seeding permissions...');
+
+  for (const permission of permissions) {
+    try {
+      await prisma.permission.upsert({
+        where: { key: permission.key },
+        update: {
+          group: permission.group,
+          description: permission.description,
+        },
+        create: permission,
+      });
+    } catch (err) {
+      console.warn(`Failed to seed permission ${permission.key}:`, err);
+    }
+  }
+
+  console.log('Permissions seeded successfully!');
+}
+
+main()
+  .catch((e) => {
+    console.error('Seeding error:', e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+    await pool.end();
+  });

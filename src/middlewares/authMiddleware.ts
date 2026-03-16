@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import prisma from '../config/prisma';
 import logger from '../utils/logger';
+import { redisClient } from '../config/redis';
 
 interface JwtPayload {
   userId: string;
@@ -104,5 +105,84 @@ export const authorize = (...roles: string[]) => {
     }
 
     next();
+  };
+};
+
+/**
+ * Permission-Based Access Control
+ * @param {string} permissionKey - Required permission key
+ */
+export const checkPermission = (permissionKey: string) => {
+  return async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    if (!req.user || !req.user.roleId) {
+      logger.warn('Permission denied. User has no assigned role.', {
+        userId: req.user?.id,
+        action: 'permission_denied_no_role',
+      });
+      return res.status(403).json({
+        success: false,
+        message: 'Forbidden: You do not have an assigned role.',
+      });
+    }
+
+    const roleId = req.user.roleId;
+    const cacheKey = `role_permissions:${roleId}`;
+
+    try {
+      let permissions: string[] = [];
+
+      // 1. Try to get from Redis
+      if (redisClient.isOpen) {
+        const cached = await redisClient.get(cacheKey);
+        if (cached) {
+          logger.info(`RBAC DEBUG: Found cached permissions for role ${roleId}`);
+          permissions = JSON.parse(cached);
+        }
+      }
+
+      logger.info(`RBAC DEBUG: Checking permission ${permissionKey} for role ${roleId}. Current perms count: ${permissions.length}`);
+
+      // 2. Fetch from DB if not in cache
+      if (permissions.length === 0) {
+        const rolePermissions = await (prisma as any).rolePermission.findMany({
+          where: { roleId },
+          include: { permission: { select: { key: true } } },
+        });
+
+        permissions = rolePermissions.map((rp: any) => rp.permission.key);
+
+        logger.info(`RBAC DEBUG: Fetched ${permissions.length} perms from DB for role ${roleId}`);
+
+        // 3. Store in Redis (1 hour cache)
+        if (redisClient.isOpen && permissions.length > 0) {
+          await redisClient.setEx(cacheKey, 3600, JSON.stringify(permissions));
+        }
+      }
+
+      // 4. Check permission
+      if (!permissions.includes(permissionKey)) {
+        logger.warn(`Permission denied. Required: ${permissionKey}. User has: ${permissions.join(', ')}`, {
+          userId: req.user.id,
+          roleId,
+          action: 'permission_denied',
+        });
+        return res.status(403).json({
+          success: false,
+          errorCode: 'PERMISSION_DENIED',
+          message: `Access denied. You need the '${permissionKey}' permission.`,
+          debug: {
+            required: permissionKey,
+            holdingCount: permissions.length,
+            roleId: roleId
+          }
+        });
+      }
+
+      next();
+    } catch (error: any) {
+      logger.error('Error checking permissions', { error: error.message, userId: req.user.id });
+      // Fallback to DB if Redis fails (already handled by permissions.length === 0 check above)
+      return res.status(500).json({ success: false, message: 'Internal server error while checking permissions.' });
+    }
   };
 };

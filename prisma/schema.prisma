@@ -32,15 +32,49 @@ enum LocationType {
   OFFICE
 }
 
+enum RoleStatus {
+  ACTIVE
+  INACTIVE
+}
+
 model Role {
-  id          String   @id @default(cuid())
+  id          String   @id @default(uuid())
   name        String   @unique
+  status      RoleStatus @default(ACTIVE)
   description String?
-  users       User[]
+
+  createdBy   String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  permissions RolePermission[]
+  users       User[]
+
   @@map("roles")
+}
+
+model Permission {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  group       String
+  description String?
+
+  createdAt   DateTime @default(now())
+
+  roles       RolePermission[]
+
+  @@map("permissions")
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+
+  role         Role       @relation(fields: [roleId], references: [id])
+  permission   Permission @relation(fields: [permissionId], references: [id])
+
+  @@id([roleId, permissionId])
+  @@map("role_permissions")
 }
 
 model Workspace {
