@@ -13,6 +13,7 @@ import {
   type ListUsersQuery,
 } from '../../validations/adminUserValidation';
 import logger from '../../utils/logger';
+import auditService from '../../services/Audit/auditService';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -80,6 +81,18 @@ export const createUser = async (req: Request, res: Response, next: NextFunction
 
   try {
     const result = await adminUserService.createUser(input, workspaceId);
+
+    await auditService.log({
+      userId: req.user!.id,
+      workspaceId,
+      action: 'ADMIN_CREATE_USER',
+      entityType: 'User',
+      entityId: (result as any).user.id,
+      details: { email: input.email, name: input.name },
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
+
     return res.status(201).json({
       success: true,
       message: 'User created successfully.',
@@ -149,6 +162,18 @@ export const updateUser = async (req: Request, res: Response, next: NextFunction
 
   try {
     const user = await adminUserService.updateUser(userId, input, workspaceId);
+
+    await auditService.log({
+      userId: req.user!.id,
+      workspaceId,
+      action: 'ADMIN_UPDATE_USER',
+      entityType: 'User',
+      entityId: userId,
+      details: { updatedFields: Object.keys(input) },
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
+
     return res.status(200).json({
       success: true,
       message: 'User updated successfully.',
@@ -172,6 +197,17 @@ export const deleteUser = async (req: Request, res: Response, next: NextFunction
 
   try {
     const result = await adminUserService.deleteUser(userId, workspaceId, requestingUserId);
+
+    await auditService.log({
+      userId: requestingUserId,
+      workspaceId,
+      action: 'ADMIN_DELETE_USER',
+      entityType: 'User',
+      entityId: userId,
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
+
     return res.status(200).json({
       success: true,
       message: result.message,
@@ -198,6 +234,17 @@ export const updateUserStatus = async (req: Request, res: Response, next: NextFu
 
   try {
     const user = await adminUserService.updateUserStatus(userId, input, workspaceId, requestingUserId);
+
+    await auditService.log({
+      userId: requestingUserId,
+      workspaceId,
+      action: input.isActive ? 'ADMIN_ACTIVATE_USER' : 'ADMIN_DEACTIVATE_USER',
+      entityType: 'User',
+      entityId: userId,
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
+
     return res.status(200).json({
       success: true,
       message: `User ${input.isActive ? 'activated' : 'deactivated'} successfully.`,
@@ -222,6 +269,17 @@ export const resetUserPassword = async (req: Request, res: Response, next: NextF
 
   try {
     const result = await adminUserService.resetUserPassword(userId, input, workspaceId);
+
+    await auditService.log({
+      userId: req.user!.id,
+      workspaceId,
+      action: 'ADMIN_RESET_PASSWORD',
+      entityType: 'User',
+      entityId: userId,
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
+
     return res.status(200).json({
       success: true,
       message: result.message,

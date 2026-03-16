@@ -12,7 +12,27 @@ const router = Router();
  *
  * Workspace scoping is enforced inside the service layer using req.user.workspaceId.
  */
-router.use(protect, authorize('admin', 'super-admin'), globalLimiter);
+// ─── Location & Office Meta Routes (Configurable by Admin) ────────────────
+import * as locationController from '../../controllers/User/locationController';
+import * as officeController from '../../controllers/User/officeController';
+
+// Locations
+router.get('/meta/locations/tree', locationController.getLocationTree);
+router.get('/meta/locations/all', locationController.getAllLocations);
+router.post('/meta/locations', locationController.createLocation);
+router.get('/meta/my-locations', locationController.getMyVisibleLocations); // For testing/boundary check
+
+// Offices
+router.get('/meta/offices', officeController.listOffices);
+router.post('/meta/offices', officeController.createOffice);
+
+// Master Data
+import * as masterDataController from '../../controllers/User/masterDataController';
+router.get('/meta/roles', masterDataController.getRoles);
+router.get('/meta/departments', masterDataController.getDepartments);
+router.get('/meta/supervisors', masterDataController.getSupervisors);
+
+// ─── User Management Routes ───────────────────────────────────────────
 
 // POST   /api/admin/users           — Create a user
 router.post('/', adminUserController.createUser);

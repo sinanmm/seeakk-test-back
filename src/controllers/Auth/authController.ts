@@ -9,6 +9,7 @@ import { redisClient } from '../../config/redis';
 import { sendVerificationEmail } from '../../services/Email/emailService';
 import { trackUserDevice } from '../../utils/deviceTracker';
 import logger from '../../utils/logger';
+import auditService from '../../services/Audit/auditService';
 
 const parsePositiveInt = (value: unknown, fallback: number): number => {
   const parsed = Number(value);
@@ -55,6 +56,16 @@ export const register = async (req: Request, res: Response): Promise<any> => {
 
     await sendVerificationEmail(user.email, verificationToken);
 
+    await auditService.log({
+      userId: user.id,
+      action: 'USER_REGISTERED',
+      entityType: 'User',
+      entityId: user.id,
+      details: { email: user.email },
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
+
     return res.status(201).json({
       message: 'Registration successful. Please check your email to verify your account.',
     });
@@ -94,6 +105,15 @@ export const verifyEmail = async (req: Request, res: Response): Promise<any> => 
     });
 
     logger.info('Email verified', { userId: user.id, email: user.email, action: 'verify_email_success' });
+
+    await auditService.log({
+      userId: user.id,
+      action: 'EMAIL_VERIFIED',
+      entityType: 'User',
+      entityId: user.id,
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
 
     return res.status(200).send(`
       <html>
@@ -161,6 +181,17 @@ export const login = async (req: Request, res: Response): Promise<any> => {
     const tokens = generateTokens(user as any);
     await redisClient.set(`refresh:${tokens.tokenId}`, user.id);
     await trackUserDevice(req, user as any);
+
+    await auditService.log({
+      userId: user.id,
+      workspaceId: user.workspaceId || undefined,
+      action: 'USER_LOGIN',
+      entityType: 'User',
+      entityId: user.id,
+      details: { method: 'password' },
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
 
     return res.status(200).json({
       user: {
@@ -237,6 +268,17 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
 
     logger.info('Google login successful', { email: user.email, userId: user.id, action: 'google_login_success' });
     await trackUserDevice(req, user as any);
+
+    await auditService.log({
+      userId: user.id,
+      workspaceId: user.workspaceId || undefined,
+      action: 'USER_LOGIN',
+      entityType: 'User',
+      entityId: user.id,
+      details: { method: 'google' },
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
 
     return res.json({
       user: {
@@ -327,6 +369,15 @@ export const logout = async (req: Request, res: Response): Promise<any> => {
 
     if (decoded?.tokenId) {
       await redisClient.del(`refresh:${decoded.tokenId}`);
+
+      await auditService.log({
+        userId: decoded.userId,
+        action: 'USER_LOGOUT',
+        entityType: 'User',
+        entityId: decoded.userId,
+        ipAddress: req.ip,
+        userAgent: req.headers['user-agent'],
+      });
     }
 
     return res.status(200).json({ message: 'Logged out successfully' });

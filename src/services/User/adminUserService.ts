@@ -47,6 +47,7 @@ const invalidateUserSessions = async (userId: string): Promise<void> => {
 const USER_SELECT = {
   id: true,
   name: true,
+  username: true,
   email: true,
   phone: true,
   isActive: true,
@@ -58,6 +59,15 @@ const USER_SELECT = {
   role: { select: { id: true, name: true, description: true } },
   department: { select: { id: true, name: true, description: true } },
   supervisor: { select: { id: true, name: true, email: true } },
+  office: { select: { id: true, name: true } },
+  country: { select: { id: true, name: true } },
+  state: { select: { id: true, name: true } },
+  district: { select: { id: true, name: true } },
+  assignedLocations: {
+    select: {
+      location: { select: { id: true, name: true, type: true } },
+    },
+  },
   workspace: { select: { id: true, companyName: true } },
 } as const;
 
@@ -68,14 +78,37 @@ const USER_SELECT = {
  * Admin-created users are pre-verified and immediately active.
  */
 export const createUser = async (input: CreateUserInput, workspaceId: string) => {
-  const { name, email, password, phone, roleId, departmentId, supervisorId } = input;
+  const {
+    name,
+    username,
+    email,
+    password,
+    phone,
+    roleId,
+    departmentId,
+    supervisorId,
+    officeId,
+    countryId,
+    stateId,
+    districtId,
+    assignedLocationIds,
+  } = input;
 
-  // 1. Email uniqueness
-  const existing = await prisma.user.findUnique({ where: { email } });
-  if (existing) {
+  // 1. Email and Username uniqueness
+  const existingEmail = await prisma.user.findUnique({ where: { email } });
+  if (existingEmail) {
     const err: any = new Error('A user with this email already exists.');
     err.statusCode = 409;
     throw err;
+  }
+
+  if (username) {
+    const existingUsername = await (prisma as any).user.findUnique({ where: { username } });
+    if (existingUsername) {
+      const err: any = new Error('This username is already taken.');
+      err.statusCode = 409;
+      throw err;
+    }
   }
 
   // 2. Validate roleId
@@ -88,13 +121,24 @@ export const createUser = async (input: CreateUserInput, workspaceId: string) =>
     }
   }
 
-  // 3. Validate departmentId belongs to this workspace
+  // 3. Validate relations belong to this workspace
   if (departmentId) {
     const dept = await (prisma as any).department.findFirst({
       where: { id: departmentId, workspaceId },
     });
     if (!dept) {
       const err: any = new Error('Department not found in this workspace.');
+      err.statusCode = 400;
+      throw err;
+    }
+  }
+
+  if (officeId) {
+    const office = await (prisma as any).office.findFirst({
+      where: { id: officeId, workspaceId },
+    });
+    if (!office) {
+      const err: any = new Error('Office not found in this workspace.');
       err.statusCode = 400;
       throw err;
     }
@@ -119,6 +163,7 @@ export const createUser = async (input: CreateUserInput, workspaceId: string) =>
   const user = await (prisma as any).user.create({
     data: {
       name,
+      username: username ?? null,
       email,
       password: hashedPassword,
       phone: phone ?? null,
@@ -129,6 +174,19 @@ export const createUser = async (input: CreateUserInput, workspaceId: string) =>
       roleId: roleId ?? null,
       departmentId: departmentId ?? null,
       supervisorId: supervisorId ?? null,
+      officeId: officeId ?? null,
+      countryId: countryId ?? null,
+      stateId: stateId ?? null,
+      districtId: districtId ?? null,
+      assignedLocations:
+        assignedLocationIds && assignedLocationIds.length > 0
+          ? {
+              create: assignedLocationIds.map((locId) => ({
+                locationId: locId,
+                workspaceId,
+              })),
+            }
+          : undefined,
     },
     select: USER_SELECT,
   });
@@ -262,15 +320,63 @@ export const updateUser = async (id: string, input: UpdateUserInput, workspaceId
     }
   }
 
+  if (input.officeId) {
+    const office = await (prisma as any).office.findFirst({
+      where: { id: input.officeId, workspaceId },
+    });
+    if (!office) {
+      const err: any = new Error('Office not found in this workspace.');
+      err.statusCode = 400;
+      throw err;
+    }
+  }
+
+  if (input.username) {
+    const existingUsername = await (prisma as any).user.findFirst({
+      where: { username: input.username, NOT: { id } },
+    });
+    if (existingUsername) {
+      const err: any = new Error('This username is already taken.');
+      err.statusCode = 409;
+      throw err;
+    }
+  }
+
+  // Handle Location Assignments
+  if (input.assignedLocationIds !== undefined) {
+    // Delete existing
+    await (prisma as any).userLocationAssignment.deleteMany({
+      where: { userId: id },
+    });
+
+    // Sessions must be refreshed to apply new boundary logic
+    await invalidateUserSessions(id);
+  }
+
   const user = await (prisma as any).user.update({
     where: { id },
     data: {
       ...(input.name !== undefined ? { name: input.name } : {}),
+      ...(input.username !== undefined ? { username: input.username } : {}),
       ...(input.phone !== undefined ? { phone: input.phone } : {}),
       ...(input.roleId !== undefined ? { roleId: input.roleId } : {}),
       ...(input.departmentId !== undefined ? { departmentId: input.departmentId } : {}),
       ...(input.supervisorId !== undefined ? { supervisorId: input.supervisorId } : {}),
+      ...(input.officeId !== undefined ? { officeId: input.officeId } : {}),
+      ...(input.countryId !== undefined ? { countryId: input.countryId } : {}),
+      ...(input.stateId !== undefined ? { stateId: input.stateId } : {}),
+      ...(input.districtId !== undefined ? { districtId: input.districtId } : {}),
       ...(input.isEmailVerified !== undefined ? { isEmailVerified: input.isEmailVerified } : {}),
+      ...(input.assignedLocationIds !== undefined && input.assignedLocationIds.length > 0
+        ? {
+            assignedLocations: {
+              create: input.assignedLocationIds.map((locId) => ({
+                locationId: locId,
+                workspaceId,
+              })),
+            },
+          }
+        : {}),
     },
     select: USER_SELECT,
   });

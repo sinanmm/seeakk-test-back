@@ -3,6 +3,7 @@ import { z } from 'zod';
 // ─── Create User ──────────────────────────────────────────────────────────────
 export const createUserSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').max(100, 'Name too long'),
+  username: z.string().min(3, 'Username must be at least 3 characters').max(50, 'Username too long').optional(),
   email: z.email('Invalid email format'),
   password: z
     .string()
@@ -13,6 +14,11 @@ export const createUserSchema = z.object({
   roleId: z.string().cuid('Invalid role ID').optional(),
   departmentId: z.string().cuid('Invalid department ID').optional(),
   supervisorId: z.string().cuid('Invalid supervisor ID').optional(),
+  officeId: z.string().cuid('Invalid office ID').optional(),
+  countryId: z.string().cuid('Invalid country ID').optional(),
+  stateId: z.string().cuid('Invalid state ID').optional(),
+  districtId: z.string().cuid('Invalid district ID').optional(),
+  assignedLocationIds: z.array(z.string().cuid('Invalid location ID')).optional(),
 });
 
 export type CreateUserInput = z.infer<typeof createUserSchema>;
@@ -20,10 +26,16 @@ export type CreateUserInput = z.infer<typeof createUserSchema>;
 // ─── Update User ──────────────────────────────────────────────────────────────
 export const updateUserSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').max(100, 'Name too long').optional(),
+  username: z.string().min(3, 'Username must be at least 3 characters').max(50, 'Username too long').optional(),
   phone: z.string().max(20, 'Phone number too long').optional(),
   roleId: z.string().cuid('Invalid role ID').optional(),
   departmentId: z.string().cuid('Invalid department ID').optional(),
   supervisorId: z.string().cuid('Invalid supervisor ID').optional(),
+  officeId: z.string().cuid('Invalid office ID').optional(),
+  countryId: z.string().cuid('Invalid country ID').optional(),
+  stateId: z.string().cuid('Invalid state ID').optional(),
+  districtId: z.string().cuid('Invalid district ID').optional(),
+  assignedLocationIds: z.array(z.string().cuid('Invalid location ID')).optional(),
   isEmailVerified: z.boolean().optional(),
 });
 

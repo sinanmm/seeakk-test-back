@@ -22,6 +22,16 @@ enum ViolationType {
   MONTHLY
 }
 
+enum LocationType {
+  COUNTRY
+  STATE
+  DISTRICT
+  CITY
+  WARD
+  CONSTITUENCY
+  OFFICE
+}
+
 model Role {
   id          String   @id @default(cuid())
   name        String   @unique
@@ -60,7 +70,63 @@ model Department {
   updatedAt   DateTime @updatedAt
 
   @@unique([name, workspaceId])
+  @@index([workspaceId])
   @@map("departments")
+}
+
+model Office {
+  id          String   @id @default(cuid())
+  name        String
+  address     String?
+  workspaceId String
+  users       User[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([workspaceId])
+  @@map("offices")
+}
+
+model Location {
+  id          String   @id @default(cuid())
+  name        String
+  type        LocationType
+  workspaceId String
+  
+  parentId    String?
+  parent      Location?  @relation("LocationHierarchy", fields: [parentId], references: [id])
+  children    Location[] @relation("LocationHierarchy")
+  
+  assignedUsers UserLocationAssignment[]
+  
+  // Potential address relations for users (where they live)
+  usersAtCountry  User[] @relation("UserCountry")
+  usersAtState    User[] @relation("UserState")
+  usersAtDistrict User[] @relation("UserDistrict")
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([workspaceId])
+  @@index([parentId])
+  @@map("locations")
+}
+
+model UserLocationAssignment {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  locationId  String
+  location    Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  
+  workspaceId String
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([userId, locationId])
+  @@index([workspaceId])
+  @@map("user_location_assignments")
 }
 
 model TargetType {
@@ -95,6 +161,7 @@ model TargetSetting {
   updatedAt            DateTime   @updatedAt
 
   @@index([userId, workspaceId])
+  @@index([targetTypeId])
   @@map("target_settings")
 }
 
@@ -113,12 +180,14 @@ model TargetViolation {
   updatedAt    DateTime      @updatedAt
 
   @@index([userId, date])
+  @@index([workspaceId])
   @@map("target_violations")
 }
 
 model User {
   id                       String      @id @default(cuid())
   name                     String?
+  username                 String?     @unique
   email                    String      @unique
   password                 String?
   phone                    String?
@@ -146,6 +215,21 @@ model User {
   department               Department? @relation(fields: [departmentId], references: [id])
   departmentId             String?
 
+  // Office relation
+  office                   Office?     @relation(fields: [officeId], references: [id])
+  officeId                 String?
+
+  // User's own location fields (Address)
+  countryId                String?
+  country                  Location?   @relation("UserCountry", fields: [countryId], references: [id])
+  stateId                  String?
+  state                    Location?   @relation("UserState", fields: [stateId], references: [id])
+  districtId               String?
+  district                 Location?   @relation("UserDistrict", fields: [districtId], references: [id])
+
+  // Assigned Locations for Visibility Boundary
+  assignedLocations        UserLocationAssignment[]
+
   // Supervisor self-relation
   supervisor               User?       @relation("UserSupervisor", fields: [supervisorId], references: [id])
   supervisorId             String?
@@ -158,10 +242,37 @@ model User {
   // Devices
   devices                  Device[]
 
+  // Audit logs relation
+  auditLogs                AuditLog[]
+
   createdAt                DateTime    @default(now())
   updatedAt                DateTime    @updatedAt
 
+  @@index([workspaceId])
+  @@index([roleId])
+  @@index([departmentId])
+  @@index([officeId])
+  @@index([supervisorId])
   @@map("users")
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  workspaceId String?
+  action      String   // e.g., "USER_LOGIN", "USER_CREATED", "SETTINGS_UPDATED"
+  entityType  String?  // e.g., "User", "Workspace"
+  entityId    String?
+  details     Json?    // Store old/new values or extra metadata
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([workspaceId])
+  @@index([action])
+  @@map("audit_logs")
 }
 
 model Device {
