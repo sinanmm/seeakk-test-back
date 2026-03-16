@@ -2,6 +2,7 @@ import prisma from '../../config/prisma';
 
 export const getRoles = async () => {
   return prisma.role.findMany({
+    where: { status: 'ACTIVE' },
     orderBy: { name: 'asc' }
   });
 };
