@@ -6,7 +6,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = "postgresql://neondb_owner:npg_ztxLH2CpGS8d@ep-shiny-darkness-a1hdx385-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+  url      = env("DATABASE_URL")
 }
 
 enum TargetCycle {
@@ -104,6 +104,11 @@ enum LeadSourceStatus {
   INACTIVE
 }
 
+enum StageStatus {
+  ACTIVE
+  INACTIVE
+}
+
 model Department {
   id          String   @id @default(uuid())
   name        String
@@ -139,6 +144,41 @@ model LeadSource {
   @@index([name])
   @@index([status])
   @@map("lead_sources")
+}
+
+model LeadStage {
+  id                 String          @id @default(uuid())
+  name               String
+  color              String          @default("#10b981")
+  isApprovalRequired Boolean         @default(false)
+  isLOB              Boolean         @default(false)
+  isClosed           Boolean         @default(false)
+  order              Int
+  status             StageStatus     @default(ACTIVE)
+  createdBy          String?
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  deletedAt          DateTime?
+  rules              StageRule[]
+
+  @@index([name])
+  @@index([status])
+  @@index([order])
+  @@map("lead_stages")
+}
+
+model StageRule {
+  id          String    @id @default(uuid())
+  stageId     String
+  field       String
+  condition   String
+  value       String?
+  isMandatory Boolean   @default(false)
+
+  stage       LeadStage @relation(fields: [stageId], references: [id], onDelete: Cascade)
+
+  @@index([stageId])
+  @@map("stage_rules")
 }
 
 model Office {

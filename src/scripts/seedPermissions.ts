@@ -31,6 +31,12 @@ const permissions = [
   { key: 'LEAD_SOURCES_EDIT', group: 'MASTER_CONFIGURATION', description: 'Edit lead sources' },
   { key: 'LEAD_SOURCES_DELETE', group: 'MASTER_CONFIGURATION', description: 'Delete lead sources' },
 
+  // MASTER LEAD STAGES
+  { key: 'LEAD_STAGES_VIEW', group: 'MASTER_CONFIGURATION', description: 'View lead stages' },
+  { key: 'LEAD_STAGES_CREATE', group: 'MASTER_CONFIGURATION', description: 'Create lead stages' },
+  { key: 'LEAD_STAGES_EDIT', group: 'MASTER_CONFIGURATION', description: 'Edit and reorder lead stages' },
+  { key: 'LEAD_STAGES_DELETE', group: 'MASTER_CONFIGURATION', description: 'Delete lead stages' },
+
   // LEADS MANAGEMENT
   { key: 'LEADS_VIEW_ALL', group: 'LEADS_MANAGEMENT', description: 'View all leads' },
   { key: 'LEADS_VIEW_OWN', group: 'LEADS_MANAGEMENT', description: 'View only own leads' },

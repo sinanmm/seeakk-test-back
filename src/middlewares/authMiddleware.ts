@@ -168,8 +168,10 @@ export const checkPermission = (permissionKey: string) => {
       const hasRequestedPermission = permissions.includes(permissionKey);
       const hasLeadSourceFallbackPermission =
         permissionKey.startsWith('LEAD_SOURCES_') && permissions.includes('SYSTEM_CONFIG');
+      const hasLeadStageFallbackPermission =
+        permissionKey.startsWith('LEAD_STAGES_') && permissions.includes('SYSTEM_CONFIG');
 
-      if (!hasRequestedPermission && !hasLeadSourceFallbackPermission) {
+      if (!hasRequestedPermission && !hasLeadSourceFallbackPermission && !hasLeadStageFallbackPermission) {
         logger.warn(`Permission denied. Required: ${permissionKey}. User has: ${permissions.join(', ')}`, {
           userId: req.user.id,
           roleId,
