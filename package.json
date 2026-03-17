@@ -15,7 +15,7 @@
   "description": "",
   "dependencies": {
     "@prisma/adapter-pg": "^7.5.0",
-    "@prisma/client": "^7.5.0",
+    "@prisma/client": "^5.22.0",
     "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
@@ -30,7 +30,7 @@
     "morgan": "^1.10.1",
     "nodemailer": "^8.0.1",
     "pg": "^8.20.0",
-    "prisma": "^7.5.0",
+    "prisma": "^5.22.0",
     "rate-limit-redis": "^4.3.1",
     "redis": "^5.11.0",
     "request-ip": "^3.3.0",

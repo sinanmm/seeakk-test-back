@@ -1,22 +1,9 @@
-import { PrismaClient } from '@prisma/client';
-import { PrismaPg } from '@prisma/adapter-pg';
-import * as pg from 'pg';
+import { PrismaClient } from '../../prisma/generated/client';
 import * as dotenv from 'dotenv';
 
 dotenv.config();
 
-const connectionString = process.env.DATABASE_URL;
-
-if (!connectionString) {
-  console.error('DATABASE_URL is not defined in .env file');
-  process.exit(1);
-}
-
-// Fixed: use 'pool as any' to avoid @types/pg version mismatch
-const pool = new pg.Pool({ connectionString });
-const adapter = new PrismaPg(pool as any);
-// Fixed: use 'adapter as any' to avoid PrismaClientOptions type mismatch
-const prisma = new PrismaClient({ adapter: adapter as any }) as any;
+const prisma = new PrismaClient() as any;
 
 const permissions = [
   // USERS MANAGEMENT
@@ -31,6 +18,18 @@ const permissions = [
   { key: 'ROLES_CREATE', group: 'ADMIN_MANAGEMENT', description: 'Create new roles' },
   { key: 'ROLES_EDIT', group: 'ADMIN_MANAGEMENT', description: 'Edit roles and permissions' },
   { key: 'ROLES_DELETE', group: 'ADMIN_MANAGEMENT', description: 'Delete roles' },
+
+  // DEPARTMENTS MANAGEMENT
+  { key: 'DEPARTMENTS_VIEW', group: 'ADMIN_MANAGEMENT', description: 'View departments' },
+  { key: 'DEPARTMENTS_CREATE', group: 'ADMIN_MANAGEMENT', description: 'Create new departments' },
+  { key: 'DEPARTMENTS_EDIT', group: 'ADMIN_MANAGEMENT', description: 'Edit existing departments' },
+  { key: 'DEPARTMENTS_DELETE', group: 'ADMIN_MANAGEMENT', description: 'Delete departments' },
+
+  // MASTER LEAD SOURCES
+  { key: 'LEAD_SOURCES_VIEW', group: 'MASTER_CONFIGURATION', description: 'View lead sources' },
+  { key: 'LEAD_SOURCES_CREATE', group: 'MASTER_CONFIGURATION', description: 'Create lead sources' },
+  { key: 'LEAD_SOURCES_EDIT', group: 'MASTER_CONFIGURATION', description: 'Edit lead sources' },
+  { key: 'LEAD_SOURCES_DELETE', group: 'MASTER_CONFIGURATION', description: 'Delete lead sources' },
 
   // LEADS MANAGEMENT
   { key: 'LEADS_VIEW_ALL', group: 'LEADS_MANAGEMENT', description: 'View all leads' },
@@ -57,6 +56,7 @@ const permissions = [
 
 async function main() {
   console.log('Seeding permissions...');
+  let failed = 0;
 
   for (const permission of permissions) {
     try {
@@ -69,8 +69,13 @@ async function main() {
         create: permission,
       });
     } catch (err) {
+      failed += 1;
       console.warn(`Failed to seed permission ${permission.key}:`, err);
     }
+  }
+
+  if (failed > 0) {
+    throw new Error(`Permission seeding failed for ${failed} item(s).`);
   }
 
   console.log('Permissions seeded successfully!');
@@ -83,5 +88,4 @@ main()
   })
   .finally(async () => {
     await prisma.$disconnect();
-    await pool.end();
   });

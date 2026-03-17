@@ -5,6 +5,8 @@ import authRoutes from './routes/Auth/authRoutes';
 import workspaceRoutes from './routes/Workspace/workspaceRoutes';
 import adminUserRoutes from './routes/User/adminUserRoutes';
 import rolesRoutes from './modules/admin/roles/roles.routes';
+import departmentsRoutes from './modules/admin/departments/departments.routes';
+import leadSourceRoutes from './modules/master/lead-source/leadSource.routes';
 import auditRoutes from './routes/Audit/auditRoutes';
 import logger from './utils/logger';
 import { globalLimiter } from './middlewares/rateLimiter';
@@ -24,6 +26,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/workspace', workspaceRoutes);
 app.use('/api/admin/users', adminUserRoutes);
 app.use('/api/admin/roles', rolesRoutes);
+app.use('/api/admin/departments', departmentsRoutes);
+app.use('/api/master/lead-sources', leadSourceRoutes);
 app.use('/api/audit', auditRoutes);
 
 // Health check

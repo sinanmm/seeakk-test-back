@@ -1,14 +1,9 @@
-import { PrismaClient } from '@prisma/client';
-import { PrismaPg } from '@prisma/adapter-pg';
-import * as pg from 'pg';
+import { PrismaClient } from '../../prisma/generated/client';
 import * as dotenv from 'dotenv';
 
 dotenv.config();
 
-const connectionString = process.env.DATABASE_URL;
-const pool = new pg.Pool({ connectionString });
-const adapter = new PrismaPg(pool as any);
-const prisma = new PrismaClient({ adapter: adapter as any }) as any;
+const prisma = new PrismaClient() as any;
 
 async function main() {
   const roles = await prisma.role.findMany();
@@ -44,5 +39,4 @@ async function main() {
 
 main().finally(async () => {
   await prisma.$disconnect();
-  await pool.end();
 });

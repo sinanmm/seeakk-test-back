@@ -119,7 +119,7 @@ export const verifyEmail = async (req: Request, res: Response): Promise<any> => 
       <html>
         <body style="font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; background-color: #f9fafb;">
           <div style="text-align: center; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-            <h1 style="color: #10b981;">Email Verified! ✅</h1>
+            <h1 style="color: #10b981;">Email Verified!</h1>
             <p style="color: #6b7280; font-size: 1.1rem; margin-top: 10px;">Your account has been successfully activated.</p>
             <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/login"
                style="display: inline-block; margin-top: 20px; padding: 10px 20px; background-color: #10b981; color: white; text-decoration: none; border-radius: 8px; font-weight: bold;">
@@ -484,3 +484,4 @@ export const listUsers = async (req: Request, res: Response): Promise<any> => {
     return res.status(500).json({ message: 'Failed to fetch users' });
   }
 };
+

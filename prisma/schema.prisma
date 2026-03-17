@@ -1,13 +1,12 @@
-// Seeakk CRM - Prisma Schema
-// Target: Neon PostgreSQL
-
 generator client {
-  provider = "prisma-client-js"
-  engineType = "library"
+  provider        = "prisma-client-js"
+  output          = "./generated/client"
+  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
   provider = "postgresql"
+  url      = "postgresql://neondb_owner:npg_ztxLH2CpGS8d@ep-shiny-darkness-a1hdx385-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
 }
 
 enum TargetCycle {
@@ -88,24 +87,58 @@ model Workspace {
   owner          User         @relation("WorkspaceOwner", fields: [ownerId], references: [id])
   ownerId        String       @unique
   users          User[]       @relation("WorkspaceMembers")
+  departments    Department[]
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
   @@map("workspaces")
 }
 
+enum DepartmentStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum LeadSourceStatus {
+  ACTIVE
+  INACTIVE
+}
+
 model Department {
-  id          String   @id @default(cuid())
+  id          String   @id @default(uuid())
   name        String
   description String?
+  status      DepartmentStatus @default(ACTIVE)
+  
+  workspace   Workspace? @relation(fields: [workspaceId], references: [id])
   workspaceId String?
-  users       User[]
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?
+
+  users       User[]
 
   @@unique([name, workspaceId])
   @@index([workspaceId])
+  @@index([name])
+  @@index([status])
+  @@index([createdAt])
   @@map("departments")
+}
+
+model LeadSource {
+  id        String           @id @default(uuid())
+  name      String           @unique
+  status    LeadSourceStatus @default(ACTIVE)
+  createdBy String?
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  deletedAt DateTime?
+
+  @@index([name])
+  @@index([status])
+  @@map("lead_sources")
 }
 
 model Office {

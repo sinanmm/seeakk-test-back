@@ -129,6 +129,11 @@ export const checkPermission = (permissionKey: string) => {
     const cacheKey = `role_permissions:${roleId}`;
 
     try {
+      const roleName = (req.user.role?.name || '').toLowerCase().trim();
+      if (roleName === 'super admin' || roleName === 'super-admin') {
+        return next();
+      }
+
       let permissions: string[] = [];
 
       // 1. Try to get from Redis
@@ -160,7 +165,11 @@ export const checkPermission = (permissionKey: string) => {
       }
 
       // 4. Check permission
-      if (!permissions.includes(permissionKey)) {
+      const hasRequestedPermission = permissions.includes(permissionKey);
+      const hasLeadSourceFallbackPermission =
+        permissionKey.startsWith('LEAD_SOURCES_') && permissions.includes('SYSTEM_CONFIG');
+
+      if (!hasRequestedPermission && !hasLeadSourceFallbackPermission) {
         logger.warn(`Permission denied. Required: ${permissionKey}. User has: ${permissions.join(', ')}`, {
           userId: req.user.id,
           roleId,

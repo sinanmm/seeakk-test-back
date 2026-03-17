@@ -1,14 +1,14 @@
 import prisma from '../../../config/prisma';
-import { CreateRoleInput, UpdateRoleInput, ListRolesQuery } from './roles.validator';
+import { CreateRoleInput, UpdateRoleInput, ListRolesQuery, RoleStatus } from './roles.validator';
 import { RoleResponse, ListRolesResponse } from './roles.types';
-import { RoleStatus } from '@prisma/client';
 import logger from '../../../utils/logger';
+import { redisClient } from '../../../config/redis';
 
 /**
  * Fetch all permissions by their keys.
  */
 const getPermissionsByKeys = async (keys: string[]) => {
-  return await prisma.permission.findMany({
+  return await (prisma.permission as any).findMany({
     where: { key: { in: keys } },
     select: { id: true, key: true },
   });
@@ -21,7 +21,7 @@ export const createRole = async (input: CreateRoleInput, userId: string): Promis
   const { name, status, description, permissions: permissionKeys } = input;
 
   // 1. Check if role name exists
-  const existingRole = await prisma.role.findUnique({ where: { name } });
+  const existingRole = await (prisma.role as any).findUnique({ where: { name } });
   if (existingRole) {
     const err: any = new Error('A role with this name already exists.');
     err.statusCode = 409;
@@ -39,7 +39,7 @@ export const createRole = async (input: CreateRoleInput, userId: string): Promis
   }
 
   // 3. Create role and role_permissions in a transaction
-  const role = await prisma.$transaction(async (tx: any) => {
+  const role = await (prisma.$transaction as any)(async (tx: any) => {
     const newRole = await tx.role.create({
       data: {
         name,
@@ -58,6 +58,10 @@ export const createRole = async (input: CreateRoleInput, userId: string): Promis
 
     return newRole;
   });
+
+  if (redisClient.isOpen) {
+    await redisClient.del(`role_permissions:${role.id}`);
+  }
 
   return {
     ...role,
@@ -84,9 +88,9 @@ export const listRoles = async (query: ListRolesQuery): Promise<ListRolesRespons
       : {}),
   };
 
-  const [total, roles] = await prisma.$transaction([
-    prisma.role.count({ where }),
-    prisma.role.findMany({
+  const [total, roles] = await (prisma.$transaction as any)([
+    (prisma.role as any).count({ where }),
+    (prisma.role as any).findMany({
       where,
       skip,
       take: limit,
@@ -122,7 +126,7 @@ export const listRoles = async (query: ListRolesQuery): Promise<ListRolesRespons
  * GET /api/admin/roles/:id
  */
 export const getRoleById = async (id: string): Promise<RoleResponse> => {
-  const role = await prisma.role.findUnique({
+  const role = await (prisma.role as any).findUnique({
     where: { id },
     include: {
       permissions: {
@@ -157,7 +161,7 @@ export const updateRole = async (id: string, input: UpdateRoleInput): Promise<Ro
   const { name, status, description, permissions: permissionKeys } = input;
 
   // 1. Check if role exists
-  const existingRole = await prisma.role.findUnique({ where: { id } });
+  const existingRole = await (prisma.role as any).findUnique({ where: { id } });
   if (!existingRole) {
     const err: any = new Error('Role not found.');
     err.statusCode = 404;
@@ -166,7 +170,7 @@ export const updateRole = async (id: string, input: UpdateRoleInput): Promise<Ro
 
   // 2. Check name uniqueness if changed
   if (name && name !== existingRole.name) {
-    const nameTaken = await prisma.role.findUnique({ where: { name } });
+    const nameTaken = await (prisma.role as any).findUnique({ where: { name } });
     if (nameTaken) {
       const err: any = new Error('A role with this name already exists.');
       err.statusCode = 409;
@@ -175,7 +179,7 @@ export const updateRole = async (id: string, input: UpdateRoleInput): Promise<Ro
   }
 
   // 3. Update in transaction
-  const updatedRole = await prisma.$transaction(async (tx: any) => {
+  const updatedRole = await (prisma.$transaction as any)(async (tx: any) => {
     // Update role fields
     const role = await tx.role.update({
       where: { id },
@@ -219,6 +223,10 @@ export const updateRole = async (id: string, input: UpdateRoleInput): Promise<Ro
     return role;
   });
 
+  if (redisClient.isOpen) {
+    await redisClient.del(`role_permissions:${id}`);
+  }
+
   // Get current permissions
   const roleWithPerms = await getRoleById(id);
 
@@ -229,7 +237,7 @@ export const updateRole = async (id: string, input: UpdateRoleInput): Promise<Ro
  * GET /api/admin/roles/meta/permissions
  */
 export const listPermissions = async () => {
-  const permissions = await prisma.permission.findMany({
+  const permissions = await (prisma.permission as any).findMany({
     orderBy: [
       { group: 'asc' },
       { key: 'asc' },
@@ -244,7 +252,7 @@ export const listPermissions = async () => {
  */
 export const deleteRole = async (id: string): Promise<void> => {
   // 1. Check if role exists
-  const role = await prisma.role.findUnique({
+  const role = await (prisma.role as any).findUnique({
     where: { id },
     include: { _count: { select: { users: true } } },
   });
@@ -270,8 +278,12 @@ export const deleteRole = async (id: string): Promise<void> => {
   }
 
   // 4. Delete relations and role in transaction
-  await prisma.$transaction(async (tx: any) => {
+  await (prisma.$transaction as any)(async (tx: any) => {
     await tx.rolePermission.deleteMany({ where: { roleId: id } });
     await tx.role.delete({ where: { id } });
   });
+
+  if (redisClient.isOpen) {
+    await redisClient.del(`role_permissions:${id}`);
+  }
 };

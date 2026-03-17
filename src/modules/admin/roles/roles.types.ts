@@ -1,4 +1,4 @@
-import { RoleStatus } from '@prisma/client';
+import { RoleStatus } from './roles.validator';
 
 export interface RoleResponse {
   id: string;
