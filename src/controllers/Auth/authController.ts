@@ -9,6 +9,32 @@ import { redisClient } from '../../config/redis';
 import { sendVerificationEmail } from '../../services/Email/emailService';
 import { trackUserDevice } from '../../utils/deviceTracker';
 import logger from '../../utils/logger';
+import auditService from '../../services/Audit/auditService';
+
+const parsePositiveInt = (value: unknown, fallback: number): number => {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed < 1) return fallback;
+  return Math.floor(parsed);
+};
+
+const invalidateUserSessions = async (userId: string): Promise<void> => {
+  try {
+    if (!redisClient.isOpen) return;
+    let cursor = 0;
+    do {
+      const reply = await (redisClient as any).scan(cursor, { MATCH: 'refresh:*', COUNT: 100 });
+      cursor = Number(reply.cursor);
+      for (const key of reply.keys) {
+        const storedUserId = await redisClient.get(key);
+        if (storedUserId === userId) {
+          await redisClient.del(key);
+        }
+      }
+    } while (cursor !== 0);
+  } catch (error: any) {
+    logger.warn('Failed to invalidate user sessions during password reset', { userId, error: error?.message });
+  }
+};
 
 export const inviteUser = async (req: Request, res: Response): Promise<any> => {
   return res.status(501).json({ message: 'inviteUser is not implemented yet' });
@@ -48,6 +74,16 @@ export const register = async (req: Request, res: Response): Promise<any> => {
     });
 
     await sendVerificationEmail(user.email, verificationToken);
+
+    await auditService.log({
+      userId: user.id,
+      action: 'USER_REGISTERED',
+      entityType: 'User',
+      entityId: user.id,
+      details: { email: user.email },
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
 
     return res.status(201).json({
       message: 'Registration successful. Please check your email to verify your account.',
@@ -89,11 +125,20 @@ export const verifyEmail = async (req: Request, res: Response): Promise<any> => 
 
     logger.info('Email verified', { userId: user.id, email: user.email, action: 'verify_email_success' });
 
+    await auditService.log({
+      userId: user.id,
+      action: 'EMAIL_VERIFIED',
+      entityType: 'User',
+      entityId: user.id,
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
+
     return res.status(200).send(`
       <html>
         <body style="font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; background-color: #f9fafb;">
           <div style="text-align: center; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-            <h1 style="color: #10b981;">Email Verified! ✅</h1>
+            <h1 style="color: #10b981;">Email Verified!</h1>
             <p style="color: #6b7280; font-size: 1.1rem; margin-top: 10px;">Your account has been successfully activated.</p>
             <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/login"
                style="display: inline-block; margin-top: 20px; padding: 10px 20px; background-color: #10b981; color: white; text-decoration: none; border-radius: 8px; font-weight: bold;">
@@ -105,6 +150,93 @@ export const verifyEmail = async (req: Request, res: Response): Promise<any> => 
     `);
   } catch (error) {
     return res.status(500).json({ message: 'Email verification failed' });
+  }
+};
+
+export const renderResetPasswordPage = async (req: Request, res: Response): Promise<any> => {
+  const token = typeof req.query.token === 'string' ? req.query.token : '';
+  if (!token) {
+    return res.status(400).send('Invalid reset link.');
+  }
+
+  return res.status(200).send(`
+    <html>
+      <head><title>Reset Password - Seeakk</title></head>
+      <body style="font-family: sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8fafc;">
+        <form method="POST" action="/api/auth/reset-password/confirm" style="width: 100%; max-width: 420px; background: #fff; padding: 24px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,.08);">
+          <h2 style="margin: 0 0 8px;">Reset your password</h2>
+          <p style="margin: 0 0 16px; color: #64748b;">Enter a new password for your account.</p>
+          <input type="hidden" name="token" value="${token}" />
+          <label style="display:block; margin-bottom: 6px;">New Password</label>
+          <input name="newPassword" type="password" minlength="8" required style="width:100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px;" />
+          <button type="submit" style="margin-top: 14px; width:100%; border:0; background:#2563eb; color:#fff; padding:10px; border-radius:8px; font-weight:600; cursor:pointer;">Update Password</button>
+        </form>
+      </body>
+    </html>
+  `);
+};
+
+export const resetPasswordWithToken = async (req: Request, res: Response): Promise<any> => {
+  try {
+    const token = String(req.body?.token || '').trim();
+    const newPassword = String(req.body?.newPassword || '').trim();
+
+    if (!token || !newPassword || newPassword.length < 8) {
+      return res.status(400).json({ message: 'Valid token and password (min 8 chars) are required.' });
+    }
+
+    const jwtSecret = process.env.JWT_SECRET as string;
+    if (!jwtSecret) {
+      return res.status(500).json({ message: 'Server configuration error.' });
+    }
+
+    let decoded: any;
+    try {
+      decoded = jwt.verify(token, jwtSecret);
+    } catch {
+      return res.status(400).json({ message: 'Invalid or expired reset token.' });
+    }
+
+    if (!decoded?.userId || decoded?.purpose !== 'password_reset') {
+      return res.status(400).json({ message: 'Invalid reset token payload.' });
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
+    if (!user || user.deletedAt) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { password: hashedPassword },
+    });
+    await invalidateUserSessions(user.id);
+
+    await auditService.log({
+      userId: user.id,
+      workspaceId: user.workspaceId || undefined,
+      action: 'PASSWORD_RESET',
+      entityType: 'User',
+      entityId: user.id,
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
+
+    return res.status(200).send(`
+      <html>
+        <body style="font-family: sans-serif; display:flex; align-items:center; justify-content:center; min-height:100vh; background:#f8fafc;">
+          <div style="text-align:center; background:#fff; padding:24px; border-radius:12px; box-shadow:0 4px 20px rgba(0,0,0,.08);">
+            <h2 style="margin:0 0 8px; color:#16a34a;">Password Updated</h2>
+            <p style="color:#64748b;">Your password has been reset successfully. You can now login with the new password.</p>
+            <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/login" style="display:inline-block; margin-top:12px; background:#2563eb; color:#fff; text-decoration:none; padding:10px 14px; border-radius:8px;">Go to Login</a>
+          </div>
+        </body>
+      </html>
+    `);
+  } catch (error: any) {
+    logger.error('Reset password with token failed', { error: error?.message });
+    return res.status(500).json({ message: 'Failed to reset password.' });
   }
 };
 
@@ -134,6 +266,12 @@ export const login = async (req: Request, res: Response): Promise<any> => {
       return res.status(403).json({ message: 'Account is inactive' });
     }
 
+    if ((user as any).isLocked) {
+      return res.status(403).json({
+        message: 'Your account has been locked due to target non-compliance. Please contact your supervisor or admin.',
+      });
+    }
+
     if (!user.isEmailVerified) {
       return res.status(403).json({ message: 'Please verify your email address to log in.' });
     }
@@ -146,9 +284,20 @@ export const login = async (req: Request, res: Response): Promise<any> => {
 
     logger.info('Login successful', { email, userId: user.id, action: 'login_success' });
 
-    const tokens = generateTokens(user);
+    const tokens = generateTokens(user as any);
     await redisClient.set(`refresh:${tokens.tokenId}`, user.id);
-    await trackUserDevice(req, user);
+    await trackUserDevice(req, user as any);
+
+    await auditService.log({
+      userId: user.id,
+      workspaceId: user.workspaceId || undefined,
+      action: 'USER_LOGIN',
+      entityType: 'User',
+      entityId: user.id,
+      details: { method: 'password' },
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
 
     return res.status(200).json({
       user: {
@@ -205,7 +354,17 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
       });
     }
 
-    const tokens = generateTokens(user);
+    if (!user.isActive) {
+      return res.status(403).json({ message: 'Account is inactive' });
+    }
+
+    if ((user as any).isLocked) {
+      return res.status(403).json({
+        message: 'Your account has been locked due to target non-compliance. Please contact your supervisor or admin.',
+      });
+    }
+
+    const tokens = generateTokens(user as any);
 
     if (redisClient?.isOpen) {
       await redisClient.set(`refresh:${tokens.tokenId}`, user.id);
@@ -214,7 +373,18 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
     }
 
     logger.info('Google login successful', { email: user.email, userId: user.id, action: 'google_login_success' });
-    await trackUserDevice(req, user);
+    await trackUserDevice(req, user as any);
+
+    await auditService.log({
+      userId: user.id,
+      workspaceId: user.workspaceId || undefined,
+      action: 'USER_LOGIN',
+      entityType: 'User',
+      entityId: user.id,
+      details: { method: 'google' },
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
 
     return res.json({
       user: {
@@ -268,9 +438,9 @@ export const refreshToken = async (req: Request, res: Response): Promise<any> =>
       return res.status(403).json({ message: 'User not found or inactive' });
     }
 
-    const tokens = generateTokens(user);
+    const tokens = generateTokens(user as any);
     await redisClient.set(`refresh:${tokens.tokenId}`, user.id);
-    await trackUserDevice(req, user);
+    await trackUserDevice(req, user as any);
 
     return res.status(200).json({
       user: {
@@ -305,6 +475,15 @@ export const logout = async (req: Request, res: Response): Promise<any> => {
 
     if (decoded?.tokenId) {
       await redisClient.del(`refresh:${decoded.tokenId}`);
+
+      await auditService.log({
+        userId: decoded.userId,
+        action: 'USER_LOGOUT',
+        entityType: 'User',
+        entityId: decoded.userId,
+        ipAddress: req.ip,
+        userAgent: req.headers['user-agent'],
+      });
     }
 
     return res.status(200).json({ message: 'Logged out successfully' });
@@ -334,3 +513,81 @@ export const getMe = async (req: Request, res: Response): Promise<any> => {
     return res.status(500).json({ message: 'Failed to fetch user profile' });
   }
 };
+
+export const listUsers = async (req: Request, res: Response): Promise<any> => {
+  try {
+    const currentUser = req.user;
+    if (!currentUser) {
+      return res.status(401).json({ message: 'Not authorized' });
+    }
+
+    const page = parsePositiveInt(req.query.page, 1);
+    const requestedLimit = parsePositiveInt(req.query.limit, 20);
+    const limit = Math.min(requestedLimit, 100);
+    const skip = (page - 1) * limit;
+    const search = typeof req.query.search === 'string' ? req.query.search.trim() : '';
+
+    const where = {
+      ...(currentUser.workspaceId ? { workspaceId: currentUser.workspaceId } : {}),
+      ...(search
+        ? {
+            OR: [
+              { name: { contains: search, mode: 'insensitive' as const } },
+              { email: { contains: search, mode: 'insensitive' as const } },
+            ],
+          }
+        : {}),
+    };
+
+    const [total, users] = await prisma.$transaction([
+      prisma.user.count({ where }),
+      prisma.user.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          isActive: true,
+          isEmailVerified: true,
+          isOnboarded: true,
+          createdAt: true,
+          updatedAt: true,
+          role: {
+            select: {
+              id: true,
+              name: true,
+              description: true,
+            },
+          },
+          _count: {
+            select: { devices: true },
+          },
+        },
+      }),
+    ]);
+
+    const totalPages = Math.max(1, Math.ceil(total / limit));
+
+    return res.status(200).json({
+      users,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+      },
+    });
+  } catch (error: any) {
+    logger.error('Error fetching paginated users', {
+      error: error.message,
+      action: 'list_users_failed',
+    });
+    return res.status(500).json({ message: 'Failed to fetch users' });
+  }
+};
+

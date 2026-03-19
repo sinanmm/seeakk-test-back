@@ -7,6 +7,8 @@ const router = Router();
 
 router.post('/register', authLimiter, authController.register);
 router.get('/verify-email', authController.verifyEmail);
+router.get('/reset-password', authController.renderResetPasswordPage);
+router.post('/reset-password/confirm', authController.resetPasswordWithToken);
 
 // Example of RBAC logic in action: Only Admin & Managers can invite new team members
 router.post('/invite', protect, authorize('admin', 'manager'), authController.inviteUser);
@@ -23,5 +25,6 @@ router.post('/logout', authController.logout);
 
 // Example of a strictly PROTECTED route requiring any valid logged-in user
 router.get('/me', protect, authController.getMe);
+router.get('/users', protect, authorize('admin', 'manager'), authController.listUsers);
 
 export default router;

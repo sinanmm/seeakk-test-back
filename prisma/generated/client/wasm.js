@@ -1,0 +1,525 @@
+
+Object.defineProperty(exports, "__esModule", { value: true });
+
+const {
+  PrismaClientKnownRequestError,
+  PrismaClientUnknownRequestError,
+  PrismaClientRustPanicError,
+  PrismaClientInitializationError,
+  PrismaClientValidationError,
+  NotFoundError,
+  getPrismaClient,
+  sqltag,
+  empty,
+  join,
+  raw,
+  skip,
+  Decimal,
+  Debug,
+  objectEnumValues,
+  makeStrictEnum,
+  Extensions,
+  warnOnce,
+  defineDmmfProperty,
+  Public,
+  getRuntime
+} = require('./runtime/wasm.js')
+
+
+const Prisma = {}
+
+exports.Prisma = Prisma
+exports.$Enums = {}
+
+/**
+ * Prisma Client JS version: 5.22.0
+ * Query Engine version: 605197351a3c8bdd595af2d2a9bc3025bca48ea2
+ */
+Prisma.prismaVersion = {
+  client: "5.22.0",
+  engine: "605197351a3c8bdd595af2d2a9bc3025bca48ea2"
+}
+
+Prisma.PrismaClientKnownRequestError = PrismaClientKnownRequestError;
+Prisma.PrismaClientUnknownRequestError = PrismaClientUnknownRequestError
+Prisma.PrismaClientRustPanicError = PrismaClientRustPanicError
+Prisma.PrismaClientInitializationError = PrismaClientInitializationError
+Prisma.PrismaClientValidationError = PrismaClientValidationError
+Prisma.NotFoundError = NotFoundError
+Prisma.Decimal = Decimal
+
+/**
+ * Re-export of sql-template-tag
+ */
+Prisma.sql = sqltag
+Prisma.empty = empty
+Prisma.join = join
+Prisma.raw = raw
+Prisma.validator = Public.validator
+
+/**
+* Extensions
+*/
+Prisma.getExtensionContext = Extensions.getExtensionContext
+Prisma.defineExtension = Extensions.defineExtension
+
+/**
+ * Shorthand utilities for JSON filtering
+ */
+Prisma.DbNull = objectEnumValues.instances.DbNull
+Prisma.JsonNull = objectEnumValues.instances.JsonNull
+Prisma.AnyNull = objectEnumValues.instances.AnyNull
+
+Prisma.NullTypes = {
+  DbNull: objectEnumValues.classes.DbNull,
+  JsonNull: objectEnumValues.classes.JsonNull,
+  AnyNull: objectEnumValues.classes.AnyNull
+}
+
+
+
+
+
+/**
+ * Enums
+ */
+exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
+  ReadUncommitted: 'ReadUncommitted',
+  ReadCommitted: 'ReadCommitted',
+  RepeatableRead: 'RepeatableRead',
+  Serializable: 'Serializable'
+});
+
+exports.Prisma.RoleScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  status: 'status',
+  description: 'description',
+  createdBy: 'createdBy',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.PermissionScalarFieldEnum = {
+  id: 'id',
+  key: 'key',
+  group: 'group',
+  description: 'description',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.RolePermissionScalarFieldEnum = {
+  roleId: 'roleId',
+  permissionId: 'permissionId'
+};
+
+exports.Prisma.WorkspaceScalarFieldEnum = {
+  id: 'id',
+  companyName: 'companyName',
+  employeeCount: 'employeeCount',
+  timeZone: 'timeZone',
+  language: 'language',
+  currencyLocale: 'currencyLocale',
+  loadSampleData: 'loadSampleData',
+  ownerId: 'ownerId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.DepartmentScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  status: 'status',
+  workspaceId: 'workspaceId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
+};
+
+exports.Prisma.LeadSourceScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  status: 'status',
+  createdBy: 'createdBy',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
+};
+
+exports.Prisma.LeadStageScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  color: 'color',
+  isApprovalRequired: 'isApprovalRequired',
+  isLOB: 'isLOB',
+  isClosed: 'isClosed',
+  order: 'order',
+  status: 'status',
+  createdBy: 'createdBy',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
+};
+
+exports.Prisma.StageRuleScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  inputType: 'inputType',
+  sortOrder: 'sortOrder',
+  required: 'required',
+  legacyField: 'legacyField',
+  legacyCondition: 'legacyCondition',
+  legacyValue: 'legacyValue',
+  legacyIsMandatory: 'legacyIsMandatory',
+  status: 'status',
+  stageId: 'stageId',
+  createdBy: 'createdBy',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
+};
+
+exports.Prisma.LeadStageInputScalarFieldEnum = {
+  id: 'id',
+  leadId: 'leadId',
+  ruleId: 'ruleId',
+  value: 'value',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.OfficeScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  address: 'address',
+  workspaceId: 'workspaceId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.LocationScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  type: 'type',
+  workspaceId: 'workspaceId',
+  parentId: 'parentId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.UserLocationAssignmentScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  locationId: 'locationId',
+  workspaceId: 'workspaceId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.TargetTypeScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  workspaceId: 'workspaceId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.TargetSettingScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  targetTypeId: 'targetTypeId',
+  cycle: 'cycle',
+  monthlyTargetLeads: 'monthlyTargetLeads',
+  dailyFollowupTarget: 'dailyFollowupTarget',
+  revenueTarget: 'revenueTarget',
+  startDate: 'startDate',
+  endDate: 'endDate',
+  workspaceId: 'workspaceId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.TargetViolationScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  date: 'date',
+  type: 'type',
+  attemptCount: 'attemptCount',
+  status: 'status',
+  message: 'message',
+  workspaceId: 'workspaceId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.UserScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  username: 'username',
+  email: 'email',
+  password: 'password',
+  phone: 'phone',
+  googleId: 'googleId',
+  isOnboarded: 'isOnboarded',
+  isActive: 'isActive',
+  isEmailVerified: 'isEmailVerified',
+  isLocked: 'isLocked',
+  verificationToken: 'verificationToken',
+  verificationTokenExpires: 'verificationTokenExpires',
+  invitationToken: 'invitationToken',
+  invitationExpires: 'invitationExpires',
+  deletedAt: 'deletedAt',
+  roleId: 'roleId',
+  workspaceId: 'workspaceId',
+  departmentId: 'departmentId',
+  officeId: 'officeId',
+  countryId: 'countryId',
+  stateId: 'stateId',
+  districtId: 'districtId',
+  supervisorId: 'supervisorId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.RosterEntryScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  rosterType: 'rosterType',
+  name: 'name',
+  startDate: 'startDate',
+  endDate: 'endDate',
+  shiftSession: 'shiftSession',
+  shiftStartTime: 'shiftStartTime',
+  shiftEndTime: 'shiftEndTime',
+  status: 'status',
+  createdBy: 'createdBy',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
+};
+
+exports.Prisma.AuditLogScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  workspaceId: 'workspaceId',
+  action: 'action',
+  entityType: 'entityType',
+  entityId: 'entityId',
+  details: 'details',
+  ipAddress: 'ipAddress',
+  userAgent: 'userAgent',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.DeviceScalarFieldEnum = {
+  id: 'id',
+  deviceId: 'deviceId',
+  os: 'os',
+  browser: 'browser',
+  deviceType: 'deviceType',
+  ipAddress: 'ipAddress',
+  lastActive: 'lastActive',
+  userId: 'userId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.SortOrder = {
+  asc: 'asc',
+  desc: 'desc'
+};
+
+exports.Prisma.NullableJsonNullValueInput = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull
+};
+
+exports.Prisma.QueryMode = {
+  default: 'default',
+  insensitive: 'insensitive'
+};
+
+exports.Prisma.NullsOrder = {
+  first: 'first',
+  last: 'last'
+};
+
+exports.Prisma.JsonNullValueFilter = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull,
+  AnyNull: Prisma.AnyNull
+};
+exports.RoleStatus = exports.$Enums.RoleStatus = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE'
+};
+
+exports.DepartmentStatus = exports.$Enums.DepartmentStatus = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE'
+};
+
+exports.LeadSourceStatus = exports.$Enums.LeadSourceStatus = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE'
+};
+
+exports.StageStatus = exports.$Enums.StageStatus = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE'
+};
+
+exports.InputType = exports.$Enums.InputType = {
+  TEXT: 'TEXT',
+  TEXTAREA: 'TEXTAREA',
+  RADIO: 'RADIO',
+  SELECT: 'SELECT'
+};
+
+exports.RuleStatus = exports.$Enums.RuleStatus = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE'
+};
+
+exports.LocationType = exports.$Enums.LocationType = {
+  COUNTRY: 'COUNTRY',
+  STATE: 'STATE',
+  DISTRICT: 'DISTRICT',
+  CITY: 'CITY',
+  WARD: 'WARD',
+  CONSTITUENCY: 'CONSTITUENCY',
+  OFFICE: 'OFFICE'
+};
+
+exports.TargetCycle = exports.$Enums.TargetCycle = {
+  MONTHLY: 'MONTHLY',
+  QUARTERLY: 'QUARTERLY',
+  YEARLY: 'YEARLY',
+  CUSTOM: 'CUSTOM'
+};
+
+exports.ViolationType = exports.$Enums.ViolationType = {
+  DAILY: 'DAILY',
+  MONTHLY: 'MONTHLY'
+};
+
+exports.RosterType = exports.$Enums.RosterType = {
+  HOLIDAY: 'HOLIDAY',
+  WEEKLY_OFF: 'WEEKLY_OFF',
+  SHIFT: 'SHIFT',
+  SPECIAL_WORKING_DAY: 'SPECIAL_WORKING_DAY'
+};
+
+exports.ShiftSession = exports.$Enums.ShiftSession = {
+  DAY: 'DAY',
+  NIGHT: 'NIGHT'
+};
+
+exports.RosterStatus = exports.$Enums.RosterStatus = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE'
+};
+
+exports.Prisma.ModelName = {
+  Role: 'Role',
+  Permission: 'Permission',
+  RolePermission: 'RolePermission',
+  Workspace: 'Workspace',
+  Department: 'Department',
+  LeadSource: 'LeadSource',
+  LeadStage: 'LeadStage',
+  StageRule: 'StageRule',
+  LeadStageInput: 'LeadStageInput',
+  Office: 'Office',
+  Location: 'Location',
+  UserLocationAssignment: 'UserLocationAssignment',
+  TargetType: 'TargetType',
+  TargetSetting: 'TargetSetting',
+  TargetViolation: 'TargetViolation',
+  User: 'User',
+  RosterEntry: 'RosterEntry',
+  AuditLog: 'AuditLog',
+  Device: 'Device'
+};
+/**
+ * Create the Client
+ */
+const config = {
+  "generator": {
+    "name": "client",
+    "provider": {
+      "fromEnvVar": null,
+      "value": "prisma-client-js"
+    },
+    "output": {
+      "value": "C:\\Users\\harsh\\OneDrive\\Desktop\\Seeakk\\backend\\prisma\\generated\\client",
+      "fromEnvVar": null
+    },
+    "config": {
+      "engineType": "library"
+    },
+    "binaryTargets": [
+      {
+        "fromEnvVar": null,
+        "value": "windows",
+        "native": true
+      }
+    ],
+    "previewFeatures": [
+      "driverAdapters"
+    ],
+    "sourceFilePath": "C:\\Users\\harsh\\OneDrive\\Desktop\\Seeakk\\backend\\prisma\\schema.prisma",
+    "isCustomOutput": true
+  },
+  "relativeEnvPaths": {
+    "rootEnvPath": null,
+    "schemaEnvPath": "../../../.env"
+  },
+  "relativePath": "../..",
+  "clientVersion": "5.22.0",
+  "engineVersion": "605197351a3c8bdd595af2d2a9bc3025bca48ea2",
+  "datasourceNames": [
+    "db"
+  ],
+  "activeProvider": "postgresql",
+  "postinstall": false,
+  "inlineDatasources": {
+    "db": {
+      "url": {
+        "fromEnvVar": "DATABASE_URL",
+        "value": null
+      }
+    }
+  },
+  "inlineSchema": "generator client {\n  provider        = \"prisma-client-js\"\n  output          = \"./generated/client\"\n  previewFeatures = [\"driverAdapters\"]\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nenum TargetCycle {\n  MONTHLY\n  QUARTERLY\n  YEARLY\n  CUSTOM\n}\n\nenum ViolationType {\n  DAILY\n  MONTHLY\n}\n\nenum LocationType {\n  COUNTRY\n  STATE\n  DISTRICT\n  CITY\n  WARD\n  CONSTITUENCY\n  OFFICE\n}\n\nenum RoleStatus {\n  ACTIVE\n  INACTIVE\n}\n\nmodel Role {\n  id          String     @id @default(uuid())\n  name        String     @unique\n  status      RoleStatus @default(ACTIVE)\n  description String?\n\n  createdBy String?\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  permissions RolePermission[]\n  users       User[]\n\n  @@map(\"roles\")\n}\n\nmodel Permission {\n  id          String  @id @default(uuid())\n  key         String  @unique\n  group       String\n  description String?\n\n  createdAt DateTime @default(now())\n\n  roles RolePermission[]\n\n  @@map(\"permissions\")\n}\n\nmodel RolePermission {\n  roleId       String\n  permissionId String\n\n  role       Role       @relation(fields: [roleId], references: [id])\n  permission Permission @relation(fields: [permissionId], references: [id])\n\n  @@id([roleId, permissionId])\n  @@map(\"role_permissions\")\n}\n\nmodel Workspace {\n  id             String       @id @default(cuid())\n  companyName    String\n  employeeCount  String\n  timeZone       String       @default(\"UTC\")\n  language       String       @default(\"en-US\")\n  currencyLocale String       @default(\"USD\")\n  loadSampleData Boolean      @default(false)\n  owner          User         @relation(\"WorkspaceOwner\", fields: [ownerId], references: [id])\n  ownerId        String       @unique\n  users          User[]       @relation(\"WorkspaceMembers\")\n  departments    Department[]\n  createdAt      DateTime     @default(now())\n  updatedAt      DateTime     @updatedAt\n\n  @@map(\"workspaces\")\n}\n\nenum DepartmentStatus {\n  ACTIVE\n  INACTIVE\n}\n\nenum LeadSourceStatus {\n  ACTIVE\n  INACTIVE\n}\n\nenum StageStatus {\n  ACTIVE\n  INACTIVE\n}\n\nenum InputType {\n  TEXT\n  TEXTAREA\n  RADIO\n  SELECT\n}\n\nenum RuleStatus {\n  ACTIVE\n  INACTIVE\n}\n\nenum RosterType {\n  HOLIDAY\n  WEEKLY_OFF\n  SHIFT\n  SPECIAL_WORKING_DAY\n}\n\nenum RosterStatus {\n  ACTIVE\n  INACTIVE\n}\n\nenum ShiftSession {\n  DAY\n  NIGHT\n}\n\nmodel Department {\n  id          String           @id @default(uuid())\n  name        String\n  description String?\n  status      DepartmentStatus @default(ACTIVE)\n\n  workspace   Workspace? @relation(fields: [workspaceId], references: [id])\n  workspaceId String?\n\n  createdAt DateTime  @default(now())\n  updatedAt DateTime  @updatedAt\n  deletedAt DateTime?\n\n  users User[]\n\n  @@unique([name, workspaceId])\n  @@index([workspaceId])\n  @@index([name])\n  @@index([status])\n  @@index([createdAt])\n  @@map(\"departments\")\n}\n\nmodel LeadSource {\n  id        String           @id @default(uuid())\n  name      String           @unique\n  status    LeadSourceStatus @default(ACTIVE)\n  createdBy String?\n  createdAt DateTime         @default(now())\n  updatedAt DateTime         @updatedAt\n  deletedAt DateTime?\n\n  @@index([name])\n  @@index([status])\n  @@map(\"lead_sources\")\n}\n\nmodel LeadStage {\n  id                 String      @id @default(uuid())\n  name               String\n  color              String      @default(\"#10b981\")\n  isApprovalRequired Boolean     @default(false)\n  isLOB              Boolean     @default(false)\n  isClosed           Boolean     @default(false)\n  order              Int\n  status             StageStatus @default(ACTIVE)\n  createdBy          String?\n  createdAt          DateTime    @default(now())\n  updatedAt          DateTime    @updatedAt\n  deletedAt          DateTime?\n  rules              StageRule[]\n\n  @@index([name])\n  @@index([status])\n  @@index([order])\n  @@map(\"lead_stages\")\n}\n\nmodel StageRule {\n  id                String     @id @default(uuid())\n  name              String     @default(\"Untitled Rule\")\n  inputType         InputType  @default(TEXT)\n  sortOrder         Int        @default(1)\n  required          Boolean    @default(false)\n  // Legacy columns kept for backward compatibility to avoid destructive schema pushes.\n  legacyField       String?    @map(\"field\")\n  legacyCondition   String?    @map(\"condition\")\n  legacyValue       String?    @map(\"value\")\n  legacyIsMandatory Boolean?   @map(\"isMandatory\")\n  status            RuleStatus @default(ACTIVE)\n  stageId           String?\n  createdBy         String?\n  createdAt         DateTime   @default(now())\n  updatedAt         DateTime   @default(now()) @updatedAt\n  deletedAt         DateTime?\n\n  stage      LeadStage?       @relation(fields: [stageId], references: [id], onDelete: SetNull)\n  leadInputs LeadStageInput[]\n\n  @@index([name])\n  @@index([status])\n  @@index([sortOrder])\n  @@index([stageId])\n  @@map(\"stage_rules\")\n}\n\nmodel LeadStageInput {\n  id        String   @id @default(uuid())\n  leadId    String\n  ruleId    String\n  value     String\n  createdAt DateTime @default(now())\n\n  rule StageRule @relation(fields: [ruleId], references: [id], onDelete: Cascade)\n\n  @@index([leadId])\n  @@index([ruleId])\n  @@map(\"lead_stage_inputs\")\n}\n\nmodel Office {\n  id          String   @id @default(cuid())\n  name        String\n  address     String?\n  workspaceId String\n  users       User[]\n  createdAt   DateTime @default(now())\n  updatedAt   DateTime @updatedAt\n\n  @@index([workspaceId])\n  @@map(\"offices\")\n}\n\nmodel Location {\n  id          String       @id @default(cuid())\n  name        String\n  type        LocationType\n  workspaceId String\n\n  parentId String?\n  parent   Location?  @relation(\"LocationHierarchy\", fields: [parentId], references: [id])\n  children Location[] @relation(\"LocationHierarchy\")\n\n  assignedUsers UserLocationAssignment[]\n\n  // Potential address relations for users (where they live)\n  usersAtCountry  User[] @relation(\"UserCountry\")\n  usersAtState    User[] @relation(\"UserState\")\n  usersAtDistrict User[] @relation(\"UserDistrict\")\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@index([workspaceId])\n  @@index([parentId])\n  @@map(\"locations\")\n}\n\nmodel UserLocationAssignment {\n  id         String   @id @default(cuid())\n  userId     String\n  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)\n  locationId String\n  location   Location @relation(fields: [locationId], references: [id], onDelete: Cascade)\n\n  workspaceId String\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@unique([userId, locationId])\n  @@index([workspaceId])\n  @@map(\"user_location_assignments\")\n}\n\nmodel TargetType {\n  id          String          @id @default(cuid())\n  name        String          @unique // e.g., \"Revenue\", \"Leads Generated\"\n  description String?\n  workspaceId String? // Optional: Global types or workspace-specific\n  settings    TargetSetting[]\n  createdAt   DateTime        @default(now())\n  updatedAt   DateTime        @updatedAt\n\n  @@map(\"target_types\")\n}\n\nmodel TargetSetting {\n  id           String      @id @default(cuid())\n  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)\n  userId       String\n  targetType   TargetType  @relation(fields: [targetTypeId], references: [id])\n  targetTypeId String\n  cycle        TargetCycle @default(MONTHLY)\n\n  monthlyTargetLeads  Int   @default(0)\n  dailyFollowupTarget Int   @default(0)\n  revenueTarget       Float @default(0)\n\n  startDate DateTime\n  endDate   DateTime?\n\n  workspaceId String\n  createdAt   DateTime @default(now())\n  updatedAt   DateTime @updatedAt\n\n  @@index([userId, workspaceId])\n  @@index([targetTypeId])\n  @@map(\"target_settings\")\n}\n\nmodel TargetViolation {\n  id           String        @id @default(cuid())\n  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)\n  userId       String\n  date         DateTime      @default(now())\n  type         ViolationType\n  attemptCount Int           @default(1)\n  status       String        @default(\"WARNING\") // WARNING, FINAL_WARNING, LOCKED\n  message      String?\n\n  workspaceId String\n  createdAt   DateTime @default(now())\n  updatedAt   DateTime @updatedAt\n\n  @@index([userId, date])\n  @@index([workspaceId])\n  @@map(\"target_violations\")\n}\n\nmodel User {\n  id                       String    @id @default(cuid())\n  name                     String?\n  username                 String?   @unique\n  email                    String    @unique\n  password                 String?\n  phone                    String?\n  googleId                 String?   @unique\n  isOnboarded              Boolean   @default(false)\n  isActive                 Boolean   @default(true)\n  isEmailVerified          Boolean   @default(false)\n  isLocked                 Boolean   @default(false) // Target compliance lock\n  verificationToken        String?\n  verificationTokenExpires DateTime?\n  invitationToken          String?\n  invitationExpires        DateTime?\n  deletedAt                DateTime?\n\n  // Role relation\n  role   Role?   @relation(fields: [roleId], references: [id])\n  roleId String?\n\n  // Workspace relation\n  workspace      Workspace? @relation(\"WorkspaceMembers\", fields: [workspaceId], references: [id])\n  workspaceId    String?\n  ownedWorkspace Workspace? @relation(\"WorkspaceOwner\")\n\n  // Department relation\n  department   Department? @relation(fields: [departmentId], references: [id])\n  departmentId String?\n\n  // Office relation\n  office   Office? @relation(fields: [officeId], references: [id])\n  officeId String?\n\n  // User's own location fields (Address)\n  countryId  String?\n  country    Location? @relation(\"UserCountry\", fields: [countryId], references: [id])\n  stateId    String?\n  state      Location? @relation(\"UserState\", fields: [stateId], references: [id])\n  districtId String?\n  district   Location? @relation(\"UserDistrict\", fields: [districtId], references: [id])\n\n  // Assigned Locations for Visibility Boundary\n  assignedLocations UserLocationAssignment[]\n\n  // Supervisor self-relation\n  supervisor   User?   @relation(\"UserSupervisor\", fields: [supervisorId], references: [id])\n  supervisorId String?\n  subordinates User[]  @relation(\"UserSupervisor\")\n\n  // Target relations\n  targetSettings TargetSetting[]\n  violations     TargetViolation[]\n\n  // Devices\n  devices Device[]\n\n  // Audit logs relation\n  auditLogs     AuditLog[]\n  rosterEntries RosterEntry[]\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@index([workspaceId])\n  @@index([roleId])\n  @@index([departmentId])\n  @@index([officeId])\n  @@index([supervisorId])\n  @@map(\"users\")\n}\n\nmodel RosterEntry {\n  id             String        @id @default(uuid())\n  userId         String\n  rosterType     RosterType\n  name           String\n  startDate      DateTime\n  endDate        DateTime?\n  shiftSession   ShiftSession?\n  shiftStartTime String?\n  shiftEndTime   String?\n  status         RosterStatus  @default(ACTIVE)\n  createdBy      String?\n  createdAt      DateTime      @default(now())\n  updatedAt      DateTime      @updatedAt\n  deletedAt      DateTime?\n\n  user User @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  @@index([userId])\n  @@index([startDate])\n  @@index([status])\n  @@map(\"roster_entries\")\n}\n\nmodel AuditLog {\n  id          String   @id @default(cuid())\n  userId      String?\n  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)\n  workspaceId String?\n  action      String // e.g., \"USER_LOGIN\", \"USER_CREATED\", \"SETTINGS_UPDATED\"\n  entityType  String? // e.g., \"User\", \"Workspace\"\n  entityId    String?\n  details     Json? // Store old/new values or extra metadata\n  ipAddress   String?\n  userAgent   String?\n  createdAt   DateTime @default(now())\n\n  @@index([userId])\n  @@index([workspaceId])\n  @@index([action])\n  @@map(\"audit_logs\")\n}\n\nmodel Device {\n  id         String   @id @default(cuid())\n  deviceId   String\n  os         String?\n  browser    String?\n  deviceType String?\n  ipAddress  String?\n  lastActive DateTime @default(now())\n\n  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)\n  userId String\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@unique([userId, deviceId])\n  @@map(\"devices\")\n}\n",
+  "inlineSchemaHash": "934f2e43ea690bedad4c94416a9f1499d515dc6f03b368ea7e40e08885e2cc21",
+  "copyEngine": true
+}
+config.dirname = '/'
+
+config.runtimeDataModel = JSON.parse("{\"models\":{\"Role\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"status\",\"kind\":\"enum\",\"type\":\"RoleStatus\"},{\"name\":\"description\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdBy\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"permissions\",\"kind\":\"object\",\"type\":\"RolePermission\",\"relationName\":\"RoleToRolePermission\"},{\"name\":\"users\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"RoleToUser\"}],\"dbName\":\"roles\"},\"Permission\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"key\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"group\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"description\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"roles\",\"kind\":\"object\",\"type\":\"RolePermission\",\"relationName\":\"PermissionToRolePermission\"}],\"dbName\":\"permissions\"},\"RolePermission\":{\"fields\":[{\"name\":\"roleId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"permissionId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"role\",\"kind\":\"object\",\"type\":\"Role\",\"relationName\":\"RoleToRolePermission\"},{\"name\":\"permission\",\"kind\":\"object\",\"type\":\"Permission\",\"relationName\":\"PermissionToRolePermission\"}],\"dbName\":\"role_permissions\"},\"Workspace\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"companyName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"employeeCount\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"timeZone\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"language\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"currencyLocale\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"loadSampleData\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"owner\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"WorkspaceOwner\"},{\"name\":\"ownerId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"users\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"WorkspaceMembers\"},{\"name\":\"departments\",\"kind\":\"object\",\"type\":\"Department\",\"relationName\":\"DepartmentToWorkspace\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"workspaces\"},\"Department\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"description\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"status\",\"kind\":\"enum\",\"type\":\"DepartmentStatus\"},{\"name\":\"workspace\",\"kind\":\"object\",\"type\":\"Workspace\",\"relationName\":\"DepartmentToWorkspace\"},{\"name\":\"workspaceId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"deletedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"users\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"DepartmentToUser\"}],\"dbName\":\"departments\"},\"LeadSource\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"status\",\"kind\":\"enum\",\"type\":\"LeadSourceStatus\"},{\"name\":\"createdBy\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"deletedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"lead_sources\"},\"LeadStage\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"color\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"isApprovalRequired\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"isLOB\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"isClosed\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"order\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"status\",\"kind\":\"enum\",\"type\":\"StageStatus\"},{\"name\":\"createdBy\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"deletedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"rules\",\"kind\":\"object\",\"type\":\"StageRule\",\"relationName\":\"LeadStageToStageRule\"}],\"dbName\":\"lead_stages\"},\"StageRule\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"inputType\",\"kind\":\"enum\",\"type\":\"InputType\"},{\"name\":\"sortOrder\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"required\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"legacyField\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"field\"},{\"name\":\"legacyCondition\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"condition\"},{\"name\":\"legacyValue\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"value\"},{\"name\":\"legacyIsMandatory\",\"kind\":\"scalar\",\"type\":\"Boolean\",\"dbName\":\"isMandatory\"},{\"name\":\"status\",\"kind\":\"enum\",\"type\":\"RuleStatus\"},{\"name\":\"stageId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdBy\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"deletedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"stage\",\"kind\":\"object\",\"type\":\"LeadStage\",\"relationName\":\"LeadStageToStageRule\"},{\"name\":\"leadInputs\",\"kind\":\"object\",\"type\":\"LeadStageInput\",\"relationName\":\"LeadStageInputToStageRule\"}],\"dbName\":\"stage_rules\"},\"LeadStageInput\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"leadId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"ruleId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"value\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"rule\",\"kind\":\"object\",\"type\":\"StageRule\",\"relationName\":\"LeadStageInputToStageRule\"}],\"dbName\":\"lead_stage_inputs\"},\"Office\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"address\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"workspaceId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"users\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"OfficeToUser\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"offices\"},\"Location\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"type\",\"kind\":\"enum\",\"type\":\"LocationType\"},{\"name\":\"workspaceId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"parentId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"parent\",\"kind\":\"object\",\"type\":\"Location\",\"relationName\":\"LocationHierarchy\"},{\"name\":\"children\",\"kind\":\"object\",\"type\":\"Location\",\"relationName\":\"LocationHierarchy\"},{\"name\":\"assignedUsers\",\"kind\":\"object\",\"type\":\"UserLocationAssignment\",\"relationName\":\"LocationToUserLocationAssignment\"},{\"name\":\"usersAtCountry\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"UserCountry\"},{\"name\":\"usersAtState\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"UserState\"},{\"name\":\"usersAtDistrict\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"UserDistrict\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"locations\"},\"UserLocationAssignment\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"UserToUserLocationAssignment\"},{\"name\":\"locationId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"location\",\"kind\":\"object\",\"type\":\"Location\",\"relationName\":\"LocationToUserLocationAssignment\"},{\"name\":\"workspaceId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"user_location_assignments\"},\"TargetType\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"description\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"workspaceId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"settings\",\"kind\":\"object\",\"type\":\"TargetSetting\",\"relationName\":\"TargetSettingToTargetType\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"target_types\"},\"TargetSetting\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"TargetSettingToUser\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"targetType\",\"kind\":\"object\",\"type\":\"TargetType\",\"relationName\":\"TargetSettingToTargetType\"},{\"name\":\"targetTypeId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"cycle\",\"kind\":\"enum\",\"type\":\"TargetCycle\"},{\"name\":\"monthlyTargetLeads\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"dailyFollowupTarget\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"revenueTarget\",\"kind\":\"scalar\",\"type\":\"Float\"},{\"name\":\"startDate\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"endDate\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"workspaceId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"target_settings\"},\"TargetViolation\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"TargetViolationToUser\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"date\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"type\",\"kind\":\"enum\",\"type\":\"ViolationType\"},{\"name\":\"attemptCount\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"status\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"message\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"workspaceId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"target_violations\"},\"User\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"username\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"password\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"phone\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"googleId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"isOnboarded\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"isActive\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"isEmailVerified\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"isLocked\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"verificationToken\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"verificationTokenExpires\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"invitationToken\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"invitationExpires\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"deletedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"role\",\"kind\":\"object\",\"type\":\"Role\",\"relationName\":\"RoleToUser\"},{\"name\":\"roleId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"workspace\",\"kind\":\"object\",\"type\":\"Workspace\",\"relationName\":\"WorkspaceMembers\"},{\"name\":\"workspaceId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"ownedWorkspace\",\"kind\":\"object\",\"type\":\"Workspace\",\"relationName\":\"WorkspaceOwner\"},{\"name\":\"department\",\"kind\":\"object\",\"type\":\"Department\",\"relationName\":\"DepartmentToUser\"},{\"name\":\"departmentId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"office\",\"kind\":\"object\",\"type\":\"Office\",\"relationName\":\"OfficeToUser\"},{\"name\":\"officeId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"countryId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"country\",\"kind\":\"object\",\"type\":\"Location\",\"relationName\":\"UserCountry\"},{\"name\":\"stateId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"state\",\"kind\":\"object\",\"type\":\"Location\",\"relationName\":\"UserState\"},{\"name\":\"districtId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"district\",\"kind\":\"object\",\"type\":\"Location\",\"relationName\":\"UserDistrict\"},{\"name\":\"assignedLocations\",\"kind\":\"object\",\"type\":\"UserLocationAssignment\",\"relationName\":\"UserToUserLocationAssignment\"},{\"name\":\"supervisor\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"UserSupervisor\"},{\"name\":\"supervisorId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"subordinates\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"UserSupervisor\"},{\"name\":\"targetSettings\",\"kind\":\"object\",\"type\":\"TargetSetting\",\"relationName\":\"TargetSettingToUser\"},{\"name\":\"violations\",\"kind\":\"object\",\"type\":\"TargetViolation\",\"relationName\":\"TargetViolationToUser\"},{\"name\":\"devices\",\"kind\":\"object\",\"type\":\"Device\",\"relationName\":\"DeviceToUser\"},{\"name\":\"auditLogs\",\"kind\":\"object\",\"type\":\"AuditLog\",\"relationName\":\"AuditLogToUser\"},{\"name\":\"rosterEntries\",\"kind\":\"object\",\"type\":\"RosterEntry\",\"relationName\":\"RosterEntryToUser\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"users\"},\"RosterEntry\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"rosterType\",\"kind\":\"enum\",\"type\":\"RosterType\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"startDate\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"endDate\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"shiftSession\",\"kind\":\"enum\",\"type\":\"ShiftSession\"},{\"name\":\"shiftStartTime\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"shiftEndTime\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"status\",\"kind\":\"enum\",\"type\":\"RosterStatus\"},{\"name\":\"createdBy\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"deletedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"RosterEntryToUser\"}],\"dbName\":\"roster_entries\"},\"AuditLog\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"AuditLogToUser\"},{\"name\":\"workspaceId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"action\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"entityType\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"entityId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"details\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"ipAddress\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userAgent\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"audit_logs\"},\"Device\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"deviceId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"os\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"browser\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"deviceType\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"ipAddress\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"lastActive\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"DeviceToUser\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"devices\"}},\"enums\":{},\"types\":{}}")
+defineDmmfProperty(exports.Prisma, config.runtimeDataModel)
+config.engineWasm = {
+  getRuntime: () => require('./query_engine_bg.js'),
+  getQueryEngineWasmModule: async () => {
+    const loader = (await import('#wasm-engine-loader')).default
+    const engine = (await loader).default
+    return engine 
+  }
+}
+
+config.injectableEdgeEnv = () => ({
+  parsed: {
+    DATABASE_URL: typeof globalThis !== 'undefined' && globalThis['DATABASE_URL'] || typeof process !== 'undefined' && process.env && process.env.DATABASE_URL || undefined
+  }
+})
+
+if (typeof globalThis !== 'undefined' && globalThis['DEBUG'] || typeof process !== 'undefined' && process.env && process.env.DEBUG || undefined) {
+  Debug.enable(typeof globalThis !== 'undefined' && globalThis['DEBUG'] || typeof process !== 'undefined' && process.env && process.env.DEBUG || undefined)
+}
+
+const PrismaClient = getPrismaClient(config)
+exports.PrismaClient = PrismaClient
+Object.assign(exports, Prisma)
+

@@ -31,3 +31,5 @@ dist/
 
 # Prisma generated client (auto-generated via prisma generate)
 /src/generated/prisma
+
+prisma/generated/client/*.tmp*

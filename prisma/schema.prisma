@@ -1,69 +1,467 @@
-// Seeakk CRM - Prisma Schema
-// Target: Neon PostgreSQL
-
 generator client {
-  provider = "prisma-client-js"
-  engineType = "library"
+  provider        = "prisma-client-js"
+  output          = "./generated/client"
+  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TargetCycle {
+  MONTHLY
+  QUARTERLY
+  YEARLY
+  CUSTOM
+}
+
+enum ViolationType {
+  DAILY
+  MONTHLY
+}
+
+enum LocationType {
+  COUNTRY
+  STATE
+  DISTRICT
+  CITY
+  WARD
+  CONSTITUENCY
+  OFFICE
+}
+
+enum RoleStatus {
+  ACTIVE
+  INACTIVE
 }
 
 model Role {
-  id          String   @id @default(cuid())
+  id          String   @id @default(uuid())
   name        String   @unique
+  status      RoleStatus @default(ACTIVE)
   description String?
-  users       User[]
+
+  createdBy   String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  permissions RolePermission[]
+  users       User[]
 
   @@map("roles")
 }
 
+model Permission {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  group       String
+  description String?
+
+  createdAt   DateTime @default(now())
+
+  roles       RolePermission[]
+
+  @@map("permissions")
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+
+  role         Role       @relation(fields: [roleId], references: [id])
+  permission   Permission @relation(fields: [permissionId], references: [id])
+
+  @@id([roleId, permissionId])
+  @@map("role_permissions")
+}
+
 model Workspace {
-  id             String   @id @default(cuid())
+  id             String       @id @default(cuid())
   companyName    String
   employeeCount  String
-  timeZone       String   @default("UTC")
-  language       String   @default("en-US")
-  currencyLocale String   @default("USD")
-  loadSampleData Boolean  @default(false)
-  owner          User     @relation("WorkspaceOwner", fields: [ownerId], references: [id])
-  ownerId        String   @unique
-  users          User[]   @relation("WorkspaceMembers")
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  timeZone       String       @default("UTC")
+  language       String       @default("en-US")
+  currencyLocale String       @default("USD")
+  loadSampleData Boolean      @default(false)
+  owner          User         @relation("WorkspaceOwner", fields: [ownerId], references: [id])
+  ownerId        String       @unique
+  users          User[]       @relation("WorkspaceMembers")
+  departments    Department[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
 
   @@map("workspaces")
 }
 
+enum DepartmentStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum LeadSourceStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum StageStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum InputType {
+  TEXT
+  TEXTAREA
+  RADIO
+  SELECT
+}
+
+enum RuleStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum RosterType {
+  HOLIDAY
+  WEEKLY_OFF
+  SHIFT
+  SPECIAL_WORKING_DAY
+}
+
+enum RosterStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum ShiftSession {
+  DAY
+  NIGHT
+}
+
+model Department {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  status      DepartmentStatus @default(ACTIVE)
+  
+  workspace   Workspace? @relation(fields: [workspaceId], references: [id])
+  workspaceId String?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?
+
+  users       User[]
+
+  @@unique([name, workspaceId])
+  @@index([workspaceId])
+  @@index([name])
+  @@index([status])
+  @@index([createdAt])
+  @@map("departments")
+}
+
+model LeadSource {
+  id        String           @id @default(uuid())
+  name      String           @unique
+  status    LeadSourceStatus @default(ACTIVE)
+  createdBy String?
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  deletedAt DateTime?
+
+  @@index([name])
+  @@index([status])
+  @@map("lead_sources")
+}
+
+model LeadStage {
+  id                 String          @id @default(uuid())
+  name               String
+  color              String          @default("#10b981")
+  isApprovalRequired Boolean         @default(false)
+  isLOB              Boolean         @default(false)
+  isClosed           Boolean         @default(false)
+  order              Int
+  status             StageStatus     @default(ACTIVE)
+  createdBy          String?
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  deletedAt          DateTime?
+  rules              StageRule[]
+
+  @@index([name])
+  @@index([status])
+  @@index([order])
+  @@map("lead_stages")
+}
+
+model StageRule {
+  id        String     @id @default(uuid())
+  name      String     @default("Untitled Rule")
+  inputType InputType  @default(TEXT)
+  sortOrder Int        @default(1)
+  required  Boolean    @default(false)
+  // Legacy columns kept for backward compatibility to avoid destructive schema pushes.
+  legacyField       String? @map("field")
+  legacyCondition   String? @map("condition")
+  legacyValue       String? @map("value")
+  legacyIsMandatory Boolean? @map("isMandatory")
+  status    RuleStatus @default(ACTIVE)
+  stageId   String?
+  createdBy String?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @default(now()) @updatedAt
+  deletedAt DateTime?
+
+  stage      LeadStage?       @relation(fields: [stageId], references: [id], onDelete: SetNull)
+  leadInputs LeadStageInput[]
+
+  @@index([name])
+  @@index([status])
+  @@index([sortOrder])
+  @@index([stageId])
+  @@map("stage_rules")
+}
+
+model LeadStageInput {
+  id        String   @id @default(uuid())
+  leadId    String
+  ruleId    String
+  value     String
+  createdAt DateTime @default(now())
+
+  rule StageRule @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+
+  @@index([leadId])
+  @@index([ruleId])
+  @@map("lead_stage_inputs")
+}
+
+model Office {
+  id          String   @id @default(cuid())
+  name        String
+  address     String?
+  workspaceId String
+  users       User[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([workspaceId])
+  @@map("offices")
+}
+
+model Location {
+  id          String   @id @default(cuid())
+  name        String
+  type        LocationType
+  workspaceId String
+  
+  parentId    String?
+  parent      Location?  @relation("LocationHierarchy", fields: [parentId], references: [id])
+  children    Location[] @relation("LocationHierarchy")
+  
+  assignedUsers UserLocationAssignment[]
+  
+  // Potential address relations for users (where they live)
+  usersAtCountry  User[] @relation("UserCountry")
+  usersAtState    User[] @relation("UserState")
+  usersAtDistrict User[] @relation("UserDistrict")
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([workspaceId])
+  @@index([parentId])
+  @@map("locations")
+}
+
+model UserLocationAssignment {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  locationId  String
+  location    Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  
+  workspaceId String
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([userId, locationId])
+  @@index([workspaceId])
+  @@map("user_location_assignments")
+}
+
+model TargetType {
+  id          String          @id @default(cuid())
+  name        String          @unique // e.g., "Revenue", "Leads Generated"
+  description String?
+  workspaceId String?         // Optional: Global types or workspace-specific
+  settings    TargetSetting[]
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@map("target_types")
+}
+
+model TargetSetting {
+  id                   String     @id @default(cuid())
+  user                 User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId               String
+  targetType           TargetType @relation(fields: [targetTypeId], references: [id])
+  targetTypeId         String
+  cycle                TargetCycle @default(MONTHLY)
+  
+  monthlyTargetLeads   Int        @default(0)
+  dailyFollowupTarget  Int        @default(0)
+  revenueTarget        Float      @default(0)
+  
+  startDate            DateTime
+  endDate              DateTime?
+  
+  workspaceId          String
+  createdAt            DateTime   @default(now())
+  updatedAt            DateTime   @updatedAt
+
+  @@index([userId, workspaceId])
+  @@index([targetTypeId])
+  @@map("target_settings")
+}
+
+model TargetViolation {
+  id           String        @id @default(cuid())
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String
+  date         DateTime      @default(now())
+  type         ViolationType
+  attemptCount Int           @default(1)
+  status       String        @default("WARNING") // WARNING, FINAL_WARNING, LOCKED
+  message      String?
+  
+  workspaceId  String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@index([userId, date])
+  @@index([workspaceId])
+  @@map("target_violations")
+}
+
 model User {
-  id                        String     @id @default(cuid())
-  name                      String?
-  email                     String     @unique
-  password                  String?
-  googleId                  String?    @unique
-  isOnboarded               Boolean    @default(false)
-  isActive                  Boolean    @default(true)
-  isEmailVerified           Boolean    @default(false)
-  verificationToken         String?
-  verificationTokenExpires  DateTime?
-  invitationToken           String?
-  invitationExpires         DateTime?
+  id                       String      @id @default(cuid())
+  name                     String?
+  username                 String?     @unique
+  email                    String      @unique
+  password                 String?
+  phone                    String?
+  googleId                 String?     @unique
+  isOnboarded              Boolean     @default(false)
+  isActive                 Boolean     @default(true)
+  isEmailVerified          Boolean     @default(false)
+  isLocked                 Boolean     @default(false) // Target compliance lock
+  verificationToken        String?
+  verificationTokenExpires DateTime?
+  invitationToken          String?
+  invitationExpires        DateTime?
+  deletedAt                DateTime?
 
-  // Relations
-  role                      Role?      @relation(fields: [roleId], references: [id])
-  roleId                    String?
-  workspace                 Workspace? @relation("WorkspaceMembers", fields: [workspaceId], references: [id])
-  workspaceId               String?
-  ownedWorkspace            Workspace? @relation("WorkspaceOwner")
-  devices                   Device[]
+  // Role relation
+  role                     Role?       @relation(fields: [roleId], references: [id])
+  roleId                   String?
 
-  createdAt                 DateTime   @default(now())
-  updatedAt                 DateTime   @updatedAt
+  // Workspace relation
+  workspace                Workspace?  @relation("WorkspaceMembers", fields: [workspaceId], references: [id])
+  workspaceId              String?
+  ownedWorkspace           Workspace?  @relation("WorkspaceOwner")
 
+  // Department relation
+  department               Department? @relation(fields: [departmentId], references: [id])
+  departmentId             String?
+
+  // Office relation
+  office                   Office?     @relation(fields: [officeId], references: [id])
+  officeId                 String?
+
+  // User's own location fields (Address)
+  countryId                String?
+  country                  Location?   @relation("UserCountry", fields: [countryId], references: [id])
+  stateId                  String?
+  state                    Location?   @relation("UserState", fields: [stateId], references: [id])
+  districtId               String?
+  district                 Location?   @relation("UserDistrict", fields: [districtId], references: [id])
+
+  // Assigned Locations for Visibility Boundary
+  assignedLocations        UserLocationAssignment[]
+
+  // Supervisor self-relation
+  supervisor               User?       @relation("UserSupervisor", fields: [supervisorId], references: [id])
+  supervisorId             String?
+  subordinates             User[]      @relation("UserSupervisor")
+
+  // Target relations
+  targetSettings           TargetSetting[]
+  violations               TargetViolation[]
+
+  // Devices
+  devices                  Device[]
+
+  // Audit logs relation
+  auditLogs                AuditLog[]
+  rosterEntries            RosterEntry[]
+
+  createdAt                DateTime    @default(now())
+  updatedAt                DateTime    @updatedAt
+
+  @@index([workspaceId])
+  @@index([roleId])
+  @@index([departmentId])
+  @@index([officeId])
+  @@index([supervisorId])
   @@map("users")
+}
+
+model RosterEntry {
+  id         String       @id @default(uuid())
+  userId     String
+  rosterType RosterType
+  name       String
+  startDate  DateTime
+  endDate    DateTime?
+  shiftSession   ShiftSession?
+  shiftStartTime String?
+  shiftEndTime   String?
+  status     RosterStatus @default(ACTIVE)
+  createdBy  String?
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  deletedAt  DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([startDate])
+  @@index([status])
+  @@map("roster_entries")
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  workspaceId String?
+  action      String   // e.g., "USER_LOGIN", "USER_CREATED", "SETTINGS_UPDATED"
+  entityType  String?  // e.g., "User", "Workspace"
+  entityId    String?
+  details     Json?    // Store old/new values or extra metadata
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([workspaceId])
+  @@index([action])
+  @@map("audit_logs")
 }
 
 model Device {
@@ -75,7 +473,6 @@ model Device {
   ipAddress  String?
   lastActive DateTime @default(now())
 
-  // Relation to User
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId     String
 
