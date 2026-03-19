@@ -2,11 +2,16 @@ export type StageStatusValue = 'ACTIVE' | 'INACTIVE';
 
 export interface StageRuleResponse {
   id: string;
-  stageId: string;
-  field: string;
-  condition: string;
-  value?: string | null;
-  isMandatory: boolean;
+  name: string;
+  inputType: 'TEXT' | 'TEXTAREA' | 'RADIO' | 'SELECT';
+  sortOrder: number;
+  required: boolean;
+  status: 'ACTIVE' | 'INACTIVE';
+  stageId?: string | null;
+  createdBy?: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date | null;
 }
 
 export interface LeadStageResponse {

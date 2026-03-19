@@ -20,7 +20,7 @@ const withNeonPoolerParams = (url: string): string => {
       parsed.searchParams.set('pool_timeout', '20');
     }
     if (!parsed.searchParams.has('connection_limit')) {
-      parsed.searchParams.set('connection_limit', '5');
+      parsed.searchParams.set('connection_limit', '10');
     }
     // PgBouncer does not support prepared statements in transaction mode.
     if (!parsed.searchParams.has('statement_cache_size')) {
@@ -42,17 +42,21 @@ const createPrismaClient = () => {
 
   const isRecoverableConnectionError = (error: unknown): boolean => {
     const message = String((error as any)?.message || '');
+    const code = String((error as any)?.code || '');
     return (
       (message.includes('Error in PostgreSQL connection') && message.includes('kind: Closed')) ||
       message.includes('Connection terminated unexpectedly') ||
       message.includes('server closed the connection unexpectedly') ||
-      message.includes('Can not perform operation: connection is closed')
+      message.includes('Can not perform operation: connection is closed') ||
+      message.includes('remaining connection slots are reserved') ||
+      code === 'P1017'
     );
   };
 
   const delay = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 
-  // Retry on transient closed-connection failures from pooled PostgreSQL connections.
+  // Retry on transient connection failures from pooled PostgreSQL connections.
+  // Do NOT force disconnect/connect here; doing so can interrupt concurrent requests.
   client.$use(async (params, next) => {
     const maxAttempts = 3;
     let attempt = 0;
@@ -68,11 +72,8 @@ const createPrismaClient = () => {
         }
 
         attempt += 1;
-        await client.$disconnect().catch(() => undefined);
-        await client.$connect().catch(() => undefined);
-
         if (attempt < maxAttempts) {
-          await delay(120 * attempt);
+          await delay(150 * attempt);
         }
       }
     }

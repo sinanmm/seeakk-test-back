@@ -4,17 +4,19 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon",
+    "dev": "ts-node --transpile-only src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
-    "prisma:seed": "ts-node --transpile-only src/scripts/seedPermissions.ts"
+    "prisma:seed": "ts-node --transpile-only src/scripts/seedPermissions.ts",
+    "prisma:generate": "node ./node_modules/prisma/build/index.js generate",
+    "db:fix:stage-rules": "ts-node --transpile-only src/scripts/fix_stage_rules_schema.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@prisma/adapter-pg": "^7.5.0",
+    "@prisma/adapter-pg": "^5.22.0",
     "@prisma/client": "^5.22.0",
     "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",

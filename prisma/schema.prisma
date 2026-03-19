@@ -109,6 +109,35 @@ enum StageStatus {
   INACTIVE
 }
 
+enum InputType {
+  TEXT
+  TEXTAREA
+  RADIO
+  SELECT
+}
+
+enum RuleStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum RosterType {
+  HOLIDAY
+  WEEKLY_OFF
+  SHIFT
+  SPECIAL_WORKING_DAY
+}
+
+enum RosterStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum ShiftSession {
+  DAY
+  NIGHT
+}
+
 model Department {
   id          String   @id @default(uuid())
   name        String
@@ -168,17 +197,45 @@ model LeadStage {
 }
 
 model StageRule {
-  id          String    @id @default(uuid())
-  stageId     String
-  field       String
-  condition   String
-  value       String?
-  isMandatory Boolean   @default(false)
+  id        String     @id @default(uuid())
+  name      String     @default("Untitled Rule")
+  inputType InputType  @default(TEXT)
+  sortOrder Int        @default(1)
+  required  Boolean    @default(false)
+  // Legacy columns kept for backward compatibility to avoid destructive schema pushes.
+  legacyField       String? @map("field")
+  legacyCondition   String? @map("condition")
+  legacyValue       String? @map("value")
+  legacyIsMandatory Boolean? @map("isMandatory")
+  status    RuleStatus @default(ACTIVE)
+  stageId   String?
+  createdBy String?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @default(now()) @updatedAt
+  deletedAt DateTime?
 
-  stage       LeadStage @relation(fields: [stageId], references: [id], onDelete: Cascade)
+  stage      LeadStage?       @relation(fields: [stageId], references: [id], onDelete: SetNull)
+  leadInputs LeadStageInput[]
 
+  @@index([name])
+  @@index([status])
+  @@index([sortOrder])
   @@index([stageId])
   @@map("stage_rules")
+}
+
+model LeadStageInput {
+  id        String   @id @default(uuid())
+  leadId    String
+  ruleId    String
+  value     String
+  createdAt DateTime @default(now())
+
+  rule StageRule @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+
+  @@index([leadId])
+  @@index([ruleId])
+  @@map("lead_stage_inputs")
 }
 
 model Office {
@@ -351,6 +408,7 @@ model User {
 
   // Audit logs relation
   auditLogs                AuditLog[]
+  rosterEntries            RosterEntry[]
 
   createdAt                DateTime    @default(now())
   updatedAt                DateTime    @updatedAt
@@ -361,6 +419,30 @@ model User {
   @@index([officeId])
   @@index([supervisorId])
   @@map("users")
+}
+
+model RosterEntry {
+  id         String       @id @default(uuid())
+  userId     String
+  rosterType RosterType
+  name       String
+  startDate  DateTime
+  endDate    DateTime?
+  shiftSession   ShiftSession?
+  shiftStartTime String?
+  shiftEndTime   String?
+  status     RosterStatus @default(ACTIVE)
+  createdBy  String?
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  deletedAt  DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([startDate])
+  @@index([status])
+  @@map("roster_entries")
 }
 
 model AuditLog {

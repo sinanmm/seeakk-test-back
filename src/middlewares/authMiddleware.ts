@@ -8,6 +8,16 @@ interface JwtPayload {
   userId: string;
 }
 
+const maskAuthHeader = (authHeader?: string): string => {
+  if (!authHeader) return 'NOTHING RECEIVED';
+  if (!authHeader.toLowerCase().startsWith('bearer ')) return '[NON_BEARER_TOKEN_REDACTED]';
+  const token = authHeader.substring(7).trim();
+  if (!token) return 'Bearer [EMPTY]';
+  const prefix = token.slice(0, 8);
+  const suffix = token.slice(-6);
+  return `Bearer ${prefix}...${suffix}`;
+};
+
 /**
  * Protect routes - Verifies JWT and injects User object (with role) into req
  */
@@ -17,7 +27,7 @@ export const protect = async (req: Request, res: Response, next: NextFunction): 
 
     const authHeader = req.headers.authorization || req.header('Authorization');
 
-    logger.info('AUTH DEBUG -> RAW HEADER:', { authString: authHeader });
+    logger.info('AUTH DEBUG -> AUTH HEADER:', { authString: maskAuthHeader(authHeader) });
 
     if (authHeader) {
       if (authHeader.toLowerCase().startsWith('bearer ')) {
@@ -40,7 +50,7 @@ export const protect = async (req: Request, res: Response, next: NextFunction): 
       return res.status(401).json({
         message: 'Not authorized to access this route. No token provided.',
         diagnostic: "Send an 'Authorization: Bearer <token>' header.",
-        rawHeaderReceived: authHeader || 'NOTHING RECEIVED',
+        rawHeaderReceived: maskAuthHeader(authHeader),
       });
     }
 
@@ -170,8 +180,15 @@ export const checkPermission = (permissionKey: string) => {
         permissionKey.startsWith('LEAD_SOURCES_') && permissions.includes('SYSTEM_CONFIG');
       const hasLeadStageFallbackPermission =
         permissionKey.startsWith('LEAD_STAGES_') && permissions.includes('SYSTEM_CONFIG');
+      const hasStageRuleFallbackPermission =
+        permissionKey.startsWith('LEAD_STAGE_RULES_') && permissions.includes('SYSTEM_CONFIG');
 
-      if (!hasRequestedPermission && !hasLeadSourceFallbackPermission && !hasLeadStageFallbackPermission) {
+      if (
+        !hasRequestedPermission &&
+        !hasLeadSourceFallbackPermission &&
+        !hasLeadStageFallbackPermission &&
+        !hasStageRuleFallbackPermission
+      ) {
         logger.warn(`Permission denied. Required: ${permissionKey}. User has: ${permissions.join(', ')}`, {
           userId: req.user.id,
           roleId,

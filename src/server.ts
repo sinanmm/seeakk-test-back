@@ -26,17 +26,20 @@ const connectPrismaWithRetry = async (): Promise<void> => {
 const startServer = async () => {
   try {
     // Connect Redis
-    await connectRedis().catch((error) => {
-      console.warn('Redis startup skipped (will continue without Redis cache):', error?.message || error);
-    });
-
-    // Test Prisma / PostgreSQL connection
-    await connectPrismaWithRetry();
-    console.log('PostgreSQL connected via Prisma');
+    await connectRedis();
 
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
     });
+
+    // Connect Prisma in background so API process can still boot and avoid ERR_CONNECTION_REFUSED.
+    connectPrismaWithRetry()
+      .then(() => {
+        console.log('PostgreSQL connected via Prisma');
+      })
+      .catch((error) => {
+        console.error('PostgreSQL initial connection failed. API is running in degraded mode:', error);
+      });
   } catch (error) {
     console.error('Failed to start server:', error);
     process.exit(1);

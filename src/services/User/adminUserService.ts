@@ -1,8 +1,10 @@
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
+import jwt from 'jsonwebtoken';
 import prisma from '../../config/prisma';
 import { redisClient } from '../../config/redis';
 import logger from '../../utils/logger';
+import { sendPasswordResetEmail } from '../Email/emailService';
 import type {
   CreateUserInput,
   UpdateUserInput,
@@ -71,6 +73,34 @@ const USER_SELECT = {
   workspace: { select: { id: true, companyName: true } },
 } as const;
 
+const resolveRoleId = async (value: string): Promise<string | null> => {
+  const role = await prisma.role.findFirst({
+    where: {
+      OR: [
+        { id: value },
+        { name: { equals: value, mode: 'insensitive' } },
+      ],
+    },
+    select: { id: true },
+  });
+  return role?.id ?? null;
+};
+
+const resolveDepartmentId = async (value: string, workspaceId: string): Promise<string | null> => {
+  const department = await (prisma as any).department.findFirst({
+    where: {
+      workspaceId,
+      deletedAt: null,
+      OR: [
+        { id: value },
+        { name: { equals: value, mode: 'insensitive' } },
+      ],
+    },
+    select: { id: true },
+  });
+  return (department as any)?.id ?? null;
+};
+
 // ─── Service Functions ────────────────────────────────────────────────────────
 
 /**
@@ -94,9 +124,20 @@ export const createUser = async (input: CreateUserInput, workspaceId: string) =>
     assignedLocationIds,
   } = input;
 
-  // 1. Email and Username uniqueness
-  const existingEmail = await prisma.user.findUnique({ where: { email } });
-  if (existingEmail) {
+  // 1. Email and Username uniqueness (supports restore from soft-deleted record)
+  const existingEmail = await (prisma as any).user.findFirst({
+    where: {
+      email: { equals: email, mode: 'insensitive' },
+    },
+    select: {
+      id: true,
+      email: true,
+      deletedAt: true,
+    },
+  });
+
+  const canRestoreSoftDeletedByEmail = Boolean(existingEmail && existingEmail.deletedAt);
+  if (existingEmail && !canRestoreSoftDeletedByEmail) {
     const err: any = new Error('A user with this email already exists.');
     err.statusCode = 409;
     throw err;
@@ -111,22 +152,20 @@ export const createUser = async (input: CreateUserInput, workspaceId: string) =>
     }
   }
 
-  // 2. Validate roleId
+  // 2. Resolve/validate roleId (supports id or role name)
+  const normalizedRoleId = roleId ? await resolveRoleId(roleId) : null;
   if (roleId) {
-    const role = await prisma.role.findUnique({ where: { id: roleId } });
-    if (!role) {
+    if (!normalizedRoleId) {
       const err: any = new Error(`Role with ID '${roleId}' does not exist.`);
       err.statusCode = 400;
       throw err;
     }
   }
 
-  // 3. Validate relations belong to this workspace
+  // 3. Resolve/validate relations belong to this workspace
+  const normalizedDepartmentId = departmentId ? await resolveDepartmentId(departmentId, workspaceId) : null;
   if (departmentId) {
-    const dept = await (prisma as any).department.findFirst({
-      where: { id: departmentId, workspaceId },
-    });
-    if (!dept) {
+    if (!normalizedDepartmentId) {
       const err: any = new Error('Department not found in this workspace.');
       err.statusCode = 400;
       throw err;
@@ -160,36 +199,63 @@ export const createUser = async (input: CreateUserInput, workspaceId: string) =>
   const rawPassword = password || generateSecurePassword();
   const hashedPassword = await bcrypt.hash(rawPassword, 12);
 
-  const user = await (prisma as any).user.create({
-    data: {
-      name,
-      username: username ?? null,
-      email,
-      password: hashedPassword,
-      phone: phone ?? null,
-      isEmailVerified: true,
-      isActive: true,
-      isOnboarded: false,
-      workspaceId,
-      roleId: roleId ?? null,
-      departmentId: departmentId ?? null,
-      supervisorId: supervisorId ?? null,
-      officeId: officeId ?? null,
-      countryId: countryId ?? null,
-      stateId: stateId ?? null,
-      districtId: districtId ?? null,
-      assignedLocations:
-        assignedLocationIds && assignedLocationIds.length > 0
-          ? {
-              create: assignedLocationIds.map((locId) => ({
-                locationId: locId,
-                workspaceId,
-              })),
-            }
-          : undefined,
-    },
-    select: USER_SELECT,
-  });
+  const createData = {
+    name,
+    username: username ?? null,
+    email,
+    password: hashedPassword,
+    phone: phone ?? null,
+    isEmailVerified: true,
+    isActive: true,
+    isOnboarded: false,
+    workspaceId,
+    roleId: normalizedRoleId,
+    departmentId: normalizedDepartmentId,
+    supervisorId: supervisorId ?? null,
+    officeId: officeId ?? null,
+    countryId: countryId ?? null,
+    stateId: stateId ?? null,
+    districtId: districtId ?? null,
+    assignedLocations:
+      assignedLocationIds && assignedLocationIds.length > 0
+        ? {
+            create: assignedLocationIds.map((locId) => ({
+              locationId: locId,
+              workspaceId,
+            })),
+          }
+        : undefined,
+  };
+
+  let user: any;
+
+  if (canRestoreSoftDeletedByEmail && existingEmail) {
+    user = await prisma.$transaction(
+      async (tx) => {
+        // Clear historical visibility assignments before restoring account.
+        await (tx as any).userLocationAssignment.deleteMany({
+          where: { userId: existingEmail.id },
+        });
+
+        return (tx as any).user.update({
+          where: { id: existingEmail.id },
+          data: {
+            ...createData,
+            deletedAt: null,
+          },
+          select: USER_SELECT,
+        });
+      },
+      { maxWait: 10_000, timeout: 20_000 },
+    );
+  } else {
+    // Avoid interactive transaction for normal creates; a single write is faster and
+    // prevents "Transaction already closed" timeouts under transient latency spikes.
+    user = await (prisma as any).user.create({
+      data: createData,
+      select: USER_SELECT,
+    });
+  }
 
   logger.info('Admin created new user', { newUserId: user.id, email: user.email, workspaceId });
 
@@ -284,20 +350,28 @@ export const updateUser = async (id: string, input: UpdateUserInput, workspaceId
     throw err;
   }
 
+  const normalizedRoleId =
+    input.roleId !== undefined
+      ? input.roleId
+        ? await resolveRoleId(input.roleId)
+        : null
+      : undefined;
   if (input.roleId) {
-    const role = await prisma.role.findUnique({ where: { id: input.roleId } });
-    if (!role) {
+    if (!normalizedRoleId) {
       const err: any = new Error(`Role with ID '${input.roleId}' does not exist.`);
       err.statusCode = 400;
       throw err;
     }
   }
 
+  const normalizedDepartmentId =
+    input.departmentId !== undefined
+      ? input.departmentId
+        ? await resolveDepartmentId(input.departmentId, workspaceId)
+        : null
+      : undefined;
   if (input.departmentId) {
-    const dept = await (prisma as any).department.findFirst({
-      where: { id: input.departmentId, workspaceId },
-    });
-    if (!dept) {
+    if (!normalizedDepartmentId) {
       const err: any = new Error('Department not found in this workspace.');
       err.statusCode = 400;
       throw err;
@@ -359,8 +433,8 @@ export const updateUser = async (id: string, input: UpdateUserInput, workspaceId
       ...(input.name !== undefined ? { name: input.name } : {}),
       ...(input.username !== undefined ? { username: input.username } : {}),
       ...(input.phone !== undefined ? { phone: input.phone } : {}),
-      ...(input.roleId !== undefined ? { roleId: input.roleId } : {}),
-      ...(input.departmentId !== undefined ? { departmentId: input.departmentId } : {}),
+      ...(normalizedRoleId !== undefined ? { roleId: normalizedRoleId } : {}),
+      ...(normalizedDepartmentId !== undefined ? { departmentId: normalizedDepartmentId } : {}),
       ...(input.supervisorId !== undefined ? { supervisorId: input.supervisorId } : {}),
       ...(input.officeId !== undefined ? { officeId: input.officeId } : {}),
       ...(input.countryId !== undefined ? { countryId: input.countryId } : {}),
@@ -406,9 +480,19 @@ export const deleteUser = async (id: string, workspaceId: string, requestingUser
     throw err;
   }
 
+  // Release unique email/username so a new user can be created with the same credentials later.
+  const deletedSuffix = `${id.slice(0, 8)}_${Date.now()}`;
+  const tombstoneEmail = `deleted+${deletedSuffix}@seeakk.local`;
+  const tombstoneUsername = existing.username ? `deleted_${deletedSuffix}` : null;
+
   await (prisma as any).user.update({
     where: { id },
-    data: { deletedAt: new Date(), isActive: false },
+    data: {
+      deletedAt: new Date(),
+      isActive: false,
+      email: tombstoneEmail,
+      username: tombstoneUsername,
+    },
   });
 
   await invalidateUserSessions(id);
@@ -478,20 +562,33 @@ export const resetUserPassword = async (
     throw err;
   }
 
-  const rawPassword = input.newPassword || generateSecurePassword();
-  const hashedPassword = await bcrypt.hash(rawPassword, 12);
+  if (input.newPassword) {
+    const hashedPassword = await bcrypt.hash(input.newPassword, 12);
 
-  await (prisma as any).user.update({
-    where: { id },
-    data: { password: hashedPassword },
-  });
+    await (prisma as any).user.update({
+      where: { id },
+      data: { password: hashedPassword },
+    });
 
-  await invalidateUserSessions(id);
+    await invalidateUserSessions(id);
+    logger.info('Admin reset user password directly', { id, workspaceId });
+    return {
+      message: 'Password reset successfully. User must log in again with the new password.',
+    };
+  }
 
-  logger.info('Admin reset user password', { id, workspaceId });
+  const jwtSecret = process.env.JWT_SECRET;
+  if (!jwtSecret) {
+    const err: any = new Error('JWT_SECRET is missing. Cannot generate reset token.');
+    err.statusCode = 500;
+    throw err;
+  }
 
+  const token = jwt.sign({ userId: existing.id, purpose: 'password_reset' }, jwtSecret, { expiresIn: '30m' });
+  await sendPasswordResetEmail(existing.email, existing.name, token);
+
+  logger.info('Admin requested password reset link', { id, email: existing.email, workspaceId });
   return {
-    message: 'Password reset successfully. User must log in again with the new password.',
-    ...(input.newPassword ? {} : { generatedPassword: rawPassword }),
+    message: 'Password reset link sent to user email.',
   };
 };

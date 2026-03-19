@@ -11,13 +11,6 @@ const stageColorSchema = z
   .trim()
   .regex(/^#([0-9A-Fa-f]{6})$/, 'Color must be a valid hex value');
 
-const stageRuleSchema = z.object({
-  field: z.string().trim().min(1, 'Rule field is required'),
-  condition: z.string().trim().min(1, 'Rule condition is required'),
-  value: z.string().trim().optional(),
-  isMandatory: z.boolean().default(false),
-});
-
 export const stageStatusSchema = z.enum(['ACTIVE', 'INACTIVE']);
 
 export const createLeadStageSchema = z.object({
@@ -28,7 +21,6 @@ export const createLeadStageSchema = z.object({
   isLOB: z.boolean().default(false),
   order: z.number().int().min(1, 'Order must be greater than 0'),
   status: stageStatusSchema.default('ACTIVE'),
-  rules: z.array(stageRuleSchema).default([]),
 });
 
 export type CreateLeadStageInput = z.infer<typeof createLeadStageSchema>;
@@ -42,7 +34,6 @@ export const updateLeadStageSchema = z
     isLOB: z.boolean().optional(),
     order: z.number().int().min(1, 'Order must be greater than 0').optional(),
     status: stageStatusSchema.optional(),
-    rules: z.array(stageRuleSchema).optional(),
   })
   .refine(
     (value) =>
@@ -52,8 +43,7 @@ export const updateLeadStageSchema = z
       value.isClosed !== undefined ||
       value.isLOB !== undefined ||
       value.order !== undefined ||
-      value.status !== undefined ||
-      value.rules !== undefined,
+      value.status !== undefined,
     { message: 'At least one field is required for update.' },
   );
 

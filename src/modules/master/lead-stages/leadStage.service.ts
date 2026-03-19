@@ -5,6 +5,7 @@ import {
   LeadStageResponse,
   StageTransitionValidationResult,
 } from './leadStage.types';
+import { validateLeadStageTransitionInputs } from '../stage-rules/stageRule.service';
 import {
   CreateLeadStageInput,
   ListLeadStagesQuery,
@@ -93,12 +94,6 @@ const countLeadUsage = async (stageId: string): Promise<number> => {
   return Number(result[0]?.count ?? 0);
 };
 
-const normalizeRuleValue = (value: string | undefined): string | null => {
-  if (value === undefined) return null;
-  const trimmed = value.trim();
-  return trimmed.length ? trimmed : null;
-};
-
 const remapSingleStage = async (record: any): Promise<LeadStageResponse> => {
   const [mapped] = await mapCreatorNames([record]);
   return mapped as LeadStageResponse;
@@ -122,49 +117,36 @@ export const createLeadStage = async (
     throw error;
   }
 
-  const created = await prisma.$transaction(async (tx) => {
-    await tx.leadStage.updateMany({
-      where: {
-        deletedAt: null,
-        order: { gte: input.order },
-      },
-      data: {
-        order: { increment: 1 },
-      },
-    });
-
-    const stage = await tx.leadStage.create({
-      data: {
-        name: input.name,
-        color: input.color,
-        isApprovalRequired: input.isApprovalRequired,
-        isClosed: input.isClosed,
-        isLOB: input.isLOB,
-        order: input.order,
-        status: input.status,
-        createdBy,
-      },
-    });
-
-    if (input.rules.length > 0) {
-      await tx.stageRule.createMany({
-        data: input.rules.map((rule) => ({
-          stageId: stage.id,
-          field: rule.field,
-          condition: rule.condition,
-          value: normalizeRuleValue(rule.value),
-          isMandatory: rule.isMandatory,
-        })),
+  const created = await prisma.$transaction(
+    async (tx) => {
+      await tx.leadStage.updateMany({
+        where: {
+          deletedAt: null,
+          order: { gte: input.order },
+        },
+        data: {
+          order: { increment: 1 },
+        },
       });
-    }
 
-    return tx.leadStage.findUniqueOrThrow({
-      where: { id: stage.id },
-      include: {
-        rules: true,
-      },
-    });
-  });
+      return tx.leadStage.create({
+        data: {
+          name: input.name,
+          color: input.color,
+          isApprovalRequired: input.isApprovalRequired,
+          isClosed: input.isClosed,
+          isLOB: input.isLOB,
+          order: input.order,
+          status: input.status,
+          createdBy,
+        },
+        include: {
+          rules: true,
+        },
+      });
+    },
+    { maxWait: 10_000, timeout: 15_000 },
+  );
 
   await clearPipelineCache();
   return remapSingleStage(created);
@@ -266,71 +248,52 @@ export const updateLeadStage = async (id: string, input: UpdateLeadStageInput): 
     }
   }
 
-  const updated = await prisma.$transaction(async (tx) => {
-    if (input.order !== undefined && input.order !== existing.order) {
-      if (input.order > existing.order) {
-        await tx.leadStage.updateMany({
-          where: {
-            id: { not: id },
-            deletedAt: null,
-            order: { gt: existing.order, lte: input.order },
-          },
-          data: {
-            order: { decrement: 1 },
-          },
-        });
-      } else {
-        await tx.leadStage.updateMany({
-          where: {
-            id: { not: id },
-            deletedAt: null,
-            order: { gte: input.order, lt: existing.order },
-          },
-          data: {
-            order: { increment: 1 },
-          },
-        });
+  const updated = await prisma.$transaction(
+    async (tx) => {
+      if (input.order !== undefined && input.order !== existing.order) {
+        if (input.order > existing.order) {
+          await tx.leadStage.updateMany({
+            where: {
+              id: { not: id },
+              deletedAt: null,
+              order: { gt: existing.order, lte: input.order },
+            },
+            data: {
+              order: { decrement: 1 },
+            },
+          });
+        } else {
+          await tx.leadStage.updateMany({
+            where: {
+              id: { not: id },
+              deletedAt: null,
+              order: { gte: input.order, lt: existing.order },
+            },
+            data: {
+              order: { increment: 1 },
+            },
+          });
+        }
       }
-    }
 
-    await tx.leadStage.update({
-      where: { id },
-      data: {
-        ...(input.name !== undefined ? { name: input.name } : {}),
-        ...(input.color !== undefined ? { color: input.color } : {}),
-        ...(input.isApprovalRequired !== undefined ? { isApprovalRequired: input.isApprovalRequired } : {}),
-        ...(input.isClosed !== undefined ? { isClosed: input.isClosed } : {}),
-        ...(input.isLOB !== undefined ? { isLOB: input.isLOB } : {}),
-        ...(input.order !== undefined ? { order: input.order } : {}),
-        ...(input.status !== undefined ? { status: input.status } : {}),
-      },
-    });
-
-    if (input.rules !== undefined) {
-      await tx.stageRule.deleteMany({
-        where: { stageId: id },
+      return tx.leadStage.update({
+        where: { id },
+        data: {
+          ...(input.name !== undefined ? { name: input.name } : {}),
+          ...(input.color !== undefined ? { color: input.color } : {}),
+          ...(input.isApprovalRequired !== undefined ? { isApprovalRequired: input.isApprovalRequired } : {}),
+          ...(input.isClosed !== undefined ? { isClosed: input.isClosed } : {}),
+          ...(input.isLOB !== undefined ? { isLOB: input.isLOB } : {}),
+          ...(input.order !== undefined ? { order: input.order } : {}),
+          ...(input.status !== undefined ? { status: input.status } : {}),
+        },
+        include: {
+          rules: true,
+        },
       });
-
-      if (input.rules.length > 0) {
-        await tx.stageRule.createMany({
-          data: input.rules.map((rule) => ({
-            stageId: id,
-            field: rule.field,
-            condition: rule.condition,
-            value: normalizeRuleValue(rule.value),
-            isMandatory: rule.isMandatory,
-          })),
-        });
-      }
-    }
-
-    return tx.leadStage.findUniqueOrThrow({
-      where: { id },
-      include: {
-        rules: true,
-      },
-    });
-  });
+    },
+    { maxWait: 10_000, timeout: 15_000 },
+  );
 
   await clearPipelineCache();
   return remapSingleStage(updated);
@@ -455,9 +418,7 @@ export const validateLeadStageTransition = async (
       deletedAt: null,
       status: 'ACTIVE',
     },
-    include: {
-      rules: true,
-    },
+    select: { id: true },
   });
 
   if (!targetStage) {
@@ -466,25 +427,5 @@ export const validateLeadStageTransition = async (
     throw error;
   }
 
-  const missingFields = targetStage.rules
-    .filter((rule) => rule.isMandatory || rule.condition.toLowerCase() === 'required')
-    .map((rule) => rule.field)
-    .filter((field) => {
-      const value = leadData[field];
-      if (value === null || value === undefined) return true;
-      if (typeof value === 'string' && value.trim() === '') return true;
-      return false;
-    });
-
-  if (missingFields.length > 0) {
-    const error: any = new Error(`Required fields missing: ${missingFields.join(', ')}`);
-    error.statusCode = 400;
-    error.details = { missingFields };
-    throw error;
-  }
-
-  return {
-    isValid: true,
-    missingFields: [],
-  };
+  return validateLeadStageTransitionInputs(targetStageId, leadData);
 };

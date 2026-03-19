@@ -9,25 +9,34 @@ export const getRoles = async () => {
 
 export const getDepartments = async (workspaceId: string) => {
   return (prisma as any).department.findMany({
-    where: { workspaceId },
+    where: {
+      workspaceId,
+      deletedAt: null,
+      status: 'ACTIVE',
+    },
     orderBy: { name: 'asc' }
   });
 };
 
 export const getSupervisors = async (workspaceId: string) => {
   return (prisma as any).user.findMany({
-    where: { 
-        workspaceId, 
-        deletedAt: null,
-        role: {
-            name: { in: ['admin', 'manager', 'super-admin'] }
-        }
+    where: {
+      workspaceId,
+      deletedAt: null,
+      isActive: true,
+      roleId: { not: null },
     },
     select: {
       id: true,
       name: true,
-      email: true
+      email: true,
+      role: {
+        select: {
+          name: true,
+          status: true,
+        },
+      },
     },
-    orderBy: { name: 'asc' }
+    orderBy: [{ name: 'asc' }],
   });
 };
