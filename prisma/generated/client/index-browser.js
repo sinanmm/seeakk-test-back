@@ -257,11 +257,32 @@ exports.Prisma.TargetTypeScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.TargetCycleScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  workspaceId: 'workspaceId',
+  totalDays: 'totalDays',
+  status: 'status',
+  createdBy: 'createdBy',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
+};
+
+exports.Prisma.TargetCycleRangeScalarFieldEnum = {
+  id: 'id',
+  targetCycleId: 'targetCycleId',
+  startDay: 'startDay',
+  endDay: 'endDay',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.TargetSettingScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
   targetTypeId: 'targetTypeId',
   cycle: 'cycle',
+  targetCycleId: 'targetCycleId',
   monthlyTargetLeads: 'monthlyTargetLeads',
   dailyFollowupTarget: 'dailyFollowupTarget',
   revenueTarget: 'revenueTarget',
@@ -424,7 +445,7 @@ exports.LocationType = exports.$Enums.LocationType = {
   OFFICE: 'OFFICE'
 };
 
-exports.TargetCycle = exports.$Enums.TargetCycle = {
+exports.TargetSettingCycle = exports.$Enums.TargetSettingCycle = {
   MONTHLY: 'MONTHLY',
   QUARTERLY: 'QUARTERLY',
   YEARLY: 'YEARLY',
@@ -467,6 +488,8 @@ exports.Prisma.ModelName = {
   Location: 'Location',
   UserLocationAssignment: 'UserLocationAssignment',
   TargetType: 'TargetType',
+  TargetCycle: 'TargetCycle',
+  TargetCycleRange: 'TargetCycleRange',
   TargetSetting: 'TargetSetting',
   TargetViolation: 'TargetViolation',
   User: 'User',

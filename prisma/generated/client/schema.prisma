@@ -9,11 +9,13 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum TargetCycle {
+enum TargetSettingCycle {
   MONTHLY
   QUARTERLY
   YEARLY
   CUSTOM
+
+  @@map("TargetCycle")
 }
 
 enum ViolationType {
@@ -77,19 +79,20 @@ model RolePermission {
 }
 
 model Workspace {
-  id             String       @id @default(cuid())
+  id             String        @id @default(cuid())
   companyName    String
   employeeCount  String
-  timeZone       String       @default("UTC")
-  language       String       @default("en-US")
-  currencyLocale String       @default("USD")
-  loadSampleData Boolean      @default(false)
-  owner          User         @relation("WorkspaceOwner", fields: [ownerId], references: [id])
-  ownerId        String       @unique
-  users          User[]       @relation("WorkspaceMembers")
+  timeZone       String        @default("UTC")
+  language       String        @default("en-US")
+  currencyLocale String        @default("USD")
+  loadSampleData Boolean       @default(false)
+  owner          User          @relation("WorkspaceOwner", fields: [ownerId], references: [id])
+  ownerId        String        @unique
+  users          User[]        @relation("WorkspaceMembers")
   departments    Department[]
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  targetCycles   TargetCycle[]
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 
   @@map("workspaces")
 }
@@ -305,13 +308,52 @@ model TargetType {
   @@map("target_types")
 }
 
+model TargetCycle {
+  id          String @id @default(cuid())
+  name        String
+  workspaceId String
+
+  totalDays Int
+  status    String @default("ACTIVE")
+
+  createdBy String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  workspace Workspace          @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  ranges    TargetCycleRange[]
+  targets   TargetSetting[]
+
+  @@unique([name, workspaceId])
+  @@index([workspaceId])
+  @@map("target_cycles")
+}
+
+model TargetCycleRange {
+  id            String @id @default(cuid())
+  targetCycleId String
+
+  startDay Int
+  endDay   Int
+
+  createdAt DateTime @default(now())
+
+  targetCycle TargetCycle @relation(fields: [targetCycleId], references: [id], onDelete: Cascade)
+
+  @@index([targetCycleId])
+  @@map("target_cycle_ranges")
+}
+
 model TargetSetting {
-  id           String      @id @default(cuid())
-  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId       String
-  targetType   TargetType  @relation(fields: [targetTypeId], references: [id])
-  targetTypeId String
-  cycle        TargetCycle @default(MONTHLY)
+  id            String             @id @default(cuid())
+  user          User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        String
+  targetType    TargetType         @relation(fields: [targetTypeId], references: [id])
+  targetTypeId  String
+  cycle         TargetSettingCycle @default(MONTHLY)
+  targetCycleId String?
+  targetCycle   TargetCycle?       @relation(fields: [targetCycleId], references: [id], onDelete: SetNull)
 
   monthlyTargetLeads  Int   @default(0)
   dailyFollowupTarget Int   @default(0)
@@ -326,6 +368,7 @@ model TargetSetting {
 
   @@index([userId, workspaceId])
   @@index([targetTypeId])
+  @@index([targetCycleId])
   @@map("target_settings")
 }
 

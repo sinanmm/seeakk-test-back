@@ -9,11 +9,13 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum TargetCycle {
+enum TargetSettingCycle {
   MONTHLY
   QUARTERLY
   YEARLY
   CUSTOM
+
+  @@map("TargetCycle")
 }
 
 enum ViolationType {
@@ -88,6 +90,7 @@ model Workspace {
   ownerId        String       @unique
   users          User[]       @relation("WorkspaceMembers")
   departments    Department[]
+  targetCycles   TargetCycle[]
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
@@ -305,13 +308,52 @@ model TargetType {
   @@map("target_types")
 }
 
+model TargetCycle {
+  id          String             @id @default(cuid())
+  name        String
+  workspaceId String
+
+  totalDays   Int
+  status      String             @default("ACTIVE")
+
+  createdBy   String?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  deletedAt   DateTime?
+
+  workspace   Workspace          @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  ranges      TargetCycleRange[]
+  targets     TargetSetting[]
+
+  @@unique([name, workspaceId])
+  @@index([workspaceId])
+  @@map("target_cycles")
+}
+
+model TargetCycleRange {
+  id            String      @id @default(cuid())
+  targetCycleId String
+
+  startDay      Int
+  endDay        Int
+
+  createdAt     DateTime    @default(now())
+
+  targetCycle   TargetCycle @relation(fields: [targetCycleId], references: [id], onDelete: Cascade)
+
+  @@index([targetCycleId])
+  @@map("target_cycle_ranges")
+}
+
 model TargetSetting {
   id                   String     @id @default(cuid())
   user                 User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId               String
   targetType           TargetType @relation(fields: [targetTypeId], references: [id])
   targetTypeId         String
-  cycle                TargetCycle @default(MONTHLY)
+  cycle                TargetSettingCycle @default(MONTHLY)
+  targetCycleId        String?
+  targetCycle          TargetCycle?       @relation(fields: [targetCycleId], references: [id], onDelete: SetNull)
   
   monthlyTargetLeads   Int        @default(0)
   dailyFollowupTarget  Int        @default(0)
@@ -326,6 +368,7 @@ model TargetSetting {
 
   @@index([userId, workspaceId])
   @@index([targetTypeId])
+  @@index([targetCycleId])
   @@map("target_settings")
 }
 

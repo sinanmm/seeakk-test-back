@@ -79,6 +79,16 @@ export type UserLocationAssignment = $Result.DefaultSelection<Prisma.$UserLocati
  */
 export type TargetType = $Result.DefaultSelection<Prisma.$TargetTypePayload>
 /**
+ * Model TargetCycle
+ * 
+ */
+export type TargetCycle = $Result.DefaultSelection<Prisma.$TargetCyclePayload>
+/**
+ * Model TargetCycleRange
+ * 
+ */
+export type TargetCycleRange = $Result.DefaultSelection<Prisma.$TargetCycleRangePayload>
+/**
  * Model TargetSetting
  * 
  */
@@ -176,14 +186,14 @@ export const LocationType: {
 export type LocationType = (typeof LocationType)[keyof typeof LocationType]
 
 
-export const TargetCycle: {
+export const TargetSettingCycle: {
   MONTHLY: 'MONTHLY',
   QUARTERLY: 'QUARTERLY',
   YEARLY: 'YEARLY',
   CUSTOM: 'CUSTOM'
 };
 
-export type TargetCycle = (typeof TargetCycle)[keyof typeof TargetCycle]
+export type TargetSettingCycle = (typeof TargetSettingCycle)[keyof typeof TargetSettingCycle]
 
 
 export const ViolationType: {
@@ -249,9 +259,9 @@ export type LocationType = $Enums.LocationType
 
 export const LocationType: typeof $Enums.LocationType
 
-export type TargetCycle = $Enums.TargetCycle
+export type TargetSettingCycle = $Enums.TargetSettingCycle
 
-export const TargetCycle: typeof $Enums.TargetCycle
+export const TargetSettingCycle: typeof $Enums.TargetSettingCycle
 
 export type ViolationType = $Enums.ViolationType
 
@@ -521,6 +531,26 @@ export class PrismaClient<
     * ```
     */
   get targetType(): Prisma.TargetTypeDelegate<ExtArgs>;
+
+  /**
+   * `prisma.targetCycle`: Exposes CRUD operations for the **TargetCycle** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more TargetCycles
+    * const targetCycles = await prisma.targetCycle.findMany()
+    * ```
+    */
+  get targetCycle(): Prisma.TargetCycleDelegate<ExtArgs>;
+
+  /**
+   * `prisma.targetCycleRange`: Exposes CRUD operations for the **TargetCycleRange** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more TargetCycleRanges
+    * const targetCycleRanges = await prisma.targetCycleRange.findMany()
+    * ```
+    */
+  get targetCycleRange(): Prisma.TargetCycleRangeDelegate<ExtArgs>;
 
   /**
    * `prisma.targetSetting`: Exposes CRUD operations for the **TargetSetting** model.
@@ -1035,6 +1065,8 @@ export namespace Prisma {
     Location: 'Location',
     UserLocationAssignment: 'UserLocationAssignment',
     TargetType: 'TargetType',
+    TargetCycle: 'TargetCycle',
+    TargetCycleRange: 'TargetCycleRange',
     TargetSetting: 'TargetSetting',
     TargetViolation: 'TargetViolation',
     User: 'User',
@@ -1056,7 +1088,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "role" | "permission" | "rolePermission" | "workspace" | "department" | "leadSource" | "leadStage" | "stageRule" | "leadStageInput" | "office" | "location" | "userLocationAssignment" | "targetType" | "targetSetting" | "targetViolation" | "user" | "rosterEntry" | "auditLog" | "device"
+      modelProps: "role" | "permission" | "rolePermission" | "workspace" | "department" | "leadSource" | "leadStage" | "stageRule" | "leadStageInput" | "office" | "location" | "userLocationAssignment" | "targetType" | "targetCycle" | "targetCycleRange" | "targetSetting" | "targetViolation" | "user" | "rosterEntry" | "auditLog" | "device"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1970,6 +2002,146 @@ export namespace Prisma {
           }
         }
       }
+      TargetCycle: {
+        payload: Prisma.$TargetCyclePayload<ExtArgs>
+        fields: Prisma.TargetCycleFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.TargetCycleFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TargetCyclePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.TargetCycleFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TargetCyclePayload>
+          }
+          findFirst: {
+            args: Prisma.TargetCycleFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TargetCyclePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.TargetCycleFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TargetCyclePayload>
+          }
+          findMany: {
+            args: Prisma.TargetCycleFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TargetCyclePayload>[]
+          }
+          create: {
+            args: Prisma.TargetCycleCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TargetCyclePayload>
+          }
+          createMany: {
+            args: Prisma.TargetCycleCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.TargetCycleCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TargetCyclePayload>[]
+          }
+          delete: {
+            args: Prisma.TargetCycleDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TargetCyclePayload>
+          }
+          update: {
+            args: Prisma.TargetCycleUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TargetCyclePayload>
+          }
+          deleteMany: {
+            args: Prisma.TargetCycleDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.TargetCycleUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.TargetCycleUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TargetCyclePayload>
+          }
+          aggregate: {
+            args: Prisma.TargetCycleAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateTargetCycle>
+          }
+          groupBy: {
+            args: Prisma.TargetCycleGroupByArgs<ExtArgs>
+            result: $Utils.Optional<TargetCycleGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.TargetCycleCountArgs<ExtArgs>
+            result: $Utils.Optional<TargetCycleCountAggregateOutputType> | number
+          }
+        }
+      }
+      TargetCycleRange: {
+        payload: Prisma.$TargetCycleRangePayload<ExtArgs>
+        fields: Prisma.TargetCycleRangeFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.TargetCycleRangeFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TargetCycleRangePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.TargetCycleRangeFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TargetCycleRangePayload>
+          }
+          findFirst: {
+            args: Prisma.TargetCycleRangeFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TargetCycleRangePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.TargetCycleRangeFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TargetCycleRangePayload>
+          }
+          findMany: {
+            args: Prisma.TargetCycleRangeFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TargetCycleRangePayload>[]
+          }
+          create: {
+            args: Prisma.TargetCycleRangeCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TargetCycleRangePayload>
+          }
+          createMany: {
+            args: Prisma.TargetCycleRangeCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.TargetCycleRangeCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TargetCycleRangePayload>[]
+          }
+          delete: {
+            args: Prisma.TargetCycleRangeDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TargetCycleRangePayload>
+          }
+          update: {
+            args: Prisma.TargetCycleRangeUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TargetCycleRangePayload>
+          }
+          deleteMany: {
+            args: Prisma.TargetCycleRangeDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.TargetCycleRangeUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.TargetCycleRangeUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TargetCycleRangePayload>
+          }
+          aggregate: {
+            args: Prisma.TargetCycleRangeAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateTargetCycleRange>
+          }
+          groupBy: {
+            args: Prisma.TargetCycleRangeGroupByArgs<ExtArgs>
+            result: $Utils.Optional<TargetCycleRangeGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.TargetCycleRangeCountArgs<ExtArgs>
+            result: $Utils.Optional<TargetCycleRangeCountAggregateOutputType> | number
+          }
+        }
+      }
       TargetSetting: {
         payload: Prisma.$TargetSettingPayload<ExtArgs>
         fields: Prisma.TargetSettingFieldRefs
@@ -2628,11 +2800,13 @@ export namespace Prisma {
   export type WorkspaceCountOutputType = {
     users: number
     departments: number
+    targetCycles: number
   }
 
   export type WorkspaceCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     users?: boolean | WorkspaceCountOutputTypeCountUsersArgs
     departments?: boolean | WorkspaceCountOutputTypeCountDepartmentsArgs
+    targetCycles?: boolean | WorkspaceCountOutputTypeCountTargetCyclesArgs
   }
 
   // Custom InputTypes
@@ -2658,6 +2832,13 @@ export namespace Prisma {
    */
   export type WorkspaceCountOutputTypeCountDepartmentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: DepartmentWhereInput
+  }
+
+  /**
+   * WorkspaceCountOutputType without action
+   */
+  export type WorkspaceCountOutputTypeCountTargetCyclesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TargetCycleWhereInput
   }
 
 
@@ -2879,6 +3060,46 @@ export namespace Prisma {
    * TargetTypeCountOutputType without action
    */
   export type TargetTypeCountOutputTypeCountSettingsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TargetSettingWhereInput
+  }
+
+
+  /**
+   * Count Type TargetCycleCountOutputType
+   */
+
+  export type TargetCycleCountOutputType = {
+    ranges: number
+    targets: number
+  }
+
+  export type TargetCycleCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    ranges?: boolean | TargetCycleCountOutputTypeCountRangesArgs
+    targets?: boolean | TargetCycleCountOutputTypeCountTargetsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * TargetCycleCountOutputType without action
+   */
+  export type TargetCycleCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TargetCycleCountOutputType
+     */
+    select?: TargetCycleCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * TargetCycleCountOutputType without action
+   */
+  export type TargetCycleCountOutputTypeCountRangesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TargetCycleRangeWhereInput
+  }
+
+  /**
+   * TargetCycleCountOutputType without action
+   */
+  export type TargetCycleCountOutputTypeCountTargetsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: TargetSettingWhereInput
   }
 
@@ -6026,6 +6247,7 @@ export namespace Prisma {
     owner?: boolean | UserDefaultArgs<ExtArgs>
     users?: boolean | Workspace$usersArgs<ExtArgs>
     departments?: boolean | Workspace$departmentsArgs<ExtArgs>
+    targetCycles?: boolean | Workspace$targetCyclesArgs<ExtArgs>
     _count?: boolean | WorkspaceCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["workspace"]>
 
@@ -6060,6 +6282,7 @@ export namespace Prisma {
     owner?: boolean | UserDefaultArgs<ExtArgs>
     users?: boolean | Workspace$usersArgs<ExtArgs>
     departments?: boolean | Workspace$departmentsArgs<ExtArgs>
+    targetCycles?: boolean | Workspace$targetCyclesArgs<ExtArgs>
     _count?: boolean | WorkspaceCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type WorkspaceIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -6072,6 +6295,7 @@ export namespace Prisma {
       owner: Prisma.$UserPayload<ExtArgs>
       users: Prisma.$UserPayload<ExtArgs>[]
       departments: Prisma.$DepartmentPayload<ExtArgs>[]
+      targetCycles: Prisma.$TargetCyclePayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -6451,6 +6675,7 @@ export namespace Prisma {
     owner<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
     users<T extends Workspace$usersArgs<ExtArgs> = {}>(args?: Subset<T, Workspace$usersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany"> | Null>
     departments<T extends Workspace$departmentsArgs<ExtArgs> = {}>(args?: Subset<T, Workspace$departmentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DepartmentPayload<ExtArgs>, T, "findMany"> | Null>
+    targetCycles<T extends Workspace$targetCyclesArgs<ExtArgs> = {}>(args?: Subset<T, Workspace$targetCyclesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TargetCyclePayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -6845,6 +7070,26 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: DepartmentScalarFieldEnum | DepartmentScalarFieldEnum[]
+  }
+
+  /**
+   * Workspace.targetCycles
+   */
+  export type Workspace$targetCyclesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TargetCycle
+     */
+    select?: TargetCycleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TargetCycleInclude<ExtArgs> | null
+    where?: TargetCycleWhereInput
+    orderBy?: TargetCycleOrderByWithRelationInput | TargetCycleOrderByWithRelationInput[]
+    cursor?: TargetCycleWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: TargetCycleScalarFieldEnum | TargetCycleScalarFieldEnum[]
   }
 
   /**
@@ -15867,6 +16112,2042 @@ export namespace Prisma {
 
 
   /**
+   * Model TargetCycle
+   */
+
+  export type AggregateTargetCycle = {
+    _count: TargetCycleCountAggregateOutputType | null
+    _avg: TargetCycleAvgAggregateOutputType | null
+    _sum: TargetCycleSumAggregateOutputType | null
+    _min: TargetCycleMinAggregateOutputType | null
+    _max: TargetCycleMaxAggregateOutputType | null
+  }
+
+  export type TargetCycleAvgAggregateOutputType = {
+    totalDays: number | null
+  }
+
+  export type TargetCycleSumAggregateOutputType = {
+    totalDays: number | null
+  }
+
+  export type TargetCycleMinAggregateOutputType = {
+    id: string | null
+    name: string | null
+    workspaceId: string | null
+    totalDays: number | null
+    status: string | null
+    createdBy: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    deletedAt: Date | null
+  }
+
+  export type TargetCycleMaxAggregateOutputType = {
+    id: string | null
+    name: string | null
+    workspaceId: string | null
+    totalDays: number | null
+    status: string | null
+    createdBy: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    deletedAt: Date | null
+  }
+
+  export type TargetCycleCountAggregateOutputType = {
+    id: number
+    name: number
+    workspaceId: number
+    totalDays: number
+    status: number
+    createdBy: number
+    createdAt: number
+    updatedAt: number
+    deletedAt: number
+    _all: number
+  }
+
+
+  export type TargetCycleAvgAggregateInputType = {
+    totalDays?: true
+  }
+
+  export type TargetCycleSumAggregateInputType = {
+    totalDays?: true
+  }
+
+  export type TargetCycleMinAggregateInputType = {
+    id?: true
+    name?: true
+    workspaceId?: true
+    totalDays?: true
+    status?: true
+    createdBy?: true
+    createdAt?: true
+    updatedAt?: true
+    deletedAt?: true
+  }
+
+  export type TargetCycleMaxAggregateInputType = {
+    id?: true
+    name?: true
+    workspaceId?: true
+    totalDays?: true
+    status?: true
+    createdBy?: true
+    createdAt?: true
+    updatedAt?: true
+    deletedAt?: true
+  }
+
+  export type TargetCycleCountAggregateInputType = {
+    id?: true
+    name?: true
+    workspaceId?: true
+    totalDays?: true
+    status?: true
+    createdBy?: true
+    createdAt?: true
+    updatedAt?: true
+    deletedAt?: true
+    _all?: true
+  }
+
+  export type TargetCycleAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which TargetCycle to aggregate.
+     */
+    where?: TargetCycleWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of TargetCycles to fetch.
+     */
+    orderBy?: TargetCycleOrderByWithRelationInput | TargetCycleOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: TargetCycleWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` TargetCycles from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` TargetCycles.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned TargetCycles
+    **/
+    _count?: true | TargetCycleCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: TargetCycleAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: TargetCycleSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: TargetCycleMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: TargetCycleMaxAggregateInputType
+  }
+
+  export type GetTargetCycleAggregateType<T extends TargetCycleAggregateArgs> = {
+        [P in keyof T & keyof AggregateTargetCycle]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateTargetCycle[P]>
+      : GetScalarType<T[P], AggregateTargetCycle[P]>
+  }
+
+
+
+
+  export type TargetCycleGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TargetCycleWhereInput
+    orderBy?: TargetCycleOrderByWithAggregationInput | TargetCycleOrderByWithAggregationInput[]
+    by: TargetCycleScalarFieldEnum[] | TargetCycleScalarFieldEnum
+    having?: TargetCycleScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: TargetCycleCountAggregateInputType | true
+    _avg?: TargetCycleAvgAggregateInputType
+    _sum?: TargetCycleSumAggregateInputType
+    _min?: TargetCycleMinAggregateInputType
+    _max?: TargetCycleMaxAggregateInputType
+  }
+
+  export type TargetCycleGroupByOutputType = {
+    id: string
+    name: string
+    workspaceId: string
+    totalDays: number
+    status: string
+    createdBy: string | null
+    createdAt: Date
+    updatedAt: Date
+    deletedAt: Date | null
+    _count: TargetCycleCountAggregateOutputType | null
+    _avg: TargetCycleAvgAggregateOutputType | null
+    _sum: TargetCycleSumAggregateOutputType | null
+    _min: TargetCycleMinAggregateOutputType | null
+    _max: TargetCycleMaxAggregateOutputType | null
+  }
+
+  type GetTargetCycleGroupByPayload<T extends TargetCycleGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<TargetCycleGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof TargetCycleGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], TargetCycleGroupByOutputType[P]>
+            : GetScalarType<T[P], TargetCycleGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type TargetCycleSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    name?: boolean
+    workspaceId?: boolean
+    totalDays?: boolean
+    status?: boolean
+    createdBy?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    deletedAt?: boolean
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+    ranges?: boolean | TargetCycle$rangesArgs<ExtArgs>
+    targets?: boolean | TargetCycle$targetsArgs<ExtArgs>
+    _count?: boolean | TargetCycleCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["targetCycle"]>
+
+  export type TargetCycleSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    name?: boolean
+    workspaceId?: boolean
+    totalDays?: boolean
+    status?: boolean
+    createdBy?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    deletedAt?: boolean
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["targetCycle"]>
+
+  export type TargetCycleSelectScalar = {
+    id?: boolean
+    name?: boolean
+    workspaceId?: boolean
+    totalDays?: boolean
+    status?: boolean
+    createdBy?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    deletedAt?: boolean
+  }
+
+  export type TargetCycleInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+    ranges?: boolean | TargetCycle$rangesArgs<ExtArgs>
+    targets?: boolean | TargetCycle$targetsArgs<ExtArgs>
+    _count?: boolean | TargetCycleCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type TargetCycleIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+  }
+
+  export type $TargetCyclePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "TargetCycle"
+    objects: {
+      workspace: Prisma.$WorkspacePayload<ExtArgs>
+      ranges: Prisma.$TargetCycleRangePayload<ExtArgs>[]
+      targets: Prisma.$TargetSettingPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      name: string
+      workspaceId: string
+      totalDays: number
+      status: string
+      createdBy: string | null
+      createdAt: Date
+      updatedAt: Date
+      deletedAt: Date | null
+    }, ExtArgs["result"]["targetCycle"]>
+    composites: {}
+  }
+
+  type TargetCycleGetPayload<S extends boolean | null | undefined | TargetCycleDefaultArgs> = $Result.GetResult<Prisma.$TargetCyclePayload, S>
+
+  type TargetCycleCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<TargetCycleFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: TargetCycleCountAggregateInputType | true
+    }
+
+  export interface TargetCycleDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['TargetCycle'], meta: { name: 'TargetCycle' } }
+    /**
+     * Find zero or one TargetCycle that matches the filter.
+     * @param {TargetCycleFindUniqueArgs} args - Arguments to find a TargetCycle
+     * @example
+     * // Get one TargetCycle
+     * const targetCycle = await prisma.targetCycle.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends TargetCycleFindUniqueArgs>(args: SelectSubset<T, TargetCycleFindUniqueArgs<ExtArgs>>): Prisma__TargetCycleClient<$Result.GetResult<Prisma.$TargetCyclePayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one TargetCycle that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {TargetCycleFindUniqueOrThrowArgs} args - Arguments to find a TargetCycle
+     * @example
+     * // Get one TargetCycle
+     * const targetCycle = await prisma.targetCycle.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends TargetCycleFindUniqueOrThrowArgs>(args: SelectSubset<T, TargetCycleFindUniqueOrThrowArgs<ExtArgs>>): Prisma__TargetCycleClient<$Result.GetResult<Prisma.$TargetCyclePayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first TargetCycle that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TargetCycleFindFirstArgs} args - Arguments to find a TargetCycle
+     * @example
+     * // Get one TargetCycle
+     * const targetCycle = await prisma.targetCycle.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends TargetCycleFindFirstArgs>(args?: SelectSubset<T, TargetCycleFindFirstArgs<ExtArgs>>): Prisma__TargetCycleClient<$Result.GetResult<Prisma.$TargetCyclePayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first TargetCycle that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TargetCycleFindFirstOrThrowArgs} args - Arguments to find a TargetCycle
+     * @example
+     * // Get one TargetCycle
+     * const targetCycle = await prisma.targetCycle.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends TargetCycleFindFirstOrThrowArgs>(args?: SelectSubset<T, TargetCycleFindFirstOrThrowArgs<ExtArgs>>): Prisma__TargetCycleClient<$Result.GetResult<Prisma.$TargetCyclePayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more TargetCycles that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TargetCycleFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all TargetCycles
+     * const targetCycles = await prisma.targetCycle.findMany()
+     * 
+     * // Get first 10 TargetCycles
+     * const targetCycles = await prisma.targetCycle.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const targetCycleWithIdOnly = await prisma.targetCycle.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends TargetCycleFindManyArgs>(args?: SelectSubset<T, TargetCycleFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TargetCyclePayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a TargetCycle.
+     * @param {TargetCycleCreateArgs} args - Arguments to create a TargetCycle.
+     * @example
+     * // Create one TargetCycle
+     * const TargetCycle = await prisma.targetCycle.create({
+     *   data: {
+     *     // ... data to create a TargetCycle
+     *   }
+     * })
+     * 
+     */
+    create<T extends TargetCycleCreateArgs>(args: SelectSubset<T, TargetCycleCreateArgs<ExtArgs>>): Prisma__TargetCycleClient<$Result.GetResult<Prisma.$TargetCyclePayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many TargetCycles.
+     * @param {TargetCycleCreateManyArgs} args - Arguments to create many TargetCycles.
+     * @example
+     * // Create many TargetCycles
+     * const targetCycle = await prisma.targetCycle.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends TargetCycleCreateManyArgs>(args?: SelectSubset<T, TargetCycleCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many TargetCycles and returns the data saved in the database.
+     * @param {TargetCycleCreateManyAndReturnArgs} args - Arguments to create many TargetCycles.
+     * @example
+     * // Create many TargetCycles
+     * const targetCycle = await prisma.targetCycle.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many TargetCycles and only return the `id`
+     * const targetCycleWithIdOnly = await prisma.targetCycle.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends TargetCycleCreateManyAndReturnArgs>(args?: SelectSubset<T, TargetCycleCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TargetCyclePayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a TargetCycle.
+     * @param {TargetCycleDeleteArgs} args - Arguments to delete one TargetCycle.
+     * @example
+     * // Delete one TargetCycle
+     * const TargetCycle = await prisma.targetCycle.delete({
+     *   where: {
+     *     // ... filter to delete one TargetCycle
+     *   }
+     * })
+     * 
+     */
+    delete<T extends TargetCycleDeleteArgs>(args: SelectSubset<T, TargetCycleDeleteArgs<ExtArgs>>): Prisma__TargetCycleClient<$Result.GetResult<Prisma.$TargetCyclePayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one TargetCycle.
+     * @param {TargetCycleUpdateArgs} args - Arguments to update one TargetCycle.
+     * @example
+     * // Update one TargetCycle
+     * const targetCycle = await prisma.targetCycle.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends TargetCycleUpdateArgs>(args: SelectSubset<T, TargetCycleUpdateArgs<ExtArgs>>): Prisma__TargetCycleClient<$Result.GetResult<Prisma.$TargetCyclePayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more TargetCycles.
+     * @param {TargetCycleDeleteManyArgs} args - Arguments to filter TargetCycles to delete.
+     * @example
+     * // Delete a few TargetCycles
+     * const { count } = await prisma.targetCycle.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends TargetCycleDeleteManyArgs>(args?: SelectSubset<T, TargetCycleDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more TargetCycles.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TargetCycleUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many TargetCycles
+     * const targetCycle = await prisma.targetCycle.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends TargetCycleUpdateManyArgs>(args: SelectSubset<T, TargetCycleUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one TargetCycle.
+     * @param {TargetCycleUpsertArgs} args - Arguments to update or create a TargetCycle.
+     * @example
+     * // Update or create a TargetCycle
+     * const targetCycle = await prisma.targetCycle.upsert({
+     *   create: {
+     *     // ... data to create a TargetCycle
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the TargetCycle we want to update
+     *   }
+     * })
+     */
+    upsert<T extends TargetCycleUpsertArgs>(args: SelectSubset<T, TargetCycleUpsertArgs<ExtArgs>>): Prisma__TargetCycleClient<$Result.GetResult<Prisma.$TargetCyclePayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of TargetCycles.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TargetCycleCountArgs} args - Arguments to filter TargetCycles to count.
+     * @example
+     * // Count the number of TargetCycles
+     * const count = await prisma.targetCycle.count({
+     *   where: {
+     *     // ... the filter for the TargetCycles we want to count
+     *   }
+     * })
+    **/
+    count<T extends TargetCycleCountArgs>(
+      args?: Subset<T, TargetCycleCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], TargetCycleCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a TargetCycle.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TargetCycleAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends TargetCycleAggregateArgs>(args: Subset<T, TargetCycleAggregateArgs>): Prisma.PrismaPromise<GetTargetCycleAggregateType<T>>
+
+    /**
+     * Group by TargetCycle.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TargetCycleGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends TargetCycleGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: TargetCycleGroupByArgs['orderBy'] }
+        : { orderBy?: TargetCycleGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, TargetCycleGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetTargetCycleGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the TargetCycle model
+   */
+  readonly fields: TargetCycleFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for TargetCycle.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__TargetCycleClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    workspace<T extends WorkspaceDefaultArgs<ExtArgs> = {}>(args?: Subset<T, WorkspaceDefaultArgs<ExtArgs>>): Prisma__WorkspaceClient<$Result.GetResult<Prisma.$WorkspacePayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    ranges<T extends TargetCycle$rangesArgs<ExtArgs> = {}>(args?: Subset<T, TargetCycle$rangesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TargetCycleRangePayload<ExtArgs>, T, "findMany"> | Null>
+    targets<T extends TargetCycle$targetsArgs<ExtArgs> = {}>(args?: Subset<T, TargetCycle$targetsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TargetSettingPayload<ExtArgs>, T, "findMany"> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the TargetCycle model
+   */ 
+  interface TargetCycleFieldRefs {
+    readonly id: FieldRef<"TargetCycle", 'String'>
+    readonly name: FieldRef<"TargetCycle", 'String'>
+    readonly workspaceId: FieldRef<"TargetCycle", 'String'>
+    readonly totalDays: FieldRef<"TargetCycle", 'Int'>
+    readonly status: FieldRef<"TargetCycle", 'String'>
+    readonly createdBy: FieldRef<"TargetCycle", 'String'>
+    readonly createdAt: FieldRef<"TargetCycle", 'DateTime'>
+    readonly updatedAt: FieldRef<"TargetCycle", 'DateTime'>
+    readonly deletedAt: FieldRef<"TargetCycle", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * TargetCycle findUnique
+   */
+  export type TargetCycleFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TargetCycle
+     */
+    select?: TargetCycleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TargetCycleInclude<ExtArgs> | null
+    /**
+     * Filter, which TargetCycle to fetch.
+     */
+    where: TargetCycleWhereUniqueInput
+  }
+
+  /**
+   * TargetCycle findUniqueOrThrow
+   */
+  export type TargetCycleFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TargetCycle
+     */
+    select?: TargetCycleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TargetCycleInclude<ExtArgs> | null
+    /**
+     * Filter, which TargetCycle to fetch.
+     */
+    where: TargetCycleWhereUniqueInput
+  }
+
+  /**
+   * TargetCycle findFirst
+   */
+  export type TargetCycleFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TargetCycle
+     */
+    select?: TargetCycleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TargetCycleInclude<ExtArgs> | null
+    /**
+     * Filter, which TargetCycle to fetch.
+     */
+    where?: TargetCycleWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of TargetCycles to fetch.
+     */
+    orderBy?: TargetCycleOrderByWithRelationInput | TargetCycleOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for TargetCycles.
+     */
+    cursor?: TargetCycleWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` TargetCycles from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` TargetCycles.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of TargetCycles.
+     */
+    distinct?: TargetCycleScalarFieldEnum | TargetCycleScalarFieldEnum[]
+  }
+
+  /**
+   * TargetCycle findFirstOrThrow
+   */
+  export type TargetCycleFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TargetCycle
+     */
+    select?: TargetCycleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TargetCycleInclude<ExtArgs> | null
+    /**
+     * Filter, which TargetCycle to fetch.
+     */
+    where?: TargetCycleWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of TargetCycles to fetch.
+     */
+    orderBy?: TargetCycleOrderByWithRelationInput | TargetCycleOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for TargetCycles.
+     */
+    cursor?: TargetCycleWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` TargetCycles from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` TargetCycles.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of TargetCycles.
+     */
+    distinct?: TargetCycleScalarFieldEnum | TargetCycleScalarFieldEnum[]
+  }
+
+  /**
+   * TargetCycle findMany
+   */
+  export type TargetCycleFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TargetCycle
+     */
+    select?: TargetCycleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TargetCycleInclude<ExtArgs> | null
+    /**
+     * Filter, which TargetCycles to fetch.
+     */
+    where?: TargetCycleWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of TargetCycles to fetch.
+     */
+    orderBy?: TargetCycleOrderByWithRelationInput | TargetCycleOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing TargetCycles.
+     */
+    cursor?: TargetCycleWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` TargetCycles from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` TargetCycles.
+     */
+    skip?: number
+    distinct?: TargetCycleScalarFieldEnum | TargetCycleScalarFieldEnum[]
+  }
+
+  /**
+   * TargetCycle create
+   */
+  export type TargetCycleCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TargetCycle
+     */
+    select?: TargetCycleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TargetCycleInclude<ExtArgs> | null
+    /**
+     * The data needed to create a TargetCycle.
+     */
+    data: XOR<TargetCycleCreateInput, TargetCycleUncheckedCreateInput>
+  }
+
+  /**
+   * TargetCycle createMany
+   */
+  export type TargetCycleCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many TargetCycles.
+     */
+    data: TargetCycleCreateManyInput | TargetCycleCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * TargetCycle createManyAndReturn
+   */
+  export type TargetCycleCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TargetCycle
+     */
+    select?: TargetCycleSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many TargetCycles.
+     */
+    data: TargetCycleCreateManyInput | TargetCycleCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TargetCycleIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * TargetCycle update
+   */
+  export type TargetCycleUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TargetCycle
+     */
+    select?: TargetCycleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TargetCycleInclude<ExtArgs> | null
+    /**
+     * The data needed to update a TargetCycle.
+     */
+    data: XOR<TargetCycleUpdateInput, TargetCycleUncheckedUpdateInput>
+    /**
+     * Choose, which TargetCycle to update.
+     */
+    where: TargetCycleWhereUniqueInput
+  }
+
+  /**
+   * TargetCycle updateMany
+   */
+  export type TargetCycleUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update TargetCycles.
+     */
+    data: XOR<TargetCycleUpdateManyMutationInput, TargetCycleUncheckedUpdateManyInput>
+    /**
+     * Filter which TargetCycles to update
+     */
+    where?: TargetCycleWhereInput
+  }
+
+  /**
+   * TargetCycle upsert
+   */
+  export type TargetCycleUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TargetCycle
+     */
+    select?: TargetCycleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TargetCycleInclude<ExtArgs> | null
+    /**
+     * The filter to search for the TargetCycle to update in case it exists.
+     */
+    where: TargetCycleWhereUniqueInput
+    /**
+     * In case the TargetCycle found by the `where` argument doesn't exist, create a new TargetCycle with this data.
+     */
+    create: XOR<TargetCycleCreateInput, TargetCycleUncheckedCreateInput>
+    /**
+     * In case the TargetCycle was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<TargetCycleUpdateInput, TargetCycleUncheckedUpdateInput>
+  }
+
+  /**
+   * TargetCycle delete
+   */
+  export type TargetCycleDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TargetCycle
+     */
+    select?: TargetCycleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TargetCycleInclude<ExtArgs> | null
+    /**
+     * Filter which TargetCycle to delete.
+     */
+    where: TargetCycleWhereUniqueInput
+  }
+
+  /**
+   * TargetCycle deleteMany
+   */
+  export type TargetCycleDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which TargetCycles to delete
+     */
+    where?: TargetCycleWhereInput
+  }
+
+  /**
+   * TargetCycle.ranges
+   */
+  export type TargetCycle$rangesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TargetCycleRange
+     */
+    select?: TargetCycleRangeSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TargetCycleRangeInclude<ExtArgs> | null
+    where?: TargetCycleRangeWhereInput
+    orderBy?: TargetCycleRangeOrderByWithRelationInput | TargetCycleRangeOrderByWithRelationInput[]
+    cursor?: TargetCycleRangeWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: TargetCycleRangeScalarFieldEnum | TargetCycleRangeScalarFieldEnum[]
+  }
+
+  /**
+   * TargetCycle.targets
+   */
+  export type TargetCycle$targetsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TargetSetting
+     */
+    select?: TargetSettingSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TargetSettingInclude<ExtArgs> | null
+    where?: TargetSettingWhereInput
+    orderBy?: TargetSettingOrderByWithRelationInput | TargetSettingOrderByWithRelationInput[]
+    cursor?: TargetSettingWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: TargetSettingScalarFieldEnum | TargetSettingScalarFieldEnum[]
+  }
+
+  /**
+   * TargetCycle without action
+   */
+  export type TargetCycleDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TargetCycle
+     */
+    select?: TargetCycleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TargetCycleInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model TargetCycleRange
+   */
+
+  export type AggregateTargetCycleRange = {
+    _count: TargetCycleRangeCountAggregateOutputType | null
+    _avg: TargetCycleRangeAvgAggregateOutputType | null
+    _sum: TargetCycleRangeSumAggregateOutputType | null
+    _min: TargetCycleRangeMinAggregateOutputType | null
+    _max: TargetCycleRangeMaxAggregateOutputType | null
+  }
+
+  export type TargetCycleRangeAvgAggregateOutputType = {
+    startDay: number | null
+    endDay: number | null
+  }
+
+  export type TargetCycleRangeSumAggregateOutputType = {
+    startDay: number | null
+    endDay: number | null
+  }
+
+  export type TargetCycleRangeMinAggregateOutputType = {
+    id: string | null
+    targetCycleId: string | null
+    startDay: number | null
+    endDay: number | null
+    createdAt: Date | null
+  }
+
+  export type TargetCycleRangeMaxAggregateOutputType = {
+    id: string | null
+    targetCycleId: string | null
+    startDay: number | null
+    endDay: number | null
+    createdAt: Date | null
+  }
+
+  export type TargetCycleRangeCountAggregateOutputType = {
+    id: number
+    targetCycleId: number
+    startDay: number
+    endDay: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type TargetCycleRangeAvgAggregateInputType = {
+    startDay?: true
+    endDay?: true
+  }
+
+  export type TargetCycleRangeSumAggregateInputType = {
+    startDay?: true
+    endDay?: true
+  }
+
+  export type TargetCycleRangeMinAggregateInputType = {
+    id?: true
+    targetCycleId?: true
+    startDay?: true
+    endDay?: true
+    createdAt?: true
+  }
+
+  export type TargetCycleRangeMaxAggregateInputType = {
+    id?: true
+    targetCycleId?: true
+    startDay?: true
+    endDay?: true
+    createdAt?: true
+  }
+
+  export type TargetCycleRangeCountAggregateInputType = {
+    id?: true
+    targetCycleId?: true
+    startDay?: true
+    endDay?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type TargetCycleRangeAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which TargetCycleRange to aggregate.
+     */
+    where?: TargetCycleRangeWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of TargetCycleRanges to fetch.
+     */
+    orderBy?: TargetCycleRangeOrderByWithRelationInput | TargetCycleRangeOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: TargetCycleRangeWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` TargetCycleRanges from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` TargetCycleRanges.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned TargetCycleRanges
+    **/
+    _count?: true | TargetCycleRangeCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: TargetCycleRangeAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: TargetCycleRangeSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: TargetCycleRangeMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: TargetCycleRangeMaxAggregateInputType
+  }
+
+  export type GetTargetCycleRangeAggregateType<T extends TargetCycleRangeAggregateArgs> = {
+        [P in keyof T & keyof AggregateTargetCycleRange]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateTargetCycleRange[P]>
+      : GetScalarType<T[P], AggregateTargetCycleRange[P]>
+  }
+
+
+
+
+  export type TargetCycleRangeGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TargetCycleRangeWhereInput
+    orderBy?: TargetCycleRangeOrderByWithAggregationInput | TargetCycleRangeOrderByWithAggregationInput[]
+    by: TargetCycleRangeScalarFieldEnum[] | TargetCycleRangeScalarFieldEnum
+    having?: TargetCycleRangeScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: TargetCycleRangeCountAggregateInputType | true
+    _avg?: TargetCycleRangeAvgAggregateInputType
+    _sum?: TargetCycleRangeSumAggregateInputType
+    _min?: TargetCycleRangeMinAggregateInputType
+    _max?: TargetCycleRangeMaxAggregateInputType
+  }
+
+  export type TargetCycleRangeGroupByOutputType = {
+    id: string
+    targetCycleId: string
+    startDay: number
+    endDay: number
+    createdAt: Date
+    _count: TargetCycleRangeCountAggregateOutputType | null
+    _avg: TargetCycleRangeAvgAggregateOutputType | null
+    _sum: TargetCycleRangeSumAggregateOutputType | null
+    _min: TargetCycleRangeMinAggregateOutputType | null
+    _max: TargetCycleRangeMaxAggregateOutputType | null
+  }
+
+  type GetTargetCycleRangeGroupByPayload<T extends TargetCycleRangeGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<TargetCycleRangeGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof TargetCycleRangeGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], TargetCycleRangeGroupByOutputType[P]>
+            : GetScalarType<T[P], TargetCycleRangeGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type TargetCycleRangeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    targetCycleId?: boolean
+    startDay?: boolean
+    endDay?: boolean
+    createdAt?: boolean
+    targetCycle?: boolean | TargetCycleDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["targetCycleRange"]>
+
+  export type TargetCycleRangeSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    targetCycleId?: boolean
+    startDay?: boolean
+    endDay?: boolean
+    createdAt?: boolean
+    targetCycle?: boolean | TargetCycleDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["targetCycleRange"]>
+
+  export type TargetCycleRangeSelectScalar = {
+    id?: boolean
+    targetCycleId?: boolean
+    startDay?: boolean
+    endDay?: boolean
+    createdAt?: boolean
+  }
+
+  export type TargetCycleRangeInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    targetCycle?: boolean | TargetCycleDefaultArgs<ExtArgs>
+  }
+  export type TargetCycleRangeIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    targetCycle?: boolean | TargetCycleDefaultArgs<ExtArgs>
+  }
+
+  export type $TargetCycleRangePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "TargetCycleRange"
+    objects: {
+      targetCycle: Prisma.$TargetCyclePayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      targetCycleId: string
+      startDay: number
+      endDay: number
+      createdAt: Date
+    }, ExtArgs["result"]["targetCycleRange"]>
+    composites: {}
+  }
+
+  type TargetCycleRangeGetPayload<S extends boolean | null | undefined | TargetCycleRangeDefaultArgs> = $Result.GetResult<Prisma.$TargetCycleRangePayload, S>
+
+  type TargetCycleRangeCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<TargetCycleRangeFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: TargetCycleRangeCountAggregateInputType | true
+    }
+
+  export interface TargetCycleRangeDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['TargetCycleRange'], meta: { name: 'TargetCycleRange' } }
+    /**
+     * Find zero or one TargetCycleRange that matches the filter.
+     * @param {TargetCycleRangeFindUniqueArgs} args - Arguments to find a TargetCycleRange
+     * @example
+     * // Get one TargetCycleRange
+     * const targetCycleRange = await prisma.targetCycleRange.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends TargetCycleRangeFindUniqueArgs>(args: SelectSubset<T, TargetCycleRangeFindUniqueArgs<ExtArgs>>): Prisma__TargetCycleRangeClient<$Result.GetResult<Prisma.$TargetCycleRangePayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one TargetCycleRange that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {TargetCycleRangeFindUniqueOrThrowArgs} args - Arguments to find a TargetCycleRange
+     * @example
+     * // Get one TargetCycleRange
+     * const targetCycleRange = await prisma.targetCycleRange.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends TargetCycleRangeFindUniqueOrThrowArgs>(args: SelectSubset<T, TargetCycleRangeFindUniqueOrThrowArgs<ExtArgs>>): Prisma__TargetCycleRangeClient<$Result.GetResult<Prisma.$TargetCycleRangePayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first TargetCycleRange that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TargetCycleRangeFindFirstArgs} args - Arguments to find a TargetCycleRange
+     * @example
+     * // Get one TargetCycleRange
+     * const targetCycleRange = await prisma.targetCycleRange.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends TargetCycleRangeFindFirstArgs>(args?: SelectSubset<T, TargetCycleRangeFindFirstArgs<ExtArgs>>): Prisma__TargetCycleRangeClient<$Result.GetResult<Prisma.$TargetCycleRangePayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first TargetCycleRange that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TargetCycleRangeFindFirstOrThrowArgs} args - Arguments to find a TargetCycleRange
+     * @example
+     * // Get one TargetCycleRange
+     * const targetCycleRange = await prisma.targetCycleRange.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends TargetCycleRangeFindFirstOrThrowArgs>(args?: SelectSubset<T, TargetCycleRangeFindFirstOrThrowArgs<ExtArgs>>): Prisma__TargetCycleRangeClient<$Result.GetResult<Prisma.$TargetCycleRangePayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more TargetCycleRanges that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TargetCycleRangeFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all TargetCycleRanges
+     * const targetCycleRanges = await prisma.targetCycleRange.findMany()
+     * 
+     * // Get first 10 TargetCycleRanges
+     * const targetCycleRanges = await prisma.targetCycleRange.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const targetCycleRangeWithIdOnly = await prisma.targetCycleRange.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends TargetCycleRangeFindManyArgs>(args?: SelectSubset<T, TargetCycleRangeFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TargetCycleRangePayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a TargetCycleRange.
+     * @param {TargetCycleRangeCreateArgs} args - Arguments to create a TargetCycleRange.
+     * @example
+     * // Create one TargetCycleRange
+     * const TargetCycleRange = await prisma.targetCycleRange.create({
+     *   data: {
+     *     // ... data to create a TargetCycleRange
+     *   }
+     * })
+     * 
+     */
+    create<T extends TargetCycleRangeCreateArgs>(args: SelectSubset<T, TargetCycleRangeCreateArgs<ExtArgs>>): Prisma__TargetCycleRangeClient<$Result.GetResult<Prisma.$TargetCycleRangePayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many TargetCycleRanges.
+     * @param {TargetCycleRangeCreateManyArgs} args - Arguments to create many TargetCycleRanges.
+     * @example
+     * // Create many TargetCycleRanges
+     * const targetCycleRange = await prisma.targetCycleRange.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends TargetCycleRangeCreateManyArgs>(args?: SelectSubset<T, TargetCycleRangeCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many TargetCycleRanges and returns the data saved in the database.
+     * @param {TargetCycleRangeCreateManyAndReturnArgs} args - Arguments to create many TargetCycleRanges.
+     * @example
+     * // Create many TargetCycleRanges
+     * const targetCycleRange = await prisma.targetCycleRange.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many TargetCycleRanges and only return the `id`
+     * const targetCycleRangeWithIdOnly = await prisma.targetCycleRange.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends TargetCycleRangeCreateManyAndReturnArgs>(args?: SelectSubset<T, TargetCycleRangeCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TargetCycleRangePayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a TargetCycleRange.
+     * @param {TargetCycleRangeDeleteArgs} args - Arguments to delete one TargetCycleRange.
+     * @example
+     * // Delete one TargetCycleRange
+     * const TargetCycleRange = await prisma.targetCycleRange.delete({
+     *   where: {
+     *     // ... filter to delete one TargetCycleRange
+     *   }
+     * })
+     * 
+     */
+    delete<T extends TargetCycleRangeDeleteArgs>(args: SelectSubset<T, TargetCycleRangeDeleteArgs<ExtArgs>>): Prisma__TargetCycleRangeClient<$Result.GetResult<Prisma.$TargetCycleRangePayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one TargetCycleRange.
+     * @param {TargetCycleRangeUpdateArgs} args - Arguments to update one TargetCycleRange.
+     * @example
+     * // Update one TargetCycleRange
+     * const targetCycleRange = await prisma.targetCycleRange.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends TargetCycleRangeUpdateArgs>(args: SelectSubset<T, TargetCycleRangeUpdateArgs<ExtArgs>>): Prisma__TargetCycleRangeClient<$Result.GetResult<Prisma.$TargetCycleRangePayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more TargetCycleRanges.
+     * @param {TargetCycleRangeDeleteManyArgs} args - Arguments to filter TargetCycleRanges to delete.
+     * @example
+     * // Delete a few TargetCycleRanges
+     * const { count } = await prisma.targetCycleRange.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends TargetCycleRangeDeleteManyArgs>(args?: SelectSubset<T, TargetCycleRangeDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more TargetCycleRanges.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TargetCycleRangeUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many TargetCycleRanges
+     * const targetCycleRange = await prisma.targetCycleRange.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends TargetCycleRangeUpdateManyArgs>(args: SelectSubset<T, TargetCycleRangeUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one TargetCycleRange.
+     * @param {TargetCycleRangeUpsertArgs} args - Arguments to update or create a TargetCycleRange.
+     * @example
+     * // Update or create a TargetCycleRange
+     * const targetCycleRange = await prisma.targetCycleRange.upsert({
+     *   create: {
+     *     // ... data to create a TargetCycleRange
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the TargetCycleRange we want to update
+     *   }
+     * })
+     */
+    upsert<T extends TargetCycleRangeUpsertArgs>(args: SelectSubset<T, TargetCycleRangeUpsertArgs<ExtArgs>>): Prisma__TargetCycleRangeClient<$Result.GetResult<Prisma.$TargetCycleRangePayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of TargetCycleRanges.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TargetCycleRangeCountArgs} args - Arguments to filter TargetCycleRanges to count.
+     * @example
+     * // Count the number of TargetCycleRanges
+     * const count = await prisma.targetCycleRange.count({
+     *   where: {
+     *     // ... the filter for the TargetCycleRanges we want to count
+     *   }
+     * })
+    **/
+    count<T extends TargetCycleRangeCountArgs>(
+      args?: Subset<T, TargetCycleRangeCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], TargetCycleRangeCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a TargetCycleRange.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TargetCycleRangeAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends TargetCycleRangeAggregateArgs>(args: Subset<T, TargetCycleRangeAggregateArgs>): Prisma.PrismaPromise<GetTargetCycleRangeAggregateType<T>>
+
+    /**
+     * Group by TargetCycleRange.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TargetCycleRangeGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends TargetCycleRangeGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: TargetCycleRangeGroupByArgs['orderBy'] }
+        : { orderBy?: TargetCycleRangeGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, TargetCycleRangeGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetTargetCycleRangeGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the TargetCycleRange model
+   */
+  readonly fields: TargetCycleRangeFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for TargetCycleRange.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__TargetCycleRangeClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    targetCycle<T extends TargetCycleDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TargetCycleDefaultArgs<ExtArgs>>): Prisma__TargetCycleClient<$Result.GetResult<Prisma.$TargetCyclePayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the TargetCycleRange model
+   */ 
+  interface TargetCycleRangeFieldRefs {
+    readonly id: FieldRef<"TargetCycleRange", 'String'>
+    readonly targetCycleId: FieldRef<"TargetCycleRange", 'String'>
+    readonly startDay: FieldRef<"TargetCycleRange", 'Int'>
+    readonly endDay: FieldRef<"TargetCycleRange", 'Int'>
+    readonly createdAt: FieldRef<"TargetCycleRange", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * TargetCycleRange findUnique
+   */
+  export type TargetCycleRangeFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TargetCycleRange
+     */
+    select?: TargetCycleRangeSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TargetCycleRangeInclude<ExtArgs> | null
+    /**
+     * Filter, which TargetCycleRange to fetch.
+     */
+    where: TargetCycleRangeWhereUniqueInput
+  }
+
+  /**
+   * TargetCycleRange findUniqueOrThrow
+   */
+  export type TargetCycleRangeFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TargetCycleRange
+     */
+    select?: TargetCycleRangeSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TargetCycleRangeInclude<ExtArgs> | null
+    /**
+     * Filter, which TargetCycleRange to fetch.
+     */
+    where: TargetCycleRangeWhereUniqueInput
+  }
+
+  /**
+   * TargetCycleRange findFirst
+   */
+  export type TargetCycleRangeFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TargetCycleRange
+     */
+    select?: TargetCycleRangeSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TargetCycleRangeInclude<ExtArgs> | null
+    /**
+     * Filter, which TargetCycleRange to fetch.
+     */
+    where?: TargetCycleRangeWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of TargetCycleRanges to fetch.
+     */
+    orderBy?: TargetCycleRangeOrderByWithRelationInput | TargetCycleRangeOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for TargetCycleRanges.
+     */
+    cursor?: TargetCycleRangeWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` TargetCycleRanges from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` TargetCycleRanges.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of TargetCycleRanges.
+     */
+    distinct?: TargetCycleRangeScalarFieldEnum | TargetCycleRangeScalarFieldEnum[]
+  }
+
+  /**
+   * TargetCycleRange findFirstOrThrow
+   */
+  export type TargetCycleRangeFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TargetCycleRange
+     */
+    select?: TargetCycleRangeSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TargetCycleRangeInclude<ExtArgs> | null
+    /**
+     * Filter, which TargetCycleRange to fetch.
+     */
+    where?: TargetCycleRangeWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of TargetCycleRanges to fetch.
+     */
+    orderBy?: TargetCycleRangeOrderByWithRelationInput | TargetCycleRangeOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for TargetCycleRanges.
+     */
+    cursor?: TargetCycleRangeWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` TargetCycleRanges from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` TargetCycleRanges.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of TargetCycleRanges.
+     */
+    distinct?: TargetCycleRangeScalarFieldEnum | TargetCycleRangeScalarFieldEnum[]
+  }
+
+  /**
+   * TargetCycleRange findMany
+   */
+  export type TargetCycleRangeFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TargetCycleRange
+     */
+    select?: TargetCycleRangeSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TargetCycleRangeInclude<ExtArgs> | null
+    /**
+     * Filter, which TargetCycleRanges to fetch.
+     */
+    where?: TargetCycleRangeWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of TargetCycleRanges to fetch.
+     */
+    orderBy?: TargetCycleRangeOrderByWithRelationInput | TargetCycleRangeOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing TargetCycleRanges.
+     */
+    cursor?: TargetCycleRangeWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` TargetCycleRanges from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` TargetCycleRanges.
+     */
+    skip?: number
+    distinct?: TargetCycleRangeScalarFieldEnum | TargetCycleRangeScalarFieldEnum[]
+  }
+
+  /**
+   * TargetCycleRange create
+   */
+  export type TargetCycleRangeCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TargetCycleRange
+     */
+    select?: TargetCycleRangeSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TargetCycleRangeInclude<ExtArgs> | null
+    /**
+     * The data needed to create a TargetCycleRange.
+     */
+    data: XOR<TargetCycleRangeCreateInput, TargetCycleRangeUncheckedCreateInput>
+  }
+
+  /**
+   * TargetCycleRange createMany
+   */
+  export type TargetCycleRangeCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many TargetCycleRanges.
+     */
+    data: TargetCycleRangeCreateManyInput | TargetCycleRangeCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * TargetCycleRange createManyAndReturn
+   */
+  export type TargetCycleRangeCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TargetCycleRange
+     */
+    select?: TargetCycleRangeSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many TargetCycleRanges.
+     */
+    data: TargetCycleRangeCreateManyInput | TargetCycleRangeCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TargetCycleRangeIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * TargetCycleRange update
+   */
+  export type TargetCycleRangeUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TargetCycleRange
+     */
+    select?: TargetCycleRangeSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TargetCycleRangeInclude<ExtArgs> | null
+    /**
+     * The data needed to update a TargetCycleRange.
+     */
+    data: XOR<TargetCycleRangeUpdateInput, TargetCycleRangeUncheckedUpdateInput>
+    /**
+     * Choose, which TargetCycleRange to update.
+     */
+    where: TargetCycleRangeWhereUniqueInput
+  }
+
+  /**
+   * TargetCycleRange updateMany
+   */
+  export type TargetCycleRangeUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update TargetCycleRanges.
+     */
+    data: XOR<TargetCycleRangeUpdateManyMutationInput, TargetCycleRangeUncheckedUpdateManyInput>
+    /**
+     * Filter which TargetCycleRanges to update
+     */
+    where?: TargetCycleRangeWhereInput
+  }
+
+  /**
+   * TargetCycleRange upsert
+   */
+  export type TargetCycleRangeUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TargetCycleRange
+     */
+    select?: TargetCycleRangeSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TargetCycleRangeInclude<ExtArgs> | null
+    /**
+     * The filter to search for the TargetCycleRange to update in case it exists.
+     */
+    where: TargetCycleRangeWhereUniqueInput
+    /**
+     * In case the TargetCycleRange found by the `where` argument doesn't exist, create a new TargetCycleRange with this data.
+     */
+    create: XOR<TargetCycleRangeCreateInput, TargetCycleRangeUncheckedCreateInput>
+    /**
+     * In case the TargetCycleRange was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<TargetCycleRangeUpdateInput, TargetCycleRangeUncheckedUpdateInput>
+  }
+
+  /**
+   * TargetCycleRange delete
+   */
+  export type TargetCycleRangeDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TargetCycleRange
+     */
+    select?: TargetCycleRangeSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TargetCycleRangeInclude<ExtArgs> | null
+    /**
+     * Filter which TargetCycleRange to delete.
+     */
+    where: TargetCycleRangeWhereUniqueInput
+  }
+
+  /**
+   * TargetCycleRange deleteMany
+   */
+  export type TargetCycleRangeDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which TargetCycleRanges to delete
+     */
+    where?: TargetCycleRangeWhereInput
+  }
+
+  /**
+   * TargetCycleRange without action
+   */
+  export type TargetCycleRangeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TargetCycleRange
+     */
+    select?: TargetCycleRangeSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TargetCycleRangeInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Model TargetSetting
    */
 
@@ -15894,7 +18175,8 @@ export namespace Prisma {
     id: string | null
     userId: string | null
     targetTypeId: string | null
-    cycle: $Enums.TargetCycle | null
+    cycle: $Enums.TargetSettingCycle | null
+    targetCycleId: string | null
     monthlyTargetLeads: number | null
     dailyFollowupTarget: number | null
     revenueTarget: number | null
@@ -15909,7 +18191,8 @@ export namespace Prisma {
     id: string | null
     userId: string | null
     targetTypeId: string | null
-    cycle: $Enums.TargetCycle | null
+    cycle: $Enums.TargetSettingCycle | null
+    targetCycleId: string | null
     monthlyTargetLeads: number | null
     dailyFollowupTarget: number | null
     revenueTarget: number | null
@@ -15925,6 +18208,7 @@ export namespace Prisma {
     userId: number
     targetTypeId: number
     cycle: number
+    targetCycleId: number
     monthlyTargetLeads: number
     dailyFollowupTarget: number
     revenueTarget: number
@@ -15954,6 +18238,7 @@ export namespace Prisma {
     userId?: true
     targetTypeId?: true
     cycle?: true
+    targetCycleId?: true
     monthlyTargetLeads?: true
     dailyFollowupTarget?: true
     revenueTarget?: true
@@ -15969,6 +18254,7 @@ export namespace Prisma {
     userId?: true
     targetTypeId?: true
     cycle?: true
+    targetCycleId?: true
     monthlyTargetLeads?: true
     dailyFollowupTarget?: true
     revenueTarget?: true
@@ -15984,6 +18270,7 @@ export namespace Prisma {
     userId?: true
     targetTypeId?: true
     cycle?: true
+    targetCycleId?: true
     monthlyTargetLeads?: true
     dailyFollowupTarget?: true
     revenueTarget?: true
@@ -16085,7 +18372,8 @@ export namespace Prisma {
     id: string
     userId: string
     targetTypeId: string
-    cycle: $Enums.TargetCycle
+    cycle: $Enums.TargetSettingCycle
+    targetCycleId: string | null
     monthlyTargetLeads: number
     dailyFollowupTarget: number
     revenueTarget: number
@@ -16120,6 +18408,7 @@ export namespace Prisma {
     userId?: boolean
     targetTypeId?: boolean
     cycle?: boolean
+    targetCycleId?: boolean
     monthlyTargetLeads?: boolean
     dailyFollowupTarget?: boolean
     revenueTarget?: boolean
@@ -16130,6 +18419,7 @@ export namespace Prisma {
     updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
     targetType?: boolean | TargetTypeDefaultArgs<ExtArgs>
+    targetCycle?: boolean | TargetSetting$targetCycleArgs<ExtArgs>
   }, ExtArgs["result"]["targetSetting"]>
 
   export type TargetSettingSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -16137,6 +18427,7 @@ export namespace Prisma {
     userId?: boolean
     targetTypeId?: boolean
     cycle?: boolean
+    targetCycleId?: boolean
     monthlyTargetLeads?: boolean
     dailyFollowupTarget?: boolean
     revenueTarget?: boolean
@@ -16147,6 +18438,7 @@ export namespace Prisma {
     updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
     targetType?: boolean | TargetTypeDefaultArgs<ExtArgs>
+    targetCycle?: boolean | TargetSetting$targetCycleArgs<ExtArgs>
   }, ExtArgs["result"]["targetSetting"]>
 
   export type TargetSettingSelectScalar = {
@@ -16154,6 +18446,7 @@ export namespace Prisma {
     userId?: boolean
     targetTypeId?: boolean
     cycle?: boolean
+    targetCycleId?: boolean
     monthlyTargetLeads?: boolean
     dailyFollowupTarget?: boolean
     revenueTarget?: boolean
@@ -16167,10 +18460,12 @@ export namespace Prisma {
   export type TargetSettingInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     targetType?: boolean | TargetTypeDefaultArgs<ExtArgs>
+    targetCycle?: boolean | TargetSetting$targetCycleArgs<ExtArgs>
   }
   export type TargetSettingIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     targetType?: boolean | TargetTypeDefaultArgs<ExtArgs>
+    targetCycle?: boolean | TargetSetting$targetCycleArgs<ExtArgs>
   }
 
   export type $TargetSettingPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -16178,12 +18473,14 @@ export namespace Prisma {
     objects: {
       user: Prisma.$UserPayload<ExtArgs>
       targetType: Prisma.$TargetTypePayload<ExtArgs>
+      targetCycle: Prisma.$TargetCyclePayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       userId: string
       targetTypeId: string
-      cycle: $Enums.TargetCycle
+      cycle: $Enums.TargetSettingCycle
+      targetCycleId: string | null
       monthlyTargetLeads: number
       dailyFollowupTarget: number
       revenueTarget: number
@@ -16558,6 +18855,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
     targetType<T extends TargetTypeDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TargetTypeDefaultArgs<ExtArgs>>): Prisma__TargetTypeClient<$Result.GetResult<Prisma.$TargetTypePayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    targetCycle<T extends TargetSetting$targetCycleArgs<ExtArgs> = {}>(args?: Subset<T, TargetSetting$targetCycleArgs<ExtArgs>>): Prisma__TargetCycleClient<$Result.GetResult<Prisma.$TargetCyclePayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -16590,7 +18888,8 @@ export namespace Prisma {
     readonly id: FieldRef<"TargetSetting", 'String'>
     readonly userId: FieldRef<"TargetSetting", 'String'>
     readonly targetTypeId: FieldRef<"TargetSetting", 'String'>
-    readonly cycle: FieldRef<"TargetSetting", 'TargetCycle'>
+    readonly cycle: FieldRef<"TargetSetting", 'TargetSettingCycle'>
+    readonly targetCycleId: FieldRef<"TargetSetting", 'String'>
     readonly monthlyTargetLeads: FieldRef<"TargetSetting", 'Int'>
     readonly dailyFollowupTarget: FieldRef<"TargetSetting", 'Int'>
     readonly revenueTarget: FieldRef<"TargetSetting", 'Float'>
@@ -16914,6 +19213,21 @@ export namespace Prisma {
      * Filter which TargetSettings to delete
      */
     where?: TargetSettingWhereInput
+  }
+
+  /**
+   * TargetSetting.targetCycle
+   */
+  export type TargetSetting$targetCycleArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TargetCycle
+     */
+    select?: TargetCycleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TargetCycleInclude<ExtArgs> | null
+    where?: TargetCycleWhereInput
   }
 
   /**
@@ -22720,11 +25034,38 @@ export namespace Prisma {
   export type TargetTypeScalarFieldEnum = (typeof TargetTypeScalarFieldEnum)[keyof typeof TargetTypeScalarFieldEnum]
 
 
+  export const TargetCycleScalarFieldEnum: {
+    id: 'id',
+    name: 'name',
+    workspaceId: 'workspaceId',
+    totalDays: 'totalDays',
+    status: 'status',
+    createdBy: 'createdBy',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
+    deletedAt: 'deletedAt'
+  };
+
+  export type TargetCycleScalarFieldEnum = (typeof TargetCycleScalarFieldEnum)[keyof typeof TargetCycleScalarFieldEnum]
+
+
+  export const TargetCycleRangeScalarFieldEnum: {
+    id: 'id',
+    targetCycleId: 'targetCycleId',
+    startDay: 'startDay',
+    endDay: 'endDay',
+    createdAt: 'createdAt'
+  };
+
+  export type TargetCycleRangeScalarFieldEnum = (typeof TargetCycleRangeScalarFieldEnum)[keyof typeof TargetCycleRangeScalarFieldEnum]
+
+
   export const TargetSettingScalarFieldEnum: {
     id: 'id',
     userId: 'userId',
     targetTypeId: 'targetTypeId',
     cycle: 'cycle',
+    targetCycleId: 'targetCycleId',
     monthlyTargetLeads: 'monthlyTargetLeads',
     dailyFollowupTarget: 'dailyFollowupTarget',
     revenueTarget: 'revenueTarget',
@@ -23032,16 +25373,16 @@ export namespace Prisma {
 
 
   /**
-   * Reference to a field of type 'TargetCycle'
+   * Reference to a field of type 'TargetSettingCycle'
    */
-  export type EnumTargetCycleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TargetCycle'>
+  export type EnumTargetSettingCycleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TargetSettingCycle'>
     
 
 
   /**
-   * Reference to a field of type 'TargetCycle[]'
+   * Reference to a field of type 'TargetSettingCycle[]'
    */
-  export type ListEnumTargetCycleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TargetCycle[]'>
+  export type ListEnumTargetSettingCycleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TargetSettingCycle[]'>
     
 
 
@@ -23309,6 +25650,7 @@ export namespace Prisma {
     owner?: XOR<UserRelationFilter, UserWhereInput>
     users?: UserListRelationFilter
     departments?: DepartmentListRelationFilter
+    targetCycles?: TargetCycleListRelationFilter
   }
 
   export type WorkspaceOrderByWithRelationInput = {
@@ -23325,6 +25667,7 @@ export namespace Prisma {
     owner?: UserOrderByWithRelationInput
     users?: UserOrderByRelationAggregateInput
     departments?: DepartmentOrderByRelationAggregateInput
+    targetCycles?: TargetCycleOrderByRelationAggregateInput
   }
 
   export type WorkspaceWhereUniqueInput = Prisma.AtLeast<{
@@ -23344,6 +25687,7 @@ export namespace Prisma {
     owner?: XOR<UserRelationFilter, UserWhereInput>
     users?: UserListRelationFilter
     departments?: DepartmentListRelationFilter
+    targetCycles?: TargetCycleListRelationFilter
   }, "id" | "ownerId">
 
   export type WorkspaceOrderByWithAggregationInput = {
@@ -24035,6 +26379,147 @@ export namespace Prisma {
     updatedAt?: DateTimeWithAggregatesFilter<"TargetType"> | Date | string
   }
 
+  export type TargetCycleWhereInput = {
+    AND?: TargetCycleWhereInput | TargetCycleWhereInput[]
+    OR?: TargetCycleWhereInput[]
+    NOT?: TargetCycleWhereInput | TargetCycleWhereInput[]
+    id?: StringFilter<"TargetCycle"> | string
+    name?: StringFilter<"TargetCycle"> | string
+    workspaceId?: StringFilter<"TargetCycle"> | string
+    totalDays?: IntFilter<"TargetCycle"> | number
+    status?: StringFilter<"TargetCycle"> | string
+    createdBy?: StringNullableFilter<"TargetCycle"> | string | null
+    createdAt?: DateTimeFilter<"TargetCycle"> | Date | string
+    updatedAt?: DateTimeFilter<"TargetCycle"> | Date | string
+    deletedAt?: DateTimeNullableFilter<"TargetCycle"> | Date | string | null
+    workspace?: XOR<WorkspaceRelationFilter, WorkspaceWhereInput>
+    ranges?: TargetCycleRangeListRelationFilter
+    targets?: TargetSettingListRelationFilter
+  }
+
+  export type TargetCycleOrderByWithRelationInput = {
+    id?: SortOrder
+    name?: SortOrder
+    workspaceId?: SortOrder
+    totalDays?: SortOrder
+    status?: SortOrder
+    createdBy?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrderInput | SortOrder
+    workspace?: WorkspaceOrderByWithRelationInput
+    ranges?: TargetCycleRangeOrderByRelationAggregateInput
+    targets?: TargetSettingOrderByRelationAggregateInput
+  }
+
+  export type TargetCycleWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    name_workspaceId?: TargetCycleNameWorkspaceIdCompoundUniqueInput
+    AND?: TargetCycleWhereInput | TargetCycleWhereInput[]
+    OR?: TargetCycleWhereInput[]
+    NOT?: TargetCycleWhereInput | TargetCycleWhereInput[]
+    name?: StringFilter<"TargetCycle"> | string
+    workspaceId?: StringFilter<"TargetCycle"> | string
+    totalDays?: IntFilter<"TargetCycle"> | number
+    status?: StringFilter<"TargetCycle"> | string
+    createdBy?: StringNullableFilter<"TargetCycle"> | string | null
+    createdAt?: DateTimeFilter<"TargetCycle"> | Date | string
+    updatedAt?: DateTimeFilter<"TargetCycle"> | Date | string
+    deletedAt?: DateTimeNullableFilter<"TargetCycle"> | Date | string | null
+    workspace?: XOR<WorkspaceRelationFilter, WorkspaceWhereInput>
+    ranges?: TargetCycleRangeListRelationFilter
+    targets?: TargetSettingListRelationFilter
+  }, "id" | "name_workspaceId">
+
+  export type TargetCycleOrderByWithAggregationInput = {
+    id?: SortOrder
+    name?: SortOrder
+    workspaceId?: SortOrder
+    totalDays?: SortOrder
+    status?: SortOrder
+    createdBy?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrderInput | SortOrder
+    _count?: TargetCycleCountOrderByAggregateInput
+    _avg?: TargetCycleAvgOrderByAggregateInput
+    _max?: TargetCycleMaxOrderByAggregateInput
+    _min?: TargetCycleMinOrderByAggregateInput
+    _sum?: TargetCycleSumOrderByAggregateInput
+  }
+
+  export type TargetCycleScalarWhereWithAggregatesInput = {
+    AND?: TargetCycleScalarWhereWithAggregatesInput | TargetCycleScalarWhereWithAggregatesInput[]
+    OR?: TargetCycleScalarWhereWithAggregatesInput[]
+    NOT?: TargetCycleScalarWhereWithAggregatesInput | TargetCycleScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"TargetCycle"> | string
+    name?: StringWithAggregatesFilter<"TargetCycle"> | string
+    workspaceId?: StringWithAggregatesFilter<"TargetCycle"> | string
+    totalDays?: IntWithAggregatesFilter<"TargetCycle"> | number
+    status?: StringWithAggregatesFilter<"TargetCycle"> | string
+    createdBy?: StringNullableWithAggregatesFilter<"TargetCycle"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"TargetCycle"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"TargetCycle"> | Date | string
+    deletedAt?: DateTimeNullableWithAggregatesFilter<"TargetCycle"> | Date | string | null
+  }
+
+  export type TargetCycleRangeWhereInput = {
+    AND?: TargetCycleRangeWhereInput | TargetCycleRangeWhereInput[]
+    OR?: TargetCycleRangeWhereInput[]
+    NOT?: TargetCycleRangeWhereInput | TargetCycleRangeWhereInput[]
+    id?: StringFilter<"TargetCycleRange"> | string
+    targetCycleId?: StringFilter<"TargetCycleRange"> | string
+    startDay?: IntFilter<"TargetCycleRange"> | number
+    endDay?: IntFilter<"TargetCycleRange"> | number
+    createdAt?: DateTimeFilter<"TargetCycleRange"> | Date | string
+    targetCycle?: XOR<TargetCycleRelationFilter, TargetCycleWhereInput>
+  }
+
+  export type TargetCycleRangeOrderByWithRelationInput = {
+    id?: SortOrder
+    targetCycleId?: SortOrder
+    startDay?: SortOrder
+    endDay?: SortOrder
+    createdAt?: SortOrder
+    targetCycle?: TargetCycleOrderByWithRelationInput
+  }
+
+  export type TargetCycleRangeWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: TargetCycleRangeWhereInput | TargetCycleRangeWhereInput[]
+    OR?: TargetCycleRangeWhereInput[]
+    NOT?: TargetCycleRangeWhereInput | TargetCycleRangeWhereInput[]
+    targetCycleId?: StringFilter<"TargetCycleRange"> | string
+    startDay?: IntFilter<"TargetCycleRange"> | number
+    endDay?: IntFilter<"TargetCycleRange"> | number
+    createdAt?: DateTimeFilter<"TargetCycleRange"> | Date | string
+    targetCycle?: XOR<TargetCycleRelationFilter, TargetCycleWhereInput>
+  }, "id">
+
+  export type TargetCycleRangeOrderByWithAggregationInput = {
+    id?: SortOrder
+    targetCycleId?: SortOrder
+    startDay?: SortOrder
+    endDay?: SortOrder
+    createdAt?: SortOrder
+    _count?: TargetCycleRangeCountOrderByAggregateInput
+    _avg?: TargetCycleRangeAvgOrderByAggregateInput
+    _max?: TargetCycleRangeMaxOrderByAggregateInput
+    _min?: TargetCycleRangeMinOrderByAggregateInput
+    _sum?: TargetCycleRangeSumOrderByAggregateInput
+  }
+
+  export type TargetCycleRangeScalarWhereWithAggregatesInput = {
+    AND?: TargetCycleRangeScalarWhereWithAggregatesInput | TargetCycleRangeScalarWhereWithAggregatesInput[]
+    OR?: TargetCycleRangeScalarWhereWithAggregatesInput[]
+    NOT?: TargetCycleRangeScalarWhereWithAggregatesInput | TargetCycleRangeScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"TargetCycleRange"> | string
+    targetCycleId?: StringWithAggregatesFilter<"TargetCycleRange"> | string
+    startDay?: IntWithAggregatesFilter<"TargetCycleRange"> | number
+    endDay?: IntWithAggregatesFilter<"TargetCycleRange"> | number
+    createdAt?: DateTimeWithAggregatesFilter<"TargetCycleRange"> | Date | string
+  }
+
   export type TargetSettingWhereInput = {
     AND?: TargetSettingWhereInput | TargetSettingWhereInput[]
     OR?: TargetSettingWhereInput[]
@@ -24042,7 +26527,8 @@ export namespace Prisma {
     id?: StringFilter<"TargetSetting"> | string
     userId?: StringFilter<"TargetSetting"> | string
     targetTypeId?: StringFilter<"TargetSetting"> | string
-    cycle?: EnumTargetCycleFilter<"TargetSetting"> | $Enums.TargetCycle
+    cycle?: EnumTargetSettingCycleFilter<"TargetSetting"> | $Enums.TargetSettingCycle
+    targetCycleId?: StringNullableFilter<"TargetSetting"> | string | null
     monthlyTargetLeads?: IntFilter<"TargetSetting"> | number
     dailyFollowupTarget?: IntFilter<"TargetSetting"> | number
     revenueTarget?: FloatFilter<"TargetSetting"> | number
@@ -24053,6 +26539,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"TargetSetting"> | Date | string
     user?: XOR<UserRelationFilter, UserWhereInput>
     targetType?: XOR<TargetTypeRelationFilter, TargetTypeWhereInput>
+    targetCycle?: XOR<TargetCycleNullableRelationFilter, TargetCycleWhereInput> | null
   }
 
   export type TargetSettingOrderByWithRelationInput = {
@@ -24060,6 +26547,7 @@ export namespace Prisma {
     userId?: SortOrder
     targetTypeId?: SortOrder
     cycle?: SortOrder
+    targetCycleId?: SortOrderInput | SortOrder
     monthlyTargetLeads?: SortOrder
     dailyFollowupTarget?: SortOrder
     revenueTarget?: SortOrder
@@ -24070,6 +26558,7 @@ export namespace Prisma {
     updatedAt?: SortOrder
     user?: UserOrderByWithRelationInput
     targetType?: TargetTypeOrderByWithRelationInput
+    targetCycle?: TargetCycleOrderByWithRelationInput
   }
 
   export type TargetSettingWhereUniqueInput = Prisma.AtLeast<{
@@ -24079,7 +26568,8 @@ export namespace Prisma {
     NOT?: TargetSettingWhereInput | TargetSettingWhereInput[]
     userId?: StringFilter<"TargetSetting"> | string
     targetTypeId?: StringFilter<"TargetSetting"> | string
-    cycle?: EnumTargetCycleFilter<"TargetSetting"> | $Enums.TargetCycle
+    cycle?: EnumTargetSettingCycleFilter<"TargetSetting"> | $Enums.TargetSettingCycle
+    targetCycleId?: StringNullableFilter<"TargetSetting"> | string | null
     monthlyTargetLeads?: IntFilter<"TargetSetting"> | number
     dailyFollowupTarget?: IntFilter<"TargetSetting"> | number
     revenueTarget?: FloatFilter<"TargetSetting"> | number
@@ -24090,6 +26580,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"TargetSetting"> | Date | string
     user?: XOR<UserRelationFilter, UserWhereInput>
     targetType?: XOR<TargetTypeRelationFilter, TargetTypeWhereInput>
+    targetCycle?: XOR<TargetCycleNullableRelationFilter, TargetCycleWhereInput> | null
   }, "id">
 
   export type TargetSettingOrderByWithAggregationInput = {
@@ -24097,6 +26588,7 @@ export namespace Prisma {
     userId?: SortOrder
     targetTypeId?: SortOrder
     cycle?: SortOrder
+    targetCycleId?: SortOrderInput | SortOrder
     monthlyTargetLeads?: SortOrder
     dailyFollowupTarget?: SortOrder
     revenueTarget?: SortOrder
@@ -24119,7 +26611,8 @@ export namespace Prisma {
     id?: StringWithAggregatesFilter<"TargetSetting"> | string
     userId?: StringWithAggregatesFilter<"TargetSetting"> | string
     targetTypeId?: StringWithAggregatesFilter<"TargetSetting"> | string
-    cycle?: EnumTargetCycleWithAggregatesFilter<"TargetSetting"> | $Enums.TargetCycle
+    cycle?: EnumTargetSettingCycleWithAggregatesFilter<"TargetSetting"> | $Enums.TargetSettingCycle
+    targetCycleId?: StringNullableWithAggregatesFilter<"TargetSetting"> | string | null
     monthlyTargetLeads?: IntWithAggregatesFilter<"TargetSetting"> | number
     dailyFollowupTarget?: IntWithAggregatesFilter<"TargetSetting"> | number
     revenueTarget?: FloatWithAggregatesFilter<"TargetSetting"> | number
@@ -24863,6 +27356,7 @@ export namespace Prisma {
     owner: UserCreateNestedOneWithoutOwnedWorkspaceInput
     users?: UserCreateNestedManyWithoutWorkspaceInput
     departments?: DepartmentCreateNestedManyWithoutWorkspaceInput
+    targetCycles?: TargetCycleCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateInput = {
@@ -24878,6 +27372,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     users?: UserUncheckedCreateNestedManyWithoutWorkspaceInput
     departments?: DepartmentUncheckedCreateNestedManyWithoutWorkspaceInput
+    targetCycles?: TargetCycleUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUpdateInput = {
@@ -24893,6 +27388,7 @@ export namespace Prisma {
     owner?: UserUpdateOneRequiredWithoutOwnedWorkspaceNestedInput
     users?: UserUpdateManyWithoutWorkspaceNestedInput
     departments?: DepartmentUpdateManyWithoutWorkspaceNestedInput
+    targetCycles?: TargetCycleUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateInput = {
@@ -24908,6 +27404,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUncheckedUpdateManyWithoutWorkspaceNestedInput
     departments?: DepartmentUncheckedUpdateManyWithoutWorkspaceNestedInput
+    targetCycles?: TargetCycleUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceCreateManyInput = {
@@ -25675,9 +28172,155 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type TargetCycleCreateInput = {
+    id?: string
+    name: string
+    totalDays: number
+    status?: string
+    createdBy?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    workspace: WorkspaceCreateNestedOneWithoutTargetCyclesInput
+    ranges?: TargetCycleRangeCreateNestedManyWithoutTargetCycleInput
+    targets?: TargetSettingCreateNestedManyWithoutTargetCycleInput
+  }
+
+  export type TargetCycleUncheckedCreateInput = {
+    id?: string
+    name: string
+    workspaceId: string
+    totalDays: number
+    status?: string
+    createdBy?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    ranges?: TargetCycleRangeUncheckedCreateNestedManyWithoutTargetCycleInput
+    targets?: TargetSettingUncheckedCreateNestedManyWithoutTargetCycleInput
+  }
+
+  export type TargetCycleUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    totalDays?: IntFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    workspace?: WorkspaceUpdateOneRequiredWithoutTargetCyclesNestedInput
+    ranges?: TargetCycleRangeUpdateManyWithoutTargetCycleNestedInput
+    targets?: TargetSettingUpdateManyWithoutTargetCycleNestedInput
+  }
+
+  export type TargetCycleUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    totalDays?: IntFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ranges?: TargetCycleRangeUncheckedUpdateManyWithoutTargetCycleNestedInput
+    targets?: TargetSettingUncheckedUpdateManyWithoutTargetCycleNestedInput
+  }
+
+  export type TargetCycleCreateManyInput = {
+    id?: string
+    name: string
+    workspaceId: string
+    totalDays: number
+    status?: string
+    createdBy?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type TargetCycleUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    totalDays?: IntFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type TargetCycleUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    totalDays?: IntFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type TargetCycleRangeCreateInput = {
+    id?: string
+    startDay: number
+    endDay: number
+    createdAt?: Date | string
+    targetCycle: TargetCycleCreateNestedOneWithoutRangesInput
+  }
+
+  export type TargetCycleRangeUncheckedCreateInput = {
+    id?: string
+    targetCycleId: string
+    startDay: number
+    endDay: number
+    createdAt?: Date | string
+  }
+
+  export type TargetCycleRangeUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    startDay?: IntFieldUpdateOperationsInput | number
+    endDay?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    targetCycle?: TargetCycleUpdateOneRequiredWithoutRangesNestedInput
+  }
+
+  export type TargetCycleRangeUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    targetCycleId?: StringFieldUpdateOperationsInput | string
+    startDay?: IntFieldUpdateOperationsInput | number
+    endDay?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TargetCycleRangeCreateManyInput = {
+    id?: string
+    targetCycleId: string
+    startDay: number
+    endDay: number
+    createdAt?: Date | string
+  }
+
+  export type TargetCycleRangeUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    startDay?: IntFieldUpdateOperationsInput | number
+    endDay?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TargetCycleRangeUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    targetCycleId?: StringFieldUpdateOperationsInput | string
+    startDay?: IntFieldUpdateOperationsInput | number
+    endDay?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type TargetSettingCreateInput = {
     id?: string
-    cycle?: $Enums.TargetCycle
+    cycle?: $Enums.TargetSettingCycle
     monthlyTargetLeads?: number
     dailyFollowupTarget?: number
     revenueTarget?: number
@@ -25688,13 +28331,15 @@ export namespace Prisma {
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutTargetSettingsInput
     targetType: TargetTypeCreateNestedOneWithoutSettingsInput
+    targetCycle?: TargetCycleCreateNestedOneWithoutTargetsInput
   }
 
   export type TargetSettingUncheckedCreateInput = {
     id?: string
     userId: string
     targetTypeId: string
-    cycle?: $Enums.TargetCycle
+    cycle?: $Enums.TargetSettingCycle
+    targetCycleId?: string | null
     monthlyTargetLeads?: number
     dailyFollowupTarget?: number
     revenueTarget?: number
@@ -25707,7 +28352,7 @@ export namespace Prisma {
 
   export type TargetSettingUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    cycle?: EnumTargetCycleFieldUpdateOperationsInput | $Enums.TargetCycle
+    cycle?: EnumTargetSettingCycleFieldUpdateOperationsInput | $Enums.TargetSettingCycle
     monthlyTargetLeads?: IntFieldUpdateOperationsInput | number
     dailyFollowupTarget?: IntFieldUpdateOperationsInput | number
     revenueTarget?: FloatFieldUpdateOperationsInput | number
@@ -25718,13 +28363,15 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutTargetSettingsNestedInput
     targetType?: TargetTypeUpdateOneRequiredWithoutSettingsNestedInput
+    targetCycle?: TargetCycleUpdateOneWithoutTargetsNestedInput
   }
 
   export type TargetSettingUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     targetTypeId?: StringFieldUpdateOperationsInput | string
-    cycle?: EnumTargetCycleFieldUpdateOperationsInput | $Enums.TargetCycle
+    cycle?: EnumTargetSettingCycleFieldUpdateOperationsInput | $Enums.TargetSettingCycle
+    targetCycleId?: NullableStringFieldUpdateOperationsInput | string | null
     monthlyTargetLeads?: IntFieldUpdateOperationsInput | number
     dailyFollowupTarget?: IntFieldUpdateOperationsInput | number
     revenueTarget?: FloatFieldUpdateOperationsInput | number
@@ -25739,7 +28386,8 @@ export namespace Prisma {
     id?: string
     userId: string
     targetTypeId: string
-    cycle?: $Enums.TargetCycle
+    cycle?: $Enums.TargetSettingCycle
+    targetCycleId?: string | null
     monthlyTargetLeads?: number
     dailyFollowupTarget?: number
     revenueTarget?: number
@@ -25752,7 +28400,7 @@ export namespace Prisma {
 
   export type TargetSettingUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
-    cycle?: EnumTargetCycleFieldUpdateOperationsInput | $Enums.TargetCycle
+    cycle?: EnumTargetSettingCycleFieldUpdateOperationsInput | $Enums.TargetSettingCycle
     monthlyTargetLeads?: IntFieldUpdateOperationsInput | number
     dailyFollowupTarget?: IntFieldUpdateOperationsInput | number
     revenueTarget?: FloatFieldUpdateOperationsInput | number
@@ -25767,7 +28415,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     targetTypeId?: StringFieldUpdateOperationsInput | string
-    cycle?: EnumTargetCycleFieldUpdateOperationsInput | $Enums.TargetCycle
+    cycle?: EnumTargetSettingCycleFieldUpdateOperationsInput | $Enums.TargetSettingCycle
+    targetCycleId?: NullableStringFieldUpdateOperationsInput | string | null
     monthlyTargetLeads?: IntFieldUpdateOperationsInput | number
     dailyFollowupTarget?: IntFieldUpdateOperationsInput | number
     revenueTarget?: FloatFieldUpdateOperationsInput | number
@@ -26626,7 +29275,17 @@ export namespace Prisma {
     none?: DepartmentWhereInput
   }
 
+  export type TargetCycleListRelationFilter = {
+    every?: TargetCycleWhereInput
+    some?: TargetCycleWhereInput
+    none?: TargetCycleWhereInput
+  }
+
   export type DepartmentOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type TargetCycleOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -27242,11 +29901,114 @@ export namespace Prisma {
     updatedAt?: SortOrder
   }
 
-  export type EnumTargetCycleFilter<$PrismaModel = never> = {
-    equals?: $Enums.TargetCycle | EnumTargetCycleFieldRefInput<$PrismaModel>
-    in?: $Enums.TargetCycle[] | ListEnumTargetCycleFieldRefInput<$PrismaModel>
-    notIn?: $Enums.TargetCycle[] | ListEnumTargetCycleFieldRefInput<$PrismaModel>
-    not?: NestedEnumTargetCycleFilter<$PrismaModel> | $Enums.TargetCycle
+  export type WorkspaceRelationFilter = {
+    is?: WorkspaceWhereInput
+    isNot?: WorkspaceWhereInput
+  }
+
+  export type TargetCycleRangeListRelationFilter = {
+    every?: TargetCycleRangeWhereInput
+    some?: TargetCycleRangeWhereInput
+    none?: TargetCycleRangeWhereInput
+  }
+
+  export type TargetCycleRangeOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type TargetCycleNameWorkspaceIdCompoundUniqueInput = {
+    name: string
+    workspaceId: string
+  }
+
+  export type TargetCycleCountOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    workspaceId?: SortOrder
+    totalDays?: SortOrder
+    status?: SortOrder
+    createdBy?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrder
+  }
+
+  export type TargetCycleAvgOrderByAggregateInput = {
+    totalDays?: SortOrder
+  }
+
+  export type TargetCycleMaxOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    workspaceId?: SortOrder
+    totalDays?: SortOrder
+    status?: SortOrder
+    createdBy?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrder
+  }
+
+  export type TargetCycleMinOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    workspaceId?: SortOrder
+    totalDays?: SortOrder
+    status?: SortOrder
+    createdBy?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrder
+  }
+
+  export type TargetCycleSumOrderByAggregateInput = {
+    totalDays?: SortOrder
+  }
+
+  export type TargetCycleRelationFilter = {
+    is?: TargetCycleWhereInput
+    isNot?: TargetCycleWhereInput
+  }
+
+  export type TargetCycleRangeCountOrderByAggregateInput = {
+    id?: SortOrder
+    targetCycleId?: SortOrder
+    startDay?: SortOrder
+    endDay?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type TargetCycleRangeAvgOrderByAggregateInput = {
+    startDay?: SortOrder
+    endDay?: SortOrder
+  }
+
+  export type TargetCycleRangeMaxOrderByAggregateInput = {
+    id?: SortOrder
+    targetCycleId?: SortOrder
+    startDay?: SortOrder
+    endDay?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type TargetCycleRangeMinOrderByAggregateInput = {
+    id?: SortOrder
+    targetCycleId?: SortOrder
+    startDay?: SortOrder
+    endDay?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type TargetCycleRangeSumOrderByAggregateInput = {
+    startDay?: SortOrder
+    endDay?: SortOrder
+  }
+
+  export type EnumTargetSettingCycleFilter<$PrismaModel = never> = {
+    equals?: $Enums.TargetSettingCycle | EnumTargetSettingCycleFieldRefInput<$PrismaModel>
+    in?: $Enums.TargetSettingCycle[] | ListEnumTargetSettingCycleFieldRefInput<$PrismaModel>
+    notIn?: $Enums.TargetSettingCycle[] | ListEnumTargetSettingCycleFieldRefInput<$PrismaModel>
+    not?: NestedEnumTargetSettingCycleFilter<$PrismaModel> | $Enums.TargetSettingCycle
   }
 
   export type FloatFilter<$PrismaModel = never> = {
@@ -27265,11 +30027,17 @@ export namespace Prisma {
     isNot?: TargetTypeWhereInput
   }
 
+  export type TargetCycleNullableRelationFilter = {
+    is?: TargetCycleWhereInput | null
+    isNot?: TargetCycleWhereInput | null
+  }
+
   export type TargetSettingCountOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
     targetTypeId?: SortOrder
     cycle?: SortOrder
+    targetCycleId?: SortOrder
     monthlyTargetLeads?: SortOrder
     dailyFollowupTarget?: SortOrder
     revenueTarget?: SortOrder
@@ -27291,6 +30059,7 @@ export namespace Prisma {
     userId?: SortOrder
     targetTypeId?: SortOrder
     cycle?: SortOrder
+    targetCycleId?: SortOrder
     monthlyTargetLeads?: SortOrder
     dailyFollowupTarget?: SortOrder
     revenueTarget?: SortOrder
@@ -27306,6 +30075,7 @@ export namespace Prisma {
     userId?: SortOrder
     targetTypeId?: SortOrder
     cycle?: SortOrder
+    targetCycleId?: SortOrder
     monthlyTargetLeads?: SortOrder
     dailyFollowupTarget?: SortOrder
     revenueTarget?: SortOrder
@@ -27322,14 +30092,14 @@ export namespace Prisma {
     revenueTarget?: SortOrder
   }
 
-  export type EnumTargetCycleWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.TargetCycle | EnumTargetCycleFieldRefInput<$PrismaModel>
-    in?: $Enums.TargetCycle[] | ListEnumTargetCycleFieldRefInput<$PrismaModel>
-    notIn?: $Enums.TargetCycle[] | ListEnumTargetCycleFieldRefInput<$PrismaModel>
-    not?: NestedEnumTargetCycleWithAggregatesFilter<$PrismaModel> | $Enums.TargetCycle
+  export type EnumTargetSettingCycleWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.TargetSettingCycle | EnumTargetSettingCycleFieldRefInput<$PrismaModel>
+    in?: $Enums.TargetSettingCycle[] | ListEnumTargetSettingCycleFieldRefInput<$PrismaModel>
+    notIn?: $Enums.TargetSettingCycle[] | ListEnumTargetSettingCycleFieldRefInput<$PrismaModel>
+    not?: NestedEnumTargetSettingCycleWithAggregatesFilter<$PrismaModel> | $Enums.TargetSettingCycle
     _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumTargetCycleFilter<$PrismaModel>
-    _max?: NestedEnumTargetCycleFilter<$PrismaModel>
+    _min?: NestedEnumTargetSettingCycleFilter<$PrismaModel>
+    _max?: NestedEnumTargetSettingCycleFilter<$PrismaModel>
   }
 
   export type FloatWithAggregatesFilter<$PrismaModel = never> = {
@@ -27979,6 +30749,13 @@ export namespace Prisma {
     connect?: DepartmentWhereUniqueInput | DepartmentWhereUniqueInput[]
   }
 
+  export type TargetCycleCreateNestedManyWithoutWorkspaceInput = {
+    create?: XOR<TargetCycleCreateWithoutWorkspaceInput, TargetCycleUncheckedCreateWithoutWorkspaceInput> | TargetCycleCreateWithoutWorkspaceInput[] | TargetCycleUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: TargetCycleCreateOrConnectWithoutWorkspaceInput | TargetCycleCreateOrConnectWithoutWorkspaceInput[]
+    createMany?: TargetCycleCreateManyWorkspaceInputEnvelope
+    connect?: TargetCycleWhereUniqueInput | TargetCycleWhereUniqueInput[]
+  }
+
   export type UserUncheckedCreateNestedManyWithoutWorkspaceInput = {
     create?: XOR<UserCreateWithoutWorkspaceInput, UserUncheckedCreateWithoutWorkspaceInput> | UserCreateWithoutWorkspaceInput[] | UserUncheckedCreateWithoutWorkspaceInput[]
     connectOrCreate?: UserCreateOrConnectWithoutWorkspaceInput | UserCreateOrConnectWithoutWorkspaceInput[]
@@ -27991,6 +30768,13 @@ export namespace Prisma {
     connectOrCreate?: DepartmentCreateOrConnectWithoutWorkspaceInput | DepartmentCreateOrConnectWithoutWorkspaceInput[]
     createMany?: DepartmentCreateManyWorkspaceInputEnvelope
     connect?: DepartmentWhereUniqueInput | DepartmentWhereUniqueInput[]
+  }
+
+  export type TargetCycleUncheckedCreateNestedManyWithoutWorkspaceInput = {
+    create?: XOR<TargetCycleCreateWithoutWorkspaceInput, TargetCycleUncheckedCreateWithoutWorkspaceInput> | TargetCycleCreateWithoutWorkspaceInput[] | TargetCycleUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: TargetCycleCreateOrConnectWithoutWorkspaceInput | TargetCycleCreateOrConnectWithoutWorkspaceInput[]
+    createMany?: TargetCycleCreateManyWorkspaceInputEnvelope
+    connect?: TargetCycleWhereUniqueInput | TargetCycleWhereUniqueInput[]
   }
 
   export type BoolFieldUpdateOperationsInput = {
@@ -28033,6 +30817,20 @@ export namespace Prisma {
     deleteMany?: DepartmentScalarWhereInput | DepartmentScalarWhereInput[]
   }
 
+  export type TargetCycleUpdateManyWithoutWorkspaceNestedInput = {
+    create?: XOR<TargetCycleCreateWithoutWorkspaceInput, TargetCycleUncheckedCreateWithoutWorkspaceInput> | TargetCycleCreateWithoutWorkspaceInput[] | TargetCycleUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: TargetCycleCreateOrConnectWithoutWorkspaceInput | TargetCycleCreateOrConnectWithoutWorkspaceInput[]
+    upsert?: TargetCycleUpsertWithWhereUniqueWithoutWorkspaceInput | TargetCycleUpsertWithWhereUniqueWithoutWorkspaceInput[]
+    createMany?: TargetCycleCreateManyWorkspaceInputEnvelope
+    set?: TargetCycleWhereUniqueInput | TargetCycleWhereUniqueInput[]
+    disconnect?: TargetCycleWhereUniqueInput | TargetCycleWhereUniqueInput[]
+    delete?: TargetCycleWhereUniqueInput | TargetCycleWhereUniqueInput[]
+    connect?: TargetCycleWhereUniqueInput | TargetCycleWhereUniqueInput[]
+    update?: TargetCycleUpdateWithWhereUniqueWithoutWorkspaceInput | TargetCycleUpdateWithWhereUniqueWithoutWorkspaceInput[]
+    updateMany?: TargetCycleUpdateManyWithWhereWithoutWorkspaceInput | TargetCycleUpdateManyWithWhereWithoutWorkspaceInput[]
+    deleteMany?: TargetCycleScalarWhereInput | TargetCycleScalarWhereInput[]
+  }
+
   export type UserUncheckedUpdateManyWithoutWorkspaceNestedInput = {
     create?: XOR<UserCreateWithoutWorkspaceInput, UserUncheckedCreateWithoutWorkspaceInput> | UserCreateWithoutWorkspaceInput[] | UserUncheckedCreateWithoutWorkspaceInput[]
     connectOrCreate?: UserCreateOrConnectWithoutWorkspaceInput | UserCreateOrConnectWithoutWorkspaceInput[]
@@ -28059,6 +30857,20 @@ export namespace Prisma {
     update?: DepartmentUpdateWithWhereUniqueWithoutWorkspaceInput | DepartmentUpdateWithWhereUniqueWithoutWorkspaceInput[]
     updateMany?: DepartmentUpdateManyWithWhereWithoutWorkspaceInput | DepartmentUpdateManyWithWhereWithoutWorkspaceInput[]
     deleteMany?: DepartmentScalarWhereInput | DepartmentScalarWhereInput[]
+  }
+
+  export type TargetCycleUncheckedUpdateManyWithoutWorkspaceNestedInput = {
+    create?: XOR<TargetCycleCreateWithoutWorkspaceInput, TargetCycleUncheckedCreateWithoutWorkspaceInput> | TargetCycleCreateWithoutWorkspaceInput[] | TargetCycleUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: TargetCycleCreateOrConnectWithoutWorkspaceInput | TargetCycleCreateOrConnectWithoutWorkspaceInput[]
+    upsert?: TargetCycleUpsertWithWhereUniqueWithoutWorkspaceInput | TargetCycleUpsertWithWhereUniqueWithoutWorkspaceInput[]
+    createMany?: TargetCycleCreateManyWorkspaceInputEnvelope
+    set?: TargetCycleWhereUniqueInput | TargetCycleWhereUniqueInput[]
+    disconnect?: TargetCycleWhereUniqueInput | TargetCycleWhereUniqueInput[]
+    delete?: TargetCycleWhereUniqueInput | TargetCycleWhereUniqueInput[]
+    connect?: TargetCycleWhereUniqueInput | TargetCycleWhereUniqueInput[]
+    update?: TargetCycleUpdateWithWhereUniqueWithoutWorkspaceInput | TargetCycleUpdateWithWhereUniqueWithoutWorkspaceInput[]
+    updateMany?: TargetCycleUpdateManyWithWhereWithoutWorkspaceInput | TargetCycleUpdateManyWithWhereWithoutWorkspaceInput[]
+    deleteMany?: TargetCycleScalarWhereInput | TargetCycleScalarWhereInput[]
   }
 
   export type WorkspaceCreateNestedOneWithoutDepartmentsInput = {
@@ -28611,6 +31423,118 @@ export namespace Prisma {
     deleteMany?: TargetSettingScalarWhereInput | TargetSettingScalarWhereInput[]
   }
 
+  export type WorkspaceCreateNestedOneWithoutTargetCyclesInput = {
+    create?: XOR<WorkspaceCreateWithoutTargetCyclesInput, WorkspaceUncheckedCreateWithoutTargetCyclesInput>
+    connectOrCreate?: WorkspaceCreateOrConnectWithoutTargetCyclesInput
+    connect?: WorkspaceWhereUniqueInput
+  }
+
+  export type TargetCycleRangeCreateNestedManyWithoutTargetCycleInput = {
+    create?: XOR<TargetCycleRangeCreateWithoutTargetCycleInput, TargetCycleRangeUncheckedCreateWithoutTargetCycleInput> | TargetCycleRangeCreateWithoutTargetCycleInput[] | TargetCycleRangeUncheckedCreateWithoutTargetCycleInput[]
+    connectOrCreate?: TargetCycleRangeCreateOrConnectWithoutTargetCycleInput | TargetCycleRangeCreateOrConnectWithoutTargetCycleInput[]
+    createMany?: TargetCycleRangeCreateManyTargetCycleInputEnvelope
+    connect?: TargetCycleRangeWhereUniqueInput | TargetCycleRangeWhereUniqueInput[]
+  }
+
+  export type TargetSettingCreateNestedManyWithoutTargetCycleInput = {
+    create?: XOR<TargetSettingCreateWithoutTargetCycleInput, TargetSettingUncheckedCreateWithoutTargetCycleInput> | TargetSettingCreateWithoutTargetCycleInput[] | TargetSettingUncheckedCreateWithoutTargetCycleInput[]
+    connectOrCreate?: TargetSettingCreateOrConnectWithoutTargetCycleInput | TargetSettingCreateOrConnectWithoutTargetCycleInput[]
+    createMany?: TargetSettingCreateManyTargetCycleInputEnvelope
+    connect?: TargetSettingWhereUniqueInput | TargetSettingWhereUniqueInput[]
+  }
+
+  export type TargetCycleRangeUncheckedCreateNestedManyWithoutTargetCycleInput = {
+    create?: XOR<TargetCycleRangeCreateWithoutTargetCycleInput, TargetCycleRangeUncheckedCreateWithoutTargetCycleInput> | TargetCycleRangeCreateWithoutTargetCycleInput[] | TargetCycleRangeUncheckedCreateWithoutTargetCycleInput[]
+    connectOrCreate?: TargetCycleRangeCreateOrConnectWithoutTargetCycleInput | TargetCycleRangeCreateOrConnectWithoutTargetCycleInput[]
+    createMany?: TargetCycleRangeCreateManyTargetCycleInputEnvelope
+    connect?: TargetCycleRangeWhereUniqueInput | TargetCycleRangeWhereUniqueInput[]
+  }
+
+  export type TargetSettingUncheckedCreateNestedManyWithoutTargetCycleInput = {
+    create?: XOR<TargetSettingCreateWithoutTargetCycleInput, TargetSettingUncheckedCreateWithoutTargetCycleInput> | TargetSettingCreateWithoutTargetCycleInput[] | TargetSettingUncheckedCreateWithoutTargetCycleInput[]
+    connectOrCreate?: TargetSettingCreateOrConnectWithoutTargetCycleInput | TargetSettingCreateOrConnectWithoutTargetCycleInput[]
+    createMany?: TargetSettingCreateManyTargetCycleInputEnvelope
+    connect?: TargetSettingWhereUniqueInput | TargetSettingWhereUniqueInput[]
+  }
+
+  export type WorkspaceUpdateOneRequiredWithoutTargetCyclesNestedInput = {
+    create?: XOR<WorkspaceCreateWithoutTargetCyclesInput, WorkspaceUncheckedCreateWithoutTargetCyclesInput>
+    connectOrCreate?: WorkspaceCreateOrConnectWithoutTargetCyclesInput
+    upsert?: WorkspaceUpsertWithoutTargetCyclesInput
+    connect?: WorkspaceWhereUniqueInput
+    update?: XOR<XOR<WorkspaceUpdateToOneWithWhereWithoutTargetCyclesInput, WorkspaceUpdateWithoutTargetCyclesInput>, WorkspaceUncheckedUpdateWithoutTargetCyclesInput>
+  }
+
+  export type TargetCycleRangeUpdateManyWithoutTargetCycleNestedInput = {
+    create?: XOR<TargetCycleRangeCreateWithoutTargetCycleInput, TargetCycleRangeUncheckedCreateWithoutTargetCycleInput> | TargetCycleRangeCreateWithoutTargetCycleInput[] | TargetCycleRangeUncheckedCreateWithoutTargetCycleInput[]
+    connectOrCreate?: TargetCycleRangeCreateOrConnectWithoutTargetCycleInput | TargetCycleRangeCreateOrConnectWithoutTargetCycleInput[]
+    upsert?: TargetCycleRangeUpsertWithWhereUniqueWithoutTargetCycleInput | TargetCycleRangeUpsertWithWhereUniqueWithoutTargetCycleInput[]
+    createMany?: TargetCycleRangeCreateManyTargetCycleInputEnvelope
+    set?: TargetCycleRangeWhereUniqueInput | TargetCycleRangeWhereUniqueInput[]
+    disconnect?: TargetCycleRangeWhereUniqueInput | TargetCycleRangeWhereUniqueInput[]
+    delete?: TargetCycleRangeWhereUniqueInput | TargetCycleRangeWhereUniqueInput[]
+    connect?: TargetCycleRangeWhereUniqueInput | TargetCycleRangeWhereUniqueInput[]
+    update?: TargetCycleRangeUpdateWithWhereUniqueWithoutTargetCycleInput | TargetCycleRangeUpdateWithWhereUniqueWithoutTargetCycleInput[]
+    updateMany?: TargetCycleRangeUpdateManyWithWhereWithoutTargetCycleInput | TargetCycleRangeUpdateManyWithWhereWithoutTargetCycleInput[]
+    deleteMany?: TargetCycleRangeScalarWhereInput | TargetCycleRangeScalarWhereInput[]
+  }
+
+  export type TargetSettingUpdateManyWithoutTargetCycleNestedInput = {
+    create?: XOR<TargetSettingCreateWithoutTargetCycleInput, TargetSettingUncheckedCreateWithoutTargetCycleInput> | TargetSettingCreateWithoutTargetCycleInput[] | TargetSettingUncheckedCreateWithoutTargetCycleInput[]
+    connectOrCreate?: TargetSettingCreateOrConnectWithoutTargetCycleInput | TargetSettingCreateOrConnectWithoutTargetCycleInput[]
+    upsert?: TargetSettingUpsertWithWhereUniqueWithoutTargetCycleInput | TargetSettingUpsertWithWhereUniqueWithoutTargetCycleInput[]
+    createMany?: TargetSettingCreateManyTargetCycleInputEnvelope
+    set?: TargetSettingWhereUniqueInput | TargetSettingWhereUniqueInput[]
+    disconnect?: TargetSettingWhereUniqueInput | TargetSettingWhereUniqueInput[]
+    delete?: TargetSettingWhereUniqueInput | TargetSettingWhereUniqueInput[]
+    connect?: TargetSettingWhereUniqueInput | TargetSettingWhereUniqueInput[]
+    update?: TargetSettingUpdateWithWhereUniqueWithoutTargetCycleInput | TargetSettingUpdateWithWhereUniqueWithoutTargetCycleInput[]
+    updateMany?: TargetSettingUpdateManyWithWhereWithoutTargetCycleInput | TargetSettingUpdateManyWithWhereWithoutTargetCycleInput[]
+    deleteMany?: TargetSettingScalarWhereInput | TargetSettingScalarWhereInput[]
+  }
+
+  export type TargetCycleRangeUncheckedUpdateManyWithoutTargetCycleNestedInput = {
+    create?: XOR<TargetCycleRangeCreateWithoutTargetCycleInput, TargetCycleRangeUncheckedCreateWithoutTargetCycleInput> | TargetCycleRangeCreateWithoutTargetCycleInput[] | TargetCycleRangeUncheckedCreateWithoutTargetCycleInput[]
+    connectOrCreate?: TargetCycleRangeCreateOrConnectWithoutTargetCycleInput | TargetCycleRangeCreateOrConnectWithoutTargetCycleInput[]
+    upsert?: TargetCycleRangeUpsertWithWhereUniqueWithoutTargetCycleInput | TargetCycleRangeUpsertWithWhereUniqueWithoutTargetCycleInput[]
+    createMany?: TargetCycleRangeCreateManyTargetCycleInputEnvelope
+    set?: TargetCycleRangeWhereUniqueInput | TargetCycleRangeWhereUniqueInput[]
+    disconnect?: TargetCycleRangeWhereUniqueInput | TargetCycleRangeWhereUniqueInput[]
+    delete?: TargetCycleRangeWhereUniqueInput | TargetCycleRangeWhereUniqueInput[]
+    connect?: TargetCycleRangeWhereUniqueInput | TargetCycleRangeWhereUniqueInput[]
+    update?: TargetCycleRangeUpdateWithWhereUniqueWithoutTargetCycleInput | TargetCycleRangeUpdateWithWhereUniqueWithoutTargetCycleInput[]
+    updateMany?: TargetCycleRangeUpdateManyWithWhereWithoutTargetCycleInput | TargetCycleRangeUpdateManyWithWhereWithoutTargetCycleInput[]
+    deleteMany?: TargetCycleRangeScalarWhereInput | TargetCycleRangeScalarWhereInput[]
+  }
+
+  export type TargetSettingUncheckedUpdateManyWithoutTargetCycleNestedInput = {
+    create?: XOR<TargetSettingCreateWithoutTargetCycleInput, TargetSettingUncheckedCreateWithoutTargetCycleInput> | TargetSettingCreateWithoutTargetCycleInput[] | TargetSettingUncheckedCreateWithoutTargetCycleInput[]
+    connectOrCreate?: TargetSettingCreateOrConnectWithoutTargetCycleInput | TargetSettingCreateOrConnectWithoutTargetCycleInput[]
+    upsert?: TargetSettingUpsertWithWhereUniqueWithoutTargetCycleInput | TargetSettingUpsertWithWhereUniqueWithoutTargetCycleInput[]
+    createMany?: TargetSettingCreateManyTargetCycleInputEnvelope
+    set?: TargetSettingWhereUniqueInput | TargetSettingWhereUniqueInput[]
+    disconnect?: TargetSettingWhereUniqueInput | TargetSettingWhereUniqueInput[]
+    delete?: TargetSettingWhereUniqueInput | TargetSettingWhereUniqueInput[]
+    connect?: TargetSettingWhereUniqueInput | TargetSettingWhereUniqueInput[]
+    update?: TargetSettingUpdateWithWhereUniqueWithoutTargetCycleInput | TargetSettingUpdateWithWhereUniqueWithoutTargetCycleInput[]
+    updateMany?: TargetSettingUpdateManyWithWhereWithoutTargetCycleInput | TargetSettingUpdateManyWithWhereWithoutTargetCycleInput[]
+    deleteMany?: TargetSettingScalarWhereInput | TargetSettingScalarWhereInput[]
+  }
+
+  export type TargetCycleCreateNestedOneWithoutRangesInput = {
+    create?: XOR<TargetCycleCreateWithoutRangesInput, TargetCycleUncheckedCreateWithoutRangesInput>
+    connectOrCreate?: TargetCycleCreateOrConnectWithoutRangesInput
+    connect?: TargetCycleWhereUniqueInput
+  }
+
+  export type TargetCycleUpdateOneRequiredWithoutRangesNestedInput = {
+    create?: XOR<TargetCycleCreateWithoutRangesInput, TargetCycleUncheckedCreateWithoutRangesInput>
+    connectOrCreate?: TargetCycleCreateOrConnectWithoutRangesInput
+    upsert?: TargetCycleUpsertWithoutRangesInput
+    connect?: TargetCycleWhereUniqueInput
+    update?: XOR<XOR<TargetCycleUpdateToOneWithWhereWithoutRangesInput, TargetCycleUpdateWithoutRangesInput>, TargetCycleUncheckedUpdateWithoutRangesInput>
+  }
+
   export type UserCreateNestedOneWithoutTargetSettingsInput = {
     create?: XOR<UserCreateWithoutTargetSettingsInput, UserUncheckedCreateWithoutTargetSettingsInput>
     connectOrCreate?: UserCreateOrConnectWithoutTargetSettingsInput
@@ -28623,8 +31547,14 @@ export namespace Prisma {
     connect?: TargetTypeWhereUniqueInput
   }
 
-  export type EnumTargetCycleFieldUpdateOperationsInput = {
-    set?: $Enums.TargetCycle
+  export type TargetCycleCreateNestedOneWithoutTargetsInput = {
+    create?: XOR<TargetCycleCreateWithoutTargetsInput, TargetCycleUncheckedCreateWithoutTargetsInput>
+    connectOrCreate?: TargetCycleCreateOrConnectWithoutTargetsInput
+    connect?: TargetCycleWhereUniqueInput
+  }
+
+  export type EnumTargetSettingCycleFieldUpdateOperationsInput = {
+    set?: $Enums.TargetSettingCycle
   }
 
   export type FloatFieldUpdateOperationsInput = {
@@ -28649,6 +31579,16 @@ export namespace Prisma {
     upsert?: TargetTypeUpsertWithoutSettingsInput
     connect?: TargetTypeWhereUniqueInput
     update?: XOR<XOR<TargetTypeUpdateToOneWithWhereWithoutSettingsInput, TargetTypeUpdateWithoutSettingsInput>, TargetTypeUncheckedUpdateWithoutSettingsInput>
+  }
+
+  export type TargetCycleUpdateOneWithoutTargetsNestedInput = {
+    create?: XOR<TargetCycleCreateWithoutTargetsInput, TargetCycleUncheckedCreateWithoutTargetsInput>
+    connectOrCreate?: TargetCycleCreateOrConnectWithoutTargetsInput
+    upsert?: TargetCycleUpsertWithoutTargetsInput
+    disconnect?: TargetCycleWhereInput | boolean
+    delete?: TargetCycleWhereInput | boolean
+    connect?: TargetCycleWhereUniqueInput
+    update?: XOR<XOR<TargetCycleUpdateToOneWithWhereWithoutTargetsInput, TargetCycleUpdateWithoutTargetsInput>, TargetCycleUncheckedUpdateWithoutTargetsInput>
   }
 
   export type UserCreateNestedOneWithoutViolationsInput = {
@@ -29485,21 +32425,21 @@ export namespace Prisma {
     _max?: NestedEnumLocationTypeFilter<$PrismaModel>
   }
 
-  export type NestedEnumTargetCycleFilter<$PrismaModel = never> = {
-    equals?: $Enums.TargetCycle | EnumTargetCycleFieldRefInput<$PrismaModel>
-    in?: $Enums.TargetCycle[] | ListEnumTargetCycleFieldRefInput<$PrismaModel>
-    notIn?: $Enums.TargetCycle[] | ListEnumTargetCycleFieldRefInput<$PrismaModel>
-    not?: NestedEnumTargetCycleFilter<$PrismaModel> | $Enums.TargetCycle
+  export type NestedEnumTargetSettingCycleFilter<$PrismaModel = never> = {
+    equals?: $Enums.TargetSettingCycle | EnumTargetSettingCycleFieldRefInput<$PrismaModel>
+    in?: $Enums.TargetSettingCycle[] | ListEnumTargetSettingCycleFieldRefInput<$PrismaModel>
+    notIn?: $Enums.TargetSettingCycle[] | ListEnumTargetSettingCycleFieldRefInput<$PrismaModel>
+    not?: NestedEnumTargetSettingCycleFilter<$PrismaModel> | $Enums.TargetSettingCycle
   }
 
-  export type NestedEnumTargetCycleWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.TargetCycle | EnumTargetCycleFieldRefInput<$PrismaModel>
-    in?: $Enums.TargetCycle[] | ListEnumTargetCycleFieldRefInput<$PrismaModel>
-    notIn?: $Enums.TargetCycle[] | ListEnumTargetCycleFieldRefInput<$PrismaModel>
-    not?: NestedEnumTargetCycleWithAggregatesFilter<$PrismaModel> | $Enums.TargetCycle
+  export type NestedEnumTargetSettingCycleWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.TargetSettingCycle | EnumTargetSettingCycleFieldRefInput<$PrismaModel>
+    in?: $Enums.TargetSettingCycle[] | ListEnumTargetSettingCycleFieldRefInput<$PrismaModel>
+    notIn?: $Enums.TargetSettingCycle[] | ListEnumTargetSettingCycleFieldRefInput<$PrismaModel>
+    not?: NestedEnumTargetSettingCycleWithAggregatesFilter<$PrismaModel> | $Enums.TargetSettingCycle
     _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumTargetCycleFilter<$PrismaModel>
-    _max?: NestedEnumTargetCycleFilter<$PrismaModel>
+    _min?: NestedEnumTargetSettingCycleFilter<$PrismaModel>
+    _max?: NestedEnumTargetSettingCycleFilter<$PrismaModel>
   }
 
   export type NestedFloatWithAggregatesFilter<$PrismaModel = never> = {
@@ -30113,6 +33053,42 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type TargetCycleCreateWithoutWorkspaceInput = {
+    id?: string
+    name: string
+    totalDays: number
+    status?: string
+    createdBy?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    ranges?: TargetCycleRangeCreateNestedManyWithoutTargetCycleInput
+    targets?: TargetSettingCreateNestedManyWithoutTargetCycleInput
+  }
+
+  export type TargetCycleUncheckedCreateWithoutWorkspaceInput = {
+    id?: string
+    name: string
+    totalDays: number
+    status?: string
+    createdBy?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    ranges?: TargetCycleRangeUncheckedCreateNestedManyWithoutTargetCycleInput
+    targets?: TargetSettingUncheckedCreateNestedManyWithoutTargetCycleInput
+  }
+
+  export type TargetCycleCreateOrConnectWithoutWorkspaceInput = {
+    where: TargetCycleWhereUniqueInput
+    create: XOR<TargetCycleCreateWithoutWorkspaceInput, TargetCycleUncheckedCreateWithoutWorkspaceInput>
+  }
+
+  export type TargetCycleCreateManyWorkspaceInputEnvelope = {
+    data: TargetCycleCreateManyWorkspaceInput | TargetCycleCreateManyWorkspaceInput[]
+    skipDuplicates?: boolean
+  }
+
   export type UserUpsertWithoutOwnedWorkspaceInput = {
     update: XOR<UserUpdateWithoutOwnedWorkspaceInput, UserUncheckedUpdateWithoutOwnedWorkspaceInput>
     create: XOR<UserCreateWithoutOwnedWorkspaceInput, UserUncheckedCreateWithoutOwnedWorkspaceInput>
@@ -30242,6 +33218,37 @@ export namespace Prisma {
     deletedAt?: DateTimeNullableFilter<"Department"> | Date | string | null
   }
 
+  export type TargetCycleUpsertWithWhereUniqueWithoutWorkspaceInput = {
+    where: TargetCycleWhereUniqueInput
+    update: XOR<TargetCycleUpdateWithoutWorkspaceInput, TargetCycleUncheckedUpdateWithoutWorkspaceInput>
+    create: XOR<TargetCycleCreateWithoutWorkspaceInput, TargetCycleUncheckedCreateWithoutWorkspaceInput>
+  }
+
+  export type TargetCycleUpdateWithWhereUniqueWithoutWorkspaceInput = {
+    where: TargetCycleWhereUniqueInput
+    data: XOR<TargetCycleUpdateWithoutWorkspaceInput, TargetCycleUncheckedUpdateWithoutWorkspaceInput>
+  }
+
+  export type TargetCycleUpdateManyWithWhereWithoutWorkspaceInput = {
+    where: TargetCycleScalarWhereInput
+    data: XOR<TargetCycleUpdateManyMutationInput, TargetCycleUncheckedUpdateManyWithoutWorkspaceInput>
+  }
+
+  export type TargetCycleScalarWhereInput = {
+    AND?: TargetCycleScalarWhereInput | TargetCycleScalarWhereInput[]
+    OR?: TargetCycleScalarWhereInput[]
+    NOT?: TargetCycleScalarWhereInput | TargetCycleScalarWhereInput[]
+    id?: StringFilter<"TargetCycle"> | string
+    name?: StringFilter<"TargetCycle"> | string
+    workspaceId?: StringFilter<"TargetCycle"> | string
+    totalDays?: IntFilter<"TargetCycle"> | number
+    status?: StringFilter<"TargetCycle"> | string
+    createdBy?: StringNullableFilter<"TargetCycle"> | string | null
+    createdAt?: DateTimeFilter<"TargetCycle"> | Date | string
+    updatedAt?: DateTimeFilter<"TargetCycle"> | Date | string
+    deletedAt?: DateTimeNullableFilter<"TargetCycle"> | Date | string | null
+  }
+
   export type WorkspaceCreateWithoutDepartmentsInput = {
     id?: string
     companyName: string
@@ -30254,6 +33261,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     owner: UserCreateNestedOneWithoutOwnedWorkspaceInput
     users?: UserCreateNestedManyWithoutWorkspaceInput
+    targetCycles?: TargetCycleCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateWithoutDepartmentsInput = {
@@ -30268,6 +33276,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     users?: UserUncheckedCreateNestedManyWithoutWorkspaceInput
+    targetCycles?: TargetCycleUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceCreateOrConnectWithoutDepartmentsInput = {
@@ -30380,6 +33389,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     owner?: UserUpdateOneRequiredWithoutOwnedWorkspaceNestedInput
     users?: UserUpdateManyWithoutWorkspaceNestedInput
+    targetCycles?: TargetCycleUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateWithoutDepartmentsInput = {
@@ -30394,6 +33404,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUncheckedUpdateManyWithoutWorkspaceNestedInput
+    targetCycles?: TargetCycleUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type UserUpsertWithWhereUniqueWithoutDepartmentInput = {
@@ -31529,7 +34540,7 @@ export namespace Prisma {
 
   export type TargetSettingCreateWithoutTargetTypeInput = {
     id?: string
-    cycle?: $Enums.TargetCycle
+    cycle?: $Enums.TargetSettingCycle
     monthlyTargetLeads?: number
     dailyFollowupTarget?: number
     revenueTarget?: number
@@ -31539,12 +34550,14 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutTargetSettingsInput
+    targetCycle?: TargetCycleCreateNestedOneWithoutTargetsInput
   }
 
   export type TargetSettingUncheckedCreateWithoutTargetTypeInput = {
     id?: string
     userId: string
-    cycle?: $Enums.TargetCycle
+    cycle?: $Enums.TargetSettingCycle
+    targetCycleId?: string | null
     monthlyTargetLeads?: number
     dailyFollowupTarget?: number
     revenueTarget?: number
@@ -31588,7 +34601,8 @@ export namespace Prisma {
     id?: StringFilter<"TargetSetting"> | string
     userId?: StringFilter<"TargetSetting"> | string
     targetTypeId?: StringFilter<"TargetSetting"> | string
-    cycle?: EnumTargetCycleFilter<"TargetSetting"> | $Enums.TargetCycle
+    cycle?: EnumTargetSettingCycleFilter<"TargetSetting"> | $Enums.TargetSettingCycle
+    targetCycleId?: StringNullableFilter<"TargetSetting"> | string | null
     monthlyTargetLeads?: IntFilter<"TargetSetting"> | number
     dailyFollowupTarget?: IntFilter<"TargetSetting"> | number
     revenueTarget?: FloatFilter<"TargetSetting"> | number
@@ -31597,6 +34611,257 @@ export namespace Prisma {
     workspaceId?: StringFilter<"TargetSetting"> | string
     createdAt?: DateTimeFilter<"TargetSetting"> | Date | string
     updatedAt?: DateTimeFilter<"TargetSetting"> | Date | string
+  }
+
+  export type WorkspaceCreateWithoutTargetCyclesInput = {
+    id?: string
+    companyName: string
+    employeeCount: string
+    timeZone?: string
+    language?: string
+    currencyLocale?: string
+    loadSampleData?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    owner: UserCreateNestedOneWithoutOwnedWorkspaceInput
+    users?: UserCreateNestedManyWithoutWorkspaceInput
+    departments?: DepartmentCreateNestedManyWithoutWorkspaceInput
+  }
+
+  export type WorkspaceUncheckedCreateWithoutTargetCyclesInput = {
+    id?: string
+    companyName: string
+    employeeCount: string
+    timeZone?: string
+    language?: string
+    currencyLocale?: string
+    loadSampleData?: boolean
+    ownerId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    users?: UserUncheckedCreateNestedManyWithoutWorkspaceInput
+    departments?: DepartmentUncheckedCreateNestedManyWithoutWorkspaceInput
+  }
+
+  export type WorkspaceCreateOrConnectWithoutTargetCyclesInput = {
+    where: WorkspaceWhereUniqueInput
+    create: XOR<WorkspaceCreateWithoutTargetCyclesInput, WorkspaceUncheckedCreateWithoutTargetCyclesInput>
+  }
+
+  export type TargetCycleRangeCreateWithoutTargetCycleInput = {
+    id?: string
+    startDay: number
+    endDay: number
+    createdAt?: Date | string
+  }
+
+  export type TargetCycleRangeUncheckedCreateWithoutTargetCycleInput = {
+    id?: string
+    startDay: number
+    endDay: number
+    createdAt?: Date | string
+  }
+
+  export type TargetCycleRangeCreateOrConnectWithoutTargetCycleInput = {
+    where: TargetCycleRangeWhereUniqueInput
+    create: XOR<TargetCycleRangeCreateWithoutTargetCycleInput, TargetCycleRangeUncheckedCreateWithoutTargetCycleInput>
+  }
+
+  export type TargetCycleRangeCreateManyTargetCycleInputEnvelope = {
+    data: TargetCycleRangeCreateManyTargetCycleInput | TargetCycleRangeCreateManyTargetCycleInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type TargetSettingCreateWithoutTargetCycleInput = {
+    id?: string
+    cycle?: $Enums.TargetSettingCycle
+    monthlyTargetLeads?: number
+    dailyFollowupTarget?: number
+    revenueTarget?: number
+    startDate: Date | string
+    endDate?: Date | string | null
+    workspaceId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutTargetSettingsInput
+    targetType: TargetTypeCreateNestedOneWithoutSettingsInput
+  }
+
+  export type TargetSettingUncheckedCreateWithoutTargetCycleInput = {
+    id?: string
+    userId: string
+    targetTypeId: string
+    cycle?: $Enums.TargetSettingCycle
+    monthlyTargetLeads?: number
+    dailyFollowupTarget?: number
+    revenueTarget?: number
+    startDate: Date | string
+    endDate?: Date | string | null
+    workspaceId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type TargetSettingCreateOrConnectWithoutTargetCycleInput = {
+    where: TargetSettingWhereUniqueInput
+    create: XOR<TargetSettingCreateWithoutTargetCycleInput, TargetSettingUncheckedCreateWithoutTargetCycleInput>
+  }
+
+  export type TargetSettingCreateManyTargetCycleInputEnvelope = {
+    data: TargetSettingCreateManyTargetCycleInput | TargetSettingCreateManyTargetCycleInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type WorkspaceUpsertWithoutTargetCyclesInput = {
+    update: XOR<WorkspaceUpdateWithoutTargetCyclesInput, WorkspaceUncheckedUpdateWithoutTargetCyclesInput>
+    create: XOR<WorkspaceCreateWithoutTargetCyclesInput, WorkspaceUncheckedCreateWithoutTargetCyclesInput>
+    where?: WorkspaceWhereInput
+  }
+
+  export type WorkspaceUpdateToOneWithWhereWithoutTargetCyclesInput = {
+    where?: WorkspaceWhereInput
+    data: XOR<WorkspaceUpdateWithoutTargetCyclesInput, WorkspaceUncheckedUpdateWithoutTargetCyclesInput>
+  }
+
+  export type WorkspaceUpdateWithoutTargetCyclesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    companyName?: StringFieldUpdateOperationsInput | string
+    employeeCount?: StringFieldUpdateOperationsInput | string
+    timeZone?: StringFieldUpdateOperationsInput | string
+    language?: StringFieldUpdateOperationsInput | string
+    currencyLocale?: StringFieldUpdateOperationsInput | string
+    loadSampleData?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    owner?: UserUpdateOneRequiredWithoutOwnedWorkspaceNestedInput
+    users?: UserUpdateManyWithoutWorkspaceNestedInput
+    departments?: DepartmentUpdateManyWithoutWorkspaceNestedInput
+  }
+
+  export type WorkspaceUncheckedUpdateWithoutTargetCyclesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    companyName?: StringFieldUpdateOperationsInput | string
+    employeeCount?: StringFieldUpdateOperationsInput | string
+    timeZone?: StringFieldUpdateOperationsInput | string
+    language?: StringFieldUpdateOperationsInput | string
+    currencyLocale?: StringFieldUpdateOperationsInput | string
+    loadSampleData?: BoolFieldUpdateOperationsInput | boolean
+    ownerId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    users?: UserUncheckedUpdateManyWithoutWorkspaceNestedInput
+    departments?: DepartmentUncheckedUpdateManyWithoutWorkspaceNestedInput
+  }
+
+  export type TargetCycleRangeUpsertWithWhereUniqueWithoutTargetCycleInput = {
+    where: TargetCycleRangeWhereUniqueInput
+    update: XOR<TargetCycleRangeUpdateWithoutTargetCycleInput, TargetCycleRangeUncheckedUpdateWithoutTargetCycleInput>
+    create: XOR<TargetCycleRangeCreateWithoutTargetCycleInput, TargetCycleRangeUncheckedCreateWithoutTargetCycleInput>
+  }
+
+  export type TargetCycleRangeUpdateWithWhereUniqueWithoutTargetCycleInput = {
+    where: TargetCycleRangeWhereUniqueInput
+    data: XOR<TargetCycleRangeUpdateWithoutTargetCycleInput, TargetCycleRangeUncheckedUpdateWithoutTargetCycleInput>
+  }
+
+  export type TargetCycleRangeUpdateManyWithWhereWithoutTargetCycleInput = {
+    where: TargetCycleRangeScalarWhereInput
+    data: XOR<TargetCycleRangeUpdateManyMutationInput, TargetCycleRangeUncheckedUpdateManyWithoutTargetCycleInput>
+  }
+
+  export type TargetCycleRangeScalarWhereInput = {
+    AND?: TargetCycleRangeScalarWhereInput | TargetCycleRangeScalarWhereInput[]
+    OR?: TargetCycleRangeScalarWhereInput[]
+    NOT?: TargetCycleRangeScalarWhereInput | TargetCycleRangeScalarWhereInput[]
+    id?: StringFilter<"TargetCycleRange"> | string
+    targetCycleId?: StringFilter<"TargetCycleRange"> | string
+    startDay?: IntFilter<"TargetCycleRange"> | number
+    endDay?: IntFilter<"TargetCycleRange"> | number
+    createdAt?: DateTimeFilter<"TargetCycleRange"> | Date | string
+  }
+
+  export type TargetSettingUpsertWithWhereUniqueWithoutTargetCycleInput = {
+    where: TargetSettingWhereUniqueInput
+    update: XOR<TargetSettingUpdateWithoutTargetCycleInput, TargetSettingUncheckedUpdateWithoutTargetCycleInput>
+    create: XOR<TargetSettingCreateWithoutTargetCycleInput, TargetSettingUncheckedCreateWithoutTargetCycleInput>
+  }
+
+  export type TargetSettingUpdateWithWhereUniqueWithoutTargetCycleInput = {
+    where: TargetSettingWhereUniqueInput
+    data: XOR<TargetSettingUpdateWithoutTargetCycleInput, TargetSettingUncheckedUpdateWithoutTargetCycleInput>
+  }
+
+  export type TargetSettingUpdateManyWithWhereWithoutTargetCycleInput = {
+    where: TargetSettingScalarWhereInput
+    data: XOR<TargetSettingUpdateManyMutationInput, TargetSettingUncheckedUpdateManyWithoutTargetCycleInput>
+  }
+
+  export type TargetCycleCreateWithoutRangesInput = {
+    id?: string
+    name: string
+    totalDays: number
+    status?: string
+    createdBy?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    workspace: WorkspaceCreateNestedOneWithoutTargetCyclesInput
+    targets?: TargetSettingCreateNestedManyWithoutTargetCycleInput
+  }
+
+  export type TargetCycleUncheckedCreateWithoutRangesInput = {
+    id?: string
+    name: string
+    workspaceId: string
+    totalDays: number
+    status?: string
+    createdBy?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    targets?: TargetSettingUncheckedCreateNestedManyWithoutTargetCycleInput
+  }
+
+  export type TargetCycleCreateOrConnectWithoutRangesInput = {
+    where: TargetCycleWhereUniqueInput
+    create: XOR<TargetCycleCreateWithoutRangesInput, TargetCycleUncheckedCreateWithoutRangesInput>
+  }
+
+  export type TargetCycleUpsertWithoutRangesInput = {
+    update: XOR<TargetCycleUpdateWithoutRangesInput, TargetCycleUncheckedUpdateWithoutRangesInput>
+    create: XOR<TargetCycleCreateWithoutRangesInput, TargetCycleUncheckedCreateWithoutRangesInput>
+    where?: TargetCycleWhereInput
+  }
+
+  export type TargetCycleUpdateToOneWithWhereWithoutRangesInput = {
+    where?: TargetCycleWhereInput
+    data: XOR<TargetCycleUpdateWithoutRangesInput, TargetCycleUncheckedUpdateWithoutRangesInput>
+  }
+
+  export type TargetCycleUpdateWithoutRangesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    totalDays?: IntFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    workspace?: WorkspaceUpdateOneRequiredWithoutTargetCyclesNestedInput
+    targets?: TargetSettingUpdateManyWithoutTargetCycleNestedInput
+  }
+
+  export type TargetCycleUncheckedUpdateWithoutRangesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    totalDays?: IntFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    targets?: TargetSettingUncheckedUpdateManyWithoutTargetCycleNestedInput
   }
 
   export type UserCreateWithoutTargetSettingsInput = {
@@ -31697,6 +34962,37 @@ export namespace Prisma {
   export type TargetTypeCreateOrConnectWithoutSettingsInput = {
     where: TargetTypeWhereUniqueInput
     create: XOR<TargetTypeCreateWithoutSettingsInput, TargetTypeUncheckedCreateWithoutSettingsInput>
+  }
+
+  export type TargetCycleCreateWithoutTargetsInput = {
+    id?: string
+    name: string
+    totalDays: number
+    status?: string
+    createdBy?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    workspace: WorkspaceCreateNestedOneWithoutTargetCyclesInput
+    ranges?: TargetCycleRangeCreateNestedManyWithoutTargetCycleInput
+  }
+
+  export type TargetCycleUncheckedCreateWithoutTargetsInput = {
+    id?: string
+    name: string
+    workspaceId: string
+    totalDays: number
+    status?: string
+    createdBy?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    ranges?: TargetCycleRangeUncheckedCreateNestedManyWithoutTargetCycleInput
+  }
+
+  export type TargetCycleCreateOrConnectWithoutTargetsInput = {
+    where: TargetCycleWhereUniqueInput
+    create: XOR<TargetCycleCreateWithoutTargetsInput, TargetCycleUncheckedCreateWithoutTargetsInput>
   }
 
   export type UserUpsertWithoutTargetSettingsInput = {
@@ -31809,6 +35105,43 @@ export namespace Prisma {
     workspaceId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TargetCycleUpsertWithoutTargetsInput = {
+    update: XOR<TargetCycleUpdateWithoutTargetsInput, TargetCycleUncheckedUpdateWithoutTargetsInput>
+    create: XOR<TargetCycleCreateWithoutTargetsInput, TargetCycleUncheckedCreateWithoutTargetsInput>
+    where?: TargetCycleWhereInput
+  }
+
+  export type TargetCycleUpdateToOneWithWhereWithoutTargetsInput = {
+    where?: TargetCycleWhereInput
+    data: XOR<TargetCycleUpdateWithoutTargetsInput, TargetCycleUncheckedUpdateWithoutTargetsInput>
+  }
+
+  export type TargetCycleUpdateWithoutTargetsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    totalDays?: IntFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    workspace?: WorkspaceUpdateOneRequiredWithoutTargetCyclesNestedInput
+    ranges?: TargetCycleRangeUpdateManyWithoutTargetCycleNestedInput
+  }
+
+  export type TargetCycleUncheckedUpdateWithoutTargetsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    totalDays?: IntFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ranges?: TargetCycleRangeUncheckedUpdateManyWithoutTargetCycleNestedInput
   }
 
   export type UserCreateWithoutViolationsInput = {
@@ -32010,6 +35343,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     owner: UserCreateNestedOneWithoutOwnedWorkspaceInput
     departments?: DepartmentCreateNestedManyWithoutWorkspaceInput
+    targetCycles?: TargetCycleCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateWithoutUsersInput = {
@@ -32024,6 +35358,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     departments?: DepartmentUncheckedCreateNestedManyWithoutWorkspaceInput
+    targetCycles?: TargetCycleUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceCreateOrConnectWithoutUsersInput = {
@@ -32043,6 +35378,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     users?: UserCreateNestedManyWithoutWorkspaceInput
     departments?: DepartmentCreateNestedManyWithoutWorkspaceInput
+    targetCycles?: TargetCycleCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateWithoutOwnerInput = {
@@ -32057,6 +35393,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     users?: UserUncheckedCreateNestedManyWithoutWorkspaceInput
     departments?: DepartmentUncheckedCreateNestedManyWithoutWorkspaceInput
+    targetCycles?: TargetCycleUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceCreateOrConnectWithoutOwnerInput = {
@@ -32400,7 +35737,7 @@ export namespace Prisma {
 
   export type TargetSettingCreateWithoutUserInput = {
     id?: string
-    cycle?: $Enums.TargetCycle
+    cycle?: $Enums.TargetSettingCycle
     monthlyTargetLeads?: number
     dailyFollowupTarget?: number
     revenueTarget?: number
@@ -32410,12 +35747,14 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     targetType: TargetTypeCreateNestedOneWithoutSettingsInput
+    targetCycle?: TargetCycleCreateNestedOneWithoutTargetsInput
   }
 
   export type TargetSettingUncheckedCreateWithoutUserInput = {
     id?: string
     targetTypeId: string
-    cycle?: $Enums.TargetCycle
+    cycle?: $Enums.TargetSettingCycle
+    targetCycleId?: string | null
     monthlyTargetLeads?: number
     dailyFollowupTarget?: number
     revenueTarget?: number
@@ -32636,6 +35975,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     owner?: UserUpdateOneRequiredWithoutOwnedWorkspaceNestedInput
     departments?: DepartmentUpdateManyWithoutWorkspaceNestedInput
+    targetCycles?: TargetCycleUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateWithoutUsersInput = {
@@ -32650,6 +35990,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     departments?: DepartmentUncheckedUpdateManyWithoutWorkspaceNestedInput
+    targetCycles?: TargetCycleUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUpsertWithoutOwnerInput = {
@@ -32675,6 +36016,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUpdateManyWithoutWorkspaceNestedInput
     departments?: DepartmentUpdateManyWithoutWorkspaceNestedInput
+    targetCycles?: TargetCycleUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateWithoutOwnerInput = {
@@ -32689,6 +36031,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUncheckedUpdateManyWithoutWorkspaceNestedInput
     departments?: DepartmentUncheckedUpdateManyWithoutWorkspaceNestedInput
+    targetCycles?: TargetCycleUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type DepartmentUpsertWithoutUsersInput = {
@@ -33811,6 +37154,17 @@ export namespace Prisma {
     deletedAt?: Date | string | null
   }
 
+  export type TargetCycleCreateManyWorkspaceInput = {
+    id?: string
+    name: string
+    totalDays: number
+    status?: string
+    createdBy?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
   export type UserUpdateWithoutWorkspaceInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: NullableStringFieldUpdateOperationsInput | string | null
@@ -33938,6 +37292,43 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDepartmentStatusFieldUpdateOperationsInput | $Enums.DepartmentStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type TargetCycleUpdateWithoutWorkspaceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    totalDays?: IntFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ranges?: TargetCycleRangeUpdateManyWithoutTargetCycleNestedInput
+    targets?: TargetSettingUpdateManyWithoutTargetCycleNestedInput
+  }
+
+  export type TargetCycleUncheckedUpdateWithoutWorkspaceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    totalDays?: IntFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ranges?: TargetCycleRangeUncheckedUpdateManyWithoutTargetCycleNestedInput
+    targets?: TargetSettingUncheckedUpdateManyWithoutTargetCycleNestedInput
+  }
+
+  export type TargetCycleUncheckedUpdateManyWithoutWorkspaceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    totalDays?: IntFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -34762,7 +38153,8 @@ export namespace Prisma {
   export type TargetSettingCreateManyTargetTypeInput = {
     id?: string
     userId: string
-    cycle?: $Enums.TargetCycle
+    cycle?: $Enums.TargetSettingCycle
+    targetCycleId?: string | null
     monthlyTargetLeads?: number
     dailyFollowupTarget?: number
     revenueTarget?: number
@@ -34775,7 +38167,7 @@ export namespace Prisma {
 
   export type TargetSettingUpdateWithoutTargetTypeInput = {
     id?: StringFieldUpdateOperationsInput | string
-    cycle?: EnumTargetCycleFieldUpdateOperationsInput | $Enums.TargetCycle
+    cycle?: EnumTargetSettingCycleFieldUpdateOperationsInput | $Enums.TargetSettingCycle
     monthlyTargetLeads?: IntFieldUpdateOperationsInput | number
     dailyFollowupTarget?: IntFieldUpdateOperationsInput | number
     revenueTarget?: FloatFieldUpdateOperationsInput | number
@@ -34785,12 +38177,14 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutTargetSettingsNestedInput
+    targetCycle?: TargetCycleUpdateOneWithoutTargetsNestedInput
   }
 
   export type TargetSettingUncheckedUpdateWithoutTargetTypeInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
-    cycle?: EnumTargetCycleFieldUpdateOperationsInput | $Enums.TargetCycle
+    cycle?: EnumTargetSettingCycleFieldUpdateOperationsInput | $Enums.TargetSettingCycle
+    targetCycleId?: NullableStringFieldUpdateOperationsInput | string | null
     monthlyTargetLeads?: IntFieldUpdateOperationsInput | number
     dailyFollowupTarget?: IntFieldUpdateOperationsInput | number
     revenueTarget?: FloatFieldUpdateOperationsInput | number
@@ -34804,7 +38198,96 @@ export namespace Prisma {
   export type TargetSettingUncheckedUpdateManyWithoutTargetTypeInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
-    cycle?: EnumTargetCycleFieldUpdateOperationsInput | $Enums.TargetCycle
+    cycle?: EnumTargetSettingCycleFieldUpdateOperationsInput | $Enums.TargetSettingCycle
+    targetCycleId?: NullableStringFieldUpdateOperationsInput | string | null
+    monthlyTargetLeads?: IntFieldUpdateOperationsInput | number
+    dailyFollowupTarget?: IntFieldUpdateOperationsInput | number
+    revenueTarget?: FloatFieldUpdateOperationsInput | number
+    startDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    endDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TargetCycleRangeCreateManyTargetCycleInput = {
+    id?: string
+    startDay: number
+    endDay: number
+    createdAt?: Date | string
+  }
+
+  export type TargetSettingCreateManyTargetCycleInput = {
+    id?: string
+    userId: string
+    targetTypeId: string
+    cycle?: $Enums.TargetSettingCycle
+    monthlyTargetLeads?: number
+    dailyFollowupTarget?: number
+    revenueTarget?: number
+    startDate: Date | string
+    endDate?: Date | string | null
+    workspaceId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type TargetCycleRangeUpdateWithoutTargetCycleInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    startDay?: IntFieldUpdateOperationsInput | number
+    endDay?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TargetCycleRangeUncheckedUpdateWithoutTargetCycleInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    startDay?: IntFieldUpdateOperationsInput | number
+    endDay?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TargetCycleRangeUncheckedUpdateManyWithoutTargetCycleInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    startDay?: IntFieldUpdateOperationsInput | number
+    endDay?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TargetSettingUpdateWithoutTargetCycleInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    cycle?: EnumTargetSettingCycleFieldUpdateOperationsInput | $Enums.TargetSettingCycle
+    monthlyTargetLeads?: IntFieldUpdateOperationsInput | number
+    dailyFollowupTarget?: IntFieldUpdateOperationsInput | number
+    revenueTarget?: FloatFieldUpdateOperationsInput | number
+    startDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    endDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutTargetSettingsNestedInput
+    targetType?: TargetTypeUpdateOneRequiredWithoutSettingsNestedInput
+  }
+
+  export type TargetSettingUncheckedUpdateWithoutTargetCycleInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    targetTypeId?: StringFieldUpdateOperationsInput | string
+    cycle?: EnumTargetSettingCycleFieldUpdateOperationsInput | $Enums.TargetSettingCycle
+    monthlyTargetLeads?: IntFieldUpdateOperationsInput | number
+    dailyFollowupTarget?: IntFieldUpdateOperationsInput | number
+    revenueTarget?: FloatFieldUpdateOperationsInput | number
+    startDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    endDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TargetSettingUncheckedUpdateManyWithoutTargetCycleInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    targetTypeId?: StringFieldUpdateOperationsInput | string
+    cycle?: EnumTargetSettingCycleFieldUpdateOperationsInput | $Enums.TargetSettingCycle
     monthlyTargetLeads?: IntFieldUpdateOperationsInput | number
     dailyFollowupTarget?: IntFieldUpdateOperationsInput | number
     revenueTarget?: FloatFieldUpdateOperationsInput | number
@@ -34854,7 +38337,8 @@ export namespace Prisma {
   export type TargetSettingCreateManyUserInput = {
     id?: string
     targetTypeId: string
-    cycle?: $Enums.TargetCycle
+    cycle?: $Enums.TargetSettingCycle
+    targetCycleId?: string | null
     monthlyTargetLeads?: number
     dailyFollowupTarget?: number
     revenueTarget?: number
@@ -35043,7 +38527,7 @@ export namespace Prisma {
 
   export type TargetSettingUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
-    cycle?: EnumTargetCycleFieldUpdateOperationsInput | $Enums.TargetCycle
+    cycle?: EnumTargetSettingCycleFieldUpdateOperationsInput | $Enums.TargetSettingCycle
     monthlyTargetLeads?: IntFieldUpdateOperationsInput | number
     dailyFollowupTarget?: IntFieldUpdateOperationsInput | number
     revenueTarget?: FloatFieldUpdateOperationsInput | number
@@ -35053,12 +38537,14 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     targetType?: TargetTypeUpdateOneRequiredWithoutSettingsNestedInput
+    targetCycle?: TargetCycleUpdateOneWithoutTargetsNestedInput
   }
 
   export type TargetSettingUncheckedUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     targetTypeId?: StringFieldUpdateOperationsInput | string
-    cycle?: EnumTargetCycleFieldUpdateOperationsInput | $Enums.TargetCycle
+    cycle?: EnumTargetSettingCycleFieldUpdateOperationsInput | $Enums.TargetSettingCycle
+    targetCycleId?: NullableStringFieldUpdateOperationsInput | string | null
     monthlyTargetLeads?: IntFieldUpdateOperationsInput | number
     dailyFollowupTarget?: IntFieldUpdateOperationsInput | number
     revenueTarget?: FloatFieldUpdateOperationsInput | number
@@ -35072,7 +38558,8 @@ export namespace Prisma {
   export type TargetSettingUncheckedUpdateManyWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     targetTypeId?: StringFieldUpdateOperationsInput | string
-    cycle?: EnumTargetCycleFieldUpdateOperationsInput | $Enums.TargetCycle
+    cycle?: EnumTargetSettingCycleFieldUpdateOperationsInput | $Enums.TargetSettingCycle
+    targetCycleId?: NullableStringFieldUpdateOperationsInput | string | null
     monthlyTargetLeads?: IntFieldUpdateOperationsInput | number
     dailyFollowupTarget?: IntFieldUpdateOperationsInput | number
     revenueTarget?: FloatFieldUpdateOperationsInput | number
@@ -35281,6 +38768,10 @@ export namespace Prisma {
      */
     export type TargetTypeCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = TargetTypeCountOutputTypeDefaultArgs<ExtArgs>
     /**
+     * @deprecated Use TargetCycleCountOutputTypeDefaultArgs instead
+     */
+    export type TargetCycleCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = TargetCycleCountOutputTypeDefaultArgs<ExtArgs>
+    /**
      * @deprecated Use UserCountOutputTypeDefaultArgs instead
      */
     export type UserCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = UserCountOutputTypeDefaultArgs<ExtArgs>
@@ -35336,6 +38827,14 @@ export namespace Prisma {
      * @deprecated Use TargetTypeDefaultArgs instead
      */
     export type TargetTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = TargetTypeDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use TargetCycleDefaultArgs instead
+     */
+    export type TargetCycleArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = TargetCycleDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use TargetCycleRangeDefaultArgs instead
+     */
+    export type TargetCycleRangeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = TargetCycleRangeDefaultArgs<ExtArgs>
     /**
      * @deprecated Use TargetSettingDefaultArgs instead
      */

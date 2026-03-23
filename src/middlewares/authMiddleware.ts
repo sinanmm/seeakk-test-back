@@ -182,12 +182,15 @@ export const checkPermission = (permissionKey: string) => {
         permissionKey.startsWith('LEAD_STAGES_') && permissions.includes('SYSTEM_CONFIG');
       const hasStageRuleFallbackPermission =
         permissionKey.startsWith('LEAD_STAGE_RULES_') && permissions.includes('SYSTEM_CONFIG');
+      const hasTargetCycleFallbackPermission =
+        permissionKey.startsWith('TARGET_CYCLES_') && permissions.includes('SYSTEM_CONFIG');
 
       if (
         !hasRequestedPermission &&
         !hasLeadSourceFallbackPermission &&
         !hasLeadStageFallbackPermission &&
-        !hasStageRuleFallbackPermission
+        !hasStageRuleFallbackPermission &&
+        !hasTargetCycleFallbackPermission
       ) {
         logger.warn(`Permission denied. Required: ${permissionKey}. User has: ${permissions.join(', ')}`, {
           userId: req.user.id,
