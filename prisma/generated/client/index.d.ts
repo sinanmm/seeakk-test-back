@@ -89,6 +89,21 @@ export type TargetCycle = $Result.DefaultSelection<Prisma.$TargetCyclePayload>
  */
 export type TargetCycleRange = $Result.DefaultSelection<Prisma.$TargetCycleRangePayload>
 /**
+ * Model LeadDynamicField
+ * 
+ */
+export type LeadDynamicField = $Result.DefaultSelection<Prisma.$LeadDynamicFieldPayload>
+/**
+ * Model LeadDynamicOption
+ * 
+ */
+export type LeadDynamicOption = $Result.DefaultSelection<Prisma.$LeadDynamicOptionPayload>
+/**
+ * Model LeadDynamicValue
+ * 
+ */
+export type LeadDynamicValue = $Result.DefaultSelection<Prisma.$LeadDynamicValuePayload>
+/**
  * Model TargetSetting
  * 
  */
@@ -551,6 +566,36 @@ export class PrismaClient<
     * ```
     */
   get targetCycleRange(): Prisma.TargetCycleRangeDelegate<ExtArgs>;
+
+  /**
+   * `prisma.leadDynamicField`: Exposes CRUD operations for the **LeadDynamicField** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more LeadDynamicFields
+    * const leadDynamicFields = await prisma.leadDynamicField.findMany()
+    * ```
+    */
+  get leadDynamicField(): Prisma.LeadDynamicFieldDelegate<ExtArgs>;
+
+  /**
+   * `prisma.leadDynamicOption`: Exposes CRUD operations for the **LeadDynamicOption** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more LeadDynamicOptions
+    * const leadDynamicOptions = await prisma.leadDynamicOption.findMany()
+    * ```
+    */
+  get leadDynamicOption(): Prisma.LeadDynamicOptionDelegate<ExtArgs>;
+
+  /**
+   * `prisma.leadDynamicValue`: Exposes CRUD operations for the **LeadDynamicValue** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more LeadDynamicValues
+    * const leadDynamicValues = await prisma.leadDynamicValue.findMany()
+    * ```
+    */
+  get leadDynamicValue(): Prisma.LeadDynamicValueDelegate<ExtArgs>;
 
   /**
    * `prisma.targetSetting`: Exposes CRUD operations for the **TargetSetting** model.
@@ -1067,6 +1112,9 @@ export namespace Prisma {
     TargetType: 'TargetType',
     TargetCycle: 'TargetCycle',
     TargetCycleRange: 'TargetCycleRange',
+    LeadDynamicField: 'LeadDynamicField',
+    LeadDynamicOption: 'LeadDynamicOption',
+    LeadDynamicValue: 'LeadDynamicValue',
     TargetSetting: 'TargetSetting',
     TargetViolation: 'TargetViolation',
     User: 'User',
@@ -1088,7 +1136,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "role" | "permission" | "rolePermission" | "workspace" | "department" | "leadSource" | "leadStage" | "stageRule" | "leadStageInput" | "office" | "location" | "userLocationAssignment" | "targetType" | "targetCycle" | "targetCycleRange" | "targetSetting" | "targetViolation" | "user" | "rosterEntry" | "auditLog" | "device"
+      modelProps: "role" | "permission" | "rolePermission" | "workspace" | "department" | "leadSource" | "leadStage" | "stageRule" | "leadStageInput" | "office" | "location" | "userLocationAssignment" | "targetType" | "targetCycle" | "targetCycleRange" | "leadDynamicField" | "leadDynamicOption" | "leadDynamicValue" | "targetSetting" | "targetViolation" | "user" | "rosterEntry" | "auditLog" | "device"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2142,6 +2190,216 @@ export namespace Prisma {
           }
         }
       }
+      LeadDynamicField: {
+        payload: Prisma.$LeadDynamicFieldPayload<ExtArgs>
+        fields: Prisma.LeadDynamicFieldFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.LeadDynamicFieldFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadDynamicFieldPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.LeadDynamicFieldFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadDynamicFieldPayload>
+          }
+          findFirst: {
+            args: Prisma.LeadDynamicFieldFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadDynamicFieldPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.LeadDynamicFieldFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadDynamicFieldPayload>
+          }
+          findMany: {
+            args: Prisma.LeadDynamicFieldFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadDynamicFieldPayload>[]
+          }
+          create: {
+            args: Prisma.LeadDynamicFieldCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadDynamicFieldPayload>
+          }
+          createMany: {
+            args: Prisma.LeadDynamicFieldCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.LeadDynamicFieldCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadDynamicFieldPayload>[]
+          }
+          delete: {
+            args: Prisma.LeadDynamicFieldDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadDynamicFieldPayload>
+          }
+          update: {
+            args: Prisma.LeadDynamicFieldUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadDynamicFieldPayload>
+          }
+          deleteMany: {
+            args: Prisma.LeadDynamicFieldDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.LeadDynamicFieldUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.LeadDynamicFieldUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadDynamicFieldPayload>
+          }
+          aggregate: {
+            args: Prisma.LeadDynamicFieldAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateLeadDynamicField>
+          }
+          groupBy: {
+            args: Prisma.LeadDynamicFieldGroupByArgs<ExtArgs>
+            result: $Utils.Optional<LeadDynamicFieldGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.LeadDynamicFieldCountArgs<ExtArgs>
+            result: $Utils.Optional<LeadDynamicFieldCountAggregateOutputType> | number
+          }
+        }
+      }
+      LeadDynamicOption: {
+        payload: Prisma.$LeadDynamicOptionPayload<ExtArgs>
+        fields: Prisma.LeadDynamicOptionFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.LeadDynamicOptionFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadDynamicOptionPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.LeadDynamicOptionFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadDynamicOptionPayload>
+          }
+          findFirst: {
+            args: Prisma.LeadDynamicOptionFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadDynamicOptionPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.LeadDynamicOptionFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadDynamicOptionPayload>
+          }
+          findMany: {
+            args: Prisma.LeadDynamicOptionFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadDynamicOptionPayload>[]
+          }
+          create: {
+            args: Prisma.LeadDynamicOptionCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadDynamicOptionPayload>
+          }
+          createMany: {
+            args: Prisma.LeadDynamicOptionCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.LeadDynamicOptionCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadDynamicOptionPayload>[]
+          }
+          delete: {
+            args: Prisma.LeadDynamicOptionDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadDynamicOptionPayload>
+          }
+          update: {
+            args: Prisma.LeadDynamicOptionUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadDynamicOptionPayload>
+          }
+          deleteMany: {
+            args: Prisma.LeadDynamicOptionDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.LeadDynamicOptionUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.LeadDynamicOptionUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadDynamicOptionPayload>
+          }
+          aggregate: {
+            args: Prisma.LeadDynamicOptionAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateLeadDynamicOption>
+          }
+          groupBy: {
+            args: Prisma.LeadDynamicOptionGroupByArgs<ExtArgs>
+            result: $Utils.Optional<LeadDynamicOptionGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.LeadDynamicOptionCountArgs<ExtArgs>
+            result: $Utils.Optional<LeadDynamicOptionCountAggregateOutputType> | number
+          }
+        }
+      }
+      LeadDynamicValue: {
+        payload: Prisma.$LeadDynamicValuePayload<ExtArgs>
+        fields: Prisma.LeadDynamicValueFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.LeadDynamicValueFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadDynamicValuePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.LeadDynamicValueFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadDynamicValuePayload>
+          }
+          findFirst: {
+            args: Prisma.LeadDynamicValueFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadDynamicValuePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.LeadDynamicValueFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadDynamicValuePayload>
+          }
+          findMany: {
+            args: Prisma.LeadDynamicValueFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadDynamicValuePayload>[]
+          }
+          create: {
+            args: Prisma.LeadDynamicValueCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadDynamicValuePayload>
+          }
+          createMany: {
+            args: Prisma.LeadDynamicValueCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.LeadDynamicValueCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadDynamicValuePayload>[]
+          }
+          delete: {
+            args: Prisma.LeadDynamicValueDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadDynamicValuePayload>
+          }
+          update: {
+            args: Prisma.LeadDynamicValueUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadDynamicValuePayload>
+          }
+          deleteMany: {
+            args: Prisma.LeadDynamicValueDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.LeadDynamicValueUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.LeadDynamicValueUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadDynamicValuePayload>
+          }
+          aggregate: {
+            args: Prisma.LeadDynamicValueAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateLeadDynamicValue>
+          }
+          groupBy: {
+            args: Prisma.LeadDynamicValueGroupByArgs<ExtArgs>
+            result: $Utils.Optional<LeadDynamicValueGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.LeadDynamicValueCountArgs<ExtArgs>
+            result: $Utils.Optional<LeadDynamicValueCountAggregateOutputType> | number
+          }
+        }
+      }
       TargetSetting: {
         payload: Prisma.$TargetSettingPayload<ExtArgs>
         fields: Prisma.TargetSettingFieldRefs
@@ -2801,12 +3059,14 @@ export namespace Prisma {
     users: number
     departments: number
     targetCycles: number
+    leadDynamicFields: number
   }
 
   export type WorkspaceCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     users?: boolean | WorkspaceCountOutputTypeCountUsersArgs
     departments?: boolean | WorkspaceCountOutputTypeCountDepartmentsArgs
     targetCycles?: boolean | WorkspaceCountOutputTypeCountTargetCyclesArgs
+    leadDynamicFields?: boolean | WorkspaceCountOutputTypeCountLeadDynamicFieldsArgs
   }
 
   // Custom InputTypes
@@ -2839,6 +3099,13 @@ export namespace Prisma {
    */
   export type WorkspaceCountOutputTypeCountTargetCyclesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: TargetCycleWhereInput
+  }
+
+  /**
+   * WorkspaceCountOutputType without action
+   */
+  export type WorkspaceCountOutputTypeCountLeadDynamicFieldsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LeadDynamicFieldWhereInput
   }
 
 
@@ -3101,6 +3368,46 @@ export namespace Prisma {
    */
   export type TargetCycleCountOutputTypeCountTargetsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: TargetSettingWhereInput
+  }
+
+
+  /**
+   * Count Type LeadDynamicFieldCountOutputType
+   */
+
+  export type LeadDynamicFieldCountOutputType = {
+    options: number
+    values: number
+  }
+
+  export type LeadDynamicFieldCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    options?: boolean | LeadDynamicFieldCountOutputTypeCountOptionsArgs
+    values?: boolean | LeadDynamicFieldCountOutputTypeCountValuesArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * LeadDynamicFieldCountOutputType without action
+   */
+  export type LeadDynamicFieldCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadDynamicFieldCountOutputType
+     */
+    select?: LeadDynamicFieldCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * LeadDynamicFieldCountOutputType without action
+   */
+  export type LeadDynamicFieldCountOutputTypeCountOptionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LeadDynamicOptionWhereInput
+  }
+
+  /**
+   * LeadDynamicFieldCountOutputType without action
+   */
+  export type LeadDynamicFieldCountOutputTypeCountValuesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LeadDynamicValueWhereInput
   }
 
 
@@ -6248,6 +6555,7 @@ export namespace Prisma {
     users?: boolean | Workspace$usersArgs<ExtArgs>
     departments?: boolean | Workspace$departmentsArgs<ExtArgs>
     targetCycles?: boolean | Workspace$targetCyclesArgs<ExtArgs>
+    leadDynamicFields?: boolean | Workspace$leadDynamicFieldsArgs<ExtArgs>
     _count?: boolean | WorkspaceCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["workspace"]>
 
@@ -6283,6 +6591,7 @@ export namespace Prisma {
     users?: boolean | Workspace$usersArgs<ExtArgs>
     departments?: boolean | Workspace$departmentsArgs<ExtArgs>
     targetCycles?: boolean | Workspace$targetCyclesArgs<ExtArgs>
+    leadDynamicFields?: boolean | Workspace$leadDynamicFieldsArgs<ExtArgs>
     _count?: boolean | WorkspaceCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type WorkspaceIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -6296,6 +6605,7 @@ export namespace Prisma {
       users: Prisma.$UserPayload<ExtArgs>[]
       departments: Prisma.$DepartmentPayload<ExtArgs>[]
       targetCycles: Prisma.$TargetCyclePayload<ExtArgs>[]
+      leadDynamicFields: Prisma.$LeadDynamicFieldPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -6676,6 +6986,7 @@ export namespace Prisma {
     users<T extends Workspace$usersArgs<ExtArgs> = {}>(args?: Subset<T, Workspace$usersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany"> | Null>
     departments<T extends Workspace$departmentsArgs<ExtArgs> = {}>(args?: Subset<T, Workspace$departmentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DepartmentPayload<ExtArgs>, T, "findMany"> | Null>
     targetCycles<T extends Workspace$targetCyclesArgs<ExtArgs> = {}>(args?: Subset<T, Workspace$targetCyclesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TargetCyclePayload<ExtArgs>, T, "findMany"> | Null>
+    leadDynamicFields<T extends Workspace$leadDynamicFieldsArgs<ExtArgs> = {}>(args?: Subset<T, Workspace$leadDynamicFieldsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadDynamicFieldPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -7090,6 +7401,26 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: TargetCycleScalarFieldEnum | TargetCycleScalarFieldEnum[]
+  }
+
+  /**
+   * Workspace.leadDynamicFields
+   */
+  export type Workspace$leadDynamicFieldsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadDynamicField
+     */
+    select?: LeadDynamicFieldSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadDynamicFieldInclude<ExtArgs> | null
+    where?: LeadDynamicFieldWhereInput
+    orderBy?: LeadDynamicFieldOrderByWithRelationInput | LeadDynamicFieldOrderByWithRelationInput[]
+    cursor?: LeadDynamicFieldWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: LeadDynamicFieldScalarFieldEnum | LeadDynamicFieldScalarFieldEnum[]
   }
 
   /**
@@ -18148,6 +18479,2959 @@ export namespace Prisma {
 
 
   /**
+   * Model LeadDynamicField
+   */
+
+  export type AggregateLeadDynamicField = {
+    _count: LeadDynamicFieldCountAggregateOutputType | null
+    _avg: LeadDynamicFieldAvgAggregateOutputType | null
+    _sum: LeadDynamicFieldSumAggregateOutputType | null
+    _min: LeadDynamicFieldMinAggregateOutputType | null
+    _max: LeadDynamicFieldMaxAggregateOutputType | null
+  }
+
+  export type LeadDynamicFieldAvgAggregateOutputType = {
+    sortOrder: number | null
+  }
+
+  export type LeadDynamicFieldSumAggregateOutputType = {
+    sortOrder: number | null
+  }
+
+  export type LeadDynamicFieldMinAggregateOutputType = {
+    id: string | null
+    name: string | null
+    inputType: string | null
+    sortOrder: number | null
+    isRequired: boolean | null
+    isActive: boolean | null
+    workspaceId: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type LeadDynamicFieldMaxAggregateOutputType = {
+    id: string | null
+    name: string | null
+    inputType: string | null
+    sortOrder: number | null
+    isRequired: boolean | null
+    isActive: boolean | null
+    workspaceId: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type LeadDynamicFieldCountAggregateOutputType = {
+    id: number
+    name: number
+    inputType: number
+    sortOrder: number
+    isRequired: number
+    isActive: number
+    workspaceId: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type LeadDynamicFieldAvgAggregateInputType = {
+    sortOrder?: true
+  }
+
+  export type LeadDynamicFieldSumAggregateInputType = {
+    sortOrder?: true
+  }
+
+  export type LeadDynamicFieldMinAggregateInputType = {
+    id?: true
+    name?: true
+    inputType?: true
+    sortOrder?: true
+    isRequired?: true
+    isActive?: true
+    workspaceId?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type LeadDynamicFieldMaxAggregateInputType = {
+    id?: true
+    name?: true
+    inputType?: true
+    sortOrder?: true
+    isRequired?: true
+    isActive?: true
+    workspaceId?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type LeadDynamicFieldCountAggregateInputType = {
+    id?: true
+    name?: true
+    inputType?: true
+    sortOrder?: true
+    isRequired?: true
+    isActive?: true
+    workspaceId?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type LeadDynamicFieldAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which LeadDynamicField to aggregate.
+     */
+    where?: LeadDynamicFieldWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LeadDynamicFields to fetch.
+     */
+    orderBy?: LeadDynamicFieldOrderByWithRelationInput | LeadDynamicFieldOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: LeadDynamicFieldWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LeadDynamicFields from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LeadDynamicFields.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned LeadDynamicFields
+    **/
+    _count?: true | LeadDynamicFieldCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: LeadDynamicFieldAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: LeadDynamicFieldSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: LeadDynamicFieldMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: LeadDynamicFieldMaxAggregateInputType
+  }
+
+  export type GetLeadDynamicFieldAggregateType<T extends LeadDynamicFieldAggregateArgs> = {
+        [P in keyof T & keyof AggregateLeadDynamicField]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateLeadDynamicField[P]>
+      : GetScalarType<T[P], AggregateLeadDynamicField[P]>
+  }
+
+
+
+
+  export type LeadDynamicFieldGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LeadDynamicFieldWhereInput
+    orderBy?: LeadDynamicFieldOrderByWithAggregationInput | LeadDynamicFieldOrderByWithAggregationInput[]
+    by: LeadDynamicFieldScalarFieldEnum[] | LeadDynamicFieldScalarFieldEnum
+    having?: LeadDynamicFieldScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: LeadDynamicFieldCountAggregateInputType | true
+    _avg?: LeadDynamicFieldAvgAggregateInputType
+    _sum?: LeadDynamicFieldSumAggregateInputType
+    _min?: LeadDynamicFieldMinAggregateInputType
+    _max?: LeadDynamicFieldMaxAggregateInputType
+  }
+
+  export type LeadDynamicFieldGroupByOutputType = {
+    id: string
+    name: string
+    inputType: string
+    sortOrder: number
+    isRequired: boolean
+    isActive: boolean
+    workspaceId: string
+    createdAt: Date
+    updatedAt: Date
+    _count: LeadDynamicFieldCountAggregateOutputType | null
+    _avg: LeadDynamicFieldAvgAggregateOutputType | null
+    _sum: LeadDynamicFieldSumAggregateOutputType | null
+    _min: LeadDynamicFieldMinAggregateOutputType | null
+    _max: LeadDynamicFieldMaxAggregateOutputType | null
+  }
+
+  type GetLeadDynamicFieldGroupByPayload<T extends LeadDynamicFieldGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<LeadDynamicFieldGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof LeadDynamicFieldGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], LeadDynamicFieldGroupByOutputType[P]>
+            : GetScalarType<T[P], LeadDynamicFieldGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type LeadDynamicFieldSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    name?: boolean
+    inputType?: boolean
+    sortOrder?: boolean
+    isRequired?: boolean
+    isActive?: boolean
+    workspaceId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+    options?: boolean | LeadDynamicField$optionsArgs<ExtArgs>
+    values?: boolean | LeadDynamicField$valuesArgs<ExtArgs>
+    _count?: boolean | LeadDynamicFieldCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["leadDynamicField"]>
+
+  export type LeadDynamicFieldSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    name?: boolean
+    inputType?: boolean
+    sortOrder?: boolean
+    isRequired?: boolean
+    isActive?: boolean
+    workspaceId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["leadDynamicField"]>
+
+  export type LeadDynamicFieldSelectScalar = {
+    id?: boolean
+    name?: boolean
+    inputType?: boolean
+    sortOrder?: boolean
+    isRequired?: boolean
+    isActive?: boolean
+    workspaceId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type LeadDynamicFieldInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+    options?: boolean | LeadDynamicField$optionsArgs<ExtArgs>
+    values?: boolean | LeadDynamicField$valuesArgs<ExtArgs>
+    _count?: boolean | LeadDynamicFieldCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type LeadDynamicFieldIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+  }
+
+  export type $LeadDynamicFieldPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "LeadDynamicField"
+    objects: {
+      workspace: Prisma.$WorkspacePayload<ExtArgs>
+      options: Prisma.$LeadDynamicOptionPayload<ExtArgs>[]
+      values: Prisma.$LeadDynamicValuePayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      name: string
+      inputType: string
+      sortOrder: number
+      isRequired: boolean
+      isActive: boolean
+      workspaceId: string
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["leadDynamicField"]>
+    composites: {}
+  }
+
+  type LeadDynamicFieldGetPayload<S extends boolean | null | undefined | LeadDynamicFieldDefaultArgs> = $Result.GetResult<Prisma.$LeadDynamicFieldPayload, S>
+
+  type LeadDynamicFieldCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<LeadDynamicFieldFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: LeadDynamicFieldCountAggregateInputType | true
+    }
+
+  export interface LeadDynamicFieldDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['LeadDynamicField'], meta: { name: 'LeadDynamicField' } }
+    /**
+     * Find zero or one LeadDynamicField that matches the filter.
+     * @param {LeadDynamicFieldFindUniqueArgs} args - Arguments to find a LeadDynamicField
+     * @example
+     * // Get one LeadDynamicField
+     * const leadDynamicField = await prisma.leadDynamicField.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends LeadDynamicFieldFindUniqueArgs>(args: SelectSubset<T, LeadDynamicFieldFindUniqueArgs<ExtArgs>>): Prisma__LeadDynamicFieldClient<$Result.GetResult<Prisma.$LeadDynamicFieldPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one LeadDynamicField that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {LeadDynamicFieldFindUniqueOrThrowArgs} args - Arguments to find a LeadDynamicField
+     * @example
+     * // Get one LeadDynamicField
+     * const leadDynamicField = await prisma.leadDynamicField.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends LeadDynamicFieldFindUniqueOrThrowArgs>(args: SelectSubset<T, LeadDynamicFieldFindUniqueOrThrowArgs<ExtArgs>>): Prisma__LeadDynamicFieldClient<$Result.GetResult<Prisma.$LeadDynamicFieldPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first LeadDynamicField that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadDynamicFieldFindFirstArgs} args - Arguments to find a LeadDynamicField
+     * @example
+     * // Get one LeadDynamicField
+     * const leadDynamicField = await prisma.leadDynamicField.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends LeadDynamicFieldFindFirstArgs>(args?: SelectSubset<T, LeadDynamicFieldFindFirstArgs<ExtArgs>>): Prisma__LeadDynamicFieldClient<$Result.GetResult<Prisma.$LeadDynamicFieldPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first LeadDynamicField that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadDynamicFieldFindFirstOrThrowArgs} args - Arguments to find a LeadDynamicField
+     * @example
+     * // Get one LeadDynamicField
+     * const leadDynamicField = await prisma.leadDynamicField.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends LeadDynamicFieldFindFirstOrThrowArgs>(args?: SelectSubset<T, LeadDynamicFieldFindFirstOrThrowArgs<ExtArgs>>): Prisma__LeadDynamicFieldClient<$Result.GetResult<Prisma.$LeadDynamicFieldPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more LeadDynamicFields that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadDynamicFieldFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all LeadDynamicFields
+     * const leadDynamicFields = await prisma.leadDynamicField.findMany()
+     * 
+     * // Get first 10 LeadDynamicFields
+     * const leadDynamicFields = await prisma.leadDynamicField.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const leadDynamicFieldWithIdOnly = await prisma.leadDynamicField.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends LeadDynamicFieldFindManyArgs>(args?: SelectSubset<T, LeadDynamicFieldFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadDynamicFieldPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a LeadDynamicField.
+     * @param {LeadDynamicFieldCreateArgs} args - Arguments to create a LeadDynamicField.
+     * @example
+     * // Create one LeadDynamicField
+     * const LeadDynamicField = await prisma.leadDynamicField.create({
+     *   data: {
+     *     // ... data to create a LeadDynamicField
+     *   }
+     * })
+     * 
+     */
+    create<T extends LeadDynamicFieldCreateArgs>(args: SelectSubset<T, LeadDynamicFieldCreateArgs<ExtArgs>>): Prisma__LeadDynamicFieldClient<$Result.GetResult<Prisma.$LeadDynamicFieldPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many LeadDynamicFields.
+     * @param {LeadDynamicFieldCreateManyArgs} args - Arguments to create many LeadDynamicFields.
+     * @example
+     * // Create many LeadDynamicFields
+     * const leadDynamicField = await prisma.leadDynamicField.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends LeadDynamicFieldCreateManyArgs>(args?: SelectSubset<T, LeadDynamicFieldCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many LeadDynamicFields and returns the data saved in the database.
+     * @param {LeadDynamicFieldCreateManyAndReturnArgs} args - Arguments to create many LeadDynamicFields.
+     * @example
+     * // Create many LeadDynamicFields
+     * const leadDynamicField = await prisma.leadDynamicField.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many LeadDynamicFields and only return the `id`
+     * const leadDynamicFieldWithIdOnly = await prisma.leadDynamicField.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends LeadDynamicFieldCreateManyAndReturnArgs>(args?: SelectSubset<T, LeadDynamicFieldCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadDynamicFieldPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a LeadDynamicField.
+     * @param {LeadDynamicFieldDeleteArgs} args - Arguments to delete one LeadDynamicField.
+     * @example
+     * // Delete one LeadDynamicField
+     * const LeadDynamicField = await prisma.leadDynamicField.delete({
+     *   where: {
+     *     // ... filter to delete one LeadDynamicField
+     *   }
+     * })
+     * 
+     */
+    delete<T extends LeadDynamicFieldDeleteArgs>(args: SelectSubset<T, LeadDynamicFieldDeleteArgs<ExtArgs>>): Prisma__LeadDynamicFieldClient<$Result.GetResult<Prisma.$LeadDynamicFieldPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one LeadDynamicField.
+     * @param {LeadDynamicFieldUpdateArgs} args - Arguments to update one LeadDynamicField.
+     * @example
+     * // Update one LeadDynamicField
+     * const leadDynamicField = await prisma.leadDynamicField.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends LeadDynamicFieldUpdateArgs>(args: SelectSubset<T, LeadDynamicFieldUpdateArgs<ExtArgs>>): Prisma__LeadDynamicFieldClient<$Result.GetResult<Prisma.$LeadDynamicFieldPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more LeadDynamicFields.
+     * @param {LeadDynamicFieldDeleteManyArgs} args - Arguments to filter LeadDynamicFields to delete.
+     * @example
+     * // Delete a few LeadDynamicFields
+     * const { count } = await prisma.leadDynamicField.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends LeadDynamicFieldDeleteManyArgs>(args?: SelectSubset<T, LeadDynamicFieldDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more LeadDynamicFields.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadDynamicFieldUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many LeadDynamicFields
+     * const leadDynamicField = await prisma.leadDynamicField.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends LeadDynamicFieldUpdateManyArgs>(args: SelectSubset<T, LeadDynamicFieldUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one LeadDynamicField.
+     * @param {LeadDynamicFieldUpsertArgs} args - Arguments to update or create a LeadDynamicField.
+     * @example
+     * // Update or create a LeadDynamicField
+     * const leadDynamicField = await prisma.leadDynamicField.upsert({
+     *   create: {
+     *     // ... data to create a LeadDynamicField
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the LeadDynamicField we want to update
+     *   }
+     * })
+     */
+    upsert<T extends LeadDynamicFieldUpsertArgs>(args: SelectSubset<T, LeadDynamicFieldUpsertArgs<ExtArgs>>): Prisma__LeadDynamicFieldClient<$Result.GetResult<Prisma.$LeadDynamicFieldPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of LeadDynamicFields.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadDynamicFieldCountArgs} args - Arguments to filter LeadDynamicFields to count.
+     * @example
+     * // Count the number of LeadDynamicFields
+     * const count = await prisma.leadDynamicField.count({
+     *   where: {
+     *     // ... the filter for the LeadDynamicFields we want to count
+     *   }
+     * })
+    **/
+    count<T extends LeadDynamicFieldCountArgs>(
+      args?: Subset<T, LeadDynamicFieldCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], LeadDynamicFieldCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a LeadDynamicField.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadDynamicFieldAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends LeadDynamicFieldAggregateArgs>(args: Subset<T, LeadDynamicFieldAggregateArgs>): Prisma.PrismaPromise<GetLeadDynamicFieldAggregateType<T>>
+
+    /**
+     * Group by LeadDynamicField.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadDynamicFieldGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends LeadDynamicFieldGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: LeadDynamicFieldGroupByArgs['orderBy'] }
+        : { orderBy?: LeadDynamicFieldGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, LeadDynamicFieldGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetLeadDynamicFieldGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the LeadDynamicField model
+   */
+  readonly fields: LeadDynamicFieldFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for LeadDynamicField.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__LeadDynamicFieldClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    workspace<T extends WorkspaceDefaultArgs<ExtArgs> = {}>(args?: Subset<T, WorkspaceDefaultArgs<ExtArgs>>): Prisma__WorkspaceClient<$Result.GetResult<Prisma.$WorkspacePayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    options<T extends LeadDynamicField$optionsArgs<ExtArgs> = {}>(args?: Subset<T, LeadDynamicField$optionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadDynamicOptionPayload<ExtArgs>, T, "findMany"> | Null>
+    values<T extends LeadDynamicField$valuesArgs<ExtArgs> = {}>(args?: Subset<T, LeadDynamicField$valuesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadDynamicValuePayload<ExtArgs>, T, "findMany"> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the LeadDynamicField model
+   */ 
+  interface LeadDynamicFieldFieldRefs {
+    readonly id: FieldRef<"LeadDynamicField", 'String'>
+    readonly name: FieldRef<"LeadDynamicField", 'String'>
+    readonly inputType: FieldRef<"LeadDynamicField", 'String'>
+    readonly sortOrder: FieldRef<"LeadDynamicField", 'Int'>
+    readonly isRequired: FieldRef<"LeadDynamicField", 'Boolean'>
+    readonly isActive: FieldRef<"LeadDynamicField", 'Boolean'>
+    readonly workspaceId: FieldRef<"LeadDynamicField", 'String'>
+    readonly createdAt: FieldRef<"LeadDynamicField", 'DateTime'>
+    readonly updatedAt: FieldRef<"LeadDynamicField", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * LeadDynamicField findUnique
+   */
+  export type LeadDynamicFieldFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadDynamicField
+     */
+    select?: LeadDynamicFieldSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadDynamicFieldInclude<ExtArgs> | null
+    /**
+     * Filter, which LeadDynamicField to fetch.
+     */
+    where: LeadDynamicFieldWhereUniqueInput
+  }
+
+  /**
+   * LeadDynamicField findUniqueOrThrow
+   */
+  export type LeadDynamicFieldFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadDynamicField
+     */
+    select?: LeadDynamicFieldSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadDynamicFieldInclude<ExtArgs> | null
+    /**
+     * Filter, which LeadDynamicField to fetch.
+     */
+    where: LeadDynamicFieldWhereUniqueInput
+  }
+
+  /**
+   * LeadDynamicField findFirst
+   */
+  export type LeadDynamicFieldFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadDynamicField
+     */
+    select?: LeadDynamicFieldSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadDynamicFieldInclude<ExtArgs> | null
+    /**
+     * Filter, which LeadDynamicField to fetch.
+     */
+    where?: LeadDynamicFieldWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LeadDynamicFields to fetch.
+     */
+    orderBy?: LeadDynamicFieldOrderByWithRelationInput | LeadDynamicFieldOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for LeadDynamicFields.
+     */
+    cursor?: LeadDynamicFieldWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LeadDynamicFields from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LeadDynamicFields.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of LeadDynamicFields.
+     */
+    distinct?: LeadDynamicFieldScalarFieldEnum | LeadDynamicFieldScalarFieldEnum[]
+  }
+
+  /**
+   * LeadDynamicField findFirstOrThrow
+   */
+  export type LeadDynamicFieldFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadDynamicField
+     */
+    select?: LeadDynamicFieldSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadDynamicFieldInclude<ExtArgs> | null
+    /**
+     * Filter, which LeadDynamicField to fetch.
+     */
+    where?: LeadDynamicFieldWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LeadDynamicFields to fetch.
+     */
+    orderBy?: LeadDynamicFieldOrderByWithRelationInput | LeadDynamicFieldOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for LeadDynamicFields.
+     */
+    cursor?: LeadDynamicFieldWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LeadDynamicFields from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LeadDynamicFields.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of LeadDynamicFields.
+     */
+    distinct?: LeadDynamicFieldScalarFieldEnum | LeadDynamicFieldScalarFieldEnum[]
+  }
+
+  /**
+   * LeadDynamicField findMany
+   */
+  export type LeadDynamicFieldFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadDynamicField
+     */
+    select?: LeadDynamicFieldSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadDynamicFieldInclude<ExtArgs> | null
+    /**
+     * Filter, which LeadDynamicFields to fetch.
+     */
+    where?: LeadDynamicFieldWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LeadDynamicFields to fetch.
+     */
+    orderBy?: LeadDynamicFieldOrderByWithRelationInput | LeadDynamicFieldOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing LeadDynamicFields.
+     */
+    cursor?: LeadDynamicFieldWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LeadDynamicFields from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LeadDynamicFields.
+     */
+    skip?: number
+    distinct?: LeadDynamicFieldScalarFieldEnum | LeadDynamicFieldScalarFieldEnum[]
+  }
+
+  /**
+   * LeadDynamicField create
+   */
+  export type LeadDynamicFieldCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadDynamicField
+     */
+    select?: LeadDynamicFieldSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadDynamicFieldInclude<ExtArgs> | null
+    /**
+     * The data needed to create a LeadDynamicField.
+     */
+    data: XOR<LeadDynamicFieldCreateInput, LeadDynamicFieldUncheckedCreateInput>
+  }
+
+  /**
+   * LeadDynamicField createMany
+   */
+  export type LeadDynamicFieldCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many LeadDynamicFields.
+     */
+    data: LeadDynamicFieldCreateManyInput | LeadDynamicFieldCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * LeadDynamicField createManyAndReturn
+   */
+  export type LeadDynamicFieldCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadDynamicField
+     */
+    select?: LeadDynamicFieldSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many LeadDynamicFields.
+     */
+    data: LeadDynamicFieldCreateManyInput | LeadDynamicFieldCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadDynamicFieldIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * LeadDynamicField update
+   */
+  export type LeadDynamicFieldUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadDynamicField
+     */
+    select?: LeadDynamicFieldSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadDynamicFieldInclude<ExtArgs> | null
+    /**
+     * The data needed to update a LeadDynamicField.
+     */
+    data: XOR<LeadDynamicFieldUpdateInput, LeadDynamicFieldUncheckedUpdateInput>
+    /**
+     * Choose, which LeadDynamicField to update.
+     */
+    where: LeadDynamicFieldWhereUniqueInput
+  }
+
+  /**
+   * LeadDynamicField updateMany
+   */
+  export type LeadDynamicFieldUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update LeadDynamicFields.
+     */
+    data: XOR<LeadDynamicFieldUpdateManyMutationInput, LeadDynamicFieldUncheckedUpdateManyInput>
+    /**
+     * Filter which LeadDynamicFields to update
+     */
+    where?: LeadDynamicFieldWhereInput
+  }
+
+  /**
+   * LeadDynamicField upsert
+   */
+  export type LeadDynamicFieldUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadDynamicField
+     */
+    select?: LeadDynamicFieldSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadDynamicFieldInclude<ExtArgs> | null
+    /**
+     * The filter to search for the LeadDynamicField to update in case it exists.
+     */
+    where: LeadDynamicFieldWhereUniqueInput
+    /**
+     * In case the LeadDynamicField found by the `where` argument doesn't exist, create a new LeadDynamicField with this data.
+     */
+    create: XOR<LeadDynamicFieldCreateInput, LeadDynamicFieldUncheckedCreateInput>
+    /**
+     * In case the LeadDynamicField was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<LeadDynamicFieldUpdateInput, LeadDynamicFieldUncheckedUpdateInput>
+  }
+
+  /**
+   * LeadDynamicField delete
+   */
+  export type LeadDynamicFieldDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadDynamicField
+     */
+    select?: LeadDynamicFieldSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadDynamicFieldInclude<ExtArgs> | null
+    /**
+     * Filter which LeadDynamicField to delete.
+     */
+    where: LeadDynamicFieldWhereUniqueInput
+  }
+
+  /**
+   * LeadDynamicField deleteMany
+   */
+  export type LeadDynamicFieldDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which LeadDynamicFields to delete
+     */
+    where?: LeadDynamicFieldWhereInput
+  }
+
+  /**
+   * LeadDynamicField.options
+   */
+  export type LeadDynamicField$optionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadDynamicOption
+     */
+    select?: LeadDynamicOptionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadDynamicOptionInclude<ExtArgs> | null
+    where?: LeadDynamicOptionWhereInput
+    orderBy?: LeadDynamicOptionOrderByWithRelationInput | LeadDynamicOptionOrderByWithRelationInput[]
+    cursor?: LeadDynamicOptionWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: LeadDynamicOptionScalarFieldEnum | LeadDynamicOptionScalarFieldEnum[]
+  }
+
+  /**
+   * LeadDynamicField.values
+   */
+  export type LeadDynamicField$valuesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadDynamicValue
+     */
+    select?: LeadDynamicValueSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadDynamicValueInclude<ExtArgs> | null
+    where?: LeadDynamicValueWhereInput
+    orderBy?: LeadDynamicValueOrderByWithRelationInput | LeadDynamicValueOrderByWithRelationInput[]
+    cursor?: LeadDynamicValueWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: LeadDynamicValueScalarFieldEnum | LeadDynamicValueScalarFieldEnum[]
+  }
+
+  /**
+   * LeadDynamicField without action
+   */
+  export type LeadDynamicFieldDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadDynamicField
+     */
+    select?: LeadDynamicFieldSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadDynamicFieldInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model LeadDynamicOption
+   */
+
+  export type AggregateLeadDynamicOption = {
+    _count: LeadDynamicOptionCountAggregateOutputType | null
+    _avg: LeadDynamicOptionAvgAggregateOutputType | null
+    _sum: LeadDynamicOptionSumAggregateOutputType | null
+    _min: LeadDynamicOptionMinAggregateOutputType | null
+    _max: LeadDynamicOptionMaxAggregateOutputType | null
+  }
+
+  export type LeadDynamicOptionAvgAggregateOutputType = {
+    sortOrder: number | null
+  }
+
+  export type LeadDynamicOptionSumAggregateOutputType = {
+    sortOrder: number | null
+  }
+
+  export type LeadDynamicOptionMinAggregateOutputType = {
+    id: string | null
+    fieldId: string | null
+    value: string | null
+    sortOrder: number | null
+  }
+
+  export type LeadDynamicOptionMaxAggregateOutputType = {
+    id: string | null
+    fieldId: string | null
+    value: string | null
+    sortOrder: number | null
+  }
+
+  export type LeadDynamicOptionCountAggregateOutputType = {
+    id: number
+    fieldId: number
+    value: number
+    sortOrder: number
+    _all: number
+  }
+
+
+  export type LeadDynamicOptionAvgAggregateInputType = {
+    sortOrder?: true
+  }
+
+  export type LeadDynamicOptionSumAggregateInputType = {
+    sortOrder?: true
+  }
+
+  export type LeadDynamicOptionMinAggregateInputType = {
+    id?: true
+    fieldId?: true
+    value?: true
+    sortOrder?: true
+  }
+
+  export type LeadDynamicOptionMaxAggregateInputType = {
+    id?: true
+    fieldId?: true
+    value?: true
+    sortOrder?: true
+  }
+
+  export type LeadDynamicOptionCountAggregateInputType = {
+    id?: true
+    fieldId?: true
+    value?: true
+    sortOrder?: true
+    _all?: true
+  }
+
+  export type LeadDynamicOptionAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which LeadDynamicOption to aggregate.
+     */
+    where?: LeadDynamicOptionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LeadDynamicOptions to fetch.
+     */
+    orderBy?: LeadDynamicOptionOrderByWithRelationInput | LeadDynamicOptionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: LeadDynamicOptionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LeadDynamicOptions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LeadDynamicOptions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned LeadDynamicOptions
+    **/
+    _count?: true | LeadDynamicOptionCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: LeadDynamicOptionAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: LeadDynamicOptionSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: LeadDynamicOptionMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: LeadDynamicOptionMaxAggregateInputType
+  }
+
+  export type GetLeadDynamicOptionAggregateType<T extends LeadDynamicOptionAggregateArgs> = {
+        [P in keyof T & keyof AggregateLeadDynamicOption]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateLeadDynamicOption[P]>
+      : GetScalarType<T[P], AggregateLeadDynamicOption[P]>
+  }
+
+
+
+
+  export type LeadDynamicOptionGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LeadDynamicOptionWhereInput
+    orderBy?: LeadDynamicOptionOrderByWithAggregationInput | LeadDynamicOptionOrderByWithAggregationInput[]
+    by: LeadDynamicOptionScalarFieldEnum[] | LeadDynamicOptionScalarFieldEnum
+    having?: LeadDynamicOptionScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: LeadDynamicOptionCountAggregateInputType | true
+    _avg?: LeadDynamicOptionAvgAggregateInputType
+    _sum?: LeadDynamicOptionSumAggregateInputType
+    _min?: LeadDynamicOptionMinAggregateInputType
+    _max?: LeadDynamicOptionMaxAggregateInputType
+  }
+
+  export type LeadDynamicOptionGroupByOutputType = {
+    id: string
+    fieldId: string
+    value: string
+    sortOrder: number
+    _count: LeadDynamicOptionCountAggregateOutputType | null
+    _avg: LeadDynamicOptionAvgAggregateOutputType | null
+    _sum: LeadDynamicOptionSumAggregateOutputType | null
+    _min: LeadDynamicOptionMinAggregateOutputType | null
+    _max: LeadDynamicOptionMaxAggregateOutputType | null
+  }
+
+  type GetLeadDynamicOptionGroupByPayload<T extends LeadDynamicOptionGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<LeadDynamicOptionGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof LeadDynamicOptionGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], LeadDynamicOptionGroupByOutputType[P]>
+            : GetScalarType<T[P], LeadDynamicOptionGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type LeadDynamicOptionSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    fieldId?: boolean
+    value?: boolean
+    sortOrder?: boolean
+    field?: boolean | LeadDynamicFieldDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["leadDynamicOption"]>
+
+  export type LeadDynamicOptionSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    fieldId?: boolean
+    value?: boolean
+    sortOrder?: boolean
+    field?: boolean | LeadDynamicFieldDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["leadDynamicOption"]>
+
+  export type LeadDynamicOptionSelectScalar = {
+    id?: boolean
+    fieldId?: boolean
+    value?: boolean
+    sortOrder?: boolean
+  }
+
+  export type LeadDynamicOptionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    field?: boolean | LeadDynamicFieldDefaultArgs<ExtArgs>
+  }
+  export type LeadDynamicOptionIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    field?: boolean | LeadDynamicFieldDefaultArgs<ExtArgs>
+  }
+
+  export type $LeadDynamicOptionPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "LeadDynamicOption"
+    objects: {
+      field: Prisma.$LeadDynamicFieldPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      fieldId: string
+      value: string
+      sortOrder: number
+    }, ExtArgs["result"]["leadDynamicOption"]>
+    composites: {}
+  }
+
+  type LeadDynamicOptionGetPayload<S extends boolean | null | undefined | LeadDynamicOptionDefaultArgs> = $Result.GetResult<Prisma.$LeadDynamicOptionPayload, S>
+
+  type LeadDynamicOptionCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<LeadDynamicOptionFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: LeadDynamicOptionCountAggregateInputType | true
+    }
+
+  export interface LeadDynamicOptionDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['LeadDynamicOption'], meta: { name: 'LeadDynamicOption' } }
+    /**
+     * Find zero or one LeadDynamicOption that matches the filter.
+     * @param {LeadDynamicOptionFindUniqueArgs} args - Arguments to find a LeadDynamicOption
+     * @example
+     * // Get one LeadDynamicOption
+     * const leadDynamicOption = await prisma.leadDynamicOption.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends LeadDynamicOptionFindUniqueArgs>(args: SelectSubset<T, LeadDynamicOptionFindUniqueArgs<ExtArgs>>): Prisma__LeadDynamicOptionClient<$Result.GetResult<Prisma.$LeadDynamicOptionPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one LeadDynamicOption that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {LeadDynamicOptionFindUniqueOrThrowArgs} args - Arguments to find a LeadDynamicOption
+     * @example
+     * // Get one LeadDynamicOption
+     * const leadDynamicOption = await prisma.leadDynamicOption.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends LeadDynamicOptionFindUniqueOrThrowArgs>(args: SelectSubset<T, LeadDynamicOptionFindUniqueOrThrowArgs<ExtArgs>>): Prisma__LeadDynamicOptionClient<$Result.GetResult<Prisma.$LeadDynamicOptionPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first LeadDynamicOption that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadDynamicOptionFindFirstArgs} args - Arguments to find a LeadDynamicOption
+     * @example
+     * // Get one LeadDynamicOption
+     * const leadDynamicOption = await prisma.leadDynamicOption.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends LeadDynamicOptionFindFirstArgs>(args?: SelectSubset<T, LeadDynamicOptionFindFirstArgs<ExtArgs>>): Prisma__LeadDynamicOptionClient<$Result.GetResult<Prisma.$LeadDynamicOptionPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first LeadDynamicOption that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadDynamicOptionFindFirstOrThrowArgs} args - Arguments to find a LeadDynamicOption
+     * @example
+     * // Get one LeadDynamicOption
+     * const leadDynamicOption = await prisma.leadDynamicOption.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends LeadDynamicOptionFindFirstOrThrowArgs>(args?: SelectSubset<T, LeadDynamicOptionFindFirstOrThrowArgs<ExtArgs>>): Prisma__LeadDynamicOptionClient<$Result.GetResult<Prisma.$LeadDynamicOptionPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more LeadDynamicOptions that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadDynamicOptionFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all LeadDynamicOptions
+     * const leadDynamicOptions = await prisma.leadDynamicOption.findMany()
+     * 
+     * // Get first 10 LeadDynamicOptions
+     * const leadDynamicOptions = await prisma.leadDynamicOption.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const leadDynamicOptionWithIdOnly = await prisma.leadDynamicOption.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends LeadDynamicOptionFindManyArgs>(args?: SelectSubset<T, LeadDynamicOptionFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadDynamicOptionPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a LeadDynamicOption.
+     * @param {LeadDynamicOptionCreateArgs} args - Arguments to create a LeadDynamicOption.
+     * @example
+     * // Create one LeadDynamicOption
+     * const LeadDynamicOption = await prisma.leadDynamicOption.create({
+     *   data: {
+     *     // ... data to create a LeadDynamicOption
+     *   }
+     * })
+     * 
+     */
+    create<T extends LeadDynamicOptionCreateArgs>(args: SelectSubset<T, LeadDynamicOptionCreateArgs<ExtArgs>>): Prisma__LeadDynamicOptionClient<$Result.GetResult<Prisma.$LeadDynamicOptionPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many LeadDynamicOptions.
+     * @param {LeadDynamicOptionCreateManyArgs} args - Arguments to create many LeadDynamicOptions.
+     * @example
+     * // Create many LeadDynamicOptions
+     * const leadDynamicOption = await prisma.leadDynamicOption.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends LeadDynamicOptionCreateManyArgs>(args?: SelectSubset<T, LeadDynamicOptionCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many LeadDynamicOptions and returns the data saved in the database.
+     * @param {LeadDynamicOptionCreateManyAndReturnArgs} args - Arguments to create many LeadDynamicOptions.
+     * @example
+     * // Create many LeadDynamicOptions
+     * const leadDynamicOption = await prisma.leadDynamicOption.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many LeadDynamicOptions and only return the `id`
+     * const leadDynamicOptionWithIdOnly = await prisma.leadDynamicOption.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends LeadDynamicOptionCreateManyAndReturnArgs>(args?: SelectSubset<T, LeadDynamicOptionCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadDynamicOptionPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a LeadDynamicOption.
+     * @param {LeadDynamicOptionDeleteArgs} args - Arguments to delete one LeadDynamicOption.
+     * @example
+     * // Delete one LeadDynamicOption
+     * const LeadDynamicOption = await prisma.leadDynamicOption.delete({
+     *   where: {
+     *     // ... filter to delete one LeadDynamicOption
+     *   }
+     * })
+     * 
+     */
+    delete<T extends LeadDynamicOptionDeleteArgs>(args: SelectSubset<T, LeadDynamicOptionDeleteArgs<ExtArgs>>): Prisma__LeadDynamicOptionClient<$Result.GetResult<Prisma.$LeadDynamicOptionPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one LeadDynamicOption.
+     * @param {LeadDynamicOptionUpdateArgs} args - Arguments to update one LeadDynamicOption.
+     * @example
+     * // Update one LeadDynamicOption
+     * const leadDynamicOption = await prisma.leadDynamicOption.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends LeadDynamicOptionUpdateArgs>(args: SelectSubset<T, LeadDynamicOptionUpdateArgs<ExtArgs>>): Prisma__LeadDynamicOptionClient<$Result.GetResult<Prisma.$LeadDynamicOptionPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more LeadDynamicOptions.
+     * @param {LeadDynamicOptionDeleteManyArgs} args - Arguments to filter LeadDynamicOptions to delete.
+     * @example
+     * // Delete a few LeadDynamicOptions
+     * const { count } = await prisma.leadDynamicOption.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends LeadDynamicOptionDeleteManyArgs>(args?: SelectSubset<T, LeadDynamicOptionDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more LeadDynamicOptions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadDynamicOptionUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many LeadDynamicOptions
+     * const leadDynamicOption = await prisma.leadDynamicOption.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends LeadDynamicOptionUpdateManyArgs>(args: SelectSubset<T, LeadDynamicOptionUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one LeadDynamicOption.
+     * @param {LeadDynamicOptionUpsertArgs} args - Arguments to update or create a LeadDynamicOption.
+     * @example
+     * // Update or create a LeadDynamicOption
+     * const leadDynamicOption = await prisma.leadDynamicOption.upsert({
+     *   create: {
+     *     // ... data to create a LeadDynamicOption
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the LeadDynamicOption we want to update
+     *   }
+     * })
+     */
+    upsert<T extends LeadDynamicOptionUpsertArgs>(args: SelectSubset<T, LeadDynamicOptionUpsertArgs<ExtArgs>>): Prisma__LeadDynamicOptionClient<$Result.GetResult<Prisma.$LeadDynamicOptionPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of LeadDynamicOptions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadDynamicOptionCountArgs} args - Arguments to filter LeadDynamicOptions to count.
+     * @example
+     * // Count the number of LeadDynamicOptions
+     * const count = await prisma.leadDynamicOption.count({
+     *   where: {
+     *     // ... the filter for the LeadDynamicOptions we want to count
+     *   }
+     * })
+    **/
+    count<T extends LeadDynamicOptionCountArgs>(
+      args?: Subset<T, LeadDynamicOptionCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], LeadDynamicOptionCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a LeadDynamicOption.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadDynamicOptionAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends LeadDynamicOptionAggregateArgs>(args: Subset<T, LeadDynamicOptionAggregateArgs>): Prisma.PrismaPromise<GetLeadDynamicOptionAggregateType<T>>
+
+    /**
+     * Group by LeadDynamicOption.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadDynamicOptionGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends LeadDynamicOptionGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: LeadDynamicOptionGroupByArgs['orderBy'] }
+        : { orderBy?: LeadDynamicOptionGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, LeadDynamicOptionGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetLeadDynamicOptionGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the LeadDynamicOption model
+   */
+  readonly fields: LeadDynamicOptionFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for LeadDynamicOption.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__LeadDynamicOptionClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    field<T extends LeadDynamicFieldDefaultArgs<ExtArgs> = {}>(args?: Subset<T, LeadDynamicFieldDefaultArgs<ExtArgs>>): Prisma__LeadDynamicFieldClient<$Result.GetResult<Prisma.$LeadDynamicFieldPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the LeadDynamicOption model
+   */ 
+  interface LeadDynamicOptionFieldRefs {
+    readonly id: FieldRef<"LeadDynamicOption", 'String'>
+    readonly fieldId: FieldRef<"LeadDynamicOption", 'String'>
+    readonly value: FieldRef<"LeadDynamicOption", 'String'>
+    readonly sortOrder: FieldRef<"LeadDynamicOption", 'Int'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * LeadDynamicOption findUnique
+   */
+  export type LeadDynamicOptionFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadDynamicOption
+     */
+    select?: LeadDynamicOptionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadDynamicOptionInclude<ExtArgs> | null
+    /**
+     * Filter, which LeadDynamicOption to fetch.
+     */
+    where: LeadDynamicOptionWhereUniqueInput
+  }
+
+  /**
+   * LeadDynamicOption findUniqueOrThrow
+   */
+  export type LeadDynamicOptionFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadDynamicOption
+     */
+    select?: LeadDynamicOptionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadDynamicOptionInclude<ExtArgs> | null
+    /**
+     * Filter, which LeadDynamicOption to fetch.
+     */
+    where: LeadDynamicOptionWhereUniqueInput
+  }
+
+  /**
+   * LeadDynamicOption findFirst
+   */
+  export type LeadDynamicOptionFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadDynamicOption
+     */
+    select?: LeadDynamicOptionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadDynamicOptionInclude<ExtArgs> | null
+    /**
+     * Filter, which LeadDynamicOption to fetch.
+     */
+    where?: LeadDynamicOptionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LeadDynamicOptions to fetch.
+     */
+    orderBy?: LeadDynamicOptionOrderByWithRelationInput | LeadDynamicOptionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for LeadDynamicOptions.
+     */
+    cursor?: LeadDynamicOptionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LeadDynamicOptions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LeadDynamicOptions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of LeadDynamicOptions.
+     */
+    distinct?: LeadDynamicOptionScalarFieldEnum | LeadDynamicOptionScalarFieldEnum[]
+  }
+
+  /**
+   * LeadDynamicOption findFirstOrThrow
+   */
+  export type LeadDynamicOptionFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadDynamicOption
+     */
+    select?: LeadDynamicOptionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadDynamicOptionInclude<ExtArgs> | null
+    /**
+     * Filter, which LeadDynamicOption to fetch.
+     */
+    where?: LeadDynamicOptionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LeadDynamicOptions to fetch.
+     */
+    orderBy?: LeadDynamicOptionOrderByWithRelationInput | LeadDynamicOptionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for LeadDynamicOptions.
+     */
+    cursor?: LeadDynamicOptionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LeadDynamicOptions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LeadDynamicOptions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of LeadDynamicOptions.
+     */
+    distinct?: LeadDynamicOptionScalarFieldEnum | LeadDynamicOptionScalarFieldEnum[]
+  }
+
+  /**
+   * LeadDynamicOption findMany
+   */
+  export type LeadDynamicOptionFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadDynamicOption
+     */
+    select?: LeadDynamicOptionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadDynamicOptionInclude<ExtArgs> | null
+    /**
+     * Filter, which LeadDynamicOptions to fetch.
+     */
+    where?: LeadDynamicOptionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LeadDynamicOptions to fetch.
+     */
+    orderBy?: LeadDynamicOptionOrderByWithRelationInput | LeadDynamicOptionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing LeadDynamicOptions.
+     */
+    cursor?: LeadDynamicOptionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LeadDynamicOptions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LeadDynamicOptions.
+     */
+    skip?: number
+    distinct?: LeadDynamicOptionScalarFieldEnum | LeadDynamicOptionScalarFieldEnum[]
+  }
+
+  /**
+   * LeadDynamicOption create
+   */
+  export type LeadDynamicOptionCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadDynamicOption
+     */
+    select?: LeadDynamicOptionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadDynamicOptionInclude<ExtArgs> | null
+    /**
+     * The data needed to create a LeadDynamicOption.
+     */
+    data: XOR<LeadDynamicOptionCreateInput, LeadDynamicOptionUncheckedCreateInput>
+  }
+
+  /**
+   * LeadDynamicOption createMany
+   */
+  export type LeadDynamicOptionCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many LeadDynamicOptions.
+     */
+    data: LeadDynamicOptionCreateManyInput | LeadDynamicOptionCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * LeadDynamicOption createManyAndReturn
+   */
+  export type LeadDynamicOptionCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadDynamicOption
+     */
+    select?: LeadDynamicOptionSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many LeadDynamicOptions.
+     */
+    data: LeadDynamicOptionCreateManyInput | LeadDynamicOptionCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadDynamicOptionIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * LeadDynamicOption update
+   */
+  export type LeadDynamicOptionUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadDynamicOption
+     */
+    select?: LeadDynamicOptionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadDynamicOptionInclude<ExtArgs> | null
+    /**
+     * The data needed to update a LeadDynamicOption.
+     */
+    data: XOR<LeadDynamicOptionUpdateInput, LeadDynamicOptionUncheckedUpdateInput>
+    /**
+     * Choose, which LeadDynamicOption to update.
+     */
+    where: LeadDynamicOptionWhereUniqueInput
+  }
+
+  /**
+   * LeadDynamicOption updateMany
+   */
+  export type LeadDynamicOptionUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update LeadDynamicOptions.
+     */
+    data: XOR<LeadDynamicOptionUpdateManyMutationInput, LeadDynamicOptionUncheckedUpdateManyInput>
+    /**
+     * Filter which LeadDynamicOptions to update
+     */
+    where?: LeadDynamicOptionWhereInput
+  }
+
+  /**
+   * LeadDynamicOption upsert
+   */
+  export type LeadDynamicOptionUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadDynamicOption
+     */
+    select?: LeadDynamicOptionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadDynamicOptionInclude<ExtArgs> | null
+    /**
+     * The filter to search for the LeadDynamicOption to update in case it exists.
+     */
+    where: LeadDynamicOptionWhereUniqueInput
+    /**
+     * In case the LeadDynamicOption found by the `where` argument doesn't exist, create a new LeadDynamicOption with this data.
+     */
+    create: XOR<LeadDynamicOptionCreateInput, LeadDynamicOptionUncheckedCreateInput>
+    /**
+     * In case the LeadDynamicOption was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<LeadDynamicOptionUpdateInput, LeadDynamicOptionUncheckedUpdateInput>
+  }
+
+  /**
+   * LeadDynamicOption delete
+   */
+  export type LeadDynamicOptionDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadDynamicOption
+     */
+    select?: LeadDynamicOptionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadDynamicOptionInclude<ExtArgs> | null
+    /**
+     * Filter which LeadDynamicOption to delete.
+     */
+    where: LeadDynamicOptionWhereUniqueInput
+  }
+
+  /**
+   * LeadDynamicOption deleteMany
+   */
+  export type LeadDynamicOptionDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which LeadDynamicOptions to delete
+     */
+    where?: LeadDynamicOptionWhereInput
+  }
+
+  /**
+   * LeadDynamicOption without action
+   */
+  export type LeadDynamicOptionDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadDynamicOption
+     */
+    select?: LeadDynamicOptionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadDynamicOptionInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model LeadDynamicValue
+   */
+
+  export type AggregateLeadDynamicValue = {
+    _count: LeadDynamicValueCountAggregateOutputType | null
+    _min: LeadDynamicValueMinAggregateOutputType | null
+    _max: LeadDynamicValueMaxAggregateOutputType | null
+  }
+
+  export type LeadDynamicValueMinAggregateOutputType = {
+    id: string | null
+    leadId: string | null
+    fieldId: string | null
+    value: string | null
+    createdAt: Date | null
+  }
+
+  export type LeadDynamicValueMaxAggregateOutputType = {
+    id: string | null
+    leadId: string | null
+    fieldId: string | null
+    value: string | null
+    createdAt: Date | null
+  }
+
+  export type LeadDynamicValueCountAggregateOutputType = {
+    id: number
+    leadId: number
+    fieldId: number
+    value: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type LeadDynamicValueMinAggregateInputType = {
+    id?: true
+    leadId?: true
+    fieldId?: true
+    value?: true
+    createdAt?: true
+  }
+
+  export type LeadDynamicValueMaxAggregateInputType = {
+    id?: true
+    leadId?: true
+    fieldId?: true
+    value?: true
+    createdAt?: true
+  }
+
+  export type LeadDynamicValueCountAggregateInputType = {
+    id?: true
+    leadId?: true
+    fieldId?: true
+    value?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type LeadDynamicValueAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which LeadDynamicValue to aggregate.
+     */
+    where?: LeadDynamicValueWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LeadDynamicValues to fetch.
+     */
+    orderBy?: LeadDynamicValueOrderByWithRelationInput | LeadDynamicValueOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: LeadDynamicValueWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LeadDynamicValues from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LeadDynamicValues.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned LeadDynamicValues
+    **/
+    _count?: true | LeadDynamicValueCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: LeadDynamicValueMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: LeadDynamicValueMaxAggregateInputType
+  }
+
+  export type GetLeadDynamicValueAggregateType<T extends LeadDynamicValueAggregateArgs> = {
+        [P in keyof T & keyof AggregateLeadDynamicValue]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateLeadDynamicValue[P]>
+      : GetScalarType<T[P], AggregateLeadDynamicValue[P]>
+  }
+
+
+
+
+  export type LeadDynamicValueGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LeadDynamicValueWhereInput
+    orderBy?: LeadDynamicValueOrderByWithAggregationInput | LeadDynamicValueOrderByWithAggregationInput[]
+    by: LeadDynamicValueScalarFieldEnum[] | LeadDynamicValueScalarFieldEnum
+    having?: LeadDynamicValueScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: LeadDynamicValueCountAggregateInputType | true
+    _min?: LeadDynamicValueMinAggregateInputType
+    _max?: LeadDynamicValueMaxAggregateInputType
+  }
+
+  export type LeadDynamicValueGroupByOutputType = {
+    id: string
+    leadId: string
+    fieldId: string
+    value: string
+    createdAt: Date
+    _count: LeadDynamicValueCountAggregateOutputType | null
+    _min: LeadDynamicValueMinAggregateOutputType | null
+    _max: LeadDynamicValueMaxAggregateOutputType | null
+  }
+
+  type GetLeadDynamicValueGroupByPayload<T extends LeadDynamicValueGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<LeadDynamicValueGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof LeadDynamicValueGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], LeadDynamicValueGroupByOutputType[P]>
+            : GetScalarType<T[P], LeadDynamicValueGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type LeadDynamicValueSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    leadId?: boolean
+    fieldId?: boolean
+    value?: boolean
+    createdAt?: boolean
+    field?: boolean | LeadDynamicFieldDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["leadDynamicValue"]>
+
+  export type LeadDynamicValueSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    leadId?: boolean
+    fieldId?: boolean
+    value?: boolean
+    createdAt?: boolean
+    field?: boolean | LeadDynamicFieldDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["leadDynamicValue"]>
+
+  export type LeadDynamicValueSelectScalar = {
+    id?: boolean
+    leadId?: boolean
+    fieldId?: boolean
+    value?: boolean
+    createdAt?: boolean
+  }
+
+  export type LeadDynamicValueInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    field?: boolean | LeadDynamicFieldDefaultArgs<ExtArgs>
+  }
+  export type LeadDynamicValueIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    field?: boolean | LeadDynamicFieldDefaultArgs<ExtArgs>
+  }
+
+  export type $LeadDynamicValuePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "LeadDynamicValue"
+    objects: {
+      field: Prisma.$LeadDynamicFieldPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      leadId: string
+      fieldId: string
+      value: string
+      createdAt: Date
+    }, ExtArgs["result"]["leadDynamicValue"]>
+    composites: {}
+  }
+
+  type LeadDynamicValueGetPayload<S extends boolean | null | undefined | LeadDynamicValueDefaultArgs> = $Result.GetResult<Prisma.$LeadDynamicValuePayload, S>
+
+  type LeadDynamicValueCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<LeadDynamicValueFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: LeadDynamicValueCountAggregateInputType | true
+    }
+
+  export interface LeadDynamicValueDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['LeadDynamicValue'], meta: { name: 'LeadDynamicValue' } }
+    /**
+     * Find zero or one LeadDynamicValue that matches the filter.
+     * @param {LeadDynamicValueFindUniqueArgs} args - Arguments to find a LeadDynamicValue
+     * @example
+     * // Get one LeadDynamicValue
+     * const leadDynamicValue = await prisma.leadDynamicValue.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends LeadDynamicValueFindUniqueArgs>(args: SelectSubset<T, LeadDynamicValueFindUniqueArgs<ExtArgs>>): Prisma__LeadDynamicValueClient<$Result.GetResult<Prisma.$LeadDynamicValuePayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one LeadDynamicValue that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {LeadDynamicValueFindUniqueOrThrowArgs} args - Arguments to find a LeadDynamicValue
+     * @example
+     * // Get one LeadDynamicValue
+     * const leadDynamicValue = await prisma.leadDynamicValue.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends LeadDynamicValueFindUniqueOrThrowArgs>(args: SelectSubset<T, LeadDynamicValueFindUniqueOrThrowArgs<ExtArgs>>): Prisma__LeadDynamicValueClient<$Result.GetResult<Prisma.$LeadDynamicValuePayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first LeadDynamicValue that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadDynamicValueFindFirstArgs} args - Arguments to find a LeadDynamicValue
+     * @example
+     * // Get one LeadDynamicValue
+     * const leadDynamicValue = await prisma.leadDynamicValue.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends LeadDynamicValueFindFirstArgs>(args?: SelectSubset<T, LeadDynamicValueFindFirstArgs<ExtArgs>>): Prisma__LeadDynamicValueClient<$Result.GetResult<Prisma.$LeadDynamicValuePayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first LeadDynamicValue that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadDynamicValueFindFirstOrThrowArgs} args - Arguments to find a LeadDynamicValue
+     * @example
+     * // Get one LeadDynamicValue
+     * const leadDynamicValue = await prisma.leadDynamicValue.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends LeadDynamicValueFindFirstOrThrowArgs>(args?: SelectSubset<T, LeadDynamicValueFindFirstOrThrowArgs<ExtArgs>>): Prisma__LeadDynamicValueClient<$Result.GetResult<Prisma.$LeadDynamicValuePayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more LeadDynamicValues that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadDynamicValueFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all LeadDynamicValues
+     * const leadDynamicValues = await prisma.leadDynamicValue.findMany()
+     * 
+     * // Get first 10 LeadDynamicValues
+     * const leadDynamicValues = await prisma.leadDynamicValue.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const leadDynamicValueWithIdOnly = await prisma.leadDynamicValue.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends LeadDynamicValueFindManyArgs>(args?: SelectSubset<T, LeadDynamicValueFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadDynamicValuePayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a LeadDynamicValue.
+     * @param {LeadDynamicValueCreateArgs} args - Arguments to create a LeadDynamicValue.
+     * @example
+     * // Create one LeadDynamicValue
+     * const LeadDynamicValue = await prisma.leadDynamicValue.create({
+     *   data: {
+     *     // ... data to create a LeadDynamicValue
+     *   }
+     * })
+     * 
+     */
+    create<T extends LeadDynamicValueCreateArgs>(args: SelectSubset<T, LeadDynamicValueCreateArgs<ExtArgs>>): Prisma__LeadDynamicValueClient<$Result.GetResult<Prisma.$LeadDynamicValuePayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many LeadDynamicValues.
+     * @param {LeadDynamicValueCreateManyArgs} args - Arguments to create many LeadDynamicValues.
+     * @example
+     * // Create many LeadDynamicValues
+     * const leadDynamicValue = await prisma.leadDynamicValue.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends LeadDynamicValueCreateManyArgs>(args?: SelectSubset<T, LeadDynamicValueCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many LeadDynamicValues and returns the data saved in the database.
+     * @param {LeadDynamicValueCreateManyAndReturnArgs} args - Arguments to create many LeadDynamicValues.
+     * @example
+     * // Create many LeadDynamicValues
+     * const leadDynamicValue = await prisma.leadDynamicValue.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many LeadDynamicValues and only return the `id`
+     * const leadDynamicValueWithIdOnly = await prisma.leadDynamicValue.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends LeadDynamicValueCreateManyAndReturnArgs>(args?: SelectSubset<T, LeadDynamicValueCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadDynamicValuePayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a LeadDynamicValue.
+     * @param {LeadDynamicValueDeleteArgs} args - Arguments to delete one LeadDynamicValue.
+     * @example
+     * // Delete one LeadDynamicValue
+     * const LeadDynamicValue = await prisma.leadDynamicValue.delete({
+     *   where: {
+     *     // ... filter to delete one LeadDynamicValue
+     *   }
+     * })
+     * 
+     */
+    delete<T extends LeadDynamicValueDeleteArgs>(args: SelectSubset<T, LeadDynamicValueDeleteArgs<ExtArgs>>): Prisma__LeadDynamicValueClient<$Result.GetResult<Prisma.$LeadDynamicValuePayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one LeadDynamicValue.
+     * @param {LeadDynamicValueUpdateArgs} args - Arguments to update one LeadDynamicValue.
+     * @example
+     * // Update one LeadDynamicValue
+     * const leadDynamicValue = await prisma.leadDynamicValue.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends LeadDynamicValueUpdateArgs>(args: SelectSubset<T, LeadDynamicValueUpdateArgs<ExtArgs>>): Prisma__LeadDynamicValueClient<$Result.GetResult<Prisma.$LeadDynamicValuePayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more LeadDynamicValues.
+     * @param {LeadDynamicValueDeleteManyArgs} args - Arguments to filter LeadDynamicValues to delete.
+     * @example
+     * // Delete a few LeadDynamicValues
+     * const { count } = await prisma.leadDynamicValue.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends LeadDynamicValueDeleteManyArgs>(args?: SelectSubset<T, LeadDynamicValueDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more LeadDynamicValues.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadDynamicValueUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many LeadDynamicValues
+     * const leadDynamicValue = await prisma.leadDynamicValue.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends LeadDynamicValueUpdateManyArgs>(args: SelectSubset<T, LeadDynamicValueUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one LeadDynamicValue.
+     * @param {LeadDynamicValueUpsertArgs} args - Arguments to update or create a LeadDynamicValue.
+     * @example
+     * // Update or create a LeadDynamicValue
+     * const leadDynamicValue = await prisma.leadDynamicValue.upsert({
+     *   create: {
+     *     // ... data to create a LeadDynamicValue
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the LeadDynamicValue we want to update
+     *   }
+     * })
+     */
+    upsert<T extends LeadDynamicValueUpsertArgs>(args: SelectSubset<T, LeadDynamicValueUpsertArgs<ExtArgs>>): Prisma__LeadDynamicValueClient<$Result.GetResult<Prisma.$LeadDynamicValuePayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of LeadDynamicValues.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadDynamicValueCountArgs} args - Arguments to filter LeadDynamicValues to count.
+     * @example
+     * // Count the number of LeadDynamicValues
+     * const count = await prisma.leadDynamicValue.count({
+     *   where: {
+     *     // ... the filter for the LeadDynamicValues we want to count
+     *   }
+     * })
+    **/
+    count<T extends LeadDynamicValueCountArgs>(
+      args?: Subset<T, LeadDynamicValueCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], LeadDynamicValueCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a LeadDynamicValue.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadDynamicValueAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends LeadDynamicValueAggregateArgs>(args: Subset<T, LeadDynamicValueAggregateArgs>): Prisma.PrismaPromise<GetLeadDynamicValueAggregateType<T>>
+
+    /**
+     * Group by LeadDynamicValue.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadDynamicValueGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends LeadDynamicValueGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: LeadDynamicValueGroupByArgs['orderBy'] }
+        : { orderBy?: LeadDynamicValueGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, LeadDynamicValueGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetLeadDynamicValueGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the LeadDynamicValue model
+   */
+  readonly fields: LeadDynamicValueFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for LeadDynamicValue.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__LeadDynamicValueClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    field<T extends LeadDynamicFieldDefaultArgs<ExtArgs> = {}>(args?: Subset<T, LeadDynamicFieldDefaultArgs<ExtArgs>>): Prisma__LeadDynamicFieldClient<$Result.GetResult<Prisma.$LeadDynamicFieldPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the LeadDynamicValue model
+   */ 
+  interface LeadDynamicValueFieldRefs {
+    readonly id: FieldRef<"LeadDynamicValue", 'String'>
+    readonly leadId: FieldRef<"LeadDynamicValue", 'String'>
+    readonly fieldId: FieldRef<"LeadDynamicValue", 'String'>
+    readonly value: FieldRef<"LeadDynamicValue", 'String'>
+    readonly createdAt: FieldRef<"LeadDynamicValue", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * LeadDynamicValue findUnique
+   */
+  export type LeadDynamicValueFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadDynamicValue
+     */
+    select?: LeadDynamicValueSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadDynamicValueInclude<ExtArgs> | null
+    /**
+     * Filter, which LeadDynamicValue to fetch.
+     */
+    where: LeadDynamicValueWhereUniqueInput
+  }
+
+  /**
+   * LeadDynamicValue findUniqueOrThrow
+   */
+  export type LeadDynamicValueFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadDynamicValue
+     */
+    select?: LeadDynamicValueSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadDynamicValueInclude<ExtArgs> | null
+    /**
+     * Filter, which LeadDynamicValue to fetch.
+     */
+    where: LeadDynamicValueWhereUniqueInput
+  }
+
+  /**
+   * LeadDynamicValue findFirst
+   */
+  export type LeadDynamicValueFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadDynamicValue
+     */
+    select?: LeadDynamicValueSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadDynamicValueInclude<ExtArgs> | null
+    /**
+     * Filter, which LeadDynamicValue to fetch.
+     */
+    where?: LeadDynamicValueWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LeadDynamicValues to fetch.
+     */
+    orderBy?: LeadDynamicValueOrderByWithRelationInput | LeadDynamicValueOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for LeadDynamicValues.
+     */
+    cursor?: LeadDynamicValueWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LeadDynamicValues from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LeadDynamicValues.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of LeadDynamicValues.
+     */
+    distinct?: LeadDynamicValueScalarFieldEnum | LeadDynamicValueScalarFieldEnum[]
+  }
+
+  /**
+   * LeadDynamicValue findFirstOrThrow
+   */
+  export type LeadDynamicValueFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadDynamicValue
+     */
+    select?: LeadDynamicValueSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadDynamicValueInclude<ExtArgs> | null
+    /**
+     * Filter, which LeadDynamicValue to fetch.
+     */
+    where?: LeadDynamicValueWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LeadDynamicValues to fetch.
+     */
+    orderBy?: LeadDynamicValueOrderByWithRelationInput | LeadDynamicValueOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for LeadDynamicValues.
+     */
+    cursor?: LeadDynamicValueWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LeadDynamicValues from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LeadDynamicValues.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of LeadDynamicValues.
+     */
+    distinct?: LeadDynamicValueScalarFieldEnum | LeadDynamicValueScalarFieldEnum[]
+  }
+
+  /**
+   * LeadDynamicValue findMany
+   */
+  export type LeadDynamicValueFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadDynamicValue
+     */
+    select?: LeadDynamicValueSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadDynamicValueInclude<ExtArgs> | null
+    /**
+     * Filter, which LeadDynamicValues to fetch.
+     */
+    where?: LeadDynamicValueWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LeadDynamicValues to fetch.
+     */
+    orderBy?: LeadDynamicValueOrderByWithRelationInput | LeadDynamicValueOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing LeadDynamicValues.
+     */
+    cursor?: LeadDynamicValueWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LeadDynamicValues from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LeadDynamicValues.
+     */
+    skip?: number
+    distinct?: LeadDynamicValueScalarFieldEnum | LeadDynamicValueScalarFieldEnum[]
+  }
+
+  /**
+   * LeadDynamicValue create
+   */
+  export type LeadDynamicValueCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadDynamicValue
+     */
+    select?: LeadDynamicValueSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadDynamicValueInclude<ExtArgs> | null
+    /**
+     * The data needed to create a LeadDynamicValue.
+     */
+    data: XOR<LeadDynamicValueCreateInput, LeadDynamicValueUncheckedCreateInput>
+  }
+
+  /**
+   * LeadDynamicValue createMany
+   */
+  export type LeadDynamicValueCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many LeadDynamicValues.
+     */
+    data: LeadDynamicValueCreateManyInput | LeadDynamicValueCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * LeadDynamicValue createManyAndReturn
+   */
+  export type LeadDynamicValueCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadDynamicValue
+     */
+    select?: LeadDynamicValueSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many LeadDynamicValues.
+     */
+    data: LeadDynamicValueCreateManyInput | LeadDynamicValueCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadDynamicValueIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * LeadDynamicValue update
+   */
+  export type LeadDynamicValueUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadDynamicValue
+     */
+    select?: LeadDynamicValueSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadDynamicValueInclude<ExtArgs> | null
+    /**
+     * The data needed to update a LeadDynamicValue.
+     */
+    data: XOR<LeadDynamicValueUpdateInput, LeadDynamicValueUncheckedUpdateInput>
+    /**
+     * Choose, which LeadDynamicValue to update.
+     */
+    where: LeadDynamicValueWhereUniqueInput
+  }
+
+  /**
+   * LeadDynamicValue updateMany
+   */
+  export type LeadDynamicValueUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update LeadDynamicValues.
+     */
+    data: XOR<LeadDynamicValueUpdateManyMutationInput, LeadDynamicValueUncheckedUpdateManyInput>
+    /**
+     * Filter which LeadDynamicValues to update
+     */
+    where?: LeadDynamicValueWhereInput
+  }
+
+  /**
+   * LeadDynamicValue upsert
+   */
+  export type LeadDynamicValueUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadDynamicValue
+     */
+    select?: LeadDynamicValueSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadDynamicValueInclude<ExtArgs> | null
+    /**
+     * The filter to search for the LeadDynamicValue to update in case it exists.
+     */
+    where: LeadDynamicValueWhereUniqueInput
+    /**
+     * In case the LeadDynamicValue found by the `where` argument doesn't exist, create a new LeadDynamicValue with this data.
+     */
+    create: XOR<LeadDynamicValueCreateInput, LeadDynamicValueUncheckedCreateInput>
+    /**
+     * In case the LeadDynamicValue was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<LeadDynamicValueUpdateInput, LeadDynamicValueUncheckedUpdateInput>
+  }
+
+  /**
+   * LeadDynamicValue delete
+   */
+  export type LeadDynamicValueDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadDynamicValue
+     */
+    select?: LeadDynamicValueSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadDynamicValueInclude<ExtArgs> | null
+    /**
+     * Filter which LeadDynamicValue to delete.
+     */
+    where: LeadDynamicValueWhereUniqueInput
+  }
+
+  /**
+   * LeadDynamicValue deleteMany
+   */
+  export type LeadDynamicValueDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which LeadDynamicValues to delete
+     */
+    where?: LeadDynamicValueWhereInput
+  }
+
+  /**
+   * LeadDynamicValue without action
+   */
+  export type LeadDynamicValueDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadDynamicValue
+     */
+    select?: LeadDynamicValueSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadDynamicValueInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Model TargetSetting
    */
 
@@ -25060,6 +28344,42 @@ export namespace Prisma {
   export type TargetCycleRangeScalarFieldEnum = (typeof TargetCycleRangeScalarFieldEnum)[keyof typeof TargetCycleRangeScalarFieldEnum]
 
 
+  export const LeadDynamicFieldScalarFieldEnum: {
+    id: 'id',
+    name: 'name',
+    inputType: 'inputType',
+    sortOrder: 'sortOrder',
+    isRequired: 'isRequired',
+    isActive: 'isActive',
+    workspaceId: 'workspaceId',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type LeadDynamicFieldScalarFieldEnum = (typeof LeadDynamicFieldScalarFieldEnum)[keyof typeof LeadDynamicFieldScalarFieldEnum]
+
+
+  export const LeadDynamicOptionScalarFieldEnum: {
+    id: 'id',
+    fieldId: 'fieldId',
+    value: 'value',
+    sortOrder: 'sortOrder'
+  };
+
+  export type LeadDynamicOptionScalarFieldEnum = (typeof LeadDynamicOptionScalarFieldEnum)[keyof typeof LeadDynamicOptionScalarFieldEnum]
+
+
+  export const LeadDynamicValueScalarFieldEnum: {
+    id: 'id',
+    leadId: 'leadId',
+    fieldId: 'fieldId',
+    value: 'value',
+    createdAt: 'createdAt'
+  };
+
+  export type LeadDynamicValueScalarFieldEnum = (typeof LeadDynamicValueScalarFieldEnum)[keyof typeof LeadDynamicValueScalarFieldEnum]
+
+
   export const TargetSettingScalarFieldEnum: {
     id: 'id',
     userId: 'userId',
@@ -25651,6 +28971,7 @@ export namespace Prisma {
     users?: UserListRelationFilter
     departments?: DepartmentListRelationFilter
     targetCycles?: TargetCycleListRelationFilter
+    leadDynamicFields?: LeadDynamicFieldListRelationFilter
   }
 
   export type WorkspaceOrderByWithRelationInput = {
@@ -25668,6 +28989,7 @@ export namespace Prisma {
     users?: UserOrderByRelationAggregateInput
     departments?: DepartmentOrderByRelationAggregateInput
     targetCycles?: TargetCycleOrderByRelationAggregateInput
+    leadDynamicFields?: LeadDynamicFieldOrderByRelationAggregateInput
   }
 
   export type WorkspaceWhereUniqueInput = Prisma.AtLeast<{
@@ -25688,6 +29010,7 @@ export namespace Prisma {
     users?: UserListRelationFilter
     departments?: DepartmentListRelationFilter
     targetCycles?: TargetCycleListRelationFilter
+    leadDynamicFields?: LeadDynamicFieldListRelationFilter
   }, "id" | "ownerId">
 
   export type WorkspaceOrderByWithAggregationInput = {
@@ -26518,6 +29841,197 @@ export namespace Prisma {
     startDay?: IntWithAggregatesFilter<"TargetCycleRange"> | number
     endDay?: IntWithAggregatesFilter<"TargetCycleRange"> | number
     createdAt?: DateTimeWithAggregatesFilter<"TargetCycleRange"> | Date | string
+  }
+
+  export type LeadDynamicFieldWhereInput = {
+    AND?: LeadDynamicFieldWhereInput | LeadDynamicFieldWhereInput[]
+    OR?: LeadDynamicFieldWhereInput[]
+    NOT?: LeadDynamicFieldWhereInput | LeadDynamicFieldWhereInput[]
+    id?: StringFilter<"LeadDynamicField"> | string
+    name?: StringFilter<"LeadDynamicField"> | string
+    inputType?: StringFilter<"LeadDynamicField"> | string
+    sortOrder?: IntFilter<"LeadDynamicField"> | number
+    isRequired?: BoolFilter<"LeadDynamicField"> | boolean
+    isActive?: BoolFilter<"LeadDynamicField"> | boolean
+    workspaceId?: StringFilter<"LeadDynamicField"> | string
+    createdAt?: DateTimeFilter<"LeadDynamicField"> | Date | string
+    updatedAt?: DateTimeFilter<"LeadDynamicField"> | Date | string
+    workspace?: XOR<WorkspaceRelationFilter, WorkspaceWhereInput>
+    options?: LeadDynamicOptionListRelationFilter
+    values?: LeadDynamicValueListRelationFilter
+  }
+
+  export type LeadDynamicFieldOrderByWithRelationInput = {
+    id?: SortOrder
+    name?: SortOrder
+    inputType?: SortOrder
+    sortOrder?: SortOrder
+    isRequired?: SortOrder
+    isActive?: SortOrder
+    workspaceId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    workspace?: WorkspaceOrderByWithRelationInput
+    options?: LeadDynamicOptionOrderByRelationAggregateInput
+    values?: LeadDynamicValueOrderByRelationAggregateInput
+  }
+
+  export type LeadDynamicFieldWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    name_workspaceId?: LeadDynamicFieldNameWorkspaceIdCompoundUniqueInput
+    AND?: LeadDynamicFieldWhereInput | LeadDynamicFieldWhereInput[]
+    OR?: LeadDynamicFieldWhereInput[]
+    NOT?: LeadDynamicFieldWhereInput | LeadDynamicFieldWhereInput[]
+    name?: StringFilter<"LeadDynamicField"> | string
+    inputType?: StringFilter<"LeadDynamicField"> | string
+    sortOrder?: IntFilter<"LeadDynamicField"> | number
+    isRequired?: BoolFilter<"LeadDynamicField"> | boolean
+    isActive?: BoolFilter<"LeadDynamicField"> | boolean
+    workspaceId?: StringFilter<"LeadDynamicField"> | string
+    createdAt?: DateTimeFilter<"LeadDynamicField"> | Date | string
+    updatedAt?: DateTimeFilter<"LeadDynamicField"> | Date | string
+    workspace?: XOR<WorkspaceRelationFilter, WorkspaceWhereInput>
+    options?: LeadDynamicOptionListRelationFilter
+    values?: LeadDynamicValueListRelationFilter
+  }, "id" | "name_workspaceId">
+
+  export type LeadDynamicFieldOrderByWithAggregationInput = {
+    id?: SortOrder
+    name?: SortOrder
+    inputType?: SortOrder
+    sortOrder?: SortOrder
+    isRequired?: SortOrder
+    isActive?: SortOrder
+    workspaceId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: LeadDynamicFieldCountOrderByAggregateInput
+    _avg?: LeadDynamicFieldAvgOrderByAggregateInput
+    _max?: LeadDynamicFieldMaxOrderByAggregateInput
+    _min?: LeadDynamicFieldMinOrderByAggregateInput
+    _sum?: LeadDynamicFieldSumOrderByAggregateInput
+  }
+
+  export type LeadDynamicFieldScalarWhereWithAggregatesInput = {
+    AND?: LeadDynamicFieldScalarWhereWithAggregatesInput | LeadDynamicFieldScalarWhereWithAggregatesInput[]
+    OR?: LeadDynamicFieldScalarWhereWithAggregatesInput[]
+    NOT?: LeadDynamicFieldScalarWhereWithAggregatesInput | LeadDynamicFieldScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"LeadDynamicField"> | string
+    name?: StringWithAggregatesFilter<"LeadDynamicField"> | string
+    inputType?: StringWithAggregatesFilter<"LeadDynamicField"> | string
+    sortOrder?: IntWithAggregatesFilter<"LeadDynamicField"> | number
+    isRequired?: BoolWithAggregatesFilter<"LeadDynamicField"> | boolean
+    isActive?: BoolWithAggregatesFilter<"LeadDynamicField"> | boolean
+    workspaceId?: StringWithAggregatesFilter<"LeadDynamicField"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"LeadDynamicField"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"LeadDynamicField"> | Date | string
+  }
+
+  export type LeadDynamicOptionWhereInput = {
+    AND?: LeadDynamicOptionWhereInput | LeadDynamicOptionWhereInput[]
+    OR?: LeadDynamicOptionWhereInput[]
+    NOT?: LeadDynamicOptionWhereInput | LeadDynamicOptionWhereInput[]
+    id?: StringFilter<"LeadDynamicOption"> | string
+    fieldId?: StringFilter<"LeadDynamicOption"> | string
+    value?: StringFilter<"LeadDynamicOption"> | string
+    sortOrder?: IntFilter<"LeadDynamicOption"> | number
+    field?: XOR<LeadDynamicFieldRelationFilter, LeadDynamicFieldWhereInput>
+  }
+
+  export type LeadDynamicOptionOrderByWithRelationInput = {
+    id?: SortOrder
+    fieldId?: SortOrder
+    value?: SortOrder
+    sortOrder?: SortOrder
+    field?: LeadDynamicFieldOrderByWithRelationInput
+  }
+
+  export type LeadDynamicOptionWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: LeadDynamicOptionWhereInput | LeadDynamicOptionWhereInput[]
+    OR?: LeadDynamicOptionWhereInput[]
+    NOT?: LeadDynamicOptionWhereInput | LeadDynamicOptionWhereInput[]
+    fieldId?: StringFilter<"LeadDynamicOption"> | string
+    value?: StringFilter<"LeadDynamicOption"> | string
+    sortOrder?: IntFilter<"LeadDynamicOption"> | number
+    field?: XOR<LeadDynamicFieldRelationFilter, LeadDynamicFieldWhereInput>
+  }, "id">
+
+  export type LeadDynamicOptionOrderByWithAggregationInput = {
+    id?: SortOrder
+    fieldId?: SortOrder
+    value?: SortOrder
+    sortOrder?: SortOrder
+    _count?: LeadDynamicOptionCountOrderByAggregateInput
+    _avg?: LeadDynamicOptionAvgOrderByAggregateInput
+    _max?: LeadDynamicOptionMaxOrderByAggregateInput
+    _min?: LeadDynamicOptionMinOrderByAggregateInput
+    _sum?: LeadDynamicOptionSumOrderByAggregateInput
+  }
+
+  export type LeadDynamicOptionScalarWhereWithAggregatesInput = {
+    AND?: LeadDynamicOptionScalarWhereWithAggregatesInput | LeadDynamicOptionScalarWhereWithAggregatesInput[]
+    OR?: LeadDynamicOptionScalarWhereWithAggregatesInput[]
+    NOT?: LeadDynamicOptionScalarWhereWithAggregatesInput | LeadDynamicOptionScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"LeadDynamicOption"> | string
+    fieldId?: StringWithAggregatesFilter<"LeadDynamicOption"> | string
+    value?: StringWithAggregatesFilter<"LeadDynamicOption"> | string
+    sortOrder?: IntWithAggregatesFilter<"LeadDynamicOption"> | number
+  }
+
+  export type LeadDynamicValueWhereInput = {
+    AND?: LeadDynamicValueWhereInput | LeadDynamicValueWhereInput[]
+    OR?: LeadDynamicValueWhereInput[]
+    NOT?: LeadDynamicValueWhereInput | LeadDynamicValueWhereInput[]
+    id?: StringFilter<"LeadDynamicValue"> | string
+    leadId?: StringFilter<"LeadDynamicValue"> | string
+    fieldId?: StringFilter<"LeadDynamicValue"> | string
+    value?: StringFilter<"LeadDynamicValue"> | string
+    createdAt?: DateTimeFilter<"LeadDynamicValue"> | Date | string
+    field?: XOR<LeadDynamicFieldRelationFilter, LeadDynamicFieldWhereInput>
+  }
+
+  export type LeadDynamicValueOrderByWithRelationInput = {
+    id?: SortOrder
+    leadId?: SortOrder
+    fieldId?: SortOrder
+    value?: SortOrder
+    createdAt?: SortOrder
+    field?: LeadDynamicFieldOrderByWithRelationInput
+  }
+
+  export type LeadDynamicValueWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: LeadDynamicValueWhereInput | LeadDynamicValueWhereInput[]
+    OR?: LeadDynamicValueWhereInput[]
+    NOT?: LeadDynamicValueWhereInput | LeadDynamicValueWhereInput[]
+    leadId?: StringFilter<"LeadDynamicValue"> | string
+    fieldId?: StringFilter<"LeadDynamicValue"> | string
+    value?: StringFilter<"LeadDynamicValue"> | string
+    createdAt?: DateTimeFilter<"LeadDynamicValue"> | Date | string
+    field?: XOR<LeadDynamicFieldRelationFilter, LeadDynamicFieldWhereInput>
+  }, "id">
+
+  export type LeadDynamicValueOrderByWithAggregationInput = {
+    id?: SortOrder
+    leadId?: SortOrder
+    fieldId?: SortOrder
+    value?: SortOrder
+    createdAt?: SortOrder
+    _count?: LeadDynamicValueCountOrderByAggregateInput
+    _max?: LeadDynamicValueMaxOrderByAggregateInput
+    _min?: LeadDynamicValueMinOrderByAggregateInput
+  }
+
+  export type LeadDynamicValueScalarWhereWithAggregatesInput = {
+    AND?: LeadDynamicValueScalarWhereWithAggregatesInput | LeadDynamicValueScalarWhereWithAggregatesInput[]
+    OR?: LeadDynamicValueScalarWhereWithAggregatesInput[]
+    NOT?: LeadDynamicValueScalarWhereWithAggregatesInput | LeadDynamicValueScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"LeadDynamicValue"> | string
+    leadId?: StringWithAggregatesFilter<"LeadDynamicValue"> | string
+    fieldId?: StringWithAggregatesFilter<"LeadDynamicValue"> | string
+    value?: StringWithAggregatesFilter<"LeadDynamicValue"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"LeadDynamicValue"> | Date | string
   }
 
   export type TargetSettingWhereInput = {
@@ -27357,6 +30871,7 @@ export namespace Prisma {
     users?: UserCreateNestedManyWithoutWorkspaceInput
     departments?: DepartmentCreateNestedManyWithoutWorkspaceInput
     targetCycles?: TargetCycleCreateNestedManyWithoutWorkspaceInput
+    leadDynamicFields?: LeadDynamicFieldCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateInput = {
@@ -27373,6 +30888,7 @@ export namespace Prisma {
     users?: UserUncheckedCreateNestedManyWithoutWorkspaceInput
     departments?: DepartmentUncheckedCreateNestedManyWithoutWorkspaceInput
     targetCycles?: TargetCycleUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadDynamicFields?: LeadDynamicFieldUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUpdateInput = {
@@ -27389,6 +30905,7 @@ export namespace Prisma {
     users?: UserUpdateManyWithoutWorkspaceNestedInput
     departments?: DepartmentUpdateManyWithoutWorkspaceNestedInput
     targetCycles?: TargetCycleUpdateManyWithoutWorkspaceNestedInput
+    leadDynamicFields?: LeadDynamicFieldUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateInput = {
@@ -27405,6 +30922,7 @@ export namespace Prisma {
     users?: UserUncheckedUpdateManyWithoutWorkspaceNestedInput
     departments?: DepartmentUncheckedUpdateManyWithoutWorkspaceNestedInput
     targetCycles?: TargetCycleUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadDynamicFields?: LeadDynamicFieldUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceCreateManyInput = {
@@ -28315,6 +31833,200 @@ export namespace Prisma {
     targetCycleId?: StringFieldUpdateOperationsInput | string
     startDay?: IntFieldUpdateOperationsInput | number
     endDay?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LeadDynamicFieldCreateInput = {
+    id?: string
+    name: string
+    inputType: string
+    sortOrder: number
+    isRequired?: boolean
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    workspace: WorkspaceCreateNestedOneWithoutLeadDynamicFieldsInput
+    options?: LeadDynamicOptionCreateNestedManyWithoutFieldInput
+    values?: LeadDynamicValueCreateNestedManyWithoutFieldInput
+  }
+
+  export type LeadDynamicFieldUncheckedCreateInput = {
+    id?: string
+    name: string
+    inputType: string
+    sortOrder: number
+    isRequired?: boolean
+    isActive?: boolean
+    workspaceId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    options?: LeadDynamicOptionUncheckedCreateNestedManyWithoutFieldInput
+    values?: LeadDynamicValueUncheckedCreateNestedManyWithoutFieldInput
+  }
+
+  export type LeadDynamicFieldUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    inputType?: StringFieldUpdateOperationsInput | string
+    sortOrder?: IntFieldUpdateOperationsInput | number
+    isRequired?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    workspace?: WorkspaceUpdateOneRequiredWithoutLeadDynamicFieldsNestedInput
+    options?: LeadDynamicOptionUpdateManyWithoutFieldNestedInput
+    values?: LeadDynamicValueUpdateManyWithoutFieldNestedInput
+  }
+
+  export type LeadDynamicFieldUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    inputType?: StringFieldUpdateOperationsInput | string
+    sortOrder?: IntFieldUpdateOperationsInput | number
+    isRequired?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    options?: LeadDynamicOptionUncheckedUpdateManyWithoutFieldNestedInput
+    values?: LeadDynamicValueUncheckedUpdateManyWithoutFieldNestedInput
+  }
+
+  export type LeadDynamicFieldCreateManyInput = {
+    id?: string
+    name: string
+    inputType: string
+    sortOrder: number
+    isRequired?: boolean
+    isActive?: boolean
+    workspaceId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type LeadDynamicFieldUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    inputType?: StringFieldUpdateOperationsInput | string
+    sortOrder?: IntFieldUpdateOperationsInput | number
+    isRequired?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LeadDynamicFieldUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    inputType?: StringFieldUpdateOperationsInput | string
+    sortOrder?: IntFieldUpdateOperationsInput | number
+    isRequired?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LeadDynamicOptionCreateInput = {
+    id?: string
+    value: string
+    sortOrder: number
+    field: LeadDynamicFieldCreateNestedOneWithoutOptionsInput
+  }
+
+  export type LeadDynamicOptionUncheckedCreateInput = {
+    id?: string
+    fieldId: string
+    value: string
+    sortOrder: number
+  }
+
+  export type LeadDynamicOptionUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    value?: StringFieldUpdateOperationsInput | string
+    sortOrder?: IntFieldUpdateOperationsInput | number
+    field?: LeadDynamicFieldUpdateOneRequiredWithoutOptionsNestedInput
+  }
+
+  export type LeadDynamicOptionUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    fieldId?: StringFieldUpdateOperationsInput | string
+    value?: StringFieldUpdateOperationsInput | string
+    sortOrder?: IntFieldUpdateOperationsInput | number
+  }
+
+  export type LeadDynamicOptionCreateManyInput = {
+    id?: string
+    fieldId: string
+    value: string
+    sortOrder: number
+  }
+
+  export type LeadDynamicOptionUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    value?: StringFieldUpdateOperationsInput | string
+    sortOrder?: IntFieldUpdateOperationsInput | number
+  }
+
+  export type LeadDynamicOptionUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    fieldId?: StringFieldUpdateOperationsInput | string
+    value?: StringFieldUpdateOperationsInput | string
+    sortOrder?: IntFieldUpdateOperationsInput | number
+  }
+
+  export type LeadDynamicValueCreateInput = {
+    id?: string
+    leadId: string
+    value: string
+    createdAt?: Date | string
+    field: LeadDynamicFieldCreateNestedOneWithoutValuesInput
+  }
+
+  export type LeadDynamicValueUncheckedCreateInput = {
+    id?: string
+    leadId: string
+    fieldId: string
+    value: string
+    createdAt?: Date | string
+  }
+
+  export type LeadDynamicValueUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    leadId?: StringFieldUpdateOperationsInput | string
+    value?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    field?: LeadDynamicFieldUpdateOneRequiredWithoutValuesNestedInput
+  }
+
+  export type LeadDynamicValueUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    leadId?: StringFieldUpdateOperationsInput | string
+    fieldId?: StringFieldUpdateOperationsInput | string
+    value?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LeadDynamicValueCreateManyInput = {
+    id?: string
+    leadId: string
+    fieldId: string
+    value: string
+    createdAt?: Date | string
+  }
+
+  export type LeadDynamicValueUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    leadId?: StringFieldUpdateOperationsInput | string
+    value?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LeadDynamicValueUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    leadId?: StringFieldUpdateOperationsInput | string
+    fieldId?: StringFieldUpdateOperationsInput | string
+    value?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -29281,11 +32993,21 @@ export namespace Prisma {
     none?: TargetCycleWhereInput
   }
 
+  export type LeadDynamicFieldListRelationFilter = {
+    every?: LeadDynamicFieldWhereInput
+    some?: LeadDynamicFieldWhereInput
+    none?: LeadDynamicFieldWhereInput
+  }
+
   export type DepartmentOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
   export type TargetCycleOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type LeadDynamicFieldOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -30002,6 +33724,133 @@ export namespace Prisma {
   export type TargetCycleRangeSumOrderByAggregateInput = {
     startDay?: SortOrder
     endDay?: SortOrder
+  }
+
+  export type LeadDynamicOptionListRelationFilter = {
+    every?: LeadDynamicOptionWhereInput
+    some?: LeadDynamicOptionWhereInput
+    none?: LeadDynamicOptionWhereInput
+  }
+
+  export type LeadDynamicValueListRelationFilter = {
+    every?: LeadDynamicValueWhereInput
+    some?: LeadDynamicValueWhereInput
+    none?: LeadDynamicValueWhereInput
+  }
+
+  export type LeadDynamicOptionOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type LeadDynamicValueOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type LeadDynamicFieldNameWorkspaceIdCompoundUniqueInput = {
+    name: string
+    workspaceId: string
+  }
+
+  export type LeadDynamicFieldCountOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    inputType?: SortOrder
+    sortOrder?: SortOrder
+    isRequired?: SortOrder
+    isActive?: SortOrder
+    workspaceId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type LeadDynamicFieldAvgOrderByAggregateInput = {
+    sortOrder?: SortOrder
+  }
+
+  export type LeadDynamicFieldMaxOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    inputType?: SortOrder
+    sortOrder?: SortOrder
+    isRequired?: SortOrder
+    isActive?: SortOrder
+    workspaceId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type LeadDynamicFieldMinOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    inputType?: SortOrder
+    sortOrder?: SortOrder
+    isRequired?: SortOrder
+    isActive?: SortOrder
+    workspaceId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type LeadDynamicFieldSumOrderByAggregateInput = {
+    sortOrder?: SortOrder
+  }
+
+  export type LeadDynamicFieldRelationFilter = {
+    is?: LeadDynamicFieldWhereInput
+    isNot?: LeadDynamicFieldWhereInput
+  }
+
+  export type LeadDynamicOptionCountOrderByAggregateInput = {
+    id?: SortOrder
+    fieldId?: SortOrder
+    value?: SortOrder
+    sortOrder?: SortOrder
+  }
+
+  export type LeadDynamicOptionAvgOrderByAggregateInput = {
+    sortOrder?: SortOrder
+  }
+
+  export type LeadDynamicOptionMaxOrderByAggregateInput = {
+    id?: SortOrder
+    fieldId?: SortOrder
+    value?: SortOrder
+    sortOrder?: SortOrder
+  }
+
+  export type LeadDynamicOptionMinOrderByAggregateInput = {
+    id?: SortOrder
+    fieldId?: SortOrder
+    value?: SortOrder
+    sortOrder?: SortOrder
+  }
+
+  export type LeadDynamicOptionSumOrderByAggregateInput = {
+    sortOrder?: SortOrder
+  }
+
+  export type LeadDynamicValueCountOrderByAggregateInput = {
+    id?: SortOrder
+    leadId?: SortOrder
+    fieldId?: SortOrder
+    value?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type LeadDynamicValueMaxOrderByAggregateInput = {
+    id?: SortOrder
+    leadId?: SortOrder
+    fieldId?: SortOrder
+    value?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type LeadDynamicValueMinOrderByAggregateInput = {
+    id?: SortOrder
+    leadId?: SortOrder
+    fieldId?: SortOrder
+    value?: SortOrder
+    createdAt?: SortOrder
   }
 
   export type EnumTargetSettingCycleFilter<$PrismaModel = never> = {
@@ -30756,6 +34605,13 @@ export namespace Prisma {
     connect?: TargetCycleWhereUniqueInput | TargetCycleWhereUniqueInput[]
   }
 
+  export type LeadDynamicFieldCreateNestedManyWithoutWorkspaceInput = {
+    create?: XOR<LeadDynamicFieldCreateWithoutWorkspaceInput, LeadDynamicFieldUncheckedCreateWithoutWorkspaceInput> | LeadDynamicFieldCreateWithoutWorkspaceInput[] | LeadDynamicFieldUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: LeadDynamicFieldCreateOrConnectWithoutWorkspaceInput | LeadDynamicFieldCreateOrConnectWithoutWorkspaceInput[]
+    createMany?: LeadDynamicFieldCreateManyWorkspaceInputEnvelope
+    connect?: LeadDynamicFieldWhereUniqueInput | LeadDynamicFieldWhereUniqueInput[]
+  }
+
   export type UserUncheckedCreateNestedManyWithoutWorkspaceInput = {
     create?: XOR<UserCreateWithoutWorkspaceInput, UserUncheckedCreateWithoutWorkspaceInput> | UserCreateWithoutWorkspaceInput[] | UserUncheckedCreateWithoutWorkspaceInput[]
     connectOrCreate?: UserCreateOrConnectWithoutWorkspaceInput | UserCreateOrConnectWithoutWorkspaceInput[]
@@ -30775,6 +34631,13 @@ export namespace Prisma {
     connectOrCreate?: TargetCycleCreateOrConnectWithoutWorkspaceInput | TargetCycleCreateOrConnectWithoutWorkspaceInput[]
     createMany?: TargetCycleCreateManyWorkspaceInputEnvelope
     connect?: TargetCycleWhereUniqueInput | TargetCycleWhereUniqueInput[]
+  }
+
+  export type LeadDynamicFieldUncheckedCreateNestedManyWithoutWorkspaceInput = {
+    create?: XOR<LeadDynamicFieldCreateWithoutWorkspaceInput, LeadDynamicFieldUncheckedCreateWithoutWorkspaceInput> | LeadDynamicFieldCreateWithoutWorkspaceInput[] | LeadDynamicFieldUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: LeadDynamicFieldCreateOrConnectWithoutWorkspaceInput | LeadDynamicFieldCreateOrConnectWithoutWorkspaceInput[]
+    createMany?: LeadDynamicFieldCreateManyWorkspaceInputEnvelope
+    connect?: LeadDynamicFieldWhereUniqueInput | LeadDynamicFieldWhereUniqueInput[]
   }
 
   export type BoolFieldUpdateOperationsInput = {
@@ -30831,6 +34694,20 @@ export namespace Prisma {
     deleteMany?: TargetCycleScalarWhereInput | TargetCycleScalarWhereInput[]
   }
 
+  export type LeadDynamicFieldUpdateManyWithoutWorkspaceNestedInput = {
+    create?: XOR<LeadDynamicFieldCreateWithoutWorkspaceInput, LeadDynamicFieldUncheckedCreateWithoutWorkspaceInput> | LeadDynamicFieldCreateWithoutWorkspaceInput[] | LeadDynamicFieldUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: LeadDynamicFieldCreateOrConnectWithoutWorkspaceInput | LeadDynamicFieldCreateOrConnectWithoutWorkspaceInput[]
+    upsert?: LeadDynamicFieldUpsertWithWhereUniqueWithoutWorkspaceInput | LeadDynamicFieldUpsertWithWhereUniqueWithoutWorkspaceInput[]
+    createMany?: LeadDynamicFieldCreateManyWorkspaceInputEnvelope
+    set?: LeadDynamicFieldWhereUniqueInput | LeadDynamicFieldWhereUniqueInput[]
+    disconnect?: LeadDynamicFieldWhereUniqueInput | LeadDynamicFieldWhereUniqueInput[]
+    delete?: LeadDynamicFieldWhereUniqueInput | LeadDynamicFieldWhereUniqueInput[]
+    connect?: LeadDynamicFieldWhereUniqueInput | LeadDynamicFieldWhereUniqueInput[]
+    update?: LeadDynamicFieldUpdateWithWhereUniqueWithoutWorkspaceInput | LeadDynamicFieldUpdateWithWhereUniqueWithoutWorkspaceInput[]
+    updateMany?: LeadDynamicFieldUpdateManyWithWhereWithoutWorkspaceInput | LeadDynamicFieldUpdateManyWithWhereWithoutWorkspaceInput[]
+    deleteMany?: LeadDynamicFieldScalarWhereInput | LeadDynamicFieldScalarWhereInput[]
+  }
+
   export type UserUncheckedUpdateManyWithoutWorkspaceNestedInput = {
     create?: XOR<UserCreateWithoutWorkspaceInput, UserUncheckedCreateWithoutWorkspaceInput> | UserCreateWithoutWorkspaceInput[] | UserUncheckedCreateWithoutWorkspaceInput[]
     connectOrCreate?: UserCreateOrConnectWithoutWorkspaceInput | UserCreateOrConnectWithoutWorkspaceInput[]
@@ -30871,6 +34748,20 @@ export namespace Prisma {
     update?: TargetCycleUpdateWithWhereUniqueWithoutWorkspaceInput | TargetCycleUpdateWithWhereUniqueWithoutWorkspaceInput[]
     updateMany?: TargetCycleUpdateManyWithWhereWithoutWorkspaceInput | TargetCycleUpdateManyWithWhereWithoutWorkspaceInput[]
     deleteMany?: TargetCycleScalarWhereInput | TargetCycleScalarWhereInput[]
+  }
+
+  export type LeadDynamicFieldUncheckedUpdateManyWithoutWorkspaceNestedInput = {
+    create?: XOR<LeadDynamicFieldCreateWithoutWorkspaceInput, LeadDynamicFieldUncheckedCreateWithoutWorkspaceInput> | LeadDynamicFieldCreateWithoutWorkspaceInput[] | LeadDynamicFieldUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: LeadDynamicFieldCreateOrConnectWithoutWorkspaceInput | LeadDynamicFieldCreateOrConnectWithoutWorkspaceInput[]
+    upsert?: LeadDynamicFieldUpsertWithWhereUniqueWithoutWorkspaceInput | LeadDynamicFieldUpsertWithWhereUniqueWithoutWorkspaceInput[]
+    createMany?: LeadDynamicFieldCreateManyWorkspaceInputEnvelope
+    set?: LeadDynamicFieldWhereUniqueInput | LeadDynamicFieldWhereUniqueInput[]
+    disconnect?: LeadDynamicFieldWhereUniqueInput | LeadDynamicFieldWhereUniqueInput[]
+    delete?: LeadDynamicFieldWhereUniqueInput | LeadDynamicFieldWhereUniqueInput[]
+    connect?: LeadDynamicFieldWhereUniqueInput | LeadDynamicFieldWhereUniqueInput[]
+    update?: LeadDynamicFieldUpdateWithWhereUniqueWithoutWorkspaceInput | LeadDynamicFieldUpdateWithWhereUniqueWithoutWorkspaceInput[]
+    updateMany?: LeadDynamicFieldUpdateManyWithWhereWithoutWorkspaceInput | LeadDynamicFieldUpdateManyWithWhereWithoutWorkspaceInput[]
+    deleteMany?: LeadDynamicFieldScalarWhereInput | LeadDynamicFieldScalarWhereInput[]
   }
 
   export type WorkspaceCreateNestedOneWithoutDepartmentsInput = {
@@ -31533,6 +35424,132 @@ export namespace Prisma {
     upsert?: TargetCycleUpsertWithoutRangesInput
     connect?: TargetCycleWhereUniqueInput
     update?: XOR<XOR<TargetCycleUpdateToOneWithWhereWithoutRangesInput, TargetCycleUpdateWithoutRangesInput>, TargetCycleUncheckedUpdateWithoutRangesInput>
+  }
+
+  export type WorkspaceCreateNestedOneWithoutLeadDynamicFieldsInput = {
+    create?: XOR<WorkspaceCreateWithoutLeadDynamicFieldsInput, WorkspaceUncheckedCreateWithoutLeadDynamicFieldsInput>
+    connectOrCreate?: WorkspaceCreateOrConnectWithoutLeadDynamicFieldsInput
+    connect?: WorkspaceWhereUniqueInput
+  }
+
+  export type LeadDynamicOptionCreateNestedManyWithoutFieldInput = {
+    create?: XOR<LeadDynamicOptionCreateWithoutFieldInput, LeadDynamicOptionUncheckedCreateWithoutFieldInput> | LeadDynamicOptionCreateWithoutFieldInput[] | LeadDynamicOptionUncheckedCreateWithoutFieldInput[]
+    connectOrCreate?: LeadDynamicOptionCreateOrConnectWithoutFieldInput | LeadDynamicOptionCreateOrConnectWithoutFieldInput[]
+    createMany?: LeadDynamicOptionCreateManyFieldInputEnvelope
+    connect?: LeadDynamicOptionWhereUniqueInput | LeadDynamicOptionWhereUniqueInput[]
+  }
+
+  export type LeadDynamicValueCreateNestedManyWithoutFieldInput = {
+    create?: XOR<LeadDynamicValueCreateWithoutFieldInput, LeadDynamicValueUncheckedCreateWithoutFieldInput> | LeadDynamicValueCreateWithoutFieldInput[] | LeadDynamicValueUncheckedCreateWithoutFieldInput[]
+    connectOrCreate?: LeadDynamicValueCreateOrConnectWithoutFieldInput | LeadDynamicValueCreateOrConnectWithoutFieldInput[]
+    createMany?: LeadDynamicValueCreateManyFieldInputEnvelope
+    connect?: LeadDynamicValueWhereUniqueInput | LeadDynamicValueWhereUniqueInput[]
+  }
+
+  export type LeadDynamicOptionUncheckedCreateNestedManyWithoutFieldInput = {
+    create?: XOR<LeadDynamicOptionCreateWithoutFieldInput, LeadDynamicOptionUncheckedCreateWithoutFieldInput> | LeadDynamicOptionCreateWithoutFieldInput[] | LeadDynamicOptionUncheckedCreateWithoutFieldInput[]
+    connectOrCreate?: LeadDynamicOptionCreateOrConnectWithoutFieldInput | LeadDynamicOptionCreateOrConnectWithoutFieldInput[]
+    createMany?: LeadDynamicOptionCreateManyFieldInputEnvelope
+    connect?: LeadDynamicOptionWhereUniqueInput | LeadDynamicOptionWhereUniqueInput[]
+  }
+
+  export type LeadDynamicValueUncheckedCreateNestedManyWithoutFieldInput = {
+    create?: XOR<LeadDynamicValueCreateWithoutFieldInput, LeadDynamicValueUncheckedCreateWithoutFieldInput> | LeadDynamicValueCreateWithoutFieldInput[] | LeadDynamicValueUncheckedCreateWithoutFieldInput[]
+    connectOrCreate?: LeadDynamicValueCreateOrConnectWithoutFieldInput | LeadDynamicValueCreateOrConnectWithoutFieldInput[]
+    createMany?: LeadDynamicValueCreateManyFieldInputEnvelope
+    connect?: LeadDynamicValueWhereUniqueInput | LeadDynamicValueWhereUniqueInput[]
+  }
+
+  export type WorkspaceUpdateOneRequiredWithoutLeadDynamicFieldsNestedInput = {
+    create?: XOR<WorkspaceCreateWithoutLeadDynamicFieldsInput, WorkspaceUncheckedCreateWithoutLeadDynamicFieldsInput>
+    connectOrCreate?: WorkspaceCreateOrConnectWithoutLeadDynamicFieldsInput
+    upsert?: WorkspaceUpsertWithoutLeadDynamicFieldsInput
+    connect?: WorkspaceWhereUniqueInput
+    update?: XOR<XOR<WorkspaceUpdateToOneWithWhereWithoutLeadDynamicFieldsInput, WorkspaceUpdateWithoutLeadDynamicFieldsInput>, WorkspaceUncheckedUpdateWithoutLeadDynamicFieldsInput>
+  }
+
+  export type LeadDynamicOptionUpdateManyWithoutFieldNestedInput = {
+    create?: XOR<LeadDynamicOptionCreateWithoutFieldInput, LeadDynamicOptionUncheckedCreateWithoutFieldInput> | LeadDynamicOptionCreateWithoutFieldInput[] | LeadDynamicOptionUncheckedCreateWithoutFieldInput[]
+    connectOrCreate?: LeadDynamicOptionCreateOrConnectWithoutFieldInput | LeadDynamicOptionCreateOrConnectWithoutFieldInput[]
+    upsert?: LeadDynamicOptionUpsertWithWhereUniqueWithoutFieldInput | LeadDynamicOptionUpsertWithWhereUniqueWithoutFieldInput[]
+    createMany?: LeadDynamicOptionCreateManyFieldInputEnvelope
+    set?: LeadDynamicOptionWhereUniqueInput | LeadDynamicOptionWhereUniqueInput[]
+    disconnect?: LeadDynamicOptionWhereUniqueInput | LeadDynamicOptionWhereUniqueInput[]
+    delete?: LeadDynamicOptionWhereUniqueInput | LeadDynamicOptionWhereUniqueInput[]
+    connect?: LeadDynamicOptionWhereUniqueInput | LeadDynamicOptionWhereUniqueInput[]
+    update?: LeadDynamicOptionUpdateWithWhereUniqueWithoutFieldInput | LeadDynamicOptionUpdateWithWhereUniqueWithoutFieldInput[]
+    updateMany?: LeadDynamicOptionUpdateManyWithWhereWithoutFieldInput | LeadDynamicOptionUpdateManyWithWhereWithoutFieldInput[]
+    deleteMany?: LeadDynamicOptionScalarWhereInput | LeadDynamicOptionScalarWhereInput[]
+  }
+
+  export type LeadDynamicValueUpdateManyWithoutFieldNestedInput = {
+    create?: XOR<LeadDynamicValueCreateWithoutFieldInput, LeadDynamicValueUncheckedCreateWithoutFieldInput> | LeadDynamicValueCreateWithoutFieldInput[] | LeadDynamicValueUncheckedCreateWithoutFieldInput[]
+    connectOrCreate?: LeadDynamicValueCreateOrConnectWithoutFieldInput | LeadDynamicValueCreateOrConnectWithoutFieldInput[]
+    upsert?: LeadDynamicValueUpsertWithWhereUniqueWithoutFieldInput | LeadDynamicValueUpsertWithWhereUniqueWithoutFieldInput[]
+    createMany?: LeadDynamicValueCreateManyFieldInputEnvelope
+    set?: LeadDynamicValueWhereUniqueInput | LeadDynamicValueWhereUniqueInput[]
+    disconnect?: LeadDynamicValueWhereUniqueInput | LeadDynamicValueWhereUniqueInput[]
+    delete?: LeadDynamicValueWhereUniqueInput | LeadDynamicValueWhereUniqueInput[]
+    connect?: LeadDynamicValueWhereUniqueInput | LeadDynamicValueWhereUniqueInput[]
+    update?: LeadDynamicValueUpdateWithWhereUniqueWithoutFieldInput | LeadDynamicValueUpdateWithWhereUniqueWithoutFieldInput[]
+    updateMany?: LeadDynamicValueUpdateManyWithWhereWithoutFieldInput | LeadDynamicValueUpdateManyWithWhereWithoutFieldInput[]
+    deleteMany?: LeadDynamicValueScalarWhereInput | LeadDynamicValueScalarWhereInput[]
+  }
+
+  export type LeadDynamicOptionUncheckedUpdateManyWithoutFieldNestedInput = {
+    create?: XOR<LeadDynamicOptionCreateWithoutFieldInput, LeadDynamicOptionUncheckedCreateWithoutFieldInput> | LeadDynamicOptionCreateWithoutFieldInput[] | LeadDynamicOptionUncheckedCreateWithoutFieldInput[]
+    connectOrCreate?: LeadDynamicOptionCreateOrConnectWithoutFieldInput | LeadDynamicOptionCreateOrConnectWithoutFieldInput[]
+    upsert?: LeadDynamicOptionUpsertWithWhereUniqueWithoutFieldInput | LeadDynamicOptionUpsertWithWhereUniqueWithoutFieldInput[]
+    createMany?: LeadDynamicOptionCreateManyFieldInputEnvelope
+    set?: LeadDynamicOptionWhereUniqueInput | LeadDynamicOptionWhereUniqueInput[]
+    disconnect?: LeadDynamicOptionWhereUniqueInput | LeadDynamicOptionWhereUniqueInput[]
+    delete?: LeadDynamicOptionWhereUniqueInput | LeadDynamicOptionWhereUniqueInput[]
+    connect?: LeadDynamicOptionWhereUniqueInput | LeadDynamicOptionWhereUniqueInput[]
+    update?: LeadDynamicOptionUpdateWithWhereUniqueWithoutFieldInput | LeadDynamicOptionUpdateWithWhereUniqueWithoutFieldInput[]
+    updateMany?: LeadDynamicOptionUpdateManyWithWhereWithoutFieldInput | LeadDynamicOptionUpdateManyWithWhereWithoutFieldInput[]
+    deleteMany?: LeadDynamicOptionScalarWhereInput | LeadDynamicOptionScalarWhereInput[]
+  }
+
+  export type LeadDynamicValueUncheckedUpdateManyWithoutFieldNestedInput = {
+    create?: XOR<LeadDynamicValueCreateWithoutFieldInput, LeadDynamicValueUncheckedCreateWithoutFieldInput> | LeadDynamicValueCreateWithoutFieldInput[] | LeadDynamicValueUncheckedCreateWithoutFieldInput[]
+    connectOrCreate?: LeadDynamicValueCreateOrConnectWithoutFieldInput | LeadDynamicValueCreateOrConnectWithoutFieldInput[]
+    upsert?: LeadDynamicValueUpsertWithWhereUniqueWithoutFieldInput | LeadDynamicValueUpsertWithWhereUniqueWithoutFieldInput[]
+    createMany?: LeadDynamicValueCreateManyFieldInputEnvelope
+    set?: LeadDynamicValueWhereUniqueInput | LeadDynamicValueWhereUniqueInput[]
+    disconnect?: LeadDynamicValueWhereUniqueInput | LeadDynamicValueWhereUniqueInput[]
+    delete?: LeadDynamicValueWhereUniqueInput | LeadDynamicValueWhereUniqueInput[]
+    connect?: LeadDynamicValueWhereUniqueInput | LeadDynamicValueWhereUniqueInput[]
+    update?: LeadDynamicValueUpdateWithWhereUniqueWithoutFieldInput | LeadDynamicValueUpdateWithWhereUniqueWithoutFieldInput[]
+    updateMany?: LeadDynamicValueUpdateManyWithWhereWithoutFieldInput | LeadDynamicValueUpdateManyWithWhereWithoutFieldInput[]
+    deleteMany?: LeadDynamicValueScalarWhereInput | LeadDynamicValueScalarWhereInput[]
+  }
+
+  export type LeadDynamicFieldCreateNestedOneWithoutOptionsInput = {
+    create?: XOR<LeadDynamicFieldCreateWithoutOptionsInput, LeadDynamicFieldUncheckedCreateWithoutOptionsInput>
+    connectOrCreate?: LeadDynamicFieldCreateOrConnectWithoutOptionsInput
+    connect?: LeadDynamicFieldWhereUniqueInput
+  }
+
+  export type LeadDynamicFieldUpdateOneRequiredWithoutOptionsNestedInput = {
+    create?: XOR<LeadDynamicFieldCreateWithoutOptionsInput, LeadDynamicFieldUncheckedCreateWithoutOptionsInput>
+    connectOrCreate?: LeadDynamicFieldCreateOrConnectWithoutOptionsInput
+    upsert?: LeadDynamicFieldUpsertWithoutOptionsInput
+    connect?: LeadDynamicFieldWhereUniqueInput
+    update?: XOR<XOR<LeadDynamicFieldUpdateToOneWithWhereWithoutOptionsInput, LeadDynamicFieldUpdateWithoutOptionsInput>, LeadDynamicFieldUncheckedUpdateWithoutOptionsInput>
+  }
+
+  export type LeadDynamicFieldCreateNestedOneWithoutValuesInput = {
+    create?: XOR<LeadDynamicFieldCreateWithoutValuesInput, LeadDynamicFieldUncheckedCreateWithoutValuesInput>
+    connectOrCreate?: LeadDynamicFieldCreateOrConnectWithoutValuesInput
+    connect?: LeadDynamicFieldWhereUniqueInput
+  }
+
+  export type LeadDynamicFieldUpdateOneRequiredWithoutValuesNestedInput = {
+    create?: XOR<LeadDynamicFieldCreateWithoutValuesInput, LeadDynamicFieldUncheckedCreateWithoutValuesInput>
+    connectOrCreate?: LeadDynamicFieldCreateOrConnectWithoutValuesInput
+    upsert?: LeadDynamicFieldUpsertWithoutValuesInput
+    connect?: LeadDynamicFieldWhereUniqueInput
+    update?: XOR<XOR<LeadDynamicFieldUpdateToOneWithWhereWithoutValuesInput, LeadDynamicFieldUpdateWithoutValuesInput>, LeadDynamicFieldUncheckedUpdateWithoutValuesInput>
   }
 
   export type UserCreateNestedOneWithoutTargetSettingsInput = {
@@ -33089,6 +37106,42 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type LeadDynamicFieldCreateWithoutWorkspaceInput = {
+    id?: string
+    name: string
+    inputType: string
+    sortOrder: number
+    isRequired?: boolean
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    options?: LeadDynamicOptionCreateNestedManyWithoutFieldInput
+    values?: LeadDynamicValueCreateNestedManyWithoutFieldInput
+  }
+
+  export type LeadDynamicFieldUncheckedCreateWithoutWorkspaceInput = {
+    id?: string
+    name: string
+    inputType: string
+    sortOrder: number
+    isRequired?: boolean
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    options?: LeadDynamicOptionUncheckedCreateNestedManyWithoutFieldInput
+    values?: LeadDynamicValueUncheckedCreateNestedManyWithoutFieldInput
+  }
+
+  export type LeadDynamicFieldCreateOrConnectWithoutWorkspaceInput = {
+    where: LeadDynamicFieldWhereUniqueInput
+    create: XOR<LeadDynamicFieldCreateWithoutWorkspaceInput, LeadDynamicFieldUncheckedCreateWithoutWorkspaceInput>
+  }
+
+  export type LeadDynamicFieldCreateManyWorkspaceInputEnvelope = {
+    data: LeadDynamicFieldCreateManyWorkspaceInput | LeadDynamicFieldCreateManyWorkspaceInput[]
+    skipDuplicates?: boolean
+  }
+
   export type UserUpsertWithoutOwnedWorkspaceInput = {
     update: XOR<UserUpdateWithoutOwnedWorkspaceInput, UserUncheckedUpdateWithoutOwnedWorkspaceInput>
     create: XOR<UserCreateWithoutOwnedWorkspaceInput, UserUncheckedCreateWithoutOwnedWorkspaceInput>
@@ -33249,6 +37302,37 @@ export namespace Prisma {
     deletedAt?: DateTimeNullableFilter<"TargetCycle"> | Date | string | null
   }
 
+  export type LeadDynamicFieldUpsertWithWhereUniqueWithoutWorkspaceInput = {
+    where: LeadDynamicFieldWhereUniqueInput
+    update: XOR<LeadDynamicFieldUpdateWithoutWorkspaceInput, LeadDynamicFieldUncheckedUpdateWithoutWorkspaceInput>
+    create: XOR<LeadDynamicFieldCreateWithoutWorkspaceInput, LeadDynamicFieldUncheckedCreateWithoutWorkspaceInput>
+  }
+
+  export type LeadDynamicFieldUpdateWithWhereUniqueWithoutWorkspaceInput = {
+    where: LeadDynamicFieldWhereUniqueInput
+    data: XOR<LeadDynamicFieldUpdateWithoutWorkspaceInput, LeadDynamicFieldUncheckedUpdateWithoutWorkspaceInput>
+  }
+
+  export type LeadDynamicFieldUpdateManyWithWhereWithoutWorkspaceInput = {
+    where: LeadDynamicFieldScalarWhereInput
+    data: XOR<LeadDynamicFieldUpdateManyMutationInput, LeadDynamicFieldUncheckedUpdateManyWithoutWorkspaceInput>
+  }
+
+  export type LeadDynamicFieldScalarWhereInput = {
+    AND?: LeadDynamicFieldScalarWhereInput | LeadDynamicFieldScalarWhereInput[]
+    OR?: LeadDynamicFieldScalarWhereInput[]
+    NOT?: LeadDynamicFieldScalarWhereInput | LeadDynamicFieldScalarWhereInput[]
+    id?: StringFilter<"LeadDynamicField"> | string
+    name?: StringFilter<"LeadDynamicField"> | string
+    inputType?: StringFilter<"LeadDynamicField"> | string
+    sortOrder?: IntFilter<"LeadDynamicField"> | number
+    isRequired?: BoolFilter<"LeadDynamicField"> | boolean
+    isActive?: BoolFilter<"LeadDynamicField"> | boolean
+    workspaceId?: StringFilter<"LeadDynamicField"> | string
+    createdAt?: DateTimeFilter<"LeadDynamicField"> | Date | string
+    updatedAt?: DateTimeFilter<"LeadDynamicField"> | Date | string
+  }
+
   export type WorkspaceCreateWithoutDepartmentsInput = {
     id?: string
     companyName: string
@@ -33262,6 +37346,7 @@ export namespace Prisma {
     owner: UserCreateNestedOneWithoutOwnedWorkspaceInput
     users?: UserCreateNestedManyWithoutWorkspaceInput
     targetCycles?: TargetCycleCreateNestedManyWithoutWorkspaceInput
+    leadDynamicFields?: LeadDynamicFieldCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateWithoutDepartmentsInput = {
@@ -33277,6 +37362,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     users?: UserUncheckedCreateNestedManyWithoutWorkspaceInput
     targetCycles?: TargetCycleUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadDynamicFields?: LeadDynamicFieldUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceCreateOrConnectWithoutDepartmentsInput = {
@@ -33390,6 +37476,7 @@ export namespace Prisma {
     owner?: UserUpdateOneRequiredWithoutOwnedWorkspaceNestedInput
     users?: UserUpdateManyWithoutWorkspaceNestedInput
     targetCycles?: TargetCycleUpdateManyWithoutWorkspaceNestedInput
+    leadDynamicFields?: LeadDynamicFieldUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateWithoutDepartmentsInput = {
@@ -33405,6 +37492,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUncheckedUpdateManyWithoutWorkspaceNestedInput
     targetCycles?: TargetCycleUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadDynamicFields?: LeadDynamicFieldUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type UserUpsertWithWhereUniqueWithoutDepartmentInput = {
@@ -34626,6 +38714,7 @@ export namespace Prisma {
     owner: UserCreateNestedOneWithoutOwnedWorkspaceInput
     users?: UserCreateNestedManyWithoutWorkspaceInput
     departments?: DepartmentCreateNestedManyWithoutWorkspaceInput
+    leadDynamicFields?: LeadDynamicFieldCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateWithoutTargetCyclesInput = {
@@ -34641,6 +38730,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     users?: UserUncheckedCreateNestedManyWithoutWorkspaceInput
     departments?: DepartmentUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadDynamicFields?: LeadDynamicFieldUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceCreateOrConnectWithoutTargetCyclesInput = {
@@ -34736,6 +38826,7 @@ export namespace Prisma {
     owner?: UserUpdateOneRequiredWithoutOwnedWorkspaceNestedInput
     users?: UserUpdateManyWithoutWorkspaceNestedInput
     departments?: DepartmentUpdateManyWithoutWorkspaceNestedInput
+    leadDynamicFields?: LeadDynamicFieldUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateWithoutTargetCyclesInput = {
@@ -34751,6 +38842,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUncheckedUpdateManyWithoutWorkspaceNestedInput
     departments?: DepartmentUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadDynamicFields?: LeadDynamicFieldUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type TargetCycleRangeUpsertWithWhereUniqueWithoutTargetCycleInput = {
@@ -34862,6 +38954,321 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     targets?: TargetSettingUncheckedUpdateManyWithoutTargetCycleNestedInput
+  }
+
+  export type WorkspaceCreateWithoutLeadDynamicFieldsInput = {
+    id?: string
+    companyName: string
+    employeeCount: string
+    timeZone?: string
+    language?: string
+    currencyLocale?: string
+    loadSampleData?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    owner: UserCreateNestedOneWithoutOwnedWorkspaceInput
+    users?: UserCreateNestedManyWithoutWorkspaceInput
+    departments?: DepartmentCreateNestedManyWithoutWorkspaceInput
+    targetCycles?: TargetCycleCreateNestedManyWithoutWorkspaceInput
+  }
+
+  export type WorkspaceUncheckedCreateWithoutLeadDynamicFieldsInput = {
+    id?: string
+    companyName: string
+    employeeCount: string
+    timeZone?: string
+    language?: string
+    currencyLocale?: string
+    loadSampleData?: boolean
+    ownerId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    users?: UserUncheckedCreateNestedManyWithoutWorkspaceInput
+    departments?: DepartmentUncheckedCreateNestedManyWithoutWorkspaceInput
+    targetCycles?: TargetCycleUncheckedCreateNestedManyWithoutWorkspaceInput
+  }
+
+  export type WorkspaceCreateOrConnectWithoutLeadDynamicFieldsInput = {
+    where: WorkspaceWhereUniqueInput
+    create: XOR<WorkspaceCreateWithoutLeadDynamicFieldsInput, WorkspaceUncheckedCreateWithoutLeadDynamicFieldsInput>
+  }
+
+  export type LeadDynamicOptionCreateWithoutFieldInput = {
+    id?: string
+    value: string
+    sortOrder: number
+  }
+
+  export type LeadDynamicOptionUncheckedCreateWithoutFieldInput = {
+    id?: string
+    value: string
+    sortOrder: number
+  }
+
+  export type LeadDynamicOptionCreateOrConnectWithoutFieldInput = {
+    where: LeadDynamicOptionWhereUniqueInput
+    create: XOR<LeadDynamicOptionCreateWithoutFieldInput, LeadDynamicOptionUncheckedCreateWithoutFieldInput>
+  }
+
+  export type LeadDynamicOptionCreateManyFieldInputEnvelope = {
+    data: LeadDynamicOptionCreateManyFieldInput | LeadDynamicOptionCreateManyFieldInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type LeadDynamicValueCreateWithoutFieldInput = {
+    id?: string
+    leadId: string
+    value: string
+    createdAt?: Date | string
+  }
+
+  export type LeadDynamicValueUncheckedCreateWithoutFieldInput = {
+    id?: string
+    leadId: string
+    value: string
+    createdAt?: Date | string
+  }
+
+  export type LeadDynamicValueCreateOrConnectWithoutFieldInput = {
+    where: LeadDynamicValueWhereUniqueInput
+    create: XOR<LeadDynamicValueCreateWithoutFieldInput, LeadDynamicValueUncheckedCreateWithoutFieldInput>
+  }
+
+  export type LeadDynamicValueCreateManyFieldInputEnvelope = {
+    data: LeadDynamicValueCreateManyFieldInput | LeadDynamicValueCreateManyFieldInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type WorkspaceUpsertWithoutLeadDynamicFieldsInput = {
+    update: XOR<WorkspaceUpdateWithoutLeadDynamicFieldsInput, WorkspaceUncheckedUpdateWithoutLeadDynamicFieldsInput>
+    create: XOR<WorkspaceCreateWithoutLeadDynamicFieldsInput, WorkspaceUncheckedCreateWithoutLeadDynamicFieldsInput>
+    where?: WorkspaceWhereInput
+  }
+
+  export type WorkspaceUpdateToOneWithWhereWithoutLeadDynamicFieldsInput = {
+    where?: WorkspaceWhereInput
+    data: XOR<WorkspaceUpdateWithoutLeadDynamicFieldsInput, WorkspaceUncheckedUpdateWithoutLeadDynamicFieldsInput>
+  }
+
+  export type WorkspaceUpdateWithoutLeadDynamicFieldsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    companyName?: StringFieldUpdateOperationsInput | string
+    employeeCount?: StringFieldUpdateOperationsInput | string
+    timeZone?: StringFieldUpdateOperationsInput | string
+    language?: StringFieldUpdateOperationsInput | string
+    currencyLocale?: StringFieldUpdateOperationsInput | string
+    loadSampleData?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    owner?: UserUpdateOneRequiredWithoutOwnedWorkspaceNestedInput
+    users?: UserUpdateManyWithoutWorkspaceNestedInput
+    departments?: DepartmentUpdateManyWithoutWorkspaceNestedInput
+    targetCycles?: TargetCycleUpdateManyWithoutWorkspaceNestedInput
+  }
+
+  export type WorkspaceUncheckedUpdateWithoutLeadDynamicFieldsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    companyName?: StringFieldUpdateOperationsInput | string
+    employeeCount?: StringFieldUpdateOperationsInput | string
+    timeZone?: StringFieldUpdateOperationsInput | string
+    language?: StringFieldUpdateOperationsInput | string
+    currencyLocale?: StringFieldUpdateOperationsInput | string
+    loadSampleData?: BoolFieldUpdateOperationsInput | boolean
+    ownerId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    users?: UserUncheckedUpdateManyWithoutWorkspaceNestedInput
+    departments?: DepartmentUncheckedUpdateManyWithoutWorkspaceNestedInput
+    targetCycles?: TargetCycleUncheckedUpdateManyWithoutWorkspaceNestedInput
+  }
+
+  export type LeadDynamicOptionUpsertWithWhereUniqueWithoutFieldInput = {
+    where: LeadDynamicOptionWhereUniqueInput
+    update: XOR<LeadDynamicOptionUpdateWithoutFieldInput, LeadDynamicOptionUncheckedUpdateWithoutFieldInput>
+    create: XOR<LeadDynamicOptionCreateWithoutFieldInput, LeadDynamicOptionUncheckedCreateWithoutFieldInput>
+  }
+
+  export type LeadDynamicOptionUpdateWithWhereUniqueWithoutFieldInput = {
+    where: LeadDynamicOptionWhereUniqueInput
+    data: XOR<LeadDynamicOptionUpdateWithoutFieldInput, LeadDynamicOptionUncheckedUpdateWithoutFieldInput>
+  }
+
+  export type LeadDynamicOptionUpdateManyWithWhereWithoutFieldInput = {
+    where: LeadDynamicOptionScalarWhereInput
+    data: XOR<LeadDynamicOptionUpdateManyMutationInput, LeadDynamicOptionUncheckedUpdateManyWithoutFieldInput>
+  }
+
+  export type LeadDynamicOptionScalarWhereInput = {
+    AND?: LeadDynamicOptionScalarWhereInput | LeadDynamicOptionScalarWhereInput[]
+    OR?: LeadDynamicOptionScalarWhereInput[]
+    NOT?: LeadDynamicOptionScalarWhereInput | LeadDynamicOptionScalarWhereInput[]
+    id?: StringFilter<"LeadDynamicOption"> | string
+    fieldId?: StringFilter<"LeadDynamicOption"> | string
+    value?: StringFilter<"LeadDynamicOption"> | string
+    sortOrder?: IntFilter<"LeadDynamicOption"> | number
+  }
+
+  export type LeadDynamicValueUpsertWithWhereUniqueWithoutFieldInput = {
+    where: LeadDynamicValueWhereUniqueInput
+    update: XOR<LeadDynamicValueUpdateWithoutFieldInput, LeadDynamicValueUncheckedUpdateWithoutFieldInput>
+    create: XOR<LeadDynamicValueCreateWithoutFieldInput, LeadDynamicValueUncheckedCreateWithoutFieldInput>
+  }
+
+  export type LeadDynamicValueUpdateWithWhereUniqueWithoutFieldInput = {
+    where: LeadDynamicValueWhereUniqueInput
+    data: XOR<LeadDynamicValueUpdateWithoutFieldInput, LeadDynamicValueUncheckedUpdateWithoutFieldInput>
+  }
+
+  export type LeadDynamicValueUpdateManyWithWhereWithoutFieldInput = {
+    where: LeadDynamicValueScalarWhereInput
+    data: XOR<LeadDynamicValueUpdateManyMutationInput, LeadDynamicValueUncheckedUpdateManyWithoutFieldInput>
+  }
+
+  export type LeadDynamicValueScalarWhereInput = {
+    AND?: LeadDynamicValueScalarWhereInput | LeadDynamicValueScalarWhereInput[]
+    OR?: LeadDynamicValueScalarWhereInput[]
+    NOT?: LeadDynamicValueScalarWhereInput | LeadDynamicValueScalarWhereInput[]
+    id?: StringFilter<"LeadDynamicValue"> | string
+    leadId?: StringFilter<"LeadDynamicValue"> | string
+    fieldId?: StringFilter<"LeadDynamicValue"> | string
+    value?: StringFilter<"LeadDynamicValue"> | string
+    createdAt?: DateTimeFilter<"LeadDynamicValue"> | Date | string
+  }
+
+  export type LeadDynamicFieldCreateWithoutOptionsInput = {
+    id?: string
+    name: string
+    inputType: string
+    sortOrder: number
+    isRequired?: boolean
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    workspace: WorkspaceCreateNestedOneWithoutLeadDynamicFieldsInput
+    values?: LeadDynamicValueCreateNestedManyWithoutFieldInput
+  }
+
+  export type LeadDynamicFieldUncheckedCreateWithoutOptionsInput = {
+    id?: string
+    name: string
+    inputType: string
+    sortOrder: number
+    isRequired?: boolean
+    isActive?: boolean
+    workspaceId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    values?: LeadDynamicValueUncheckedCreateNestedManyWithoutFieldInput
+  }
+
+  export type LeadDynamicFieldCreateOrConnectWithoutOptionsInput = {
+    where: LeadDynamicFieldWhereUniqueInput
+    create: XOR<LeadDynamicFieldCreateWithoutOptionsInput, LeadDynamicFieldUncheckedCreateWithoutOptionsInput>
+  }
+
+  export type LeadDynamicFieldUpsertWithoutOptionsInput = {
+    update: XOR<LeadDynamicFieldUpdateWithoutOptionsInput, LeadDynamicFieldUncheckedUpdateWithoutOptionsInput>
+    create: XOR<LeadDynamicFieldCreateWithoutOptionsInput, LeadDynamicFieldUncheckedCreateWithoutOptionsInput>
+    where?: LeadDynamicFieldWhereInput
+  }
+
+  export type LeadDynamicFieldUpdateToOneWithWhereWithoutOptionsInput = {
+    where?: LeadDynamicFieldWhereInput
+    data: XOR<LeadDynamicFieldUpdateWithoutOptionsInput, LeadDynamicFieldUncheckedUpdateWithoutOptionsInput>
+  }
+
+  export type LeadDynamicFieldUpdateWithoutOptionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    inputType?: StringFieldUpdateOperationsInput | string
+    sortOrder?: IntFieldUpdateOperationsInput | number
+    isRequired?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    workspace?: WorkspaceUpdateOneRequiredWithoutLeadDynamicFieldsNestedInput
+    values?: LeadDynamicValueUpdateManyWithoutFieldNestedInput
+  }
+
+  export type LeadDynamicFieldUncheckedUpdateWithoutOptionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    inputType?: StringFieldUpdateOperationsInput | string
+    sortOrder?: IntFieldUpdateOperationsInput | number
+    isRequired?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    values?: LeadDynamicValueUncheckedUpdateManyWithoutFieldNestedInput
+  }
+
+  export type LeadDynamicFieldCreateWithoutValuesInput = {
+    id?: string
+    name: string
+    inputType: string
+    sortOrder: number
+    isRequired?: boolean
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    workspace: WorkspaceCreateNestedOneWithoutLeadDynamicFieldsInput
+    options?: LeadDynamicOptionCreateNestedManyWithoutFieldInput
+  }
+
+  export type LeadDynamicFieldUncheckedCreateWithoutValuesInput = {
+    id?: string
+    name: string
+    inputType: string
+    sortOrder: number
+    isRequired?: boolean
+    isActive?: boolean
+    workspaceId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    options?: LeadDynamicOptionUncheckedCreateNestedManyWithoutFieldInput
+  }
+
+  export type LeadDynamicFieldCreateOrConnectWithoutValuesInput = {
+    where: LeadDynamicFieldWhereUniqueInput
+    create: XOR<LeadDynamicFieldCreateWithoutValuesInput, LeadDynamicFieldUncheckedCreateWithoutValuesInput>
+  }
+
+  export type LeadDynamicFieldUpsertWithoutValuesInput = {
+    update: XOR<LeadDynamicFieldUpdateWithoutValuesInput, LeadDynamicFieldUncheckedUpdateWithoutValuesInput>
+    create: XOR<LeadDynamicFieldCreateWithoutValuesInput, LeadDynamicFieldUncheckedCreateWithoutValuesInput>
+    where?: LeadDynamicFieldWhereInput
+  }
+
+  export type LeadDynamicFieldUpdateToOneWithWhereWithoutValuesInput = {
+    where?: LeadDynamicFieldWhereInput
+    data: XOR<LeadDynamicFieldUpdateWithoutValuesInput, LeadDynamicFieldUncheckedUpdateWithoutValuesInput>
+  }
+
+  export type LeadDynamicFieldUpdateWithoutValuesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    inputType?: StringFieldUpdateOperationsInput | string
+    sortOrder?: IntFieldUpdateOperationsInput | number
+    isRequired?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    workspace?: WorkspaceUpdateOneRequiredWithoutLeadDynamicFieldsNestedInput
+    options?: LeadDynamicOptionUpdateManyWithoutFieldNestedInput
+  }
+
+  export type LeadDynamicFieldUncheckedUpdateWithoutValuesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    inputType?: StringFieldUpdateOperationsInput | string
+    sortOrder?: IntFieldUpdateOperationsInput | number
+    isRequired?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    options?: LeadDynamicOptionUncheckedUpdateManyWithoutFieldNestedInput
   }
 
   export type UserCreateWithoutTargetSettingsInput = {
@@ -35344,6 +39751,7 @@ export namespace Prisma {
     owner: UserCreateNestedOneWithoutOwnedWorkspaceInput
     departments?: DepartmentCreateNestedManyWithoutWorkspaceInput
     targetCycles?: TargetCycleCreateNestedManyWithoutWorkspaceInput
+    leadDynamicFields?: LeadDynamicFieldCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateWithoutUsersInput = {
@@ -35359,6 +39767,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     departments?: DepartmentUncheckedCreateNestedManyWithoutWorkspaceInput
     targetCycles?: TargetCycleUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadDynamicFields?: LeadDynamicFieldUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceCreateOrConnectWithoutUsersInput = {
@@ -35379,6 +39788,7 @@ export namespace Prisma {
     users?: UserCreateNestedManyWithoutWorkspaceInput
     departments?: DepartmentCreateNestedManyWithoutWorkspaceInput
     targetCycles?: TargetCycleCreateNestedManyWithoutWorkspaceInput
+    leadDynamicFields?: LeadDynamicFieldCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateWithoutOwnerInput = {
@@ -35394,6 +39804,7 @@ export namespace Prisma {
     users?: UserUncheckedCreateNestedManyWithoutWorkspaceInput
     departments?: DepartmentUncheckedCreateNestedManyWithoutWorkspaceInput
     targetCycles?: TargetCycleUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadDynamicFields?: LeadDynamicFieldUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceCreateOrConnectWithoutOwnerInput = {
@@ -35976,6 +40387,7 @@ export namespace Prisma {
     owner?: UserUpdateOneRequiredWithoutOwnedWorkspaceNestedInput
     departments?: DepartmentUpdateManyWithoutWorkspaceNestedInput
     targetCycles?: TargetCycleUpdateManyWithoutWorkspaceNestedInput
+    leadDynamicFields?: LeadDynamicFieldUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateWithoutUsersInput = {
@@ -35991,6 +40403,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     departments?: DepartmentUncheckedUpdateManyWithoutWorkspaceNestedInput
     targetCycles?: TargetCycleUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadDynamicFields?: LeadDynamicFieldUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUpsertWithoutOwnerInput = {
@@ -36017,6 +40430,7 @@ export namespace Prisma {
     users?: UserUpdateManyWithoutWorkspaceNestedInput
     departments?: DepartmentUpdateManyWithoutWorkspaceNestedInput
     targetCycles?: TargetCycleUpdateManyWithoutWorkspaceNestedInput
+    leadDynamicFields?: LeadDynamicFieldUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateWithoutOwnerInput = {
@@ -36032,6 +40446,7 @@ export namespace Prisma {
     users?: UserUncheckedUpdateManyWithoutWorkspaceNestedInput
     departments?: DepartmentUncheckedUpdateManyWithoutWorkspaceNestedInput
     targetCycles?: TargetCycleUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadDynamicFields?: LeadDynamicFieldUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type DepartmentUpsertWithoutUsersInput = {
@@ -37165,6 +41580,17 @@ export namespace Prisma {
     deletedAt?: Date | string | null
   }
 
+  export type LeadDynamicFieldCreateManyWorkspaceInput = {
+    id?: string
+    name: string
+    inputType: string
+    sortOrder: number
+    isRequired?: boolean
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type UserUpdateWithoutWorkspaceInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: NullableStringFieldUpdateOperationsInput | string | null
@@ -37332,6 +41758,43 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type LeadDynamicFieldUpdateWithoutWorkspaceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    inputType?: StringFieldUpdateOperationsInput | string
+    sortOrder?: IntFieldUpdateOperationsInput | number
+    isRequired?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    options?: LeadDynamicOptionUpdateManyWithoutFieldNestedInput
+    values?: LeadDynamicValueUpdateManyWithoutFieldNestedInput
+  }
+
+  export type LeadDynamicFieldUncheckedUpdateWithoutWorkspaceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    inputType?: StringFieldUpdateOperationsInput | string
+    sortOrder?: IntFieldUpdateOperationsInput | number
+    isRequired?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    options?: LeadDynamicOptionUncheckedUpdateManyWithoutFieldNestedInput
+    values?: LeadDynamicValueUncheckedUpdateManyWithoutFieldNestedInput
+  }
+
+  export type LeadDynamicFieldUncheckedUpdateManyWithoutWorkspaceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    inputType?: StringFieldUpdateOperationsInput | string
+    sortOrder?: IntFieldUpdateOperationsInput | number
+    isRequired?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type UserCreateManyDepartmentInput = {
@@ -38298,6 +42761,58 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type LeadDynamicOptionCreateManyFieldInput = {
+    id?: string
+    value: string
+    sortOrder: number
+  }
+
+  export type LeadDynamicValueCreateManyFieldInput = {
+    id?: string
+    leadId: string
+    value: string
+    createdAt?: Date | string
+  }
+
+  export type LeadDynamicOptionUpdateWithoutFieldInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    value?: StringFieldUpdateOperationsInput | string
+    sortOrder?: IntFieldUpdateOperationsInput | number
+  }
+
+  export type LeadDynamicOptionUncheckedUpdateWithoutFieldInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    value?: StringFieldUpdateOperationsInput | string
+    sortOrder?: IntFieldUpdateOperationsInput | number
+  }
+
+  export type LeadDynamicOptionUncheckedUpdateManyWithoutFieldInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    value?: StringFieldUpdateOperationsInput | string
+    sortOrder?: IntFieldUpdateOperationsInput | number
+  }
+
+  export type LeadDynamicValueUpdateWithoutFieldInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    leadId?: StringFieldUpdateOperationsInput | string
+    value?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LeadDynamicValueUncheckedUpdateWithoutFieldInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    leadId?: StringFieldUpdateOperationsInput | string
+    value?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LeadDynamicValueUncheckedUpdateManyWithoutFieldInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    leadId?: StringFieldUpdateOperationsInput | string
+    value?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type UserLocationAssignmentCreateManyUserInput = {
     id?: string
     locationId: string
@@ -38772,6 +43287,10 @@ export namespace Prisma {
      */
     export type TargetCycleCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = TargetCycleCountOutputTypeDefaultArgs<ExtArgs>
     /**
+     * @deprecated Use LeadDynamicFieldCountOutputTypeDefaultArgs instead
+     */
+    export type LeadDynamicFieldCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = LeadDynamicFieldCountOutputTypeDefaultArgs<ExtArgs>
+    /**
      * @deprecated Use UserCountOutputTypeDefaultArgs instead
      */
     export type UserCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = UserCountOutputTypeDefaultArgs<ExtArgs>
@@ -38835,6 +43354,18 @@ export namespace Prisma {
      * @deprecated Use TargetCycleRangeDefaultArgs instead
      */
     export type TargetCycleRangeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = TargetCycleRangeDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use LeadDynamicFieldDefaultArgs instead
+     */
+    export type LeadDynamicFieldArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = LeadDynamicFieldDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use LeadDynamicOptionDefaultArgs instead
+     */
+    export type LeadDynamicOptionArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = LeadDynamicOptionDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use LeadDynamicValueDefaultArgs instead
+     */
+    export type LeadDynamicValueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = LeadDynamicValueDefaultArgs<ExtArgs>
     /**
      * @deprecated Use TargetSettingDefaultArgs instead
      */

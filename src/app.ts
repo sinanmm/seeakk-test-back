@@ -9,6 +9,11 @@ import departmentsRoutes from './modules/admin/departments/departments.routes';
 import organisationChartRoutes from './modules/admin/organisation-chart/organisationChart.routes';
 import rosterRoutes from './modules/admin/roster/roster.routes';
 import targetCycleRoutes from './modules/admin/targetCycle/targetCycle.routes';
+import {
+  leadDynamicsAdminRoutes,
+  leadDynamicsRouter,
+  leadValuesRouter,
+} from './modules/admin/lead-dynamics/leadDynamics.routes';
 import leadSourceRoutes from './modules/master/lead-source/leadSource.routes';
 import leadStageRoutes from './modules/master/lead-stages/leadStage.routes';
 import stageRuleRoutes from './modules/master/stage-rules/stageRule.routes';
@@ -36,7 +41,10 @@ app.use('/api/admin/organisation-chart', organisationChartRoutes);
 app.use('/api/admin/organization-chart', organisationChartRoutes);
 app.use('/api/admin/roster', rosterRoutes);
 app.use('/api/admin/target-cycles', targetCycleRoutes);
+app.use('/api/admin/lead-dynamics', leadDynamicsAdminRoutes);
 app.use('/api/master/target-cycles', targetCycleRoutes);
+app.use('/api/lead-dynamics', leadDynamicsRouter);
+app.use('/api/leads', leadValuesRouter);
 app.use('/api/master/lead-sources', leadSourceRoutes);
 app.use('/api/master/lead-stages', leadStageRoutes);
 app.use('/api/master/stage-rules', stageRuleRoutes);

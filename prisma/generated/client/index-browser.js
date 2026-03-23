@@ -277,6 +277,33 @@ exports.Prisma.TargetCycleRangeScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.LeadDynamicFieldScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  inputType: 'inputType',
+  sortOrder: 'sortOrder',
+  isRequired: 'isRequired',
+  isActive: 'isActive',
+  workspaceId: 'workspaceId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.LeadDynamicOptionScalarFieldEnum = {
+  id: 'id',
+  fieldId: 'fieldId',
+  value: 'value',
+  sortOrder: 'sortOrder'
+};
+
+exports.Prisma.LeadDynamicValueScalarFieldEnum = {
+  id: 'id',
+  leadId: 'leadId',
+  fieldId: 'fieldId',
+  value: 'value',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.TargetSettingScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
@@ -490,6 +517,9 @@ exports.Prisma.ModelName = {
   TargetType: 'TargetType',
   TargetCycle: 'TargetCycle',
   TargetCycleRange: 'TargetCycleRange',
+  LeadDynamicField: 'LeadDynamicField',
+  LeadDynamicOption: 'LeadDynamicOption',
+  LeadDynamicValue: 'LeadDynamicValue',
   TargetSetting: 'TargetSetting',
   TargetViolation: 'TargetViolation',
   User: 'User',

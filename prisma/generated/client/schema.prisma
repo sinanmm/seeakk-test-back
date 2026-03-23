@@ -79,20 +79,21 @@ model RolePermission {
 }
 
 model Workspace {
-  id             String        @id @default(cuid())
-  companyName    String
-  employeeCount  String
-  timeZone       String        @default("UTC")
-  language       String        @default("en-US")
-  currencyLocale String        @default("USD")
-  loadSampleData Boolean       @default(false)
-  owner          User          @relation("WorkspaceOwner", fields: [ownerId], references: [id])
-  ownerId        String        @unique
-  users          User[]        @relation("WorkspaceMembers")
-  departments    Department[]
-  targetCycles   TargetCycle[]
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  id                String             @id @default(cuid())
+  companyName       String
+  employeeCount     String
+  timeZone          String             @default("UTC")
+  language          String             @default("en-US")
+  currencyLocale    String             @default("USD")
+  loadSampleData    Boolean            @default(false)
+  owner             User               @relation("WorkspaceOwner", fields: [ownerId], references: [id])
+  ownerId           String             @unique
+  users             User[]             @relation("WorkspaceMembers")
+  departments       Department[]
+  targetCycles      TargetCycle[]
+  leadDynamicFields LeadDynamicField[]
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
 
   @@map("workspaces")
 }
@@ -343,6 +344,57 @@ model TargetCycleRange {
 
   @@index([targetCycleId])
   @@map("target_cycle_ranges")
+}
+
+model LeadDynamicField {
+  id         String  @id @default(cuid())
+  name       String
+  inputType  String
+  sortOrder  Int
+  isRequired Boolean @default(false)
+  isActive   Boolean @default(true)
+
+  workspaceId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  workspace Workspace           @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  options   LeadDynamicOption[]
+  values    LeadDynamicValue[]
+
+  @@unique([name, workspaceId])
+  @@index([workspaceId, sortOrder])
+  @@map("lead_dynamic_fields")
+}
+
+model LeadDynamicOption {
+  id      String @id @default(cuid())
+  fieldId String
+
+  value     String
+  sortOrder Int
+
+  field LeadDynamicField @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+
+  @@index([fieldId])
+  @@map("lead_dynamic_options")
+}
+
+model LeadDynamicValue {
+  id      String @id @default(cuid())
+  leadId  String
+  fieldId String
+
+  value String
+
+  createdAt DateTime @default(now())
+
+  field LeadDynamicField @relation(fields: [fieldId], references: [id], onDelete: Restrict)
+
+  @@index([leadId])
+  @@index([fieldId])
+  @@map("lead_dynamic_values")
 }
 
 model TargetSetting {

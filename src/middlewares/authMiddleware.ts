@@ -8,6 +8,12 @@ interface JwtPayload {
   userId: string;
 }
 
+const normalizeRoleKey = (role: string): string =>
+  role
+    .toLowerCase()
+    .trim()
+    .replace(/[\s_-]+/g, '');
+
 const maskAuthHeader = (authHeader?: string): string => {
   if (!authHeader) return 'NOTHING RECEIVED';
   if (!authHeader.toLowerCase().startsWith('bearer ')) return '[NON_BEARER_TOKEN_REDACTED]';
@@ -102,8 +108,10 @@ export const authorize = (...roles: string[]) => {
     }
 
     const userRole = req.user.role.name;
+    const normalizedUserRole = normalizeRoleKey(userRole);
+    const normalizedAllowedRoles = roles.map((role) => normalizeRoleKey(role));
 
-    if (!roles.includes(userRole)) {
+    if (!normalizedAllowedRoles.includes(normalizedUserRole)) {
       logger.warn(`Access forbidden. Required: ${roles.join(', ')}, Found: ${userRole}`, {
         userId: req.user.id,
         role: userRole,
@@ -139,8 +147,8 @@ export const checkPermission = (permissionKey: string) => {
     const cacheKey = `role_permissions:${roleId}`;
 
     try {
-      const roleName = (req.user.role?.name || '').toLowerCase().trim();
-      if (roleName === 'super admin' || roleName === 'super-admin') {
+      const roleName = normalizeRoleKey(req.user.role?.name || '');
+      if (roleName === 'superadmin') {
         return next();
       }
 
