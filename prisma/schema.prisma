@@ -246,12 +246,21 @@ model Office {
   id          String   @id @default(cuid())
   name        String
   address     String?
+  countryId   String?
+  stateId     String?
+  districtId  String?
+  isActive    Boolean  @default(true)
+  createdBy   String?
   workspaceId String
   users       User[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   @@index([workspaceId])
+  @@index([name])
+  @@index([countryId])
+  @@index([stateId])
+  @@index([districtId])
   @@map("offices")
 }
 

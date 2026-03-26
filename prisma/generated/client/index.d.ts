@@ -12491,6 +12491,11 @@ export namespace Prisma {
     id: string | null
     name: string | null
     address: string | null
+    countryId: string | null
+    stateId: string | null
+    districtId: string | null
+    isActive: boolean | null
+    createdBy: string | null
     workspaceId: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -12500,6 +12505,11 @@ export namespace Prisma {
     id: string | null
     name: string | null
     address: string | null
+    countryId: string | null
+    stateId: string | null
+    districtId: string | null
+    isActive: boolean | null
+    createdBy: string | null
     workspaceId: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -12509,6 +12519,11 @@ export namespace Prisma {
     id: number
     name: number
     address: number
+    countryId: number
+    stateId: number
+    districtId: number
+    isActive: number
+    createdBy: number
     workspaceId: number
     createdAt: number
     updatedAt: number
@@ -12520,6 +12535,11 @@ export namespace Prisma {
     id?: true
     name?: true
     address?: true
+    countryId?: true
+    stateId?: true
+    districtId?: true
+    isActive?: true
+    createdBy?: true
     workspaceId?: true
     createdAt?: true
     updatedAt?: true
@@ -12529,6 +12549,11 @@ export namespace Prisma {
     id?: true
     name?: true
     address?: true
+    countryId?: true
+    stateId?: true
+    districtId?: true
+    isActive?: true
+    createdBy?: true
     workspaceId?: true
     createdAt?: true
     updatedAt?: true
@@ -12538,6 +12563,11 @@ export namespace Prisma {
     id?: true
     name?: true
     address?: true
+    countryId?: true
+    stateId?: true
+    districtId?: true
+    isActive?: true
+    createdBy?: true
     workspaceId?: true
     createdAt?: true
     updatedAt?: true
@@ -12620,6 +12650,11 @@ export namespace Prisma {
     id: string
     name: string
     address: string | null
+    countryId: string | null
+    stateId: string | null
+    districtId: string | null
+    isActive: boolean
+    createdBy: string | null
     workspaceId: string
     createdAt: Date
     updatedAt: Date
@@ -12646,6 +12681,11 @@ export namespace Prisma {
     id?: boolean
     name?: boolean
     address?: boolean
+    countryId?: boolean
+    stateId?: boolean
+    districtId?: boolean
+    isActive?: boolean
+    createdBy?: boolean
     workspaceId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -12657,6 +12697,11 @@ export namespace Prisma {
     id?: boolean
     name?: boolean
     address?: boolean
+    countryId?: boolean
+    stateId?: boolean
+    districtId?: boolean
+    isActive?: boolean
+    createdBy?: boolean
     workspaceId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -12666,6 +12711,11 @@ export namespace Prisma {
     id?: boolean
     name?: boolean
     address?: boolean
+    countryId?: boolean
+    stateId?: boolean
+    districtId?: boolean
+    isActive?: boolean
+    createdBy?: boolean
     workspaceId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -12686,6 +12736,11 @@ export namespace Prisma {
       id: string
       name: string
       address: string | null
+      countryId: string | null
+      stateId: string | null
+      districtId: string | null
+      isActive: boolean
+      createdBy: string | null
       workspaceId: string
       createdAt: Date
       updatedAt: Date
@@ -13086,6 +13141,11 @@ export namespace Prisma {
     readonly id: FieldRef<"Office", 'String'>
     readonly name: FieldRef<"Office", 'String'>
     readonly address: FieldRef<"Office", 'String'>
+    readonly countryId: FieldRef<"Office", 'String'>
+    readonly stateId: FieldRef<"Office", 'String'>
+    readonly districtId: FieldRef<"Office", 'String'>
+    readonly isActive: FieldRef<"Office", 'Boolean'>
+    readonly createdBy: FieldRef<"Office", 'String'>
     readonly workspaceId: FieldRef<"Office", 'String'>
     readonly createdAt: FieldRef<"Office", 'DateTime'>
     readonly updatedAt: FieldRef<"Office", 'DateTime'>
@@ -28273,6 +28333,11 @@ export namespace Prisma {
     id: 'id',
     name: 'name',
     address: 'address',
+    countryId: 'countryId',
+    stateId: 'stateId',
+    districtId: 'districtId',
+    isActive: 'isActive',
+    createdBy: 'createdBy',
     workspaceId: 'workspaceId',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -29445,6 +29510,11 @@ export namespace Prisma {
     id?: StringFilter<"Office"> | string
     name?: StringFilter<"Office"> | string
     address?: StringNullableFilter<"Office"> | string | null
+    countryId?: StringNullableFilter<"Office"> | string | null
+    stateId?: StringNullableFilter<"Office"> | string | null
+    districtId?: StringNullableFilter<"Office"> | string | null
+    isActive?: BoolFilter<"Office"> | boolean
+    createdBy?: StringNullableFilter<"Office"> | string | null
     workspaceId?: StringFilter<"Office"> | string
     createdAt?: DateTimeFilter<"Office"> | Date | string
     updatedAt?: DateTimeFilter<"Office"> | Date | string
@@ -29455,6 +29525,11 @@ export namespace Prisma {
     id?: SortOrder
     name?: SortOrder
     address?: SortOrderInput | SortOrder
+    countryId?: SortOrderInput | SortOrder
+    stateId?: SortOrderInput | SortOrder
+    districtId?: SortOrderInput | SortOrder
+    isActive?: SortOrder
+    createdBy?: SortOrderInput | SortOrder
     workspaceId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -29468,6 +29543,11 @@ export namespace Prisma {
     NOT?: OfficeWhereInput | OfficeWhereInput[]
     name?: StringFilter<"Office"> | string
     address?: StringNullableFilter<"Office"> | string | null
+    countryId?: StringNullableFilter<"Office"> | string | null
+    stateId?: StringNullableFilter<"Office"> | string | null
+    districtId?: StringNullableFilter<"Office"> | string | null
+    isActive?: BoolFilter<"Office"> | boolean
+    createdBy?: StringNullableFilter<"Office"> | string | null
     workspaceId?: StringFilter<"Office"> | string
     createdAt?: DateTimeFilter<"Office"> | Date | string
     updatedAt?: DateTimeFilter<"Office"> | Date | string
@@ -29478,6 +29558,11 @@ export namespace Prisma {
     id?: SortOrder
     name?: SortOrder
     address?: SortOrderInput | SortOrder
+    countryId?: SortOrderInput | SortOrder
+    stateId?: SortOrderInput | SortOrder
+    districtId?: SortOrderInput | SortOrder
+    isActive?: SortOrder
+    createdBy?: SortOrderInput | SortOrder
     workspaceId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -29493,6 +29578,11 @@ export namespace Prisma {
     id?: StringWithAggregatesFilter<"Office"> | string
     name?: StringWithAggregatesFilter<"Office"> | string
     address?: StringNullableWithAggregatesFilter<"Office"> | string | null
+    countryId?: StringNullableWithAggregatesFilter<"Office"> | string | null
+    stateId?: StringNullableWithAggregatesFilter<"Office"> | string | null
+    districtId?: StringNullableWithAggregatesFilter<"Office"> | string | null
+    isActive?: BoolWithAggregatesFilter<"Office"> | boolean
+    createdBy?: StringNullableWithAggregatesFilter<"Office"> | string | null
     workspaceId?: StringWithAggregatesFilter<"Office"> | string
     createdAt?: DateTimeWithAggregatesFilter<"Office"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Office"> | Date | string
@@ -31410,6 +31500,11 @@ export namespace Prisma {
     id?: string
     name: string
     address?: string | null
+    countryId?: string | null
+    stateId?: string | null
+    districtId?: string | null
+    isActive?: boolean
+    createdBy?: string | null
     workspaceId: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -31420,6 +31515,11 @@ export namespace Prisma {
     id?: string
     name: string
     address?: string | null
+    countryId?: string | null
+    stateId?: string | null
+    districtId?: string | null
+    isActive?: boolean
+    createdBy?: string | null
     workspaceId: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -31430,6 +31530,11 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     address?: NullableStringFieldUpdateOperationsInput | string | null
+    countryId?: NullableStringFieldUpdateOperationsInput | string | null
+    stateId?: NullableStringFieldUpdateOperationsInput | string | null
+    districtId?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
     workspaceId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -31440,6 +31545,11 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     address?: NullableStringFieldUpdateOperationsInput | string | null
+    countryId?: NullableStringFieldUpdateOperationsInput | string | null
+    stateId?: NullableStringFieldUpdateOperationsInput | string | null
+    districtId?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
     workspaceId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -31450,6 +31560,11 @@ export namespace Prisma {
     id?: string
     name: string
     address?: string | null
+    countryId?: string | null
+    stateId?: string | null
+    districtId?: string | null
+    isActive?: boolean
+    createdBy?: string | null
     workspaceId: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -31459,6 +31574,11 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     address?: NullableStringFieldUpdateOperationsInput | string | null
+    countryId?: NullableStringFieldUpdateOperationsInput | string | null
+    stateId?: NullableStringFieldUpdateOperationsInput | string | null
+    districtId?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
     workspaceId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -31468,6 +31588,11 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     address?: NullableStringFieldUpdateOperationsInput | string | null
+    countryId?: NullableStringFieldUpdateOperationsInput | string | null
+    stateId?: NullableStringFieldUpdateOperationsInput | string | null
+    districtId?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
     workspaceId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -33454,6 +33579,11 @@ export namespace Prisma {
     id?: SortOrder
     name?: SortOrder
     address?: SortOrder
+    countryId?: SortOrder
+    stateId?: SortOrder
+    districtId?: SortOrder
+    isActive?: SortOrder
+    createdBy?: SortOrder
     workspaceId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -33463,6 +33593,11 @@ export namespace Prisma {
     id?: SortOrder
     name?: SortOrder
     address?: SortOrder
+    countryId?: SortOrder
+    stateId?: SortOrder
+    districtId?: SortOrder
+    isActive?: SortOrder
+    createdBy?: SortOrder
     workspaceId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -33472,6 +33607,11 @@ export namespace Prisma {
     id?: SortOrder
     name?: SortOrder
     address?: SortOrder
+    countryId?: SortOrder
+    stateId?: SortOrder
+    districtId?: SortOrder
+    isActive?: SortOrder
+    createdBy?: SortOrder
     workspaceId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -39843,6 +39983,11 @@ export namespace Prisma {
     id?: string
     name: string
     address?: string | null
+    countryId?: string | null
+    stateId?: string | null
+    districtId?: string | null
+    isActive?: boolean
+    createdBy?: string | null
     workspaceId: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -39852,6 +39997,11 @@ export namespace Prisma {
     id?: string
     name: string
     address?: string | null
+    countryId?: string | null
+    stateId?: string | null
+    districtId?: string | null
+    isActive?: boolean
+    createdBy?: string | null
     workspaceId: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -40497,6 +40647,11 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     address?: NullableStringFieldUpdateOperationsInput | string | null
+    countryId?: NullableStringFieldUpdateOperationsInput | string | null
+    stateId?: NullableStringFieldUpdateOperationsInput | string | null
+    districtId?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
     workspaceId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -40506,6 +40661,11 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     address?: NullableStringFieldUpdateOperationsInput | string | null
+    countryId?: NullableStringFieldUpdateOperationsInput | string | null
+    stateId?: NullableStringFieldUpdateOperationsInput | string | null
+    districtId?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
     workspaceId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string

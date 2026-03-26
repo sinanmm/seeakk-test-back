@@ -224,6 +224,11 @@ exports.Prisma.OfficeScalarFieldEnum = {
   id: 'id',
   name: 'name',
   address: 'address',
+  countryId: 'countryId',
+  stateId: 'stateId',
+  districtId: 'districtId',
+  isActive: 'isActive',
+  createdBy: 'createdBy',
   workspaceId: 'workspaceId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
