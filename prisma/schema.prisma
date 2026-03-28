@@ -91,6 +91,7 @@ model Workspace {
   users          User[]       @relation("WorkspaceMembers")
   departments    Department[]
   targetCycles   TargetCycle[]
+  leadLifeCycles LeadLifeCycle[]
   leadDynamicFields LeadDynamicField[]
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
@@ -353,6 +354,47 @@ model TargetCycleRange {
 
   @@index([targetCycleId])
   @@map("target_cycle_ranges")
+}
+
+model LeadLifeCycle {
+  id          String   @id @default(cuid())
+  name        String
+  isDefault   Boolean  @default(false)
+
+  workspaceId String
+
+  createdBy   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workspace   Workspace                 @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  transitions LeadLifeCycleTransition[]
+
+  @@unique([name, workspaceId])
+  @@index([workspaceId])
+  @@map("lead_life_cycles")
+}
+
+model LeadLifeCycleTransition {
+  id           String   @id @default(cuid())
+  lifecycleId  String
+  lifecycle    LeadLifeCycle @relation(fields: [lifecycleId], references: [id], onDelete: Cascade)
+
+  fromStageId  String
+  toStageId    String
+
+  numberOfDays Int
+
+  sortOrder    Int
+
+  workspaceId  String
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([lifecycleId])
+  @@index([workspaceId])
+  @@map("lead_life_cycle_transitions")
 }
 
 model LeadDynamicField {

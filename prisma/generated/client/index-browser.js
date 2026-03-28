@@ -282,6 +282,28 @@ exports.Prisma.TargetCycleRangeScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.LeadLifeCycleScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  isDefault: 'isDefault',
+  workspaceId: 'workspaceId',
+  createdBy: 'createdBy',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.LeadLifeCycleTransitionScalarFieldEnum = {
+  id: 'id',
+  lifecycleId: 'lifecycleId',
+  fromStageId: 'fromStageId',
+  toStageId: 'toStageId',
+  numberOfDays: 'numberOfDays',
+  sortOrder: 'sortOrder',
+  workspaceId: 'workspaceId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.LeadDynamicFieldScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -522,6 +544,8 @@ exports.Prisma.ModelName = {
   TargetType: 'TargetType',
   TargetCycle: 'TargetCycle',
   TargetCycleRange: 'TargetCycleRange',
+  LeadLifeCycle: 'LeadLifeCycle',
+  LeadLifeCycleTransition: 'LeadLifeCycleTransition',
   LeadDynamicField: 'LeadDynamicField',
   LeadDynamicOption: 'LeadDynamicOption',
   LeadDynamicValue: 'LeadDynamicValue',

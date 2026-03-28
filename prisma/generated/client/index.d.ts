@@ -89,6 +89,16 @@ export type TargetCycle = $Result.DefaultSelection<Prisma.$TargetCyclePayload>
  */
 export type TargetCycleRange = $Result.DefaultSelection<Prisma.$TargetCycleRangePayload>
 /**
+ * Model LeadLifeCycle
+ * 
+ */
+export type LeadLifeCycle = $Result.DefaultSelection<Prisma.$LeadLifeCyclePayload>
+/**
+ * Model LeadLifeCycleTransition
+ * 
+ */
+export type LeadLifeCycleTransition = $Result.DefaultSelection<Prisma.$LeadLifeCycleTransitionPayload>
+/**
  * Model LeadDynamicField
  * 
  */
@@ -566,6 +576,26 @@ export class PrismaClient<
     * ```
     */
   get targetCycleRange(): Prisma.TargetCycleRangeDelegate<ExtArgs>;
+
+  /**
+   * `prisma.leadLifeCycle`: Exposes CRUD operations for the **LeadLifeCycle** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more LeadLifeCycles
+    * const leadLifeCycles = await prisma.leadLifeCycle.findMany()
+    * ```
+    */
+  get leadLifeCycle(): Prisma.LeadLifeCycleDelegate<ExtArgs>;
+
+  /**
+   * `prisma.leadLifeCycleTransition`: Exposes CRUD operations for the **LeadLifeCycleTransition** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more LeadLifeCycleTransitions
+    * const leadLifeCycleTransitions = await prisma.leadLifeCycleTransition.findMany()
+    * ```
+    */
+  get leadLifeCycleTransition(): Prisma.LeadLifeCycleTransitionDelegate<ExtArgs>;
 
   /**
    * `prisma.leadDynamicField`: Exposes CRUD operations for the **LeadDynamicField** model.
@@ -1112,6 +1142,8 @@ export namespace Prisma {
     TargetType: 'TargetType',
     TargetCycle: 'TargetCycle',
     TargetCycleRange: 'TargetCycleRange',
+    LeadLifeCycle: 'LeadLifeCycle',
+    LeadLifeCycleTransition: 'LeadLifeCycleTransition',
     LeadDynamicField: 'LeadDynamicField',
     LeadDynamicOption: 'LeadDynamicOption',
     LeadDynamicValue: 'LeadDynamicValue',
@@ -1136,7 +1168,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "role" | "permission" | "rolePermission" | "workspace" | "department" | "leadSource" | "leadStage" | "stageRule" | "leadStageInput" | "office" | "location" | "userLocationAssignment" | "targetType" | "targetCycle" | "targetCycleRange" | "leadDynamicField" | "leadDynamicOption" | "leadDynamicValue" | "targetSetting" | "targetViolation" | "user" | "rosterEntry" | "auditLog" | "device"
+      modelProps: "role" | "permission" | "rolePermission" | "workspace" | "department" | "leadSource" | "leadStage" | "stageRule" | "leadStageInput" | "office" | "location" | "userLocationAssignment" | "targetType" | "targetCycle" | "targetCycleRange" | "leadLifeCycle" | "leadLifeCycleTransition" | "leadDynamicField" | "leadDynamicOption" | "leadDynamicValue" | "targetSetting" | "targetViolation" | "user" | "rosterEntry" | "auditLog" | "device"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2190,6 +2222,146 @@ export namespace Prisma {
           }
         }
       }
+      LeadLifeCycle: {
+        payload: Prisma.$LeadLifeCyclePayload<ExtArgs>
+        fields: Prisma.LeadLifeCycleFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.LeadLifeCycleFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadLifeCyclePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.LeadLifeCycleFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadLifeCyclePayload>
+          }
+          findFirst: {
+            args: Prisma.LeadLifeCycleFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadLifeCyclePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.LeadLifeCycleFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadLifeCyclePayload>
+          }
+          findMany: {
+            args: Prisma.LeadLifeCycleFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadLifeCyclePayload>[]
+          }
+          create: {
+            args: Prisma.LeadLifeCycleCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadLifeCyclePayload>
+          }
+          createMany: {
+            args: Prisma.LeadLifeCycleCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.LeadLifeCycleCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadLifeCyclePayload>[]
+          }
+          delete: {
+            args: Prisma.LeadLifeCycleDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadLifeCyclePayload>
+          }
+          update: {
+            args: Prisma.LeadLifeCycleUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadLifeCyclePayload>
+          }
+          deleteMany: {
+            args: Prisma.LeadLifeCycleDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.LeadLifeCycleUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.LeadLifeCycleUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadLifeCyclePayload>
+          }
+          aggregate: {
+            args: Prisma.LeadLifeCycleAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateLeadLifeCycle>
+          }
+          groupBy: {
+            args: Prisma.LeadLifeCycleGroupByArgs<ExtArgs>
+            result: $Utils.Optional<LeadLifeCycleGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.LeadLifeCycleCountArgs<ExtArgs>
+            result: $Utils.Optional<LeadLifeCycleCountAggregateOutputType> | number
+          }
+        }
+      }
+      LeadLifeCycleTransition: {
+        payload: Prisma.$LeadLifeCycleTransitionPayload<ExtArgs>
+        fields: Prisma.LeadLifeCycleTransitionFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.LeadLifeCycleTransitionFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadLifeCycleTransitionPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.LeadLifeCycleTransitionFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadLifeCycleTransitionPayload>
+          }
+          findFirst: {
+            args: Prisma.LeadLifeCycleTransitionFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadLifeCycleTransitionPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.LeadLifeCycleTransitionFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadLifeCycleTransitionPayload>
+          }
+          findMany: {
+            args: Prisma.LeadLifeCycleTransitionFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadLifeCycleTransitionPayload>[]
+          }
+          create: {
+            args: Prisma.LeadLifeCycleTransitionCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadLifeCycleTransitionPayload>
+          }
+          createMany: {
+            args: Prisma.LeadLifeCycleTransitionCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.LeadLifeCycleTransitionCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadLifeCycleTransitionPayload>[]
+          }
+          delete: {
+            args: Prisma.LeadLifeCycleTransitionDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadLifeCycleTransitionPayload>
+          }
+          update: {
+            args: Prisma.LeadLifeCycleTransitionUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadLifeCycleTransitionPayload>
+          }
+          deleteMany: {
+            args: Prisma.LeadLifeCycleTransitionDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.LeadLifeCycleTransitionUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.LeadLifeCycleTransitionUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadLifeCycleTransitionPayload>
+          }
+          aggregate: {
+            args: Prisma.LeadLifeCycleTransitionAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateLeadLifeCycleTransition>
+          }
+          groupBy: {
+            args: Prisma.LeadLifeCycleTransitionGroupByArgs<ExtArgs>
+            result: $Utils.Optional<LeadLifeCycleTransitionGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.LeadLifeCycleTransitionCountArgs<ExtArgs>
+            result: $Utils.Optional<LeadLifeCycleTransitionCountAggregateOutputType> | number
+          }
+        }
+      }
       LeadDynamicField: {
         payload: Prisma.$LeadDynamicFieldPayload<ExtArgs>
         fields: Prisma.LeadDynamicFieldFieldRefs
@@ -3059,6 +3231,7 @@ export namespace Prisma {
     users: number
     departments: number
     targetCycles: number
+    leadLifeCycles: number
     leadDynamicFields: number
   }
 
@@ -3066,6 +3239,7 @@ export namespace Prisma {
     users?: boolean | WorkspaceCountOutputTypeCountUsersArgs
     departments?: boolean | WorkspaceCountOutputTypeCountDepartmentsArgs
     targetCycles?: boolean | WorkspaceCountOutputTypeCountTargetCyclesArgs
+    leadLifeCycles?: boolean | WorkspaceCountOutputTypeCountLeadLifeCyclesArgs
     leadDynamicFields?: boolean | WorkspaceCountOutputTypeCountLeadDynamicFieldsArgs
   }
 
@@ -3099,6 +3273,13 @@ export namespace Prisma {
    */
   export type WorkspaceCountOutputTypeCountTargetCyclesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: TargetCycleWhereInput
+  }
+
+  /**
+   * WorkspaceCountOutputType without action
+   */
+  export type WorkspaceCountOutputTypeCountLeadLifeCyclesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LeadLifeCycleWhereInput
   }
 
   /**
@@ -3368,6 +3549,37 @@ export namespace Prisma {
    */
   export type TargetCycleCountOutputTypeCountTargetsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: TargetSettingWhereInput
+  }
+
+
+  /**
+   * Count Type LeadLifeCycleCountOutputType
+   */
+
+  export type LeadLifeCycleCountOutputType = {
+    transitions: number
+  }
+
+  export type LeadLifeCycleCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    transitions?: boolean | LeadLifeCycleCountOutputTypeCountTransitionsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * LeadLifeCycleCountOutputType without action
+   */
+  export type LeadLifeCycleCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadLifeCycleCountOutputType
+     */
+    select?: LeadLifeCycleCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * LeadLifeCycleCountOutputType without action
+   */
+  export type LeadLifeCycleCountOutputTypeCountTransitionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LeadLifeCycleTransitionWhereInput
   }
 
 
@@ -6555,6 +6767,7 @@ export namespace Prisma {
     users?: boolean | Workspace$usersArgs<ExtArgs>
     departments?: boolean | Workspace$departmentsArgs<ExtArgs>
     targetCycles?: boolean | Workspace$targetCyclesArgs<ExtArgs>
+    leadLifeCycles?: boolean | Workspace$leadLifeCyclesArgs<ExtArgs>
     leadDynamicFields?: boolean | Workspace$leadDynamicFieldsArgs<ExtArgs>
     _count?: boolean | WorkspaceCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["workspace"]>
@@ -6591,6 +6804,7 @@ export namespace Prisma {
     users?: boolean | Workspace$usersArgs<ExtArgs>
     departments?: boolean | Workspace$departmentsArgs<ExtArgs>
     targetCycles?: boolean | Workspace$targetCyclesArgs<ExtArgs>
+    leadLifeCycles?: boolean | Workspace$leadLifeCyclesArgs<ExtArgs>
     leadDynamicFields?: boolean | Workspace$leadDynamicFieldsArgs<ExtArgs>
     _count?: boolean | WorkspaceCountOutputTypeDefaultArgs<ExtArgs>
   }
@@ -6605,6 +6819,7 @@ export namespace Prisma {
       users: Prisma.$UserPayload<ExtArgs>[]
       departments: Prisma.$DepartmentPayload<ExtArgs>[]
       targetCycles: Prisma.$TargetCyclePayload<ExtArgs>[]
+      leadLifeCycles: Prisma.$LeadLifeCyclePayload<ExtArgs>[]
       leadDynamicFields: Prisma.$LeadDynamicFieldPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
@@ -6986,6 +7201,7 @@ export namespace Prisma {
     users<T extends Workspace$usersArgs<ExtArgs> = {}>(args?: Subset<T, Workspace$usersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany"> | Null>
     departments<T extends Workspace$departmentsArgs<ExtArgs> = {}>(args?: Subset<T, Workspace$departmentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DepartmentPayload<ExtArgs>, T, "findMany"> | Null>
     targetCycles<T extends Workspace$targetCyclesArgs<ExtArgs> = {}>(args?: Subset<T, Workspace$targetCyclesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TargetCyclePayload<ExtArgs>, T, "findMany"> | Null>
+    leadLifeCycles<T extends Workspace$leadLifeCyclesArgs<ExtArgs> = {}>(args?: Subset<T, Workspace$leadLifeCyclesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadLifeCyclePayload<ExtArgs>, T, "findMany"> | Null>
     leadDynamicFields<T extends Workspace$leadDynamicFieldsArgs<ExtArgs> = {}>(args?: Subset<T, Workspace$leadDynamicFieldsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadDynamicFieldPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -7401,6 +7617,26 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: TargetCycleScalarFieldEnum | TargetCycleScalarFieldEnum[]
+  }
+
+  /**
+   * Workspace.leadLifeCycles
+   */
+  export type Workspace$leadLifeCyclesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadLifeCycle
+     */
+    select?: LeadLifeCycleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadLifeCycleInclude<ExtArgs> | null
+    where?: LeadLifeCycleWhereInput
+    orderBy?: LeadLifeCycleOrderByWithRelationInput | LeadLifeCycleOrderByWithRelationInput[]
+    cursor?: LeadLifeCycleWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: LeadLifeCycleScalarFieldEnum | LeadLifeCycleScalarFieldEnum[]
   }
 
   /**
@@ -18539,6 +18775,2008 @@ export namespace Prisma {
 
 
   /**
+   * Model LeadLifeCycle
+   */
+
+  export type AggregateLeadLifeCycle = {
+    _count: LeadLifeCycleCountAggregateOutputType | null
+    _min: LeadLifeCycleMinAggregateOutputType | null
+    _max: LeadLifeCycleMaxAggregateOutputType | null
+  }
+
+  export type LeadLifeCycleMinAggregateOutputType = {
+    id: string | null
+    name: string | null
+    isDefault: boolean | null
+    workspaceId: string | null
+    createdBy: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type LeadLifeCycleMaxAggregateOutputType = {
+    id: string | null
+    name: string | null
+    isDefault: boolean | null
+    workspaceId: string | null
+    createdBy: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type LeadLifeCycleCountAggregateOutputType = {
+    id: number
+    name: number
+    isDefault: number
+    workspaceId: number
+    createdBy: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type LeadLifeCycleMinAggregateInputType = {
+    id?: true
+    name?: true
+    isDefault?: true
+    workspaceId?: true
+    createdBy?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type LeadLifeCycleMaxAggregateInputType = {
+    id?: true
+    name?: true
+    isDefault?: true
+    workspaceId?: true
+    createdBy?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type LeadLifeCycleCountAggregateInputType = {
+    id?: true
+    name?: true
+    isDefault?: true
+    workspaceId?: true
+    createdBy?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type LeadLifeCycleAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which LeadLifeCycle to aggregate.
+     */
+    where?: LeadLifeCycleWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LeadLifeCycles to fetch.
+     */
+    orderBy?: LeadLifeCycleOrderByWithRelationInput | LeadLifeCycleOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: LeadLifeCycleWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LeadLifeCycles from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LeadLifeCycles.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned LeadLifeCycles
+    **/
+    _count?: true | LeadLifeCycleCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: LeadLifeCycleMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: LeadLifeCycleMaxAggregateInputType
+  }
+
+  export type GetLeadLifeCycleAggregateType<T extends LeadLifeCycleAggregateArgs> = {
+        [P in keyof T & keyof AggregateLeadLifeCycle]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateLeadLifeCycle[P]>
+      : GetScalarType<T[P], AggregateLeadLifeCycle[P]>
+  }
+
+
+
+
+  export type LeadLifeCycleGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LeadLifeCycleWhereInput
+    orderBy?: LeadLifeCycleOrderByWithAggregationInput | LeadLifeCycleOrderByWithAggregationInput[]
+    by: LeadLifeCycleScalarFieldEnum[] | LeadLifeCycleScalarFieldEnum
+    having?: LeadLifeCycleScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: LeadLifeCycleCountAggregateInputType | true
+    _min?: LeadLifeCycleMinAggregateInputType
+    _max?: LeadLifeCycleMaxAggregateInputType
+  }
+
+  export type LeadLifeCycleGroupByOutputType = {
+    id: string
+    name: string
+    isDefault: boolean
+    workspaceId: string
+    createdBy: string | null
+    createdAt: Date
+    updatedAt: Date
+    _count: LeadLifeCycleCountAggregateOutputType | null
+    _min: LeadLifeCycleMinAggregateOutputType | null
+    _max: LeadLifeCycleMaxAggregateOutputType | null
+  }
+
+  type GetLeadLifeCycleGroupByPayload<T extends LeadLifeCycleGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<LeadLifeCycleGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof LeadLifeCycleGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], LeadLifeCycleGroupByOutputType[P]>
+            : GetScalarType<T[P], LeadLifeCycleGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type LeadLifeCycleSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    name?: boolean
+    isDefault?: boolean
+    workspaceId?: boolean
+    createdBy?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+    transitions?: boolean | LeadLifeCycle$transitionsArgs<ExtArgs>
+    _count?: boolean | LeadLifeCycleCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["leadLifeCycle"]>
+
+  export type LeadLifeCycleSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    name?: boolean
+    isDefault?: boolean
+    workspaceId?: boolean
+    createdBy?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["leadLifeCycle"]>
+
+  export type LeadLifeCycleSelectScalar = {
+    id?: boolean
+    name?: boolean
+    isDefault?: boolean
+    workspaceId?: boolean
+    createdBy?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type LeadLifeCycleInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+    transitions?: boolean | LeadLifeCycle$transitionsArgs<ExtArgs>
+    _count?: boolean | LeadLifeCycleCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type LeadLifeCycleIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+  }
+
+  export type $LeadLifeCyclePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "LeadLifeCycle"
+    objects: {
+      workspace: Prisma.$WorkspacePayload<ExtArgs>
+      transitions: Prisma.$LeadLifeCycleTransitionPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      name: string
+      isDefault: boolean
+      workspaceId: string
+      createdBy: string | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["leadLifeCycle"]>
+    composites: {}
+  }
+
+  type LeadLifeCycleGetPayload<S extends boolean | null | undefined | LeadLifeCycleDefaultArgs> = $Result.GetResult<Prisma.$LeadLifeCyclePayload, S>
+
+  type LeadLifeCycleCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<LeadLifeCycleFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: LeadLifeCycleCountAggregateInputType | true
+    }
+
+  export interface LeadLifeCycleDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['LeadLifeCycle'], meta: { name: 'LeadLifeCycle' } }
+    /**
+     * Find zero or one LeadLifeCycle that matches the filter.
+     * @param {LeadLifeCycleFindUniqueArgs} args - Arguments to find a LeadLifeCycle
+     * @example
+     * // Get one LeadLifeCycle
+     * const leadLifeCycle = await prisma.leadLifeCycle.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends LeadLifeCycleFindUniqueArgs>(args: SelectSubset<T, LeadLifeCycleFindUniqueArgs<ExtArgs>>): Prisma__LeadLifeCycleClient<$Result.GetResult<Prisma.$LeadLifeCyclePayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one LeadLifeCycle that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {LeadLifeCycleFindUniqueOrThrowArgs} args - Arguments to find a LeadLifeCycle
+     * @example
+     * // Get one LeadLifeCycle
+     * const leadLifeCycle = await prisma.leadLifeCycle.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends LeadLifeCycleFindUniqueOrThrowArgs>(args: SelectSubset<T, LeadLifeCycleFindUniqueOrThrowArgs<ExtArgs>>): Prisma__LeadLifeCycleClient<$Result.GetResult<Prisma.$LeadLifeCyclePayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first LeadLifeCycle that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadLifeCycleFindFirstArgs} args - Arguments to find a LeadLifeCycle
+     * @example
+     * // Get one LeadLifeCycle
+     * const leadLifeCycle = await prisma.leadLifeCycle.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends LeadLifeCycleFindFirstArgs>(args?: SelectSubset<T, LeadLifeCycleFindFirstArgs<ExtArgs>>): Prisma__LeadLifeCycleClient<$Result.GetResult<Prisma.$LeadLifeCyclePayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first LeadLifeCycle that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadLifeCycleFindFirstOrThrowArgs} args - Arguments to find a LeadLifeCycle
+     * @example
+     * // Get one LeadLifeCycle
+     * const leadLifeCycle = await prisma.leadLifeCycle.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends LeadLifeCycleFindFirstOrThrowArgs>(args?: SelectSubset<T, LeadLifeCycleFindFirstOrThrowArgs<ExtArgs>>): Prisma__LeadLifeCycleClient<$Result.GetResult<Prisma.$LeadLifeCyclePayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more LeadLifeCycles that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadLifeCycleFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all LeadLifeCycles
+     * const leadLifeCycles = await prisma.leadLifeCycle.findMany()
+     * 
+     * // Get first 10 LeadLifeCycles
+     * const leadLifeCycles = await prisma.leadLifeCycle.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const leadLifeCycleWithIdOnly = await prisma.leadLifeCycle.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends LeadLifeCycleFindManyArgs>(args?: SelectSubset<T, LeadLifeCycleFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadLifeCyclePayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a LeadLifeCycle.
+     * @param {LeadLifeCycleCreateArgs} args - Arguments to create a LeadLifeCycle.
+     * @example
+     * // Create one LeadLifeCycle
+     * const LeadLifeCycle = await prisma.leadLifeCycle.create({
+     *   data: {
+     *     // ... data to create a LeadLifeCycle
+     *   }
+     * })
+     * 
+     */
+    create<T extends LeadLifeCycleCreateArgs>(args: SelectSubset<T, LeadLifeCycleCreateArgs<ExtArgs>>): Prisma__LeadLifeCycleClient<$Result.GetResult<Prisma.$LeadLifeCyclePayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many LeadLifeCycles.
+     * @param {LeadLifeCycleCreateManyArgs} args - Arguments to create many LeadLifeCycles.
+     * @example
+     * // Create many LeadLifeCycles
+     * const leadLifeCycle = await prisma.leadLifeCycle.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends LeadLifeCycleCreateManyArgs>(args?: SelectSubset<T, LeadLifeCycleCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many LeadLifeCycles and returns the data saved in the database.
+     * @param {LeadLifeCycleCreateManyAndReturnArgs} args - Arguments to create many LeadLifeCycles.
+     * @example
+     * // Create many LeadLifeCycles
+     * const leadLifeCycle = await prisma.leadLifeCycle.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many LeadLifeCycles and only return the `id`
+     * const leadLifeCycleWithIdOnly = await prisma.leadLifeCycle.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends LeadLifeCycleCreateManyAndReturnArgs>(args?: SelectSubset<T, LeadLifeCycleCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadLifeCyclePayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a LeadLifeCycle.
+     * @param {LeadLifeCycleDeleteArgs} args - Arguments to delete one LeadLifeCycle.
+     * @example
+     * // Delete one LeadLifeCycle
+     * const LeadLifeCycle = await prisma.leadLifeCycle.delete({
+     *   where: {
+     *     // ... filter to delete one LeadLifeCycle
+     *   }
+     * })
+     * 
+     */
+    delete<T extends LeadLifeCycleDeleteArgs>(args: SelectSubset<T, LeadLifeCycleDeleteArgs<ExtArgs>>): Prisma__LeadLifeCycleClient<$Result.GetResult<Prisma.$LeadLifeCyclePayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one LeadLifeCycle.
+     * @param {LeadLifeCycleUpdateArgs} args - Arguments to update one LeadLifeCycle.
+     * @example
+     * // Update one LeadLifeCycle
+     * const leadLifeCycle = await prisma.leadLifeCycle.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends LeadLifeCycleUpdateArgs>(args: SelectSubset<T, LeadLifeCycleUpdateArgs<ExtArgs>>): Prisma__LeadLifeCycleClient<$Result.GetResult<Prisma.$LeadLifeCyclePayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more LeadLifeCycles.
+     * @param {LeadLifeCycleDeleteManyArgs} args - Arguments to filter LeadLifeCycles to delete.
+     * @example
+     * // Delete a few LeadLifeCycles
+     * const { count } = await prisma.leadLifeCycle.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends LeadLifeCycleDeleteManyArgs>(args?: SelectSubset<T, LeadLifeCycleDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more LeadLifeCycles.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadLifeCycleUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many LeadLifeCycles
+     * const leadLifeCycle = await prisma.leadLifeCycle.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends LeadLifeCycleUpdateManyArgs>(args: SelectSubset<T, LeadLifeCycleUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one LeadLifeCycle.
+     * @param {LeadLifeCycleUpsertArgs} args - Arguments to update or create a LeadLifeCycle.
+     * @example
+     * // Update or create a LeadLifeCycle
+     * const leadLifeCycle = await prisma.leadLifeCycle.upsert({
+     *   create: {
+     *     // ... data to create a LeadLifeCycle
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the LeadLifeCycle we want to update
+     *   }
+     * })
+     */
+    upsert<T extends LeadLifeCycleUpsertArgs>(args: SelectSubset<T, LeadLifeCycleUpsertArgs<ExtArgs>>): Prisma__LeadLifeCycleClient<$Result.GetResult<Prisma.$LeadLifeCyclePayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of LeadLifeCycles.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadLifeCycleCountArgs} args - Arguments to filter LeadLifeCycles to count.
+     * @example
+     * // Count the number of LeadLifeCycles
+     * const count = await prisma.leadLifeCycle.count({
+     *   where: {
+     *     // ... the filter for the LeadLifeCycles we want to count
+     *   }
+     * })
+    **/
+    count<T extends LeadLifeCycleCountArgs>(
+      args?: Subset<T, LeadLifeCycleCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], LeadLifeCycleCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a LeadLifeCycle.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadLifeCycleAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends LeadLifeCycleAggregateArgs>(args: Subset<T, LeadLifeCycleAggregateArgs>): Prisma.PrismaPromise<GetLeadLifeCycleAggregateType<T>>
+
+    /**
+     * Group by LeadLifeCycle.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadLifeCycleGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends LeadLifeCycleGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: LeadLifeCycleGroupByArgs['orderBy'] }
+        : { orderBy?: LeadLifeCycleGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, LeadLifeCycleGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetLeadLifeCycleGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the LeadLifeCycle model
+   */
+  readonly fields: LeadLifeCycleFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for LeadLifeCycle.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__LeadLifeCycleClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    workspace<T extends WorkspaceDefaultArgs<ExtArgs> = {}>(args?: Subset<T, WorkspaceDefaultArgs<ExtArgs>>): Prisma__WorkspaceClient<$Result.GetResult<Prisma.$WorkspacePayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    transitions<T extends LeadLifeCycle$transitionsArgs<ExtArgs> = {}>(args?: Subset<T, LeadLifeCycle$transitionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadLifeCycleTransitionPayload<ExtArgs>, T, "findMany"> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the LeadLifeCycle model
+   */ 
+  interface LeadLifeCycleFieldRefs {
+    readonly id: FieldRef<"LeadLifeCycle", 'String'>
+    readonly name: FieldRef<"LeadLifeCycle", 'String'>
+    readonly isDefault: FieldRef<"LeadLifeCycle", 'Boolean'>
+    readonly workspaceId: FieldRef<"LeadLifeCycle", 'String'>
+    readonly createdBy: FieldRef<"LeadLifeCycle", 'String'>
+    readonly createdAt: FieldRef<"LeadLifeCycle", 'DateTime'>
+    readonly updatedAt: FieldRef<"LeadLifeCycle", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * LeadLifeCycle findUnique
+   */
+  export type LeadLifeCycleFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadLifeCycle
+     */
+    select?: LeadLifeCycleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadLifeCycleInclude<ExtArgs> | null
+    /**
+     * Filter, which LeadLifeCycle to fetch.
+     */
+    where: LeadLifeCycleWhereUniqueInput
+  }
+
+  /**
+   * LeadLifeCycle findUniqueOrThrow
+   */
+  export type LeadLifeCycleFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadLifeCycle
+     */
+    select?: LeadLifeCycleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadLifeCycleInclude<ExtArgs> | null
+    /**
+     * Filter, which LeadLifeCycle to fetch.
+     */
+    where: LeadLifeCycleWhereUniqueInput
+  }
+
+  /**
+   * LeadLifeCycle findFirst
+   */
+  export type LeadLifeCycleFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadLifeCycle
+     */
+    select?: LeadLifeCycleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadLifeCycleInclude<ExtArgs> | null
+    /**
+     * Filter, which LeadLifeCycle to fetch.
+     */
+    where?: LeadLifeCycleWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LeadLifeCycles to fetch.
+     */
+    orderBy?: LeadLifeCycleOrderByWithRelationInput | LeadLifeCycleOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for LeadLifeCycles.
+     */
+    cursor?: LeadLifeCycleWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LeadLifeCycles from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LeadLifeCycles.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of LeadLifeCycles.
+     */
+    distinct?: LeadLifeCycleScalarFieldEnum | LeadLifeCycleScalarFieldEnum[]
+  }
+
+  /**
+   * LeadLifeCycle findFirstOrThrow
+   */
+  export type LeadLifeCycleFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadLifeCycle
+     */
+    select?: LeadLifeCycleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadLifeCycleInclude<ExtArgs> | null
+    /**
+     * Filter, which LeadLifeCycle to fetch.
+     */
+    where?: LeadLifeCycleWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LeadLifeCycles to fetch.
+     */
+    orderBy?: LeadLifeCycleOrderByWithRelationInput | LeadLifeCycleOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for LeadLifeCycles.
+     */
+    cursor?: LeadLifeCycleWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LeadLifeCycles from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LeadLifeCycles.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of LeadLifeCycles.
+     */
+    distinct?: LeadLifeCycleScalarFieldEnum | LeadLifeCycleScalarFieldEnum[]
+  }
+
+  /**
+   * LeadLifeCycle findMany
+   */
+  export type LeadLifeCycleFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadLifeCycle
+     */
+    select?: LeadLifeCycleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadLifeCycleInclude<ExtArgs> | null
+    /**
+     * Filter, which LeadLifeCycles to fetch.
+     */
+    where?: LeadLifeCycleWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LeadLifeCycles to fetch.
+     */
+    orderBy?: LeadLifeCycleOrderByWithRelationInput | LeadLifeCycleOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing LeadLifeCycles.
+     */
+    cursor?: LeadLifeCycleWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LeadLifeCycles from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LeadLifeCycles.
+     */
+    skip?: number
+    distinct?: LeadLifeCycleScalarFieldEnum | LeadLifeCycleScalarFieldEnum[]
+  }
+
+  /**
+   * LeadLifeCycle create
+   */
+  export type LeadLifeCycleCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadLifeCycle
+     */
+    select?: LeadLifeCycleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadLifeCycleInclude<ExtArgs> | null
+    /**
+     * The data needed to create a LeadLifeCycle.
+     */
+    data: XOR<LeadLifeCycleCreateInput, LeadLifeCycleUncheckedCreateInput>
+  }
+
+  /**
+   * LeadLifeCycle createMany
+   */
+  export type LeadLifeCycleCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many LeadLifeCycles.
+     */
+    data: LeadLifeCycleCreateManyInput | LeadLifeCycleCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * LeadLifeCycle createManyAndReturn
+   */
+  export type LeadLifeCycleCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadLifeCycle
+     */
+    select?: LeadLifeCycleSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many LeadLifeCycles.
+     */
+    data: LeadLifeCycleCreateManyInput | LeadLifeCycleCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadLifeCycleIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * LeadLifeCycle update
+   */
+  export type LeadLifeCycleUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadLifeCycle
+     */
+    select?: LeadLifeCycleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadLifeCycleInclude<ExtArgs> | null
+    /**
+     * The data needed to update a LeadLifeCycle.
+     */
+    data: XOR<LeadLifeCycleUpdateInput, LeadLifeCycleUncheckedUpdateInput>
+    /**
+     * Choose, which LeadLifeCycle to update.
+     */
+    where: LeadLifeCycleWhereUniqueInput
+  }
+
+  /**
+   * LeadLifeCycle updateMany
+   */
+  export type LeadLifeCycleUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update LeadLifeCycles.
+     */
+    data: XOR<LeadLifeCycleUpdateManyMutationInput, LeadLifeCycleUncheckedUpdateManyInput>
+    /**
+     * Filter which LeadLifeCycles to update
+     */
+    where?: LeadLifeCycleWhereInput
+  }
+
+  /**
+   * LeadLifeCycle upsert
+   */
+  export type LeadLifeCycleUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadLifeCycle
+     */
+    select?: LeadLifeCycleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadLifeCycleInclude<ExtArgs> | null
+    /**
+     * The filter to search for the LeadLifeCycle to update in case it exists.
+     */
+    where: LeadLifeCycleWhereUniqueInput
+    /**
+     * In case the LeadLifeCycle found by the `where` argument doesn't exist, create a new LeadLifeCycle with this data.
+     */
+    create: XOR<LeadLifeCycleCreateInput, LeadLifeCycleUncheckedCreateInput>
+    /**
+     * In case the LeadLifeCycle was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<LeadLifeCycleUpdateInput, LeadLifeCycleUncheckedUpdateInput>
+  }
+
+  /**
+   * LeadLifeCycle delete
+   */
+  export type LeadLifeCycleDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadLifeCycle
+     */
+    select?: LeadLifeCycleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadLifeCycleInclude<ExtArgs> | null
+    /**
+     * Filter which LeadLifeCycle to delete.
+     */
+    where: LeadLifeCycleWhereUniqueInput
+  }
+
+  /**
+   * LeadLifeCycle deleteMany
+   */
+  export type LeadLifeCycleDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which LeadLifeCycles to delete
+     */
+    where?: LeadLifeCycleWhereInput
+  }
+
+  /**
+   * LeadLifeCycle.transitions
+   */
+  export type LeadLifeCycle$transitionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadLifeCycleTransition
+     */
+    select?: LeadLifeCycleTransitionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadLifeCycleTransitionInclude<ExtArgs> | null
+    where?: LeadLifeCycleTransitionWhereInput
+    orderBy?: LeadLifeCycleTransitionOrderByWithRelationInput | LeadLifeCycleTransitionOrderByWithRelationInput[]
+    cursor?: LeadLifeCycleTransitionWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: LeadLifeCycleTransitionScalarFieldEnum | LeadLifeCycleTransitionScalarFieldEnum[]
+  }
+
+  /**
+   * LeadLifeCycle without action
+   */
+  export type LeadLifeCycleDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadLifeCycle
+     */
+    select?: LeadLifeCycleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadLifeCycleInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model LeadLifeCycleTransition
+   */
+
+  export type AggregateLeadLifeCycleTransition = {
+    _count: LeadLifeCycleTransitionCountAggregateOutputType | null
+    _avg: LeadLifeCycleTransitionAvgAggregateOutputType | null
+    _sum: LeadLifeCycleTransitionSumAggregateOutputType | null
+    _min: LeadLifeCycleTransitionMinAggregateOutputType | null
+    _max: LeadLifeCycleTransitionMaxAggregateOutputType | null
+  }
+
+  export type LeadLifeCycleTransitionAvgAggregateOutputType = {
+    numberOfDays: number | null
+    sortOrder: number | null
+  }
+
+  export type LeadLifeCycleTransitionSumAggregateOutputType = {
+    numberOfDays: number | null
+    sortOrder: number | null
+  }
+
+  export type LeadLifeCycleTransitionMinAggregateOutputType = {
+    id: string | null
+    lifecycleId: string | null
+    fromStageId: string | null
+    toStageId: string | null
+    numberOfDays: number | null
+    sortOrder: number | null
+    workspaceId: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type LeadLifeCycleTransitionMaxAggregateOutputType = {
+    id: string | null
+    lifecycleId: string | null
+    fromStageId: string | null
+    toStageId: string | null
+    numberOfDays: number | null
+    sortOrder: number | null
+    workspaceId: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type LeadLifeCycleTransitionCountAggregateOutputType = {
+    id: number
+    lifecycleId: number
+    fromStageId: number
+    toStageId: number
+    numberOfDays: number
+    sortOrder: number
+    workspaceId: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type LeadLifeCycleTransitionAvgAggregateInputType = {
+    numberOfDays?: true
+    sortOrder?: true
+  }
+
+  export type LeadLifeCycleTransitionSumAggregateInputType = {
+    numberOfDays?: true
+    sortOrder?: true
+  }
+
+  export type LeadLifeCycleTransitionMinAggregateInputType = {
+    id?: true
+    lifecycleId?: true
+    fromStageId?: true
+    toStageId?: true
+    numberOfDays?: true
+    sortOrder?: true
+    workspaceId?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type LeadLifeCycleTransitionMaxAggregateInputType = {
+    id?: true
+    lifecycleId?: true
+    fromStageId?: true
+    toStageId?: true
+    numberOfDays?: true
+    sortOrder?: true
+    workspaceId?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type LeadLifeCycleTransitionCountAggregateInputType = {
+    id?: true
+    lifecycleId?: true
+    fromStageId?: true
+    toStageId?: true
+    numberOfDays?: true
+    sortOrder?: true
+    workspaceId?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type LeadLifeCycleTransitionAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which LeadLifeCycleTransition to aggregate.
+     */
+    where?: LeadLifeCycleTransitionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LeadLifeCycleTransitions to fetch.
+     */
+    orderBy?: LeadLifeCycleTransitionOrderByWithRelationInput | LeadLifeCycleTransitionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: LeadLifeCycleTransitionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LeadLifeCycleTransitions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LeadLifeCycleTransitions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned LeadLifeCycleTransitions
+    **/
+    _count?: true | LeadLifeCycleTransitionCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: LeadLifeCycleTransitionAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: LeadLifeCycleTransitionSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: LeadLifeCycleTransitionMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: LeadLifeCycleTransitionMaxAggregateInputType
+  }
+
+  export type GetLeadLifeCycleTransitionAggregateType<T extends LeadLifeCycleTransitionAggregateArgs> = {
+        [P in keyof T & keyof AggregateLeadLifeCycleTransition]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateLeadLifeCycleTransition[P]>
+      : GetScalarType<T[P], AggregateLeadLifeCycleTransition[P]>
+  }
+
+
+
+
+  export type LeadLifeCycleTransitionGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LeadLifeCycleTransitionWhereInput
+    orderBy?: LeadLifeCycleTransitionOrderByWithAggregationInput | LeadLifeCycleTransitionOrderByWithAggregationInput[]
+    by: LeadLifeCycleTransitionScalarFieldEnum[] | LeadLifeCycleTransitionScalarFieldEnum
+    having?: LeadLifeCycleTransitionScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: LeadLifeCycleTransitionCountAggregateInputType | true
+    _avg?: LeadLifeCycleTransitionAvgAggregateInputType
+    _sum?: LeadLifeCycleTransitionSumAggregateInputType
+    _min?: LeadLifeCycleTransitionMinAggregateInputType
+    _max?: LeadLifeCycleTransitionMaxAggregateInputType
+  }
+
+  export type LeadLifeCycleTransitionGroupByOutputType = {
+    id: string
+    lifecycleId: string
+    fromStageId: string
+    toStageId: string
+    numberOfDays: number
+    sortOrder: number
+    workspaceId: string
+    createdAt: Date
+    updatedAt: Date
+    _count: LeadLifeCycleTransitionCountAggregateOutputType | null
+    _avg: LeadLifeCycleTransitionAvgAggregateOutputType | null
+    _sum: LeadLifeCycleTransitionSumAggregateOutputType | null
+    _min: LeadLifeCycleTransitionMinAggregateOutputType | null
+    _max: LeadLifeCycleTransitionMaxAggregateOutputType | null
+  }
+
+  type GetLeadLifeCycleTransitionGroupByPayload<T extends LeadLifeCycleTransitionGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<LeadLifeCycleTransitionGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof LeadLifeCycleTransitionGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], LeadLifeCycleTransitionGroupByOutputType[P]>
+            : GetScalarType<T[P], LeadLifeCycleTransitionGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type LeadLifeCycleTransitionSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    lifecycleId?: boolean
+    fromStageId?: boolean
+    toStageId?: boolean
+    numberOfDays?: boolean
+    sortOrder?: boolean
+    workspaceId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    lifecycle?: boolean | LeadLifeCycleDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["leadLifeCycleTransition"]>
+
+  export type LeadLifeCycleTransitionSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    lifecycleId?: boolean
+    fromStageId?: boolean
+    toStageId?: boolean
+    numberOfDays?: boolean
+    sortOrder?: boolean
+    workspaceId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    lifecycle?: boolean | LeadLifeCycleDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["leadLifeCycleTransition"]>
+
+  export type LeadLifeCycleTransitionSelectScalar = {
+    id?: boolean
+    lifecycleId?: boolean
+    fromStageId?: boolean
+    toStageId?: boolean
+    numberOfDays?: boolean
+    sortOrder?: boolean
+    workspaceId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type LeadLifeCycleTransitionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    lifecycle?: boolean | LeadLifeCycleDefaultArgs<ExtArgs>
+  }
+  export type LeadLifeCycleTransitionIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    lifecycle?: boolean | LeadLifeCycleDefaultArgs<ExtArgs>
+  }
+
+  export type $LeadLifeCycleTransitionPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "LeadLifeCycleTransition"
+    objects: {
+      lifecycle: Prisma.$LeadLifeCyclePayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      lifecycleId: string
+      fromStageId: string
+      toStageId: string
+      numberOfDays: number
+      sortOrder: number
+      workspaceId: string
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["leadLifeCycleTransition"]>
+    composites: {}
+  }
+
+  type LeadLifeCycleTransitionGetPayload<S extends boolean | null | undefined | LeadLifeCycleTransitionDefaultArgs> = $Result.GetResult<Prisma.$LeadLifeCycleTransitionPayload, S>
+
+  type LeadLifeCycleTransitionCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<LeadLifeCycleTransitionFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: LeadLifeCycleTransitionCountAggregateInputType | true
+    }
+
+  export interface LeadLifeCycleTransitionDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['LeadLifeCycleTransition'], meta: { name: 'LeadLifeCycleTransition' } }
+    /**
+     * Find zero or one LeadLifeCycleTransition that matches the filter.
+     * @param {LeadLifeCycleTransitionFindUniqueArgs} args - Arguments to find a LeadLifeCycleTransition
+     * @example
+     * // Get one LeadLifeCycleTransition
+     * const leadLifeCycleTransition = await prisma.leadLifeCycleTransition.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends LeadLifeCycleTransitionFindUniqueArgs>(args: SelectSubset<T, LeadLifeCycleTransitionFindUniqueArgs<ExtArgs>>): Prisma__LeadLifeCycleTransitionClient<$Result.GetResult<Prisma.$LeadLifeCycleTransitionPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one LeadLifeCycleTransition that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {LeadLifeCycleTransitionFindUniqueOrThrowArgs} args - Arguments to find a LeadLifeCycleTransition
+     * @example
+     * // Get one LeadLifeCycleTransition
+     * const leadLifeCycleTransition = await prisma.leadLifeCycleTransition.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends LeadLifeCycleTransitionFindUniqueOrThrowArgs>(args: SelectSubset<T, LeadLifeCycleTransitionFindUniqueOrThrowArgs<ExtArgs>>): Prisma__LeadLifeCycleTransitionClient<$Result.GetResult<Prisma.$LeadLifeCycleTransitionPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first LeadLifeCycleTransition that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadLifeCycleTransitionFindFirstArgs} args - Arguments to find a LeadLifeCycleTransition
+     * @example
+     * // Get one LeadLifeCycleTransition
+     * const leadLifeCycleTransition = await prisma.leadLifeCycleTransition.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends LeadLifeCycleTransitionFindFirstArgs>(args?: SelectSubset<T, LeadLifeCycleTransitionFindFirstArgs<ExtArgs>>): Prisma__LeadLifeCycleTransitionClient<$Result.GetResult<Prisma.$LeadLifeCycleTransitionPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first LeadLifeCycleTransition that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadLifeCycleTransitionFindFirstOrThrowArgs} args - Arguments to find a LeadLifeCycleTransition
+     * @example
+     * // Get one LeadLifeCycleTransition
+     * const leadLifeCycleTransition = await prisma.leadLifeCycleTransition.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends LeadLifeCycleTransitionFindFirstOrThrowArgs>(args?: SelectSubset<T, LeadLifeCycleTransitionFindFirstOrThrowArgs<ExtArgs>>): Prisma__LeadLifeCycleTransitionClient<$Result.GetResult<Prisma.$LeadLifeCycleTransitionPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more LeadLifeCycleTransitions that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadLifeCycleTransitionFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all LeadLifeCycleTransitions
+     * const leadLifeCycleTransitions = await prisma.leadLifeCycleTransition.findMany()
+     * 
+     * // Get first 10 LeadLifeCycleTransitions
+     * const leadLifeCycleTransitions = await prisma.leadLifeCycleTransition.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const leadLifeCycleTransitionWithIdOnly = await prisma.leadLifeCycleTransition.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends LeadLifeCycleTransitionFindManyArgs>(args?: SelectSubset<T, LeadLifeCycleTransitionFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadLifeCycleTransitionPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a LeadLifeCycleTransition.
+     * @param {LeadLifeCycleTransitionCreateArgs} args - Arguments to create a LeadLifeCycleTransition.
+     * @example
+     * // Create one LeadLifeCycleTransition
+     * const LeadLifeCycleTransition = await prisma.leadLifeCycleTransition.create({
+     *   data: {
+     *     // ... data to create a LeadLifeCycleTransition
+     *   }
+     * })
+     * 
+     */
+    create<T extends LeadLifeCycleTransitionCreateArgs>(args: SelectSubset<T, LeadLifeCycleTransitionCreateArgs<ExtArgs>>): Prisma__LeadLifeCycleTransitionClient<$Result.GetResult<Prisma.$LeadLifeCycleTransitionPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many LeadLifeCycleTransitions.
+     * @param {LeadLifeCycleTransitionCreateManyArgs} args - Arguments to create many LeadLifeCycleTransitions.
+     * @example
+     * // Create many LeadLifeCycleTransitions
+     * const leadLifeCycleTransition = await prisma.leadLifeCycleTransition.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends LeadLifeCycleTransitionCreateManyArgs>(args?: SelectSubset<T, LeadLifeCycleTransitionCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many LeadLifeCycleTransitions and returns the data saved in the database.
+     * @param {LeadLifeCycleTransitionCreateManyAndReturnArgs} args - Arguments to create many LeadLifeCycleTransitions.
+     * @example
+     * // Create many LeadLifeCycleTransitions
+     * const leadLifeCycleTransition = await prisma.leadLifeCycleTransition.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many LeadLifeCycleTransitions and only return the `id`
+     * const leadLifeCycleTransitionWithIdOnly = await prisma.leadLifeCycleTransition.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends LeadLifeCycleTransitionCreateManyAndReturnArgs>(args?: SelectSubset<T, LeadLifeCycleTransitionCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadLifeCycleTransitionPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a LeadLifeCycleTransition.
+     * @param {LeadLifeCycleTransitionDeleteArgs} args - Arguments to delete one LeadLifeCycleTransition.
+     * @example
+     * // Delete one LeadLifeCycleTransition
+     * const LeadLifeCycleTransition = await prisma.leadLifeCycleTransition.delete({
+     *   where: {
+     *     // ... filter to delete one LeadLifeCycleTransition
+     *   }
+     * })
+     * 
+     */
+    delete<T extends LeadLifeCycleTransitionDeleteArgs>(args: SelectSubset<T, LeadLifeCycleTransitionDeleteArgs<ExtArgs>>): Prisma__LeadLifeCycleTransitionClient<$Result.GetResult<Prisma.$LeadLifeCycleTransitionPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one LeadLifeCycleTransition.
+     * @param {LeadLifeCycleTransitionUpdateArgs} args - Arguments to update one LeadLifeCycleTransition.
+     * @example
+     * // Update one LeadLifeCycleTransition
+     * const leadLifeCycleTransition = await prisma.leadLifeCycleTransition.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends LeadLifeCycleTransitionUpdateArgs>(args: SelectSubset<T, LeadLifeCycleTransitionUpdateArgs<ExtArgs>>): Prisma__LeadLifeCycleTransitionClient<$Result.GetResult<Prisma.$LeadLifeCycleTransitionPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more LeadLifeCycleTransitions.
+     * @param {LeadLifeCycleTransitionDeleteManyArgs} args - Arguments to filter LeadLifeCycleTransitions to delete.
+     * @example
+     * // Delete a few LeadLifeCycleTransitions
+     * const { count } = await prisma.leadLifeCycleTransition.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends LeadLifeCycleTransitionDeleteManyArgs>(args?: SelectSubset<T, LeadLifeCycleTransitionDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more LeadLifeCycleTransitions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadLifeCycleTransitionUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many LeadLifeCycleTransitions
+     * const leadLifeCycleTransition = await prisma.leadLifeCycleTransition.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends LeadLifeCycleTransitionUpdateManyArgs>(args: SelectSubset<T, LeadLifeCycleTransitionUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one LeadLifeCycleTransition.
+     * @param {LeadLifeCycleTransitionUpsertArgs} args - Arguments to update or create a LeadLifeCycleTransition.
+     * @example
+     * // Update or create a LeadLifeCycleTransition
+     * const leadLifeCycleTransition = await prisma.leadLifeCycleTransition.upsert({
+     *   create: {
+     *     // ... data to create a LeadLifeCycleTransition
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the LeadLifeCycleTransition we want to update
+     *   }
+     * })
+     */
+    upsert<T extends LeadLifeCycleTransitionUpsertArgs>(args: SelectSubset<T, LeadLifeCycleTransitionUpsertArgs<ExtArgs>>): Prisma__LeadLifeCycleTransitionClient<$Result.GetResult<Prisma.$LeadLifeCycleTransitionPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of LeadLifeCycleTransitions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadLifeCycleTransitionCountArgs} args - Arguments to filter LeadLifeCycleTransitions to count.
+     * @example
+     * // Count the number of LeadLifeCycleTransitions
+     * const count = await prisma.leadLifeCycleTransition.count({
+     *   where: {
+     *     // ... the filter for the LeadLifeCycleTransitions we want to count
+     *   }
+     * })
+    **/
+    count<T extends LeadLifeCycleTransitionCountArgs>(
+      args?: Subset<T, LeadLifeCycleTransitionCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], LeadLifeCycleTransitionCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a LeadLifeCycleTransition.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadLifeCycleTransitionAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends LeadLifeCycleTransitionAggregateArgs>(args: Subset<T, LeadLifeCycleTransitionAggregateArgs>): Prisma.PrismaPromise<GetLeadLifeCycleTransitionAggregateType<T>>
+
+    /**
+     * Group by LeadLifeCycleTransition.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadLifeCycleTransitionGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends LeadLifeCycleTransitionGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: LeadLifeCycleTransitionGroupByArgs['orderBy'] }
+        : { orderBy?: LeadLifeCycleTransitionGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, LeadLifeCycleTransitionGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetLeadLifeCycleTransitionGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the LeadLifeCycleTransition model
+   */
+  readonly fields: LeadLifeCycleTransitionFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for LeadLifeCycleTransition.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__LeadLifeCycleTransitionClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    lifecycle<T extends LeadLifeCycleDefaultArgs<ExtArgs> = {}>(args?: Subset<T, LeadLifeCycleDefaultArgs<ExtArgs>>): Prisma__LeadLifeCycleClient<$Result.GetResult<Prisma.$LeadLifeCyclePayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the LeadLifeCycleTransition model
+   */ 
+  interface LeadLifeCycleTransitionFieldRefs {
+    readonly id: FieldRef<"LeadLifeCycleTransition", 'String'>
+    readonly lifecycleId: FieldRef<"LeadLifeCycleTransition", 'String'>
+    readonly fromStageId: FieldRef<"LeadLifeCycleTransition", 'String'>
+    readonly toStageId: FieldRef<"LeadLifeCycleTransition", 'String'>
+    readonly numberOfDays: FieldRef<"LeadLifeCycleTransition", 'Int'>
+    readonly sortOrder: FieldRef<"LeadLifeCycleTransition", 'Int'>
+    readonly workspaceId: FieldRef<"LeadLifeCycleTransition", 'String'>
+    readonly createdAt: FieldRef<"LeadLifeCycleTransition", 'DateTime'>
+    readonly updatedAt: FieldRef<"LeadLifeCycleTransition", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * LeadLifeCycleTransition findUnique
+   */
+  export type LeadLifeCycleTransitionFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadLifeCycleTransition
+     */
+    select?: LeadLifeCycleTransitionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadLifeCycleTransitionInclude<ExtArgs> | null
+    /**
+     * Filter, which LeadLifeCycleTransition to fetch.
+     */
+    where: LeadLifeCycleTransitionWhereUniqueInput
+  }
+
+  /**
+   * LeadLifeCycleTransition findUniqueOrThrow
+   */
+  export type LeadLifeCycleTransitionFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadLifeCycleTransition
+     */
+    select?: LeadLifeCycleTransitionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadLifeCycleTransitionInclude<ExtArgs> | null
+    /**
+     * Filter, which LeadLifeCycleTransition to fetch.
+     */
+    where: LeadLifeCycleTransitionWhereUniqueInput
+  }
+
+  /**
+   * LeadLifeCycleTransition findFirst
+   */
+  export type LeadLifeCycleTransitionFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadLifeCycleTransition
+     */
+    select?: LeadLifeCycleTransitionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadLifeCycleTransitionInclude<ExtArgs> | null
+    /**
+     * Filter, which LeadLifeCycleTransition to fetch.
+     */
+    where?: LeadLifeCycleTransitionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LeadLifeCycleTransitions to fetch.
+     */
+    orderBy?: LeadLifeCycleTransitionOrderByWithRelationInput | LeadLifeCycleTransitionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for LeadLifeCycleTransitions.
+     */
+    cursor?: LeadLifeCycleTransitionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LeadLifeCycleTransitions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LeadLifeCycleTransitions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of LeadLifeCycleTransitions.
+     */
+    distinct?: LeadLifeCycleTransitionScalarFieldEnum | LeadLifeCycleTransitionScalarFieldEnum[]
+  }
+
+  /**
+   * LeadLifeCycleTransition findFirstOrThrow
+   */
+  export type LeadLifeCycleTransitionFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadLifeCycleTransition
+     */
+    select?: LeadLifeCycleTransitionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadLifeCycleTransitionInclude<ExtArgs> | null
+    /**
+     * Filter, which LeadLifeCycleTransition to fetch.
+     */
+    where?: LeadLifeCycleTransitionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LeadLifeCycleTransitions to fetch.
+     */
+    orderBy?: LeadLifeCycleTransitionOrderByWithRelationInput | LeadLifeCycleTransitionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for LeadLifeCycleTransitions.
+     */
+    cursor?: LeadLifeCycleTransitionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LeadLifeCycleTransitions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LeadLifeCycleTransitions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of LeadLifeCycleTransitions.
+     */
+    distinct?: LeadLifeCycleTransitionScalarFieldEnum | LeadLifeCycleTransitionScalarFieldEnum[]
+  }
+
+  /**
+   * LeadLifeCycleTransition findMany
+   */
+  export type LeadLifeCycleTransitionFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadLifeCycleTransition
+     */
+    select?: LeadLifeCycleTransitionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadLifeCycleTransitionInclude<ExtArgs> | null
+    /**
+     * Filter, which LeadLifeCycleTransitions to fetch.
+     */
+    where?: LeadLifeCycleTransitionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LeadLifeCycleTransitions to fetch.
+     */
+    orderBy?: LeadLifeCycleTransitionOrderByWithRelationInput | LeadLifeCycleTransitionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing LeadLifeCycleTransitions.
+     */
+    cursor?: LeadLifeCycleTransitionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LeadLifeCycleTransitions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LeadLifeCycleTransitions.
+     */
+    skip?: number
+    distinct?: LeadLifeCycleTransitionScalarFieldEnum | LeadLifeCycleTransitionScalarFieldEnum[]
+  }
+
+  /**
+   * LeadLifeCycleTransition create
+   */
+  export type LeadLifeCycleTransitionCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadLifeCycleTransition
+     */
+    select?: LeadLifeCycleTransitionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadLifeCycleTransitionInclude<ExtArgs> | null
+    /**
+     * The data needed to create a LeadLifeCycleTransition.
+     */
+    data: XOR<LeadLifeCycleTransitionCreateInput, LeadLifeCycleTransitionUncheckedCreateInput>
+  }
+
+  /**
+   * LeadLifeCycleTransition createMany
+   */
+  export type LeadLifeCycleTransitionCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many LeadLifeCycleTransitions.
+     */
+    data: LeadLifeCycleTransitionCreateManyInput | LeadLifeCycleTransitionCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * LeadLifeCycleTransition createManyAndReturn
+   */
+  export type LeadLifeCycleTransitionCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadLifeCycleTransition
+     */
+    select?: LeadLifeCycleTransitionSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many LeadLifeCycleTransitions.
+     */
+    data: LeadLifeCycleTransitionCreateManyInput | LeadLifeCycleTransitionCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadLifeCycleTransitionIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * LeadLifeCycleTransition update
+   */
+  export type LeadLifeCycleTransitionUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadLifeCycleTransition
+     */
+    select?: LeadLifeCycleTransitionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadLifeCycleTransitionInclude<ExtArgs> | null
+    /**
+     * The data needed to update a LeadLifeCycleTransition.
+     */
+    data: XOR<LeadLifeCycleTransitionUpdateInput, LeadLifeCycleTransitionUncheckedUpdateInput>
+    /**
+     * Choose, which LeadLifeCycleTransition to update.
+     */
+    where: LeadLifeCycleTransitionWhereUniqueInput
+  }
+
+  /**
+   * LeadLifeCycleTransition updateMany
+   */
+  export type LeadLifeCycleTransitionUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update LeadLifeCycleTransitions.
+     */
+    data: XOR<LeadLifeCycleTransitionUpdateManyMutationInput, LeadLifeCycleTransitionUncheckedUpdateManyInput>
+    /**
+     * Filter which LeadLifeCycleTransitions to update
+     */
+    where?: LeadLifeCycleTransitionWhereInput
+  }
+
+  /**
+   * LeadLifeCycleTransition upsert
+   */
+  export type LeadLifeCycleTransitionUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadLifeCycleTransition
+     */
+    select?: LeadLifeCycleTransitionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadLifeCycleTransitionInclude<ExtArgs> | null
+    /**
+     * The filter to search for the LeadLifeCycleTransition to update in case it exists.
+     */
+    where: LeadLifeCycleTransitionWhereUniqueInput
+    /**
+     * In case the LeadLifeCycleTransition found by the `where` argument doesn't exist, create a new LeadLifeCycleTransition with this data.
+     */
+    create: XOR<LeadLifeCycleTransitionCreateInput, LeadLifeCycleTransitionUncheckedCreateInput>
+    /**
+     * In case the LeadLifeCycleTransition was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<LeadLifeCycleTransitionUpdateInput, LeadLifeCycleTransitionUncheckedUpdateInput>
+  }
+
+  /**
+   * LeadLifeCycleTransition delete
+   */
+  export type LeadLifeCycleTransitionDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadLifeCycleTransition
+     */
+    select?: LeadLifeCycleTransitionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadLifeCycleTransitionInclude<ExtArgs> | null
+    /**
+     * Filter which LeadLifeCycleTransition to delete.
+     */
+    where: LeadLifeCycleTransitionWhereUniqueInput
+  }
+
+  /**
+   * LeadLifeCycleTransition deleteMany
+   */
+  export type LeadLifeCycleTransitionDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which LeadLifeCycleTransitions to delete
+     */
+    where?: LeadLifeCycleTransitionWhereInput
+  }
+
+  /**
+   * LeadLifeCycleTransition without action
+   */
+  export type LeadLifeCycleTransitionDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadLifeCycleTransition
+     */
+    select?: LeadLifeCycleTransitionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadLifeCycleTransitionInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Model LeadDynamicField
    */
 
@@ -28409,6 +30647,34 @@ export namespace Prisma {
   export type TargetCycleRangeScalarFieldEnum = (typeof TargetCycleRangeScalarFieldEnum)[keyof typeof TargetCycleRangeScalarFieldEnum]
 
 
+  export const LeadLifeCycleScalarFieldEnum: {
+    id: 'id',
+    name: 'name',
+    isDefault: 'isDefault',
+    workspaceId: 'workspaceId',
+    createdBy: 'createdBy',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type LeadLifeCycleScalarFieldEnum = (typeof LeadLifeCycleScalarFieldEnum)[keyof typeof LeadLifeCycleScalarFieldEnum]
+
+
+  export const LeadLifeCycleTransitionScalarFieldEnum: {
+    id: 'id',
+    lifecycleId: 'lifecycleId',
+    fromStageId: 'fromStageId',
+    toStageId: 'toStageId',
+    numberOfDays: 'numberOfDays',
+    sortOrder: 'sortOrder',
+    workspaceId: 'workspaceId',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type LeadLifeCycleTransitionScalarFieldEnum = (typeof LeadLifeCycleTransitionScalarFieldEnum)[keyof typeof LeadLifeCycleTransitionScalarFieldEnum]
+
+
   export const LeadDynamicFieldScalarFieldEnum: {
     id: 'id',
     name: 'name',
@@ -29036,6 +31302,7 @@ export namespace Prisma {
     users?: UserListRelationFilter
     departments?: DepartmentListRelationFilter
     targetCycles?: TargetCycleListRelationFilter
+    leadLifeCycles?: LeadLifeCycleListRelationFilter
     leadDynamicFields?: LeadDynamicFieldListRelationFilter
   }
 
@@ -29054,6 +31321,7 @@ export namespace Prisma {
     users?: UserOrderByRelationAggregateInput
     departments?: DepartmentOrderByRelationAggregateInput
     targetCycles?: TargetCycleOrderByRelationAggregateInput
+    leadLifeCycles?: LeadLifeCycleOrderByRelationAggregateInput
     leadDynamicFields?: LeadDynamicFieldOrderByRelationAggregateInput
   }
 
@@ -29075,6 +31343,7 @@ export namespace Prisma {
     users?: UserListRelationFilter
     departments?: DepartmentListRelationFilter
     targetCycles?: TargetCycleListRelationFilter
+    leadLifeCycles?: LeadLifeCycleListRelationFilter
     leadDynamicFields?: LeadDynamicFieldListRelationFilter
   }, "id" | "ownerId">
 
@@ -29931,6 +32200,152 @@ export namespace Prisma {
     startDay?: IntWithAggregatesFilter<"TargetCycleRange"> | number
     endDay?: IntWithAggregatesFilter<"TargetCycleRange"> | number
     createdAt?: DateTimeWithAggregatesFilter<"TargetCycleRange"> | Date | string
+  }
+
+  export type LeadLifeCycleWhereInput = {
+    AND?: LeadLifeCycleWhereInput | LeadLifeCycleWhereInput[]
+    OR?: LeadLifeCycleWhereInput[]
+    NOT?: LeadLifeCycleWhereInput | LeadLifeCycleWhereInput[]
+    id?: StringFilter<"LeadLifeCycle"> | string
+    name?: StringFilter<"LeadLifeCycle"> | string
+    isDefault?: BoolFilter<"LeadLifeCycle"> | boolean
+    workspaceId?: StringFilter<"LeadLifeCycle"> | string
+    createdBy?: StringNullableFilter<"LeadLifeCycle"> | string | null
+    createdAt?: DateTimeFilter<"LeadLifeCycle"> | Date | string
+    updatedAt?: DateTimeFilter<"LeadLifeCycle"> | Date | string
+    workspace?: XOR<WorkspaceRelationFilter, WorkspaceWhereInput>
+    transitions?: LeadLifeCycleTransitionListRelationFilter
+  }
+
+  export type LeadLifeCycleOrderByWithRelationInput = {
+    id?: SortOrder
+    name?: SortOrder
+    isDefault?: SortOrder
+    workspaceId?: SortOrder
+    createdBy?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    workspace?: WorkspaceOrderByWithRelationInput
+    transitions?: LeadLifeCycleTransitionOrderByRelationAggregateInput
+  }
+
+  export type LeadLifeCycleWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    name_workspaceId?: LeadLifeCycleNameWorkspaceIdCompoundUniqueInput
+    AND?: LeadLifeCycleWhereInput | LeadLifeCycleWhereInput[]
+    OR?: LeadLifeCycleWhereInput[]
+    NOT?: LeadLifeCycleWhereInput | LeadLifeCycleWhereInput[]
+    name?: StringFilter<"LeadLifeCycle"> | string
+    isDefault?: BoolFilter<"LeadLifeCycle"> | boolean
+    workspaceId?: StringFilter<"LeadLifeCycle"> | string
+    createdBy?: StringNullableFilter<"LeadLifeCycle"> | string | null
+    createdAt?: DateTimeFilter<"LeadLifeCycle"> | Date | string
+    updatedAt?: DateTimeFilter<"LeadLifeCycle"> | Date | string
+    workspace?: XOR<WorkspaceRelationFilter, WorkspaceWhereInput>
+    transitions?: LeadLifeCycleTransitionListRelationFilter
+  }, "id" | "name_workspaceId">
+
+  export type LeadLifeCycleOrderByWithAggregationInput = {
+    id?: SortOrder
+    name?: SortOrder
+    isDefault?: SortOrder
+    workspaceId?: SortOrder
+    createdBy?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: LeadLifeCycleCountOrderByAggregateInput
+    _max?: LeadLifeCycleMaxOrderByAggregateInput
+    _min?: LeadLifeCycleMinOrderByAggregateInput
+  }
+
+  export type LeadLifeCycleScalarWhereWithAggregatesInput = {
+    AND?: LeadLifeCycleScalarWhereWithAggregatesInput | LeadLifeCycleScalarWhereWithAggregatesInput[]
+    OR?: LeadLifeCycleScalarWhereWithAggregatesInput[]
+    NOT?: LeadLifeCycleScalarWhereWithAggregatesInput | LeadLifeCycleScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"LeadLifeCycle"> | string
+    name?: StringWithAggregatesFilter<"LeadLifeCycle"> | string
+    isDefault?: BoolWithAggregatesFilter<"LeadLifeCycle"> | boolean
+    workspaceId?: StringWithAggregatesFilter<"LeadLifeCycle"> | string
+    createdBy?: StringNullableWithAggregatesFilter<"LeadLifeCycle"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"LeadLifeCycle"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"LeadLifeCycle"> | Date | string
+  }
+
+  export type LeadLifeCycleTransitionWhereInput = {
+    AND?: LeadLifeCycleTransitionWhereInput | LeadLifeCycleTransitionWhereInput[]
+    OR?: LeadLifeCycleTransitionWhereInput[]
+    NOT?: LeadLifeCycleTransitionWhereInput | LeadLifeCycleTransitionWhereInput[]
+    id?: StringFilter<"LeadLifeCycleTransition"> | string
+    lifecycleId?: StringFilter<"LeadLifeCycleTransition"> | string
+    fromStageId?: StringFilter<"LeadLifeCycleTransition"> | string
+    toStageId?: StringFilter<"LeadLifeCycleTransition"> | string
+    numberOfDays?: IntFilter<"LeadLifeCycleTransition"> | number
+    sortOrder?: IntFilter<"LeadLifeCycleTransition"> | number
+    workspaceId?: StringFilter<"LeadLifeCycleTransition"> | string
+    createdAt?: DateTimeFilter<"LeadLifeCycleTransition"> | Date | string
+    updatedAt?: DateTimeFilter<"LeadLifeCycleTransition"> | Date | string
+    lifecycle?: XOR<LeadLifeCycleRelationFilter, LeadLifeCycleWhereInput>
+  }
+
+  export type LeadLifeCycleTransitionOrderByWithRelationInput = {
+    id?: SortOrder
+    lifecycleId?: SortOrder
+    fromStageId?: SortOrder
+    toStageId?: SortOrder
+    numberOfDays?: SortOrder
+    sortOrder?: SortOrder
+    workspaceId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    lifecycle?: LeadLifeCycleOrderByWithRelationInput
+  }
+
+  export type LeadLifeCycleTransitionWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: LeadLifeCycleTransitionWhereInput | LeadLifeCycleTransitionWhereInput[]
+    OR?: LeadLifeCycleTransitionWhereInput[]
+    NOT?: LeadLifeCycleTransitionWhereInput | LeadLifeCycleTransitionWhereInput[]
+    lifecycleId?: StringFilter<"LeadLifeCycleTransition"> | string
+    fromStageId?: StringFilter<"LeadLifeCycleTransition"> | string
+    toStageId?: StringFilter<"LeadLifeCycleTransition"> | string
+    numberOfDays?: IntFilter<"LeadLifeCycleTransition"> | number
+    sortOrder?: IntFilter<"LeadLifeCycleTransition"> | number
+    workspaceId?: StringFilter<"LeadLifeCycleTransition"> | string
+    createdAt?: DateTimeFilter<"LeadLifeCycleTransition"> | Date | string
+    updatedAt?: DateTimeFilter<"LeadLifeCycleTransition"> | Date | string
+    lifecycle?: XOR<LeadLifeCycleRelationFilter, LeadLifeCycleWhereInput>
+  }, "id">
+
+  export type LeadLifeCycleTransitionOrderByWithAggregationInput = {
+    id?: SortOrder
+    lifecycleId?: SortOrder
+    fromStageId?: SortOrder
+    toStageId?: SortOrder
+    numberOfDays?: SortOrder
+    sortOrder?: SortOrder
+    workspaceId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: LeadLifeCycleTransitionCountOrderByAggregateInput
+    _avg?: LeadLifeCycleTransitionAvgOrderByAggregateInput
+    _max?: LeadLifeCycleTransitionMaxOrderByAggregateInput
+    _min?: LeadLifeCycleTransitionMinOrderByAggregateInput
+    _sum?: LeadLifeCycleTransitionSumOrderByAggregateInput
+  }
+
+  export type LeadLifeCycleTransitionScalarWhereWithAggregatesInput = {
+    AND?: LeadLifeCycleTransitionScalarWhereWithAggregatesInput | LeadLifeCycleTransitionScalarWhereWithAggregatesInput[]
+    OR?: LeadLifeCycleTransitionScalarWhereWithAggregatesInput[]
+    NOT?: LeadLifeCycleTransitionScalarWhereWithAggregatesInput | LeadLifeCycleTransitionScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"LeadLifeCycleTransition"> | string
+    lifecycleId?: StringWithAggregatesFilter<"LeadLifeCycleTransition"> | string
+    fromStageId?: StringWithAggregatesFilter<"LeadLifeCycleTransition"> | string
+    toStageId?: StringWithAggregatesFilter<"LeadLifeCycleTransition"> | string
+    numberOfDays?: IntWithAggregatesFilter<"LeadLifeCycleTransition"> | number
+    sortOrder?: IntWithAggregatesFilter<"LeadLifeCycleTransition"> | number
+    workspaceId?: StringWithAggregatesFilter<"LeadLifeCycleTransition"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"LeadLifeCycleTransition"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"LeadLifeCycleTransition"> | Date | string
   }
 
   export type LeadDynamicFieldWhereInput = {
@@ -30961,6 +33376,7 @@ export namespace Prisma {
     users?: UserCreateNestedManyWithoutWorkspaceInput
     departments?: DepartmentCreateNestedManyWithoutWorkspaceInput
     targetCycles?: TargetCycleCreateNestedManyWithoutWorkspaceInput
+    leadLifeCycles?: LeadLifeCycleCreateNestedManyWithoutWorkspaceInput
     leadDynamicFields?: LeadDynamicFieldCreateNestedManyWithoutWorkspaceInput
   }
 
@@ -30978,6 +33394,7 @@ export namespace Prisma {
     users?: UserUncheckedCreateNestedManyWithoutWorkspaceInput
     departments?: DepartmentUncheckedCreateNestedManyWithoutWorkspaceInput
     targetCycles?: TargetCycleUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadLifeCycles?: LeadLifeCycleUncheckedCreateNestedManyWithoutWorkspaceInput
     leadDynamicFields?: LeadDynamicFieldUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
@@ -30995,6 +33412,7 @@ export namespace Prisma {
     users?: UserUpdateManyWithoutWorkspaceNestedInput
     departments?: DepartmentUpdateManyWithoutWorkspaceNestedInput
     targetCycles?: TargetCycleUpdateManyWithoutWorkspaceNestedInput
+    leadLifeCycles?: LeadLifeCycleUpdateManyWithoutWorkspaceNestedInput
     leadDynamicFields?: LeadDynamicFieldUpdateManyWithoutWorkspaceNestedInput
   }
 
@@ -31012,6 +33430,7 @@ export namespace Prisma {
     users?: UserUncheckedUpdateManyWithoutWorkspaceNestedInput
     departments?: DepartmentUncheckedUpdateManyWithoutWorkspaceNestedInput
     targetCycles?: TargetCycleUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadLifeCycles?: LeadLifeCycleUncheckedUpdateManyWithoutWorkspaceNestedInput
     leadDynamicFields?: LeadDynamicFieldUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
@@ -31959,6 +34378,162 @@ export namespace Prisma {
     startDay?: IntFieldUpdateOperationsInput | number
     endDay?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LeadLifeCycleCreateInput = {
+    id?: string
+    name: string
+    isDefault?: boolean
+    createdBy?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    workspace: WorkspaceCreateNestedOneWithoutLeadLifeCyclesInput
+    transitions?: LeadLifeCycleTransitionCreateNestedManyWithoutLifecycleInput
+  }
+
+  export type LeadLifeCycleUncheckedCreateInput = {
+    id?: string
+    name: string
+    isDefault?: boolean
+    workspaceId: string
+    createdBy?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    transitions?: LeadLifeCycleTransitionUncheckedCreateNestedManyWithoutLifecycleInput
+  }
+
+  export type LeadLifeCycleUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    isDefault?: BoolFieldUpdateOperationsInput | boolean
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    workspace?: WorkspaceUpdateOneRequiredWithoutLeadLifeCyclesNestedInput
+    transitions?: LeadLifeCycleTransitionUpdateManyWithoutLifecycleNestedInput
+  }
+
+  export type LeadLifeCycleUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    isDefault?: BoolFieldUpdateOperationsInput | boolean
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    transitions?: LeadLifeCycleTransitionUncheckedUpdateManyWithoutLifecycleNestedInput
+  }
+
+  export type LeadLifeCycleCreateManyInput = {
+    id?: string
+    name: string
+    isDefault?: boolean
+    workspaceId: string
+    createdBy?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type LeadLifeCycleUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    isDefault?: BoolFieldUpdateOperationsInput | boolean
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LeadLifeCycleUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    isDefault?: BoolFieldUpdateOperationsInput | boolean
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LeadLifeCycleTransitionCreateInput = {
+    id?: string
+    fromStageId: string
+    toStageId: string
+    numberOfDays: number
+    sortOrder: number
+    workspaceId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    lifecycle: LeadLifeCycleCreateNestedOneWithoutTransitionsInput
+  }
+
+  export type LeadLifeCycleTransitionUncheckedCreateInput = {
+    id?: string
+    lifecycleId: string
+    fromStageId: string
+    toStageId: string
+    numberOfDays: number
+    sortOrder: number
+    workspaceId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type LeadLifeCycleTransitionUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    fromStageId?: StringFieldUpdateOperationsInput | string
+    toStageId?: StringFieldUpdateOperationsInput | string
+    numberOfDays?: IntFieldUpdateOperationsInput | number
+    sortOrder?: IntFieldUpdateOperationsInput | number
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lifecycle?: LeadLifeCycleUpdateOneRequiredWithoutTransitionsNestedInput
+  }
+
+  export type LeadLifeCycleTransitionUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    lifecycleId?: StringFieldUpdateOperationsInput | string
+    fromStageId?: StringFieldUpdateOperationsInput | string
+    toStageId?: StringFieldUpdateOperationsInput | string
+    numberOfDays?: IntFieldUpdateOperationsInput | number
+    sortOrder?: IntFieldUpdateOperationsInput | number
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LeadLifeCycleTransitionCreateManyInput = {
+    id?: string
+    lifecycleId: string
+    fromStageId: string
+    toStageId: string
+    numberOfDays: number
+    sortOrder: number
+    workspaceId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type LeadLifeCycleTransitionUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    fromStageId?: StringFieldUpdateOperationsInput | string
+    toStageId?: StringFieldUpdateOperationsInput | string
+    numberOfDays?: IntFieldUpdateOperationsInput | number
+    sortOrder?: IntFieldUpdateOperationsInput | number
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LeadLifeCycleTransitionUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    lifecycleId?: StringFieldUpdateOperationsInput | string
+    fromStageId?: StringFieldUpdateOperationsInput | string
+    toStageId?: StringFieldUpdateOperationsInput | string
+    numberOfDays?: IntFieldUpdateOperationsInput | number
+    sortOrder?: IntFieldUpdateOperationsInput | number
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type LeadDynamicFieldCreateInput = {
@@ -33118,6 +35693,12 @@ export namespace Prisma {
     none?: TargetCycleWhereInput
   }
 
+  export type LeadLifeCycleListRelationFilter = {
+    every?: LeadLifeCycleWhereInput
+    some?: LeadLifeCycleWhereInput
+    none?: LeadLifeCycleWhereInput
+  }
+
   export type LeadDynamicFieldListRelationFilter = {
     every?: LeadDynamicFieldWhereInput
     some?: LeadDynamicFieldWhereInput
@@ -33129,6 +35710,10 @@ export namespace Prisma {
   }
 
   export type TargetCycleOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type LeadLifeCycleOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -33864,6 +36449,102 @@ export namespace Prisma {
   export type TargetCycleRangeSumOrderByAggregateInput = {
     startDay?: SortOrder
     endDay?: SortOrder
+  }
+
+  export type LeadLifeCycleTransitionListRelationFilter = {
+    every?: LeadLifeCycleTransitionWhereInput
+    some?: LeadLifeCycleTransitionWhereInput
+    none?: LeadLifeCycleTransitionWhereInput
+  }
+
+  export type LeadLifeCycleTransitionOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type LeadLifeCycleNameWorkspaceIdCompoundUniqueInput = {
+    name: string
+    workspaceId: string
+  }
+
+  export type LeadLifeCycleCountOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    isDefault?: SortOrder
+    workspaceId?: SortOrder
+    createdBy?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type LeadLifeCycleMaxOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    isDefault?: SortOrder
+    workspaceId?: SortOrder
+    createdBy?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type LeadLifeCycleMinOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    isDefault?: SortOrder
+    workspaceId?: SortOrder
+    createdBy?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type LeadLifeCycleRelationFilter = {
+    is?: LeadLifeCycleWhereInput
+    isNot?: LeadLifeCycleWhereInput
+  }
+
+  export type LeadLifeCycleTransitionCountOrderByAggregateInput = {
+    id?: SortOrder
+    lifecycleId?: SortOrder
+    fromStageId?: SortOrder
+    toStageId?: SortOrder
+    numberOfDays?: SortOrder
+    sortOrder?: SortOrder
+    workspaceId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type LeadLifeCycleTransitionAvgOrderByAggregateInput = {
+    numberOfDays?: SortOrder
+    sortOrder?: SortOrder
+  }
+
+  export type LeadLifeCycleTransitionMaxOrderByAggregateInput = {
+    id?: SortOrder
+    lifecycleId?: SortOrder
+    fromStageId?: SortOrder
+    toStageId?: SortOrder
+    numberOfDays?: SortOrder
+    sortOrder?: SortOrder
+    workspaceId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type LeadLifeCycleTransitionMinOrderByAggregateInput = {
+    id?: SortOrder
+    lifecycleId?: SortOrder
+    fromStageId?: SortOrder
+    toStageId?: SortOrder
+    numberOfDays?: SortOrder
+    sortOrder?: SortOrder
+    workspaceId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type LeadLifeCycleTransitionSumOrderByAggregateInput = {
+    numberOfDays?: SortOrder
+    sortOrder?: SortOrder
   }
 
   export type LeadDynamicOptionListRelationFilter = {
@@ -34745,6 +37426,13 @@ export namespace Prisma {
     connect?: TargetCycleWhereUniqueInput | TargetCycleWhereUniqueInput[]
   }
 
+  export type LeadLifeCycleCreateNestedManyWithoutWorkspaceInput = {
+    create?: XOR<LeadLifeCycleCreateWithoutWorkspaceInput, LeadLifeCycleUncheckedCreateWithoutWorkspaceInput> | LeadLifeCycleCreateWithoutWorkspaceInput[] | LeadLifeCycleUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: LeadLifeCycleCreateOrConnectWithoutWorkspaceInput | LeadLifeCycleCreateOrConnectWithoutWorkspaceInput[]
+    createMany?: LeadLifeCycleCreateManyWorkspaceInputEnvelope
+    connect?: LeadLifeCycleWhereUniqueInput | LeadLifeCycleWhereUniqueInput[]
+  }
+
   export type LeadDynamicFieldCreateNestedManyWithoutWorkspaceInput = {
     create?: XOR<LeadDynamicFieldCreateWithoutWorkspaceInput, LeadDynamicFieldUncheckedCreateWithoutWorkspaceInput> | LeadDynamicFieldCreateWithoutWorkspaceInput[] | LeadDynamicFieldUncheckedCreateWithoutWorkspaceInput[]
     connectOrCreate?: LeadDynamicFieldCreateOrConnectWithoutWorkspaceInput | LeadDynamicFieldCreateOrConnectWithoutWorkspaceInput[]
@@ -34771,6 +37459,13 @@ export namespace Prisma {
     connectOrCreate?: TargetCycleCreateOrConnectWithoutWorkspaceInput | TargetCycleCreateOrConnectWithoutWorkspaceInput[]
     createMany?: TargetCycleCreateManyWorkspaceInputEnvelope
     connect?: TargetCycleWhereUniqueInput | TargetCycleWhereUniqueInput[]
+  }
+
+  export type LeadLifeCycleUncheckedCreateNestedManyWithoutWorkspaceInput = {
+    create?: XOR<LeadLifeCycleCreateWithoutWorkspaceInput, LeadLifeCycleUncheckedCreateWithoutWorkspaceInput> | LeadLifeCycleCreateWithoutWorkspaceInput[] | LeadLifeCycleUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: LeadLifeCycleCreateOrConnectWithoutWorkspaceInput | LeadLifeCycleCreateOrConnectWithoutWorkspaceInput[]
+    createMany?: LeadLifeCycleCreateManyWorkspaceInputEnvelope
+    connect?: LeadLifeCycleWhereUniqueInput | LeadLifeCycleWhereUniqueInput[]
   }
 
   export type LeadDynamicFieldUncheckedCreateNestedManyWithoutWorkspaceInput = {
@@ -34834,6 +37529,20 @@ export namespace Prisma {
     deleteMany?: TargetCycleScalarWhereInput | TargetCycleScalarWhereInput[]
   }
 
+  export type LeadLifeCycleUpdateManyWithoutWorkspaceNestedInput = {
+    create?: XOR<LeadLifeCycleCreateWithoutWorkspaceInput, LeadLifeCycleUncheckedCreateWithoutWorkspaceInput> | LeadLifeCycleCreateWithoutWorkspaceInput[] | LeadLifeCycleUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: LeadLifeCycleCreateOrConnectWithoutWorkspaceInput | LeadLifeCycleCreateOrConnectWithoutWorkspaceInput[]
+    upsert?: LeadLifeCycleUpsertWithWhereUniqueWithoutWorkspaceInput | LeadLifeCycleUpsertWithWhereUniqueWithoutWorkspaceInput[]
+    createMany?: LeadLifeCycleCreateManyWorkspaceInputEnvelope
+    set?: LeadLifeCycleWhereUniqueInput | LeadLifeCycleWhereUniqueInput[]
+    disconnect?: LeadLifeCycleWhereUniqueInput | LeadLifeCycleWhereUniqueInput[]
+    delete?: LeadLifeCycleWhereUniqueInput | LeadLifeCycleWhereUniqueInput[]
+    connect?: LeadLifeCycleWhereUniqueInput | LeadLifeCycleWhereUniqueInput[]
+    update?: LeadLifeCycleUpdateWithWhereUniqueWithoutWorkspaceInput | LeadLifeCycleUpdateWithWhereUniqueWithoutWorkspaceInput[]
+    updateMany?: LeadLifeCycleUpdateManyWithWhereWithoutWorkspaceInput | LeadLifeCycleUpdateManyWithWhereWithoutWorkspaceInput[]
+    deleteMany?: LeadLifeCycleScalarWhereInput | LeadLifeCycleScalarWhereInput[]
+  }
+
   export type LeadDynamicFieldUpdateManyWithoutWorkspaceNestedInput = {
     create?: XOR<LeadDynamicFieldCreateWithoutWorkspaceInput, LeadDynamicFieldUncheckedCreateWithoutWorkspaceInput> | LeadDynamicFieldCreateWithoutWorkspaceInput[] | LeadDynamicFieldUncheckedCreateWithoutWorkspaceInput[]
     connectOrCreate?: LeadDynamicFieldCreateOrConnectWithoutWorkspaceInput | LeadDynamicFieldCreateOrConnectWithoutWorkspaceInput[]
@@ -34888,6 +37597,20 @@ export namespace Prisma {
     update?: TargetCycleUpdateWithWhereUniqueWithoutWorkspaceInput | TargetCycleUpdateWithWhereUniqueWithoutWorkspaceInput[]
     updateMany?: TargetCycleUpdateManyWithWhereWithoutWorkspaceInput | TargetCycleUpdateManyWithWhereWithoutWorkspaceInput[]
     deleteMany?: TargetCycleScalarWhereInput | TargetCycleScalarWhereInput[]
+  }
+
+  export type LeadLifeCycleUncheckedUpdateManyWithoutWorkspaceNestedInput = {
+    create?: XOR<LeadLifeCycleCreateWithoutWorkspaceInput, LeadLifeCycleUncheckedCreateWithoutWorkspaceInput> | LeadLifeCycleCreateWithoutWorkspaceInput[] | LeadLifeCycleUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: LeadLifeCycleCreateOrConnectWithoutWorkspaceInput | LeadLifeCycleCreateOrConnectWithoutWorkspaceInput[]
+    upsert?: LeadLifeCycleUpsertWithWhereUniqueWithoutWorkspaceInput | LeadLifeCycleUpsertWithWhereUniqueWithoutWorkspaceInput[]
+    createMany?: LeadLifeCycleCreateManyWorkspaceInputEnvelope
+    set?: LeadLifeCycleWhereUniqueInput | LeadLifeCycleWhereUniqueInput[]
+    disconnect?: LeadLifeCycleWhereUniqueInput | LeadLifeCycleWhereUniqueInput[]
+    delete?: LeadLifeCycleWhereUniqueInput | LeadLifeCycleWhereUniqueInput[]
+    connect?: LeadLifeCycleWhereUniqueInput | LeadLifeCycleWhereUniqueInput[]
+    update?: LeadLifeCycleUpdateWithWhereUniqueWithoutWorkspaceInput | LeadLifeCycleUpdateWithWhereUniqueWithoutWorkspaceInput[]
+    updateMany?: LeadLifeCycleUpdateManyWithWhereWithoutWorkspaceInput | LeadLifeCycleUpdateManyWithWhereWithoutWorkspaceInput[]
+    deleteMany?: LeadLifeCycleScalarWhereInput | LeadLifeCycleScalarWhereInput[]
   }
 
   export type LeadDynamicFieldUncheckedUpdateManyWithoutWorkspaceNestedInput = {
@@ -35564,6 +38287,76 @@ export namespace Prisma {
     upsert?: TargetCycleUpsertWithoutRangesInput
     connect?: TargetCycleWhereUniqueInput
     update?: XOR<XOR<TargetCycleUpdateToOneWithWhereWithoutRangesInput, TargetCycleUpdateWithoutRangesInput>, TargetCycleUncheckedUpdateWithoutRangesInput>
+  }
+
+  export type WorkspaceCreateNestedOneWithoutLeadLifeCyclesInput = {
+    create?: XOR<WorkspaceCreateWithoutLeadLifeCyclesInput, WorkspaceUncheckedCreateWithoutLeadLifeCyclesInput>
+    connectOrCreate?: WorkspaceCreateOrConnectWithoutLeadLifeCyclesInput
+    connect?: WorkspaceWhereUniqueInput
+  }
+
+  export type LeadLifeCycleTransitionCreateNestedManyWithoutLifecycleInput = {
+    create?: XOR<LeadLifeCycleTransitionCreateWithoutLifecycleInput, LeadLifeCycleTransitionUncheckedCreateWithoutLifecycleInput> | LeadLifeCycleTransitionCreateWithoutLifecycleInput[] | LeadLifeCycleTransitionUncheckedCreateWithoutLifecycleInput[]
+    connectOrCreate?: LeadLifeCycleTransitionCreateOrConnectWithoutLifecycleInput | LeadLifeCycleTransitionCreateOrConnectWithoutLifecycleInput[]
+    createMany?: LeadLifeCycleTransitionCreateManyLifecycleInputEnvelope
+    connect?: LeadLifeCycleTransitionWhereUniqueInput | LeadLifeCycleTransitionWhereUniqueInput[]
+  }
+
+  export type LeadLifeCycleTransitionUncheckedCreateNestedManyWithoutLifecycleInput = {
+    create?: XOR<LeadLifeCycleTransitionCreateWithoutLifecycleInput, LeadLifeCycleTransitionUncheckedCreateWithoutLifecycleInput> | LeadLifeCycleTransitionCreateWithoutLifecycleInput[] | LeadLifeCycleTransitionUncheckedCreateWithoutLifecycleInput[]
+    connectOrCreate?: LeadLifeCycleTransitionCreateOrConnectWithoutLifecycleInput | LeadLifeCycleTransitionCreateOrConnectWithoutLifecycleInput[]
+    createMany?: LeadLifeCycleTransitionCreateManyLifecycleInputEnvelope
+    connect?: LeadLifeCycleTransitionWhereUniqueInput | LeadLifeCycleTransitionWhereUniqueInput[]
+  }
+
+  export type WorkspaceUpdateOneRequiredWithoutLeadLifeCyclesNestedInput = {
+    create?: XOR<WorkspaceCreateWithoutLeadLifeCyclesInput, WorkspaceUncheckedCreateWithoutLeadLifeCyclesInput>
+    connectOrCreate?: WorkspaceCreateOrConnectWithoutLeadLifeCyclesInput
+    upsert?: WorkspaceUpsertWithoutLeadLifeCyclesInput
+    connect?: WorkspaceWhereUniqueInput
+    update?: XOR<XOR<WorkspaceUpdateToOneWithWhereWithoutLeadLifeCyclesInput, WorkspaceUpdateWithoutLeadLifeCyclesInput>, WorkspaceUncheckedUpdateWithoutLeadLifeCyclesInput>
+  }
+
+  export type LeadLifeCycleTransitionUpdateManyWithoutLifecycleNestedInput = {
+    create?: XOR<LeadLifeCycleTransitionCreateWithoutLifecycleInput, LeadLifeCycleTransitionUncheckedCreateWithoutLifecycleInput> | LeadLifeCycleTransitionCreateWithoutLifecycleInput[] | LeadLifeCycleTransitionUncheckedCreateWithoutLifecycleInput[]
+    connectOrCreate?: LeadLifeCycleTransitionCreateOrConnectWithoutLifecycleInput | LeadLifeCycleTransitionCreateOrConnectWithoutLifecycleInput[]
+    upsert?: LeadLifeCycleTransitionUpsertWithWhereUniqueWithoutLifecycleInput | LeadLifeCycleTransitionUpsertWithWhereUniqueWithoutLifecycleInput[]
+    createMany?: LeadLifeCycleTransitionCreateManyLifecycleInputEnvelope
+    set?: LeadLifeCycleTransitionWhereUniqueInput | LeadLifeCycleTransitionWhereUniqueInput[]
+    disconnect?: LeadLifeCycleTransitionWhereUniqueInput | LeadLifeCycleTransitionWhereUniqueInput[]
+    delete?: LeadLifeCycleTransitionWhereUniqueInput | LeadLifeCycleTransitionWhereUniqueInput[]
+    connect?: LeadLifeCycleTransitionWhereUniqueInput | LeadLifeCycleTransitionWhereUniqueInput[]
+    update?: LeadLifeCycleTransitionUpdateWithWhereUniqueWithoutLifecycleInput | LeadLifeCycleTransitionUpdateWithWhereUniqueWithoutLifecycleInput[]
+    updateMany?: LeadLifeCycleTransitionUpdateManyWithWhereWithoutLifecycleInput | LeadLifeCycleTransitionUpdateManyWithWhereWithoutLifecycleInput[]
+    deleteMany?: LeadLifeCycleTransitionScalarWhereInput | LeadLifeCycleTransitionScalarWhereInput[]
+  }
+
+  export type LeadLifeCycleTransitionUncheckedUpdateManyWithoutLifecycleNestedInput = {
+    create?: XOR<LeadLifeCycleTransitionCreateWithoutLifecycleInput, LeadLifeCycleTransitionUncheckedCreateWithoutLifecycleInput> | LeadLifeCycleTransitionCreateWithoutLifecycleInput[] | LeadLifeCycleTransitionUncheckedCreateWithoutLifecycleInput[]
+    connectOrCreate?: LeadLifeCycleTransitionCreateOrConnectWithoutLifecycleInput | LeadLifeCycleTransitionCreateOrConnectWithoutLifecycleInput[]
+    upsert?: LeadLifeCycleTransitionUpsertWithWhereUniqueWithoutLifecycleInput | LeadLifeCycleTransitionUpsertWithWhereUniqueWithoutLifecycleInput[]
+    createMany?: LeadLifeCycleTransitionCreateManyLifecycleInputEnvelope
+    set?: LeadLifeCycleTransitionWhereUniqueInput | LeadLifeCycleTransitionWhereUniqueInput[]
+    disconnect?: LeadLifeCycleTransitionWhereUniqueInput | LeadLifeCycleTransitionWhereUniqueInput[]
+    delete?: LeadLifeCycleTransitionWhereUniqueInput | LeadLifeCycleTransitionWhereUniqueInput[]
+    connect?: LeadLifeCycleTransitionWhereUniqueInput | LeadLifeCycleTransitionWhereUniqueInput[]
+    update?: LeadLifeCycleTransitionUpdateWithWhereUniqueWithoutLifecycleInput | LeadLifeCycleTransitionUpdateWithWhereUniqueWithoutLifecycleInput[]
+    updateMany?: LeadLifeCycleTransitionUpdateManyWithWhereWithoutLifecycleInput | LeadLifeCycleTransitionUpdateManyWithWhereWithoutLifecycleInput[]
+    deleteMany?: LeadLifeCycleTransitionScalarWhereInput | LeadLifeCycleTransitionScalarWhereInput[]
+  }
+
+  export type LeadLifeCycleCreateNestedOneWithoutTransitionsInput = {
+    create?: XOR<LeadLifeCycleCreateWithoutTransitionsInput, LeadLifeCycleUncheckedCreateWithoutTransitionsInput>
+    connectOrCreate?: LeadLifeCycleCreateOrConnectWithoutTransitionsInput
+    connect?: LeadLifeCycleWhereUniqueInput
+  }
+
+  export type LeadLifeCycleUpdateOneRequiredWithoutTransitionsNestedInput = {
+    create?: XOR<LeadLifeCycleCreateWithoutTransitionsInput, LeadLifeCycleUncheckedCreateWithoutTransitionsInput>
+    connectOrCreate?: LeadLifeCycleCreateOrConnectWithoutTransitionsInput
+    upsert?: LeadLifeCycleUpsertWithoutTransitionsInput
+    connect?: LeadLifeCycleWhereUniqueInput
+    update?: XOR<XOR<LeadLifeCycleUpdateToOneWithWhereWithoutTransitionsInput, LeadLifeCycleUpdateWithoutTransitionsInput>, LeadLifeCycleUncheckedUpdateWithoutTransitionsInput>
   }
 
   export type WorkspaceCreateNestedOneWithoutLeadDynamicFieldsInput = {
@@ -37246,6 +40039,36 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type LeadLifeCycleCreateWithoutWorkspaceInput = {
+    id?: string
+    name: string
+    isDefault?: boolean
+    createdBy?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    transitions?: LeadLifeCycleTransitionCreateNestedManyWithoutLifecycleInput
+  }
+
+  export type LeadLifeCycleUncheckedCreateWithoutWorkspaceInput = {
+    id?: string
+    name: string
+    isDefault?: boolean
+    createdBy?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    transitions?: LeadLifeCycleTransitionUncheckedCreateNestedManyWithoutLifecycleInput
+  }
+
+  export type LeadLifeCycleCreateOrConnectWithoutWorkspaceInput = {
+    where: LeadLifeCycleWhereUniqueInput
+    create: XOR<LeadLifeCycleCreateWithoutWorkspaceInput, LeadLifeCycleUncheckedCreateWithoutWorkspaceInput>
+  }
+
+  export type LeadLifeCycleCreateManyWorkspaceInputEnvelope = {
+    data: LeadLifeCycleCreateManyWorkspaceInput | LeadLifeCycleCreateManyWorkspaceInput[]
+    skipDuplicates?: boolean
+  }
+
   export type LeadDynamicFieldCreateWithoutWorkspaceInput = {
     id?: string
     name: string
@@ -37442,6 +40265,35 @@ export namespace Prisma {
     deletedAt?: DateTimeNullableFilter<"TargetCycle"> | Date | string | null
   }
 
+  export type LeadLifeCycleUpsertWithWhereUniqueWithoutWorkspaceInput = {
+    where: LeadLifeCycleWhereUniqueInput
+    update: XOR<LeadLifeCycleUpdateWithoutWorkspaceInput, LeadLifeCycleUncheckedUpdateWithoutWorkspaceInput>
+    create: XOR<LeadLifeCycleCreateWithoutWorkspaceInput, LeadLifeCycleUncheckedCreateWithoutWorkspaceInput>
+  }
+
+  export type LeadLifeCycleUpdateWithWhereUniqueWithoutWorkspaceInput = {
+    where: LeadLifeCycleWhereUniqueInput
+    data: XOR<LeadLifeCycleUpdateWithoutWorkspaceInput, LeadLifeCycleUncheckedUpdateWithoutWorkspaceInput>
+  }
+
+  export type LeadLifeCycleUpdateManyWithWhereWithoutWorkspaceInput = {
+    where: LeadLifeCycleScalarWhereInput
+    data: XOR<LeadLifeCycleUpdateManyMutationInput, LeadLifeCycleUncheckedUpdateManyWithoutWorkspaceInput>
+  }
+
+  export type LeadLifeCycleScalarWhereInput = {
+    AND?: LeadLifeCycleScalarWhereInput | LeadLifeCycleScalarWhereInput[]
+    OR?: LeadLifeCycleScalarWhereInput[]
+    NOT?: LeadLifeCycleScalarWhereInput | LeadLifeCycleScalarWhereInput[]
+    id?: StringFilter<"LeadLifeCycle"> | string
+    name?: StringFilter<"LeadLifeCycle"> | string
+    isDefault?: BoolFilter<"LeadLifeCycle"> | boolean
+    workspaceId?: StringFilter<"LeadLifeCycle"> | string
+    createdBy?: StringNullableFilter<"LeadLifeCycle"> | string | null
+    createdAt?: DateTimeFilter<"LeadLifeCycle"> | Date | string
+    updatedAt?: DateTimeFilter<"LeadLifeCycle"> | Date | string
+  }
+
   export type LeadDynamicFieldUpsertWithWhereUniqueWithoutWorkspaceInput = {
     where: LeadDynamicFieldWhereUniqueInput
     update: XOR<LeadDynamicFieldUpdateWithoutWorkspaceInput, LeadDynamicFieldUncheckedUpdateWithoutWorkspaceInput>
@@ -37486,6 +40338,7 @@ export namespace Prisma {
     owner: UserCreateNestedOneWithoutOwnedWorkspaceInput
     users?: UserCreateNestedManyWithoutWorkspaceInput
     targetCycles?: TargetCycleCreateNestedManyWithoutWorkspaceInput
+    leadLifeCycles?: LeadLifeCycleCreateNestedManyWithoutWorkspaceInput
     leadDynamicFields?: LeadDynamicFieldCreateNestedManyWithoutWorkspaceInput
   }
 
@@ -37502,6 +40355,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     users?: UserUncheckedCreateNestedManyWithoutWorkspaceInput
     targetCycles?: TargetCycleUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadLifeCycles?: LeadLifeCycleUncheckedCreateNestedManyWithoutWorkspaceInput
     leadDynamicFields?: LeadDynamicFieldUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
@@ -37616,6 +40470,7 @@ export namespace Prisma {
     owner?: UserUpdateOneRequiredWithoutOwnedWorkspaceNestedInput
     users?: UserUpdateManyWithoutWorkspaceNestedInput
     targetCycles?: TargetCycleUpdateManyWithoutWorkspaceNestedInput
+    leadLifeCycles?: LeadLifeCycleUpdateManyWithoutWorkspaceNestedInput
     leadDynamicFields?: LeadDynamicFieldUpdateManyWithoutWorkspaceNestedInput
   }
 
@@ -37632,6 +40487,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUncheckedUpdateManyWithoutWorkspaceNestedInput
     targetCycles?: TargetCycleUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadLifeCycles?: LeadLifeCycleUncheckedUpdateManyWithoutWorkspaceNestedInput
     leadDynamicFields?: LeadDynamicFieldUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
@@ -38854,6 +41710,7 @@ export namespace Prisma {
     owner: UserCreateNestedOneWithoutOwnedWorkspaceInput
     users?: UserCreateNestedManyWithoutWorkspaceInput
     departments?: DepartmentCreateNestedManyWithoutWorkspaceInput
+    leadLifeCycles?: LeadLifeCycleCreateNestedManyWithoutWorkspaceInput
     leadDynamicFields?: LeadDynamicFieldCreateNestedManyWithoutWorkspaceInput
   }
 
@@ -38870,6 +41727,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     users?: UserUncheckedCreateNestedManyWithoutWorkspaceInput
     departments?: DepartmentUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadLifeCycles?: LeadLifeCycleUncheckedCreateNestedManyWithoutWorkspaceInput
     leadDynamicFields?: LeadDynamicFieldUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
@@ -38966,6 +41824,7 @@ export namespace Prisma {
     owner?: UserUpdateOneRequiredWithoutOwnedWorkspaceNestedInput
     users?: UserUpdateManyWithoutWorkspaceNestedInput
     departments?: DepartmentUpdateManyWithoutWorkspaceNestedInput
+    leadLifeCycles?: LeadLifeCycleUpdateManyWithoutWorkspaceNestedInput
     leadDynamicFields?: LeadDynamicFieldUpdateManyWithoutWorkspaceNestedInput
   }
 
@@ -38982,6 +41841,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUncheckedUpdateManyWithoutWorkspaceNestedInput
     departments?: DepartmentUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadLifeCycles?: LeadLifeCycleUncheckedUpdateManyWithoutWorkspaceNestedInput
     leadDynamicFields?: LeadDynamicFieldUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
@@ -39096,6 +41956,209 @@ export namespace Prisma {
     targets?: TargetSettingUncheckedUpdateManyWithoutTargetCycleNestedInput
   }
 
+  export type WorkspaceCreateWithoutLeadLifeCyclesInput = {
+    id?: string
+    companyName: string
+    employeeCount: string
+    timeZone?: string
+    language?: string
+    currencyLocale?: string
+    loadSampleData?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    owner: UserCreateNestedOneWithoutOwnedWorkspaceInput
+    users?: UserCreateNestedManyWithoutWorkspaceInput
+    departments?: DepartmentCreateNestedManyWithoutWorkspaceInput
+    targetCycles?: TargetCycleCreateNestedManyWithoutWorkspaceInput
+    leadDynamicFields?: LeadDynamicFieldCreateNestedManyWithoutWorkspaceInput
+  }
+
+  export type WorkspaceUncheckedCreateWithoutLeadLifeCyclesInput = {
+    id?: string
+    companyName: string
+    employeeCount: string
+    timeZone?: string
+    language?: string
+    currencyLocale?: string
+    loadSampleData?: boolean
+    ownerId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    users?: UserUncheckedCreateNestedManyWithoutWorkspaceInput
+    departments?: DepartmentUncheckedCreateNestedManyWithoutWorkspaceInput
+    targetCycles?: TargetCycleUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadDynamicFields?: LeadDynamicFieldUncheckedCreateNestedManyWithoutWorkspaceInput
+  }
+
+  export type WorkspaceCreateOrConnectWithoutLeadLifeCyclesInput = {
+    where: WorkspaceWhereUniqueInput
+    create: XOR<WorkspaceCreateWithoutLeadLifeCyclesInput, WorkspaceUncheckedCreateWithoutLeadLifeCyclesInput>
+  }
+
+  export type LeadLifeCycleTransitionCreateWithoutLifecycleInput = {
+    id?: string
+    fromStageId: string
+    toStageId: string
+    numberOfDays: number
+    sortOrder: number
+    workspaceId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type LeadLifeCycleTransitionUncheckedCreateWithoutLifecycleInput = {
+    id?: string
+    fromStageId: string
+    toStageId: string
+    numberOfDays: number
+    sortOrder: number
+    workspaceId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type LeadLifeCycleTransitionCreateOrConnectWithoutLifecycleInput = {
+    where: LeadLifeCycleTransitionWhereUniqueInput
+    create: XOR<LeadLifeCycleTransitionCreateWithoutLifecycleInput, LeadLifeCycleTransitionUncheckedCreateWithoutLifecycleInput>
+  }
+
+  export type LeadLifeCycleTransitionCreateManyLifecycleInputEnvelope = {
+    data: LeadLifeCycleTransitionCreateManyLifecycleInput | LeadLifeCycleTransitionCreateManyLifecycleInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type WorkspaceUpsertWithoutLeadLifeCyclesInput = {
+    update: XOR<WorkspaceUpdateWithoutLeadLifeCyclesInput, WorkspaceUncheckedUpdateWithoutLeadLifeCyclesInput>
+    create: XOR<WorkspaceCreateWithoutLeadLifeCyclesInput, WorkspaceUncheckedCreateWithoutLeadLifeCyclesInput>
+    where?: WorkspaceWhereInput
+  }
+
+  export type WorkspaceUpdateToOneWithWhereWithoutLeadLifeCyclesInput = {
+    where?: WorkspaceWhereInput
+    data: XOR<WorkspaceUpdateWithoutLeadLifeCyclesInput, WorkspaceUncheckedUpdateWithoutLeadLifeCyclesInput>
+  }
+
+  export type WorkspaceUpdateWithoutLeadLifeCyclesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    companyName?: StringFieldUpdateOperationsInput | string
+    employeeCount?: StringFieldUpdateOperationsInput | string
+    timeZone?: StringFieldUpdateOperationsInput | string
+    language?: StringFieldUpdateOperationsInput | string
+    currencyLocale?: StringFieldUpdateOperationsInput | string
+    loadSampleData?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    owner?: UserUpdateOneRequiredWithoutOwnedWorkspaceNestedInput
+    users?: UserUpdateManyWithoutWorkspaceNestedInput
+    departments?: DepartmentUpdateManyWithoutWorkspaceNestedInput
+    targetCycles?: TargetCycleUpdateManyWithoutWorkspaceNestedInput
+    leadDynamicFields?: LeadDynamicFieldUpdateManyWithoutWorkspaceNestedInput
+  }
+
+  export type WorkspaceUncheckedUpdateWithoutLeadLifeCyclesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    companyName?: StringFieldUpdateOperationsInput | string
+    employeeCount?: StringFieldUpdateOperationsInput | string
+    timeZone?: StringFieldUpdateOperationsInput | string
+    language?: StringFieldUpdateOperationsInput | string
+    currencyLocale?: StringFieldUpdateOperationsInput | string
+    loadSampleData?: BoolFieldUpdateOperationsInput | boolean
+    ownerId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    users?: UserUncheckedUpdateManyWithoutWorkspaceNestedInput
+    departments?: DepartmentUncheckedUpdateManyWithoutWorkspaceNestedInput
+    targetCycles?: TargetCycleUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadDynamicFields?: LeadDynamicFieldUncheckedUpdateManyWithoutWorkspaceNestedInput
+  }
+
+  export type LeadLifeCycleTransitionUpsertWithWhereUniqueWithoutLifecycleInput = {
+    where: LeadLifeCycleTransitionWhereUniqueInput
+    update: XOR<LeadLifeCycleTransitionUpdateWithoutLifecycleInput, LeadLifeCycleTransitionUncheckedUpdateWithoutLifecycleInput>
+    create: XOR<LeadLifeCycleTransitionCreateWithoutLifecycleInput, LeadLifeCycleTransitionUncheckedCreateWithoutLifecycleInput>
+  }
+
+  export type LeadLifeCycleTransitionUpdateWithWhereUniqueWithoutLifecycleInput = {
+    where: LeadLifeCycleTransitionWhereUniqueInput
+    data: XOR<LeadLifeCycleTransitionUpdateWithoutLifecycleInput, LeadLifeCycleTransitionUncheckedUpdateWithoutLifecycleInput>
+  }
+
+  export type LeadLifeCycleTransitionUpdateManyWithWhereWithoutLifecycleInput = {
+    where: LeadLifeCycleTransitionScalarWhereInput
+    data: XOR<LeadLifeCycleTransitionUpdateManyMutationInput, LeadLifeCycleTransitionUncheckedUpdateManyWithoutLifecycleInput>
+  }
+
+  export type LeadLifeCycleTransitionScalarWhereInput = {
+    AND?: LeadLifeCycleTransitionScalarWhereInput | LeadLifeCycleTransitionScalarWhereInput[]
+    OR?: LeadLifeCycleTransitionScalarWhereInput[]
+    NOT?: LeadLifeCycleTransitionScalarWhereInput | LeadLifeCycleTransitionScalarWhereInput[]
+    id?: StringFilter<"LeadLifeCycleTransition"> | string
+    lifecycleId?: StringFilter<"LeadLifeCycleTransition"> | string
+    fromStageId?: StringFilter<"LeadLifeCycleTransition"> | string
+    toStageId?: StringFilter<"LeadLifeCycleTransition"> | string
+    numberOfDays?: IntFilter<"LeadLifeCycleTransition"> | number
+    sortOrder?: IntFilter<"LeadLifeCycleTransition"> | number
+    workspaceId?: StringFilter<"LeadLifeCycleTransition"> | string
+    createdAt?: DateTimeFilter<"LeadLifeCycleTransition"> | Date | string
+    updatedAt?: DateTimeFilter<"LeadLifeCycleTransition"> | Date | string
+  }
+
+  export type LeadLifeCycleCreateWithoutTransitionsInput = {
+    id?: string
+    name: string
+    isDefault?: boolean
+    createdBy?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    workspace: WorkspaceCreateNestedOneWithoutLeadLifeCyclesInput
+  }
+
+  export type LeadLifeCycleUncheckedCreateWithoutTransitionsInput = {
+    id?: string
+    name: string
+    isDefault?: boolean
+    workspaceId: string
+    createdBy?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type LeadLifeCycleCreateOrConnectWithoutTransitionsInput = {
+    where: LeadLifeCycleWhereUniqueInput
+    create: XOR<LeadLifeCycleCreateWithoutTransitionsInput, LeadLifeCycleUncheckedCreateWithoutTransitionsInput>
+  }
+
+  export type LeadLifeCycleUpsertWithoutTransitionsInput = {
+    update: XOR<LeadLifeCycleUpdateWithoutTransitionsInput, LeadLifeCycleUncheckedUpdateWithoutTransitionsInput>
+    create: XOR<LeadLifeCycleCreateWithoutTransitionsInput, LeadLifeCycleUncheckedCreateWithoutTransitionsInput>
+    where?: LeadLifeCycleWhereInput
+  }
+
+  export type LeadLifeCycleUpdateToOneWithWhereWithoutTransitionsInput = {
+    where?: LeadLifeCycleWhereInput
+    data: XOR<LeadLifeCycleUpdateWithoutTransitionsInput, LeadLifeCycleUncheckedUpdateWithoutTransitionsInput>
+  }
+
+  export type LeadLifeCycleUpdateWithoutTransitionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    isDefault?: BoolFieldUpdateOperationsInput | boolean
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    workspace?: WorkspaceUpdateOneRequiredWithoutLeadLifeCyclesNestedInput
+  }
+
+  export type LeadLifeCycleUncheckedUpdateWithoutTransitionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    isDefault?: BoolFieldUpdateOperationsInput | boolean
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type WorkspaceCreateWithoutLeadDynamicFieldsInput = {
     id?: string
     companyName: string
@@ -39110,6 +42173,7 @@ export namespace Prisma {
     users?: UserCreateNestedManyWithoutWorkspaceInput
     departments?: DepartmentCreateNestedManyWithoutWorkspaceInput
     targetCycles?: TargetCycleCreateNestedManyWithoutWorkspaceInput
+    leadLifeCycles?: LeadLifeCycleCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateWithoutLeadDynamicFieldsInput = {
@@ -39126,6 +42190,7 @@ export namespace Prisma {
     users?: UserUncheckedCreateNestedManyWithoutWorkspaceInput
     departments?: DepartmentUncheckedCreateNestedManyWithoutWorkspaceInput
     targetCycles?: TargetCycleUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadLifeCycles?: LeadLifeCycleUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceCreateOrConnectWithoutLeadDynamicFieldsInput = {
@@ -39204,6 +42269,7 @@ export namespace Prisma {
     users?: UserUpdateManyWithoutWorkspaceNestedInput
     departments?: DepartmentUpdateManyWithoutWorkspaceNestedInput
     targetCycles?: TargetCycleUpdateManyWithoutWorkspaceNestedInput
+    leadLifeCycles?: LeadLifeCycleUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateWithoutLeadDynamicFieldsInput = {
@@ -39220,6 +42286,7 @@ export namespace Prisma {
     users?: UserUncheckedUpdateManyWithoutWorkspaceNestedInput
     departments?: DepartmentUncheckedUpdateManyWithoutWorkspaceNestedInput
     targetCycles?: TargetCycleUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadLifeCycles?: LeadLifeCycleUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type LeadDynamicOptionUpsertWithWhereUniqueWithoutFieldInput = {
@@ -39891,6 +42958,7 @@ export namespace Prisma {
     owner: UserCreateNestedOneWithoutOwnedWorkspaceInput
     departments?: DepartmentCreateNestedManyWithoutWorkspaceInput
     targetCycles?: TargetCycleCreateNestedManyWithoutWorkspaceInput
+    leadLifeCycles?: LeadLifeCycleCreateNestedManyWithoutWorkspaceInput
     leadDynamicFields?: LeadDynamicFieldCreateNestedManyWithoutWorkspaceInput
   }
 
@@ -39907,6 +42975,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     departments?: DepartmentUncheckedCreateNestedManyWithoutWorkspaceInput
     targetCycles?: TargetCycleUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadLifeCycles?: LeadLifeCycleUncheckedCreateNestedManyWithoutWorkspaceInput
     leadDynamicFields?: LeadDynamicFieldUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
@@ -39928,6 +42997,7 @@ export namespace Prisma {
     users?: UserCreateNestedManyWithoutWorkspaceInput
     departments?: DepartmentCreateNestedManyWithoutWorkspaceInput
     targetCycles?: TargetCycleCreateNestedManyWithoutWorkspaceInput
+    leadLifeCycles?: LeadLifeCycleCreateNestedManyWithoutWorkspaceInput
     leadDynamicFields?: LeadDynamicFieldCreateNestedManyWithoutWorkspaceInput
   }
 
@@ -39944,6 +43014,7 @@ export namespace Prisma {
     users?: UserUncheckedCreateNestedManyWithoutWorkspaceInput
     departments?: DepartmentUncheckedCreateNestedManyWithoutWorkspaceInput
     targetCycles?: TargetCycleUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadLifeCycles?: LeadLifeCycleUncheckedCreateNestedManyWithoutWorkspaceInput
     leadDynamicFields?: LeadDynamicFieldUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
@@ -40537,6 +43608,7 @@ export namespace Prisma {
     owner?: UserUpdateOneRequiredWithoutOwnedWorkspaceNestedInput
     departments?: DepartmentUpdateManyWithoutWorkspaceNestedInput
     targetCycles?: TargetCycleUpdateManyWithoutWorkspaceNestedInput
+    leadLifeCycles?: LeadLifeCycleUpdateManyWithoutWorkspaceNestedInput
     leadDynamicFields?: LeadDynamicFieldUpdateManyWithoutWorkspaceNestedInput
   }
 
@@ -40553,6 +43625,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     departments?: DepartmentUncheckedUpdateManyWithoutWorkspaceNestedInput
     targetCycles?: TargetCycleUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadLifeCycles?: LeadLifeCycleUncheckedUpdateManyWithoutWorkspaceNestedInput
     leadDynamicFields?: LeadDynamicFieldUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
@@ -40580,6 +43653,7 @@ export namespace Prisma {
     users?: UserUpdateManyWithoutWorkspaceNestedInput
     departments?: DepartmentUpdateManyWithoutWorkspaceNestedInput
     targetCycles?: TargetCycleUpdateManyWithoutWorkspaceNestedInput
+    leadLifeCycles?: LeadLifeCycleUpdateManyWithoutWorkspaceNestedInput
     leadDynamicFields?: LeadDynamicFieldUpdateManyWithoutWorkspaceNestedInput
   }
 
@@ -40596,6 +43670,7 @@ export namespace Prisma {
     users?: UserUncheckedUpdateManyWithoutWorkspaceNestedInput
     departments?: DepartmentUncheckedUpdateManyWithoutWorkspaceNestedInput
     targetCycles?: TargetCycleUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadLifeCycles?: LeadLifeCycleUncheckedUpdateManyWithoutWorkspaceNestedInput
     leadDynamicFields?: LeadDynamicFieldUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
@@ -41740,6 +44815,15 @@ export namespace Prisma {
     deletedAt?: Date | string | null
   }
 
+  export type LeadLifeCycleCreateManyWorkspaceInput = {
+    id?: string
+    name: string
+    isDefault?: boolean
+    createdBy?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type LeadDynamicFieldCreateManyWorkspaceInput = {
     id?: string
     name: string
@@ -41918,6 +45002,35 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type LeadLifeCycleUpdateWithoutWorkspaceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    isDefault?: BoolFieldUpdateOperationsInput | boolean
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    transitions?: LeadLifeCycleTransitionUpdateManyWithoutLifecycleNestedInput
+  }
+
+  export type LeadLifeCycleUncheckedUpdateWithoutWorkspaceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    isDefault?: BoolFieldUpdateOperationsInput | boolean
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    transitions?: LeadLifeCycleTransitionUncheckedUpdateManyWithoutLifecycleNestedInput
+  }
+
+  export type LeadLifeCycleUncheckedUpdateManyWithoutWorkspaceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    isDefault?: BoolFieldUpdateOperationsInput | boolean
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type LeadDynamicFieldUpdateWithoutWorkspaceInput = {
@@ -42921,6 +46034,50 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type LeadLifeCycleTransitionCreateManyLifecycleInput = {
+    id?: string
+    fromStageId: string
+    toStageId: string
+    numberOfDays: number
+    sortOrder: number
+    workspaceId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type LeadLifeCycleTransitionUpdateWithoutLifecycleInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    fromStageId?: StringFieldUpdateOperationsInput | string
+    toStageId?: StringFieldUpdateOperationsInput | string
+    numberOfDays?: IntFieldUpdateOperationsInput | number
+    sortOrder?: IntFieldUpdateOperationsInput | number
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LeadLifeCycleTransitionUncheckedUpdateWithoutLifecycleInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    fromStageId?: StringFieldUpdateOperationsInput | string
+    toStageId?: StringFieldUpdateOperationsInput | string
+    numberOfDays?: IntFieldUpdateOperationsInput | number
+    sortOrder?: IntFieldUpdateOperationsInput | number
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LeadLifeCycleTransitionUncheckedUpdateManyWithoutLifecycleInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    fromStageId?: StringFieldUpdateOperationsInput | string
+    toStageId?: StringFieldUpdateOperationsInput | string
+    numberOfDays?: IntFieldUpdateOperationsInput | number
+    sortOrder?: IntFieldUpdateOperationsInput | number
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type LeadDynamicOptionCreateManyFieldInput = {
     id?: string
     value: string
@@ -43447,6 +46604,10 @@ export namespace Prisma {
      */
     export type TargetCycleCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = TargetCycleCountOutputTypeDefaultArgs<ExtArgs>
     /**
+     * @deprecated Use LeadLifeCycleCountOutputTypeDefaultArgs instead
+     */
+    export type LeadLifeCycleCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = LeadLifeCycleCountOutputTypeDefaultArgs<ExtArgs>
+    /**
      * @deprecated Use LeadDynamicFieldCountOutputTypeDefaultArgs instead
      */
     export type LeadDynamicFieldCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = LeadDynamicFieldCountOutputTypeDefaultArgs<ExtArgs>
@@ -43514,6 +46675,14 @@ export namespace Prisma {
      * @deprecated Use TargetCycleRangeDefaultArgs instead
      */
     export type TargetCycleRangeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = TargetCycleRangeDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use LeadLifeCycleDefaultArgs instead
+     */
+    export type LeadLifeCycleArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = LeadLifeCycleDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use LeadLifeCycleTransitionDefaultArgs instead
+     */
+    export type LeadLifeCycleTransitionArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = LeadLifeCycleTransitionDefaultArgs<ExtArgs>
     /**
      * @deprecated Use LeadDynamicFieldDefaultArgs instead
      */
