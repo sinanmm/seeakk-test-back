@@ -14,6 +14,15 @@ import {
 
 const OPTION_INPUT_TYPES = new Set<LeadDynamicInputType>(['SELECT', 'RADIO', 'CHECKBOX']);
 
+const isHttpUrl = (value: string): boolean => {
+  try {
+    const parsed = new URL(value);
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+  } catch {
+    return false;
+  }
+};
+
 const createServiceError = (message: string, statusCode: number): Error & { statusCode: number } => {
   const error = new Error(message) as Error & { statusCode: number };
   error.statusCode = statusCode;
@@ -431,6 +440,13 @@ export const saveLeadDynamicValues = async (
           422,
         );
       }
+    }
+
+    if (field.inputType === 'FILE' && !isHttpUrl(value)) {
+      throw createServiceError(
+        `Field "${field.name}" expects a valid uploaded file URL.`,
+        422,
+      );
     }
   }
 
