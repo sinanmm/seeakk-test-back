@@ -6,6 +6,7 @@ import workspaceRoutes from './routes/Workspace/workspaceRoutes';
 import adminUserRoutes from './routes/User/adminUserRoutes';
 import officeRoutes from './routes/User/officeRoutes';
 import leadLifeCycleRoutes from './routes/User/leadLifeCycleRoutes';
+import followupRoutes from './routes/User/followupRoutes';
 import rolesRoutes from './modules/admin/roles/roles.routes';
 import departmentsRoutes from './modules/admin/departments/departments.routes';
 import organisationChartRoutes from './modules/admin/organisation-chart/organisationChart.routes';
@@ -26,11 +27,40 @@ import { notFound, errorHandler } from './middlewares/errorMiddleware';
 
 const app = express();
 
+const allowedOrigins = new Set(
+  [
+    process.env.FRONTEND_URL,
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+  ]
+    .map((origin) => origin?.trim())
+    .filter((origin): origin is string => Boolean(origin)),
+);
+
+const isAllowedOrigin = (origin?: string): origin is string => Boolean(origin && allowedOrigins.has(origin));
+
+const corsOptions: cors.CorsOptions = {
+  origin: (origin, callback) => {
+    if (!origin || isAllowedOrigin(origin)) {
+      callback(null, true);
+      return;
+    }
+
+    callback(new Error(`CORS blocked for origin: ${origin}`));
+  },
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-device-id', 'x-access-token', 'Accept', 'Origin'],
+  credentials: true,
+  optionsSuccessStatus: 204,
+};
 
 // Middleware
 app.use(morgan('combined', { stream: { write: (message: string) => logger.info(message.trim()) } }));
-app.use(cors());
+
+app.use(cors(corsOptions));
+app.options(/.*/, cors(corsOptions));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Global rate limiting
 app.use('/api/', globalLimiter);
@@ -39,6 +69,7 @@ app.use('/api/workspace', workspaceRoutes);
 app.use('/api/admin/users', adminUserRoutes);
 app.use('/api/admin/offices', officeRoutes);
 app.use('/api/admin/lead-life-cycles', leadLifeCycleRoutes);
+app.use('/api/followups', followupRoutes);
 app.use('/api/admin/roles', rolesRoutes);
 app.use('/api/admin/departments', departmentsRoutes);
 app.use('/api/admin/organisation-chart', organisationChartRoutes);

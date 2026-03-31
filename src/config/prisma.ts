@@ -7,24 +7,34 @@ if (!connectionString) {
   throw new Error('DATABASE_URL is required to initialize Prisma client');
 }
 
-const withNeonPoolerParams = (url: string): string => {
+const withConditionalPoolerParams = (url: string): string => {
   try {
     const parsed = new URL(url);
-    if (!parsed.searchParams.has('pgbouncer')) {
-      parsed.searchParams.set('pgbouncer', 'true');
-    }
-    if (!parsed.searchParams.has('connect_timeout')) {
-      parsed.searchParams.set('connect_timeout', '15');
-    }
-    if (!parsed.searchParams.has('pool_timeout')) {
-      parsed.searchParams.set('pool_timeout', '20');
-    }
-    if (!parsed.searchParams.has('connection_limit')) {
-      parsed.searchParams.set('connection_limit', '10');
-    }
-    // PgBouncer does not support prepared statements in transaction mode.
-    if (!parsed.searchParams.has('statement_cache_size')) {
-      parsed.searchParams.set('statement_cache_size', '0');
+
+    const hostname = parsed.hostname.toLowerCase();
+    const alreadyConfiguredForPooler = parsed.searchParams.get('pgbouncer') === 'true';
+    const looksLikePoolerHost =
+      hostname.includes('-pooler.') ||
+      hostname.includes('.pooler.') ||
+      hostname.includes('pgbouncer');
+
+    if (alreadyConfiguredForPooler || looksLikePoolerHost) {
+      if (!parsed.searchParams.has('pgbouncer')) {
+        parsed.searchParams.set('pgbouncer', 'true');
+      }
+      if (!parsed.searchParams.has('connect_timeout')) {
+        parsed.searchParams.set('connect_timeout', '15');
+      }
+      if (!parsed.searchParams.has('pool_timeout')) {
+        parsed.searchParams.set('pool_timeout', '20');
+      }
+      if (!parsed.searchParams.has('connection_limit')) {
+        parsed.searchParams.set('connection_limit', '10');
+      }
+      // PgBouncer does not support prepared statements in transaction mode.
+      if (!parsed.searchParams.has('statement_cache_size')) {
+        parsed.searchParams.set('statement_cache_size', '0');
+      }
     }
     return parsed.toString();
   } catch {
@@ -32,7 +42,7 @@ const withNeonPoolerParams = (url: string): string => {
   }
 };
 
-const dbUrl = withNeonPoolerParams(connectionString);
+const dbUrl = withConditionalPoolerParams(connectionString);
 
 const createPrismaClient = () => {
   const client = new PrismaClient({

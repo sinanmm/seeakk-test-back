@@ -1,8 +1,10 @@
 import winston from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
 import path from 'path';
+import fs from 'fs';
 
 const logDir = path.join(__dirname, '../../logs');
+fs.mkdirSync(logDir, { recursive: true });
 
 const logFormat = winston.format.combine(
   winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
@@ -33,15 +35,23 @@ const accessRotator = new DailyRotateFile({
   maxFiles: '14d',
 });
 
-const logger = winston.createLogger({
+const isProduction = process.env.NODE_ENV === 'production';
+const enableProcessHandlers = process.env.LOG_PROCESS_HANDLERS !== 'false' && isProduction;
+
+const loggerOptions: winston.LoggerOptions = {
   level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
   format: logFormat,
   transports: [securityRotator, errorRotator, accessRotator],
-  exceptionHandlers: [new DailyRotateFile({ filename: `${logDir}/exceptions-%DATE%.log` })],
-  rejectionHandlers: [new DailyRotateFile({ filename: `${logDir}/rejections-%DATE%.log` })],
-});
+};
 
-if (process.env.NODE_ENV !== 'production') {
+if (enableProcessHandlers) {
+  loggerOptions.exceptionHandlers = [new DailyRotateFile({ filename: `${logDir}/exceptions-%DATE%.log` })];
+  loggerOptions.rejectionHandlers = [new DailyRotateFile({ filename: `${logDir}/rejections-%DATE%.log` })];
+}
+
+const logger = winston.createLogger(loggerOptions);
+
+if (!isProduction) {
   logger.add(
     new winston.transports.Console({
       format: winston.format.combine(winston.format.colorize(), winston.format.simple()),

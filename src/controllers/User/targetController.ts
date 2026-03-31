@@ -74,8 +74,9 @@ export const updateTarget = async (req: Request, res: Response, next: NextFuncti
   }
 
   try {
+    const userId = req.params['userId'] as string;
     const targetId = req.params['targetId'] as string;
-    const target = await targetService.updateTarget(targetId, workspaceId, result.data);
+    const target = await targetService.updateTarget(targetId, userId, workspaceId, result.data);
     res.status(200).json({ success: true, message: 'Target updated successfully.', data: { target } });
   } catch (error) {
     handleServiceError(error, res, next);

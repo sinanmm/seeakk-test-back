@@ -2,6 +2,7 @@ generator client {
   provider        = "prisma-client-js"
   output          = "./generated/client"
   previewFeatures = ["driverAdapters"]
+  binaryTargets   = ["native", "darwin-arm64"]
 }
 
 datasource db {
@@ -91,6 +92,7 @@ model Workspace {
   users             User[]             @relation("WorkspaceMembers")
   departments       Department[]
   targetCycles      TargetCycle[]
+  leadLifeCycles    LeadLifeCycle[]
   leadDynamicFields LeadDynamicField[]
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
@@ -355,6 +357,47 @@ model TargetCycleRange {
   @@map("target_cycle_ranges")
 }
 
+model LeadLifeCycle {
+  id        String  @id @default(cuid())
+  name      String
+  isDefault Boolean @default(false)
+
+  workspaceId String
+
+  createdBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  workspace   Workspace                 @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  transitions LeadLifeCycleTransition[]
+
+  @@unique([name, workspaceId])
+  @@index([workspaceId])
+  @@map("lead_life_cycles")
+}
+
+model LeadLifeCycleTransition {
+  id          String        @id @default(cuid())
+  lifecycleId String
+  lifecycle   LeadLifeCycle @relation(fields: [lifecycleId], references: [id], onDelete: Cascade)
+
+  fromStageId String
+  toStageId   String
+
+  numberOfDays Int
+
+  sortOrder Int
+
+  workspaceId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([lifecycleId])
+  @@index([workspaceId])
+  @@map("lead_life_cycle_transitions")
+}
+
 model LeadDynamicField {
   id         String  @id @default(cuid())
   name       String
@@ -513,6 +556,7 @@ model User {
   // Audit logs relation
   auditLogs     AuditLog[]
   rosterEntries RosterEntry[]
+  followUps     FollowUp[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -523,6 +567,44 @@ model User {
   @@index([officeId])
   @@index([supervisorId])
   @@map("users")
+}
+
+model FollowUp {
+  id          String @id @default(cuid())
+  leadId      String
+  userId      String
+  workspaceId String
+
+  type        String
+  description String?
+  status      String  @default("PENDING")
+
+  scheduledAt DateTime
+  completedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user   User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  images FollowUpImage[]
+
+  @@index([workspaceId, userId, scheduledAt])
+  @@index([workspaceId, status, scheduledAt])
+  @@index([leadId])
+  @@map("follow_ups")
+}
+
+model FollowUpImage {
+  id         String @id @default(cuid())
+  followUpId String
+  url        String
+
+  createdAt DateTime @default(now())
+
+  followUp FollowUp @relation(fields: [followUpId], references: [id], onDelete: Cascade)
+
+  @@index([followUpId])
+  @@map("follow_up_images")
 }
 
 model RosterEntry {

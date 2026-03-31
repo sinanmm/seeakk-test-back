@@ -129,6 +129,16 @@ export type TargetViolation = $Result.DefaultSelection<Prisma.$TargetViolationPa
  */
 export type User = $Result.DefaultSelection<Prisma.$UserPayload>
 /**
+ * Model FollowUp
+ * 
+ */
+export type FollowUp = $Result.DefaultSelection<Prisma.$FollowUpPayload>
+/**
+ * Model FollowUpImage
+ * 
+ */
+export type FollowUpImage = $Result.DefaultSelection<Prisma.$FollowUpImagePayload>
+/**
  * Model RosterEntry
  * 
  */
@@ -658,6 +668,26 @@ export class PrismaClient<
   get user(): Prisma.UserDelegate<ExtArgs>;
 
   /**
+   * `prisma.followUp`: Exposes CRUD operations for the **FollowUp** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more FollowUps
+    * const followUps = await prisma.followUp.findMany()
+    * ```
+    */
+  get followUp(): Prisma.FollowUpDelegate<ExtArgs>;
+
+  /**
+   * `prisma.followUpImage`: Exposes CRUD operations for the **FollowUpImage** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more FollowUpImages
+    * const followUpImages = await prisma.followUpImage.findMany()
+    * ```
+    */
+  get followUpImage(): Prisma.FollowUpImageDelegate<ExtArgs>;
+
+  /**
    * `prisma.rosterEntry`: Exposes CRUD operations for the **RosterEntry** model.
     * Example usage:
     * ```ts
@@ -1150,6 +1180,8 @@ export namespace Prisma {
     TargetSetting: 'TargetSetting',
     TargetViolation: 'TargetViolation',
     User: 'User',
+    FollowUp: 'FollowUp',
+    FollowUpImage: 'FollowUpImage',
     RosterEntry: 'RosterEntry',
     AuditLog: 'AuditLog',
     Device: 'Device'
@@ -1168,7 +1200,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "role" | "permission" | "rolePermission" | "workspace" | "department" | "leadSource" | "leadStage" | "stageRule" | "leadStageInput" | "office" | "location" | "userLocationAssignment" | "targetType" | "targetCycle" | "targetCycleRange" | "leadLifeCycle" | "leadLifeCycleTransition" | "leadDynamicField" | "leadDynamicOption" | "leadDynamicValue" | "targetSetting" | "targetViolation" | "user" | "rosterEntry" | "auditLog" | "device"
+      modelProps: "role" | "permission" | "rolePermission" | "workspace" | "department" | "leadSource" | "leadStage" | "stageRule" | "leadStageInput" | "office" | "location" | "userLocationAssignment" | "targetType" | "targetCycle" | "targetCycleRange" | "leadLifeCycle" | "leadLifeCycleTransition" | "leadDynamicField" | "leadDynamicOption" | "leadDynamicValue" | "targetSetting" | "targetViolation" | "user" | "followUp" | "followUpImage" | "rosterEntry" | "auditLog" | "device"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2782,6 +2814,146 @@ export namespace Prisma {
           }
         }
       }
+      FollowUp: {
+        payload: Prisma.$FollowUpPayload<ExtArgs>
+        fields: Prisma.FollowUpFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.FollowUpFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.FollowUpFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpPayload>
+          }
+          findFirst: {
+            args: Prisma.FollowUpFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.FollowUpFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpPayload>
+          }
+          findMany: {
+            args: Prisma.FollowUpFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpPayload>[]
+          }
+          create: {
+            args: Prisma.FollowUpCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpPayload>
+          }
+          createMany: {
+            args: Prisma.FollowUpCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.FollowUpCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpPayload>[]
+          }
+          delete: {
+            args: Prisma.FollowUpDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpPayload>
+          }
+          update: {
+            args: Prisma.FollowUpUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpPayload>
+          }
+          deleteMany: {
+            args: Prisma.FollowUpDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.FollowUpUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.FollowUpUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpPayload>
+          }
+          aggregate: {
+            args: Prisma.FollowUpAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateFollowUp>
+          }
+          groupBy: {
+            args: Prisma.FollowUpGroupByArgs<ExtArgs>
+            result: $Utils.Optional<FollowUpGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.FollowUpCountArgs<ExtArgs>
+            result: $Utils.Optional<FollowUpCountAggregateOutputType> | number
+          }
+        }
+      }
+      FollowUpImage: {
+        payload: Prisma.$FollowUpImagePayload<ExtArgs>
+        fields: Prisma.FollowUpImageFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.FollowUpImageFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpImagePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.FollowUpImageFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpImagePayload>
+          }
+          findFirst: {
+            args: Prisma.FollowUpImageFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpImagePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.FollowUpImageFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpImagePayload>
+          }
+          findMany: {
+            args: Prisma.FollowUpImageFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpImagePayload>[]
+          }
+          create: {
+            args: Prisma.FollowUpImageCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpImagePayload>
+          }
+          createMany: {
+            args: Prisma.FollowUpImageCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.FollowUpImageCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpImagePayload>[]
+          }
+          delete: {
+            args: Prisma.FollowUpImageDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpImagePayload>
+          }
+          update: {
+            args: Prisma.FollowUpImageUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpImagePayload>
+          }
+          deleteMany: {
+            args: Prisma.FollowUpImageDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.FollowUpImageUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.FollowUpImageUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpImagePayload>
+          }
+          aggregate: {
+            args: Prisma.FollowUpImageAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateFollowUpImage>
+          }
+          groupBy: {
+            args: Prisma.FollowUpImageGroupByArgs<ExtArgs>
+            result: $Utils.Optional<FollowUpImageGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.FollowUpImageCountArgs<ExtArgs>
+            result: $Utils.Optional<FollowUpImageCountAggregateOutputType> | number
+          }
+        }
+      }
       RosterEntry: {
         payload: Prisma.$RosterEntryPayload<ExtArgs>
         fields: Prisma.RosterEntryFieldRefs
@@ -3635,6 +3807,7 @@ export namespace Prisma {
     devices: number
     auditLogs: number
     rosterEntries: number
+    followUps: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3645,6 +3818,7 @@ export namespace Prisma {
     devices?: boolean | UserCountOutputTypeCountDevicesArgs
     auditLogs?: boolean | UserCountOutputTypeCountAuditLogsArgs
     rosterEntries?: boolean | UserCountOutputTypeCountRosterEntriesArgs
+    followUps?: boolean | UserCountOutputTypeCountFollowUpsArgs
   }
 
   // Custom InputTypes
@@ -3705,6 +3879,44 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountRosterEntriesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: RosterEntryWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountFollowUpsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: FollowUpWhereInput
+  }
+
+
+  /**
+   * Count Type FollowUpCountOutputType
+   */
+
+  export type FollowUpCountOutputType = {
+    images: number
+  }
+
+  export type FollowUpCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    images?: boolean | FollowUpCountOutputTypeCountImagesArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * FollowUpCountOutputType without action
+   */
+  export type FollowUpCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpCountOutputType
+     */
+    select?: FollowUpCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * FollowUpCountOutputType without action
+   */
+  export type FollowUpCountOutputTypeCountImagesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: FollowUpImageWhereInput
   }
 
 
@@ -26202,6 +26414,7 @@ export namespace Prisma {
     devices?: boolean | User$devicesArgs<ExtArgs>
     auditLogs?: boolean | User$auditLogsArgs<ExtArgs>
     rosterEntries?: boolean | User$rosterEntriesArgs<ExtArgs>
+    followUps?: boolean | User$followUpsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -26288,6 +26501,7 @@ export namespace Prisma {
     devices?: boolean | User$devicesArgs<ExtArgs>
     auditLogs?: boolean | User$auditLogsArgs<ExtArgs>
     rosterEntries?: boolean | User$rosterEntriesArgs<ExtArgs>
+    followUps?: boolean | User$followUpsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -26320,6 +26534,7 @@ export namespace Prisma {
       devices: Prisma.$DevicePayload<ExtArgs>[]
       auditLogs: Prisma.$AuditLogPayload<ExtArgs>[]
       rosterEntries: Prisma.$RosterEntryPayload<ExtArgs>[]
+      followUps: Prisma.$FollowUpPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -26728,6 +26943,7 @@ export namespace Prisma {
     devices<T extends User$devicesArgs<ExtArgs> = {}>(args?: Subset<T, User$devicesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DevicePayload<ExtArgs>, T, "findMany"> | Null>
     auditLogs<T extends User$auditLogsArgs<ExtArgs> = {}>(args?: Subset<T, User$auditLogsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AuditLogPayload<ExtArgs>, T, "findMany"> | Null>
     rosterEntries<T extends User$rosterEntriesArgs<ExtArgs> = {}>(args?: Subset<T, User$rosterEntriesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RosterEntryPayload<ExtArgs>, T, "findMany"> | Null>
+    followUps<T extends User$followUpsArgs<ExtArgs> = {}>(args?: Subset<T, User$followUpsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FollowUpPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -27376,6 +27592,26 @@ export namespace Prisma {
   }
 
   /**
+   * User.followUps
+   */
+  export type User$followUpsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUp
+     */
+    select?: FollowUpSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpInclude<ExtArgs> | null
+    where?: FollowUpWhereInput
+    orderBy?: FollowUpOrderByWithRelationInput | FollowUpOrderByWithRelationInput[]
+    cursor?: FollowUpWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: FollowUpScalarFieldEnum | FollowUpScalarFieldEnum[]
+  }
+
+  /**
    * User without action
    */
   export type UserDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -27387,6 +27623,1958 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: UserInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model FollowUp
+   */
+
+  export type AggregateFollowUp = {
+    _count: FollowUpCountAggregateOutputType | null
+    _min: FollowUpMinAggregateOutputType | null
+    _max: FollowUpMaxAggregateOutputType | null
+  }
+
+  export type FollowUpMinAggregateOutputType = {
+    id: string | null
+    leadId: string | null
+    userId: string | null
+    workspaceId: string | null
+    type: string | null
+    description: string | null
+    status: string | null
+    scheduledAt: Date | null
+    completedAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type FollowUpMaxAggregateOutputType = {
+    id: string | null
+    leadId: string | null
+    userId: string | null
+    workspaceId: string | null
+    type: string | null
+    description: string | null
+    status: string | null
+    scheduledAt: Date | null
+    completedAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type FollowUpCountAggregateOutputType = {
+    id: number
+    leadId: number
+    userId: number
+    workspaceId: number
+    type: number
+    description: number
+    status: number
+    scheduledAt: number
+    completedAt: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type FollowUpMinAggregateInputType = {
+    id?: true
+    leadId?: true
+    userId?: true
+    workspaceId?: true
+    type?: true
+    description?: true
+    status?: true
+    scheduledAt?: true
+    completedAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type FollowUpMaxAggregateInputType = {
+    id?: true
+    leadId?: true
+    userId?: true
+    workspaceId?: true
+    type?: true
+    description?: true
+    status?: true
+    scheduledAt?: true
+    completedAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type FollowUpCountAggregateInputType = {
+    id?: true
+    leadId?: true
+    userId?: true
+    workspaceId?: true
+    type?: true
+    description?: true
+    status?: true
+    scheduledAt?: true
+    completedAt?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type FollowUpAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which FollowUp to aggregate.
+     */
+    where?: FollowUpWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FollowUps to fetch.
+     */
+    orderBy?: FollowUpOrderByWithRelationInput | FollowUpOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: FollowUpWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FollowUps from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FollowUps.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned FollowUps
+    **/
+    _count?: true | FollowUpCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: FollowUpMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: FollowUpMaxAggregateInputType
+  }
+
+  export type GetFollowUpAggregateType<T extends FollowUpAggregateArgs> = {
+        [P in keyof T & keyof AggregateFollowUp]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateFollowUp[P]>
+      : GetScalarType<T[P], AggregateFollowUp[P]>
+  }
+
+
+
+
+  export type FollowUpGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: FollowUpWhereInput
+    orderBy?: FollowUpOrderByWithAggregationInput | FollowUpOrderByWithAggregationInput[]
+    by: FollowUpScalarFieldEnum[] | FollowUpScalarFieldEnum
+    having?: FollowUpScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: FollowUpCountAggregateInputType | true
+    _min?: FollowUpMinAggregateInputType
+    _max?: FollowUpMaxAggregateInputType
+  }
+
+  export type FollowUpGroupByOutputType = {
+    id: string
+    leadId: string
+    userId: string
+    workspaceId: string
+    type: string
+    description: string | null
+    status: string
+    scheduledAt: Date
+    completedAt: Date | null
+    createdAt: Date
+    updatedAt: Date
+    _count: FollowUpCountAggregateOutputType | null
+    _min: FollowUpMinAggregateOutputType | null
+    _max: FollowUpMaxAggregateOutputType | null
+  }
+
+  type GetFollowUpGroupByPayload<T extends FollowUpGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<FollowUpGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof FollowUpGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], FollowUpGroupByOutputType[P]>
+            : GetScalarType<T[P], FollowUpGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type FollowUpSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    leadId?: boolean
+    userId?: boolean
+    workspaceId?: boolean
+    type?: boolean
+    description?: boolean
+    status?: boolean
+    scheduledAt?: boolean
+    completedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    images?: boolean | FollowUp$imagesArgs<ExtArgs>
+    _count?: boolean | FollowUpCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["followUp"]>
+
+  export type FollowUpSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    leadId?: boolean
+    userId?: boolean
+    workspaceId?: boolean
+    type?: boolean
+    description?: boolean
+    status?: boolean
+    scheduledAt?: boolean
+    completedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["followUp"]>
+
+  export type FollowUpSelectScalar = {
+    id?: boolean
+    leadId?: boolean
+    userId?: boolean
+    workspaceId?: boolean
+    type?: boolean
+    description?: boolean
+    status?: boolean
+    scheduledAt?: boolean
+    completedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type FollowUpInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    images?: boolean | FollowUp$imagesArgs<ExtArgs>
+    _count?: boolean | FollowUpCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type FollowUpIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $FollowUpPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "FollowUp"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>
+      images: Prisma.$FollowUpImagePayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      leadId: string
+      userId: string
+      workspaceId: string
+      type: string
+      description: string | null
+      status: string
+      scheduledAt: Date
+      completedAt: Date | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["followUp"]>
+    composites: {}
+  }
+
+  type FollowUpGetPayload<S extends boolean | null | undefined | FollowUpDefaultArgs> = $Result.GetResult<Prisma.$FollowUpPayload, S>
+
+  type FollowUpCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<FollowUpFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: FollowUpCountAggregateInputType | true
+    }
+
+  export interface FollowUpDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['FollowUp'], meta: { name: 'FollowUp' } }
+    /**
+     * Find zero or one FollowUp that matches the filter.
+     * @param {FollowUpFindUniqueArgs} args - Arguments to find a FollowUp
+     * @example
+     * // Get one FollowUp
+     * const followUp = await prisma.followUp.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends FollowUpFindUniqueArgs>(args: SelectSubset<T, FollowUpFindUniqueArgs<ExtArgs>>): Prisma__FollowUpClient<$Result.GetResult<Prisma.$FollowUpPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one FollowUp that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {FollowUpFindUniqueOrThrowArgs} args - Arguments to find a FollowUp
+     * @example
+     * // Get one FollowUp
+     * const followUp = await prisma.followUp.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends FollowUpFindUniqueOrThrowArgs>(args: SelectSubset<T, FollowUpFindUniqueOrThrowArgs<ExtArgs>>): Prisma__FollowUpClient<$Result.GetResult<Prisma.$FollowUpPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first FollowUp that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FollowUpFindFirstArgs} args - Arguments to find a FollowUp
+     * @example
+     * // Get one FollowUp
+     * const followUp = await prisma.followUp.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends FollowUpFindFirstArgs>(args?: SelectSubset<T, FollowUpFindFirstArgs<ExtArgs>>): Prisma__FollowUpClient<$Result.GetResult<Prisma.$FollowUpPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first FollowUp that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FollowUpFindFirstOrThrowArgs} args - Arguments to find a FollowUp
+     * @example
+     * // Get one FollowUp
+     * const followUp = await prisma.followUp.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends FollowUpFindFirstOrThrowArgs>(args?: SelectSubset<T, FollowUpFindFirstOrThrowArgs<ExtArgs>>): Prisma__FollowUpClient<$Result.GetResult<Prisma.$FollowUpPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more FollowUps that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FollowUpFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all FollowUps
+     * const followUps = await prisma.followUp.findMany()
+     * 
+     * // Get first 10 FollowUps
+     * const followUps = await prisma.followUp.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const followUpWithIdOnly = await prisma.followUp.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends FollowUpFindManyArgs>(args?: SelectSubset<T, FollowUpFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FollowUpPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a FollowUp.
+     * @param {FollowUpCreateArgs} args - Arguments to create a FollowUp.
+     * @example
+     * // Create one FollowUp
+     * const FollowUp = await prisma.followUp.create({
+     *   data: {
+     *     // ... data to create a FollowUp
+     *   }
+     * })
+     * 
+     */
+    create<T extends FollowUpCreateArgs>(args: SelectSubset<T, FollowUpCreateArgs<ExtArgs>>): Prisma__FollowUpClient<$Result.GetResult<Prisma.$FollowUpPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many FollowUps.
+     * @param {FollowUpCreateManyArgs} args - Arguments to create many FollowUps.
+     * @example
+     * // Create many FollowUps
+     * const followUp = await prisma.followUp.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends FollowUpCreateManyArgs>(args?: SelectSubset<T, FollowUpCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many FollowUps and returns the data saved in the database.
+     * @param {FollowUpCreateManyAndReturnArgs} args - Arguments to create many FollowUps.
+     * @example
+     * // Create many FollowUps
+     * const followUp = await prisma.followUp.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many FollowUps and only return the `id`
+     * const followUpWithIdOnly = await prisma.followUp.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends FollowUpCreateManyAndReturnArgs>(args?: SelectSubset<T, FollowUpCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FollowUpPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a FollowUp.
+     * @param {FollowUpDeleteArgs} args - Arguments to delete one FollowUp.
+     * @example
+     * // Delete one FollowUp
+     * const FollowUp = await prisma.followUp.delete({
+     *   where: {
+     *     // ... filter to delete one FollowUp
+     *   }
+     * })
+     * 
+     */
+    delete<T extends FollowUpDeleteArgs>(args: SelectSubset<T, FollowUpDeleteArgs<ExtArgs>>): Prisma__FollowUpClient<$Result.GetResult<Prisma.$FollowUpPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one FollowUp.
+     * @param {FollowUpUpdateArgs} args - Arguments to update one FollowUp.
+     * @example
+     * // Update one FollowUp
+     * const followUp = await prisma.followUp.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends FollowUpUpdateArgs>(args: SelectSubset<T, FollowUpUpdateArgs<ExtArgs>>): Prisma__FollowUpClient<$Result.GetResult<Prisma.$FollowUpPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more FollowUps.
+     * @param {FollowUpDeleteManyArgs} args - Arguments to filter FollowUps to delete.
+     * @example
+     * // Delete a few FollowUps
+     * const { count } = await prisma.followUp.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends FollowUpDeleteManyArgs>(args?: SelectSubset<T, FollowUpDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more FollowUps.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FollowUpUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many FollowUps
+     * const followUp = await prisma.followUp.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends FollowUpUpdateManyArgs>(args: SelectSubset<T, FollowUpUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one FollowUp.
+     * @param {FollowUpUpsertArgs} args - Arguments to update or create a FollowUp.
+     * @example
+     * // Update or create a FollowUp
+     * const followUp = await prisma.followUp.upsert({
+     *   create: {
+     *     // ... data to create a FollowUp
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the FollowUp we want to update
+     *   }
+     * })
+     */
+    upsert<T extends FollowUpUpsertArgs>(args: SelectSubset<T, FollowUpUpsertArgs<ExtArgs>>): Prisma__FollowUpClient<$Result.GetResult<Prisma.$FollowUpPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of FollowUps.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FollowUpCountArgs} args - Arguments to filter FollowUps to count.
+     * @example
+     * // Count the number of FollowUps
+     * const count = await prisma.followUp.count({
+     *   where: {
+     *     // ... the filter for the FollowUps we want to count
+     *   }
+     * })
+    **/
+    count<T extends FollowUpCountArgs>(
+      args?: Subset<T, FollowUpCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], FollowUpCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a FollowUp.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FollowUpAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends FollowUpAggregateArgs>(args: Subset<T, FollowUpAggregateArgs>): Prisma.PrismaPromise<GetFollowUpAggregateType<T>>
+
+    /**
+     * Group by FollowUp.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FollowUpGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends FollowUpGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: FollowUpGroupByArgs['orderBy'] }
+        : { orderBy?: FollowUpGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, FollowUpGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetFollowUpGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the FollowUp model
+   */
+  readonly fields: FollowUpFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for FollowUp.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__FollowUpClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    images<T extends FollowUp$imagesArgs<ExtArgs> = {}>(args?: Subset<T, FollowUp$imagesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FollowUpImagePayload<ExtArgs>, T, "findMany"> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the FollowUp model
+   */ 
+  interface FollowUpFieldRefs {
+    readonly id: FieldRef<"FollowUp", 'String'>
+    readonly leadId: FieldRef<"FollowUp", 'String'>
+    readonly userId: FieldRef<"FollowUp", 'String'>
+    readonly workspaceId: FieldRef<"FollowUp", 'String'>
+    readonly type: FieldRef<"FollowUp", 'String'>
+    readonly description: FieldRef<"FollowUp", 'String'>
+    readonly status: FieldRef<"FollowUp", 'String'>
+    readonly scheduledAt: FieldRef<"FollowUp", 'DateTime'>
+    readonly completedAt: FieldRef<"FollowUp", 'DateTime'>
+    readonly createdAt: FieldRef<"FollowUp", 'DateTime'>
+    readonly updatedAt: FieldRef<"FollowUp", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * FollowUp findUnique
+   */
+  export type FollowUpFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUp
+     */
+    select?: FollowUpSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpInclude<ExtArgs> | null
+    /**
+     * Filter, which FollowUp to fetch.
+     */
+    where: FollowUpWhereUniqueInput
+  }
+
+  /**
+   * FollowUp findUniqueOrThrow
+   */
+  export type FollowUpFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUp
+     */
+    select?: FollowUpSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpInclude<ExtArgs> | null
+    /**
+     * Filter, which FollowUp to fetch.
+     */
+    where: FollowUpWhereUniqueInput
+  }
+
+  /**
+   * FollowUp findFirst
+   */
+  export type FollowUpFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUp
+     */
+    select?: FollowUpSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpInclude<ExtArgs> | null
+    /**
+     * Filter, which FollowUp to fetch.
+     */
+    where?: FollowUpWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FollowUps to fetch.
+     */
+    orderBy?: FollowUpOrderByWithRelationInput | FollowUpOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for FollowUps.
+     */
+    cursor?: FollowUpWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FollowUps from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FollowUps.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of FollowUps.
+     */
+    distinct?: FollowUpScalarFieldEnum | FollowUpScalarFieldEnum[]
+  }
+
+  /**
+   * FollowUp findFirstOrThrow
+   */
+  export type FollowUpFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUp
+     */
+    select?: FollowUpSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpInclude<ExtArgs> | null
+    /**
+     * Filter, which FollowUp to fetch.
+     */
+    where?: FollowUpWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FollowUps to fetch.
+     */
+    orderBy?: FollowUpOrderByWithRelationInput | FollowUpOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for FollowUps.
+     */
+    cursor?: FollowUpWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FollowUps from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FollowUps.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of FollowUps.
+     */
+    distinct?: FollowUpScalarFieldEnum | FollowUpScalarFieldEnum[]
+  }
+
+  /**
+   * FollowUp findMany
+   */
+  export type FollowUpFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUp
+     */
+    select?: FollowUpSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpInclude<ExtArgs> | null
+    /**
+     * Filter, which FollowUps to fetch.
+     */
+    where?: FollowUpWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FollowUps to fetch.
+     */
+    orderBy?: FollowUpOrderByWithRelationInput | FollowUpOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing FollowUps.
+     */
+    cursor?: FollowUpWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FollowUps from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FollowUps.
+     */
+    skip?: number
+    distinct?: FollowUpScalarFieldEnum | FollowUpScalarFieldEnum[]
+  }
+
+  /**
+   * FollowUp create
+   */
+  export type FollowUpCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUp
+     */
+    select?: FollowUpSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpInclude<ExtArgs> | null
+    /**
+     * The data needed to create a FollowUp.
+     */
+    data: XOR<FollowUpCreateInput, FollowUpUncheckedCreateInput>
+  }
+
+  /**
+   * FollowUp createMany
+   */
+  export type FollowUpCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many FollowUps.
+     */
+    data: FollowUpCreateManyInput | FollowUpCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * FollowUp createManyAndReturn
+   */
+  export type FollowUpCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUp
+     */
+    select?: FollowUpSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many FollowUps.
+     */
+    data: FollowUpCreateManyInput | FollowUpCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * FollowUp update
+   */
+  export type FollowUpUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUp
+     */
+    select?: FollowUpSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpInclude<ExtArgs> | null
+    /**
+     * The data needed to update a FollowUp.
+     */
+    data: XOR<FollowUpUpdateInput, FollowUpUncheckedUpdateInput>
+    /**
+     * Choose, which FollowUp to update.
+     */
+    where: FollowUpWhereUniqueInput
+  }
+
+  /**
+   * FollowUp updateMany
+   */
+  export type FollowUpUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update FollowUps.
+     */
+    data: XOR<FollowUpUpdateManyMutationInput, FollowUpUncheckedUpdateManyInput>
+    /**
+     * Filter which FollowUps to update
+     */
+    where?: FollowUpWhereInput
+  }
+
+  /**
+   * FollowUp upsert
+   */
+  export type FollowUpUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUp
+     */
+    select?: FollowUpSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpInclude<ExtArgs> | null
+    /**
+     * The filter to search for the FollowUp to update in case it exists.
+     */
+    where: FollowUpWhereUniqueInput
+    /**
+     * In case the FollowUp found by the `where` argument doesn't exist, create a new FollowUp with this data.
+     */
+    create: XOR<FollowUpCreateInput, FollowUpUncheckedCreateInput>
+    /**
+     * In case the FollowUp was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<FollowUpUpdateInput, FollowUpUncheckedUpdateInput>
+  }
+
+  /**
+   * FollowUp delete
+   */
+  export type FollowUpDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUp
+     */
+    select?: FollowUpSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpInclude<ExtArgs> | null
+    /**
+     * Filter which FollowUp to delete.
+     */
+    where: FollowUpWhereUniqueInput
+  }
+
+  /**
+   * FollowUp deleteMany
+   */
+  export type FollowUpDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which FollowUps to delete
+     */
+    where?: FollowUpWhereInput
+  }
+
+  /**
+   * FollowUp.images
+   */
+  export type FollowUp$imagesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpImage
+     */
+    select?: FollowUpImageSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpImageInclude<ExtArgs> | null
+    where?: FollowUpImageWhereInput
+    orderBy?: FollowUpImageOrderByWithRelationInput | FollowUpImageOrderByWithRelationInput[]
+    cursor?: FollowUpImageWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: FollowUpImageScalarFieldEnum | FollowUpImageScalarFieldEnum[]
+  }
+
+  /**
+   * FollowUp without action
+   */
+  export type FollowUpDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUp
+     */
+    select?: FollowUpSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model FollowUpImage
+   */
+
+  export type AggregateFollowUpImage = {
+    _count: FollowUpImageCountAggregateOutputType | null
+    _min: FollowUpImageMinAggregateOutputType | null
+    _max: FollowUpImageMaxAggregateOutputType | null
+  }
+
+  export type FollowUpImageMinAggregateOutputType = {
+    id: string | null
+    followUpId: string | null
+    url: string | null
+    createdAt: Date | null
+  }
+
+  export type FollowUpImageMaxAggregateOutputType = {
+    id: string | null
+    followUpId: string | null
+    url: string | null
+    createdAt: Date | null
+  }
+
+  export type FollowUpImageCountAggregateOutputType = {
+    id: number
+    followUpId: number
+    url: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type FollowUpImageMinAggregateInputType = {
+    id?: true
+    followUpId?: true
+    url?: true
+    createdAt?: true
+  }
+
+  export type FollowUpImageMaxAggregateInputType = {
+    id?: true
+    followUpId?: true
+    url?: true
+    createdAt?: true
+  }
+
+  export type FollowUpImageCountAggregateInputType = {
+    id?: true
+    followUpId?: true
+    url?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type FollowUpImageAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which FollowUpImage to aggregate.
+     */
+    where?: FollowUpImageWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FollowUpImages to fetch.
+     */
+    orderBy?: FollowUpImageOrderByWithRelationInput | FollowUpImageOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: FollowUpImageWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FollowUpImages from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FollowUpImages.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned FollowUpImages
+    **/
+    _count?: true | FollowUpImageCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: FollowUpImageMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: FollowUpImageMaxAggregateInputType
+  }
+
+  export type GetFollowUpImageAggregateType<T extends FollowUpImageAggregateArgs> = {
+        [P in keyof T & keyof AggregateFollowUpImage]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateFollowUpImage[P]>
+      : GetScalarType<T[P], AggregateFollowUpImage[P]>
+  }
+
+
+
+
+  export type FollowUpImageGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: FollowUpImageWhereInput
+    orderBy?: FollowUpImageOrderByWithAggregationInput | FollowUpImageOrderByWithAggregationInput[]
+    by: FollowUpImageScalarFieldEnum[] | FollowUpImageScalarFieldEnum
+    having?: FollowUpImageScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: FollowUpImageCountAggregateInputType | true
+    _min?: FollowUpImageMinAggregateInputType
+    _max?: FollowUpImageMaxAggregateInputType
+  }
+
+  export type FollowUpImageGroupByOutputType = {
+    id: string
+    followUpId: string
+    url: string
+    createdAt: Date
+    _count: FollowUpImageCountAggregateOutputType | null
+    _min: FollowUpImageMinAggregateOutputType | null
+    _max: FollowUpImageMaxAggregateOutputType | null
+  }
+
+  type GetFollowUpImageGroupByPayload<T extends FollowUpImageGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<FollowUpImageGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof FollowUpImageGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], FollowUpImageGroupByOutputType[P]>
+            : GetScalarType<T[P], FollowUpImageGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type FollowUpImageSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    followUpId?: boolean
+    url?: boolean
+    createdAt?: boolean
+    followUp?: boolean | FollowUpDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["followUpImage"]>
+
+  export type FollowUpImageSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    followUpId?: boolean
+    url?: boolean
+    createdAt?: boolean
+    followUp?: boolean | FollowUpDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["followUpImage"]>
+
+  export type FollowUpImageSelectScalar = {
+    id?: boolean
+    followUpId?: boolean
+    url?: boolean
+    createdAt?: boolean
+  }
+
+  export type FollowUpImageInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    followUp?: boolean | FollowUpDefaultArgs<ExtArgs>
+  }
+  export type FollowUpImageIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    followUp?: boolean | FollowUpDefaultArgs<ExtArgs>
+  }
+
+  export type $FollowUpImagePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "FollowUpImage"
+    objects: {
+      followUp: Prisma.$FollowUpPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      followUpId: string
+      url: string
+      createdAt: Date
+    }, ExtArgs["result"]["followUpImage"]>
+    composites: {}
+  }
+
+  type FollowUpImageGetPayload<S extends boolean | null | undefined | FollowUpImageDefaultArgs> = $Result.GetResult<Prisma.$FollowUpImagePayload, S>
+
+  type FollowUpImageCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<FollowUpImageFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: FollowUpImageCountAggregateInputType | true
+    }
+
+  export interface FollowUpImageDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['FollowUpImage'], meta: { name: 'FollowUpImage' } }
+    /**
+     * Find zero or one FollowUpImage that matches the filter.
+     * @param {FollowUpImageFindUniqueArgs} args - Arguments to find a FollowUpImage
+     * @example
+     * // Get one FollowUpImage
+     * const followUpImage = await prisma.followUpImage.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends FollowUpImageFindUniqueArgs>(args: SelectSubset<T, FollowUpImageFindUniqueArgs<ExtArgs>>): Prisma__FollowUpImageClient<$Result.GetResult<Prisma.$FollowUpImagePayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one FollowUpImage that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {FollowUpImageFindUniqueOrThrowArgs} args - Arguments to find a FollowUpImage
+     * @example
+     * // Get one FollowUpImage
+     * const followUpImage = await prisma.followUpImage.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends FollowUpImageFindUniqueOrThrowArgs>(args: SelectSubset<T, FollowUpImageFindUniqueOrThrowArgs<ExtArgs>>): Prisma__FollowUpImageClient<$Result.GetResult<Prisma.$FollowUpImagePayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first FollowUpImage that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FollowUpImageFindFirstArgs} args - Arguments to find a FollowUpImage
+     * @example
+     * // Get one FollowUpImage
+     * const followUpImage = await prisma.followUpImage.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends FollowUpImageFindFirstArgs>(args?: SelectSubset<T, FollowUpImageFindFirstArgs<ExtArgs>>): Prisma__FollowUpImageClient<$Result.GetResult<Prisma.$FollowUpImagePayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first FollowUpImage that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FollowUpImageFindFirstOrThrowArgs} args - Arguments to find a FollowUpImage
+     * @example
+     * // Get one FollowUpImage
+     * const followUpImage = await prisma.followUpImage.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends FollowUpImageFindFirstOrThrowArgs>(args?: SelectSubset<T, FollowUpImageFindFirstOrThrowArgs<ExtArgs>>): Prisma__FollowUpImageClient<$Result.GetResult<Prisma.$FollowUpImagePayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more FollowUpImages that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FollowUpImageFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all FollowUpImages
+     * const followUpImages = await prisma.followUpImage.findMany()
+     * 
+     * // Get first 10 FollowUpImages
+     * const followUpImages = await prisma.followUpImage.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const followUpImageWithIdOnly = await prisma.followUpImage.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends FollowUpImageFindManyArgs>(args?: SelectSubset<T, FollowUpImageFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FollowUpImagePayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a FollowUpImage.
+     * @param {FollowUpImageCreateArgs} args - Arguments to create a FollowUpImage.
+     * @example
+     * // Create one FollowUpImage
+     * const FollowUpImage = await prisma.followUpImage.create({
+     *   data: {
+     *     // ... data to create a FollowUpImage
+     *   }
+     * })
+     * 
+     */
+    create<T extends FollowUpImageCreateArgs>(args: SelectSubset<T, FollowUpImageCreateArgs<ExtArgs>>): Prisma__FollowUpImageClient<$Result.GetResult<Prisma.$FollowUpImagePayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many FollowUpImages.
+     * @param {FollowUpImageCreateManyArgs} args - Arguments to create many FollowUpImages.
+     * @example
+     * // Create many FollowUpImages
+     * const followUpImage = await prisma.followUpImage.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends FollowUpImageCreateManyArgs>(args?: SelectSubset<T, FollowUpImageCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many FollowUpImages and returns the data saved in the database.
+     * @param {FollowUpImageCreateManyAndReturnArgs} args - Arguments to create many FollowUpImages.
+     * @example
+     * // Create many FollowUpImages
+     * const followUpImage = await prisma.followUpImage.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many FollowUpImages and only return the `id`
+     * const followUpImageWithIdOnly = await prisma.followUpImage.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends FollowUpImageCreateManyAndReturnArgs>(args?: SelectSubset<T, FollowUpImageCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FollowUpImagePayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a FollowUpImage.
+     * @param {FollowUpImageDeleteArgs} args - Arguments to delete one FollowUpImage.
+     * @example
+     * // Delete one FollowUpImage
+     * const FollowUpImage = await prisma.followUpImage.delete({
+     *   where: {
+     *     // ... filter to delete one FollowUpImage
+     *   }
+     * })
+     * 
+     */
+    delete<T extends FollowUpImageDeleteArgs>(args: SelectSubset<T, FollowUpImageDeleteArgs<ExtArgs>>): Prisma__FollowUpImageClient<$Result.GetResult<Prisma.$FollowUpImagePayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one FollowUpImage.
+     * @param {FollowUpImageUpdateArgs} args - Arguments to update one FollowUpImage.
+     * @example
+     * // Update one FollowUpImage
+     * const followUpImage = await prisma.followUpImage.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends FollowUpImageUpdateArgs>(args: SelectSubset<T, FollowUpImageUpdateArgs<ExtArgs>>): Prisma__FollowUpImageClient<$Result.GetResult<Prisma.$FollowUpImagePayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more FollowUpImages.
+     * @param {FollowUpImageDeleteManyArgs} args - Arguments to filter FollowUpImages to delete.
+     * @example
+     * // Delete a few FollowUpImages
+     * const { count } = await prisma.followUpImage.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends FollowUpImageDeleteManyArgs>(args?: SelectSubset<T, FollowUpImageDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more FollowUpImages.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FollowUpImageUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many FollowUpImages
+     * const followUpImage = await prisma.followUpImage.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends FollowUpImageUpdateManyArgs>(args: SelectSubset<T, FollowUpImageUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one FollowUpImage.
+     * @param {FollowUpImageUpsertArgs} args - Arguments to update or create a FollowUpImage.
+     * @example
+     * // Update or create a FollowUpImage
+     * const followUpImage = await prisma.followUpImage.upsert({
+     *   create: {
+     *     // ... data to create a FollowUpImage
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the FollowUpImage we want to update
+     *   }
+     * })
+     */
+    upsert<T extends FollowUpImageUpsertArgs>(args: SelectSubset<T, FollowUpImageUpsertArgs<ExtArgs>>): Prisma__FollowUpImageClient<$Result.GetResult<Prisma.$FollowUpImagePayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of FollowUpImages.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FollowUpImageCountArgs} args - Arguments to filter FollowUpImages to count.
+     * @example
+     * // Count the number of FollowUpImages
+     * const count = await prisma.followUpImage.count({
+     *   where: {
+     *     // ... the filter for the FollowUpImages we want to count
+     *   }
+     * })
+    **/
+    count<T extends FollowUpImageCountArgs>(
+      args?: Subset<T, FollowUpImageCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], FollowUpImageCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a FollowUpImage.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FollowUpImageAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends FollowUpImageAggregateArgs>(args: Subset<T, FollowUpImageAggregateArgs>): Prisma.PrismaPromise<GetFollowUpImageAggregateType<T>>
+
+    /**
+     * Group by FollowUpImage.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FollowUpImageGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends FollowUpImageGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: FollowUpImageGroupByArgs['orderBy'] }
+        : { orderBy?: FollowUpImageGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, FollowUpImageGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetFollowUpImageGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the FollowUpImage model
+   */
+  readonly fields: FollowUpImageFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for FollowUpImage.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__FollowUpImageClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    followUp<T extends FollowUpDefaultArgs<ExtArgs> = {}>(args?: Subset<T, FollowUpDefaultArgs<ExtArgs>>): Prisma__FollowUpClient<$Result.GetResult<Prisma.$FollowUpPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the FollowUpImage model
+   */ 
+  interface FollowUpImageFieldRefs {
+    readonly id: FieldRef<"FollowUpImage", 'String'>
+    readonly followUpId: FieldRef<"FollowUpImage", 'String'>
+    readonly url: FieldRef<"FollowUpImage", 'String'>
+    readonly createdAt: FieldRef<"FollowUpImage", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * FollowUpImage findUnique
+   */
+  export type FollowUpImageFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpImage
+     */
+    select?: FollowUpImageSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpImageInclude<ExtArgs> | null
+    /**
+     * Filter, which FollowUpImage to fetch.
+     */
+    where: FollowUpImageWhereUniqueInput
+  }
+
+  /**
+   * FollowUpImage findUniqueOrThrow
+   */
+  export type FollowUpImageFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpImage
+     */
+    select?: FollowUpImageSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpImageInclude<ExtArgs> | null
+    /**
+     * Filter, which FollowUpImage to fetch.
+     */
+    where: FollowUpImageWhereUniqueInput
+  }
+
+  /**
+   * FollowUpImage findFirst
+   */
+  export type FollowUpImageFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpImage
+     */
+    select?: FollowUpImageSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpImageInclude<ExtArgs> | null
+    /**
+     * Filter, which FollowUpImage to fetch.
+     */
+    where?: FollowUpImageWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FollowUpImages to fetch.
+     */
+    orderBy?: FollowUpImageOrderByWithRelationInput | FollowUpImageOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for FollowUpImages.
+     */
+    cursor?: FollowUpImageWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FollowUpImages from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FollowUpImages.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of FollowUpImages.
+     */
+    distinct?: FollowUpImageScalarFieldEnum | FollowUpImageScalarFieldEnum[]
+  }
+
+  /**
+   * FollowUpImage findFirstOrThrow
+   */
+  export type FollowUpImageFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpImage
+     */
+    select?: FollowUpImageSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpImageInclude<ExtArgs> | null
+    /**
+     * Filter, which FollowUpImage to fetch.
+     */
+    where?: FollowUpImageWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FollowUpImages to fetch.
+     */
+    orderBy?: FollowUpImageOrderByWithRelationInput | FollowUpImageOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for FollowUpImages.
+     */
+    cursor?: FollowUpImageWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FollowUpImages from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FollowUpImages.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of FollowUpImages.
+     */
+    distinct?: FollowUpImageScalarFieldEnum | FollowUpImageScalarFieldEnum[]
+  }
+
+  /**
+   * FollowUpImage findMany
+   */
+  export type FollowUpImageFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpImage
+     */
+    select?: FollowUpImageSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpImageInclude<ExtArgs> | null
+    /**
+     * Filter, which FollowUpImages to fetch.
+     */
+    where?: FollowUpImageWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FollowUpImages to fetch.
+     */
+    orderBy?: FollowUpImageOrderByWithRelationInput | FollowUpImageOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing FollowUpImages.
+     */
+    cursor?: FollowUpImageWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FollowUpImages from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FollowUpImages.
+     */
+    skip?: number
+    distinct?: FollowUpImageScalarFieldEnum | FollowUpImageScalarFieldEnum[]
+  }
+
+  /**
+   * FollowUpImage create
+   */
+  export type FollowUpImageCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpImage
+     */
+    select?: FollowUpImageSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpImageInclude<ExtArgs> | null
+    /**
+     * The data needed to create a FollowUpImage.
+     */
+    data: XOR<FollowUpImageCreateInput, FollowUpImageUncheckedCreateInput>
+  }
+
+  /**
+   * FollowUpImage createMany
+   */
+  export type FollowUpImageCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many FollowUpImages.
+     */
+    data: FollowUpImageCreateManyInput | FollowUpImageCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * FollowUpImage createManyAndReturn
+   */
+  export type FollowUpImageCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpImage
+     */
+    select?: FollowUpImageSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many FollowUpImages.
+     */
+    data: FollowUpImageCreateManyInput | FollowUpImageCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpImageIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * FollowUpImage update
+   */
+  export type FollowUpImageUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpImage
+     */
+    select?: FollowUpImageSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpImageInclude<ExtArgs> | null
+    /**
+     * The data needed to update a FollowUpImage.
+     */
+    data: XOR<FollowUpImageUpdateInput, FollowUpImageUncheckedUpdateInput>
+    /**
+     * Choose, which FollowUpImage to update.
+     */
+    where: FollowUpImageWhereUniqueInput
+  }
+
+  /**
+   * FollowUpImage updateMany
+   */
+  export type FollowUpImageUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update FollowUpImages.
+     */
+    data: XOR<FollowUpImageUpdateManyMutationInput, FollowUpImageUncheckedUpdateManyInput>
+    /**
+     * Filter which FollowUpImages to update
+     */
+    where?: FollowUpImageWhereInput
+  }
+
+  /**
+   * FollowUpImage upsert
+   */
+  export type FollowUpImageUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpImage
+     */
+    select?: FollowUpImageSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpImageInclude<ExtArgs> | null
+    /**
+     * The filter to search for the FollowUpImage to update in case it exists.
+     */
+    where: FollowUpImageWhereUniqueInput
+    /**
+     * In case the FollowUpImage found by the `where` argument doesn't exist, create a new FollowUpImage with this data.
+     */
+    create: XOR<FollowUpImageCreateInput, FollowUpImageUncheckedCreateInput>
+    /**
+     * In case the FollowUpImage was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<FollowUpImageUpdateInput, FollowUpImageUncheckedUpdateInput>
+  }
+
+  /**
+   * FollowUpImage delete
+   */
+  export type FollowUpImageDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpImage
+     */
+    select?: FollowUpImageSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpImageInclude<ExtArgs> | null
+    /**
+     * Filter which FollowUpImage to delete.
+     */
+    where: FollowUpImageWhereUniqueInput
+  }
+
+  /**
+   * FollowUpImage deleteMany
+   */
+  export type FollowUpImageDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which FollowUpImages to delete
+     */
+    where?: FollowUpImageWhereInput
+  }
+
+  /**
+   * FollowUpImage without action
+   */
+  export type FollowUpImageDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpImage
+     */
+    select?: FollowUpImageSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpImageInclude<ExtArgs> | null
   }
 
 
@@ -30778,6 +32966,33 @@ export namespace Prisma {
   export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
 
 
+  export const FollowUpScalarFieldEnum: {
+    id: 'id',
+    leadId: 'leadId',
+    userId: 'userId',
+    workspaceId: 'workspaceId',
+    type: 'type',
+    description: 'description',
+    status: 'status',
+    scheduledAt: 'scheduledAt',
+    completedAt: 'completedAt',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type FollowUpScalarFieldEnum = (typeof FollowUpScalarFieldEnum)[keyof typeof FollowUpScalarFieldEnum]
+
+
+  export const FollowUpImageScalarFieldEnum: {
+    id: 'id',
+    followUpId: 'followUpId',
+    url: 'url',
+    createdAt: 'createdAt'
+  };
+
+  export type FollowUpImageScalarFieldEnum = (typeof FollowUpImageScalarFieldEnum)[keyof typeof FollowUpImageScalarFieldEnum]
+
+
   export const RosterEntryScalarFieldEnum: {
     id: 'id',
     userId: 'userId',
@@ -32770,6 +34985,7 @@ export namespace Prisma {
     devices?: DeviceListRelationFilter
     auditLogs?: AuditLogListRelationFilter
     rosterEntries?: RosterEntryListRelationFilter
+    followUps?: FollowUpListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -32815,6 +35031,7 @@ export namespace Prisma {
     devices?: DeviceOrderByRelationAggregateInput
     auditLogs?: AuditLogOrderByRelationAggregateInput
     rosterEntries?: RosterEntryOrderByRelationAggregateInput
+    followUps?: FollowUpOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -32863,6 +35080,7 @@ export namespace Prisma {
     devices?: DeviceListRelationFilter
     auditLogs?: AuditLogListRelationFilter
     rosterEntries?: RosterEntryListRelationFilter
+    followUps?: FollowUpListRelationFilter
   }, "id" | "username" | "email" | "googleId">
 
   export type UserOrderByWithAggregationInput = {
@@ -32927,6 +35145,144 @@ export namespace Prisma {
     supervisorId?: StringNullableWithAggregatesFilter<"User"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
+  }
+
+  export type FollowUpWhereInput = {
+    AND?: FollowUpWhereInput | FollowUpWhereInput[]
+    OR?: FollowUpWhereInput[]
+    NOT?: FollowUpWhereInput | FollowUpWhereInput[]
+    id?: StringFilter<"FollowUp"> | string
+    leadId?: StringFilter<"FollowUp"> | string
+    userId?: StringFilter<"FollowUp"> | string
+    workspaceId?: StringFilter<"FollowUp"> | string
+    type?: StringFilter<"FollowUp"> | string
+    description?: StringNullableFilter<"FollowUp"> | string | null
+    status?: StringFilter<"FollowUp"> | string
+    scheduledAt?: DateTimeFilter<"FollowUp"> | Date | string
+    completedAt?: DateTimeNullableFilter<"FollowUp"> | Date | string | null
+    createdAt?: DateTimeFilter<"FollowUp"> | Date | string
+    updatedAt?: DateTimeFilter<"FollowUp"> | Date | string
+    user?: XOR<UserRelationFilter, UserWhereInput>
+    images?: FollowUpImageListRelationFilter
+  }
+
+  export type FollowUpOrderByWithRelationInput = {
+    id?: SortOrder
+    leadId?: SortOrder
+    userId?: SortOrder
+    workspaceId?: SortOrder
+    type?: SortOrder
+    description?: SortOrderInput | SortOrder
+    status?: SortOrder
+    scheduledAt?: SortOrder
+    completedAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    user?: UserOrderByWithRelationInput
+    images?: FollowUpImageOrderByRelationAggregateInput
+  }
+
+  export type FollowUpWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: FollowUpWhereInput | FollowUpWhereInput[]
+    OR?: FollowUpWhereInput[]
+    NOT?: FollowUpWhereInput | FollowUpWhereInput[]
+    leadId?: StringFilter<"FollowUp"> | string
+    userId?: StringFilter<"FollowUp"> | string
+    workspaceId?: StringFilter<"FollowUp"> | string
+    type?: StringFilter<"FollowUp"> | string
+    description?: StringNullableFilter<"FollowUp"> | string | null
+    status?: StringFilter<"FollowUp"> | string
+    scheduledAt?: DateTimeFilter<"FollowUp"> | Date | string
+    completedAt?: DateTimeNullableFilter<"FollowUp"> | Date | string | null
+    createdAt?: DateTimeFilter<"FollowUp"> | Date | string
+    updatedAt?: DateTimeFilter<"FollowUp"> | Date | string
+    user?: XOR<UserRelationFilter, UserWhereInput>
+    images?: FollowUpImageListRelationFilter
+  }, "id">
+
+  export type FollowUpOrderByWithAggregationInput = {
+    id?: SortOrder
+    leadId?: SortOrder
+    userId?: SortOrder
+    workspaceId?: SortOrder
+    type?: SortOrder
+    description?: SortOrderInput | SortOrder
+    status?: SortOrder
+    scheduledAt?: SortOrder
+    completedAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: FollowUpCountOrderByAggregateInput
+    _max?: FollowUpMaxOrderByAggregateInput
+    _min?: FollowUpMinOrderByAggregateInput
+  }
+
+  export type FollowUpScalarWhereWithAggregatesInput = {
+    AND?: FollowUpScalarWhereWithAggregatesInput | FollowUpScalarWhereWithAggregatesInput[]
+    OR?: FollowUpScalarWhereWithAggregatesInput[]
+    NOT?: FollowUpScalarWhereWithAggregatesInput | FollowUpScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"FollowUp"> | string
+    leadId?: StringWithAggregatesFilter<"FollowUp"> | string
+    userId?: StringWithAggregatesFilter<"FollowUp"> | string
+    workspaceId?: StringWithAggregatesFilter<"FollowUp"> | string
+    type?: StringWithAggregatesFilter<"FollowUp"> | string
+    description?: StringNullableWithAggregatesFilter<"FollowUp"> | string | null
+    status?: StringWithAggregatesFilter<"FollowUp"> | string
+    scheduledAt?: DateTimeWithAggregatesFilter<"FollowUp"> | Date | string
+    completedAt?: DateTimeNullableWithAggregatesFilter<"FollowUp"> | Date | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"FollowUp"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"FollowUp"> | Date | string
+  }
+
+  export type FollowUpImageWhereInput = {
+    AND?: FollowUpImageWhereInput | FollowUpImageWhereInput[]
+    OR?: FollowUpImageWhereInput[]
+    NOT?: FollowUpImageWhereInput | FollowUpImageWhereInput[]
+    id?: StringFilter<"FollowUpImage"> | string
+    followUpId?: StringFilter<"FollowUpImage"> | string
+    url?: StringFilter<"FollowUpImage"> | string
+    createdAt?: DateTimeFilter<"FollowUpImage"> | Date | string
+    followUp?: XOR<FollowUpRelationFilter, FollowUpWhereInput>
+  }
+
+  export type FollowUpImageOrderByWithRelationInput = {
+    id?: SortOrder
+    followUpId?: SortOrder
+    url?: SortOrder
+    createdAt?: SortOrder
+    followUp?: FollowUpOrderByWithRelationInput
+  }
+
+  export type FollowUpImageWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: FollowUpImageWhereInput | FollowUpImageWhereInput[]
+    OR?: FollowUpImageWhereInput[]
+    NOT?: FollowUpImageWhereInput | FollowUpImageWhereInput[]
+    followUpId?: StringFilter<"FollowUpImage"> | string
+    url?: StringFilter<"FollowUpImage"> | string
+    createdAt?: DateTimeFilter<"FollowUpImage"> | Date | string
+    followUp?: XOR<FollowUpRelationFilter, FollowUpWhereInput>
+  }, "id">
+
+  export type FollowUpImageOrderByWithAggregationInput = {
+    id?: SortOrder
+    followUpId?: SortOrder
+    url?: SortOrder
+    createdAt?: SortOrder
+    _count?: FollowUpImageCountOrderByAggregateInput
+    _max?: FollowUpImageMaxOrderByAggregateInput
+    _min?: FollowUpImageMinOrderByAggregateInput
+  }
+
+  export type FollowUpImageScalarWhereWithAggregatesInput = {
+    AND?: FollowUpImageScalarWhereWithAggregatesInput | FollowUpImageScalarWhereWithAggregatesInput[]
+    OR?: FollowUpImageScalarWhereWithAggregatesInput[]
+    NOT?: FollowUpImageScalarWhereWithAggregatesInput | FollowUpImageScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"FollowUpImage"> | string
+    followUpId?: StringWithAggregatesFilter<"FollowUpImage"> | string
+    url?: StringWithAggregatesFilter<"FollowUpImage"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"FollowUpImage"> | Date | string
   }
 
   export type RosterEntryWhereInput = {
@@ -34964,6 +37320,7 @@ export namespace Prisma {
     devices?: DeviceCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     rosterEntries?: RosterEntryCreateNestedManyWithoutUserInput
+    followUps?: FollowUpCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -35001,6 +37358,7 @@ export namespace Prisma {
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     rosterEntries?: RosterEntryUncheckedCreateNestedManyWithoutUserInput
+    followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserUpdateInput = {
@@ -35038,6 +37396,7 @@ export namespace Prisma {
     devices?: DeviceUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     rosterEntries?: RosterEntryUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -35075,6 +37434,7 @@ export namespace Prisma {
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     rosterEntries?: RosterEntryUncheckedUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -35154,6 +37514,155 @@ export namespace Prisma {
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FollowUpCreateInput = {
+    id?: string
+    leadId: string
+    workspaceId: string
+    type: string
+    description?: string | null
+    status?: string
+    scheduledAt: Date | string
+    completedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutFollowUpsInput
+    images?: FollowUpImageCreateNestedManyWithoutFollowUpInput
+  }
+
+  export type FollowUpUncheckedCreateInput = {
+    id?: string
+    leadId: string
+    userId: string
+    workspaceId: string
+    type: string
+    description?: string | null
+    status?: string
+    scheduledAt: Date | string
+    completedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    images?: FollowUpImageUncheckedCreateNestedManyWithoutFollowUpInput
+  }
+
+  export type FollowUpUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    leadId?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    scheduledAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutFollowUpsNestedInput
+    images?: FollowUpImageUpdateManyWithoutFollowUpNestedInput
+  }
+
+  export type FollowUpUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    leadId?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    scheduledAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    images?: FollowUpImageUncheckedUpdateManyWithoutFollowUpNestedInput
+  }
+
+  export type FollowUpCreateManyInput = {
+    id?: string
+    leadId: string
+    userId: string
+    workspaceId: string
+    type: string
+    description?: string | null
+    status?: string
+    scheduledAt: Date | string
+    completedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type FollowUpUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    leadId?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    scheduledAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FollowUpUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    leadId?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    scheduledAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FollowUpImageCreateInput = {
+    id?: string
+    url: string
+    createdAt?: Date | string
+    followUp: FollowUpCreateNestedOneWithoutImagesInput
+  }
+
+  export type FollowUpImageUncheckedCreateInput = {
+    id?: string
+    followUpId: string
+    url: string
+    createdAt?: Date | string
+  }
+
+  export type FollowUpImageUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    url?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    followUp?: FollowUpUpdateOneRequiredWithoutImagesNestedInput
+  }
+
+  export type FollowUpImageUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    followUpId?: StringFieldUpdateOperationsInput | string
+    url?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FollowUpImageCreateManyInput = {
+    id?: string
+    followUpId: string
+    url: string
+    createdAt?: Date | string
+  }
+
+  export type FollowUpImageUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    url?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FollowUpImageUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    followUpId?: StringFieldUpdateOperationsInput | string
+    url?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type RosterEntryCreateInput = {
@@ -36896,6 +39405,12 @@ export namespace Prisma {
     none?: RosterEntryWhereInput
   }
 
+  export type FollowUpListRelationFilter = {
+    every?: FollowUpWhereInput
+    some?: FollowUpWhereInput
+    none?: FollowUpWhereInput
+  }
+
   export type TargetViolationOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -36909,6 +39424,10 @@ export namespace Prisma {
   }
 
   export type RosterEntryOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type FollowUpOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -36997,6 +39516,84 @@ export namespace Prisma {
     supervisorId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+  }
+
+  export type FollowUpImageListRelationFilter = {
+    every?: FollowUpImageWhereInput
+    some?: FollowUpImageWhereInput
+    none?: FollowUpImageWhereInput
+  }
+
+  export type FollowUpImageOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type FollowUpCountOrderByAggregateInput = {
+    id?: SortOrder
+    leadId?: SortOrder
+    userId?: SortOrder
+    workspaceId?: SortOrder
+    type?: SortOrder
+    description?: SortOrder
+    status?: SortOrder
+    scheduledAt?: SortOrder
+    completedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type FollowUpMaxOrderByAggregateInput = {
+    id?: SortOrder
+    leadId?: SortOrder
+    userId?: SortOrder
+    workspaceId?: SortOrder
+    type?: SortOrder
+    description?: SortOrder
+    status?: SortOrder
+    scheduledAt?: SortOrder
+    completedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type FollowUpMinOrderByAggregateInput = {
+    id?: SortOrder
+    leadId?: SortOrder
+    userId?: SortOrder
+    workspaceId?: SortOrder
+    type?: SortOrder
+    description?: SortOrder
+    status?: SortOrder
+    scheduledAt?: SortOrder
+    completedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type FollowUpRelationFilter = {
+    is?: FollowUpWhereInput
+    isNot?: FollowUpWhereInput
+  }
+
+  export type FollowUpImageCountOrderByAggregateInput = {
+    id?: SortOrder
+    followUpId?: SortOrder
+    url?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type FollowUpImageMaxOrderByAggregateInput = {
+    id?: SortOrder
+    followUpId?: SortOrder
+    url?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type FollowUpImageMinOrderByAggregateInput = {
+    id?: SortOrder
+    followUpId?: SortOrder
+    url?: SortOrder
+    createdAt?: SortOrder
   }
 
   export type EnumRosterTypeFilter<$PrismaModel = never> = {
@@ -38662,6 +41259,13 @@ export namespace Prisma {
     connect?: RosterEntryWhereUniqueInput | RosterEntryWhereUniqueInput[]
   }
 
+  export type FollowUpCreateNestedManyWithoutUserInput = {
+    create?: XOR<FollowUpCreateWithoutUserInput, FollowUpUncheckedCreateWithoutUserInput> | FollowUpCreateWithoutUserInput[] | FollowUpUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: FollowUpCreateOrConnectWithoutUserInput | FollowUpCreateOrConnectWithoutUserInput[]
+    createMany?: FollowUpCreateManyUserInputEnvelope
+    connect?: FollowUpWhereUniqueInput | FollowUpWhereUniqueInput[]
+  }
+
   export type WorkspaceUncheckedCreateNestedOneWithoutOwnerInput = {
     create?: XOR<WorkspaceCreateWithoutOwnerInput, WorkspaceUncheckedCreateWithoutOwnerInput>
     connectOrCreate?: WorkspaceCreateOrConnectWithoutOwnerInput
@@ -38715,6 +41319,13 @@ export namespace Prisma {
     connectOrCreate?: RosterEntryCreateOrConnectWithoutUserInput | RosterEntryCreateOrConnectWithoutUserInput[]
     createMany?: RosterEntryCreateManyUserInputEnvelope
     connect?: RosterEntryWhereUniqueInput | RosterEntryWhereUniqueInput[]
+  }
+
+  export type FollowUpUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<FollowUpCreateWithoutUserInput, FollowUpUncheckedCreateWithoutUserInput> | FollowUpCreateWithoutUserInput[] | FollowUpUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: FollowUpCreateOrConnectWithoutUserInput | FollowUpCreateOrConnectWithoutUserInput[]
+    createMany?: FollowUpCreateManyUserInputEnvelope
+    connect?: FollowUpWhereUniqueInput | FollowUpWhereUniqueInput[]
   }
 
   export type RoleUpdateOneWithoutUsersNestedInput = {
@@ -38905,6 +41516,20 @@ export namespace Prisma {
     deleteMany?: RosterEntryScalarWhereInput | RosterEntryScalarWhereInput[]
   }
 
+  export type FollowUpUpdateManyWithoutUserNestedInput = {
+    create?: XOR<FollowUpCreateWithoutUserInput, FollowUpUncheckedCreateWithoutUserInput> | FollowUpCreateWithoutUserInput[] | FollowUpUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: FollowUpCreateOrConnectWithoutUserInput | FollowUpCreateOrConnectWithoutUserInput[]
+    upsert?: FollowUpUpsertWithWhereUniqueWithoutUserInput | FollowUpUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: FollowUpCreateManyUserInputEnvelope
+    set?: FollowUpWhereUniqueInput | FollowUpWhereUniqueInput[]
+    disconnect?: FollowUpWhereUniqueInput | FollowUpWhereUniqueInput[]
+    delete?: FollowUpWhereUniqueInput | FollowUpWhereUniqueInput[]
+    connect?: FollowUpWhereUniqueInput | FollowUpWhereUniqueInput[]
+    update?: FollowUpUpdateWithWhereUniqueWithoutUserInput | FollowUpUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: FollowUpUpdateManyWithWhereWithoutUserInput | FollowUpUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: FollowUpScalarWhereInput | FollowUpScalarWhereInput[]
+  }
+
   export type WorkspaceUncheckedUpdateOneWithoutOwnerNestedInput = {
     create?: XOR<WorkspaceCreateWithoutOwnerInput, WorkspaceUncheckedCreateWithoutOwnerInput>
     connectOrCreate?: WorkspaceCreateOrConnectWithoutOwnerInput
@@ -39011,6 +41636,90 @@ export namespace Prisma {
     update?: RosterEntryUpdateWithWhereUniqueWithoutUserInput | RosterEntryUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: RosterEntryUpdateManyWithWhereWithoutUserInput | RosterEntryUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: RosterEntryScalarWhereInput | RosterEntryScalarWhereInput[]
+  }
+
+  export type FollowUpUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<FollowUpCreateWithoutUserInput, FollowUpUncheckedCreateWithoutUserInput> | FollowUpCreateWithoutUserInput[] | FollowUpUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: FollowUpCreateOrConnectWithoutUserInput | FollowUpCreateOrConnectWithoutUserInput[]
+    upsert?: FollowUpUpsertWithWhereUniqueWithoutUserInput | FollowUpUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: FollowUpCreateManyUserInputEnvelope
+    set?: FollowUpWhereUniqueInput | FollowUpWhereUniqueInput[]
+    disconnect?: FollowUpWhereUniqueInput | FollowUpWhereUniqueInput[]
+    delete?: FollowUpWhereUniqueInput | FollowUpWhereUniqueInput[]
+    connect?: FollowUpWhereUniqueInput | FollowUpWhereUniqueInput[]
+    update?: FollowUpUpdateWithWhereUniqueWithoutUserInput | FollowUpUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: FollowUpUpdateManyWithWhereWithoutUserInput | FollowUpUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: FollowUpScalarWhereInput | FollowUpScalarWhereInput[]
+  }
+
+  export type UserCreateNestedOneWithoutFollowUpsInput = {
+    create?: XOR<UserCreateWithoutFollowUpsInput, UserUncheckedCreateWithoutFollowUpsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutFollowUpsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type FollowUpImageCreateNestedManyWithoutFollowUpInput = {
+    create?: XOR<FollowUpImageCreateWithoutFollowUpInput, FollowUpImageUncheckedCreateWithoutFollowUpInput> | FollowUpImageCreateWithoutFollowUpInput[] | FollowUpImageUncheckedCreateWithoutFollowUpInput[]
+    connectOrCreate?: FollowUpImageCreateOrConnectWithoutFollowUpInput | FollowUpImageCreateOrConnectWithoutFollowUpInput[]
+    createMany?: FollowUpImageCreateManyFollowUpInputEnvelope
+    connect?: FollowUpImageWhereUniqueInput | FollowUpImageWhereUniqueInput[]
+  }
+
+  export type FollowUpImageUncheckedCreateNestedManyWithoutFollowUpInput = {
+    create?: XOR<FollowUpImageCreateWithoutFollowUpInput, FollowUpImageUncheckedCreateWithoutFollowUpInput> | FollowUpImageCreateWithoutFollowUpInput[] | FollowUpImageUncheckedCreateWithoutFollowUpInput[]
+    connectOrCreate?: FollowUpImageCreateOrConnectWithoutFollowUpInput | FollowUpImageCreateOrConnectWithoutFollowUpInput[]
+    createMany?: FollowUpImageCreateManyFollowUpInputEnvelope
+    connect?: FollowUpImageWhereUniqueInput | FollowUpImageWhereUniqueInput[]
+  }
+
+  export type UserUpdateOneRequiredWithoutFollowUpsNestedInput = {
+    create?: XOR<UserCreateWithoutFollowUpsInput, UserUncheckedCreateWithoutFollowUpsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutFollowUpsInput
+    upsert?: UserUpsertWithoutFollowUpsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutFollowUpsInput, UserUpdateWithoutFollowUpsInput>, UserUncheckedUpdateWithoutFollowUpsInput>
+  }
+
+  export type FollowUpImageUpdateManyWithoutFollowUpNestedInput = {
+    create?: XOR<FollowUpImageCreateWithoutFollowUpInput, FollowUpImageUncheckedCreateWithoutFollowUpInput> | FollowUpImageCreateWithoutFollowUpInput[] | FollowUpImageUncheckedCreateWithoutFollowUpInput[]
+    connectOrCreate?: FollowUpImageCreateOrConnectWithoutFollowUpInput | FollowUpImageCreateOrConnectWithoutFollowUpInput[]
+    upsert?: FollowUpImageUpsertWithWhereUniqueWithoutFollowUpInput | FollowUpImageUpsertWithWhereUniqueWithoutFollowUpInput[]
+    createMany?: FollowUpImageCreateManyFollowUpInputEnvelope
+    set?: FollowUpImageWhereUniqueInput | FollowUpImageWhereUniqueInput[]
+    disconnect?: FollowUpImageWhereUniqueInput | FollowUpImageWhereUniqueInput[]
+    delete?: FollowUpImageWhereUniqueInput | FollowUpImageWhereUniqueInput[]
+    connect?: FollowUpImageWhereUniqueInput | FollowUpImageWhereUniqueInput[]
+    update?: FollowUpImageUpdateWithWhereUniqueWithoutFollowUpInput | FollowUpImageUpdateWithWhereUniqueWithoutFollowUpInput[]
+    updateMany?: FollowUpImageUpdateManyWithWhereWithoutFollowUpInput | FollowUpImageUpdateManyWithWhereWithoutFollowUpInput[]
+    deleteMany?: FollowUpImageScalarWhereInput | FollowUpImageScalarWhereInput[]
+  }
+
+  export type FollowUpImageUncheckedUpdateManyWithoutFollowUpNestedInput = {
+    create?: XOR<FollowUpImageCreateWithoutFollowUpInput, FollowUpImageUncheckedCreateWithoutFollowUpInput> | FollowUpImageCreateWithoutFollowUpInput[] | FollowUpImageUncheckedCreateWithoutFollowUpInput[]
+    connectOrCreate?: FollowUpImageCreateOrConnectWithoutFollowUpInput | FollowUpImageCreateOrConnectWithoutFollowUpInput[]
+    upsert?: FollowUpImageUpsertWithWhereUniqueWithoutFollowUpInput | FollowUpImageUpsertWithWhereUniqueWithoutFollowUpInput[]
+    createMany?: FollowUpImageCreateManyFollowUpInputEnvelope
+    set?: FollowUpImageWhereUniqueInput | FollowUpImageWhereUniqueInput[]
+    disconnect?: FollowUpImageWhereUniqueInput | FollowUpImageWhereUniqueInput[]
+    delete?: FollowUpImageWhereUniqueInput | FollowUpImageWhereUniqueInput[]
+    connect?: FollowUpImageWhereUniqueInput | FollowUpImageWhereUniqueInput[]
+    update?: FollowUpImageUpdateWithWhereUniqueWithoutFollowUpInput | FollowUpImageUpdateWithWhereUniqueWithoutFollowUpInput[]
+    updateMany?: FollowUpImageUpdateManyWithWhereWithoutFollowUpInput | FollowUpImageUpdateManyWithWhereWithoutFollowUpInput[]
+    deleteMany?: FollowUpImageScalarWhereInput | FollowUpImageScalarWhereInput[]
+  }
+
+  export type FollowUpCreateNestedOneWithoutImagesInput = {
+    create?: XOR<FollowUpCreateWithoutImagesInput, FollowUpUncheckedCreateWithoutImagesInput>
+    connectOrCreate?: FollowUpCreateOrConnectWithoutImagesInput
+    connect?: FollowUpWhereUniqueInput
+  }
+
+  export type FollowUpUpdateOneRequiredWithoutImagesNestedInput = {
+    create?: XOR<FollowUpCreateWithoutImagesInput, FollowUpUncheckedCreateWithoutImagesInput>
+    connectOrCreate?: FollowUpCreateOrConnectWithoutImagesInput
+    upsert?: FollowUpUpsertWithoutImagesInput
+    connect?: FollowUpWhereUniqueInput
+    update?: XOR<XOR<FollowUpUpdateToOneWithWhereWithoutImagesInput, FollowUpUpdateWithoutImagesInput>, FollowUpUncheckedUpdateWithoutImagesInput>
   }
 
   export type UserCreateNestedOneWithoutRosterEntriesInput = {
@@ -39550,6 +42259,7 @@ export namespace Prisma {
     devices?: DeviceCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     rosterEntries?: RosterEntryCreateNestedManyWithoutUserInput
+    followUps?: FollowUpCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutRoleInput = {
@@ -39586,6 +42296,7 @@ export namespace Prisma {
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     rosterEntries?: RosterEntryUncheckedCreateNestedManyWithoutUserInput
+    followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutRoleInput = {
@@ -39846,6 +42557,7 @@ export namespace Prisma {
     devices?: DeviceCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     rosterEntries?: RosterEntryCreateNestedManyWithoutUserInput
+    followUps?: FollowUpCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutOwnedWorkspaceInput = {
@@ -39882,6 +42594,7 @@ export namespace Prisma {
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     rosterEntries?: RosterEntryUncheckedCreateNestedManyWithoutUserInput
+    followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutOwnedWorkspaceInput = {
@@ -39923,6 +42636,7 @@ export namespace Prisma {
     devices?: DeviceCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     rosterEntries?: RosterEntryCreateNestedManyWithoutUserInput
+    followUps?: FollowUpCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutWorkspaceInput = {
@@ -39959,6 +42673,7 @@ export namespace Prisma {
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     rosterEntries?: RosterEntryUncheckedCreateNestedManyWithoutUserInput
+    followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutWorkspaceInput = {
@@ -40150,6 +42865,7 @@ export namespace Prisma {
     devices?: DeviceUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     rosterEntries?: RosterEntryUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutOwnedWorkspaceInput = {
@@ -40186,6 +42902,7 @@ export namespace Prisma {
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     rosterEntries?: RosterEntryUncheckedUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserUpsertWithWhereUniqueWithoutWorkspaceInput = {
@@ -40398,6 +43115,7 @@ export namespace Prisma {
     devices?: DeviceCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     rosterEntries?: RosterEntryCreateNestedManyWithoutUserInput
+    followUps?: FollowUpCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutDepartmentInput = {
@@ -40434,6 +43152,7 @@ export namespace Prisma {
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     rosterEntries?: RosterEntryUncheckedCreateNestedManyWithoutUserInput
+    followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutDepartmentInput = {
@@ -40839,6 +43558,7 @@ export namespace Prisma {
     devices?: DeviceCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     rosterEntries?: RosterEntryCreateNestedManyWithoutUserInput
+    followUps?: FollowUpCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutOfficeInput = {
@@ -40875,6 +43595,7 @@ export namespace Prisma {
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     rosterEntries?: RosterEntryUncheckedCreateNestedManyWithoutUserInput
+    followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutOfficeInput = {
@@ -41034,6 +43755,7 @@ export namespace Prisma {
     devices?: DeviceCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     rosterEntries?: RosterEntryCreateNestedManyWithoutUserInput
+    followUps?: FollowUpCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutCountryInput = {
@@ -41070,6 +43792,7 @@ export namespace Prisma {
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     rosterEntries?: RosterEntryUncheckedCreateNestedManyWithoutUserInput
+    followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutCountryInput = {
@@ -41116,6 +43839,7 @@ export namespace Prisma {
     devices?: DeviceCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     rosterEntries?: RosterEntryCreateNestedManyWithoutUserInput
+    followUps?: FollowUpCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutStateInput = {
@@ -41152,6 +43876,7 @@ export namespace Prisma {
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     rosterEntries?: RosterEntryUncheckedCreateNestedManyWithoutUserInput
+    followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutStateInput = {
@@ -41198,6 +43923,7 @@ export namespace Prisma {
     devices?: DeviceCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     rosterEntries?: RosterEntryCreateNestedManyWithoutUserInput
+    followUps?: FollowUpCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutDistrictInput = {
@@ -41234,6 +43960,7 @@ export namespace Prisma {
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     rosterEntries?: RosterEntryUncheckedCreateNestedManyWithoutUserInput
+    followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutDistrictInput = {
@@ -41424,6 +44151,7 @@ export namespace Prisma {
     devices?: DeviceCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     rosterEntries?: RosterEntryCreateNestedManyWithoutUserInput
+    followUps?: FollowUpCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutAssignedLocationsInput = {
@@ -41460,6 +44188,7 @@ export namespace Prisma {
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     rosterEntries?: RosterEntryUncheckedCreateNestedManyWithoutUserInput
+    followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutAssignedLocationsInput = {
@@ -41545,6 +44274,7 @@ export namespace Prisma {
     devices?: DeviceUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     rosterEntries?: RosterEntryUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAssignedLocationsInput = {
@@ -41581,6 +44311,7 @@ export namespace Prisma {
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     rosterEntries?: RosterEntryUncheckedUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type LocationUpsertWithoutAssignedUsersInput = {
@@ -42512,6 +45243,7 @@ export namespace Prisma {
     devices?: DeviceCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     rosterEntries?: RosterEntryCreateNestedManyWithoutUserInput
+    followUps?: FollowUpCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutTargetSettingsInput = {
@@ -42548,6 +45280,7 @@ export namespace Prisma {
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     rosterEntries?: RosterEntryUncheckedCreateNestedManyWithoutUserInput
+    followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutTargetSettingsInput = {
@@ -42654,6 +45387,7 @@ export namespace Prisma {
     devices?: DeviceUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     rosterEntries?: RosterEntryUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutTargetSettingsInput = {
@@ -42690,6 +45424,7 @@ export namespace Prisma {
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     rosterEntries?: RosterEntryUncheckedUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type TargetTypeUpsertWithoutSettingsInput = {
@@ -42792,6 +45527,7 @@ export namespace Prisma {
     devices?: DeviceCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     rosterEntries?: RosterEntryCreateNestedManyWithoutUserInput
+    followUps?: FollowUpCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutViolationsInput = {
@@ -42828,6 +45564,7 @@ export namespace Prisma {
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     rosterEntries?: RosterEntryUncheckedCreateNestedManyWithoutUserInput
+    followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutViolationsInput = {
@@ -42880,6 +45617,7 @@ export namespace Prisma {
     devices?: DeviceUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     rosterEntries?: RosterEntryUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutViolationsInput = {
@@ -42916,6 +45654,7 @@ export namespace Prisma {
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     rosterEntries?: RosterEntryUncheckedUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type RoleCreateWithoutUsersInput = {
@@ -43242,6 +45981,7 @@ export namespace Prisma {
     devices?: DeviceCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     rosterEntries?: RosterEntryCreateNestedManyWithoutUserInput
+    followUps?: FollowUpCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutSubordinatesInput = {
@@ -43278,6 +46018,7 @@ export namespace Prisma {
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     rosterEntries?: RosterEntryUncheckedCreateNestedManyWithoutUserInput
+    followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutSubordinatesInput = {
@@ -43319,6 +46060,7 @@ export namespace Prisma {
     devices?: DeviceCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     rosterEntries?: RosterEntryCreateNestedManyWithoutUserInput
+    followUps?: FollowUpCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutSupervisorInput = {
@@ -43355,6 +46097,7 @@ export namespace Prisma {
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     rosterEntries?: RosterEntryUncheckedCreateNestedManyWithoutUserInput
+    followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutSupervisorInput = {
@@ -43548,6 +46291,44 @@ export namespace Prisma {
 
   export type RosterEntryCreateManyUserInputEnvelope = {
     data: RosterEntryCreateManyUserInput | RosterEntryCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type FollowUpCreateWithoutUserInput = {
+    id?: string
+    leadId: string
+    workspaceId: string
+    type: string
+    description?: string | null
+    status?: string
+    scheduledAt: Date | string
+    completedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    images?: FollowUpImageCreateNestedManyWithoutFollowUpInput
+  }
+
+  export type FollowUpUncheckedCreateWithoutUserInput = {
+    id?: string
+    leadId: string
+    workspaceId: string
+    type: string
+    description?: string | null
+    status?: string
+    scheduledAt: Date | string
+    completedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    images?: FollowUpImageUncheckedCreateNestedManyWithoutFollowUpInput
+  }
+
+  export type FollowUpCreateOrConnectWithoutUserInput = {
+    where: FollowUpWhereUniqueInput
+    create: XOR<FollowUpCreateWithoutUserInput, FollowUpUncheckedCreateWithoutUserInput>
+  }
+
+  export type FollowUpCreateManyUserInputEnvelope = {
+    data: FollowUpCreateManyUserInput | FollowUpCreateManyUserInput[]
     skipDuplicates?: boolean
   }
 
@@ -43924,6 +46705,7 @@ export namespace Prisma {
     devices?: DeviceUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     rosterEntries?: RosterEntryUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSubordinatesInput = {
@@ -43960,6 +46742,7 @@ export namespace Prisma {
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     rosterEntries?: RosterEntryUncheckedUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserUpsertWithWhereUniqueWithoutSupervisorInput = {
@@ -44126,6 +46909,323 @@ export namespace Prisma {
     deletedAt?: DateTimeNullableFilter<"RosterEntry"> | Date | string | null
   }
 
+  export type FollowUpUpsertWithWhereUniqueWithoutUserInput = {
+    where: FollowUpWhereUniqueInput
+    update: XOR<FollowUpUpdateWithoutUserInput, FollowUpUncheckedUpdateWithoutUserInput>
+    create: XOR<FollowUpCreateWithoutUserInput, FollowUpUncheckedCreateWithoutUserInput>
+  }
+
+  export type FollowUpUpdateWithWhereUniqueWithoutUserInput = {
+    where: FollowUpWhereUniqueInput
+    data: XOR<FollowUpUpdateWithoutUserInput, FollowUpUncheckedUpdateWithoutUserInput>
+  }
+
+  export type FollowUpUpdateManyWithWhereWithoutUserInput = {
+    where: FollowUpScalarWhereInput
+    data: XOR<FollowUpUpdateManyMutationInput, FollowUpUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type FollowUpScalarWhereInput = {
+    AND?: FollowUpScalarWhereInput | FollowUpScalarWhereInput[]
+    OR?: FollowUpScalarWhereInput[]
+    NOT?: FollowUpScalarWhereInput | FollowUpScalarWhereInput[]
+    id?: StringFilter<"FollowUp"> | string
+    leadId?: StringFilter<"FollowUp"> | string
+    userId?: StringFilter<"FollowUp"> | string
+    workspaceId?: StringFilter<"FollowUp"> | string
+    type?: StringFilter<"FollowUp"> | string
+    description?: StringNullableFilter<"FollowUp"> | string | null
+    status?: StringFilter<"FollowUp"> | string
+    scheduledAt?: DateTimeFilter<"FollowUp"> | Date | string
+    completedAt?: DateTimeNullableFilter<"FollowUp"> | Date | string | null
+    createdAt?: DateTimeFilter<"FollowUp"> | Date | string
+    updatedAt?: DateTimeFilter<"FollowUp"> | Date | string
+  }
+
+  export type UserCreateWithoutFollowUpsInput = {
+    id?: string
+    name?: string | null
+    username?: string | null
+    email: string
+    password?: string | null
+    phone?: string | null
+    googleId?: string | null
+    isOnboarded?: boolean
+    isActive?: boolean
+    isEmailVerified?: boolean
+    isLocked?: boolean
+    verificationToken?: string | null
+    verificationTokenExpires?: Date | string | null
+    invitationToken?: string | null
+    invitationExpires?: Date | string | null
+    deletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    role?: RoleCreateNestedOneWithoutUsersInput
+    workspace?: WorkspaceCreateNestedOneWithoutUsersInput
+    ownedWorkspace?: WorkspaceCreateNestedOneWithoutOwnerInput
+    department?: DepartmentCreateNestedOneWithoutUsersInput
+    office?: OfficeCreateNestedOneWithoutUsersInput
+    country?: LocationCreateNestedOneWithoutUsersAtCountryInput
+    state?: LocationCreateNestedOneWithoutUsersAtStateInput
+    district?: LocationCreateNestedOneWithoutUsersAtDistrictInput
+    assignedLocations?: UserLocationAssignmentCreateNestedManyWithoutUserInput
+    supervisor?: UserCreateNestedOneWithoutSubordinatesInput
+    subordinates?: UserCreateNestedManyWithoutSupervisorInput
+    targetSettings?: TargetSettingCreateNestedManyWithoutUserInput
+    violations?: TargetViolationCreateNestedManyWithoutUserInput
+    devices?: DeviceCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogCreateNestedManyWithoutUserInput
+    rosterEntries?: RosterEntryCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutFollowUpsInput = {
+    id?: string
+    name?: string | null
+    username?: string | null
+    email: string
+    password?: string | null
+    phone?: string | null
+    googleId?: string | null
+    isOnboarded?: boolean
+    isActive?: boolean
+    isEmailVerified?: boolean
+    isLocked?: boolean
+    verificationToken?: string | null
+    verificationTokenExpires?: Date | string | null
+    invitationToken?: string | null
+    invitationExpires?: Date | string | null
+    deletedAt?: Date | string | null
+    roleId?: string | null
+    workspaceId?: string | null
+    departmentId?: string | null
+    officeId?: string | null
+    countryId?: string | null
+    stateId?: string | null
+    districtId?: string | null
+    supervisorId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    ownedWorkspace?: WorkspaceUncheckedCreateNestedOneWithoutOwnerInput
+    assignedLocations?: UserLocationAssignmentUncheckedCreateNestedManyWithoutUserInput
+    subordinates?: UserUncheckedCreateNestedManyWithoutSupervisorInput
+    targetSettings?: TargetSettingUncheckedCreateNestedManyWithoutUserInput
+    violations?: TargetViolationUncheckedCreateNestedManyWithoutUserInput
+    devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
+    rosterEntries?: RosterEntryUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutFollowUpsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutFollowUpsInput, UserUncheckedCreateWithoutFollowUpsInput>
+  }
+
+  export type FollowUpImageCreateWithoutFollowUpInput = {
+    id?: string
+    url: string
+    createdAt?: Date | string
+  }
+
+  export type FollowUpImageUncheckedCreateWithoutFollowUpInput = {
+    id?: string
+    url: string
+    createdAt?: Date | string
+  }
+
+  export type FollowUpImageCreateOrConnectWithoutFollowUpInput = {
+    where: FollowUpImageWhereUniqueInput
+    create: XOR<FollowUpImageCreateWithoutFollowUpInput, FollowUpImageUncheckedCreateWithoutFollowUpInput>
+  }
+
+  export type FollowUpImageCreateManyFollowUpInputEnvelope = {
+    data: FollowUpImageCreateManyFollowUpInput | FollowUpImageCreateManyFollowUpInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type UserUpsertWithoutFollowUpsInput = {
+    update: XOR<UserUpdateWithoutFollowUpsInput, UserUncheckedUpdateWithoutFollowUpsInput>
+    create: XOR<UserCreateWithoutFollowUpsInput, UserUncheckedCreateWithoutFollowUpsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutFollowUpsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutFollowUpsInput, UserUncheckedUpdateWithoutFollowUpsInput>
+  }
+
+  export type UserUpdateWithoutFollowUpsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    username?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    googleId?: NullableStringFieldUpdateOperationsInput | string | null
+    isOnboarded?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isEmailVerified?: BoolFieldUpdateOperationsInput | boolean
+    isLocked?: BoolFieldUpdateOperationsInput | boolean
+    verificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    verificationTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    invitationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    invitationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    role?: RoleUpdateOneWithoutUsersNestedInput
+    workspace?: WorkspaceUpdateOneWithoutUsersNestedInput
+    ownedWorkspace?: WorkspaceUpdateOneWithoutOwnerNestedInput
+    department?: DepartmentUpdateOneWithoutUsersNestedInput
+    office?: OfficeUpdateOneWithoutUsersNestedInput
+    country?: LocationUpdateOneWithoutUsersAtCountryNestedInput
+    state?: LocationUpdateOneWithoutUsersAtStateNestedInput
+    district?: LocationUpdateOneWithoutUsersAtDistrictNestedInput
+    assignedLocations?: UserLocationAssignmentUpdateManyWithoutUserNestedInput
+    supervisor?: UserUpdateOneWithoutSubordinatesNestedInput
+    subordinates?: UserUpdateManyWithoutSupervisorNestedInput
+    targetSettings?: TargetSettingUpdateManyWithoutUserNestedInput
+    violations?: TargetViolationUpdateManyWithoutUserNestedInput
+    devices?: DeviceUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
+    rosterEntries?: RosterEntryUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutFollowUpsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    username?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    googleId?: NullableStringFieldUpdateOperationsInput | string | null
+    isOnboarded?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isEmailVerified?: BoolFieldUpdateOperationsInput | boolean
+    isLocked?: BoolFieldUpdateOperationsInput | boolean
+    verificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    verificationTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    invitationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    invitationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    roleId?: NullableStringFieldUpdateOperationsInput | string | null
+    workspaceId?: NullableStringFieldUpdateOperationsInput | string | null
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    officeId?: NullableStringFieldUpdateOperationsInput | string | null
+    countryId?: NullableStringFieldUpdateOperationsInput | string | null
+    stateId?: NullableStringFieldUpdateOperationsInput | string | null
+    districtId?: NullableStringFieldUpdateOperationsInput | string | null
+    supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ownedWorkspace?: WorkspaceUncheckedUpdateOneWithoutOwnerNestedInput
+    assignedLocations?: UserLocationAssignmentUncheckedUpdateManyWithoutUserNestedInput
+    subordinates?: UserUncheckedUpdateManyWithoutSupervisorNestedInput
+    targetSettings?: TargetSettingUncheckedUpdateManyWithoutUserNestedInput
+    violations?: TargetViolationUncheckedUpdateManyWithoutUserNestedInput
+    devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
+    rosterEntries?: RosterEntryUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type FollowUpImageUpsertWithWhereUniqueWithoutFollowUpInput = {
+    where: FollowUpImageWhereUniqueInput
+    update: XOR<FollowUpImageUpdateWithoutFollowUpInput, FollowUpImageUncheckedUpdateWithoutFollowUpInput>
+    create: XOR<FollowUpImageCreateWithoutFollowUpInput, FollowUpImageUncheckedCreateWithoutFollowUpInput>
+  }
+
+  export type FollowUpImageUpdateWithWhereUniqueWithoutFollowUpInput = {
+    where: FollowUpImageWhereUniqueInput
+    data: XOR<FollowUpImageUpdateWithoutFollowUpInput, FollowUpImageUncheckedUpdateWithoutFollowUpInput>
+  }
+
+  export type FollowUpImageUpdateManyWithWhereWithoutFollowUpInput = {
+    where: FollowUpImageScalarWhereInput
+    data: XOR<FollowUpImageUpdateManyMutationInput, FollowUpImageUncheckedUpdateManyWithoutFollowUpInput>
+  }
+
+  export type FollowUpImageScalarWhereInput = {
+    AND?: FollowUpImageScalarWhereInput | FollowUpImageScalarWhereInput[]
+    OR?: FollowUpImageScalarWhereInput[]
+    NOT?: FollowUpImageScalarWhereInput | FollowUpImageScalarWhereInput[]
+    id?: StringFilter<"FollowUpImage"> | string
+    followUpId?: StringFilter<"FollowUpImage"> | string
+    url?: StringFilter<"FollowUpImage"> | string
+    createdAt?: DateTimeFilter<"FollowUpImage"> | Date | string
+  }
+
+  export type FollowUpCreateWithoutImagesInput = {
+    id?: string
+    leadId: string
+    workspaceId: string
+    type: string
+    description?: string | null
+    status?: string
+    scheduledAt: Date | string
+    completedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutFollowUpsInput
+  }
+
+  export type FollowUpUncheckedCreateWithoutImagesInput = {
+    id?: string
+    leadId: string
+    userId: string
+    workspaceId: string
+    type: string
+    description?: string | null
+    status?: string
+    scheduledAt: Date | string
+    completedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type FollowUpCreateOrConnectWithoutImagesInput = {
+    where: FollowUpWhereUniqueInput
+    create: XOR<FollowUpCreateWithoutImagesInput, FollowUpUncheckedCreateWithoutImagesInput>
+  }
+
+  export type FollowUpUpsertWithoutImagesInput = {
+    update: XOR<FollowUpUpdateWithoutImagesInput, FollowUpUncheckedUpdateWithoutImagesInput>
+    create: XOR<FollowUpCreateWithoutImagesInput, FollowUpUncheckedCreateWithoutImagesInput>
+    where?: FollowUpWhereInput
+  }
+
+  export type FollowUpUpdateToOneWithWhereWithoutImagesInput = {
+    where?: FollowUpWhereInput
+    data: XOR<FollowUpUpdateWithoutImagesInput, FollowUpUncheckedUpdateWithoutImagesInput>
+  }
+
+  export type FollowUpUpdateWithoutImagesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    leadId?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    scheduledAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutFollowUpsNestedInput
+  }
+
+  export type FollowUpUncheckedUpdateWithoutImagesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    leadId?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    scheduledAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type UserCreateWithoutRosterEntriesInput = {
     id?: string
     name?: string | null
@@ -44160,6 +47260,7 @@ export namespace Prisma {
     violations?: TargetViolationCreateNestedManyWithoutUserInput
     devices?: DeviceCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
+    followUps?: FollowUpCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutRosterEntriesInput = {
@@ -44196,6 +47297,7 @@ export namespace Prisma {
     violations?: TargetViolationUncheckedCreateNestedManyWithoutUserInput
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
+    followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutRosterEntriesInput = {
@@ -44248,6 +47350,7 @@ export namespace Prisma {
     violations?: TargetViolationUpdateManyWithoutUserNestedInput
     devices?: DeviceUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutRosterEntriesInput = {
@@ -44284,6 +47387,7 @@ export namespace Prisma {
     violations?: TargetViolationUncheckedUpdateManyWithoutUserNestedInput
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutAuditLogsInput = {
@@ -44320,6 +47424,7 @@ export namespace Prisma {
     violations?: TargetViolationCreateNestedManyWithoutUserInput
     devices?: DeviceCreateNestedManyWithoutUserInput
     rosterEntries?: RosterEntryCreateNestedManyWithoutUserInput
+    followUps?: FollowUpCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutAuditLogsInput = {
@@ -44356,6 +47461,7 @@ export namespace Prisma {
     violations?: TargetViolationUncheckedCreateNestedManyWithoutUserInput
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
     rosterEntries?: RosterEntryUncheckedCreateNestedManyWithoutUserInput
+    followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutAuditLogsInput = {
@@ -44408,6 +47514,7 @@ export namespace Prisma {
     violations?: TargetViolationUpdateManyWithoutUserNestedInput
     devices?: DeviceUpdateManyWithoutUserNestedInput
     rosterEntries?: RosterEntryUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAuditLogsInput = {
@@ -44444,6 +47551,7 @@ export namespace Prisma {
     violations?: TargetViolationUncheckedUpdateManyWithoutUserNestedInput
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
     rosterEntries?: RosterEntryUncheckedUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutDevicesInput = {
@@ -44480,6 +47588,7 @@ export namespace Prisma {
     violations?: TargetViolationCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     rosterEntries?: RosterEntryCreateNestedManyWithoutUserInput
+    followUps?: FollowUpCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutDevicesInput = {
@@ -44516,6 +47625,7 @@ export namespace Prisma {
     violations?: TargetViolationUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     rosterEntries?: RosterEntryUncheckedCreateNestedManyWithoutUserInput
+    followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutDevicesInput = {
@@ -44568,6 +47678,7 @@ export namespace Prisma {
     violations?: TargetViolationUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     rosterEntries?: RosterEntryUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutDevicesInput = {
@@ -44604,6 +47715,7 @@ export namespace Prisma {
     violations?: TargetViolationUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     rosterEntries?: RosterEntryUncheckedUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type RolePermissionCreateManyRoleInput = {
@@ -44684,6 +47796,7 @@ export namespace Prisma {
     devices?: DeviceUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     rosterEntries?: RosterEntryUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutRoleInput = {
@@ -44720,6 +47833,7 @@ export namespace Prisma {
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     rosterEntries?: RosterEntryUncheckedUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutRoleInput = {
@@ -44869,6 +47983,7 @@ export namespace Prisma {
     devices?: DeviceUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     rosterEntries?: RosterEntryUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutWorkspaceInput = {
@@ -44905,6 +48020,7 @@ export namespace Prisma {
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     rosterEntries?: RosterEntryUncheckedUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutWorkspaceInput = {
@@ -45132,6 +48248,7 @@ export namespace Prisma {
     devices?: DeviceUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     rosterEntries?: RosterEntryUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutDepartmentInput = {
@@ -45168,6 +48285,7 @@ export namespace Prisma {
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     rosterEntries?: RosterEntryUncheckedUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutDepartmentInput = {
@@ -45358,6 +48476,7 @@ export namespace Prisma {
     devices?: DeviceUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     rosterEntries?: RosterEntryUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutOfficeInput = {
@@ -45394,6 +48513,7 @@ export namespace Prisma {
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     rosterEntries?: RosterEntryUncheckedUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutOfficeInput = {
@@ -45620,6 +48740,7 @@ export namespace Prisma {
     devices?: DeviceUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     rosterEntries?: RosterEntryUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCountryInput = {
@@ -45656,6 +48777,7 @@ export namespace Prisma {
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     rosterEntries?: RosterEntryUncheckedUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutCountryInput = {
@@ -45720,6 +48842,7 @@ export namespace Prisma {
     devices?: DeviceUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     rosterEntries?: RosterEntryUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutStateInput = {
@@ -45756,6 +48879,7 @@ export namespace Prisma {
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     rosterEntries?: RosterEntryUncheckedUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutStateInput = {
@@ -45820,6 +48944,7 @@ export namespace Prisma {
     devices?: DeviceUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     rosterEntries?: RosterEntryUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutDistrictInput = {
@@ -45856,6 +48981,7 @@ export namespace Prisma {
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     rosterEntries?: RosterEntryUncheckedUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutDistrictInput = {
@@ -46233,6 +49359,19 @@ export namespace Prisma {
     deletedAt?: Date | string | null
   }
 
+  export type FollowUpCreateManyUserInput = {
+    id?: string
+    leadId: string
+    workspaceId: string
+    type: string
+    description?: string | null
+    status?: string
+    scheduledAt: Date | string
+    completedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type UserLocationAssignmentUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     workspaceId?: StringFieldUpdateOperationsInput | string
@@ -46291,6 +49430,7 @@ export namespace Prisma {
     devices?: DeviceUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     rosterEntries?: RosterEntryUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSupervisorInput = {
@@ -46327,6 +49467,7 @@ export namespace Prisma {
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     rosterEntries?: RosterEntryUncheckedUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutSupervisorInput = {
@@ -46558,6 +49699,71 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
+  export type FollowUpUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    leadId?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    scheduledAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    images?: FollowUpImageUpdateManyWithoutFollowUpNestedInput
+  }
+
+  export type FollowUpUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    leadId?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    scheduledAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    images?: FollowUpImageUncheckedUpdateManyWithoutFollowUpNestedInput
+  }
+
+  export type FollowUpUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    leadId?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    scheduledAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FollowUpImageCreateManyFollowUpInput = {
+    id?: string
+    url: string
+    createdAt?: Date | string
+  }
+
+  export type FollowUpImageUpdateWithoutFollowUpInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    url?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FollowUpImageUncheckedUpdateWithoutFollowUpInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    url?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FollowUpImageUncheckedUpdateManyWithoutFollowUpInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    url?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
 
 
   /**
@@ -46615,6 +49821,10 @@ export namespace Prisma {
      * @deprecated Use UserCountOutputTypeDefaultArgs instead
      */
     export type UserCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = UserCountOutputTypeDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use FollowUpCountOutputTypeDefaultArgs instead
+     */
+    export type FollowUpCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = FollowUpCountOutputTypeDefaultArgs<ExtArgs>
     /**
      * @deprecated Use RoleDefaultArgs instead
      */
@@ -46707,6 +49917,14 @@ export namespace Prisma {
      * @deprecated Use UserDefaultArgs instead
      */
     export type UserArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = UserDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use FollowUpDefaultArgs instead
+     */
+    export type FollowUpArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = FollowUpDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use FollowUpImageDefaultArgs instead
+     */
+    export type FollowUpImageArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = FollowUpImageDefaultArgs<ExtArgs>
     /**
      * @deprecated Use RosterEntryDefaultArgs instead
      */

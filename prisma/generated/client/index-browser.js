@@ -389,6 +389,27 @@ exports.Prisma.UserScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.FollowUpScalarFieldEnum = {
+  id: 'id',
+  leadId: 'leadId',
+  userId: 'userId',
+  workspaceId: 'workspaceId',
+  type: 'type',
+  description: 'description',
+  status: 'status',
+  scheduledAt: 'scheduledAt',
+  completedAt: 'completedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.FollowUpImageScalarFieldEnum = {
+  id: 'id',
+  followUpId: 'followUpId',
+  url: 'url',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.RosterEntryScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
@@ -552,6 +573,8 @@ exports.Prisma.ModelName = {
   TargetSetting: 'TargetSetting',
   TargetViolation: 'TargetViolation',
   User: 'User',
+  FollowUp: 'FollowUp',
+  FollowUpImage: 'FollowUpImage',
   RosterEntry: 'RosterEntry',
   AuditLog: 'AuditLog',
   Device: 'Device'
