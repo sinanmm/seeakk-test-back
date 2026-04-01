@@ -94,6 +94,7 @@ model Workspace {
   targetCycles      TargetCycle[]
   leadLifeCycles    LeadLifeCycle[]
   leadDynamicFields LeadDynamicField[]
+  leads             Lead[]
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
 
@@ -175,6 +176,7 @@ model LeadSource {
   createdAt DateTime         @default(now())
   updatedAt DateTime         @updatedAt
   deletedAt DateTime?
+  leads     Lead[]
 
   @@index([name])
   @@index([status])
@@ -195,6 +197,7 @@ model LeadStage {
   updatedAt          DateTime    @updatedAt
   deletedAt          DateTime?
   rules              StageRule[]
+  leads              Lead[]
 
   @@index([name])
   @@index([status])
@@ -370,10 +373,63 @@ model LeadLifeCycle {
 
   workspace   Workspace                 @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   transitions LeadLifeCycleTransition[]
+  leads       Lead[]
 
   @@unique([name, workspaceId])
   @@index([workspaceId])
   @@map("lead_life_cycles")
+}
+
+model Lead {
+  id              String    @id @default(cuid())
+  name            String
+  email           String?
+  phone           String?
+  expectedRevenue Float?
+  assignedToId    String?
+  stageId         String?
+  lifecycleId     String?
+  sourceId        String?
+  nextFollowUpAt  DateTime?
+  isClosed        Boolean   @default(false)
+  isLOB           Boolean   @default(false)
+  workspaceId     String
+  createdById     String
+  deletedAt       DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  assignedTo User?          @relation("LeadAssignedTo", fields: [assignedToId], references: [id], onDelete: SetNull)
+  stage      LeadStage?     @relation(fields: [stageId], references: [id], onDelete: SetNull)
+  lifecycle  LeadLifeCycle? @relation(fields: [lifecycleId], references: [id], onDelete: SetNull)
+  source     LeadSource?    @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+  createdBy  User           @relation("LeadCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  workspace  Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  followUps  FollowUp[]
+  lobLogs    LeadLOBLog[]
+
+  @@index([workspaceId, assignedToId, stageId])
+  @@index([workspaceId, sourceId, createdAt])
+  @@index([workspaceId, deletedAt])
+  @@index([workspaceId, isLOB, isClosed])
+  @@index([nextFollowUpAt])
+  @@map("leads")
+}
+
+model LeadLOBLog {
+  id          String   @id @default(cuid())
+  leadId      String
+  reasonId    String
+  remarks     String?
+  changedById String
+  changedAt   DateTime @default(now())
+  workspaceId String
+
+  lead Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([leadId, changedAt])
+  @@index([workspaceId, reasonId])
+  @@map("lead_lob_logs")
 }
 
 model LeadLifeCycleTransition {
@@ -557,6 +613,8 @@ model User {
   auditLogs     AuditLog[]
   rosterEntries RosterEntry[]
   followUps     FollowUp[]
+  createdLeads  Lead[]        @relation("LeadCreatedBy")
+  assignedLeads Lead[]        @relation("LeadAssignedTo")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -586,6 +644,7 @@ model FollowUp {
   updatedAt DateTime @updatedAt
 
   user   User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lead   Lead            @relation(fields: [leadId], references: [id], onDelete: Cascade)
   images FollowUpImage[]
 
   @@index([workspaceId, userId, scheduledAt])

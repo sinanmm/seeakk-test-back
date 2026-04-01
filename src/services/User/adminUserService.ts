@@ -290,7 +290,9 @@ export const listUsers = async (query: ListUsersQuery, workspaceId: string) => {
       : {}),
   };
 
-  const [total, users] = await prisma.$transaction([
+  // Avoid wrapping paginated read queries in a Prisma transaction on pooled connections.
+  // PgBouncer/pooled PostgreSQL can intermittently close transaction-scoped reads.
+  const [total, users] = await Promise.all([
     (prisma as any).user.count({ where }),
     (prisma as any).user.findMany({
       where,

@@ -7,6 +7,12 @@ if (!connectionString) {
   throw new Error('DATABASE_URL is required to initialize Prisma client');
 }
 
+const toPositiveNumber = (value: string | undefined, fallback: number): number => {
+  if (!value) return fallback;
+  const parsed = parseInt(value, 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+};
+
 const withConditionalPoolerParams = (url: string): string => {
   try {
     const parsed = new URL(url);
@@ -19,17 +25,21 @@ const withConditionalPoolerParams = (url: string): string => {
       hostname.includes('pgbouncer');
 
     if (alreadyConfiguredForPooler || looksLikePoolerHost) {
+      const connectTimeout = toPositiveNumber(process.env.PRISMA_CONNECT_TIMEOUT, 15);
+      const poolTimeout = toPositiveNumber(process.env.PRISMA_POOL_TIMEOUT, 30);
+      const connectionLimit = toPositiveNumber(process.env.PRISMA_CONNECTION_LIMIT, 15);
+
       if (!parsed.searchParams.has('pgbouncer')) {
         parsed.searchParams.set('pgbouncer', 'true');
       }
       if (!parsed.searchParams.has('connect_timeout')) {
-        parsed.searchParams.set('connect_timeout', '15');
+        parsed.searchParams.set('connect_timeout', String(connectTimeout));
       }
       if (!parsed.searchParams.has('pool_timeout')) {
-        parsed.searchParams.set('pool_timeout', '20');
+        parsed.searchParams.set('pool_timeout', String(poolTimeout));
       }
       if (!parsed.searchParams.has('connection_limit')) {
-        parsed.searchParams.set('connection_limit', '10');
+        parsed.searchParams.set('connection_limit', String(connectionLimit));
       }
       // PgBouncer does not support prepared statements in transaction mode.
       if (!parsed.searchParams.has('statement_cache_size')) {

@@ -292,6 +292,36 @@ exports.Prisma.LeadLifeCycleScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.LeadScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  email: 'email',
+  phone: 'phone',
+  expectedRevenue: 'expectedRevenue',
+  assignedToId: 'assignedToId',
+  stageId: 'stageId',
+  lifecycleId: 'lifecycleId',
+  sourceId: 'sourceId',
+  nextFollowUpAt: 'nextFollowUpAt',
+  isClosed: 'isClosed',
+  isLOB: 'isLOB',
+  workspaceId: 'workspaceId',
+  createdById: 'createdById',
+  deletedAt: 'deletedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.LeadLOBLogScalarFieldEnum = {
+  id: 'id',
+  leadId: 'leadId',
+  reasonId: 'reasonId',
+  remarks: 'remarks',
+  changedById: 'changedById',
+  changedAt: 'changedAt',
+  workspaceId: 'workspaceId'
+};
+
 exports.Prisma.LeadLifeCycleTransitionScalarFieldEnum = {
   id: 'id',
   lifecycleId: 'lifecycleId',
@@ -566,6 +596,8 @@ exports.Prisma.ModelName = {
   TargetCycle: 'TargetCycle',
   TargetCycleRange: 'TargetCycleRange',
   LeadLifeCycle: 'LeadLifeCycle',
+  Lead: 'Lead',
+  LeadLOBLog: 'LeadLOBLog',
   LeadLifeCycleTransition: 'LeadLifeCycleTransition',
   LeadDynamicField: 'LeadDynamicField',
   LeadDynamicOption: 'LeadDynamicOption',
