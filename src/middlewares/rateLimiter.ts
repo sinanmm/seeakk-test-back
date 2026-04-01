@@ -4,10 +4,23 @@ import { redisClient } from '../config/redis';
 import logger from '../utils/logger';
 import { Request, Response, NextFunction } from 'express';
 
+const toRedisArgument = (value: unknown): string | Buffer => {
+  if (Buffer.isBuffer(value)) return value;
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'bigint' || typeof value === 'boolean') {
+    return String(value);
+  }
+  if (value === null || value === undefined) {
+    return '';
+  }
+  return String(value);
+};
+
 const getStore = (prefix: string) => {
   if (redisClient.isReady) {
     return new RedisStore({
-      sendCommand: (...args: string[]) => redisClient.sendCommand(args),
+      sendCommand: (...args: Array<string | Buffer | number>) =>
+        redisClient.sendCommand(args.map(toRedisArgument)),
       prefix: prefix,
     });
   }

@@ -198,14 +198,17 @@ const buildLeadCacheKey = (workspaceId: string, query: ListLeadsQueryInput | Exp
 const clearLeadCache = async (workspaceId: string): Promise<void> => {
   if (!redisClient.isOpen) return;
 
-  let cursor = 0;
-  do {
-    const reply = await (redisClient as any).scan(cursor, { MATCH: `leads:${workspaceId}:*`, COUNT: 100 });
-    cursor = Number(reply.cursor);
-    if (reply.keys.length > 0) {
-      await redisClient.del(reply.keys);
+  const keysToDelete: string[] = [];
+
+  for await (const key of (redisClient as any).scanIterator({ MATCH: `leads:${workspaceId}:*`, COUNT: 100 })) {
+    if (typeof key === 'string' && key.length > 0) {
+      keysToDelete.push(key);
     }
-  } while (cursor !== 0);
+  }
+
+  if (keysToDelete.length > 0) {
+    await redisClient.del(keysToDelete);
+  }
 };
 
 const ensureFutureFollowUp = (date?: Date | null): void => {
@@ -344,9 +347,11 @@ const findDuplicateLead = async (
   phone?: string | null,
   excludeId?: string,
 ): Promise<void> => {
+  const normalizedEmail = email?.trim() || null;
+  const normalizedPhone = phone?.trim() || null;
   const filters = [];
-  if (email) filters.push({ email });
-  if (phone) filters.push({ phone });
+  if (normalizedEmail) filters.push({ email: normalizedEmail });
+  if (normalizedPhone) filters.push({ phone: normalizedPhone });
   if (filters.length === 0) return;
 
   const duplicate = await (prisma as any).lead.findFirst({
@@ -356,11 +361,24 @@ const findDuplicateLead = async (
       OR: filters,
       ...(excludeId ? { id: { not: excludeId } } : {}),
     },
-    select: { id: true, name: true },
+    select: { id: true, name: true, email: true, phone: true },
   });
 
   if (duplicate) {
-    throw createServiceError('A lead with the same email or phone already exists in this workspace.', 409);
+    const conflicts: string[] = [];
+    if (normalizedEmail && duplicate.email?.trim().toLowerCase() === normalizedEmail.toLowerCase()) {
+      conflicts.push(`email "${normalizedEmail}"`);
+    }
+    if (normalizedPhone && duplicate.phone?.trim() === normalizedPhone) {
+      conflicts.push(`phone "${normalizedPhone}"`);
+    }
+
+    const duplicateLabel = duplicate.name?.trim() || 'another lead';
+    const conflictSummary = conflicts.length > 0 ? conflicts.join(' and ') : 'the same email or phone';
+    throw createServiceError(
+      `A lead already exists with ${conflictSummary}. Please review "${duplicateLabel}" or use different contact details.`,
+      409,
+    );
   }
 };
 
@@ -451,7 +469,7 @@ export const createLead = async (
   const source = await resolveSource(input.sourceId);
   ensureLOBPayload(stage, input.reasonId, input.remarks ?? null);
 
-  const created = await prisma.$transaction(async (tx) => {
+  const createdLeadId = await prisma.$transaction(async (tx) => {
     const lead = await (tx as any).lead.create({
       data: {
         name: input.name.trim(),
@@ -494,10 +512,11 @@ export const createLead = async (
       });
     }
 
-    return getLeadScoped(workspaceId, lead.id);
+    return lead.id;
   });
 
   await clearLeadCache(workspaceId);
+  const created = await getLeadScoped(workspaceId, createdLeadId);
   return mapLeadRecord(created);
 };
 
@@ -595,7 +614,7 @@ export const updateLead = async (
   const reasonId = input.reasonId === null ? null : input.reasonId ?? null;
   ensureLOBPayload(stage, reasonId, remarks);
 
-  const updated = await prisma.$transaction(async (tx) => {
+  const updatedLeadId = await prisma.$transaction(async (tx) => {
     await (tx as any).lead.update({
       where: { id },
       data: {
@@ -639,10 +658,11 @@ export const updateLead = async (
       });
     }
 
-    return getLeadScoped(workspaceId, id);
+    return id;
   });
 
   await clearLeadCache(workspaceId);
+  const updated = await getLeadScoped(workspaceId, updatedLeadId);
   return mapLeadRecord(updated);
 };
 
@@ -672,7 +692,26 @@ export const assignLead = async (
 
 export const deleteLead = async (workspaceId: string, id: string): Promise<void> => {
   await assertModuleReady();
-  await getLeadScoped(workspaceId, id);
+
+  const lead = await (prisma as any).lead.findFirst({
+    where: {
+      id,
+      workspaceId,
+    },
+    select: {
+      id: true,
+      deletedAt: true,
+    },
+  });
+
+  if (!lead) {
+    throw createServiceError('Lead not found in this workspace.', 404);
+  }
+
+  if (lead.deletedAt) {
+    await clearLeadCache(workspaceId);
+    return;
+  }
 
   await (prisma as any).lead.update({
     where: { id },

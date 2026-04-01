@@ -10,6 +10,9 @@
     "start": "node dist/server.js",
     "prisma:seed": "ts-node --transpile-only src/scripts/seedPermissions.ts",
     "prisma:generate": "node ./node_modules/prisma/build/index.js generate",
+    "prisma:push": "node ./node_modules/prisma/build/index.js db push",
+    "prisma:migrate:deploy": "node ./node_modules/prisma/build/index.js migrate deploy",
+    "prisma:migrate:dev": "node ./node_modules/prisma/build/index.js migrate dev",
     "db:fix:stage-rules": "ts-node --transpile-only src/scripts/fix_stage_rules_schema.ts"
   },
   "keywords": [],
