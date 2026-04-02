@@ -116,6 +116,12 @@ enum StageStatus {
   INACTIVE
 }
 
+enum LeadClosureType {
+  WON
+  LOST
+  CANCELLED
+}
+
 enum InputType {
   TEXT
   TEXTAREA
@@ -381,29 +387,34 @@ model LeadLifeCycle {
 }
 
 model Lead {
-  id              String    @id @default(cuid())
-  name            String
-  email           String?
-  phone           String?
-  expectedRevenue Float?
-  assignedToId    String?
-  stageId         String?
-  lifecycleId     String?
-  sourceId        String?
-  nextFollowUpAt  DateTime?
-  isClosed        Boolean   @default(false)
-  isLOB           Boolean   @default(false)
-  workspaceId     String
-  createdById     String
-  deletedAt       DateTime?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  id               String           @id @default(cuid())
+  name             String
+  email            String?
+  phone            String?
+  expectedRevenue  Float?
+  generatedRevenue Float            @default(0)
+  assignedToId     String?
+  stageId          String?
+  lifecycleId      String?
+  sourceId         String?
+  nextFollowUpAt   DateTime?
+  isClosed         Boolean          @default(false)
+  isLOB            Boolean          @default(false)
+  closedAt         DateTime?
+  closedById       String?
+  closureType      LeadClosureType?
+  workspaceId      String
+  createdById      String
+  deletedAt        DateTime?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
 
   assignedTo User?          @relation("LeadAssignedTo", fields: [assignedToId], references: [id], onDelete: SetNull)
   stage      LeadStage?     @relation(fields: [stageId], references: [id], onDelete: SetNull)
   lifecycle  LeadLifeCycle? @relation(fields: [lifecycleId], references: [id], onDelete: SetNull)
   source     LeadSource?    @relation(fields: [sourceId], references: [id], onDelete: SetNull)
   createdBy  User           @relation("LeadCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  closedBy   User?          @relation("LeadClosedBy", fields: [closedById], references: [id], onDelete: SetNull)
   workspace  Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   followUps  FollowUp[]
   lobLogs    LeadLOBLog[]
@@ -412,6 +423,10 @@ model Lead {
   @@index([workspaceId, sourceId, createdAt])
   @@index([workspaceId, deletedAt])
   @@index([workspaceId, isLOB, isClosed])
+  @@index([isClosed])
+  @@index([workspaceId, isClosed])
+  @@index([closureType])
+  @@index([closedAt(sort: Desc)])
   @@index([nextFollowUpAt])
   @@map("leads")
 }
@@ -615,6 +630,7 @@ model User {
   followUps     FollowUp[]
   createdLeads  Lead[]        @relation("LeadCreatedBy")
   assignedLeads Lead[]        @relation("LeadAssignedTo")
+  closedLeads   Lead[]        @relation("LeadClosedBy")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

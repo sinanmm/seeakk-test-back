@@ -116,6 +116,12 @@ enum StageStatus {
   INACTIVE
 }
 
+enum LeadClosureType {
+  WON
+  LOST
+  CANCELLED
+}
+
 enum InputType {
   TEXT
   TEXTAREA
@@ -165,6 +171,7 @@ model Department {
   @@index([name])
   @@index([status])
   @@index([createdAt])
+  @@index([workspaceId, deletedAt, status, createdAt(sort: Desc)])
   @@map("departments")
 }
 
@@ -377,6 +384,7 @@ model LeadLifeCycle {
 
   @@unique([name, workspaceId])
   @@index([workspaceId])
+  @@index([workspaceId, isDefault, name])
   @@map("lead_life_cycles")
 }
 
@@ -386,6 +394,7 @@ model Lead {
   email           String?
   phone           String?
   expectedRevenue Float?
+  generatedRevenue Float        @default(0)
   assignedToId    String?
   stageId         String?
   lifecycleId     String?
@@ -393,6 +402,9 @@ model Lead {
   nextFollowUpAt  DateTime?
   isClosed        Boolean       @default(false)
   isLOB           Boolean       @default(false)
+  closedAt        DateTime?
+  closedById      String?
+  closureType     LeadClosureType?
   workspaceId     String
   createdById     String
   deletedAt       DateTime?
@@ -404,6 +416,7 @@ model Lead {
   lifecycle       LeadLifeCycle? @relation(fields: [lifecycleId], references: [id], onDelete: SetNull)
   source          LeadSource?   @relation(fields: [sourceId], references: [id], onDelete: SetNull)
   createdBy       User          @relation("LeadCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  closedBy        User?         @relation("LeadClosedBy", fields: [closedById], references: [id], onDelete: SetNull)
   workspace       Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   followUps       FollowUp[]
   lobLogs         LeadLOBLog[]
@@ -412,6 +425,10 @@ model Lead {
   @@index([workspaceId, sourceId, createdAt])
   @@index([workspaceId, deletedAt])
   @@index([workspaceId, isLOB, isClosed])
+  @@index([isClosed])
+  @@index([workspaceId, isClosed])
+  @@index([closureType])
+  @@index([closedAt(sort: Desc)])
   @@index([nextFollowUpAt])
   @@map("leads")
 }
@@ -473,6 +490,7 @@ model LeadDynamicField {
 
   @@unique([name, workspaceId])
   @@index([workspaceId, sortOrder])
+  @@index([workspaceId, isActive, inputType, sortOrder])
   @@map("lead_dynamic_fields")
 }
 
@@ -615,6 +633,7 @@ model User {
   followUps                FollowUp[]
   createdLeads             Lead[]       @relation("LeadCreatedBy")
   assignedLeads            Lead[]       @relation("LeadAssignedTo")
+  closedLeads              Lead[]       @relation("LeadClosedBy")
 
   createdAt                DateTime    @default(now())
   updatedAt                DateTime    @updatedAt
@@ -624,6 +643,9 @@ model User {
   @@index([departmentId])
   @@index([officeId])
   @@index([supervisorId])
+  @@index([workspaceId, deletedAt, createdAt(sort: Desc)])
+  @@index([workspaceId, roleId, deletedAt])
+  @@index([workspaceId, supervisorId, deletedAt])
   @@map("users")
 }
 
@@ -650,6 +672,7 @@ model FollowUp {
   @@index([workspaceId, userId, scheduledAt])
   @@index([workspaceId, status, scheduledAt])
   @@index([leadId])
+  @@index([workspaceId, userId, status, scheduledAt(sort: Desc)])
   @@map("follow_ups")
 }
 
@@ -706,6 +729,9 @@ model AuditLog {
   @@index([userId])
   @@index([workspaceId])
   @@index([action])
+  @@index([workspaceId, createdAt(sort: Desc)])
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([workspaceId, action, createdAt(sort: Desc)])
   @@map("audit_logs")
 }
 

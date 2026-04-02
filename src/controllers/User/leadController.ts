@@ -21,6 +21,12 @@ import {
   updateLeadSchema,
 } from '../../validations/leadValidation';
 
+const normalizeStageKey = (value?: string | null): string =>
+  (value || '')
+    .toLowerCase()
+    .trim()
+    .replace(/[\s_-]+/g, '');
+
 const requireWorkspace = (req: Request, res: Response): string | null => {
   const workspaceId = req.user?.workspaceId ?? null;
   if (!workspaceId) {
@@ -203,16 +209,24 @@ export const changeStage = async (req: Request, res: Response, next: NextFunctio
 
   try {
     const lead = await leadService.changeStage(workspaceId, getActor(req), params.id, input);
+    const isClosureStage = Boolean(lead.stage?.isClosed || normalizeStageKey(lead.stage?.name) === 'closure');
+    const action = lead.isLOB
+      ? 'LEAD_LOB_APPLIED'
+      : lead.isClosed && isClosureStage
+        ? 'LEAD_CLOSED'
+        : 'LEAD_STAGE_CHANGED';
 
     await auditService.log({
       userId: req.user?.id,
       workspaceId,
-      action: lead.isLOB ? 'LEAD_LOB_APPLIED' : 'LEAD_STAGE_CHANGED',
+      action,
       entityType: 'Lead',
       entityId: lead.id,
       details: {
         stageId: lead.stageId,
         isLOB: lead.isLOB,
+        isClosed: lead.isClosed,
+        generatedRevenue: (lead as any).generatedRevenue,
         reasonId: input.reasonId,
         remarks: input.remarks,
       },

@@ -231,6 +231,15 @@ export const LocationType: {
 export type LocationType = (typeof LocationType)[keyof typeof LocationType]
 
 
+export const LeadClosureType: {
+  WON: 'WON',
+  LOST: 'LOST',
+  CANCELLED: 'CANCELLED'
+};
+
+export type LeadClosureType = (typeof LeadClosureType)[keyof typeof LeadClosureType]
+
+
 export const TargetSettingCycle: {
   MONTHLY: 'MONTHLY',
   QUARTERLY: 'QUARTERLY',
@@ -303,6 +312,10 @@ export const RuleStatus: typeof $Enums.RuleStatus
 export type LocationType = $Enums.LocationType
 
 export const LocationType: typeof $Enums.LocationType
+
+export type LeadClosureType = $Enums.LeadClosureType
+
+export const LeadClosureType: typeof $Enums.LeadClosureType
 
 export type TargetSettingCycle = $Enums.TargetSettingCycle
 
@@ -4080,6 +4093,7 @@ export namespace Prisma {
     followUps: number
     createdLeads: number
     assignedLeads: number
+    closedLeads: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -4093,6 +4107,7 @@ export namespace Prisma {
     followUps?: boolean | UserCountOutputTypeCountFollowUpsArgs
     createdLeads?: boolean | UserCountOutputTypeCountCreatedLeadsArgs
     assignedLeads?: boolean | UserCountOutputTypeCountAssignedLeadsArgs
+    closedLeads?: boolean | UserCountOutputTypeCountClosedLeadsArgs
   }
 
   // Custom InputTypes
@@ -4173,6 +4188,13 @@ export namespace Prisma {
    * UserCountOutputType without action
    */
   export type UserCountOutputTypeCountAssignedLeadsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LeadWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountClosedLeadsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: LeadWhereInput
   }
 
@@ -20413,10 +20435,12 @@ export namespace Prisma {
 
   export type LeadAvgAggregateOutputType = {
     expectedRevenue: number | null
+    generatedRevenue: number | null
   }
 
   export type LeadSumAggregateOutputType = {
     expectedRevenue: number | null
+    generatedRevenue: number | null
   }
 
   export type LeadMinAggregateOutputType = {
@@ -20425,6 +20449,7 @@ export namespace Prisma {
     email: string | null
     phone: string | null
     expectedRevenue: number | null
+    generatedRevenue: number | null
     assignedToId: string | null
     stageId: string | null
     lifecycleId: string | null
@@ -20432,6 +20457,9 @@ export namespace Prisma {
     nextFollowUpAt: Date | null
     isClosed: boolean | null
     isLOB: boolean | null
+    closedAt: Date | null
+    closedById: string | null
+    closureType: $Enums.LeadClosureType | null
     workspaceId: string | null
     createdById: string | null
     deletedAt: Date | null
@@ -20445,6 +20473,7 @@ export namespace Prisma {
     email: string | null
     phone: string | null
     expectedRevenue: number | null
+    generatedRevenue: number | null
     assignedToId: string | null
     stageId: string | null
     lifecycleId: string | null
@@ -20452,6 +20481,9 @@ export namespace Prisma {
     nextFollowUpAt: Date | null
     isClosed: boolean | null
     isLOB: boolean | null
+    closedAt: Date | null
+    closedById: string | null
+    closureType: $Enums.LeadClosureType | null
     workspaceId: string | null
     createdById: string | null
     deletedAt: Date | null
@@ -20465,6 +20497,7 @@ export namespace Prisma {
     email: number
     phone: number
     expectedRevenue: number
+    generatedRevenue: number
     assignedToId: number
     stageId: number
     lifecycleId: number
@@ -20472,6 +20505,9 @@ export namespace Prisma {
     nextFollowUpAt: number
     isClosed: number
     isLOB: number
+    closedAt: number
+    closedById: number
+    closureType: number
     workspaceId: number
     createdById: number
     deletedAt: number
@@ -20483,10 +20519,12 @@ export namespace Prisma {
 
   export type LeadAvgAggregateInputType = {
     expectedRevenue?: true
+    generatedRevenue?: true
   }
 
   export type LeadSumAggregateInputType = {
     expectedRevenue?: true
+    generatedRevenue?: true
   }
 
   export type LeadMinAggregateInputType = {
@@ -20495,6 +20533,7 @@ export namespace Prisma {
     email?: true
     phone?: true
     expectedRevenue?: true
+    generatedRevenue?: true
     assignedToId?: true
     stageId?: true
     lifecycleId?: true
@@ -20502,6 +20541,9 @@ export namespace Prisma {
     nextFollowUpAt?: true
     isClosed?: true
     isLOB?: true
+    closedAt?: true
+    closedById?: true
+    closureType?: true
     workspaceId?: true
     createdById?: true
     deletedAt?: true
@@ -20515,6 +20557,7 @@ export namespace Prisma {
     email?: true
     phone?: true
     expectedRevenue?: true
+    generatedRevenue?: true
     assignedToId?: true
     stageId?: true
     lifecycleId?: true
@@ -20522,6 +20565,9 @@ export namespace Prisma {
     nextFollowUpAt?: true
     isClosed?: true
     isLOB?: true
+    closedAt?: true
+    closedById?: true
+    closureType?: true
     workspaceId?: true
     createdById?: true
     deletedAt?: true
@@ -20535,6 +20581,7 @@ export namespace Prisma {
     email?: true
     phone?: true
     expectedRevenue?: true
+    generatedRevenue?: true
     assignedToId?: true
     stageId?: true
     lifecycleId?: true
@@ -20542,6 +20589,9 @@ export namespace Prisma {
     nextFollowUpAt?: true
     isClosed?: true
     isLOB?: true
+    closedAt?: true
+    closedById?: true
+    closureType?: true
     workspaceId?: true
     createdById?: true
     deletedAt?: true
@@ -20642,6 +20692,7 @@ export namespace Prisma {
     email: string | null
     phone: string | null
     expectedRevenue: number | null
+    generatedRevenue: number
     assignedToId: string | null
     stageId: string | null
     lifecycleId: string | null
@@ -20649,6 +20700,9 @@ export namespace Prisma {
     nextFollowUpAt: Date | null
     isClosed: boolean
     isLOB: boolean
+    closedAt: Date | null
+    closedById: string | null
+    closureType: $Enums.LeadClosureType | null
     workspaceId: string
     createdById: string
     deletedAt: Date | null
@@ -20681,6 +20735,7 @@ export namespace Prisma {
     email?: boolean
     phone?: boolean
     expectedRevenue?: boolean
+    generatedRevenue?: boolean
     assignedToId?: boolean
     stageId?: boolean
     lifecycleId?: boolean
@@ -20688,6 +20743,9 @@ export namespace Prisma {
     nextFollowUpAt?: boolean
     isClosed?: boolean
     isLOB?: boolean
+    closedAt?: boolean
+    closedById?: boolean
+    closureType?: boolean
     workspaceId?: boolean
     createdById?: boolean
     deletedAt?: boolean
@@ -20698,6 +20756,7 @@ export namespace Prisma {
     lifecycle?: boolean | Lead$lifecycleArgs<ExtArgs>
     source?: boolean | Lead$sourceArgs<ExtArgs>
     createdBy?: boolean | UserDefaultArgs<ExtArgs>
+    closedBy?: boolean | Lead$closedByArgs<ExtArgs>
     workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
     followUps?: boolean | Lead$followUpsArgs<ExtArgs>
     lobLogs?: boolean | Lead$lobLogsArgs<ExtArgs>
@@ -20710,6 +20769,7 @@ export namespace Prisma {
     email?: boolean
     phone?: boolean
     expectedRevenue?: boolean
+    generatedRevenue?: boolean
     assignedToId?: boolean
     stageId?: boolean
     lifecycleId?: boolean
@@ -20717,6 +20777,9 @@ export namespace Prisma {
     nextFollowUpAt?: boolean
     isClosed?: boolean
     isLOB?: boolean
+    closedAt?: boolean
+    closedById?: boolean
+    closureType?: boolean
     workspaceId?: boolean
     createdById?: boolean
     deletedAt?: boolean
@@ -20727,6 +20790,7 @@ export namespace Prisma {
     lifecycle?: boolean | Lead$lifecycleArgs<ExtArgs>
     source?: boolean | Lead$sourceArgs<ExtArgs>
     createdBy?: boolean | UserDefaultArgs<ExtArgs>
+    closedBy?: boolean | Lead$closedByArgs<ExtArgs>
     workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["lead"]>
 
@@ -20736,6 +20800,7 @@ export namespace Prisma {
     email?: boolean
     phone?: boolean
     expectedRevenue?: boolean
+    generatedRevenue?: boolean
     assignedToId?: boolean
     stageId?: boolean
     lifecycleId?: boolean
@@ -20743,6 +20808,9 @@ export namespace Prisma {
     nextFollowUpAt?: boolean
     isClosed?: boolean
     isLOB?: boolean
+    closedAt?: boolean
+    closedById?: boolean
+    closureType?: boolean
     workspaceId?: boolean
     createdById?: boolean
     deletedAt?: boolean
@@ -20756,6 +20824,7 @@ export namespace Prisma {
     lifecycle?: boolean | Lead$lifecycleArgs<ExtArgs>
     source?: boolean | Lead$sourceArgs<ExtArgs>
     createdBy?: boolean | UserDefaultArgs<ExtArgs>
+    closedBy?: boolean | Lead$closedByArgs<ExtArgs>
     workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
     followUps?: boolean | Lead$followUpsArgs<ExtArgs>
     lobLogs?: boolean | Lead$lobLogsArgs<ExtArgs>
@@ -20767,6 +20836,7 @@ export namespace Prisma {
     lifecycle?: boolean | Lead$lifecycleArgs<ExtArgs>
     source?: boolean | Lead$sourceArgs<ExtArgs>
     createdBy?: boolean | UserDefaultArgs<ExtArgs>
+    closedBy?: boolean | Lead$closedByArgs<ExtArgs>
     workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
   }
 
@@ -20778,6 +20848,7 @@ export namespace Prisma {
       lifecycle: Prisma.$LeadLifeCyclePayload<ExtArgs> | null
       source: Prisma.$LeadSourcePayload<ExtArgs> | null
       createdBy: Prisma.$UserPayload<ExtArgs>
+      closedBy: Prisma.$UserPayload<ExtArgs> | null
       workspace: Prisma.$WorkspacePayload<ExtArgs>
       followUps: Prisma.$FollowUpPayload<ExtArgs>[]
       lobLogs: Prisma.$LeadLOBLogPayload<ExtArgs>[]
@@ -20788,6 +20859,7 @@ export namespace Prisma {
       email: string | null
       phone: string | null
       expectedRevenue: number | null
+      generatedRevenue: number
       assignedToId: string | null
       stageId: string | null
       lifecycleId: string | null
@@ -20795,6 +20867,9 @@ export namespace Prisma {
       nextFollowUpAt: Date | null
       isClosed: boolean
       isLOB: boolean
+      closedAt: Date | null
+      closedById: string | null
+      closureType: $Enums.LeadClosureType | null
       workspaceId: string
       createdById: string
       deletedAt: Date | null
@@ -21169,6 +21244,7 @@ export namespace Prisma {
     lifecycle<T extends Lead$lifecycleArgs<ExtArgs> = {}>(args?: Subset<T, Lead$lifecycleArgs<ExtArgs>>): Prisma__LeadLifeCycleClient<$Result.GetResult<Prisma.$LeadLifeCyclePayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     source<T extends Lead$sourceArgs<ExtArgs> = {}>(args?: Subset<T, Lead$sourceArgs<ExtArgs>>): Prisma__LeadSourceClient<$Result.GetResult<Prisma.$LeadSourcePayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     createdBy<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    closedBy<T extends Lead$closedByArgs<ExtArgs> = {}>(args?: Subset<T, Lead$closedByArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     workspace<T extends WorkspaceDefaultArgs<ExtArgs> = {}>(args?: Subset<T, WorkspaceDefaultArgs<ExtArgs>>): Prisma__WorkspaceClient<$Result.GetResult<Prisma.$WorkspacePayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
     followUps<T extends Lead$followUpsArgs<ExtArgs> = {}>(args?: Subset<T, Lead$followUpsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FollowUpPayload<ExtArgs>, T, "findMany"> | Null>
     lobLogs<T extends Lead$lobLogsArgs<ExtArgs> = {}>(args?: Subset<T, Lead$lobLogsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadLOBLogPayload<ExtArgs>, T, "findMany"> | Null>
@@ -21206,6 +21282,7 @@ export namespace Prisma {
     readonly email: FieldRef<"Lead", 'String'>
     readonly phone: FieldRef<"Lead", 'String'>
     readonly expectedRevenue: FieldRef<"Lead", 'Float'>
+    readonly generatedRevenue: FieldRef<"Lead", 'Float'>
     readonly assignedToId: FieldRef<"Lead", 'String'>
     readonly stageId: FieldRef<"Lead", 'String'>
     readonly lifecycleId: FieldRef<"Lead", 'String'>
@@ -21213,6 +21290,9 @@ export namespace Prisma {
     readonly nextFollowUpAt: FieldRef<"Lead", 'DateTime'>
     readonly isClosed: FieldRef<"Lead", 'Boolean'>
     readonly isLOB: FieldRef<"Lead", 'Boolean'>
+    readonly closedAt: FieldRef<"Lead", 'DateTime'>
+    readonly closedById: FieldRef<"Lead", 'String'>
+    readonly closureType: FieldRef<"Lead", 'LeadClosureType'>
     readonly workspaceId: FieldRef<"Lead", 'String'>
     readonly createdById: FieldRef<"Lead", 'String'>
     readonly deletedAt: FieldRef<"Lead", 'DateTime'>
@@ -21593,6 +21673,21 @@ export namespace Prisma {
      */
     include?: LeadSourceInclude<ExtArgs> | null
     where?: LeadSourceWhereInput
+  }
+
+  /**
+   * Lead.closedBy
+   */
+  export type Lead$closedByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
   }
 
   /**
@@ -29055,6 +29150,7 @@ export namespace Prisma {
     followUps?: boolean | User$followUpsArgs<ExtArgs>
     createdLeads?: boolean | User$createdLeadsArgs<ExtArgs>
     assignedLeads?: boolean | User$assignedLeadsArgs<ExtArgs>
+    closedLeads?: boolean | User$closedLeadsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -29144,6 +29240,7 @@ export namespace Prisma {
     followUps?: boolean | User$followUpsArgs<ExtArgs>
     createdLeads?: boolean | User$createdLeadsArgs<ExtArgs>
     assignedLeads?: boolean | User$assignedLeadsArgs<ExtArgs>
+    closedLeads?: boolean | User$closedLeadsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -29179,6 +29276,7 @@ export namespace Prisma {
       followUps: Prisma.$FollowUpPayload<ExtArgs>[]
       createdLeads: Prisma.$LeadPayload<ExtArgs>[]
       assignedLeads: Prisma.$LeadPayload<ExtArgs>[]
+      closedLeads: Prisma.$LeadPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -29590,6 +29688,7 @@ export namespace Prisma {
     followUps<T extends User$followUpsArgs<ExtArgs> = {}>(args?: Subset<T, User$followUpsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FollowUpPayload<ExtArgs>, T, "findMany"> | Null>
     createdLeads<T extends User$createdLeadsArgs<ExtArgs> = {}>(args?: Subset<T, User$createdLeadsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadPayload<ExtArgs>, T, "findMany"> | Null>
     assignedLeads<T extends User$assignedLeadsArgs<ExtArgs> = {}>(args?: Subset<T, User$assignedLeadsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadPayload<ExtArgs>, T, "findMany"> | Null>
+    closedLeads<T extends User$closedLeadsArgs<ExtArgs> = {}>(args?: Subset<T, User$closedLeadsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -30281,6 +30380,26 @@ export namespace Prisma {
    * User.assignedLeads
    */
   export type User$assignedLeadsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Lead
+     */
+    select?: LeadSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadInclude<ExtArgs> | null
+    where?: LeadWhereInput
+    orderBy?: LeadOrderByWithRelationInput | LeadOrderByWithRelationInput[]
+    cursor?: LeadWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: LeadScalarFieldEnum | LeadScalarFieldEnum[]
+  }
+
+  /**
+   * User.closedLeads
+   */
+  export type User$closedLeadsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the Lead
      */
@@ -35546,6 +35665,7 @@ export namespace Prisma {
     email: 'email',
     phone: 'phone',
     expectedRevenue: 'expectedRevenue',
+    generatedRevenue: 'generatedRevenue',
     assignedToId: 'assignedToId',
     stageId: 'stageId',
     lifecycleId: 'lifecycleId',
@@ -35553,6 +35673,9 @@ export namespace Prisma {
     nextFollowUpAt: 'nextFollowUpAt',
     isClosed: 'isClosed',
     isLOB: 'isLOB',
+    closedAt: 'closedAt',
+    closedById: 'closedById',
+    closureType: 'closureType',
     workspaceId: 'workspaceId',
     createdById: 'createdById',
     deletedAt: 'deletedAt',
@@ -35977,6 +36100,20 @@ export namespace Prisma {
    * Reference to a field of type 'Float[]'
    */
   export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'LeadClosureType'
+   */
+  export type EnumLeadClosureTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LeadClosureType'>
+    
+
+
+  /**
+   * Reference to a field of type 'LeadClosureType[]'
+   */
+  export type ListEnumLeadClosureTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LeadClosureType[]'>
     
 
 
@@ -37235,6 +37372,7 @@ export namespace Prisma {
     email?: StringNullableFilter<"Lead"> | string | null
     phone?: StringNullableFilter<"Lead"> | string | null
     expectedRevenue?: FloatNullableFilter<"Lead"> | number | null
+    generatedRevenue?: FloatFilter<"Lead"> | number
     assignedToId?: StringNullableFilter<"Lead"> | string | null
     stageId?: StringNullableFilter<"Lead"> | string | null
     lifecycleId?: StringNullableFilter<"Lead"> | string | null
@@ -37242,6 +37380,9 @@ export namespace Prisma {
     nextFollowUpAt?: DateTimeNullableFilter<"Lead"> | Date | string | null
     isClosed?: BoolFilter<"Lead"> | boolean
     isLOB?: BoolFilter<"Lead"> | boolean
+    closedAt?: DateTimeNullableFilter<"Lead"> | Date | string | null
+    closedById?: StringNullableFilter<"Lead"> | string | null
+    closureType?: EnumLeadClosureTypeNullableFilter<"Lead"> | $Enums.LeadClosureType | null
     workspaceId?: StringFilter<"Lead"> | string
     createdById?: StringFilter<"Lead"> | string
     deletedAt?: DateTimeNullableFilter<"Lead"> | Date | string | null
@@ -37252,6 +37393,7 @@ export namespace Prisma {
     lifecycle?: XOR<LeadLifeCycleNullableRelationFilter, LeadLifeCycleWhereInput> | null
     source?: XOR<LeadSourceNullableRelationFilter, LeadSourceWhereInput> | null
     createdBy?: XOR<UserRelationFilter, UserWhereInput>
+    closedBy?: XOR<UserNullableRelationFilter, UserWhereInput> | null
     workspace?: XOR<WorkspaceRelationFilter, WorkspaceWhereInput>
     followUps?: FollowUpListRelationFilter
     lobLogs?: LeadLOBLogListRelationFilter
@@ -37263,6 +37405,7 @@ export namespace Prisma {
     email?: SortOrderInput | SortOrder
     phone?: SortOrderInput | SortOrder
     expectedRevenue?: SortOrderInput | SortOrder
+    generatedRevenue?: SortOrder
     assignedToId?: SortOrderInput | SortOrder
     stageId?: SortOrderInput | SortOrder
     lifecycleId?: SortOrderInput | SortOrder
@@ -37270,6 +37413,9 @@ export namespace Prisma {
     nextFollowUpAt?: SortOrderInput | SortOrder
     isClosed?: SortOrder
     isLOB?: SortOrder
+    closedAt?: SortOrderInput | SortOrder
+    closedById?: SortOrderInput | SortOrder
+    closureType?: SortOrderInput | SortOrder
     workspaceId?: SortOrder
     createdById?: SortOrder
     deletedAt?: SortOrderInput | SortOrder
@@ -37280,6 +37426,7 @@ export namespace Prisma {
     lifecycle?: LeadLifeCycleOrderByWithRelationInput
     source?: LeadSourceOrderByWithRelationInput
     createdBy?: UserOrderByWithRelationInput
+    closedBy?: UserOrderByWithRelationInput
     workspace?: WorkspaceOrderByWithRelationInput
     followUps?: FollowUpOrderByRelationAggregateInput
     lobLogs?: LeadLOBLogOrderByRelationAggregateInput
@@ -37294,6 +37441,7 @@ export namespace Prisma {
     email?: StringNullableFilter<"Lead"> | string | null
     phone?: StringNullableFilter<"Lead"> | string | null
     expectedRevenue?: FloatNullableFilter<"Lead"> | number | null
+    generatedRevenue?: FloatFilter<"Lead"> | number
     assignedToId?: StringNullableFilter<"Lead"> | string | null
     stageId?: StringNullableFilter<"Lead"> | string | null
     lifecycleId?: StringNullableFilter<"Lead"> | string | null
@@ -37301,6 +37449,9 @@ export namespace Prisma {
     nextFollowUpAt?: DateTimeNullableFilter<"Lead"> | Date | string | null
     isClosed?: BoolFilter<"Lead"> | boolean
     isLOB?: BoolFilter<"Lead"> | boolean
+    closedAt?: DateTimeNullableFilter<"Lead"> | Date | string | null
+    closedById?: StringNullableFilter<"Lead"> | string | null
+    closureType?: EnumLeadClosureTypeNullableFilter<"Lead"> | $Enums.LeadClosureType | null
     workspaceId?: StringFilter<"Lead"> | string
     createdById?: StringFilter<"Lead"> | string
     deletedAt?: DateTimeNullableFilter<"Lead"> | Date | string | null
@@ -37311,6 +37462,7 @@ export namespace Prisma {
     lifecycle?: XOR<LeadLifeCycleNullableRelationFilter, LeadLifeCycleWhereInput> | null
     source?: XOR<LeadSourceNullableRelationFilter, LeadSourceWhereInput> | null
     createdBy?: XOR<UserRelationFilter, UserWhereInput>
+    closedBy?: XOR<UserNullableRelationFilter, UserWhereInput> | null
     workspace?: XOR<WorkspaceRelationFilter, WorkspaceWhereInput>
     followUps?: FollowUpListRelationFilter
     lobLogs?: LeadLOBLogListRelationFilter
@@ -37322,6 +37474,7 @@ export namespace Prisma {
     email?: SortOrderInput | SortOrder
     phone?: SortOrderInput | SortOrder
     expectedRevenue?: SortOrderInput | SortOrder
+    generatedRevenue?: SortOrder
     assignedToId?: SortOrderInput | SortOrder
     stageId?: SortOrderInput | SortOrder
     lifecycleId?: SortOrderInput | SortOrder
@@ -37329,6 +37482,9 @@ export namespace Prisma {
     nextFollowUpAt?: SortOrderInput | SortOrder
     isClosed?: SortOrder
     isLOB?: SortOrder
+    closedAt?: SortOrderInput | SortOrder
+    closedById?: SortOrderInput | SortOrder
+    closureType?: SortOrderInput | SortOrder
     workspaceId?: SortOrder
     createdById?: SortOrder
     deletedAt?: SortOrderInput | SortOrder
@@ -37350,6 +37506,7 @@ export namespace Prisma {
     email?: StringNullableWithAggregatesFilter<"Lead"> | string | null
     phone?: StringNullableWithAggregatesFilter<"Lead"> | string | null
     expectedRevenue?: FloatNullableWithAggregatesFilter<"Lead"> | number | null
+    generatedRevenue?: FloatWithAggregatesFilter<"Lead"> | number
     assignedToId?: StringNullableWithAggregatesFilter<"Lead"> | string | null
     stageId?: StringNullableWithAggregatesFilter<"Lead"> | string | null
     lifecycleId?: StringNullableWithAggregatesFilter<"Lead"> | string | null
@@ -37357,6 +37514,9 @@ export namespace Prisma {
     nextFollowUpAt?: DateTimeNullableWithAggregatesFilter<"Lead"> | Date | string | null
     isClosed?: BoolWithAggregatesFilter<"Lead"> | boolean
     isLOB?: BoolWithAggregatesFilter<"Lead"> | boolean
+    closedAt?: DateTimeNullableWithAggregatesFilter<"Lead"> | Date | string | null
+    closedById?: StringNullableWithAggregatesFilter<"Lead"> | string | null
+    closureType?: EnumLeadClosureTypeNullableWithAggregatesFilter<"Lead"> | $Enums.LeadClosureType | null
     workspaceId?: StringWithAggregatesFilter<"Lead"> | string
     createdById?: StringWithAggregatesFilter<"Lead"> | string
     deletedAt?: DateTimeNullableWithAggregatesFilter<"Lead"> | Date | string | null
@@ -37931,6 +38091,7 @@ export namespace Prisma {
     followUps?: FollowUpListRelationFilter
     createdLeads?: LeadListRelationFilter
     assignedLeads?: LeadListRelationFilter
+    closedLeads?: LeadListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -37979,6 +38140,7 @@ export namespace Prisma {
     followUps?: FollowUpOrderByRelationAggregateInput
     createdLeads?: LeadOrderByRelationAggregateInput
     assignedLeads?: LeadOrderByRelationAggregateInput
+    closedLeads?: LeadOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -38030,6 +38192,7 @@ export namespace Prisma {
     followUps?: FollowUpListRelationFilter
     createdLeads?: LeadListRelationFilter
     assignedLeads?: LeadListRelationFilter
+    closedLeads?: LeadListRelationFilter
   }, "id" | "username" | "email" | "googleId">
 
   export type UserOrderByWithAggregationInput = {
@@ -39783,9 +39946,12 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     expectedRevenue?: number | null
+    generatedRevenue?: number
     nextFollowUpAt?: Date | string | null
     isClosed?: boolean
     isLOB?: boolean
+    closedAt?: Date | string | null
+    closureType?: $Enums.LeadClosureType | null
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -39794,6 +39960,7 @@ export namespace Prisma {
     lifecycle?: LeadLifeCycleCreateNestedOneWithoutLeadsInput
     source?: LeadSourceCreateNestedOneWithoutLeadsInput
     createdBy: UserCreateNestedOneWithoutCreatedLeadsInput
+    closedBy?: UserCreateNestedOneWithoutClosedLeadsInput
     workspace: WorkspaceCreateNestedOneWithoutLeadsInput
     followUps?: FollowUpCreateNestedManyWithoutLeadInput
     lobLogs?: LeadLOBLogCreateNestedManyWithoutLeadInput
@@ -39805,6 +39972,7 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     expectedRevenue?: number | null
+    generatedRevenue?: number
     assignedToId?: string | null
     stageId?: string | null
     lifecycleId?: string | null
@@ -39812,6 +39980,9 @@ export namespace Prisma {
     nextFollowUpAt?: Date | string | null
     isClosed?: boolean
     isLOB?: boolean
+    closedAt?: Date | string | null
+    closedById?: string | null
+    closureType?: $Enums.LeadClosureType | null
     workspaceId: string
     createdById: string
     deletedAt?: Date | string | null
@@ -39827,9 +39998,12 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     expectedRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
+    generatedRevenue?: FloatFieldUpdateOperationsInput | number
     nextFollowUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isClosed?: BoolFieldUpdateOperationsInput | boolean
     isLOB?: BoolFieldUpdateOperationsInput | boolean
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    closureType?: NullableEnumLeadClosureTypeFieldUpdateOperationsInput | $Enums.LeadClosureType | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -39838,6 +40012,7 @@ export namespace Prisma {
     lifecycle?: LeadLifeCycleUpdateOneWithoutLeadsNestedInput
     source?: LeadSourceUpdateOneWithoutLeadsNestedInput
     createdBy?: UserUpdateOneRequiredWithoutCreatedLeadsNestedInput
+    closedBy?: UserUpdateOneWithoutClosedLeadsNestedInput
     workspace?: WorkspaceUpdateOneRequiredWithoutLeadsNestedInput
     followUps?: FollowUpUpdateManyWithoutLeadNestedInput
     lobLogs?: LeadLOBLogUpdateManyWithoutLeadNestedInput
@@ -39849,6 +40024,7 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     expectedRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
+    generatedRevenue?: FloatFieldUpdateOperationsInput | number
     assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
     stageId?: NullableStringFieldUpdateOperationsInput | string | null
     lifecycleId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -39856,6 +40032,9 @@ export namespace Prisma {
     nextFollowUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isClosed?: BoolFieldUpdateOperationsInput | boolean
     isLOB?: BoolFieldUpdateOperationsInput | boolean
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    closedById?: NullableStringFieldUpdateOperationsInput | string | null
+    closureType?: NullableEnumLeadClosureTypeFieldUpdateOperationsInput | $Enums.LeadClosureType | null
     workspaceId?: StringFieldUpdateOperationsInput | string
     createdById?: StringFieldUpdateOperationsInput | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -39871,6 +40050,7 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     expectedRevenue?: number | null
+    generatedRevenue?: number
     assignedToId?: string | null
     stageId?: string | null
     lifecycleId?: string | null
@@ -39878,6 +40058,9 @@ export namespace Prisma {
     nextFollowUpAt?: Date | string | null
     isClosed?: boolean
     isLOB?: boolean
+    closedAt?: Date | string | null
+    closedById?: string | null
+    closureType?: $Enums.LeadClosureType | null
     workspaceId: string
     createdById: string
     deletedAt?: Date | string | null
@@ -39891,9 +40074,12 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     expectedRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
+    generatedRevenue?: FloatFieldUpdateOperationsInput | number
     nextFollowUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isClosed?: BoolFieldUpdateOperationsInput | boolean
     isLOB?: BoolFieldUpdateOperationsInput | boolean
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    closureType?: NullableEnumLeadClosureTypeFieldUpdateOperationsInput | $Enums.LeadClosureType | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -39905,6 +40091,7 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     expectedRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
+    generatedRevenue?: FloatFieldUpdateOperationsInput | number
     assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
     stageId?: NullableStringFieldUpdateOperationsInput | string | null
     lifecycleId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -39912,6 +40099,9 @@ export namespace Prisma {
     nextFollowUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isClosed?: BoolFieldUpdateOperationsInput | boolean
     isLOB?: BoolFieldUpdateOperationsInput | boolean
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    closedById?: NullableStringFieldUpdateOperationsInput | string | null
+    closureType?: NullableEnumLeadClosureTypeFieldUpdateOperationsInput | $Enums.LeadClosureType | null
     workspaceId?: StringFieldUpdateOperationsInput | string
     createdById?: StringFieldUpdateOperationsInput | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -40502,6 +40692,7 @@ export namespace Prisma {
     followUps?: FollowUpCreateNestedManyWithoutUserInput
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadCreateNestedManyWithoutClosedByInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -40542,6 +40733,7 @@ export namespace Prisma {
     followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
   }
 
   export type UserUpdateInput = {
@@ -40582,6 +40774,7 @@ export namespace Prisma {
     followUps?: FollowUpUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -40622,6 +40815,7 @@ export namespace Prisma {
     followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -42212,6 +42406,24 @@ export namespace Prisma {
     not?: NestedFloatNullableFilter<$PrismaModel> | number | null
   }
 
+  export type FloatFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatFilter<$PrismaModel> | number
+  }
+
+  export type EnumLeadClosureTypeNullableFilter<$PrismaModel = never> = {
+    equals?: $Enums.LeadClosureType | EnumLeadClosureTypeFieldRefInput<$PrismaModel> | null
+    in?: $Enums.LeadClosureType[] | ListEnumLeadClosureTypeFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.LeadClosureType[] | ListEnumLeadClosureTypeFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumLeadClosureTypeNullableFilter<$PrismaModel> | $Enums.LeadClosureType | null
+  }
+
   export type UserNullableRelationFilter = {
     is?: UserWhereInput | null
     isNot?: UserWhereInput | null
@@ -42253,6 +42465,7 @@ export namespace Prisma {
     email?: SortOrder
     phone?: SortOrder
     expectedRevenue?: SortOrder
+    generatedRevenue?: SortOrder
     assignedToId?: SortOrder
     stageId?: SortOrder
     lifecycleId?: SortOrder
@@ -42260,6 +42473,9 @@ export namespace Prisma {
     nextFollowUpAt?: SortOrder
     isClosed?: SortOrder
     isLOB?: SortOrder
+    closedAt?: SortOrder
+    closedById?: SortOrder
+    closureType?: SortOrder
     workspaceId?: SortOrder
     createdById?: SortOrder
     deletedAt?: SortOrder
@@ -42269,6 +42485,7 @@ export namespace Prisma {
 
   export type LeadAvgOrderByAggregateInput = {
     expectedRevenue?: SortOrder
+    generatedRevenue?: SortOrder
   }
 
   export type LeadMaxOrderByAggregateInput = {
@@ -42277,6 +42494,7 @@ export namespace Prisma {
     email?: SortOrder
     phone?: SortOrder
     expectedRevenue?: SortOrder
+    generatedRevenue?: SortOrder
     assignedToId?: SortOrder
     stageId?: SortOrder
     lifecycleId?: SortOrder
@@ -42284,6 +42502,9 @@ export namespace Prisma {
     nextFollowUpAt?: SortOrder
     isClosed?: SortOrder
     isLOB?: SortOrder
+    closedAt?: SortOrder
+    closedById?: SortOrder
+    closureType?: SortOrder
     workspaceId?: SortOrder
     createdById?: SortOrder
     deletedAt?: SortOrder
@@ -42297,6 +42518,7 @@ export namespace Prisma {
     email?: SortOrder
     phone?: SortOrder
     expectedRevenue?: SortOrder
+    generatedRevenue?: SortOrder
     assignedToId?: SortOrder
     stageId?: SortOrder
     lifecycleId?: SortOrder
@@ -42304,6 +42526,9 @@ export namespace Prisma {
     nextFollowUpAt?: SortOrder
     isClosed?: SortOrder
     isLOB?: SortOrder
+    closedAt?: SortOrder
+    closedById?: SortOrder
+    closureType?: SortOrder
     workspaceId?: SortOrder
     createdById?: SortOrder
     deletedAt?: SortOrder
@@ -42313,6 +42538,7 @@ export namespace Prisma {
 
   export type LeadSumOrderByAggregateInput = {
     expectedRevenue?: SortOrder
+    generatedRevenue?: SortOrder
   }
 
   export type FloatNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -42329,6 +42555,32 @@ export namespace Prisma {
     _sum?: NestedFloatNullableFilter<$PrismaModel>
     _min?: NestedFloatNullableFilter<$PrismaModel>
     _max?: NestedFloatNullableFilter<$PrismaModel>
+  }
+
+  export type FloatWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedFloatFilter<$PrismaModel>
+    _min?: NestedFloatFilter<$PrismaModel>
+    _max?: NestedFloatFilter<$PrismaModel>
+  }
+
+  export type EnumLeadClosureTypeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.LeadClosureType | EnumLeadClosureTypeFieldRefInput<$PrismaModel> | null
+    in?: $Enums.LeadClosureType[] | ListEnumLeadClosureTypeFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.LeadClosureType[] | ListEnumLeadClosureTypeFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumLeadClosureTypeNullableWithAggregatesFilter<$PrismaModel> | $Enums.LeadClosureType | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedEnumLeadClosureTypeNullableFilter<$PrismaModel>
+    _max?: NestedEnumLeadClosureTypeNullableFilter<$PrismaModel>
   }
 
   export type LeadRelationFilter = {
@@ -42551,17 +42803,6 @@ export namespace Prisma {
     not?: NestedEnumTargetSettingCycleFilter<$PrismaModel> | $Enums.TargetSettingCycle
   }
 
-  export type FloatFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel>
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatFilter<$PrismaModel> | number
-  }
-
   export type TargetTypeRelationFilter = {
     is?: TargetTypeWhereInput
     isNot?: TargetTypeWhereInput
@@ -42640,22 +42881,6 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumTargetSettingCycleFilter<$PrismaModel>
     _max?: NestedEnumTargetSettingCycleFilter<$PrismaModel>
-  }
-
-  export type FloatWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel>
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatWithAggregatesFilter<$PrismaModel> | number
-    _count?: NestedIntFilter<$PrismaModel>
-    _avg?: NestedFloatFilter<$PrismaModel>
-    _sum?: NestedFloatFilter<$PrismaModel>
-    _min?: NestedFloatFilter<$PrismaModel>
-    _max?: NestedFloatFilter<$PrismaModel>
   }
 
   export type EnumViolationTypeFilter<$PrismaModel = never> = {
@@ -44486,6 +44711,12 @@ export namespace Prisma {
     connect?: UserWhereUniqueInput
   }
 
+  export type UserCreateNestedOneWithoutClosedLeadsInput = {
+    create?: XOR<UserCreateWithoutClosedLeadsInput, UserUncheckedCreateWithoutClosedLeadsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutClosedLeadsInput
+    connect?: UserWhereUniqueInput
+  }
+
   export type WorkspaceCreateNestedOneWithoutLeadsInput = {
     create?: XOR<WorkspaceCreateWithoutLeadsInput, WorkspaceUncheckedCreateWithoutLeadsInput>
     connectOrCreate?: WorkspaceCreateOrConnectWithoutLeadsInput
@@ -44526,6 +44757,18 @@ export namespace Prisma {
     decrement?: number
     multiply?: number
     divide?: number
+  }
+
+  export type FloatFieldUpdateOperationsInput = {
+    set?: number
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
+  export type NullableEnumLeadClosureTypeFieldUpdateOperationsInput = {
+    set?: $Enums.LeadClosureType | null
   }
 
   export type UserUpdateOneWithoutAssignedLeadsNestedInput = {
@@ -44574,6 +44817,16 @@ export namespace Prisma {
     upsert?: UserUpsertWithoutCreatedLeadsInput
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutCreatedLeadsInput, UserUpdateWithoutCreatedLeadsInput>, UserUncheckedUpdateWithoutCreatedLeadsInput>
+  }
+
+  export type UserUpdateOneWithoutClosedLeadsNestedInput = {
+    create?: XOR<UserCreateWithoutClosedLeadsInput, UserUncheckedCreateWithoutClosedLeadsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutClosedLeadsInput
+    upsert?: UserUpsertWithoutClosedLeadsInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutClosedLeadsInput, UserUpdateWithoutClosedLeadsInput>, UserUncheckedUpdateWithoutClosedLeadsInput>
   }
 
   export type WorkspaceUpdateOneRequiredWithoutLeadsNestedInput = {
@@ -44816,14 +45069,6 @@ export namespace Prisma {
     set?: $Enums.TargetSettingCycle
   }
 
-  export type FloatFieldUpdateOperationsInput = {
-    set?: number
-    increment?: number
-    decrement?: number
-    multiply?: number
-    divide?: number
-  }
-
   export type UserUpdateOneRequiredWithoutTargetSettingsNestedInput = {
     create?: XOR<UserCreateWithoutTargetSettingsInput, UserUncheckedCreateWithoutTargetSettingsInput>
     connectOrCreate?: UserCreateOrConnectWithoutTargetSettingsInput
@@ -44992,6 +45237,13 @@ export namespace Prisma {
     connect?: LeadWhereUniqueInput | LeadWhereUniqueInput[]
   }
 
+  export type LeadCreateNestedManyWithoutClosedByInput = {
+    create?: XOR<LeadCreateWithoutClosedByInput, LeadUncheckedCreateWithoutClosedByInput> | LeadCreateWithoutClosedByInput[] | LeadUncheckedCreateWithoutClosedByInput[]
+    connectOrCreate?: LeadCreateOrConnectWithoutClosedByInput | LeadCreateOrConnectWithoutClosedByInput[]
+    createMany?: LeadCreateManyClosedByInputEnvelope
+    connect?: LeadWhereUniqueInput | LeadWhereUniqueInput[]
+  }
+
   export type WorkspaceUncheckedCreateNestedOneWithoutOwnerInput = {
     create?: XOR<WorkspaceCreateWithoutOwnerInput, WorkspaceUncheckedCreateWithoutOwnerInput>
     connectOrCreate?: WorkspaceCreateOrConnectWithoutOwnerInput
@@ -45065,6 +45317,13 @@ export namespace Prisma {
     create?: XOR<LeadCreateWithoutAssignedToInput, LeadUncheckedCreateWithoutAssignedToInput> | LeadCreateWithoutAssignedToInput[] | LeadUncheckedCreateWithoutAssignedToInput[]
     connectOrCreate?: LeadCreateOrConnectWithoutAssignedToInput | LeadCreateOrConnectWithoutAssignedToInput[]
     createMany?: LeadCreateManyAssignedToInputEnvelope
+    connect?: LeadWhereUniqueInput | LeadWhereUniqueInput[]
+  }
+
+  export type LeadUncheckedCreateNestedManyWithoutClosedByInput = {
+    create?: XOR<LeadCreateWithoutClosedByInput, LeadUncheckedCreateWithoutClosedByInput> | LeadCreateWithoutClosedByInput[] | LeadUncheckedCreateWithoutClosedByInput[]
+    connectOrCreate?: LeadCreateOrConnectWithoutClosedByInput | LeadCreateOrConnectWithoutClosedByInput[]
+    createMany?: LeadCreateManyClosedByInputEnvelope
     connect?: LeadWhereUniqueInput | LeadWhereUniqueInput[]
   }
 
@@ -45298,6 +45557,20 @@ export namespace Prisma {
     deleteMany?: LeadScalarWhereInput | LeadScalarWhereInput[]
   }
 
+  export type LeadUpdateManyWithoutClosedByNestedInput = {
+    create?: XOR<LeadCreateWithoutClosedByInput, LeadUncheckedCreateWithoutClosedByInput> | LeadCreateWithoutClosedByInput[] | LeadUncheckedCreateWithoutClosedByInput[]
+    connectOrCreate?: LeadCreateOrConnectWithoutClosedByInput | LeadCreateOrConnectWithoutClosedByInput[]
+    upsert?: LeadUpsertWithWhereUniqueWithoutClosedByInput | LeadUpsertWithWhereUniqueWithoutClosedByInput[]
+    createMany?: LeadCreateManyClosedByInputEnvelope
+    set?: LeadWhereUniqueInput | LeadWhereUniqueInput[]
+    disconnect?: LeadWhereUniqueInput | LeadWhereUniqueInput[]
+    delete?: LeadWhereUniqueInput | LeadWhereUniqueInput[]
+    connect?: LeadWhereUniqueInput | LeadWhereUniqueInput[]
+    update?: LeadUpdateWithWhereUniqueWithoutClosedByInput | LeadUpdateWithWhereUniqueWithoutClosedByInput[]
+    updateMany?: LeadUpdateManyWithWhereWithoutClosedByInput | LeadUpdateManyWithWhereWithoutClosedByInput[]
+    deleteMany?: LeadScalarWhereInput | LeadScalarWhereInput[]
+  }
+
   export type WorkspaceUncheckedUpdateOneWithoutOwnerNestedInput = {
     create?: XOR<WorkspaceCreateWithoutOwnerInput, WorkspaceUncheckedCreateWithoutOwnerInput>
     connectOrCreate?: WorkspaceCreateOrConnectWithoutOwnerInput
@@ -45445,6 +45718,20 @@ export namespace Prisma {
     connect?: LeadWhereUniqueInput | LeadWhereUniqueInput[]
     update?: LeadUpdateWithWhereUniqueWithoutAssignedToInput | LeadUpdateWithWhereUniqueWithoutAssignedToInput[]
     updateMany?: LeadUpdateManyWithWhereWithoutAssignedToInput | LeadUpdateManyWithWhereWithoutAssignedToInput[]
+    deleteMany?: LeadScalarWhereInput | LeadScalarWhereInput[]
+  }
+
+  export type LeadUncheckedUpdateManyWithoutClosedByNestedInput = {
+    create?: XOR<LeadCreateWithoutClosedByInput, LeadUncheckedCreateWithoutClosedByInput> | LeadCreateWithoutClosedByInput[] | LeadUncheckedCreateWithoutClosedByInput[]
+    connectOrCreate?: LeadCreateOrConnectWithoutClosedByInput | LeadCreateOrConnectWithoutClosedByInput[]
+    upsert?: LeadUpsertWithWhereUniqueWithoutClosedByInput | LeadUpsertWithWhereUniqueWithoutClosedByInput[]
+    createMany?: LeadCreateManyClosedByInputEnvelope
+    set?: LeadWhereUniqueInput | LeadWhereUniqueInput[]
+    disconnect?: LeadWhereUniqueInput | LeadWhereUniqueInput[]
+    delete?: LeadWhereUniqueInput | LeadWhereUniqueInput[]
+    connect?: LeadWhereUniqueInput | LeadWhereUniqueInput[]
+    update?: LeadUpdateWithWhereUniqueWithoutClosedByInput | LeadUpdateWithWhereUniqueWithoutClosedByInput[]
+    updateMany?: LeadUpdateManyWithWhereWithoutClosedByInput | LeadUpdateManyWithWhereWithoutClosedByInput[]
     deleteMany?: LeadScalarWhereInput | LeadScalarWhereInput[]
   }
 
@@ -45905,6 +46192,13 @@ export namespace Prisma {
     not?: NestedFloatNullableFilter<$PrismaModel> | number | null
   }
 
+  export type NestedEnumLeadClosureTypeNullableFilter<$PrismaModel = never> = {
+    equals?: $Enums.LeadClosureType | EnumLeadClosureTypeFieldRefInput<$PrismaModel> | null
+    in?: $Enums.LeadClosureType[] | ListEnumLeadClosureTypeFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.LeadClosureType[] | ListEnumLeadClosureTypeFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumLeadClosureTypeNullableFilter<$PrismaModel> | $Enums.LeadClosureType | null
+  }
+
   export type NestedFloatNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | FloatFieldRefInput<$PrismaModel> | null
     in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
@@ -45919,6 +46213,32 @@ export namespace Prisma {
     _sum?: NestedFloatNullableFilter<$PrismaModel>
     _min?: NestedFloatNullableFilter<$PrismaModel>
     _max?: NestedFloatNullableFilter<$PrismaModel>
+  }
+
+  export type NestedFloatWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedFloatFilter<$PrismaModel>
+    _min?: NestedFloatFilter<$PrismaModel>
+    _max?: NestedFloatFilter<$PrismaModel>
+  }
+
+  export type NestedEnumLeadClosureTypeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.LeadClosureType | EnumLeadClosureTypeFieldRefInput<$PrismaModel> | null
+    in?: $Enums.LeadClosureType[] | ListEnumLeadClosureTypeFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.LeadClosureType[] | ListEnumLeadClosureTypeFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumLeadClosureTypeNullableWithAggregatesFilter<$PrismaModel> | $Enums.LeadClosureType | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedEnumLeadClosureTypeNullableFilter<$PrismaModel>
+    _max?: NestedEnumLeadClosureTypeNullableFilter<$PrismaModel>
   }
 
   export type NestedEnumTargetSettingCycleFilter<$PrismaModel = never> = {
@@ -45936,22 +46256,6 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumTargetSettingCycleFilter<$PrismaModel>
     _max?: NestedEnumTargetSettingCycleFilter<$PrismaModel>
-  }
-
-  export type NestedFloatWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel>
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatWithAggregatesFilter<$PrismaModel> | number
-    _count?: NestedIntFilter<$PrismaModel>
-    _avg?: NestedFloatFilter<$PrismaModel>
-    _sum?: NestedFloatFilter<$PrismaModel>
-    _min?: NestedFloatFilter<$PrismaModel>
-    _max?: NestedFloatFilter<$PrismaModel>
   }
 
   export type NestedEnumViolationTypeFilter<$PrismaModel = never> = {
@@ -46099,6 +46403,7 @@ export namespace Prisma {
     followUps?: FollowUpCreateNestedManyWithoutUserInput
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadCreateNestedManyWithoutClosedByInput
   }
 
   export type UserUncheckedCreateWithoutRoleInput = {
@@ -46138,6 +46443,7 @@ export namespace Prisma {
     followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
   }
 
   export type UserCreateOrConnectWithoutRoleInput = {
@@ -46401,6 +46707,7 @@ export namespace Prisma {
     followUps?: FollowUpCreateNestedManyWithoutUserInput
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadCreateNestedManyWithoutClosedByInput
   }
 
   export type UserUncheckedCreateWithoutOwnedWorkspaceInput = {
@@ -46440,6 +46747,7 @@ export namespace Prisma {
     followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
   }
 
   export type UserCreateOrConnectWithoutOwnedWorkspaceInput = {
@@ -46484,6 +46792,7 @@ export namespace Prisma {
     followUps?: FollowUpCreateNestedManyWithoutUserInput
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadCreateNestedManyWithoutClosedByInput
   }
 
   export type UserUncheckedCreateWithoutWorkspaceInput = {
@@ -46523,6 +46832,7 @@ export namespace Prisma {
     followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
   }
 
   export type UserCreateOrConnectWithoutWorkspaceInput = {
@@ -46677,9 +46987,12 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     expectedRevenue?: number | null
+    generatedRevenue?: number
     nextFollowUpAt?: Date | string | null
     isClosed?: boolean
     isLOB?: boolean
+    closedAt?: Date | string | null
+    closureType?: $Enums.LeadClosureType | null
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -46688,6 +47001,7 @@ export namespace Prisma {
     lifecycle?: LeadLifeCycleCreateNestedOneWithoutLeadsInput
     source?: LeadSourceCreateNestedOneWithoutLeadsInput
     createdBy: UserCreateNestedOneWithoutCreatedLeadsInput
+    closedBy?: UserCreateNestedOneWithoutClosedLeadsInput
     followUps?: FollowUpCreateNestedManyWithoutLeadInput
     lobLogs?: LeadLOBLogCreateNestedManyWithoutLeadInput
   }
@@ -46698,6 +47012,7 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     expectedRevenue?: number | null
+    generatedRevenue?: number
     assignedToId?: string | null
     stageId?: string | null
     lifecycleId?: string | null
@@ -46705,6 +47020,9 @@ export namespace Prisma {
     nextFollowUpAt?: Date | string | null
     isClosed?: boolean
     isLOB?: boolean
+    closedAt?: Date | string | null
+    closedById?: string | null
+    closureType?: $Enums.LeadClosureType | null
     createdById: string
     deletedAt?: Date | string | null
     createdAt?: Date | string
@@ -46771,6 +47089,7 @@ export namespace Prisma {
     followUps?: FollowUpUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutOwnedWorkspaceInput = {
@@ -46810,6 +47129,7 @@ export namespace Prisma {
     followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
   }
 
   export type UserUpsertWithWhereUniqueWithoutWorkspaceInput = {
@@ -46974,6 +47294,7 @@ export namespace Prisma {
     email?: StringNullableFilter<"Lead"> | string | null
     phone?: StringNullableFilter<"Lead"> | string | null
     expectedRevenue?: FloatNullableFilter<"Lead"> | number | null
+    generatedRevenue?: FloatFilter<"Lead"> | number
     assignedToId?: StringNullableFilter<"Lead"> | string | null
     stageId?: StringNullableFilter<"Lead"> | string | null
     lifecycleId?: StringNullableFilter<"Lead"> | string | null
@@ -46981,6 +47302,9 @@ export namespace Prisma {
     nextFollowUpAt?: DateTimeNullableFilter<"Lead"> | Date | string | null
     isClosed?: BoolFilter<"Lead"> | boolean
     isLOB?: BoolFilter<"Lead"> | boolean
+    closedAt?: DateTimeNullableFilter<"Lead"> | Date | string | null
+    closedById?: StringNullableFilter<"Lead"> | string | null
+    closureType?: EnumLeadClosureTypeNullableFilter<"Lead"> | $Enums.LeadClosureType | null
     workspaceId?: StringFilter<"Lead"> | string
     createdById?: StringFilter<"Lead"> | string
     deletedAt?: DateTimeNullableFilter<"Lead"> | Date | string | null
@@ -47066,6 +47390,7 @@ export namespace Prisma {
     followUps?: FollowUpCreateNestedManyWithoutUserInput
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadCreateNestedManyWithoutClosedByInput
   }
 
   export type UserUncheckedCreateWithoutDepartmentInput = {
@@ -47105,6 +47430,7 @@ export namespace Prisma {
     followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
   }
 
   export type UserCreateOrConnectWithoutDepartmentInput = {
@@ -47186,9 +47512,12 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     expectedRevenue?: number | null
+    generatedRevenue?: number
     nextFollowUpAt?: Date | string | null
     isClosed?: boolean
     isLOB?: boolean
+    closedAt?: Date | string | null
+    closureType?: $Enums.LeadClosureType | null
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -47196,6 +47525,7 @@ export namespace Prisma {
     stage?: LeadStageCreateNestedOneWithoutLeadsInput
     lifecycle?: LeadLifeCycleCreateNestedOneWithoutLeadsInput
     createdBy: UserCreateNestedOneWithoutCreatedLeadsInput
+    closedBy?: UserCreateNestedOneWithoutClosedLeadsInput
     workspace: WorkspaceCreateNestedOneWithoutLeadsInput
     followUps?: FollowUpCreateNestedManyWithoutLeadInput
     lobLogs?: LeadLOBLogCreateNestedManyWithoutLeadInput
@@ -47207,12 +47537,16 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     expectedRevenue?: number | null
+    generatedRevenue?: number
     assignedToId?: string | null
     stageId?: string | null
     lifecycleId?: string | null
     nextFollowUpAt?: Date | string | null
     isClosed?: boolean
     isLOB?: boolean
+    closedAt?: Date | string | null
+    closedById?: string | null
+    closureType?: $Enums.LeadClosureType | null
     workspaceId: string
     createdById: string
     deletedAt?: Date | string | null
@@ -47300,9 +47634,12 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     expectedRevenue?: number | null
+    generatedRevenue?: number
     nextFollowUpAt?: Date | string | null
     isClosed?: boolean
     isLOB?: boolean
+    closedAt?: Date | string | null
+    closureType?: $Enums.LeadClosureType | null
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -47310,6 +47647,7 @@ export namespace Prisma {
     lifecycle?: LeadLifeCycleCreateNestedOneWithoutLeadsInput
     source?: LeadSourceCreateNestedOneWithoutLeadsInput
     createdBy: UserCreateNestedOneWithoutCreatedLeadsInput
+    closedBy?: UserCreateNestedOneWithoutClosedLeadsInput
     workspace: WorkspaceCreateNestedOneWithoutLeadsInput
     followUps?: FollowUpCreateNestedManyWithoutLeadInput
     lobLogs?: LeadLOBLogCreateNestedManyWithoutLeadInput
@@ -47321,12 +47659,16 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     expectedRevenue?: number | null
+    generatedRevenue?: number
     assignedToId?: string | null
     lifecycleId?: string | null
     sourceId?: string | null
     nextFollowUpAt?: Date | string | null
     isClosed?: boolean
     isLOB?: boolean
+    closedAt?: Date | string | null
+    closedById?: string | null
+    closureType?: $Enums.LeadClosureType | null
     workspaceId: string
     createdById: string
     deletedAt?: Date | string | null
@@ -47655,6 +47997,7 @@ export namespace Prisma {
     followUps?: FollowUpCreateNestedManyWithoutUserInput
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadCreateNestedManyWithoutClosedByInput
   }
 
   export type UserUncheckedCreateWithoutOfficeInput = {
@@ -47694,6 +48037,7 @@ export namespace Prisma {
     followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
   }
 
   export type UserCreateOrConnectWithoutOfficeInput = {
@@ -47856,6 +48200,7 @@ export namespace Prisma {
     followUps?: FollowUpCreateNestedManyWithoutUserInput
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadCreateNestedManyWithoutClosedByInput
   }
 
   export type UserUncheckedCreateWithoutCountryInput = {
@@ -47895,6 +48240,7 @@ export namespace Prisma {
     followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
   }
 
   export type UserCreateOrConnectWithoutCountryInput = {
@@ -47944,6 +48290,7 @@ export namespace Prisma {
     followUps?: FollowUpCreateNestedManyWithoutUserInput
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadCreateNestedManyWithoutClosedByInput
   }
 
   export type UserUncheckedCreateWithoutStateInput = {
@@ -47983,6 +48330,7 @@ export namespace Prisma {
     followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
   }
 
   export type UserCreateOrConnectWithoutStateInput = {
@@ -48032,6 +48380,7 @@ export namespace Prisma {
     followUps?: FollowUpCreateNestedManyWithoutUserInput
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadCreateNestedManyWithoutClosedByInput
   }
 
   export type UserUncheckedCreateWithoutDistrictInput = {
@@ -48071,6 +48420,7 @@ export namespace Prisma {
     followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
   }
 
   export type UserCreateOrConnectWithoutDistrictInput = {
@@ -48264,6 +48614,7 @@ export namespace Prisma {
     followUps?: FollowUpCreateNestedManyWithoutUserInput
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadCreateNestedManyWithoutClosedByInput
   }
 
   export type UserUncheckedCreateWithoutAssignedLocationsInput = {
@@ -48303,6 +48654,7 @@ export namespace Prisma {
     followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
   }
 
   export type UserCreateOrConnectWithoutAssignedLocationsInput = {
@@ -48391,6 +48743,7 @@ export namespace Prisma {
     followUps?: FollowUpUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAssignedLocationsInput = {
@@ -48430,6 +48783,7 @@ export namespace Prisma {
     followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
   }
 
   export type LocationUpsertWithoutAssignedUsersInput = {
@@ -48888,9 +49242,12 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     expectedRevenue?: number | null
+    generatedRevenue?: number
     nextFollowUpAt?: Date | string | null
     isClosed?: boolean
     isLOB?: boolean
+    closedAt?: Date | string | null
+    closureType?: $Enums.LeadClosureType | null
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -48898,6 +49255,7 @@ export namespace Prisma {
     stage?: LeadStageCreateNestedOneWithoutLeadsInput
     source?: LeadSourceCreateNestedOneWithoutLeadsInput
     createdBy: UserCreateNestedOneWithoutCreatedLeadsInput
+    closedBy?: UserCreateNestedOneWithoutClosedLeadsInput
     workspace: WorkspaceCreateNestedOneWithoutLeadsInput
     followUps?: FollowUpCreateNestedManyWithoutLeadInput
     lobLogs?: LeadLOBLogCreateNestedManyWithoutLeadInput
@@ -48909,12 +49267,16 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     expectedRevenue?: number | null
+    generatedRevenue?: number
     assignedToId?: string | null
     stageId?: string | null
     sourceId?: string | null
     nextFollowUpAt?: Date | string | null
     isClosed?: boolean
     isLOB?: boolean
+    closedAt?: Date | string | null
+    closedById?: string | null
+    closureType?: $Enums.LeadClosureType | null
     workspaceId: string
     createdById: string
     deletedAt?: Date | string | null
@@ -49065,6 +49427,7 @@ export namespace Prisma {
     rosterEntries?: RosterEntryCreateNestedManyWithoutUserInput
     followUps?: FollowUpCreateNestedManyWithoutUserInput
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
+    closedLeads?: LeadCreateNestedManyWithoutClosedByInput
   }
 
   export type UserUncheckedCreateWithoutAssignedLeadsInput = {
@@ -49104,6 +49467,7 @@ export namespace Prisma {
     rosterEntries?: RosterEntryUncheckedCreateNestedManyWithoutUserInput
     followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
+    closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
   }
 
   export type UserCreateOrConnectWithoutAssignedLeadsInput = {
@@ -49237,6 +49601,7 @@ export namespace Prisma {
     rosterEntries?: RosterEntryCreateNestedManyWithoutUserInput
     followUps?: FollowUpCreateNestedManyWithoutUserInput
     assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadCreateNestedManyWithoutClosedByInput
   }
 
   export type UserUncheckedCreateWithoutCreatedLeadsInput = {
@@ -49276,11 +49641,97 @@ export namespace Prisma {
     rosterEntries?: RosterEntryUncheckedCreateNestedManyWithoutUserInput
     followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
     assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
   }
 
   export type UserCreateOrConnectWithoutCreatedLeadsInput = {
     where: UserWhereUniqueInput
     create: XOR<UserCreateWithoutCreatedLeadsInput, UserUncheckedCreateWithoutCreatedLeadsInput>
+  }
+
+  export type UserCreateWithoutClosedLeadsInput = {
+    id?: string
+    name?: string | null
+    username?: string | null
+    email: string
+    password?: string | null
+    phone?: string | null
+    googleId?: string | null
+    isOnboarded?: boolean
+    isActive?: boolean
+    isEmailVerified?: boolean
+    isLocked?: boolean
+    verificationToken?: string | null
+    verificationTokenExpires?: Date | string | null
+    invitationToken?: string | null
+    invitationExpires?: Date | string | null
+    deletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    role?: RoleCreateNestedOneWithoutUsersInput
+    workspace?: WorkspaceCreateNestedOneWithoutUsersInput
+    ownedWorkspace?: WorkspaceCreateNestedOneWithoutOwnerInput
+    department?: DepartmentCreateNestedOneWithoutUsersInput
+    office?: OfficeCreateNestedOneWithoutUsersInput
+    country?: LocationCreateNestedOneWithoutUsersAtCountryInput
+    state?: LocationCreateNestedOneWithoutUsersAtStateInput
+    district?: LocationCreateNestedOneWithoutUsersAtDistrictInput
+    assignedLocations?: UserLocationAssignmentCreateNestedManyWithoutUserInput
+    supervisor?: UserCreateNestedOneWithoutSubordinatesInput
+    subordinates?: UserCreateNestedManyWithoutSupervisorInput
+    targetSettings?: TargetSettingCreateNestedManyWithoutUserInput
+    violations?: TargetViolationCreateNestedManyWithoutUserInput
+    devices?: DeviceCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogCreateNestedManyWithoutUserInput
+    rosterEntries?: RosterEntryCreateNestedManyWithoutUserInput
+    followUps?: FollowUpCreateNestedManyWithoutUserInput
+    createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
+    assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
+  }
+
+  export type UserUncheckedCreateWithoutClosedLeadsInput = {
+    id?: string
+    name?: string | null
+    username?: string | null
+    email: string
+    password?: string | null
+    phone?: string | null
+    googleId?: string | null
+    isOnboarded?: boolean
+    isActive?: boolean
+    isEmailVerified?: boolean
+    isLocked?: boolean
+    verificationToken?: string | null
+    verificationTokenExpires?: Date | string | null
+    invitationToken?: string | null
+    invitationExpires?: Date | string | null
+    deletedAt?: Date | string | null
+    roleId?: string | null
+    workspaceId?: string | null
+    departmentId?: string | null
+    officeId?: string | null
+    countryId?: string | null
+    stateId?: string | null
+    districtId?: string | null
+    supervisorId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    ownedWorkspace?: WorkspaceUncheckedCreateNestedOneWithoutOwnerInput
+    assignedLocations?: UserLocationAssignmentUncheckedCreateNestedManyWithoutUserInput
+    subordinates?: UserUncheckedCreateNestedManyWithoutSupervisorInput
+    targetSettings?: TargetSettingUncheckedCreateNestedManyWithoutUserInput
+    violations?: TargetViolationUncheckedCreateNestedManyWithoutUserInput
+    devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
+    rosterEntries?: RosterEntryUncheckedCreateNestedManyWithoutUserInput
+    followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
+    createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
+    assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
+  }
+
+  export type UserCreateOrConnectWithoutClosedLeadsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutClosedLeadsInput, UserUncheckedCreateWithoutClosedLeadsInput>
   }
 
   export type WorkspaceCreateWithoutLeadsInput = {
@@ -49438,6 +49889,7 @@ export namespace Prisma {
     rosterEntries?: RosterEntryUpdateManyWithoutUserNestedInput
     followUps?: FollowUpUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
+    closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAssignedLeadsInput = {
@@ -49477,6 +49929,7 @@ export namespace Prisma {
     rosterEntries?: RosterEntryUncheckedUpdateManyWithoutUserNestedInput
     followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
+    closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
   }
 
   export type LeadStageUpsertWithoutLeadsInput = {
@@ -49634,6 +50087,7 @@ export namespace Prisma {
     rosterEntries?: RosterEntryUpdateManyWithoutUserNestedInput
     followUps?: FollowUpUpdateManyWithoutUserNestedInput
     assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCreatedLeadsInput = {
@@ -49672,6 +50126,98 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     rosterEntries?: RosterEntryUncheckedUpdateManyWithoutUserNestedInput
     followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
+    assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
+  }
+
+  export type UserUpsertWithoutClosedLeadsInput = {
+    update: XOR<UserUpdateWithoutClosedLeadsInput, UserUncheckedUpdateWithoutClosedLeadsInput>
+    create: XOR<UserCreateWithoutClosedLeadsInput, UserUncheckedCreateWithoutClosedLeadsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutClosedLeadsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutClosedLeadsInput, UserUncheckedUpdateWithoutClosedLeadsInput>
+  }
+
+  export type UserUpdateWithoutClosedLeadsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    username?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    googleId?: NullableStringFieldUpdateOperationsInput | string | null
+    isOnboarded?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isEmailVerified?: BoolFieldUpdateOperationsInput | boolean
+    isLocked?: BoolFieldUpdateOperationsInput | boolean
+    verificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    verificationTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    invitationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    invitationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    role?: RoleUpdateOneWithoutUsersNestedInput
+    workspace?: WorkspaceUpdateOneWithoutUsersNestedInput
+    ownedWorkspace?: WorkspaceUpdateOneWithoutOwnerNestedInput
+    department?: DepartmentUpdateOneWithoutUsersNestedInput
+    office?: OfficeUpdateOneWithoutUsersNestedInput
+    country?: LocationUpdateOneWithoutUsersAtCountryNestedInput
+    state?: LocationUpdateOneWithoutUsersAtStateNestedInput
+    district?: LocationUpdateOneWithoutUsersAtDistrictNestedInput
+    assignedLocations?: UserLocationAssignmentUpdateManyWithoutUserNestedInput
+    supervisor?: UserUpdateOneWithoutSubordinatesNestedInput
+    subordinates?: UserUpdateManyWithoutSupervisorNestedInput
+    targetSettings?: TargetSettingUpdateManyWithoutUserNestedInput
+    violations?: TargetViolationUpdateManyWithoutUserNestedInput
+    devices?: DeviceUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
+    rosterEntries?: RosterEntryUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUpdateManyWithoutUserNestedInput
+    createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
+    assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutClosedLeadsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    username?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    googleId?: NullableStringFieldUpdateOperationsInput | string | null
+    isOnboarded?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isEmailVerified?: BoolFieldUpdateOperationsInput | boolean
+    isLocked?: BoolFieldUpdateOperationsInput | boolean
+    verificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    verificationTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    invitationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    invitationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    roleId?: NullableStringFieldUpdateOperationsInput | string | null
+    workspaceId?: NullableStringFieldUpdateOperationsInput | string | null
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    officeId?: NullableStringFieldUpdateOperationsInput | string | null
+    countryId?: NullableStringFieldUpdateOperationsInput | string | null
+    stateId?: NullableStringFieldUpdateOperationsInput | string | null
+    districtId?: NullableStringFieldUpdateOperationsInput | string | null
+    supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ownedWorkspace?: WorkspaceUncheckedUpdateOneWithoutOwnerNestedInput
+    assignedLocations?: UserLocationAssignmentUncheckedUpdateManyWithoutUserNestedInput
+    subordinates?: UserUncheckedUpdateManyWithoutSupervisorNestedInput
+    targetSettings?: TargetSettingUncheckedUpdateManyWithoutUserNestedInput
+    violations?: TargetViolationUncheckedUpdateManyWithoutUserNestedInput
+    devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
+    rosterEntries?: RosterEntryUncheckedUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
+    createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
   }
 
@@ -49790,9 +50336,12 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     expectedRevenue?: number | null
+    generatedRevenue?: number
     nextFollowUpAt?: Date | string | null
     isClosed?: boolean
     isLOB?: boolean
+    closedAt?: Date | string | null
+    closureType?: $Enums.LeadClosureType | null
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -49801,6 +50350,7 @@ export namespace Prisma {
     lifecycle?: LeadLifeCycleCreateNestedOneWithoutLeadsInput
     source?: LeadSourceCreateNestedOneWithoutLeadsInput
     createdBy: UserCreateNestedOneWithoutCreatedLeadsInput
+    closedBy?: UserCreateNestedOneWithoutClosedLeadsInput
     workspace: WorkspaceCreateNestedOneWithoutLeadsInput
     followUps?: FollowUpCreateNestedManyWithoutLeadInput
   }
@@ -49811,6 +50361,7 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     expectedRevenue?: number | null
+    generatedRevenue?: number
     assignedToId?: string | null
     stageId?: string | null
     lifecycleId?: string | null
@@ -49818,6 +50369,9 @@ export namespace Prisma {
     nextFollowUpAt?: Date | string | null
     isClosed?: boolean
     isLOB?: boolean
+    closedAt?: Date | string | null
+    closedById?: string | null
+    closureType?: $Enums.LeadClosureType | null
     workspaceId: string
     createdById: string
     deletedAt?: Date | string | null
@@ -49848,9 +50402,12 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     expectedRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
+    generatedRevenue?: FloatFieldUpdateOperationsInput | number
     nextFollowUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isClosed?: BoolFieldUpdateOperationsInput | boolean
     isLOB?: BoolFieldUpdateOperationsInput | boolean
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    closureType?: NullableEnumLeadClosureTypeFieldUpdateOperationsInput | $Enums.LeadClosureType | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -49859,6 +50416,7 @@ export namespace Prisma {
     lifecycle?: LeadLifeCycleUpdateOneWithoutLeadsNestedInput
     source?: LeadSourceUpdateOneWithoutLeadsNestedInput
     createdBy?: UserUpdateOneRequiredWithoutCreatedLeadsNestedInput
+    closedBy?: UserUpdateOneWithoutClosedLeadsNestedInput
     workspace?: WorkspaceUpdateOneRequiredWithoutLeadsNestedInput
     followUps?: FollowUpUpdateManyWithoutLeadNestedInput
   }
@@ -49869,6 +50427,7 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     expectedRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
+    generatedRevenue?: FloatFieldUpdateOperationsInput | number
     assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
     stageId?: NullableStringFieldUpdateOperationsInput | string | null
     lifecycleId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -49876,6 +50435,9 @@ export namespace Prisma {
     nextFollowUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isClosed?: BoolFieldUpdateOperationsInput | boolean
     isLOB?: BoolFieldUpdateOperationsInput | boolean
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    closedById?: NullableStringFieldUpdateOperationsInput | string | null
+    closureType?: NullableEnumLeadClosureTypeFieldUpdateOperationsInput | $Enums.LeadClosureType | null
     workspaceId?: StringFieldUpdateOperationsInput | string
     createdById?: StringFieldUpdateOperationsInput | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -50304,6 +50866,7 @@ export namespace Prisma {
     followUps?: FollowUpCreateNestedManyWithoutUserInput
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadCreateNestedManyWithoutClosedByInput
   }
 
   export type UserUncheckedCreateWithoutTargetSettingsInput = {
@@ -50343,6 +50906,7 @@ export namespace Prisma {
     followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
   }
 
   export type UserCreateOrConnectWithoutTargetSettingsInput = {
@@ -50452,6 +51016,7 @@ export namespace Prisma {
     followUps?: FollowUpUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutTargetSettingsInput = {
@@ -50491,6 +51056,7 @@ export namespace Prisma {
     followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
   }
 
   export type TargetTypeUpsertWithoutSettingsInput = {
@@ -50596,6 +51162,7 @@ export namespace Prisma {
     followUps?: FollowUpCreateNestedManyWithoutUserInput
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadCreateNestedManyWithoutClosedByInput
   }
 
   export type UserUncheckedCreateWithoutViolationsInput = {
@@ -50635,6 +51202,7 @@ export namespace Prisma {
     followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
   }
 
   export type UserCreateOrConnectWithoutViolationsInput = {
@@ -50690,6 +51258,7 @@ export namespace Prisma {
     followUps?: FollowUpUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutViolationsInput = {
@@ -50729,6 +51298,7 @@ export namespace Prisma {
     followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
   }
 
   export type RoleCreateWithoutUsersInput = {
@@ -51062,6 +51632,7 @@ export namespace Prisma {
     followUps?: FollowUpCreateNestedManyWithoutUserInput
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadCreateNestedManyWithoutClosedByInput
   }
 
   export type UserUncheckedCreateWithoutSubordinatesInput = {
@@ -51101,6 +51672,7 @@ export namespace Prisma {
     followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
   }
 
   export type UserCreateOrConnectWithoutSubordinatesInput = {
@@ -51145,6 +51717,7 @@ export namespace Prisma {
     followUps?: FollowUpCreateNestedManyWithoutUserInput
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadCreateNestedManyWithoutClosedByInput
   }
 
   export type UserUncheckedCreateWithoutSupervisorInput = {
@@ -51184,6 +51757,7 @@ export namespace Prisma {
     followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
   }
 
   export type UserCreateOrConnectWithoutSupervisorInput = {
@@ -51424,9 +51998,12 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     expectedRevenue?: number | null
+    generatedRevenue?: number
     nextFollowUpAt?: Date | string | null
     isClosed?: boolean
     isLOB?: boolean
+    closedAt?: Date | string | null
+    closureType?: $Enums.LeadClosureType | null
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -51434,6 +52011,7 @@ export namespace Prisma {
     stage?: LeadStageCreateNestedOneWithoutLeadsInput
     lifecycle?: LeadLifeCycleCreateNestedOneWithoutLeadsInput
     source?: LeadSourceCreateNestedOneWithoutLeadsInput
+    closedBy?: UserCreateNestedOneWithoutClosedLeadsInput
     workspace: WorkspaceCreateNestedOneWithoutLeadsInput
     followUps?: FollowUpCreateNestedManyWithoutLeadInput
     lobLogs?: LeadLOBLogCreateNestedManyWithoutLeadInput
@@ -51445,6 +52023,7 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     expectedRevenue?: number | null
+    generatedRevenue?: number
     assignedToId?: string | null
     stageId?: string | null
     lifecycleId?: string | null
@@ -51452,6 +52031,9 @@ export namespace Prisma {
     nextFollowUpAt?: Date | string | null
     isClosed?: boolean
     isLOB?: boolean
+    closedAt?: Date | string | null
+    closedById?: string | null
+    closureType?: $Enums.LeadClosureType | null
     workspaceId: string
     deletedAt?: Date | string | null
     createdAt?: Date | string
@@ -51476,9 +52058,12 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     expectedRevenue?: number | null
+    generatedRevenue?: number
     nextFollowUpAt?: Date | string | null
     isClosed?: boolean
     isLOB?: boolean
+    closedAt?: Date | string | null
+    closureType?: $Enums.LeadClosureType | null
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -51486,6 +52071,7 @@ export namespace Prisma {
     lifecycle?: LeadLifeCycleCreateNestedOneWithoutLeadsInput
     source?: LeadSourceCreateNestedOneWithoutLeadsInput
     createdBy: UserCreateNestedOneWithoutCreatedLeadsInput
+    closedBy?: UserCreateNestedOneWithoutClosedLeadsInput
     workspace: WorkspaceCreateNestedOneWithoutLeadsInput
     followUps?: FollowUpCreateNestedManyWithoutLeadInput
     lobLogs?: LeadLOBLogCreateNestedManyWithoutLeadInput
@@ -51497,12 +52083,16 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     expectedRevenue?: number | null
+    generatedRevenue?: number
     stageId?: string | null
     lifecycleId?: string | null
     sourceId?: string | null
     nextFollowUpAt?: Date | string | null
     isClosed?: boolean
     isLOB?: boolean
+    closedAt?: Date | string | null
+    closedById?: string | null
+    closureType?: $Enums.LeadClosureType | null
     workspaceId: string
     createdById: string
     deletedAt?: Date | string | null
@@ -51519,6 +52109,66 @@ export namespace Prisma {
 
   export type LeadCreateManyAssignedToInputEnvelope = {
     data: LeadCreateManyAssignedToInput | LeadCreateManyAssignedToInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type LeadCreateWithoutClosedByInput = {
+    id?: string
+    name: string
+    email?: string | null
+    phone?: string | null
+    expectedRevenue?: number | null
+    generatedRevenue?: number
+    nextFollowUpAt?: Date | string | null
+    isClosed?: boolean
+    isLOB?: boolean
+    closedAt?: Date | string | null
+    closureType?: $Enums.LeadClosureType | null
+    deletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    assignedTo?: UserCreateNestedOneWithoutAssignedLeadsInput
+    stage?: LeadStageCreateNestedOneWithoutLeadsInput
+    lifecycle?: LeadLifeCycleCreateNestedOneWithoutLeadsInput
+    source?: LeadSourceCreateNestedOneWithoutLeadsInput
+    createdBy: UserCreateNestedOneWithoutCreatedLeadsInput
+    workspace: WorkspaceCreateNestedOneWithoutLeadsInput
+    followUps?: FollowUpCreateNestedManyWithoutLeadInput
+    lobLogs?: LeadLOBLogCreateNestedManyWithoutLeadInput
+  }
+
+  export type LeadUncheckedCreateWithoutClosedByInput = {
+    id?: string
+    name: string
+    email?: string | null
+    phone?: string | null
+    expectedRevenue?: number | null
+    generatedRevenue?: number
+    assignedToId?: string | null
+    stageId?: string | null
+    lifecycleId?: string | null
+    sourceId?: string | null
+    nextFollowUpAt?: Date | string | null
+    isClosed?: boolean
+    isLOB?: boolean
+    closedAt?: Date | string | null
+    closureType?: $Enums.LeadClosureType | null
+    workspaceId: string
+    createdById: string
+    deletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    followUps?: FollowUpUncheckedCreateNestedManyWithoutLeadInput
+    lobLogs?: LeadLOBLogUncheckedCreateNestedManyWithoutLeadInput
+  }
+
+  export type LeadCreateOrConnectWithoutClosedByInput = {
+    where: LeadWhereUniqueInput
+    create: XOR<LeadCreateWithoutClosedByInput, LeadUncheckedCreateWithoutClosedByInput>
+  }
+
+  export type LeadCreateManyClosedByInputEnvelope = {
+    data: LeadCreateManyClosedByInput | LeadCreateManyClosedByInput[]
     skipDuplicates?: boolean
   }
 
@@ -51902,6 +52552,7 @@ export namespace Prisma {
     followUps?: FollowUpUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSubordinatesInput = {
@@ -51941,6 +52592,7 @@ export namespace Prisma {
     followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
   }
 
   export type UserUpsertWithWhereUniqueWithoutSupervisorInput = {
@@ -52155,6 +52807,22 @@ export namespace Prisma {
     data: XOR<LeadUpdateManyMutationInput, LeadUncheckedUpdateManyWithoutAssignedToInput>
   }
 
+  export type LeadUpsertWithWhereUniqueWithoutClosedByInput = {
+    where: LeadWhereUniqueInput
+    update: XOR<LeadUpdateWithoutClosedByInput, LeadUncheckedUpdateWithoutClosedByInput>
+    create: XOR<LeadCreateWithoutClosedByInput, LeadUncheckedCreateWithoutClosedByInput>
+  }
+
+  export type LeadUpdateWithWhereUniqueWithoutClosedByInput = {
+    where: LeadWhereUniqueInput
+    data: XOR<LeadUpdateWithoutClosedByInput, LeadUncheckedUpdateWithoutClosedByInput>
+  }
+
+  export type LeadUpdateManyWithWhereWithoutClosedByInput = {
+    where: LeadScalarWhereInput
+    data: XOR<LeadUpdateManyMutationInput, LeadUncheckedUpdateManyWithoutClosedByInput>
+  }
+
   export type UserCreateWithoutFollowUpsInput = {
     id?: string
     name?: string | null
@@ -52192,6 +52860,7 @@ export namespace Prisma {
     rosterEntries?: RosterEntryCreateNestedManyWithoutUserInput
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadCreateNestedManyWithoutClosedByInput
   }
 
   export type UserUncheckedCreateWithoutFollowUpsInput = {
@@ -52231,6 +52900,7 @@ export namespace Prisma {
     rosterEntries?: RosterEntryUncheckedCreateNestedManyWithoutUserInput
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
   }
 
   export type UserCreateOrConnectWithoutFollowUpsInput = {
@@ -52244,9 +52914,12 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     expectedRevenue?: number | null
+    generatedRevenue?: number
     nextFollowUpAt?: Date | string | null
     isClosed?: boolean
     isLOB?: boolean
+    closedAt?: Date | string | null
+    closureType?: $Enums.LeadClosureType | null
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -52255,6 +52928,7 @@ export namespace Prisma {
     lifecycle?: LeadLifeCycleCreateNestedOneWithoutLeadsInput
     source?: LeadSourceCreateNestedOneWithoutLeadsInput
     createdBy: UserCreateNestedOneWithoutCreatedLeadsInput
+    closedBy?: UserCreateNestedOneWithoutClosedLeadsInput
     workspace: WorkspaceCreateNestedOneWithoutLeadsInput
     lobLogs?: LeadLOBLogCreateNestedManyWithoutLeadInput
   }
@@ -52265,6 +52939,7 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     expectedRevenue?: number | null
+    generatedRevenue?: number
     assignedToId?: string | null
     stageId?: string | null
     lifecycleId?: string | null
@@ -52272,6 +52947,9 @@ export namespace Prisma {
     nextFollowUpAt?: Date | string | null
     isClosed?: boolean
     isLOB?: boolean
+    closedAt?: Date | string | null
+    closedById?: string | null
+    closureType?: $Enums.LeadClosureType | null
     workspaceId: string
     createdById: string
     deletedAt?: Date | string | null
@@ -52355,6 +53033,7 @@ export namespace Prisma {
     rosterEntries?: RosterEntryUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutFollowUpsInput = {
@@ -52394,6 +53073,7 @@ export namespace Prisma {
     rosterEntries?: RosterEntryUncheckedUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
   }
 
   export type LeadUpsertWithoutFollowUpsInput = {
@@ -52413,9 +53093,12 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     expectedRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
+    generatedRevenue?: FloatFieldUpdateOperationsInput | number
     nextFollowUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isClosed?: BoolFieldUpdateOperationsInput | boolean
     isLOB?: BoolFieldUpdateOperationsInput | boolean
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    closureType?: NullableEnumLeadClosureTypeFieldUpdateOperationsInput | $Enums.LeadClosureType | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -52424,6 +53107,7 @@ export namespace Prisma {
     lifecycle?: LeadLifeCycleUpdateOneWithoutLeadsNestedInput
     source?: LeadSourceUpdateOneWithoutLeadsNestedInput
     createdBy?: UserUpdateOneRequiredWithoutCreatedLeadsNestedInput
+    closedBy?: UserUpdateOneWithoutClosedLeadsNestedInput
     workspace?: WorkspaceUpdateOneRequiredWithoutLeadsNestedInput
     lobLogs?: LeadLOBLogUpdateManyWithoutLeadNestedInput
   }
@@ -52434,6 +53118,7 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     expectedRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
+    generatedRevenue?: FloatFieldUpdateOperationsInput | number
     assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
     stageId?: NullableStringFieldUpdateOperationsInput | string | null
     lifecycleId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -52441,6 +53126,9 @@ export namespace Prisma {
     nextFollowUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isClosed?: BoolFieldUpdateOperationsInput | boolean
     isLOB?: BoolFieldUpdateOperationsInput | boolean
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    closedById?: NullableStringFieldUpdateOperationsInput | string | null
+    closureType?: NullableEnumLeadClosureTypeFieldUpdateOperationsInput | $Enums.LeadClosureType | null
     workspaceId?: StringFieldUpdateOperationsInput | string
     createdById?: StringFieldUpdateOperationsInput | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -52584,6 +53272,7 @@ export namespace Prisma {
     followUps?: FollowUpCreateNestedManyWithoutUserInput
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadCreateNestedManyWithoutClosedByInput
   }
 
   export type UserUncheckedCreateWithoutRosterEntriesInput = {
@@ -52623,6 +53312,7 @@ export namespace Prisma {
     followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
   }
 
   export type UserCreateOrConnectWithoutRosterEntriesInput = {
@@ -52678,6 +53368,7 @@ export namespace Prisma {
     followUps?: FollowUpUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutRosterEntriesInput = {
@@ -52717,6 +53408,7 @@ export namespace Prisma {
     followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
   }
 
   export type UserCreateWithoutAuditLogsInput = {
@@ -52756,6 +53448,7 @@ export namespace Prisma {
     followUps?: FollowUpCreateNestedManyWithoutUserInput
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadCreateNestedManyWithoutClosedByInput
   }
 
   export type UserUncheckedCreateWithoutAuditLogsInput = {
@@ -52795,6 +53488,7 @@ export namespace Prisma {
     followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
   }
 
   export type UserCreateOrConnectWithoutAuditLogsInput = {
@@ -52850,6 +53544,7 @@ export namespace Prisma {
     followUps?: FollowUpUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAuditLogsInput = {
@@ -52889,6 +53584,7 @@ export namespace Prisma {
     followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
   }
 
   export type UserCreateWithoutDevicesInput = {
@@ -52928,6 +53624,7 @@ export namespace Prisma {
     followUps?: FollowUpCreateNestedManyWithoutUserInput
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadCreateNestedManyWithoutClosedByInput
   }
 
   export type UserUncheckedCreateWithoutDevicesInput = {
@@ -52967,6 +53664,7 @@ export namespace Prisma {
     followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
   }
 
   export type UserCreateOrConnectWithoutDevicesInput = {
@@ -53022,6 +53720,7 @@ export namespace Prisma {
     followUps?: FollowUpUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutDevicesInput = {
@@ -53061,6 +53760,7 @@ export namespace Prisma {
     followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
   }
 
   export type RolePermissionCreateManyRoleInput = {
@@ -53144,6 +53844,7 @@ export namespace Prisma {
     followUps?: FollowUpUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutRoleInput = {
@@ -53183,6 +53884,7 @@ export namespace Prisma {
     followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutRoleInput = {
@@ -53304,6 +54006,7 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     expectedRevenue?: number | null
+    generatedRevenue?: number
     assignedToId?: string | null
     stageId?: string | null
     lifecycleId?: string | null
@@ -53311,6 +54014,9 @@ export namespace Prisma {
     nextFollowUpAt?: Date | string | null
     isClosed?: boolean
     isLOB?: boolean
+    closedAt?: Date | string | null
+    closedById?: string | null
+    closureType?: $Enums.LeadClosureType | null
     createdById: string
     deletedAt?: Date | string | null
     createdAt?: Date | string
@@ -53354,6 +54060,7 @@ export namespace Prisma {
     followUps?: FollowUpUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutWorkspaceInput = {
@@ -53393,6 +54100,7 @@ export namespace Prisma {
     followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutWorkspaceInput = {
@@ -53566,9 +54274,12 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     expectedRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
+    generatedRevenue?: FloatFieldUpdateOperationsInput | number
     nextFollowUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isClosed?: BoolFieldUpdateOperationsInput | boolean
     isLOB?: BoolFieldUpdateOperationsInput | boolean
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    closureType?: NullableEnumLeadClosureTypeFieldUpdateOperationsInput | $Enums.LeadClosureType | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -53577,6 +54288,7 @@ export namespace Prisma {
     lifecycle?: LeadLifeCycleUpdateOneWithoutLeadsNestedInput
     source?: LeadSourceUpdateOneWithoutLeadsNestedInput
     createdBy?: UserUpdateOneRequiredWithoutCreatedLeadsNestedInput
+    closedBy?: UserUpdateOneWithoutClosedLeadsNestedInput
     followUps?: FollowUpUpdateManyWithoutLeadNestedInput
     lobLogs?: LeadLOBLogUpdateManyWithoutLeadNestedInput
   }
@@ -53587,6 +54299,7 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     expectedRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
+    generatedRevenue?: FloatFieldUpdateOperationsInput | number
     assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
     stageId?: NullableStringFieldUpdateOperationsInput | string | null
     lifecycleId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -53594,6 +54307,9 @@ export namespace Prisma {
     nextFollowUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isClosed?: BoolFieldUpdateOperationsInput | boolean
     isLOB?: BoolFieldUpdateOperationsInput | boolean
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    closedById?: NullableStringFieldUpdateOperationsInput | string | null
+    closureType?: NullableEnumLeadClosureTypeFieldUpdateOperationsInput | $Enums.LeadClosureType | null
     createdById?: StringFieldUpdateOperationsInput | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -53608,6 +54324,7 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     expectedRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
+    generatedRevenue?: FloatFieldUpdateOperationsInput | number
     assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
     stageId?: NullableStringFieldUpdateOperationsInput | string | null
     lifecycleId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -53615,6 +54332,9 @@ export namespace Prisma {
     nextFollowUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isClosed?: BoolFieldUpdateOperationsInput | boolean
     isLOB?: BoolFieldUpdateOperationsInput | boolean
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    closedById?: NullableStringFieldUpdateOperationsInput | string | null
+    closureType?: NullableEnumLeadClosureTypeFieldUpdateOperationsInput | $Enums.LeadClosureType | null
     createdById?: StringFieldUpdateOperationsInput | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -53686,6 +54406,7 @@ export namespace Prisma {
     followUps?: FollowUpUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutDepartmentInput = {
@@ -53725,6 +54446,7 @@ export namespace Prisma {
     followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutDepartmentInput = {
@@ -53761,12 +54483,16 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     expectedRevenue?: number | null
+    generatedRevenue?: number
     assignedToId?: string | null
     stageId?: string | null
     lifecycleId?: string | null
     nextFollowUpAt?: Date | string | null
     isClosed?: boolean
     isLOB?: boolean
+    closedAt?: Date | string | null
+    closedById?: string | null
+    closureType?: $Enums.LeadClosureType | null
     workspaceId: string
     createdById: string
     deletedAt?: Date | string | null
@@ -53780,9 +54506,12 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     expectedRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
+    generatedRevenue?: FloatFieldUpdateOperationsInput | number
     nextFollowUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isClosed?: BoolFieldUpdateOperationsInput | boolean
     isLOB?: BoolFieldUpdateOperationsInput | boolean
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    closureType?: NullableEnumLeadClosureTypeFieldUpdateOperationsInput | $Enums.LeadClosureType | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -53790,6 +54519,7 @@ export namespace Prisma {
     stage?: LeadStageUpdateOneWithoutLeadsNestedInput
     lifecycle?: LeadLifeCycleUpdateOneWithoutLeadsNestedInput
     createdBy?: UserUpdateOneRequiredWithoutCreatedLeadsNestedInput
+    closedBy?: UserUpdateOneWithoutClosedLeadsNestedInput
     workspace?: WorkspaceUpdateOneRequiredWithoutLeadsNestedInput
     followUps?: FollowUpUpdateManyWithoutLeadNestedInput
     lobLogs?: LeadLOBLogUpdateManyWithoutLeadNestedInput
@@ -53801,12 +54531,16 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     expectedRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
+    generatedRevenue?: FloatFieldUpdateOperationsInput | number
     assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
     stageId?: NullableStringFieldUpdateOperationsInput | string | null
     lifecycleId?: NullableStringFieldUpdateOperationsInput | string | null
     nextFollowUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isClosed?: BoolFieldUpdateOperationsInput | boolean
     isLOB?: BoolFieldUpdateOperationsInput | boolean
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    closedById?: NullableStringFieldUpdateOperationsInput | string | null
+    closureType?: NullableEnumLeadClosureTypeFieldUpdateOperationsInput | $Enums.LeadClosureType | null
     workspaceId?: StringFieldUpdateOperationsInput | string
     createdById?: StringFieldUpdateOperationsInput | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -53822,12 +54556,16 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     expectedRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
+    generatedRevenue?: FloatFieldUpdateOperationsInput | number
     assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
     stageId?: NullableStringFieldUpdateOperationsInput | string | null
     lifecycleId?: NullableStringFieldUpdateOperationsInput | string | null
     nextFollowUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isClosed?: BoolFieldUpdateOperationsInput | boolean
     isLOB?: BoolFieldUpdateOperationsInput | boolean
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    closedById?: NullableStringFieldUpdateOperationsInput | string | null
+    closureType?: NullableEnumLeadClosureTypeFieldUpdateOperationsInput | $Enums.LeadClosureType | null
     workspaceId?: StringFieldUpdateOperationsInput | string
     createdById?: StringFieldUpdateOperationsInput | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -53858,12 +54596,16 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     expectedRevenue?: number | null
+    generatedRevenue?: number
     assignedToId?: string | null
     lifecycleId?: string | null
     sourceId?: string | null
     nextFollowUpAt?: Date | string | null
     isClosed?: boolean
     isLOB?: boolean
+    closedAt?: Date | string | null
+    closedById?: string | null
+    closureType?: $Enums.LeadClosureType | null
     workspaceId: string
     createdById: string
     deletedAt?: Date | string | null
@@ -53930,9 +54672,12 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     expectedRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
+    generatedRevenue?: FloatFieldUpdateOperationsInput | number
     nextFollowUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isClosed?: BoolFieldUpdateOperationsInput | boolean
     isLOB?: BoolFieldUpdateOperationsInput | boolean
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    closureType?: NullableEnumLeadClosureTypeFieldUpdateOperationsInput | $Enums.LeadClosureType | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -53940,6 +54685,7 @@ export namespace Prisma {
     lifecycle?: LeadLifeCycleUpdateOneWithoutLeadsNestedInput
     source?: LeadSourceUpdateOneWithoutLeadsNestedInput
     createdBy?: UserUpdateOneRequiredWithoutCreatedLeadsNestedInput
+    closedBy?: UserUpdateOneWithoutClosedLeadsNestedInput
     workspace?: WorkspaceUpdateOneRequiredWithoutLeadsNestedInput
     followUps?: FollowUpUpdateManyWithoutLeadNestedInput
     lobLogs?: LeadLOBLogUpdateManyWithoutLeadNestedInput
@@ -53951,12 +54697,16 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     expectedRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
+    generatedRevenue?: FloatFieldUpdateOperationsInput | number
     assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
     lifecycleId?: NullableStringFieldUpdateOperationsInput | string | null
     sourceId?: NullableStringFieldUpdateOperationsInput | string | null
     nextFollowUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isClosed?: BoolFieldUpdateOperationsInput | boolean
     isLOB?: BoolFieldUpdateOperationsInput | boolean
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    closedById?: NullableStringFieldUpdateOperationsInput | string | null
+    closureType?: NullableEnumLeadClosureTypeFieldUpdateOperationsInput | $Enums.LeadClosureType | null
     workspaceId?: StringFieldUpdateOperationsInput | string
     createdById?: StringFieldUpdateOperationsInput | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -53972,12 +54722,16 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     expectedRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
+    generatedRevenue?: FloatFieldUpdateOperationsInput | number
     assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
     lifecycleId?: NullableStringFieldUpdateOperationsInput | string | null
     sourceId?: NullableStringFieldUpdateOperationsInput | string | null
     nextFollowUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isClosed?: BoolFieldUpdateOperationsInput | boolean
     isLOB?: BoolFieldUpdateOperationsInput | boolean
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    closedById?: NullableStringFieldUpdateOperationsInput | string | null
+    closureType?: NullableEnumLeadClosureTypeFieldUpdateOperationsInput | $Enums.LeadClosureType | null
     workspaceId?: StringFieldUpdateOperationsInput | string
     createdById?: StringFieldUpdateOperationsInput | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -54078,6 +54832,7 @@ export namespace Prisma {
     followUps?: FollowUpUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutOfficeInput = {
@@ -54117,6 +54872,7 @@ export namespace Prisma {
     followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutOfficeInput = {
@@ -54346,6 +55102,7 @@ export namespace Prisma {
     followUps?: FollowUpUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCountryInput = {
@@ -54385,6 +55142,7 @@ export namespace Prisma {
     followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutCountryInput = {
@@ -54452,6 +55210,7 @@ export namespace Prisma {
     followUps?: FollowUpUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutStateInput = {
@@ -54491,6 +55250,7 @@ export namespace Prisma {
     followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutStateInput = {
@@ -54558,6 +55318,7 @@ export namespace Prisma {
     followUps?: FollowUpUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutDistrictInput = {
@@ -54597,6 +55358,7 @@ export namespace Prisma {
     followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutDistrictInput = {
@@ -54792,12 +55554,16 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     expectedRevenue?: number | null
+    generatedRevenue?: number
     assignedToId?: string | null
     stageId?: string | null
     sourceId?: string | null
     nextFollowUpAt?: Date | string | null
     isClosed?: boolean
     isLOB?: boolean
+    closedAt?: Date | string | null
+    closedById?: string | null
+    closureType?: $Enums.LeadClosureType | null
     workspaceId: string
     createdById: string
     deletedAt?: Date | string | null
@@ -54844,9 +55610,12 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     expectedRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
+    generatedRevenue?: FloatFieldUpdateOperationsInput | number
     nextFollowUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isClosed?: BoolFieldUpdateOperationsInput | boolean
     isLOB?: BoolFieldUpdateOperationsInput | boolean
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    closureType?: NullableEnumLeadClosureTypeFieldUpdateOperationsInput | $Enums.LeadClosureType | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -54854,6 +55623,7 @@ export namespace Prisma {
     stage?: LeadStageUpdateOneWithoutLeadsNestedInput
     source?: LeadSourceUpdateOneWithoutLeadsNestedInput
     createdBy?: UserUpdateOneRequiredWithoutCreatedLeadsNestedInput
+    closedBy?: UserUpdateOneWithoutClosedLeadsNestedInput
     workspace?: WorkspaceUpdateOneRequiredWithoutLeadsNestedInput
     followUps?: FollowUpUpdateManyWithoutLeadNestedInput
     lobLogs?: LeadLOBLogUpdateManyWithoutLeadNestedInput
@@ -54865,12 +55635,16 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     expectedRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
+    generatedRevenue?: FloatFieldUpdateOperationsInput | number
     assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
     stageId?: NullableStringFieldUpdateOperationsInput | string | null
     sourceId?: NullableStringFieldUpdateOperationsInput | string | null
     nextFollowUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isClosed?: BoolFieldUpdateOperationsInput | boolean
     isLOB?: BoolFieldUpdateOperationsInput | boolean
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    closedById?: NullableStringFieldUpdateOperationsInput | string | null
+    closureType?: NullableEnumLeadClosureTypeFieldUpdateOperationsInput | $Enums.LeadClosureType | null
     workspaceId?: StringFieldUpdateOperationsInput | string
     createdById?: StringFieldUpdateOperationsInput | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -54886,12 +55660,16 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     expectedRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
+    generatedRevenue?: FloatFieldUpdateOperationsInput | number
     assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
     stageId?: NullableStringFieldUpdateOperationsInput | string | null
     sourceId?: NullableStringFieldUpdateOperationsInput | string | null
     nextFollowUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isClosed?: BoolFieldUpdateOperationsInput | boolean
     isLOB?: BoolFieldUpdateOperationsInput | boolean
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    closedById?: NullableStringFieldUpdateOperationsInput | string | null
+    closureType?: NullableEnumLeadClosureTypeFieldUpdateOperationsInput | $Enums.LeadClosureType | null
     workspaceId?: StringFieldUpdateOperationsInput | string
     createdById?: StringFieldUpdateOperationsInput | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -55163,6 +55941,7 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     expectedRevenue?: number | null
+    generatedRevenue?: number
     assignedToId?: string | null
     stageId?: string | null
     lifecycleId?: string | null
@@ -55170,6 +55949,9 @@ export namespace Prisma {
     nextFollowUpAt?: Date | string | null
     isClosed?: boolean
     isLOB?: boolean
+    closedAt?: Date | string | null
+    closedById?: string | null
+    closureType?: $Enums.LeadClosureType | null
     workspaceId: string
     deletedAt?: Date | string | null
     createdAt?: Date | string
@@ -55182,12 +55964,39 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     expectedRevenue?: number | null
+    generatedRevenue?: number
     stageId?: string | null
     lifecycleId?: string | null
     sourceId?: string | null
     nextFollowUpAt?: Date | string | null
     isClosed?: boolean
     isLOB?: boolean
+    closedAt?: Date | string | null
+    closedById?: string | null
+    closureType?: $Enums.LeadClosureType | null
+    workspaceId: string
+    createdById: string
+    deletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type LeadCreateManyClosedByInput = {
+    id?: string
+    name: string
+    email?: string | null
+    phone?: string | null
+    expectedRevenue?: number | null
+    generatedRevenue?: number
+    assignedToId?: string | null
+    stageId?: string | null
+    lifecycleId?: string | null
+    sourceId?: string | null
+    nextFollowUpAt?: Date | string | null
+    isClosed?: boolean
+    isLOB?: boolean
+    closedAt?: Date | string | null
+    closureType?: $Enums.LeadClosureType | null
     workspaceId: string
     createdById: string
     deletedAt?: Date | string | null
@@ -55256,6 +56065,7 @@ export namespace Prisma {
     followUps?: FollowUpUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSupervisorInput = {
@@ -55295,6 +56105,7 @@ export namespace Prisma {
     followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutSupervisorInput = {
@@ -55573,9 +56384,12 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     expectedRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
+    generatedRevenue?: FloatFieldUpdateOperationsInput | number
     nextFollowUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isClosed?: BoolFieldUpdateOperationsInput | boolean
     isLOB?: BoolFieldUpdateOperationsInput | boolean
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    closureType?: NullableEnumLeadClosureTypeFieldUpdateOperationsInput | $Enums.LeadClosureType | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -55583,6 +56397,7 @@ export namespace Prisma {
     stage?: LeadStageUpdateOneWithoutLeadsNestedInput
     lifecycle?: LeadLifeCycleUpdateOneWithoutLeadsNestedInput
     source?: LeadSourceUpdateOneWithoutLeadsNestedInput
+    closedBy?: UserUpdateOneWithoutClosedLeadsNestedInput
     workspace?: WorkspaceUpdateOneRequiredWithoutLeadsNestedInput
     followUps?: FollowUpUpdateManyWithoutLeadNestedInput
     lobLogs?: LeadLOBLogUpdateManyWithoutLeadNestedInput
@@ -55594,6 +56409,7 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     expectedRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
+    generatedRevenue?: FloatFieldUpdateOperationsInput | number
     assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
     stageId?: NullableStringFieldUpdateOperationsInput | string | null
     lifecycleId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -55601,6 +56417,9 @@ export namespace Prisma {
     nextFollowUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isClosed?: BoolFieldUpdateOperationsInput | boolean
     isLOB?: BoolFieldUpdateOperationsInput | boolean
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    closedById?: NullableStringFieldUpdateOperationsInput | string | null
+    closureType?: NullableEnumLeadClosureTypeFieldUpdateOperationsInput | $Enums.LeadClosureType | null
     workspaceId?: StringFieldUpdateOperationsInput | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -55615,6 +56434,7 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     expectedRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
+    generatedRevenue?: FloatFieldUpdateOperationsInput | number
     assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
     stageId?: NullableStringFieldUpdateOperationsInput | string | null
     lifecycleId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -55622,6 +56442,9 @@ export namespace Prisma {
     nextFollowUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isClosed?: BoolFieldUpdateOperationsInput | boolean
     isLOB?: BoolFieldUpdateOperationsInput | boolean
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    closedById?: NullableStringFieldUpdateOperationsInput | string | null
+    closureType?: NullableEnumLeadClosureTypeFieldUpdateOperationsInput | $Enums.LeadClosureType | null
     workspaceId?: StringFieldUpdateOperationsInput | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -55634,9 +56457,12 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     expectedRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
+    generatedRevenue?: FloatFieldUpdateOperationsInput | number
     nextFollowUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isClosed?: BoolFieldUpdateOperationsInput | boolean
     isLOB?: BoolFieldUpdateOperationsInput | boolean
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    closureType?: NullableEnumLeadClosureTypeFieldUpdateOperationsInput | $Enums.LeadClosureType | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -55644,6 +56470,7 @@ export namespace Prisma {
     lifecycle?: LeadLifeCycleUpdateOneWithoutLeadsNestedInput
     source?: LeadSourceUpdateOneWithoutLeadsNestedInput
     createdBy?: UserUpdateOneRequiredWithoutCreatedLeadsNestedInput
+    closedBy?: UserUpdateOneWithoutClosedLeadsNestedInput
     workspace?: WorkspaceUpdateOneRequiredWithoutLeadsNestedInput
     followUps?: FollowUpUpdateManyWithoutLeadNestedInput
     lobLogs?: LeadLOBLogUpdateManyWithoutLeadNestedInput
@@ -55655,12 +56482,16 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     expectedRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
+    generatedRevenue?: FloatFieldUpdateOperationsInput | number
     stageId?: NullableStringFieldUpdateOperationsInput | string | null
     lifecycleId?: NullableStringFieldUpdateOperationsInput | string | null
     sourceId?: NullableStringFieldUpdateOperationsInput | string | null
     nextFollowUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isClosed?: BoolFieldUpdateOperationsInput | boolean
     isLOB?: BoolFieldUpdateOperationsInput | boolean
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    closedById?: NullableStringFieldUpdateOperationsInput | string | null
+    closureType?: NullableEnumLeadClosureTypeFieldUpdateOperationsInput | $Enums.LeadClosureType | null
     workspaceId?: StringFieldUpdateOperationsInput | string
     createdById?: StringFieldUpdateOperationsInput | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -55676,12 +56507,89 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     expectedRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
+    generatedRevenue?: FloatFieldUpdateOperationsInput | number
     stageId?: NullableStringFieldUpdateOperationsInput | string | null
     lifecycleId?: NullableStringFieldUpdateOperationsInput | string | null
     sourceId?: NullableStringFieldUpdateOperationsInput | string | null
     nextFollowUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isClosed?: BoolFieldUpdateOperationsInput | boolean
     isLOB?: BoolFieldUpdateOperationsInput | boolean
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    closedById?: NullableStringFieldUpdateOperationsInput | string | null
+    closureType?: NullableEnumLeadClosureTypeFieldUpdateOperationsInput | $Enums.LeadClosureType | null
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    createdById?: StringFieldUpdateOperationsInput | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LeadUpdateWithoutClosedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    expectedRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
+    generatedRevenue?: FloatFieldUpdateOperationsInput | number
+    nextFollowUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isClosed?: BoolFieldUpdateOperationsInput | boolean
+    isLOB?: BoolFieldUpdateOperationsInput | boolean
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    closureType?: NullableEnumLeadClosureTypeFieldUpdateOperationsInput | $Enums.LeadClosureType | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    assignedTo?: UserUpdateOneWithoutAssignedLeadsNestedInput
+    stage?: LeadStageUpdateOneWithoutLeadsNestedInput
+    lifecycle?: LeadLifeCycleUpdateOneWithoutLeadsNestedInput
+    source?: LeadSourceUpdateOneWithoutLeadsNestedInput
+    createdBy?: UserUpdateOneRequiredWithoutCreatedLeadsNestedInput
+    workspace?: WorkspaceUpdateOneRequiredWithoutLeadsNestedInput
+    followUps?: FollowUpUpdateManyWithoutLeadNestedInput
+    lobLogs?: LeadLOBLogUpdateManyWithoutLeadNestedInput
+  }
+
+  export type LeadUncheckedUpdateWithoutClosedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    expectedRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
+    generatedRevenue?: FloatFieldUpdateOperationsInput | number
+    assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
+    stageId?: NullableStringFieldUpdateOperationsInput | string | null
+    lifecycleId?: NullableStringFieldUpdateOperationsInput | string | null
+    sourceId?: NullableStringFieldUpdateOperationsInput | string | null
+    nextFollowUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isClosed?: BoolFieldUpdateOperationsInput | boolean
+    isLOB?: BoolFieldUpdateOperationsInput | boolean
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    closureType?: NullableEnumLeadClosureTypeFieldUpdateOperationsInput | $Enums.LeadClosureType | null
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    createdById?: StringFieldUpdateOperationsInput | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    followUps?: FollowUpUncheckedUpdateManyWithoutLeadNestedInput
+    lobLogs?: LeadLOBLogUncheckedUpdateManyWithoutLeadNestedInput
+  }
+
+  export type LeadUncheckedUpdateManyWithoutClosedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    expectedRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
+    generatedRevenue?: FloatFieldUpdateOperationsInput | number
+    assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
+    stageId?: NullableStringFieldUpdateOperationsInput | string | null
+    lifecycleId?: NullableStringFieldUpdateOperationsInput | string | null
+    sourceId?: NullableStringFieldUpdateOperationsInput | string | null
+    nextFollowUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isClosed?: BoolFieldUpdateOperationsInput | boolean
+    isLOB?: BoolFieldUpdateOperationsInput | boolean
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    closureType?: NullableEnumLeadClosureTypeFieldUpdateOperationsInput | $Enums.LeadClosureType | null
     workspaceId?: StringFieldUpdateOperationsInput | string
     createdById?: StringFieldUpdateOperationsInput | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null

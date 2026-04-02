@@ -298,6 +298,7 @@ exports.Prisma.LeadScalarFieldEnum = {
   email: 'email',
   phone: 'phone',
   expectedRevenue: 'expectedRevenue',
+  generatedRevenue: 'generatedRevenue',
   assignedToId: 'assignedToId',
   stageId: 'stageId',
   lifecycleId: 'lifecycleId',
@@ -305,6 +306,9 @@ exports.Prisma.LeadScalarFieldEnum = {
   nextFollowUpAt: 'nextFollowUpAt',
   isClosed: 'isClosed',
   isLOB: 'isLOB',
+  closedAt: 'closedAt',
+  closedById: 'closedById',
+  closureType: 'closureType',
   workspaceId: 'workspaceId',
   createdById: 'createdById',
   deletedAt: 'deletedAt',
@@ -548,6 +552,12 @@ exports.LocationType = exports.$Enums.LocationType = {
   WARD: 'WARD',
   CONSTITUENCY: 'CONSTITUENCY',
   OFFICE: 'OFFICE'
+};
+
+exports.LeadClosureType = exports.$Enums.LeadClosureType = {
+  WON: 'WON',
+  LOST: 'LOST',
+  CANCELLED: 'CANCELLED'
 };
 
 exports.TargetSettingCycle = exports.$Enums.TargetSettingCycle = {

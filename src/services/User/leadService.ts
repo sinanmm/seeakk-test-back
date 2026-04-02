@@ -1,5 +1,6 @@
 import prisma from '../../config/prisma';
 import { redisClient } from '../../config/redis';
+import { buildClosureUpdateData, isClosureStage } from '../../modules/leads/leads.service';
 import type {
   AssignLeadInput,
   ChangeStageInput,
@@ -22,6 +23,7 @@ type LeadIncludeRecord = {
   email: string | null;
   phone: string | null;
   expectedRevenue: number | null;
+  generatedRevenue: number;
   assignedToId: string | null;
   stageId: string | null;
   lifecycleId: string | null;
@@ -29,6 +31,9 @@ type LeadIncludeRecord = {
   nextFollowUpAt: Date | null;
   isClosed: boolean;
   isLOB: boolean;
+  closedAt: Date | null;
+  closedById: string | null;
+  closureType: 'WON' | 'LOST' | 'CANCELLED' | null;
   workspaceId: string;
   createdById: string;
   deletedAt: Date | null;
@@ -39,6 +44,7 @@ type LeadIncludeRecord = {
   lifecycle: { id: string; name: string; isDefault: boolean } | null;
   source: { id: string; name: string; status: string } | null;
   createdBy: { id: string; name: string | null; username: string | null; email: string };
+  closedBy: { id: string; name: string | null; username: string | null; email: string } | null;
   lobLogs: Array<{
     id: string;
     reasonId: string;
@@ -111,6 +117,14 @@ const leadInclude = {
       email: true,
     },
   },
+  closedBy: {
+    select: {
+      id: true,
+      name: true,
+      username: true,
+      email: true,
+    },
+  },
   lobLogs: {
     orderBy: { changedAt: 'desc' as const },
     take: 5,
@@ -164,6 +178,7 @@ const assertModuleReady = async (): Promise<void> => {
 const mapLeadRecord = (lead: LeadIncludeRecord) => ({
   ...lead,
   nextFollowUpAt: lead.nextFollowUpAt ? lead.nextFollowUpAt.toISOString() : null,
+  closedAt: lead.closedAt ? lead.closedAt.toISOString() : null,
   deletedAt: lead.deletedAt ? lead.deletedAt.toISOString() : null,
   createdAt: lead.createdAt.toISOString(),
   updatedAt: lead.updatedAt.toISOString(),
@@ -177,6 +192,12 @@ const mapLeadRecord = (lead: LeadIncludeRecord) => ({
     ...lead.createdBy,
     displayName: resolveDisplayName(lead.createdBy),
   },
+  closedBy: lead.closedBy
+    ? {
+        ...lead.closedBy,
+        displayName: resolveDisplayName(lead.closedBy),
+      }
+    : null,
   lobLogs: lead.lobLogs.map((item) => ({
     ...item,
     changedAt: item.changedAt.toISOString(),
@@ -470,6 +491,8 @@ export const createLead = async (
   ensureLOBPayload(stage, input.reasonId, input.remarks ?? null);
 
   const createdLeadId = await prisma.$transaction(async (tx) => {
+    const closureData = buildClosureUpdateData(stage, actor.id);
+
     const lead = await (tx as any).lead.create({
       data: {
         name: input.name.trim(),
@@ -481,8 +504,12 @@ export const createLead = async (
         lifecycleId: lifecycle?.id || null,
         sourceId: source?.id || null,
         nextFollowUpAt: input.nextFollowUpAt ?? null,
-        isClosed: Boolean(stage?.isClosed || stage?.isLOB),
+        isClosed: Boolean(stage?.isLOB) ? true : closureData.isClosed,
         isLOB: Boolean(stage?.isLOB),
+        closedAt: closureData.closedAt,
+        closedById: closureData.closedById,
+        closureType: closureData.closureType,
+        generatedRevenue: closureData.generatedRevenue,
         workspaceId,
         createdById: actor.id,
       },
@@ -613,6 +640,21 @@ export const updateLead = async (
   const remarks = input.remarks === null ? null : input.remarks ?? null;
   const reasonId = input.reasonId === null ? null : input.reasonId ?? null;
   ensureLOBPayload(stage, reasonId, remarks);
+  const closureData = input.stageId !== undefined
+    ? buildClosureUpdateData(stage as any, actor.id, {
+        isClosed: existing.isClosed,
+        closedAt: existing.closedAt,
+        closedById: existing.closedById,
+        generatedRevenue: existing.generatedRevenue,
+        closureType: existing.closureType as any,
+      })
+    : {
+        isClosed: existing.isClosed,
+        closedAt: existing.closedAt,
+        closedById: existing.closedById,
+        closureType: existing.closureType as any,
+        generatedRevenue: existing.generatedRevenue,
+      };
 
   const updatedLeadId = await prisma.$transaction(async (tx) => {
     await (tx as any).lead.update({
@@ -631,7 +673,15 @@ export const updateLead = async (
         ...(input.nextFollowUpAt !== undefined ? { nextFollowUpAt } : {}),
         ...(input.isClosed !== undefined ? { isClosed: input.isClosed } : {}),
         isLOB: Boolean(stage?.isLOB),
-        ...(stage ? { isClosed: input.isClosed ?? Boolean(stage.isClosed || stage.isLOB) } : {}),
+        ...(stage
+          ? {
+              isClosed: Boolean(stage.isLOB) ? true : closureData.isClosed,
+              closedAt: closureData.closedAt,
+              closedById: closureData.closedById,
+              closureType: closureData.closureType,
+              generatedRevenue: closureData.generatedRevenue,
+            }
+          : {}),
       },
     });
 
