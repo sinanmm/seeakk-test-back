@@ -103,7 +103,7 @@ export const createOffice = async (
 export const listOffices = async (workspaceId: string, query?: ListOfficesQuery) => {
   if (!query) {
     const offices = await (prisma as any).office.findMany({
-      where: { workspaceId },
+      where: { workspaceId, isActive: true },
       orderBy: { name: 'asc' },
     });
     return {
@@ -122,12 +122,12 @@ export const listOffices = async (workspaceId: string, query?: ListOfficesQuery)
 
   const where: any = {
     workspaceId,
+    ...(status ? { isActive: status === 'ACTIVE' } : { isActive: true }),
     ...(search
       ? {
           name: { contains: search, mode: 'insensitive' },
         }
       : {}),
-    ...(status ? { isActive: status === 'ACTIVE' } : {}),
     ...(countryId ? { countryId } : {}),
     ...(stateId ? { stateId } : {}),
     ...(districtId ? { districtId } : {}),

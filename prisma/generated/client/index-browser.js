@@ -304,6 +304,10 @@ exports.Prisma.LeadScalarFieldEnum = {
   lifecycleId: 'lifecycleId',
   sourceId: 'sourceId',
   nextFollowUpAt: 'nextFollowUpAt',
+  stageEnteredAt: 'stageEnteredAt',
+  stageExpiresAt: 'stageExpiresAt',
+  slaAction: 'slaAction',
+  slaWarningDays: 'slaWarningDays',
   isClosed: 'isClosed',
   isLOB: 'isLOB',
   closedAt: 'closedAt',
@@ -332,6 +336,8 @@ exports.Prisma.LeadLifeCycleTransitionScalarFieldEnum = {
   fromStageId: 'fromStageId',
   toStageId: 'toStageId',
   numberOfDays: 'numberOfDays',
+  expiryAction: 'expiryAction',
+  warningDays: 'warningDays',
   sortOrder: 'sortOrder',
   workspaceId: 'workspaceId',
   createdAt: 'createdAt',
@@ -362,6 +368,16 @@ exports.Prisma.LeadDynamicValueScalarFieldEnum = {
   leadId: 'leadId',
   fieldId: 'fieldId',
   value: 'value',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.LeadActivityScalarFieldEnum = {
+  id: 'id',
+  leadId: 'leadId',
+  performedById: 'performedById',
+  workspaceId: 'workspaceId',
+  action: 'action',
+  metadata: 'metadata',
   createdAt: 'createdAt'
 };
 
@@ -554,6 +570,11 @@ exports.LocationType = exports.$Enums.LocationType = {
   OFFICE: 'OFFICE'
 };
 
+exports.LeadExpiryAction = exports.$Enums.LeadExpiryAction = {
+  AUTO_LOB: 'AUTO_LOB',
+  WARN_AND_CHOOSE: 'WARN_AND_CHOOSE'
+};
+
 exports.LeadClosureType = exports.$Enums.LeadClosureType = {
   WON: 'WON',
   LOST: 'LOST',
@@ -612,6 +633,7 @@ exports.Prisma.ModelName = {
   LeadDynamicField: 'LeadDynamicField',
   LeadDynamicOption: 'LeadDynamicOption',
   LeadDynamicValue: 'LeadDynamicValue',
+  LeadActivity: 'LeadActivity',
   TargetSetting: 'TargetSetting',
   TargetViolation: 'TargetViolation',
   User: 'User',

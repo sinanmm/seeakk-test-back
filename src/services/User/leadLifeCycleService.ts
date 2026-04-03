@@ -116,6 +116,8 @@ const normalizeTransitions = (transitions: LifecycleTransitionInput[]): Array<{
   fromStageId: string;
   toStageId: string;
   numberOfDays: number;
+  expiryAction: 'AUTO_LOB' | 'WARN_AND_CHOOSE';
+  warningDays: number;
   sortOrder: number;
 }> => {
   if (transitions.length === 0) {
@@ -177,6 +179,8 @@ const normalizeTransitions = (transitions: LifecycleTransitionInput[]): Array<{
       fromStageId,
       toStageId,
       numberOfDays: transition.numberOfDays,
+      expiryAction: transition.expiryAction,
+      warningDays: transition.warningDays,
       sortOrder,
     };
   });
@@ -218,32 +222,30 @@ const ensureStagesExist = async (stageIds: string[]): Promise<void> => {
 };
 
 const countLifecycleUsage = async (workspaceId: string, lifecycleId: string): Promise<number> => {
+  const leadDelegate = (prisma as any).lead;
+
+  if (leadDelegate?.count) {
+    return leadDelegate.count({
+      where: {
+        workspaceId,
+        lifecycleId,
+        deletedAt: null,
+      },
+    });
+  }
+
   const tableRows = await prisma.$queryRaw<Array<{ table_name: string | null }>>`
     SELECT to_regclass('public.leads')::text AS table_name
   `;
 
   if (!tableRows[0]?.table_name) return 0;
 
-  const columnRows = await prisma.$queryRaw<Array<{ column_name: string }>>`
-    SELECT column_name
-    FROM information_schema.columns
-    WHERE table_schema = 'public'
-      AND table_name = 'leads'
-  `;
-
-  const candidateColumns = ['leadLifeCycleId', 'lead_life_cycle_id', 'lifecycleId', 'lifecycle_id'];
-  const matchedColumn = candidateColumns.find((column) =>
-    columnRows.some((row) => row.column_name === column),
-  );
-
-  if (!matchedColumn) return 0;
-
-  const quotedColumn = `"${matchedColumn}"`;
   const result = await prisma.$queryRawUnsafe<Array<{ count: number }>>(
     `SELECT COUNT(*)::int AS count
      FROM "leads"
      WHERE "workspaceId" = $1
-       AND ${quotedColumn} = $2`,
+       AND "lifecycleId" = $2
+       AND "deletedAt" IS NULL`,
     workspaceId,
     lifecycleId,
   );
@@ -316,6 +318,8 @@ export const createLifeCycle = async (
         fromStageId: transition.fromStageId,
         toStageId: transition.toStageId,
         numberOfDays: transition.numberOfDays,
+        expiryAction: transition.expiryAction,
+        warningDays: transition.warningDays,
         sortOrder: transition.sortOrder,
         workspaceId,
       })),
@@ -470,6 +474,8 @@ export const updateLifeCycle = async (
         fromStageId: transition.fromStageId,
         toStageId: transition.toStageId,
         numberOfDays: transition.numberOfDays,
+        expiryAction: transition.expiryAction,
+        warningDays: transition.warningDays,
         sortOrder: transition.sortOrder,
         workspaceId,
       })),

@@ -12,6 +12,7 @@ router.post('/', leadController.createLead);
 router.get('/:id', leadController.getLeadById);
 router.put('/:id', leadController.updateLead);
 router.patch('/:id/stage', leadController.changeStage);
+router.patch('/:id/sla/extend', leadController.extendLeadSla);
 router.patch('/:id/assign', leadController.assignLead);
 router.delete('/:id', leadController.deleteLead);
 

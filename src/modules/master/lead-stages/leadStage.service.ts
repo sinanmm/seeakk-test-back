@@ -86,34 +86,13 @@ const mapCreatorNames = async <T extends { createdBy: string | null }>(
   }));
 };
 
-const countLeadUsage = async (stageId: string): Promise<number> => {
-  const tableRows = await prisma.$queryRaw<Array<{ table_name: string | null }>>`
-    SELECT to_regclass('public.leads')::text AS table_name
-  `;
-
-  const hasLeadsTable = Boolean(tableRows[0]?.table_name);
-  if (!hasLeadsTable) return 0;
-
-  const columnRows = await prisma.$queryRaw<Array<{ column_name: string }>>`
-    SELECT column_name
-    FROM information_schema.columns
-    WHERE table_schema = 'public'
-      AND table_name = 'leads'
-  `;
-
-  const hasCamelColumn = columnRows.some((column) => column.column_name === 'stageId');
-  const hasSnakeColumn = columnRows.some((column) => column.column_name === 'stage_id');
-
-  if (!hasCamelColumn && !hasSnakeColumn) return 0;
-
-  const filterColumn = hasCamelColumn ? '"stageId"' : '"stage_id"';
-  const result = await prisma.$queryRawUnsafe<Array<{ count: number }>>(
-    `SELECT COUNT(*)::int AS count FROM "leads" WHERE ${filterColumn} = $1`,
-    stageId,
-  );
-
-  return Number(result[0]?.count ?? 0);
-};
+const countLeadUsage = async (stageId: string): Promise<number> =>
+  (prisma as any).lead.count({
+    where: {
+      stageId,
+      deletedAt: null,
+    },
+  });
 
 const remapSingleStage = async (record: any): Promise<LeadStageResponse> => {
   const [mapped] = await mapCreatorNames([record]);

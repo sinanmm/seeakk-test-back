@@ -365,15 +365,29 @@ export const deleteLeadDynamicField = async (id: string, workspaceId: string): P
     throw createServiceError('Lead dynamic field not found.', 404);
   }
 
-  const usageCount = await (prisma as any).leadDynamicValue.count({
-    where: { fieldId: id },
-  });
+  const usageCountRows = await prisma.$queryRaw<Array<{ count: number }>>`
+    SELECT COUNT(*)::int AS count
+    FROM "lead_dynamic_values" ldv
+    INNER JOIN "leads" l
+      ON l."id" = ldv."leadId"
+    WHERE ldv."fieldId" = ${id}
+      AND l."workspaceId" = ${workspaceId}
+      AND l."deletedAt" IS NULL
+  `;
+
+  const usageCount = Number(usageCountRows[0]?.count ?? 0);
 
   if (usageCount > 0) {
     throw createServiceError('Field is used in leads and cannot be deleted.', 400);
   }
 
   await prisma.$transaction(async (tx) => {
+    await (tx as any).leadDynamicValue.deleteMany({
+      where: {
+        fieldId: id,
+      },
+    });
+
     await (tx as any).leadDynamicField.delete({ where: { id } });
     await (tx as any).leadDynamicField.updateMany({
       where: {

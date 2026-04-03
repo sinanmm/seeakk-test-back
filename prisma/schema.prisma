@@ -95,6 +95,7 @@ model Workspace {
   leadLifeCycles LeadLifeCycle[]
   leadDynamicFields LeadDynamicField[]
   leads          Lead[]
+  leadActivities LeadActivity[]
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
@@ -120,6 +121,11 @@ enum LeadClosureType {
   WON
   LOST
   CANCELLED
+}
+
+enum LeadExpiryAction {
+  AUTO_LOB
+  WARN_AND_CHOOSE
 }
 
 enum InputType {
@@ -400,6 +406,10 @@ model Lead {
   lifecycleId     String?
   sourceId        String?
   nextFollowUpAt  DateTime?
+  stageEnteredAt  DateTime?
+  stageExpiresAt  DateTime?
+  slaAction       LeadExpiryAction?
+  slaWarningDays  Int?
   isClosed        Boolean       @default(false)
   isLOB           Boolean       @default(false)
   closedAt        DateTime?
@@ -420,6 +430,7 @@ model Lead {
   workspace       Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   followUps       FollowUp[]
   lobLogs         LeadLOBLog[]
+  activities      LeadActivity[]
 
   @@index([workspaceId, assignedToId, stageId])
   @@index([workspaceId, sourceId, createdAt])
@@ -430,6 +441,13 @@ model Lead {
   @@index([closureType])
   @@index([closedAt(sort: Desc)])
   @@index([nextFollowUpAt])
+  @@index([workspaceId, isClosed, isLOB, stageExpiresAt])
+  @@index([workspaceId, stageId, deletedAt, isClosed])
+  @@index([workspaceId, assignedToId, deletedAt, isClosed])
+  @@index([workspaceId, sourceId, deletedAt, isClosed])
+  @@index([workspaceId, lifecycleId, deletedAt, isClosed])
+  @@index([workspaceId, nextFollowUpAt, deletedAt, isClosed])
+  @@index([workspaceId, createdAt(sort: Desc), deletedAt, isClosed])
   @@map("leads")
 }
 
@@ -458,6 +476,8 @@ model LeadLifeCycleTransition {
   toStageId    String
 
   numberOfDays Int
+  expiryAction LeadExpiryAction @default(WARN_AND_CHOOSE)
+  warningDays  Int              @default(1)
 
   sortOrder    Int
 
@@ -521,6 +541,24 @@ model LeadDynamicValue {
   @@index([leadId])
   @@index([fieldId])
   @@map("lead_dynamic_values")
+}
+
+model LeadActivity {
+  id           String   @id @default(cuid())
+  leadId        String
+  performedById String?
+  workspaceId   String
+  action        String
+  metadata      Json?
+  createdAt     DateTime @default(now())
+
+  lead          Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  performedBy   User?     @relation("LeadActivityPerformedBy", fields: [performedById], references: [id], onDelete: SetNull)
+  workspace     Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([leadId, createdAt(sort: Desc)])
+  @@index([workspaceId, action, createdAt(sort: Desc)])
+  @@map("lead_activities")
 }
 
 model TargetSetting {
@@ -629,6 +667,7 @@ model User {
 
   // Audit logs relation
   auditLogs                AuditLog[]
+  performedLeadActivities  LeadActivity[] @relation("LeadActivityPerformedBy")
   rosterEntries            RosterEntry[]
   followUps                FollowUp[]
   createdLeads             Lead[]       @relation("LeadCreatedBy")

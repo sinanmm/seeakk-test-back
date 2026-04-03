@@ -101,6 +101,20 @@ export const assignLeadSchema = z.object({
 
 export type AssignLeadInput = z.infer<typeof assignLeadSchema>;
 
+export const extendLeadSlaSchema = z.object({
+  extraDays: z.preprocess((value: unknown) => {
+    const normalized = emptyStringToUndefined(value);
+    if (typeof normalized === 'number') return normalized;
+    if (typeof normalized === 'string') {
+      const parsed = Number(normalized);
+      return Number.isFinite(parsed) ? parsed : normalized;
+    }
+    return normalized;
+  }, z.number().int('extraDays must be a whole number').positive('extraDays must be greater than 0')),
+});
+
+export type ExtendLeadSlaInput = z.infer<typeof extendLeadSlaSchema>;
+
 export const leadIdParamSchema = z.object({
   id: requiredId('id'),
 });

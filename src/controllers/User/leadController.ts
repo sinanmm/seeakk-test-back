@@ -6,6 +6,7 @@ import type {
   AssignLeadInput,
   ChangeStageInput,
   CreateLeadInput,
+  ExtendLeadSlaInput,
   ExportLeadsQueryInput,
   LeadIdParamInput,
   ListLeadsQueryInput,
@@ -15,6 +16,7 @@ import {
   assignLeadSchema,
   changeStageSchema,
   createLeadSchema,
+  extendLeadSlaSchema,
   exportLeadsQuerySchema,
   leadIdParamSchema,
   listLeadsQuerySchema,
@@ -277,6 +279,43 @@ export const assignLead = async (req: Request, res: Response, next: NextFunction
     });
   } catch (error) {
     handleServiceError(error, res, next, 'assignLead');
+  }
+};
+
+export const extendLeadSla = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = requireWorkspace(req, res);
+  if (!workspaceId) return;
+
+  const params = validate<LeadIdParamInput>(leadIdParamSchema, req.params, res);
+  if (!params) return;
+
+  const input = validate<ExtendLeadSlaInput>(extendLeadSlaSchema, req.body, res);
+  if (!input) return;
+
+  try {
+    const lead = await leadService.extendLeadSla(workspaceId, params.id, input.extraDays);
+
+    await auditService.log({
+      userId: req.user?.id,
+      workspaceId,
+      action: 'LEAD_SLA_EXTENDED',
+      entityType: 'Lead',
+      entityId: lead.id,
+      details: {
+        extraDays: input.extraDays,
+        stageExpiresAt: (lead as any).stageExpiresAt,
+      },
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Lead lifecycle timer extended successfully',
+      data: lead,
+    });
+  } catch (error) {
+    handleServiceError(error, res, next, 'extendLeadSla');
   }
 };
 

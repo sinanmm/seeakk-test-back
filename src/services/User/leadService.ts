@@ -17,6 +17,15 @@ type Actor = {
   role?: { name?: string | null } | null;
 };
 
+type SlaAction = 'AUTO_LOB' | 'WARN_AND_CHOOSE';
+
+type LeadSlaSnapshot = {
+  stageEnteredAt: Date | null;
+  stageExpiresAt: Date | null;
+  slaAction: SlaAction | null;
+  slaWarningDays: number | null;
+};
+
 type LeadIncludeRecord = {
   id: string;
   name: string;
@@ -29,6 +38,10 @@ type LeadIncludeRecord = {
   lifecycleId: string | null;
   sourceId: string | null;
   nextFollowUpAt: Date | null;
+  stageEnteredAt: Date | null;
+  stageExpiresAt: Date | null;
+  slaAction: SlaAction | null;
+  slaWarningDays: number | null;
   isClosed: boolean;
   isLOB: boolean;
   closedAt: Date | null;
@@ -178,10 +191,23 @@ const assertModuleReady = async (): Promise<void> => {
 const mapLeadRecord = (lead: LeadIncludeRecord) => ({
   ...lead,
   nextFollowUpAt: lead.nextFollowUpAt ? lead.nextFollowUpAt.toISOString() : null,
+  stageEnteredAt: lead.stageEnteredAt ? lead.stageEnteredAt.toISOString() : null,
+  stageExpiresAt: lead.stageExpiresAt ? lead.stageExpiresAt.toISOString() : null,
   closedAt: lead.closedAt ? lead.closedAt.toISOString() : null,
   deletedAt: lead.deletedAt ? lead.deletedAt.toISOString() : null,
   createdAt: lead.createdAt.toISOString(),
   updatedAt: lead.updatedAt.toISOString(),
+  slaState: (() => {
+    if (!lead.stageExpiresAt || !lead.slaAction || lead.isClosed || lead.isLOB) return null;
+    const now = Date.now();
+    const expiresAt = lead.stageExpiresAt.getTime();
+    if (expiresAt <= now) return 'EXPIRED' as const;
+    if (lead.slaWarningDays !== null && lead.slaWarningDays !== undefined) {
+      const warningAt = expiresAt - lead.slaWarningDays * 24 * 60 * 60 * 1000;
+      if (warningAt <= now) return 'WARNING' as const;
+    }
+    return 'ON_TRACK' as const;
+  })(),
   assignedTo: lead.assignedTo
     ? {
         ...lead.assignedTo,
@@ -305,6 +331,15 @@ const resolveLifecycle = async (workspaceId: string, lifecycleId?: string | null
       select: {
         id: true,
         name: true,
+        transitions: {
+          orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
+          select: {
+            fromStageId: true,
+            numberOfDays: true,
+            expiryAction: true,
+            warningDays: true,
+          },
+        },
       },
     });
   }
@@ -317,6 +352,15 @@ const resolveLifecycle = async (workspaceId: string, lifecycleId?: string | null
     select: {
       id: true,
       name: true,
+      transitions: {
+        orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
+        select: {
+          fromStageId: true,
+          numberOfDays: true,
+          expiryAction: true,
+          warningDays: true,
+        },
+      },
     },
   });
 
@@ -325,6 +369,157 @@ const resolveLifecycle = async (workspaceId: string, lifecycleId?: string | null
   }
 
   return lifecycle;
+};
+
+const emptySlaSnapshot = (): LeadSlaSnapshot => ({
+  stageEnteredAt: null,
+  stageExpiresAt: null,
+  slaAction: null,
+  slaWarningDays: null,
+});
+
+const addDays = (base: Date, days: number): Date => new Date(base.getTime() + days * 24 * 60 * 60 * 1000);
+
+const resolveLifecycleTransition = (
+  lifecycle?:
+    | {
+        transitions?: Array<{
+          numberOfDays: number;
+          expiryAction: SlaAction;
+          warningDays: number;
+          fromStageId?: string | null;
+        }>;
+      }
+    | null,
+  stageId?: string | null,
+): {
+  numberOfDays: number;
+  expiryAction: SlaAction;
+  warningDays: number;
+} | null => {
+  const transitions = lifecycle?.transitions || [];
+  if (transitions.length === 0 || !stageId) return null;
+  const transition = transitions.find((item) => item.fromStageId === stageId) || transitions[0];
+  if (!transition || transition.numberOfDays <= 0) return null;
+
+  return {
+    numberOfDays: transition.numberOfDays,
+    expiryAction: transition.expiryAction || 'AUTO_LOB',
+    warningDays: transition.warningDays ?? 0,
+  };
+};
+
+const buildLeadSlaSnapshot = async (
+  lifecycle?:
+    | {
+        transitions?: Array<{
+          fromStageId?: string | null;
+          numberOfDays: number;
+          expiryAction: SlaAction;
+          warningDays: number;
+        }>;
+      }
+    | null,
+  stageId?: string | null,
+  fromDate = new Date(),
+): Promise<LeadSlaSnapshot> => {
+  const transition = resolveLifecycleTransition(lifecycle, stageId);
+  if (!transition) return emptySlaSnapshot();
+
+  return {
+    stageEnteredAt: fromDate,
+    stageExpiresAt: addDays(fromDate, transition.numberOfDays),
+    slaAction: transition.expiryAction,
+    slaWarningDays: transition.warningDays,
+  };
+};
+
+const shouldRefreshSla = (
+  existing: Pick<LeadIncludeRecord, 'stageId' | 'lifecycleId'>,
+  nextStageId?: string | null,
+  nextLifecycleId?: string | null,
+): boolean => existing.stageId !== (nextStageId ?? null) || existing.lifecycleId !== (nextLifecycleId ?? null);
+
+const sweepThrottleByWorkspace = new Map<string, number>();
+
+const shouldRunSweepNow = (workspaceId: string): boolean => {
+  const now = Date.now();
+  const lastRunAt = sweepThrottleByWorkspace.get(workspaceId) || 0;
+  if (now - lastRunAt < LEADS_CACHE_TTL_SECONDS * 1000) return false;
+  sweepThrottleByWorkspace.set(workspaceId, now);
+  return true;
+};
+
+const getLobStageForWorkspace = async (_workspaceId: string) =>
+  prisma.leadStage.findFirst({
+    where: {
+      deletedAt: null,
+      status: 'ACTIVE',
+      OR: [{ isLOB: true }, { name: { equals: 'LOB', mode: 'insensitive' } }],
+    },
+    orderBy: [{ order: 'asc' }, { createdAt: 'asc' }],
+    select: {
+      id: true,
+      name: true,
+      isLOB: true,
+      isClosed: true,
+    },
+  });
+
+const maybeRunLeadSlaSweep = async (workspaceId: string): Promise<void> => {
+  if (!shouldRunSweepNow(workspaceId)) return;
+
+  const expiredAutoLobLeads = await prisma.lead.findMany({
+    where: {
+      workspaceId,
+      deletedAt: null,
+      isClosed: false,
+      isLOB: false,
+      stageExpiresAt: { lte: new Date() },
+      slaAction: 'AUTO_LOB',
+    },
+    select: {
+      id: true,
+    },
+    take: 100,
+  });
+
+  if (expiredAutoLobLeads.length === 0) return;
+
+  const lobStage = await getLobStageForWorkspace(workspaceId);
+  if (!lobStage) return;
+
+  for (const lead of expiredAutoLobLeads) {
+    const now = new Date();
+    await prisma.$transaction(async (tx) => {
+      await (tx as any).lead.update({
+        where: { id: lead.id },
+        data: {
+          stageId: lobStage.id,
+          isLOB: true,
+          isClosed: true,
+          closedAt: now,
+          closureType: 'LOST',
+          stageEnteredAt: now,
+          stageExpiresAt: null,
+          slaAction: null,
+          slaWarningDays: null,
+        },
+      });
+
+      await (tx as any).leadLOBLog.create({
+        data: {
+          leadId: lead.id,
+          reasonId: 'SYSTEM_SLA_EXPIRED',
+          remarks: 'Moved automatically to LOB after stage SLA expired.',
+          changedById: 'system',
+          workspaceId,
+        },
+      });
+    });
+  }
+
+  await clearLeadCache(workspaceId);
 };
 
 const resolveSource = async (sourceId: string | null | undefined) => {
@@ -489,6 +684,9 @@ export const createLead = async (
   const lifecycle = await resolveLifecycle(workspaceId, input.lifecycleId);
   const source = await resolveSource(input.sourceId);
   ensureLOBPayload(stage, input.reasonId, input.remarks ?? null);
+  const slaSnapshot = stage?.isLOB || stage?.isClosed
+    ? emptySlaSnapshot()
+    : await buildLeadSlaSnapshot(lifecycle, stage?.id || null);
 
   const createdLeadId = await prisma.$transaction(async (tx) => {
     const closureData = buildClosureUpdateData(stage, actor.id);
@@ -504,6 +702,10 @@ export const createLead = async (
         lifecycleId: lifecycle?.id || null,
         sourceId: source?.id || null,
         nextFollowUpAt: input.nextFollowUpAt ?? null,
+        stageEnteredAt: slaSnapshot.stageEnteredAt,
+        stageExpiresAt: slaSnapshot.stageExpiresAt,
+        slaAction: slaSnapshot.slaAction,
+        slaWarningDays: slaSnapshot.slaWarningDays,
         isClosed: Boolean(stage?.isLOB) ? true : closureData.isClosed,
         isLOB: Boolean(stage?.isLOB),
         closedAt: closureData.closedAt,
@@ -562,6 +764,7 @@ export const getLeads = async (
   };
 }> => {
   await assertModuleReady();
+  await maybeRunLeadSlaSweep(workspaceId);
 
   const cacheKey = buildLeadCacheKey(workspaceId, query);
   if (redisClient.isOpen) {
@@ -610,6 +813,7 @@ export const getLeadById = async (
   id: string,
 ): Promise<ReturnType<typeof mapLeadRecord>> => {
   await assertModuleReady();
+  await maybeRunLeadSlaSweep(workspaceId);
   const lead = await getLeadScoped(workspaceId, id);
   return mapLeadRecord(lead);
 };
@@ -636,6 +840,12 @@ export const updateLead = async (
   const stage = input.stageId !== undefined ? await resolveStage(input.stageId) : existing.stage;
   const lifecycle = input.lifecycleId !== undefined ? await resolveLifecycle(workspaceId, input.lifecycleId) : existing.lifecycle;
   const source = input.sourceId !== undefined ? await resolveSource(input.sourceId) : existing.source;
+  const lifecycleForSla =
+    input.lifecycleId !== undefined
+      ? lifecycle
+      : input.stageId !== undefined && existing.lifecycleId
+        ? await resolveLifecycle(workspaceId, existing.lifecycleId)
+        : null;
 
   const remarks = input.remarks === null ? null : input.remarks ?? null;
   const reasonId = input.reasonId === null ? null : input.reasonId ?? null;
@@ -655,6 +865,22 @@ export const updateLead = async (
         closureType: existing.closureType as any,
         generatedRevenue: existing.generatedRevenue,
       };
+  const nextStageId = stage?.id || null;
+  const nextLifecycleId = lifecycle?.id || null;
+  const nextLifecycleForSla =
+    lifecycleForSla && 'transitions' in lifecycleForSla
+      ? { transitions: lifecycleForSla.transitions }
+      : null;
+  const slaSnapshot = shouldRefreshSla(existing, nextStageId, nextLifecycleId)
+    ? (stage?.isLOB || isClosureStage(stage)
+        ? emptySlaSnapshot()
+        : await buildLeadSlaSnapshot(nextLifecycleForSla, nextStageId))
+    : {
+        stageEnteredAt: existing.stageEnteredAt,
+        stageExpiresAt: existing.stageExpiresAt,
+        slaAction: existing.slaAction,
+        slaWarningDays: existing.slaWarningDays,
+      };
 
   const updatedLeadId = await prisma.$transaction(async (tx) => {
     await (tx as any).lead.update({
@@ -671,6 +897,14 @@ export const updateLead = async (
         ...(input.lifecycleId !== undefined ? { lifecycleId: lifecycle?.id || null } : {}),
         ...(input.sourceId !== undefined ? { sourceId: source?.id || null } : {}),
         ...(input.nextFollowUpAt !== undefined ? { nextFollowUpAt } : {}),
+        ...(shouldRefreshSla(existing, nextStageId, nextLifecycleId)
+          ? {
+              stageEnteredAt: slaSnapshot.stageEnteredAt,
+              stageExpiresAt: slaSnapshot.stageExpiresAt,
+              slaAction: slaSnapshot.slaAction,
+              slaWarningDays: slaSnapshot.slaWarningDays,
+            }
+          : {}),
         ...(input.isClosed !== undefined ? { isClosed: input.isClosed } : {}),
         isLOB: Boolean(stage?.isLOB),
         ...(stage
@@ -739,6 +973,38 @@ export const assignLead = async (
   updateLead(workspaceId, actor, id, {
     assignedToId: input.assignedToId,
   });
+
+export const extendLeadSla = async (
+  workspaceId: string,
+  id: string,
+  extraDays: number,
+): Promise<ReturnType<typeof mapLeadRecord>> => {
+  await assertModuleReady();
+
+  const lead = await getLeadScoped(workspaceId, id);
+  if (lead.isClosed || lead.isLOB) {
+    throw createServiceError('Only active leads can have their lifecycle timer extended.', 409);
+  }
+
+  if (!lead.stageExpiresAt) {
+    throw createServiceError('This lead does not have an active lifecycle timer to extend.', 409);
+  }
+
+  if (lead.slaAction !== 'WARN_AND_CHOOSE') {
+    throw createServiceError('This lead is configured to move to LOB automatically on expiry.', 409);
+  }
+
+  const updated = await (prisma as any).lead.update({
+    where: { id },
+    data: {
+      stageExpiresAt: addDays(lead.stageExpiresAt, extraDays),
+    },
+    include: leadInclude,
+  });
+
+  await clearLeadCache(workspaceId);
+  return mapLeadRecord(updated as LeadIncludeRecord);
+};
 
 export const deleteLead = async (workspaceId: string, id: string): Promise<void> => {
   await assertModuleReady();

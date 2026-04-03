@@ -30,23 +30,35 @@ const transitionSchema = z.object({
   numberOfDays: numericIntField('numberOfDays').refine((value) => value > 0, {
     message: 'numberOfDays must be greater than 0',
   }),
+  expiryAction: z.enum(['AUTO_LOB', 'WARN_AND_CHOOSE']).default('AUTO_LOB'),
+  warningDays: numericIntField('warningDays').refine((value) => value >= 0, {
+    message: 'warningDays must be zero or greater',
+  }).default(1),
   sortOrder: numericIntField('sortOrder').refine((value) => value > 0, {
     message: 'sortOrder must be greater than 0',
   }).optional(),
+}).superRefine((value, ctx) => {
+  if (value.warningDays >= value.numberOfDays) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'warningDays must be less than numberOfDays',
+      path: ['warningDays'],
+    });
+  }
 });
 
-export const createLeadLifeCycleSchema = z.object({
+const lifeCycleSchema = z.object({
   name: z.string().trim().min(1, 'name is required').max(120, 'name is too long'),
   isDefault: z.boolean().optional().default(false),
   transitions: z.array(transitionSchema).min(1, 'At least one transition is required'),
 });
 
+export const createLeadLifeCycleSchema = lifeCycleSchema;
+
 export type CreateLeadLifeCycleInput = z.infer<typeof createLeadLifeCycleSchema>;
 
-export const updateLeadLifeCycleSchema = z.object({
-  name: z.string().trim().min(1, 'name is required').max(120, 'name is too long'),
+export const updateLeadLifeCycleSchema = lifeCycleSchema.extend({
   isDefault: z.boolean().optional(),
-  transitions: z.array(transitionSchema).min(1, 'At least one transition is required'),
 });
 
 export type UpdateLeadLifeCycleInput = z.infer<typeof updateLeadLifeCycleSchema>;
