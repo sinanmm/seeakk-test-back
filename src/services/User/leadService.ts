@@ -1,6 +1,7 @@
 import prisma from '../../config/prisma';
 import { redisClient } from '../../config/redis';
 import { buildClosureUpdateData, isClosureStage } from '../../modules/leads/leads.service';
+import * as leadApprovalService from '../../modules/leads/leadApprovals.service';
 import type {
   AssignLeadInput,
   ChangeStageInput,
@@ -14,6 +15,7 @@ const LEADS_CACHE_TTL_SECONDS = 60;
 
 type Actor = {
   id: string;
+  roleId?: string | null;
   role?: { name?: string | null } | null;
 };
 
@@ -42,6 +44,9 @@ type LeadIncludeRecord = {
   stageExpiresAt: Date | null;
   slaAction: SlaAction | null;
   slaWarningDays: number | null;
+  approvalState: 'NONE' | 'PENDING';
+  pendingApprovalToStageId: string | null;
+  pendingApprovalRequestedAt: Date | null;
   isClosed: boolean;
   isLOB: boolean;
   closedAt: Date | null;
@@ -193,6 +198,7 @@ const mapLeadRecord = (lead: LeadIncludeRecord) => ({
   nextFollowUpAt: lead.nextFollowUpAt ? lead.nextFollowUpAt.toISOString() : null,
   stageEnteredAt: lead.stageEnteredAt ? lead.stageEnteredAt.toISOString() : null,
   stageExpiresAt: lead.stageExpiresAt ? lead.stageExpiresAt.toISOString() : null,
+  pendingApprovalRequestedAt: lead.pendingApprovalRequestedAt ? lead.pendingApprovalRequestedAt.toISOString() : null,
   closedAt: lead.closedAt ? lead.closedAt.toISOString() : null,
   deletedAt: lead.deletedAt ? lead.deletedAt.toISOString() : null,
   createdAt: lead.createdAt.toISOString(),
@@ -309,6 +315,7 @@ const resolveStage = async (stageId: string | null | undefined) => {
     select: {
       id: true,
       name: true,
+      isApprovalRequired: true,
       isLOB: true,
       isClosed: true,
     },
@@ -827,6 +834,17 @@ export const updateLead = async (
   await assertModuleReady();
 
   const existing = await getLeadScoped(workspaceId, id);
+  if (
+    existing.approvalState === 'PENDING' &&
+    input.stageId !== undefined &&
+    input.stageId !== existing.stageId
+  ) {
+    throw createServiceError(
+      'This lead has a pending stage approval request. Resolve it before changing the stage again.',
+      409,
+    );
+  }
+
   const nextFollowUpAt = input.nextFollowUpAt === null ? null : (input.nextFollowUpAt ?? existing.nextFollowUpAt);
   ensureFutureFollowUp(nextFollowUpAt);
 
@@ -955,14 +973,60 @@ export const changeStage = async (
   actor: Actor,
   id: string,
   input: ChangeStageInput,
-): Promise<ReturnType<typeof mapLeadRecord>> =>
-  updateLead(workspaceId, actor, id, {
+): Promise<
+  | { approvalRequired: false; lead: ReturnType<typeof mapLeadRecord> }
+  | { approvalRequired: true; lead: any; approval: any }
+> => {
+  await assertModuleReady();
+
+  const existing = await getLeadScoped(workspaceId, id);
+  const targetStage = await resolveStage(input.stageId);
+
+  if (!targetStage) {
+    throw createServiceError('Lead stage was not found.', 404);
+  }
+
+  if (existing.stageId !== targetStage.id && targetStage.isApprovalRequired) {
+    if (!existing.stageId) {
+      throw createServiceError('Lead does not have a current stage to request approval from.', 409);
+    }
+
+    const result = await leadApprovalService.createLeadApproval(
+      workspaceId,
+      { id: actor.id, roleId: actor.roleId ?? null, role: actor.role },
+      {
+        leadId: id,
+        fromStageId: existing.stageId,
+        toStageId: targetStage.id,
+        requestData: {
+          reasonId: input.reasonId ?? null,
+          remarks: input.remarks ?? null,
+          nextFollowUpAt: input.nextFollowUpAt ? input.nextFollowUpAt.toISOString() : null,
+          followUpDescription: input.followUpDescription ?? null,
+        },
+      },
+    );
+
+    return {
+      approvalRequired: true,
+      lead: result.lead,
+      approval: result.approval,
+    };
+  }
+
+  const updatedLead = await updateLead(workspaceId, actor, id, {
     stageId: input.stageId,
     reasonId: input.reasonId,
     remarks: input.remarks,
     nextFollowUpAt: input.nextFollowUpAt,
     followUpDescription: input.followUpDescription,
   });
+
+  return {
+    approvalRequired: false,
+    lead: updatedLead,
+  };
+};
 
 export const assignLead = async (
   workspaceId: string,

@@ -104,6 +104,11 @@ export type Lead = $Result.DefaultSelection<Prisma.$LeadPayload>
  */
 export type LeadLOBLog = $Result.DefaultSelection<Prisma.$LeadLOBLogPayload>
 /**
+ * Model LeadStageApproval
+ * 
+ */
+export type LeadStageApproval = $Result.DefaultSelection<Prisma.$LeadStageApprovalPayload>
+/**
  * Model LeadLifeCycleTransition
  * 
  */
@@ -244,6 +249,14 @@ export const LeadExpiryAction: {
 export type LeadExpiryAction = (typeof LeadExpiryAction)[keyof typeof LeadExpiryAction]
 
 
+export const LeadApprovalState: {
+  NONE: 'NONE',
+  PENDING: 'PENDING'
+};
+
+export type LeadApprovalState = (typeof LeadApprovalState)[keyof typeof LeadApprovalState]
+
+
 export const LeadClosureType: {
   WON: 'WON',
   LOST: 'LOST',
@@ -251,6 +264,15 @@ export const LeadClosureType: {
 };
 
 export type LeadClosureType = (typeof LeadClosureType)[keyof typeof LeadClosureType]
+
+
+export const LeadApprovalStatus: {
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  DENIED: 'DENIED'
+};
+
+export type LeadApprovalStatus = (typeof LeadApprovalStatus)[keyof typeof LeadApprovalStatus]
 
 
 export const TargetSettingCycle: {
@@ -330,9 +352,17 @@ export type LeadExpiryAction = $Enums.LeadExpiryAction
 
 export const LeadExpiryAction: typeof $Enums.LeadExpiryAction
 
+export type LeadApprovalState = $Enums.LeadApprovalState
+
+export const LeadApprovalState: typeof $Enums.LeadApprovalState
+
 export type LeadClosureType = $Enums.LeadClosureType
 
 export const LeadClosureType: typeof $Enums.LeadClosureType
+
+export type LeadApprovalStatus = $Enums.LeadApprovalStatus
+
+export const LeadApprovalStatus: typeof $Enums.LeadApprovalStatus
 
 export type TargetSettingCycle = $Enums.TargetSettingCycle
 
@@ -656,6 +686,16 @@ export class PrismaClient<
     * ```
     */
   get leadLOBLog(): Prisma.LeadLOBLogDelegate<ExtArgs>;
+
+  /**
+   * `prisma.leadStageApproval`: Exposes CRUD operations for the **LeadStageApproval** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more LeadStageApprovals
+    * const leadStageApprovals = await prisma.leadStageApproval.findMany()
+    * ```
+    */
+  get leadStageApproval(): Prisma.LeadStageApprovalDelegate<ExtArgs>;
 
   /**
    * `prisma.leadLifeCycleTransition`: Exposes CRUD operations for the **LeadLifeCycleTransition** model.
@@ -1245,6 +1285,7 @@ export namespace Prisma {
     LeadLifeCycle: 'LeadLifeCycle',
     Lead: 'Lead',
     LeadLOBLog: 'LeadLOBLog',
+    LeadStageApproval: 'LeadStageApproval',
     LeadLifeCycleTransition: 'LeadLifeCycleTransition',
     LeadDynamicField: 'LeadDynamicField',
     LeadDynamicOption: 'LeadDynamicOption',
@@ -1273,7 +1314,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "role" | "permission" | "rolePermission" | "workspace" | "department" | "leadSource" | "leadStage" | "stageRule" | "leadStageInput" | "office" | "location" | "userLocationAssignment" | "targetType" | "targetCycle" | "targetCycleRange" | "leadLifeCycle" | "lead" | "leadLOBLog" | "leadLifeCycleTransition" | "leadDynamicField" | "leadDynamicOption" | "leadDynamicValue" | "leadActivity" | "targetSetting" | "targetViolation" | "user" | "followUp" | "followUpImage" | "rosterEntry" | "auditLog" | "device"
+      modelProps: "role" | "permission" | "rolePermission" | "workspace" | "department" | "leadSource" | "leadStage" | "stageRule" | "leadStageInput" | "office" | "location" | "userLocationAssignment" | "targetType" | "targetCycle" | "targetCycleRange" | "leadLifeCycle" | "lead" | "leadLOBLog" | "leadStageApproval" | "leadLifeCycleTransition" | "leadDynamicField" | "leadDynamicOption" | "leadDynamicValue" | "leadActivity" | "targetSetting" | "targetViolation" | "user" | "followUp" | "followUpImage" | "rosterEntry" | "auditLog" | "device"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2537,6 +2578,76 @@ export namespace Prisma {
           }
         }
       }
+      LeadStageApproval: {
+        payload: Prisma.$LeadStageApprovalPayload<ExtArgs>
+        fields: Prisma.LeadStageApprovalFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.LeadStageApprovalFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadStageApprovalPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.LeadStageApprovalFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadStageApprovalPayload>
+          }
+          findFirst: {
+            args: Prisma.LeadStageApprovalFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadStageApprovalPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.LeadStageApprovalFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadStageApprovalPayload>
+          }
+          findMany: {
+            args: Prisma.LeadStageApprovalFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadStageApprovalPayload>[]
+          }
+          create: {
+            args: Prisma.LeadStageApprovalCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadStageApprovalPayload>
+          }
+          createMany: {
+            args: Prisma.LeadStageApprovalCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.LeadStageApprovalCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadStageApprovalPayload>[]
+          }
+          delete: {
+            args: Prisma.LeadStageApprovalDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadStageApprovalPayload>
+          }
+          update: {
+            args: Prisma.LeadStageApprovalUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadStageApprovalPayload>
+          }
+          deleteMany: {
+            args: Prisma.LeadStageApprovalDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.LeadStageApprovalUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.LeadStageApprovalUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadStageApprovalPayload>
+          }
+          aggregate: {
+            args: Prisma.LeadStageApprovalAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateLeadStageApproval>
+          }
+          groupBy: {
+            args: Prisma.LeadStageApprovalGroupByArgs<ExtArgs>
+            result: $Utils.Optional<LeadStageApprovalGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.LeadStageApprovalCountArgs<ExtArgs>
+            result: $Utils.Optional<LeadStageApprovalCountAggregateOutputType> | number
+          }
+        }
+      }
       LeadLifeCycleTransition: {
         payload: Prisma.$LeadLifeCycleTransitionPayload<ExtArgs>
         fields: Prisma.LeadLifeCycleTransitionFieldRefs
@@ -3690,6 +3801,7 @@ export namespace Prisma {
     leadDynamicFields: number
     leads: number
     leadActivities: number
+    leadStageApprovals: number
   }
 
   export type WorkspaceCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3700,6 +3812,7 @@ export namespace Prisma {
     leadDynamicFields?: boolean | WorkspaceCountOutputTypeCountLeadDynamicFieldsArgs
     leads?: boolean | WorkspaceCountOutputTypeCountLeadsArgs
     leadActivities?: boolean | WorkspaceCountOutputTypeCountLeadActivitiesArgs
+    leadStageApprovals?: boolean | WorkspaceCountOutputTypeCountLeadStageApprovalsArgs
   }
 
   // Custom InputTypes
@@ -3760,6 +3873,13 @@ export namespace Prisma {
    */
   export type WorkspaceCountOutputTypeCountLeadActivitiesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: LeadActivityWhereInput
+  }
+
+  /**
+   * WorkspaceCountOutputType without action
+   */
+  export type WorkspaceCountOutputTypeCountLeadStageApprovalsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LeadStageApprovalWhereInput
   }
 
 
@@ -3832,11 +3952,15 @@ export namespace Prisma {
   export type LeadStageCountOutputType = {
     rules: number
     leads: number
+    approvalsFrom: number
+    approvalsTo: number
   }
 
   export type LeadStageCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     rules?: boolean | LeadStageCountOutputTypeCountRulesArgs
     leads?: boolean | LeadStageCountOutputTypeCountLeadsArgs
+    approvalsFrom?: boolean | LeadStageCountOutputTypeCountApprovalsFromArgs
+    approvalsTo?: boolean | LeadStageCountOutputTypeCountApprovalsToArgs
   }
 
   // Custom InputTypes
@@ -3862,6 +3986,20 @@ export namespace Prisma {
    */
   export type LeadStageCountOutputTypeCountLeadsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: LeadWhereInput
+  }
+
+  /**
+   * LeadStageCountOutputType without action
+   */
+  export type LeadStageCountOutputTypeCountApprovalsFromArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LeadStageApprovalWhereInput
+  }
+
+  /**
+   * LeadStageCountOutputType without action
+   */
+  export type LeadStageCountOutputTypeCountApprovalsToArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LeadStageApprovalWhereInput
   }
 
 
@@ -4113,12 +4251,14 @@ export namespace Prisma {
     followUps: number
     lobLogs: number
     activities: number
+    stageApprovals: number
   }
 
   export type LeadCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     followUps?: boolean | LeadCountOutputTypeCountFollowUpsArgs
     lobLogs?: boolean | LeadCountOutputTypeCountLobLogsArgs
     activities?: boolean | LeadCountOutputTypeCountActivitiesArgs
+    stageApprovals?: boolean | LeadCountOutputTypeCountStageApprovalsArgs
   }
 
   // Custom InputTypes
@@ -4151,6 +4291,13 @@ export namespace Prisma {
    */
   export type LeadCountOutputTypeCountActivitiesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: LeadActivityWhereInput
+  }
+
+  /**
+   * LeadCountOutputType without action
+   */
+  export type LeadCountOutputTypeCountStageApprovalsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LeadStageApprovalWhereInput
   }
 
 
@@ -4206,6 +4353,9 @@ export namespace Prisma {
     devices: number
     auditLogs: number
     performedLeadActivities: number
+    requestedLeadStageApprovals: number
+    assignedLeadStageApprovals: number
+    approvedLeadStageApprovals: number
     rosterEntries: number
     followUps: number
     createdLeads: number
@@ -4221,6 +4371,9 @@ export namespace Prisma {
     devices?: boolean | UserCountOutputTypeCountDevicesArgs
     auditLogs?: boolean | UserCountOutputTypeCountAuditLogsArgs
     performedLeadActivities?: boolean | UserCountOutputTypeCountPerformedLeadActivitiesArgs
+    requestedLeadStageApprovals?: boolean | UserCountOutputTypeCountRequestedLeadStageApprovalsArgs
+    assignedLeadStageApprovals?: boolean | UserCountOutputTypeCountAssignedLeadStageApprovalsArgs
+    approvedLeadStageApprovals?: boolean | UserCountOutputTypeCountApprovedLeadStageApprovalsArgs
     rosterEntries?: boolean | UserCountOutputTypeCountRosterEntriesArgs
     followUps?: boolean | UserCountOutputTypeCountFollowUpsArgs
     createdLeads?: boolean | UserCountOutputTypeCountCreatedLeadsArgs
@@ -4286,6 +4439,27 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountPerformedLeadActivitiesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: LeadActivityWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountRequestedLeadStageApprovalsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LeadStageApprovalWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountAssignedLeadStageApprovalsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LeadStageApprovalWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountApprovedLeadStageApprovalsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LeadStageApprovalWhereInput
   }
 
   /**
@@ -7418,6 +7592,7 @@ export namespace Prisma {
     leadDynamicFields?: boolean | Workspace$leadDynamicFieldsArgs<ExtArgs>
     leads?: boolean | Workspace$leadsArgs<ExtArgs>
     leadActivities?: boolean | Workspace$leadActivitiesArgs<ExtArgs>
+    leadStageApprovals?: boolean | Workspace$leadStageApprovalsArgs<ExtArgs>
     _count?: boolean | WorkspaceCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["workspace"]>
 
@@ -7457,6 +7632,7 @@ export namespace Prisma {
     leadDynamicFields?: boolean | Workspace$leadDynamicFieldsArgs<ExtArgs>
     leads?: boolean | Workspace$leadsArgs<ExtArgs>
     leadActivities?: boolean | Workspace$leadActivitiesArgs<ExtArgs>
+    leadStageApprovals?: boolean | Workspace$leadStageApprovalsArgs<ExtArgs>
     _count?: boolean | WorkspaceCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type WorkspaceIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -7474,6 +7650,7 @@ export namespace Prisma {
       leadDynamicFields: Prisma.$LeadDynamicFieldPayload<ExtArgs>[]
       leads: Prisma.$LeadPayload<ExtArgs>[]
       leadActivities: Prisma.$LeadActivityPayload<ExtArgs>[]
+      leadStageApprovals: Prisma.$LeadStageApprovalPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -7858,6 +8035,7 @@ export namespace Prisma {
     leadDynamicFields<T extends Workspace$leadDynamicFieldsArgs<ExtArgs> = {}>(args?: Subset<T, Workspace$leadDynamicFieldsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadDynamicFieldPayload<ExtArgs>, T, "findMany"> | Null>
     leads<T extends Workspace$leadsArgs<ExtArgs> = {}>(args?: Subset<T, Workspace$leadsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadPayload<ExtArgs>, T, "findMany"> | Null>
     leadActivities<T extends Workspace$leadActivitiesArgs<ExtArgs> = {}>(args?: Subset<T, Workspace$leadActivitiesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadActivityPayload<ExtArgs>, T, "findMany"> | Null>
+    leadStageApprovals<T extends Workspace$leadStageApprovalsArgs<ExtArgs> = {}>(args?: Subset<T, Workspace$leadStageApprovalsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadStageApprovalPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -8352,6 +8530,26 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: LeadActivityScalarFieldEnum | LeadActivityScalarFieldEnum[]
+  }
+
+  /**
+   * Workspace.leadStageApprovals
+   */
+  export type Workspace$leadStageApprovalsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadStageApproval
+     */
+    select?: LeadStageApprovalSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadStageApprovalInclude<ExtArgs> | null
+    where?: LeadStageApprovalWhereInput
+    orderBy?: LeadStageApprovalOrderByWithRelationInput | LeadStageApprovalOrderByWithRelationInput[]
+    cursor?: LeadStageApprovalWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: LeadStageApprovalScalarFieldEnum | LeadStageApprovalScalarFieldEnum[]
   }
 
   /**
@@ -10607,6 +10805,8 @@ export namespace Prisma {
     deletedAt?: boolean
     rules?: boolean | LeadStage$rulesArgs<ExtArgs>
     leads?: boolean | LeadStage$leadsArgs<ExtArgs>
+    approvalsFrom?: boolean | LeadStage$approvalsFromArgs<ExtArgs>
+    approvalsTo?: boolean | LeadStage$approvalsToArgs<ExtArgs>
     _count?: boolean | LeadStageCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["leadStage"]>
 
@@ -10643,6 +10843,8 @@ export namespace Prisma {
   export type LeadStageInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     rules?: boolean | LeadStage$rulesArgs<ExtArgs>
     leads?: boolean | LeadStage$leadsArgs<ExtArgs>
+    approvalsFrom?: boolean | LeadStage$approvalsFromArgs<ExtArgs>
+    approvalsTo?: boolean | LeadStage$approvalsToArgs<ExtArgs>
     _count?: boolean | LeadStageCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type LeadStageIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -10652,6 +10854,8 @@ export namespace Prisma {
     objects: {
       rules: Prisma.$StageRulePayload<ExtArgs>[]
       leads: Prisma.$LeadPayload<ExtArgs>[]
+      approvalsFrom: Prisma.$LeadStageApprovalPayload<ExtArgs>[]
+      approvalsTo: Prisma.$LeadStageApprovalPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -11032,6 +11236,8 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     rules<T extends LeadStage$rulesArgs<ExtArgs> = {}>(args?: Subset<T, LeadStage$rulesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$StageRulePayload<ExtArgs>, T, "findMany"> | Null>
     leads<T extends LeadStage$leadsArgs<ExtArgs> = {}>(args?: Subset<T, LeadStage$leadsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadPayload<ExtArgs>, T, "findMany"> | Null>
+    approvalsFrom<T extends LeadStage$approvalsFromArgs<ExtArgs> = {}>(args?: Subset<T, LeadStage$approvalsFromArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadStageApprovalPayload<ExtArgs>, T, "findMany"> | Null>
+    approvalsTo<T extends LeadStage$approvalsToArgs<ExtArgs> = {}>(args?: Subset<T, LeadStage$approvalsToArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadStageApprovalPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -11424,6 +11630,46 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: LeadScalarFieldEnum | LeadScalarFieldEnum[]
+  }
+
+  /**
+   * LeadStage.approvalsFrom
+   */
+  export type LeadStage$approvalsFromArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadStageApproval
+     */
+    select?: LeadStageApprovalSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadStageApprovalInclude<ExtArgs> | null
+    where?: LeadStageApprovalWhereInput
+    orderBy?: LeadStageApprovalOrderByWithRelationInput | LeadStageApprovalOrderByWithRelationInput[]
+    cursor?: LeadStageApprovalWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: LeadStageApprovalScalarFieldEnum | LeadStageApprovalScalarFieldEnum[]
+  }
+
+  /**
+   * LeadStage.approvalsTo
+   */
+  export type LeadStage$approvalsToArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadStageApproval
+     */
+    select?: LeadStageApprovalSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadStageApprovalInclude<ExtArgs> | null
+    where?: LeadStageApprovalWhereInput
+    orderBy?: LeadStageApprovalOrderByWithRelationInput | LeadStageApprovalOrderByWithRelationInput[]
+    cursor?: LeadStageApprovalWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: LeadStageApprovalScalarFieldEnum | LeadStageApprovalScalarFieldEnum[]
   }
 
   /**
@@ -20610,6 +20856,9 @@ export namespace Prisma {
     stageExpiresAt: Date | null
     slaAction: $Enums.LeadExpiryAction | null
     slaWarningDays: number | null
+    approvalState: $Enums.LeadApprovalState | null
+    pendingApprovalToStageId: string | null
+    pendingApprovalRequestedAt: Date | null
     isClosed: boolean | null
     isLOB: boolean | null
     closedAt: Date | null
@@ -20638,6 +20887,9 @@ export namespace Prisma {
     stageExpiresAt: Date | null
     slaAction: $Enums.LeadExpiryAction | null
     slaWarningDays: number | null
+    approvalState: $Enums.LeadApprovalState | null
+    pendingApprovalToStageId: string | null
+    pendingApprovalRequestedAt: Date | null
     isClosed: boolean | null
     isLOB: boolean | null
     closedAt: Date | null
@@ -20666,6 +20918,9 @@ export namespace Prisma {
     stageExpiresAt: number
     slaAction: number
     slaWarningDays: number
+    approvalState: number
+    pendingApprovalToStageId: number
+    pendingApprovalRequestedAt: number
     isClosed: number
     isLOB: number
     closedAt: number
@@ -20708,6 +20963,9 @@ export namespace Prisma {
     stageExpiresAt?: true
     slaAction?: true
     slaWarningDays?: true
+    approvalState?: true
+    pendingApprovalToStageId?: true
+    pendingApprovalRequestedAt?: true
     isClosed?: true
     isLOB?: true
     closedAt?: true
@@ -20736,6 +20994,9 @@ export namespace Prisma {
     stageExpiresAt?: true
     slaAction?: true
     slaWarningDays?: true
+    approvalState?: true
+    pendingApprovalToStageId?: true
+    pendingApprovalRequestedAt?: true
     isClosed?: true
     isLOB?: true
     closedAt?: true
@@ -20764,6 +21025,9 @@ export namespace Prisma {
     stageExpiresAt?: true
     slaAction?: true
     slaWarningDays?: true
+    approvalState?: true
+    pendingApprovalToStageId?: true
+    pendingApprovalRequestedAt?: true
     isClosed?: true
     isLOB?: true
     closedAt?: true
@@ -20879,6 +21143,9 @@ export namespace Prisma {
     stageExpiresAt: Date | null
     slaAction: $Enums.LeadExpiryAction | null
     slaWarningDays: number | null
+    approvalState: $Enums.LeadApprovalState
+    pendingApprovalToStageId: string | null
+    pendingApprovalRequestedAt: Date | null
     isClosed: boolean
     isLOB: boolean
     closedAt: Date | null
@@ -20926,6 +21193,9 @@ export namespace Prisma {
     stageExpiresAt?: boolean
     slaAction?: boolean
     slaWarningDays?: boolean
+    approvalState?: boolean
+    pendingApprovalToStageId?: boolean
+    pendingApprovalRequestedAt?: boolean
     isClosed?: boolean
     isLOB?: boolean
     closedAt?: boolean
@@ -20946,6 +21216,7 @@ export namespace Prisma {
     followUps?: boolean | Lead$followUpsArgs<ExtArgs>
     lobLogs?: boolean | Lead$lobLogsArgs<ExtArgs>
     activities?: boolean | Lead$activitiesArgs<ExtArgs>
+    stageApprovals?: boolean | Lead$stageApprovalsArgs<ExtArgs>
     _count?: boolean | LeadCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["lead"]>
 
@@ -20965,6 +21236,9 @@ export namespace Prisma {
     stageExpiresAt?: boolean
     slaAction?: boolean
     slaWarningDays?: boolean
+    approvalState?: boolean
+    pendingApprovalToStageId?: boolean
+    pendingApprovalRequestedAt?: boolean
     isClosed?: boolean
     isLOB?: boolean
     closedAt?: boolean
@@ -21000,6 +21274,9 @@ export namespace Prisma {
     stageExpiresAt?: boolean
     slaAction?: boolean
     slaWarningDays?: boolean
+    approvalState?: boolean
+    pendingApprovalToStageId?: boolean
+    pendingApprovalRequestedAt?: boolean
     isClosed?: boolean
     isLOB?: boolean
     closedAt?: boolean
@@ -21023,6 +21300,7 @@ export namespace Prisma {
     followUps?: boolean | Lead$followUpsArgs<ExtArgs>
     lobLogs?: boolean | Lead$lobLogsArgs<ExtArgs>
     activities?: boolean | Lead$activitiesArgs<ExtArgs>
+    stageApprovals?: boolean | Lead$stageApprovalsArgs<ExtArgs>
     _count?: boolean | LeadCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type LeadIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -21048,6 +21326,7 @@ export namespace Prisma {
       followUps: Prisma.$FollowUpPayload<ExtArgs>[]
       lobLogs: Prisma.$LeadLOBLogPayload<ExtArgs>[]
       activities: Prisma.$LeadActivityPayload<ExtArgs>[]
+      stageApprovals: Prisma.$LeadStageApprovalPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -21065,6 +21344,9 @@ export namespace Prisma {
       stageExpiresAt: Date | null
       slaAction: $Enums.LeadExpiryAction | null
       slaWarningDays: number | null
+      approvalState: $Enums.LeadApprovalState
+      pendingApprovalToStageId: string | null
+      pendingApprovalRequestedAt: Date | null
       isClosed: boolean
       isLOB: boolean
       closedAt: Date | null
@@ -21449,6 +21731,7 @@ export namespace Prisma {
     followUps<T extends Lead$followUpsArgs<ExtArgs> = {}>(args?: Subset<T, Lead$followUpsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FollowUpPayload<ExtArgs>, T, "findMany"> | Null>
     lobLogs<T extends Lead$lobLogsArgs<ExtArgs> = {}>(args?: Subset<T, Lead$lobLogsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadLOBLogPayload<ExtArgs>, T, "findMany"> | Null>
     activities<T extends Lead$activitiesArgs<ExtArgs> = {}>(args?: Subset<T, Lead$activitiesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadActivityPayload<ExtArgs>, T, "findMany"> | Null>
+    stageApprovals<T extends Lead$stageApprovalsArgs<ExtArgs> = {}>(args?: Subset<T, Lead$stageApprovalsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadStageApprovalPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -21493,6 +21776,9 @@ export namespace Prisma {
     readonly stageExpiresAt: FieldRef<"Lead", 'DateTime'>
     readonly slaAction: FieldRef<"Lead", 'LeadExpiryAction'>
     readonly slaWarningDays: FieldRef<"Lead", 'Int'>
+    readonly approvalState: FieldRef<"Lead", 'LeadApprovalState'>
+    readonly pendingApprovalToStageId: FieldRef<"Lead", 'String'>
+    readonly pendingApprovalRequestedAt: FieldRef<"Lead", 'DateTime'>
     readonly isClosed: FieldRef<"Lead", 'Boolean'>
     readonly isLOB: FieldRef<"Lead", 'Boolean'>
     readonly closedAt: FieldRef<"Lead", 'DateTime'>
@@ -21953,6 +22239,26 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: LeadActivityScalarFieldEnum | LeadActivityScalarFieldEnum[]
+  }
+
+  /**
+   * Lead.stageApprovals
+   */
+  export type Lead$stageApprovalsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadStageApproval
+     */
+    select?: LeadStageApprovalSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadStageApprovalInclude<ExtArgs> | null
+    where?: LeadStageApprovalWhereInput
+    orderBy?: LeadStageApprovalOrderByWithRelationInput | LeadStageApprovalOrderByWithRelationInput[]
+    cursor?: LeadStageApprovalWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: LeadStageApprovalScalarFieldEnum | LeadStageApprovalScalarFieldEnum[]
   }
 
   /**
@@ -22924,6 +23230,1109 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: LeadLOBLogInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model LeadStageApproval
+   */
+
+  export type AggregateLeadStageApproval = {
+    _count: LeadStageApprovalCountAggregateOutputType | null
+    _min: LeadStageApprovalMinAggregateOutputType | null
+    _max: LeadStageApprovalMaxAggregateOutputType | null
+  }
+
+  export type LeadStageApprovalMinAggregateOutputType = {
+    id: string | null
+    workspaceId: string | null
+    leadId: string | null
+    fromStageId: string | null
+    toStageId: string | null
+    requestedById: string | null
+    assignedToId: string | null
+    status: $Enums.LeadApprovalStatus | null
+    comment: string | null
+    approvedById: string | null
+    approvedAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type LeadStageApprovalMaxAggregateOutputType = {
+    id: string | null
+    workspaceId: string | null
+    leadId: string | null
+    fromStageId: string | null
+    toStageId: string | null
+    requestedById: string | null
+    assignedToId: string | null
+    status: $Enums.LeadApprovalStatus | null
+    comment: string | null
+    approvedById: string | null
+    approvedAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type LeadStageApprovalCountAggregateOutputType = {
+    id: number
+    workspaceId: number
+    leadId: number
+    fromStageId: number
+    toStageId: number
+    requestedById: number
+    assignedToId: number
+    status: number
+    comment: number
+    requestData: number
+    approvedById: number
+    approvedAt: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type LeadStageApprovalMinAggregateInputType = {
+    id?: true
+    workspaceId?: true
+    leadId?: true
+    fromStageId?: true
+    toStageId?: true
+    requestedById?: true
+    assignedToId?: true
+    status?: true
+    comment?: true
+    approvedById?: true
+    approvedAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type LeadStageApprovalMaxAggregateInputType = {
+    id?: true
+    workspaceId?: true
+    leadId?: true
+    fromStageId?: true
+    toStageId?: true
+    requestedById?: true
+    assignedToId?: true
+    status?: true
+    comment?: true
+    approvedById?: true
+    approvedAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type LeadStageApprovalCountAggregateInputType = {
+    id?: true
+    workspaceId?: true
+    leadId?: true
+    fromStageId?: true
+    toStageId?: true
+    requestedById?: true
+    assignedToId?: true
+    status?: true
+    comment?: true
+    requestData?: true
+    approvedById?: true
+    approvedAt?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type LeadStageApprovalAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which LeadStageApproval to aggregate.
+     */
+    where?: LeadStageApprovalWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LeadStageApprovals to fetch.
+     */
+    orderBy?: LeadStageApprovalOrderByWithRelationInput | LeadStageApprovalOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: LeadStageApprovalWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LeadStageApprovals from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LeadStageApprovals.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned LeadStageApprovals
+    **/
+    _count?: true | LeadStageApprovalCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: LeadStageApprovalMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: LeadStageApprovalMaxAggregateInputType
+  }
+
+  export type GetLeadStageApprovalAggregateType<T extends LeadStageApprovalAggregateArgs> = {
+        [P in keyof T & keyof AggregateLeadStageApproval]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateLeadStageApproval[P]>
+      : GetScalarType<T[P], AggregateLeadStageApproval[P]>
+  }
+
+
+
+
+  export type LeadStageApprovalGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LeadStageApprovalWhereInput
+    orderBy?: LeadStageApprovalOrderByWithAggregationInput | LeadStageApprovalOrderByWithAggregationInput[]
+    by: LeadStageApprovalScalarFieldEnum[] | LeadStageApprovalScalarFieldEnum
+    having?: LeadStageApprovalScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: LeadStageApprovalCountAggregateInputType | true
+    _min?: LeadStageApprovalMinAggregateInputType
+    _max?: LeadStageApprovalMaxAggregateInputType
+  }
+
+  export type LeadStageApprovalGroupByOutputType = {
+    id: string
+    workspaceId: string
+    leadId: string
+    fromStageId: string
+    toStageId: string
+    requestedById: string
+    assignedToId: string | null
+    status: $Enums.LeadApprovalStatus
+    comment: string | null
+    requestData: JsonValue | null
+    approvedById: string | null
+    approvedAt: Date | null
+    createdAt: Date
+    updatedAt: Date
+    _count: LeadStageApprovalCountAggregateOutputType | null
+    _min: LeadStageApprovalMinAggregateOutputType | null
+    _max: LeadStageApprovalMaxAggregateOutputType | null
+  }
+
+  type GetLeadStageApprovalGroupByPayload<T extends LeadStageApprovalGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<LeadStageApprovalGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof LeadStageApprovalGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], LeadStageApprovalGroupByOutputType[P]>
+            : GetScalarType<T[P], LeadStageApprovalGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type LeadStageApprovalSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    workspaceId?: boolean
+    leadId?: boolean
+    fromStageId?: boolean
+    toStageId?: boolean
+    requestedById?: boolean
+    assignedToId?: boolean
+    status?: boolean
+    comment?: boolean
+    requestData?: boolean
+    approvedById?: boolean
+    approvedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+    lead?: boolean | LeadDefaultArgs<ExtArgs>
+    fromStage?: boolean | LeadStageDefaultArgs<ExtArgs>
+    toStage?: boolean | LeadStageDefaultArgs<ExtArgs>
+    requestedBy?: boolean | UserDefaultArgs<ExtArgs>
+    assignedTo?: boolean | LeadStageApproval$assignedToArgs<ExtArgs>
+    approvedBy?: boolean | LeadStageApproval$approvedByArgs<ExtArgs>
+  }, ExtArgs["result"]["leadStageApproval"]>
+
+  export type LeadStageApprovalSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    workspaceId?: boolean
+    leadId?: boolean
+    fromStageId?: boolean
+    toStageId?: boolean
+    requestedById?: boolean
+    assignedToId?: boolean
+    status?: boolean
+    comment?: boolean
+    requestData?: boolean
+    approvedById?: boolean
+    approvedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+    lead?: boolean | LeadDefaultArgs<ExtArgs>
+    fromStage?: boolean | LeadStageDefaultArgs<ExtArgs>
+    toStage?: boolean | LeadStageDefaultArgs<ExtArgs>
+    requestedBy?: boolean | UserDefaultArgs<ExtArgs>
+    assignedTo?: boolean | LeadStageApproval$assignedToArgs<ExtArgs>
+    approvedBy?: boolean | LeadStageApproval$approvedByArgs<ExtArgs>
+  }, ExtArgs["result"]["leadStageApproval"]>
+
+  export type LeadStageApprovalSelectScalar = {
+    id?: boolean
+    workspaceId?: boolean
+    leadId?: boolean
+    fromStageId?: boolean
+    toStageId?: boolean
+    requestedById?: boolean
+    assignedToId?: boolean
+    status?: boolean
+    comment?: boolean
+    requestData?: boolean
+    approvedById?: boolean
+    approvedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type LeadStageApprovalInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+    lead?: boolean | LeadDefaultArgs<ExtArgs>
+    fromStage?: boolean | LeadStageDefaultArgs<ExtArgs>
+    toStage?: boolean | LeadStageDefaultArgs<ExtArgs>
+    requestedBy?: boolean | UserDefaultArgs<ExtArgs>
+    assignedTo?: boolean | LeadStageApproval$assignedToArgs<ExtArgs>
+    approvedBy?: boolean | LeadStageApproval$approvedByArgs<ExtArgs>
+  }
+  export type LeadStageApprovalIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+    lead?: boolean | LeadDefaultArgs<ExtArgs>
+    fromStage?: boolean | LeadStageDefaultArgs<ExtArgs>
+    toStage?: boolean | LeadStageDefaultArgs<ExtArgs>
+    requestedBy?: boolean | UserDefaultArgs<ExtArgs>
+    assignedTo?: boolean | LeadStageApproval$assignedToArgs<ExtArgs>
+    approvedBy?: boolean | LeadStageApproval$approvedByArgs<ExtArgs>
+  }
+
+  export type $LeadStageApprovalPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "LeadStageApproval"
+    objects: {
+      workspace: Prisma.$WorkspacePayload<ExtArgs>
+      lead: Prisma.$LeadPayload<ExtArgs>
+      fromStage: Prisma.$LeadStagePayload<ExtArgs>
+      toStage: Prisma.$LeadStagePayload<ExtArgs>
+      requestedBy: Prisma.$UserPayload<ExtArgs>
+      assignedTo: Prisma.$UserPayload<ExtArgs> | null
+      approvedBy: Prisma.$UserPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      workspaceId: string
+      leadId: string
+      fromStageId: string
+      toStageId: string
+      requestedById: string
+      assignedToId: string | null
+      status: $Enums.LeadApprovalStatus
+      comment: string | null
+      requestData: Prisma.JsonValue | null
+      approvedById: string | null
+      approvedAt: Date | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["leadStageApproval"]>
+    composites: {}
+  }
+
+  type LeadStageApprovalGetPayload<S extends boolean | null | undefined | LeadStageApprovalDefaultArgs> = $Result.GetResult<Prisma.$LeadStageApprovalPayload, S>
+
+  type LeadStageApprovalCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<LeadStageApprovalFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: LeadStageApprovalCountAggregateInputType | true
+    }
+
+  export interface LeadStageApprovalDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['LeadStageApproval'], meta: { name: 'LeadStageApproval' } }
+    /**
+     * Find zero or one LeadStageApproval that matches the filter.
+     * @param {LeadStageApprovalFindUniqueArgs} args - Arguments to find a LeadStageApproval
+     * @example
+     * // Get one LeadStageApproval
+     * const leadStageApproval = await prisma.leadStageApproval.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends LeadStageApprovalFindUniqueArgs>(args: SelectSubset<T, LeadStageApprovalFindUniqueArgs<ExtArgs>>): Prisma__LeadStageApprovalClient<$Result.GetResult<Prisma.$LeadStageApprovalPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one LeadStageApproval that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {LeadStageApprovalFindUniqueOrThrowArgs} args - Arguments to find a LeadStageApproval
+     * @example
+     * // Get one LeadStageApproval
+     * const leadStageApproval = await prisma.leadStageApproval.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends LeadStageApprovalFindUniqueOrThrowArgs>(args: SelectSubset<T, LeadStageApprovalFindUniqueOrThrowArgs<ExtArgs>>): Prisma__LeadStageApprovalClient<$Result.GetResult<Prisma.$LeadStageApprovalPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first LeadStageApproval that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadStageApprovalFindFirstArgs} args - Arguments to find a LeadStageApproval
+     * @example
+     * // Get one LeadStageApproval
+     * const leadStageApproval = await prisma.leadStageApproval.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends LeadStageApprovalFindFirstArgs>(args?: SelectSubset<T, LeadStageApprovalFindFirstArgs<ExtArgs>>): Prisma__LeadStageApprovalClient<$Result.GetResult<Prisma.$LeadStageApprovalPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first LeadStageApproval that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadStageApprovalFindFirstOrThrowArgs} args - Arguments to find a LeadStageApproval
+     * @example
+     * // Get one LeadStageApproval
+     * const leadStageApproval = await prisma.leadStageApproval.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends LeadStageApprovalFindFirstOrThrowArgs>(args?: SelectSubset<T, LeadStageApprovalFindFirstOrThrowArgs<ExtArgs>>): Prisma__LeadStageApprovalClient<$Result.GetResult<Prisma.$LeadStageApprovalPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more LeadStageApprovals that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadStageApprovalFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all LeadStageApprovals
+     * const leadStageApprovals = await prisma.leadStageApproval.findMany()
+     * 
+     * // Get first 10 LeadStageApprovals
+     * const leadStageApprovals = await prisma.leadStageApproval.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const leadStageApprovalWithIdOnly = await prisma.leadStageApproval.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends LeadStageApprovalFindManyArgs>(args?: SelectSubset<T, LeadStageApprovalFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadStageApprovalPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a LeadStageApproval.
+     * @param {LeadStageApprovalCreateArgs} args - Arguments to create a LeadStageApproval.
+     * @example
+     * // Create one LeadStageApproval
+     * const LeadStageApproval = await prisma.leadStageApproval.create({
+     *   data: {
+     *     // ... data to create a LeadStageApproval
+     *   }
+     * })
+     * 
+     */
+    create<T extends LeadStageApprovalCreateArgs>(args: SelectSubset<T, LeadStageApprovalCreateArgs<ExtArgs>>): Prisma__LeadStageApprovalClient<$Result.GetResult<Prisma.$LeadStageApprovalPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many LeadStageApprovals.
+     * @param {LeadStageApprovalCreateManyArgs} args - Arguments to create many LeadStageApprovals.
+     * @example
+     * // Create many LeadStageApprovals
+     * const leadStageApproval = await prisma.leadStageApproval.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends LeadStageApprovalCreateManyArgs>(args?: SelectSubset<T, LeadStageApprovalCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many LeadStageApprovals and returns the data saved in the database.
+     * @param {LeadStageApprovalCreateManyAndReturnArgs} args - Arguments to create many LeadStageApprovals.
+     * @example
+     * // Create many LeadStageApprovals
+     * const leadStageApproval = await prisma.leadStageApproval.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many LeadStageApprovals and only return the `id`
+     * const leadStageApprovalWithIdOnly = await prisma.leadStageApproval.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends LeadStageApprovalCreateManyAndReturnArgs>(args?: SelectSubset<T, LeadStageApprovalCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadStageApprovalPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a LeadStageApproval.
+     * @param {LeadStageApprovalDeleteArgs} args - Arguments to delete one LeadStageApproval.
+     * @example
+     * // Delete one LeadStageApproval
+     * const LeadStageApproval = await prisma.leadStageApproval.delete({
+     *   where: {
+     *     // ... filter to delete one LeadStageApproval
+     *   }
+     * })
+     * 
+     */
+    delete<T extends LeadStageApprovalDeleteArgs>(args: SelectSubset<T, LeadStageApprovalDeleteArgs<ExtArgs>>): Prisma__LeadStageApprovalClient<$Result.GetResult<Prisma.$LeadStageApprovalPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one LeadStageApproval.
+     * @param {LeadStageApprovalUpdateArgs} args - Arguments to update one LeadStageApproval.
+     * @example
+     * // Update one LeadStageApproval
+     * const leadStageApproval = await prisma.leadStageApproval.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends LeadStageApprovalUpdateArgs>(args: SelectSubset<T, LeadStageApprovalUpdateArgs<ExtArgs>>): Prisma__LeadStageApprovalClient<$Result.GetResult<Prisma.$LeadStageApprovalPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more LeadStageApprovals.
+     * @param {LeadStageApprovalDeleteManyArgs} args - Arguments to filter LeadStageApprovals to delete.
+     * @example
+     * // Delete a few LeadStageApprovals
+     * const { count } = await prisma.leadStageApproval.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends LeadStageApprovalDeleteManyArgs>(args?: SelectSubset<T, LeadStageApprovalDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more LeadStageApprovals.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadStageApprovalUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many LeadStageApprovals
+     * const leadStageApproval = await prisma.leadStageApproval.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends LeadStageApprovalUpdateManyArgs>(args: SelectSubset<T, LeadStageApprovalUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one LeadStageApproval.
+     * @param {LeadStageApprovalUpsertArgs} args - Arguments to update or create a LeadStageApproval.
+     * @example
+     * // Update or create a LeadStageApproval
+     * const leadStageApproval = await prisma.leadStageApproval.upsert({
+     *   create: {
+     *     // ... data to create a LeadStageApproval
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the LeadStageApproval we want to update
+     *   }
+     * })
+     */
+    upsert<T extends LeadStageApprovalUpsertArgs>(args: SelectSubset<T, LeadStageApprovalUpsertArgs<ExtArgs>>): Prisma__LeadStageApprovalClient<$Result.GetResult<Prisma.$LeadStageApprovalPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of LeadStageApprovals.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadStageApprovalCountArgs} args - Arguments to filter LeadStageApprovals to count.
+     * @example
+     * // Count the number of LeadStageApprovals
+     * const count = await prisma.leadStageApproval.count({
+     *   where: {
+     *     // ... the filter for the LeadStageApprovals we want to count
+     *   }
+     * })
+    **/
+    count<T extends LeadStageApprovalCountArgs>(
+      args?: Subset<T, LeadStageApprovalCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], LeadStageApprovalCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a LeadStageApproval.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadStageApprovalAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends LeadStageApprovalAggregateArgs>(args: Subset<T, LeadStageApprovalAggregateArgs>): Prisma.PrismaPromise<GetLeadStageApprovalAggregateType<T>>
+
+    /**
+     * Group by LeadStageApproval.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadStageApprovalGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends LeadStageApprovalGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: LeadStageApprovalGroupByArgs['orderBy'] }
+        : { orderBy?: LeadStageApprovalGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, LeadStageApprovalGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetLeadStageApprovalGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the LeadStageApproval model
+   */
+  readonly fields: LeadStageApprovalFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for LeadStageApproval.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__LeadStageApprovalClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    workspace<T extends WorkspaceDefaultArgs<ExtArgs> = {}>(args?: Subset<T, WorkspaceDefaultArgs<ExtArgs>>): Prisma__WorkspaceClient<$Result.GetResult<Prisma.$WorkspacePayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    lead<T extends LeadDefaultArgs<ExtArgs> = {}>(args?: Subset<T, LeadDefaultArgs<ExtArgs>>): Prisma__LeadClient<$Result.GetResult<Prisma.$LeadPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    fromStage<T extends LeadStageDefaultArgs<ExtArgs> = {}>(args?: Subset<T, LeadStageDefaultArgs<ExtArgs>>): Prisma__LeadStageClient<$Result.GetResult<Prisma.$LeadStagePayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    toStage<T extends LeadStageDefaultArgs<ExtArgs> = {}>(args?: Subset<T, LeadStageDefaultArgs<ExtArgs>>): Prisma__LeadStageClient<$Result.GetResult<Prisma.$LeadStagePayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    requestedBy<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    assignedTo<T extends LeadStageApproval$assignedToArgs<ExtArgs> = {}>(args?: Subset<T, LeadStageApproval$assignedToArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    approvedBy<T extends LeadStageApproval$approvedByArgs<ExtArgs> = {}>(args?: Subset<T, LeadStageApproval$approvedByArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the LeadStageApproval model
+   */ 
+  interface LeadStageApprovalFieldRefs {
+    readonly id: FieldRef<"LeadStageApproval", 'String'>
+    readonly workspaceId: FieldRef<"LeadStageApproval", 'String'>
+    readonly leadId: FieldRef<"LeadStageApproval", 'String'>
+    readonly fromStageId: FieldRef<"LeadStageApproval", 'String'>
+    readonly toStageId: FieldRef<"LeadStageApproval", 'String'>
+    readonly requestedById: FieldRef<"LeadStageApproval", 'String'>
+    readonly assignedToId: FieldRef<"LeadStageApproval", 'String'>
+    readonly status: FieldRef<"LeadStageApproval", 'LeadApprovalStatus'>
+    readonly comment: FieldRef<"LeadStageApproval", 'String'>
+    readonly requestData: FieldRef<"LeadStageApproval", 'Json'>
+    readonly approvedById: FieldRef<"LeadStageApproval", 'String'>
+    readonly approvedAt: FieldRef<"LeadStageApproval", 'DateTime'>
+    readonly createdAt: FieldRef<"LeadStageApproval", 'DateTime'>
+    readonly updatedAt: FieldRef<"LeadStageApproval", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * LeadStageApproval findUnique
+   */
+  export type LeadStageApprovalFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadStageApproval
+     */
+    select?: LeadStageApprovalSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadStageApprovalInclude<ExtArgs> | null
+    /**
+     * Filter, which LeadStageApproval to fetch.
+     */
+    where: LeadStageApprovalWhereUniqueInput
+  }
+
+  /**
+   * LeadStageApproval findUniqueOrThrow
+   */
+  export type LeadStageApprovalFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadStageApproval
+     */
+    select?: LeadStageApprovalSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadStageApprovalInclude<ExtArgs> | null
+    /**
+     * Filter, which LeadStageApproval to fetch.
+     */
+    where: LeadStageApprovalWhereUniqueInput
+  }
+
+  /**
+   * LeadStageApproval findFirst
+   */
+  export type LeadStageApprovalFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadStageApproval
+     */
+    select?: LeadStageApprovalSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadStageApprovalInclude<ExtArgs> | null
+    /**
+     * Filter, which LeadStageApproval to fetch.
+     */
+    where?: LeadStageApprovalWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LeadStageApprovals to fetch.
+     */
+    orderBy?: LeadStageApprovalOrderByWithRelationInput | LeadStageApprovalOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for LeadStageApprovals.
+     */
+    cursor?: LeadStageApprovalWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LeadStageApprovals from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LeadStageApprovals.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of LeadStageApprovals.
+     */
+    distinct?: LeadStageApprovalScalarFieldEnum | LeadStageApprovalScalarFieldEnum[]
+  }
+
+  /**
+   * LeadStageApproval findFirstOrThrow
+   */
+  export type LeadStageApprovalFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadStageApproval
+     */
+    select?: LeadStageApprovalSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadStageApprovalInclude<ExtArgs> | null
+    /**
+     * Filter, which LeadStageApproval to fetch.
+     */
+    where?: LeadStageApprovalWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LeadStageApprovals to fetch.
+     */
+    orderBy?: LeadStageApprovalOrderByWithRelationInput | LeadStageApprovalOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for LeadStageApprovals.
+     */
+    cursor?: LeadStageApprovalWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LeadStageApprovals from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LeadStageApprovals.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of LeadStageApprovals.
+     */
+    distinct?: LeadStageApprovalScalarFieldEnum | LeadStageApprovalScalarFieldEnum[]
+  }
+
+  /**
+   * LeadStageApproval findMany
+   */
+  export type LeadStageApprovalFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadStageApproval
+     */
+    select?: LeadStageApprovalSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadStageApprovalInclude<ExtArgs> | null
+    /**
+     * Filter, which LeadStageApprovals to fetch.
+     */
+    where?: LeadStageApprovalWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LeadStageApprovals to fetch.
+     */
+    orderBy?: LeadStageApprovalOrderByWithRelationInput | LeadStageApprovalOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing LeadStageApprovals.
+     */
+    cursor?: LeadStageApprovalWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LeadStageApprovals from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LeadStageApprovals.
+     */
+    skip?: number
+    distinct?: LeadStageApprovalScalarFieldEnum | LeadStageApprovalScalarFieldEnum[]
+  }
+
+  /**
+   * LeadStageApproval create
+   */
+  export type LeadStageApprovalCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadStageApproval
+     */
+    select?: LeadStageApprovalSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadStageApprovalInclude<ExtArgs> | null
+    /**
+     * The data needed to create a LeadStageApproval.
+     */
+    data: XOR<LeadStageApprovalCreateInput, LeadStageApprovalUncheckedCreateInput>
+  }
+
+  /**
+   * LeadStageApproval createMany
+   */
+  export type LeadStageApprovalCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many LeadStageApprovals.
+     */
+    data: LeadStageApprovalCreateManyInput | LeadStageApprovalCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * LeadStageApproval createManyAndReturn
+   */
+  export type LeadStageApprovalCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadStageApproval
+     */
+    select?: LeadStageApprovalSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many LeadStageApprovals.
+     */
+    data: LeadStageApprovalCreateManyInput | LeadStageApprovalCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadStageApprovalIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * LeadStageApproval update
+   */
+  export type LeadStageApprovalUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadStageApproval
+     */
+    select?: LeadStageApprovalSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadStageApprovalInclude<ExtArgs> | null
+    /**
+     * The data needed to update a LeadStageApproval.
+     */
+    data: XOR<LeadStageApprovalUpdateInput, LeadStageApprovalUncheckedUpdateInput>
+    /**
+     * Choose, which LeadStageApproval to update.
+     */
+    where: LeadStageApprovalWhereUniqueInput
+  }
+
+  /**
+   * LeadStageApproval updateMany
+   */
+  export type LeadStageApprovalUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update LeadStageApprovals.
+     */
+    data: XOR<LeadStageApprovalUpdateManyMutationInput, LeadStageApprovalUncheckedUpdateManyInput>
+    /**
+     * Filter which LeadStageApprovals to update
+     */
+    where?: LeadStageApprovalWhereInput
+  }
+
+  /**
+   * LeadStageApproval upsert
+   */
+  export type LeadStageApprovalUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadStageApproval
+     */
+    select?: LeadStageApprovalSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadStageApprovalInclude<ExtArgs> | null
+    /**
+     * The filter to search for the LeadStageApproval to update in case it exists.
+     */
+    where: LeadStageApprovalWhereUniqueInput
+    /**
+     * In case the LeadStageApproval found by the `where` argument doesn't exist, create a new LeadStageApproval with this data.
+     */
+    create: XOR<LeadStageApprovalCreateInput, LeadStageApprovalUncheckedCreateInput>
+    /**
+     * In case the LeadStageApproval was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<LeadStageApprovalUpdateInput, LeadStageApprovalUncheckedUpdateInput>
+  }
+
+  /**
+   * LeadStageApproval delete
+   */
+  export type LeadStageApprovalDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadStageApproval
+     */
+    select?: LeadStageApprovalSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadStageApprovalInclude<ExtArgs> | null
+    /**
+     * Filter which LeadStageApproval to delete.
+     */
+    where: LeadStageApprovalWhereUniqueInput
+  }
+
+  /**
+   * LeadStageApproval deleteMany
+   */
+  export type LeadStageApprovalDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which LeadStageApprovals to delete
+     */
+    where?: LeadStageApprovalWhereInput
+  }
+
+  /**
+   * LeadStageApproval.assignedTo
+   */
+  export type LeadStageApproval$assignedToArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+  }
+
+  /**
+   * LeadStageApproval.approvedBy
+   */
+  export type LeadStageApproval$approvedByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+  }
+
+  /**
+   * LeadStageApproval without action
+   */
+  export type LeadStageApprovalDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadStageApproval
+     */
+    select?: LeadStageApprovalSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadStageApprovalInclude<ExtArgs> | null
   }
 
 
@@ -30380,6 +31789,9 @@ export namespace Prisma {
     devices?: boolean | User$devicesArgs<ExtArgs>
     auditLogs?: boolean | User$auditLogsArgs<ExtArgs>
     performedLeadActivities?: boolean | User$performedLeadActivitiesArgs<ExtArgs>
+    requestedLeadStageApprovals?: boolean | User$requestedLeadStageApprovalsArgs<ExtArgs>
+    assignedLeadStageApprovals?: boolean | User$assignedLeadStageApprovalsArgs<ExtArgs>
+    approvedLeadStageApprovals?: boolean | User$approvedLeadStageApprovalsArgs<ExtArgs>
     rosterEntries?: boolean | User$rosterEntriesArgs<ExtArgs>
     followUps?: boolean | User$followUpsArgs<ExtArgs>
     createdLeads?: boolean | User$createdLeadsArgs<ExtArgs>
@@ -30471,6 +31883,9 @@ export namespace Prisma {
     devices?: boolean | User$devicesArgs<ExtArgs>
     auditLogs?: boolean | User$auditLogsArgs<ExtArgs>
     performedLeadActivities?: boolean | User$performedLeadActivitiesArgs<ExtArgs>
+    requestedLeadStageApprovals?: boolean | User$requestedLeadStageApprovalsArgs<ExtArgs>
+    assignedLeadStageApprovals?: boolean | User$assignedLeadStageApprovalsArgs<ExtArgs>
+    approvedLeadStageApprovals?: boolean | User$approvedLeadStageApprovalsArgs<ExtArgs>
     rosterEntries?: boolean | User$rosterEntriesArgs<ExtArgs>
     followUps?: boolean | User$followUpsArgs<ExtArgs>
     createdLeads?: boolean | User$createdLeadsArgs<ExtArgs>
@@ -30508,6 +31923,9 @@ export namespace Prisma {
       devices: Prisma.$DevicePayload<ExtArgs>[]
       auditLogs: Prisma.$AuditLogPayload<ExtArgs>[]
       performedLeadActivities: Prisma.$LeadActivityPayload<ExtArgs>[]
+      requestedLeadStageApprovals: Prisma.$LeadStageApprovalPayload<ExtArgs>[]
+      assignedLeadStageApprovals: Prisma.$LeadStageApprovalPayload<ExtArgs>[]
+      approvedLeadStageApprovals: Prisma.$LeadStageApprovalPayload<ExtArgs>[]
       rosterEntries: Prisma.$RosterEntryPayload<ExtArgs>[]
       followUps: Prisma.$FollowUpPayload<ExtArgs>[]
       createdLeads: Prisma.$LeadPayload<ExtArgs>[]
@@ -30921,6 +32339,9 @@ export namespace Prisma {
     devices<T extends User$devicesArgs<ExtArgs> = {}>(args?: Subset<T, User$devicesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DevicePayload<ExtArgs>, T, "findMany"> | Null>
     auditLogs<T extends User$auditLogsArgs<ExtArgs> = {}>(args?: Subset<T, User$auditLogsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AuditLogPayload<ExtArgs>, T, "findMany"> | Null>
     performedLeadActivities<T extends User$performedLeadActivitiesArgs<ExtArgs> = {}>(args?: Subset<T, User$performedLeadActivitiesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadActivityPayload<ExtArgs>, T, "findMany"> | Null>
+    requestedLeadStageApprovals<T extends User$requestedLeadStageApprovalsArgs<ExtArgs> = {}>(args?: Subset<T, User$requestedLeadStageApprovalsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadStageApprovalPayload<ExtArgs>, T, "findMany"> | Null>
+    assignedLeadStageApprovals<T extends User$assignedLeadStageApprovalsArgs<ExtArgs> = {}>(args?: Subset<T, User$assignedLeadStageApprovalsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadStageApprovalPayload<ExtArgs>, T, "findMany"> | Null>
+    approvedLeadStageApprovals<T extends User$approvedLeadStageApprovalsArgs<ExtArgs> = {}>(args?: Subset<T, User$approvedLeadStageApprovalsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadStageApprovalPayload<ExtArgs>, T, "findMany"> | Null>
     rosterEntries<T extends User$rosterEntriesArgs<ExtArgs> = {}>(args?: Subset<T, User$rosterEntriesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RosterEntryPayload<ExtArgs>, T, "findMany"> | Null>
     followUps<T extends User$followUpsArgs<ExtArgs> = {}>(args?: Subset<T, User$followUpsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FollowUpPayload<ExtArgs>, T, "findMany"> | Null>
     createdLeads<T extends User$createdLeadsArgs<ExtArgs> = {}>(args?: Subset<T, User$createdLeadsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadPayload<ExtArgs>, T, "findMany"> | Null>
@@ -31571,6 +32992,66 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: LeadActivityScalarFieldEnum | LeadActivityScalarFieldEnum[]
+  }
+
+  /**
+   * User.requestedLeadStageApprovals
+   */
+  export type User$requestedLeadStageApprovalsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadStageApproval
+     */
+    select?: LeadStageApprovalSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadStageApprovalInclude<ExtArgs> | null
+    where?: LeadStageApprovalWhereInput
+    orderBy?: LeadStageApprovalOrderByWithRelationInput | LeadStageApprovalOrderByWithRelationInput[]
+    cursor?: LeadStageApprovalWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: LeadStageApprovalScalarFieldEnum | LeadStageApprovalScalarFieldEnum[]
+  }
+
+  /**
+   * User.assignedLeadStageApprovals
+   */
+  export type User$assignedLeadStageApprovalsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadStageApproval
+     */
+    select?: LeadStageApprovalSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadStageApprovalInclude<ExtArgs> | null
+    where?: LeadStageApprovalWhereInput
+    orderBy?: LeadStageApprovalOrderByWithRelationInput | LeadStageApprovalOrderByWithRelationInput[]
+    cursor?: LeadStageApprovalWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: LeadStageApprovalScalarFieldEnum | LeadStageApprovalScalarFieldEnum[]
+  }
+
+  /**
+   * User.approvedLeadStageApprovals
+   */
+  export type User$approvedLeadStageApprovalsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadStageApproval
+     */
+    select?: LeadStageApprovalSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadStageApprovalInclude<ExtArgs> | null
+    where?: LeadStageApprovalWhereInput
+    orderBy?: LeadStageApprovalOrderByWithRelationInput | LeadStageApprovalOrderByWithRelationInput[]
+    cursor?: LeadStageApprovalWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: LeadStageApprovalScalarFieldEnum | LeadStageApprovalScalarFieldEnum[]
   }
 
   /**
@@ -36932,6 +38413,9 @@ export namespace Prisma {
     stageExpiresAt: 'stageExpiresAt',
     slaAction: 'slaAction',
     slaWarningDays: 'slaWarningDays',
+    approvalState: 'approvalState',
+    pendingApprovalToStageId: 'pendingApprovalToStageId',
+    pendingApprovalRequestedAt: 'pendingApprovalRequestedAt',
     isClosed: 'isClosed',
     isLOB: 'isLOB',
     closedAt: 'closedAt',
@@ -36958,6 +38442,26 @@ export namespace Prisma {
   };
 
   export type LeadLOBLogScalarFieldEnum = (typeof LeadLOBLogScalarFieldEnum)[keyof typeof LeadLOBLogScalarFieldEnum]
+
+
+  export const LeadStageApprovalScalarFieldEnum: {
+    id: 'id',
+    workspaceId: 'workspaceId',
+    leadId: 'leadId',
+    fromStageId: 'fromStageId',
+    toStageId: 'toStageId',
+    requestedById: 'requestedById',
+    assignedToId: 'assignedToId',
+    status: 'status',
+    comment: 'comment',
+    requestData: 'requestData',
+    approvedById: 'approvedById',
+    approvedAt: 'approvedAt',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type LeadStageApprovalScalarFieldEnum = (typeof LeadStageApprovalScalarFieldEnum)[keyof typeof LeadStageApprovalScalarFieldEnum]
 
 
   export const LeadLifeCycleTransitionScalarFieldEnum: {
@@ -37394,6 +38898,20 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'LeadApprovalState'
+   */
+  export type EnumLeadApprovalStateFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LeadApprovalState'>
+    
+
+
+  /**
+   * Reference to a field of type 'LeadApprovalState[]'
+   */
+  export type ListEnumLeadApprovalStateFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LeadApprovalState[]'>
+    
+
+
+  /**
    * Reference to a field of type 'LeadClosureType'
    */
   export type EnumLeadClosureTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LeadClosureType'>
@@ -37404,6 +38922,20 @@ export namespace Prisma {
    * Reference to a field of type 'LeadClosureType[]'
    */
   export type ListEnumLeadClosureTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LeadClosureType[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'LeadApprovalStatus'
+   */
+  export type EnumLeadApprovalStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LeadApprovalStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'LeadApprovalStatus[]'
+   */
+  export type ListEnumLeadApprovalStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LeadApprovalStatus[]'>
     
 
 
@@ -37676,6 +39208,7 @@ export namespace Prisma {
     leadDynamicFields?: LeadDynamicFieldListRelationFilter
     leads?: LeadListRelationFilter
     leadActivities?: LeadActivityListRelationFilter
+    leadStageApprovals?: LeadStageApprovalListRelationFilter
   }
 
   export type WorkspaceOrderByWithRelationInput = {
@@ -37697,6 +39230,7 @@ export namespace Prisma {
     leadDynamicFields?: LeadDynamicFieldOrderByRelationAggregateInput
     leads?: LeadOrderByRelationAggregateInput
     leadActivities?: LeadActivityOrderByRelationAggregateInput
+    leadStageApprovals?: LeadStageApprovalOrderByRelationAggregateInput
   }
 
   export type WorkspaceWhereUniqueInput = Prisma.AtLeast<{
@@ -37721,6 +39255,7 @@ export namespace Prisma {
     leadDynamicFields?: LeadDynamicFieldListRelationFilter
     leads?: LeadListRelationFilter
     leadActivities?: LeadActivityListRelationFilter
+    leadStageApprovals?: LeadStageApprovalListRelationFilter
   }, "id" | "ownerId">
 
   export type WorkspaceOrderByWithAggregationInput = {
@@ -37912,6 +39447,8 @@ export namespace Prisma {
     deletedAt?: DateTimeNullableFilter<"LeadStage"> | Date | string | null
     rules?: StageRuleListRelationFilter
     leads?: LeadListRelationFilter
+    approvalsFrom?: LeadStageApprovalListRelationFilter
+    approvalsTo?: LeadStageApprovalListRelationFilter
   }
 
   export type LeadStageOrderByWithRelationInput = {
@@ -37929,6 +39466,8 @@ export namespace Prisma {
     deletedAt?: SortOrderInput | SortOrder
     rules?: StageRuleOrderByRelationAggregateInput
     leads?: LeadOrderByRelationAggregateInput
+    approvalsFrom?: LeadStageApprovalOrderByRelationAggregateInput
+    approvalsTo?: LeadStageApprovalOrderByRelationAggregateInput
   }
 
   export type LeadStageWhereUniqueInput = Prisma.AtLeast<{
@@ -37949,6 +39488,8 @@ export namespace Prisma {
     deletedAt?: DateTimeNullableFilter<"LeadStage"> | Date | string | null
     rules?: StageRuleListRelationFilter
     leads?: LeadListRelationFilter
+    approvalsFrom?: LeadStageApprovalListRelationFilter
+    approvalsTo?: LeadStageApprovalListRelationFilter
   }, "id">
 
   export type LeadStageOrderByWithAggregationInput = {
@@ -38675,6 +40216,9 @@ export namespace Prisma {
     stageExpiresAt?: DateTimeNullableFilter<"Lead"> | Date | string | null
     slaAction?: EnumLeadExpiryActionNullableFilter<"Lead"> | $Enums.LeadExpiryAction | null
     slaWarningDays?: IntNullableFilter<"Lead"> | number | null
+    approvalState?: EnumLeadApprovalStateFilter<"Lead"> | $Enums.LeadApprovalState
+    pendingApprovalToStageId?: StringNullableFilter<"Lead"> | string | null
+    pendingApprovalRequestedAt?: DateTimeNullableFilter<"Lead"> | Date | string | null
     isClosed?: BoolFilter<"Lead"> | boolean
     isLOB?: BoolFilter<"Lead"> | boolean
     closedAt?: DateTimeNullableFilter<"Lead"> | Date | string | null
@@ -38695,6 +40239,7 @@ export namespace Prisma {
     followUps?: FollowUpListRelationFilter
     lobLogs?: LeadLOBLogListRelationFilter
     activities?: LeadActivityListRelationFilter
+    stageApprovals?: LeadStageApprovalListRelationFilter
   }
 
   export type LeadOrderByWithRelationInput = {
@@ -38713,6 +40258,9 @@ export namespace Prisma {
     stageExpiresAt?: SortOrderInput | SortOrder
     slaAction?: SortOrderInput | SortOrder
     slaWarningDays?: SortOrderInput | SortOrder
+    approvalState?: SortOrder
+    pendingApprovalToStageId?: SortOrderInput | SortOrder
+    pendingApprovalRequestedAt?: SortOrderInput | SortOrder
     isClosed?: SortOrder
     isLOB?: SortOrder
     closedAt?: SortOrderInput | SortOrder
@@ -38733,6 +40281,7 @@ export namespace Prisma {
     followUps?: FollowUpOrderByRelationAggregateInput
     lobLogs?: LeadLOBLogOrderByRelationAggregateInput
     activities?: LeadActivityOrderByRelationAggregateInput
+    stageApprovals?: LeadStageApprovalOrderByRelationAggregateInput
   }
 
   export type LeadWhereUniqueInput = Prisma.AtLeast<{
@@ -38754,6 +40303,9 @@ export namespace Prisma {
     stageExpiresAt?: DateTimeNullableFilter<"Lead"> | Date | string | null
     slaAction?: EnumLeadExpiryActionNullableFilter<"Lead"> | $Enums.LeadExpiryAction | null
     slaWarningDays?: IntNullableFilter<"Lead"> | number | null
+    approvalState?: EnumLeadApprovalStateFilter<"Lead"> | $Enums.LeadApprovalState
+    pendingApprovalToStageId?: StringNullableFilter<"Lead"> | string | null
+    pendingApprovalRequestedAt?: DateTimeNullableFilter<"Lead"> | Date | string | null
     isClosed?: BoolFilter<"Lead"> | boolean
     isLOB?: BoolFilter<"Lead"> | boolean
     closedAt?: DateTimeNullableFilter<"Lead"> | Date | string | null
@@ -38774,6 +40326,7 @@ export namespace Prisma {
     followUps?: FollowUpListRelationFilter
     lobLogs?: LeadLOBLogListRelationFilter
     activities?: LeadActivityListRelationFilter
+    stageApprovals?: LeadStageApprovalListRelationFilter
   }, "id">
 
   export type LeadOrderByWithAggregationInput = {
@@ -38792,6 +40345,9 @@ export namespace Prisma {
     stageExpiresAt?: SortOrderInput | SortOrder
     slaAction?: SortOrderInput | SortOrder
     slaWarningDays?: SortOrderInput | SortOrder
+    approvalState?: SortOrder
+    pendingApprovalToStageId?: SortOrderInput | SortOrder
+    pendingApprovalRequestedAt?: SortOrderInput | SortOrder
     isClosed?: SortOrder
     isLOB?: SortOrder
     closedAt?: SortOrderInput | SortOrder
@@ -38828,6 +40384,9 @@ export namespace Prisma {
     stageExpiresAt?: DateTimeNullableWithAggregatesFilter<"Lead"> | Date | string | null
     slaAction?: EnumLeadExpiryActionNullableWithAggregatesFilter<"Lead"> | $Enums.LeadExpiryAction | null
     slaWarningDays?: IntNullableWithAggregatesFilter<"Lead"> | number | null
+    approvalState?: EnumLeadApprovalStateWithAggregatesFilter<"Lead"> | $Enums.LeadApprovalState
+    pendingApprovalToStageId?: StringNullableWithAggregatesFilter<"Lead"> | string | null
+    pendingApprovalRequestedAt?: DateTimeNullableWithAggregatesFilter<"Lead"> | Date | string | null
     isClosed?: BoolWithAggregatesFilter<"Lead"> | boolean
     isLOB?: BoolWithAggregatesFilter<"Lead"> | boolean
     closedAt?: DateTimeNullableWithAggregatesFilter<"Lead"> | Date | string | null
@@ -38903,6 +40462,124 @@ export namespace Prisma {
     changedById?: StringWithAggregatesFilter<"LeadLOBLog"> | string
     changedAt?: DateTimeWithAggregatesFilter<"LeadLOBLog"> | Date | string
     workspaceId?: StringWithAggregatesFilter<"LeadLOBLog"> | string
+  }
+
+  export type LeadStageApprovalWhereInput = {
+    AND?: LeadStageApprovalWhereInput | LeadStageApprovalWhereInput[]
+    OR?: LeadStageApprovalWhereInput[]
+    NOT?: LeadStageApprovalWhereInput | LeadStageApprovalWhereInput[]
+    id?: StringFilter<"LeadStageApproval"> | string
+    workspaceId?: StringFilter<"LeadStageApproval"> | string
+    leadId?: StringFilter<"LeadStageApproval"> | string
+    fromStageId?: StringFilter<"LeadStageApproval"> | string
+    toStageId?: StringFilter<"LeadStageApproval"> | string
+    requestedById?: StringFilter<"LeadStageApproval"> | string
+    assignedToId?: StringNullableFilter<"LeadStageApproval"> | string | null
+    status?: EnumLeadApprovalStatusFilter<"LeadStageApproval"> | $Enums.LeadApprovalStatus
+    comment?: StringNullableFilter<"LeadStageApproval"> | string | null
+    requestData?: JsonNullableFilter<"LeadStageApproval">
+    approvedById?: StringNullableFilter<"LeadStageApproval"> | string | null
+    approvedAt?: DateTimeNullableFilter<"LeadStageApproval"> | Date | string | null
+    createdAt?: DateTimeFilter<"LeadStageApproval"> | Date | string
+    updatedAt?: DateTimeFilter<"LeadStageApproval"> | Date | string
+    workspace?: XOR<WorkspaceRelationFilter, WorkspaceWhereInput>
+    lead?: XOR<LeadRelationFilter, LeadWhereInput>
+    fromStage?: XOR<LeadStageRelationFilter, LeadStageWhereInput>
+    toStage?: XOR<LeadStageRelationFilter, LeadStageWhereInput>
+    requestedBy?: XOR<UserRelationFilter, UserWhereInput>
+    assignedTo?: XOR<UserNullableRelationFilter, UserWhereInput> | null
+    approvedBy?: XOR<UserNullableRelationFilter, UserWhereInput> | null
+  }
+
+  export type LeadStageApprovalOrderByWithRelationInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    leadId?: SortOrder
+    fromStageId?: SortOrder
+    toStageId?: SortOrder
+    requestedById?: SortOrder
+    assignedToId?: SortOrderInput | SortOrder
+    status?: SortOrder
+    comment?: SortOrderInput | SortOrder
+    requestData?: SortOrderInput | SortOrder
+    approvedById?: SortOrderInput | SortOrder
+    approvedAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    workspace?: WorkspaceOrderByWithRelationInput
+    lead?: LeadOrderByWithRelationInput
+    fromStage?: LeadStageOrderByWithRelationInput
+    toStage?: LeadStageOrderByWithRelationInput
+    requestedBy?: UserOrderByWithRelationInput
+    assignedTo?: UserOrderByWithRelationInput
+    approvedBy?: UserOrderByWithRelationInput
+  }
+
+  export type LeadStageApprovalWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: LeadStageApprovalWhereInput | LeadStageApprovalWhereInput[]
+    OR?: LeadStageApprovalWhereInput[]
+    NOT?: LeadStageApprovalWhereInput | LeadStageApprovalWhereInput[]
+    workspaceId?: StringFilter<"LeadStageApproval"> | string
+    leadId?: StringFilter<"LeadStageApproval"> | string
+    fromStageId?: StringFilter<"LeadStageApproval"> | string
+    toStageId?: StringFilter<"LeadStageApproval"> | string
+    requestedById?: StringFilter<"LeadStageApproval"> | string
+    assignedToId?: StringNullableFilter<"LeadStageApproval"> | string | null
+    status?: EnumLeadApprovalStatusFilter<"LeadStageApproval"> | $Enums.LeadApprovalStatus
+    comment?: StringNullableFilter<"LeadStageApproval"> | string | null
+    requestData?: JsonNullableFilter<"LeadStageApproval">
+    approvedById?: StringNullableFilter<"LeadStageApproval"> | string | null
+    approvedAt?: DateTimeNullableFilter<"LeadStageApproval"> | Date | string | null
+    createdAt?: DateTimeFilter<"LeadStageApproval"> | Date | string
+    updatedAt?: DateTimeFilter<"LeadStageApproval"> | Date | string
+    workspace?: XOR<WorkspaceRelationFilter, WorkspaceWhereInput>
+    lead?: XOR<LeadRelationFilter, LeadWhereInput>
+    fromStage?: XOR<LeadStageRelationFilter, LeadStageWhereInput>
+    toStage?: XOR<LeadStageRelationFilter, LeadStageWhereInput>
+    requestedBy?: XOR<UserRelationFilter, UserWhereInput>
+    assignedTo?: XOR<UserNullableRelationFilter, UserWhereInput> | null
+    approvedBy?: XOR<UserNullableRelationFilter, UserWhereInput> | null
+  }, "id">
+
+  export type LeadStageApprovalOrderByWithAggregationInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    leadId?: SortOrder
+    fromStageId?: SortOrder
+    toStageId?: SortOrder
+    requestedById?: SortOrder
+    assignedToId?: SortOrderInput | SortOrder
+    status?: SortOrder
+    comment?: SortOrderInput | SortOrder
+    requestData?: SortOrderInput | SortOrder
+    approvedById?: SortOrderInput | SortOrder
+    approvedAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: LeadStageApprovalCountOrderByAggregateInput
+    _max?: LeadStageApprovalMaxOrderByAggregateInput
+    _min?: LeadStageApprovalMinOrderByAggregateInput
+  }
+
+  export type LeadStageApprovalScalarWhereWithAggregatesInput = {
+    AND?: LeadStageApprovalScalarWhereWithAggregatesInput | LeadStageApprovalScalarWhereWithAggregatesInput[]
+    OR?: LeadStageApprovalScalarWhereWithAggregatesInput[]
+    NOT?: LeadStageApprovalScalarWhereWithAggregatesInput | LeadStageApprovalScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"LeadStageApproval"> | string
+    workspaceId?: StringWithAggregatesFilter<"LeadStageApproval"> | string
+    leadId?: StringWithAggregatesFilter<"LeadStageApproval"> | string
+    fromStageId?: StringWithAggregatesFilter<"LeadStageApproval"> | string
+    toStageId?: StringWithAggregatesFilter<"LeadStageApproval"> | string
+    requestedById?: StringWithAggregatesFilter<"LeadStageApproval"> | string
+    assignedToId?: StringNullableWithAggregatesFilter<"LeadStageApproval"> | string | null
+    status?: EnumLeadApprovalStatusWithAggregatesFilter<"LeadStageApproval"> | $Enums.LeadApprovalStatus
+    comment?: StringNullableWithAggregatesFilter<"LeadStageApproval"> | string | null
+    requestData?: JsonNullableWithAggregatesFilter<"LeadStageApproval">
+    approvedById?: StringNullableWithAggregatesFilter<"LeadStageApproval"> | string | null
+    approvedAt?: DateTimeNullableWithAggregatesFilter<"LeadStageApproval"> | Date | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"LeadStageApproval"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"LeadStageApproval"> | Date | string
   }
 
   export type LeadLifeCycleTransitionWhereInput = {
@@ -39485,6 +41162,9 @@ export namespace Prisma {
     devices?: DeviceListRelationFilter
     auditLogs?: AuditLogListRelationFilter
     performedLeadActivities?: LeadActivityListRelationFilter
+    requestedLeadStageApprovals?: LeadStageApprovalListRelationFilter
+    assignedLeadStageApprovals?: LeadStageApprovalListRelationFilter
+    approvedLeadStageApprovals?: LeadStageApprovalListRelationFilter
     rosterEntries?: RosterEntryListRelationFilter
     followUps?: FollowUpListRelationFilter
     createdLeads?: LeadListRelationFilter
@@ -39535,6 +41215,9 @@ export namespace Prisma {
     devices?: DeviceOrderByRelationAggregateInput
     auditLogs?: AuditLogOrderByRelationAggregateInput
     performedLeadActivities?: LeadActivityOrderByRelationAggregateInput
+    requestedLeadStageApprovals?: LeadStageApprovalOrderByRelationAggregateInput
+    assignedLeadStageApprovals?: LeadStageApprovalOrderByRelationAggregateInput
+    approvedLeadStageApprovals?: LeadStageApprovalOrderByRelationAggregateInput
     rosterEntries?: RosterEntryOrderByRelationAggregateInput
     followUps?: FollowUpOrderByRelationAggregateInput
     createdLeads?: LeadOrderByRelationAggregateInput
@@ -39588,6 +41271,9 @@ export namespace Prisma {
     devices?: DeviceListRelationFilter
     auditLogs?: AuditLogListRelationFilter
     performedLeadActivities?: LeadActivityListRelationFilter
+    requestedLeadStageApprovals?: LeadStageApprovalListRelationFilter
+    assignedLeadStageApprovals?: LeadStageApprovalListRelationFilter
+    approvedLeadStageApprovals?: LeadStageApprovalListRelationFilter
     rosterEntries?: RosterEntryListRelationFilter
     followUps?: FollowUpListRelationFilter
     createdLeads?: LeadListRelationFilter
@@ -40251,6 +41937,7 @@ export namespace Prisma {
     leadDynamicFields?: LeadDynamicFieldCreateNestedManyWithoutWorkspaceInput
     leads?: LeadCreateNestedManyWithoutWorkspaceInput
     leadActivities?: LeadActivityCreateNestedManyWithoutWorkspaceInput
+    leadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateInput = {
@@ -40271,6 +41958,7 @@ export namespace Prisma {
     leadDynamicFields?: LeadDynamicFieldUncheckedCreateNestedManyWithoutWorkspaceInput
     leads?: LeadUncheckedCreateNestedManyWithoutWorkspaceInput
     leadActivities?: LeadActivityUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUpdateInput = {
@@ -40291,6 +41979,7 @@ export namespace Prisma {
     leadDynamicFields?: LeadDynamicFieldUpdateManyWithoutWorkspaceNestedInput
     leads?: LeadUpdateManyWithoutWorkspaceNestedInput
     leadActivities?: LeadActivityUpdateManyWithoutWorkspaceNestedInput
+    leadStageApprovals?: LeadStageApprovalUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateInput = {
@@ -40311,6 +42000,7 @@ export namespace Prisma {
     leadDynamicFields?: LeadDynamicFieldUncheckedUpdateManyWithoutWorkspaceNestedInput
     leads?: LeadUncheckedUpdateManyWithoutWorkspaceNestedInput
     leadActivities?: LeadActivityUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceCreateManyInput = {
@@ -40520,6 +42210,8 @@ export namespace Prisma {
     deletedAt?: Date | string | null
     rules?: StageRuleCreateNestedManyWithoutStageInput
     leads?: LeadCreateNestedManyWithoutStageInput
+    approvalsFrom?: LeadStageApprovalCreateNestedManyWithoutFromStageInput
+    approvalsTo?: LeadStageApprovalCreateNestedManyWithoutToStageInput
   }
 
   export type LeadStageUncheckedCreateInput = {
@@ -40537,6 +42229,8 @@ export namespace Prisma {
     deletedAt?: Date | string | null
     rules?: StageRuleUncheckedCreateNestedManyWithoutStageInput
     leads?: LeadUncheckedCreateNestedManyWithoutStageInput
+    approvalsFrom?: LeadStageApprovalUncheckedCreateNestedManyWithoutFromStageInput
+    approvalsTo?: LeadStageApprovalUncheckedCreateNestedManyWithoutToStageInput
   }
 
   export type LeadStageUpdateInput = {
@@ -40554,6 +42248,8 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     rules?: StageRuleUpdateManyWithoutStageNestedInput
     leads?: LeadUpdateManyWithoutStageNestedInput
+    approvalsFrom?: LeadStageApprovalUpdateManyWithoutFromStageNestedInput
+    approvalsTo?: LeadStageApprovalUpdateManyWithoutToStageNestedInput
   }
 
   export type LeadStageUncheckedUpdateInput = {
@@ -40571,6 +42267,8 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     rules?: StageRuleUncheckedUpdateManyWithoutStageNestedInput
     leads?: LeadUncheckedUpdateManyWithoutStageNestedInput
+    approvalsFrom?: LeadStageApprovalUncheckedUpdateManyWithoutFromStageNestedInput
+    approvalsTo?: LeadStageApprovalUncheckedUpdateManyWithoutToStageNestedInput
   }
 
   export type LeadStageCreateManyInput = {
@@ -41356,6 +43054,9 @@ export namespace Prisma {
     stageExpiresAt?: Date | string | null
     slaAction?: $Enums.LeadExpiryAction | null
     slaWarningDays?: number | null
+    approvalState?: $Enums.LeadApprovalState
+    pendingApprovalToStageId?: string | null
+    pendingApprovalRequestedAt?: Date | string | null
     isClosed?: boolean
     isLOB?: boolean
     closedAt?: Date | string | null
@@ -41373,6 +43074,7 @@ export namespace Prisma {
     followUps?: FollowUpCreateNestedManyWithoutLeadInput
     lobLogs?: LeadLOBLogCreateNestedManyWithoutLeadInput
     activities?: LeadActivityCreateNestedManyWithoutLeadInput
+    stageApprovals?: LeadStageApprovalCreateNestedManyWithoutLeadInput
   }
 
   export type LeadUncheckedCreateInput = {
@@ -41391,6 +43093,9 @@ export namespace Prisma {
     stageExpiresAt?: Date | string | null
     slaAction?: $Enums.LeadExpiryAction | null
     slaWarningDays?: number | null
+    approvalState?: $Enums.LeadApprovalState
+    pendingApprovalToStageId?: string | null
+    pendingApprovalRequestedAt?: Date | string | null
     isClosed?: boolean
     isLOB?: boolean
     closedAt?: Date | string | null
@@ -41404,6 +43109,7 @@ export namespace Prisma {
     followUps?: FollowUpUncheckedCreateNestedManyWithoutLeadInput
     lobLogs?: LeadLOBLogUncheckedCreateNestedManyWithoutLeadInput
     activities?: LeadActivityUncheckedCreateNestedManyWithoutLeadInput
+    stageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutLeadInput
   }
 
   export type LeadUpdateInput = {
@@ -41418,6 +43124,9 @@ export namespace Prisma {
     stageExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     slaAction?: NullableEnumLeadExpiryActionFieldUpdateOperationsInput | $Enums.LeadExpiryAction | null
     slaWarningDays?: NullableIntFieldUpdateOperationsInput | number | null
+    approvalState?: EnumLeadApprovalStateFieldUpdateOperationsInput | $Enums.LeadApprovalState
+    pendingApprovalToStageId?: NullableStringFieldUpdateOperationsInput | string | null
+    pendingApprovalRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isClosed?: BoolFieldUpdateOperationsInput | boolean
     isLOB?: BoolFieldUpdateOperationsInput | boolean
     closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -41435,6 +43144,7 @@ export namespace Prisma {
     followUps?: FollowUpUpdateManyWithoutLeadNestedInput
     lobLogs?: LeadLOBLogUpdateManyWithoutLeadNestedInput
     activities?: LeadActivityUpdateManyWithoutLeadNestedInput
+    stageApprovals?: LeadStageApprovalUpdateManyWithoutLeadNestedInput
   }
 
   export type LeadUncheckedUpdateInput = {
@@ -41453,6 +43163,9 @@ export namespace Prisma {
     stageExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     slaAction?: NullableEnumLeadExpiryActionFieldUpdateOperationsInput | $Enums.LeadExpiryAction | null
     slaWarningDays?: NullableIntFieldUpdateOperationsInput | number | null
+    approvalState?: EnumLeadApprovalStateFieldUpdateOperationsInput | $Enums.LeadApprovalState
+    pendingApprovalToStageId?: NullableStringFieldUpdateOperationsInput | string | null
+    pendingApprovalRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isClosed?: BoolFieldUpdateOperationsInput | boolean
     isLOB?: BoolFieldUpdateOperationsInput | boolean
     closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -41466,6 +43179,7 @@ export namespace Prisma {
     followUps?: FollowUpUncheckedUpdateManyWithoutLeadNestedInput
     lobLogs?: LeadLOBLogUncheckedUpdateManyWithoutLeadNestedInput
     activities?: LeadActivityUncheckedUpdateManyWithoutLeadNestedInput
+    stageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutLeadNestedInput
   }
 
   export type LeadCreateManyInput = {
@@ -41484,6 +43198,9 @@ export namespace Prisma {
     stageExpiresAt?: Date | string | null
     slaAction?: $Enums.LeadExpiryAction | null
     slaWarningDays?: number | null
+    approvalState?: $Enums.LeadApprovalState
+    pendingApprovalToStageId?: string | null
+    pendingApprovalRequestedAt?: Date | string | null
     isClosed?: boolean
     isLOB?: boolean
     closedAt?: Date | string | null
@@ -41508,6 +43225,9 @@ export namespace Prisma {
     stageExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     slaAction?: NullableEnumLeadExpiryActionFieldUpdateOperationsInput | $Enums.LeadExpiryAction | null
     slaWarningDays?: NullableIntFieldUpdateOperationsInput | number | null
+    approvalState?: EnumLeadApprovalStateFieldUpdateOperationsInput | $Enums.LeadApprovalState
+    pendingApprovalToStageId?: NullableStringFieldUpdateOperationsInput | string | null
+    pendingApprovalRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isClosed?: BoolFieldUpdateOperationsInput | boolean
     isLOB?: BoolFieldUpdateOperationsInput | boolean
     closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -41533,6 +43253,9 @@ export namespace Prisma {
     stageExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     slaAction?: NullableEnumLeadExpiryActionFieldUpdateOperationsInput | $Enums.LeadExpiryAction | null
     slaWarningDays?: NullableIntFieldUpdateOperationsInput | number | null
+    approvalState?: EnumLeadApprovalStateFieldUpdateOperationsInput | $Enums.LeadApprovalState
+    pendingApprovalToStageId?: NullableStringFieldUpdateOperationsInput | string | null
+    pendingApprovalRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isClosed?: BoolFieldUpdateOperationsInput | boolean
     isLOB?: BoolFieldUpdateOperationsInput | boolean
     closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -41612,6 +43335,118 @@ export namespace Prisma {
     changedById?: StringFieldUpdateOperationsInput | string
     changedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     workspaceId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type LeadStageApprovalCreateInput = {
+    id?: string
+    status?: $Enums.LeadApprovalStatus
+    comment?: string | null
+    requestData?: NullableJsonNullValueInput | InputJsonValue
+    approvedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    workspace: WorkspaceCreateNestedOneWithoutLeadStageApprovalsInput
+    lead: LeadCreateNestedOneWithoutStageApprovalsInput
+    fromStage: LeadStageCreateNestedOneWithoutApprovalsFromInput
+    toStage: LeadStageCreateNestedOneWithoutApprovalsToInput
+    requestedBy: UserCreateNestedOneWithoutRequestedLeadStageApprovalsInput
+    assignedTo?: UserCreateNestedOneWithoutAssignedLeadStageApprovalsInput
+    approvedBy?: UserCreateNestedOneWithoutApprovedLeadStageApprovalsInput
+  }
+
+  export type LeadStageApprovalUncheckedCreateInput = {
+    id?: string
+    workspaceId: string
+    leadId: string
+    fromStageId: string
+    toStageId: string
+    requestedById: string
+    assignedToId?: string | null
+    status?: $Enums.LeadApprovalStatus
+    comment?: string | null
+    requestData?: NullableJsonNullValueInput | InputJsonValue
+    approvedById?: string | null
+    approvedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type LeadStageApprovalUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: EnumLeadApprovalStatusFieldUpdateOperationsInput | $Enums.LeadApprovalStatus
+    comment?: NullableStringFieldUpdateOperationsInput | string | null
+    requestData?: NullableJsonNullValueInput | InputJsonValue
+    approvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    workspace?: WorkspaceUpdateOneRequiredWithoutLeadStageApprovalsNestedInput
+    lead?: LeadUpdateOneRequiredWithoutStageApprovalsNestedInput
+    fromStage?: LeadStageUpdateOneRequiredWithoutApprovalsFromNestedInput
+    toStage?: LeadStageUpdateOneRequiredWithoutApprovalsToNestedInput
+    requestedBy?: UserUpdateOneRequiredWithoutRequestedLeadStageApprovalsNestedInput
+    assignedTo?: UserUpdateOneWithoutAssignedLeadStageApprovalsNestedInput
+    approvedBy?: UserUpdateOneWithoutApprovedLeadStageApprovalsNestedInput
+  }
+
+  export type LeadStageApprovalUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    leadId?: StringFieldUpdateOperationsInput | string
+    fromStageId?: StringFieldUpdateOperationsInput | string
+    toStageId?: StringFieldUpdateOperationsInput | string
+    requestedById?: StringFieldUpdateOperationsInput | string
+    assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumLeadApprovalStatusFieldUpdateOperationsInput | $Enums.LeadApprovalStatus
+    comment?: NullableStringFieldUpdateOperationsInput | string | null
+    requestData?: NullableJsonNullValueInput | InputJsonValue
+    approvedById?: NullableStringFieldUpdateOperationsInput | string | null
+    approvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LeadStageApprovalCreateManyInput = {
+    id?: string
+    workspaceId: string
+    leadId: string
+    fromStageId: string
+    toStageId: string
+    requestedById: string
+    assignedToId?: string | null
+    status?: $Enums.LeadApprovalStatus
+    comment?: string | null
+    requestData?: NullableJsonNullValueInput | InputJsonValue
+    approvedById?: string | null
+    approvedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type LeadStageApprovalUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: EnumLeadApprovalStatusFieldUpdateOperationsInput | $Enums.LeadApprovalStatus
+    comment?: NullableStringFieldUpdateOperationsInput | string | null
+    requestData?: NullableJsonNullValueInput | InputJsonValue
+    approvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LeadStageApprovalUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    leadId?: StringFieldUpdateOperationsInput | string
+    fromStageId?: StringFieldUpdateOperationsInput | string
+    toStageId?: StringFieldUpdateOperationsInput | string
+    requestedById?: StringFieldUpdateOperationsInput | string
+    assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumLeadApprovalStatusFieldUpdateOperationsInput | $Enums.LeadApprovalStatus
+    comment?: NullableStringFieldUpdateOperationsInput | string | null
+    requestData?: NullableJsonNullValueInput | InputJsonValue
+    approvedById?: NullableStringFieldUpdateOperationsInput | string | null
+    approvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type LeadLifeCycleTransitionCreateInput = {
@@ -42206,6 +44041,9 @@ export namespace Prisma {
     devices?: DeviceCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     performedLeadActivities?: LeadActivityCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutApprovedByInput
     rosterEntries?: RosterEntryCreateNestedManyWithoutUserInput
     followUps?: FollowUpCreateNestedManyWithoutUserInput
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
@@ -42248,6 +44086,9 @@ export namespace Prisma {
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     performedLeadActivities?: LeadActivityUncheckedCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutApprovedByInput
     rosterEntries?: RosterEntryUncheckedCreateNestedManyWithoutUserInput
     followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -42290,6 +44131,9 @@ export namespace Prisma {
     devices?: DeviceUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     performedLeadActivities?: LeadActivityUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutApprovedByNestedInput
     rosterEntries?: RosterEntryUpdateManyWithoutUserNestedInput
     followUps?: FollowUpUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
@@ -42332,6 +44176,9 @@ export namespace Prisma {
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     performedLeadActivities?: LeadActivityUncheckedUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
     rosterEntries?: RosterEntryUncheckedUpdateManyWithoutUserNestedInput
     followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -43127,6 +44974,12 @@ export namespace Prisma {
     none?: LeadActivityWhereInput
   }
 
+  export type LeadStageApprovalListRelationFilter = {
+    every?: LeadStageApprovalWhereInput
+    some?: LeadStageApprovalWhereInput
+    none?: LeadStageApprovalWhereInput
+  }
+
   export type DepartmentOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -43148,6 +45001,10 @@ export namespace Prisma {
   }
 
   export type LeadActivityOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type LeadStageApprovalOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -43966,6 +45823,13 @@ export namespace Prisma {
     not?: NestedIntNullableFilter<$PrismaModel> | number | null
   }
 
+  export type EnumLeadApprovalStateFilter<$PrismaModel = never> = {
+    equals?: $Enums.LeadApprovalState | EnumLeadApprovalStateFieldRefInput<$PrismaModel>
+    in?: $Enums.LeadApprovalState[] | ListEnumLeadApprovalStateFieldRefInput<$PrismaModel>
+    notIn?: $Enums.LeadApprovalState[] | ListEnumLeadApprovalStateFieldRefInput<$PrismaModel>
+    not?: NestedEnumLeadApprovalStateFilter<$PrismaModel> | $Enums.LeadApprovalState
+  }
+
   export type EnumLeadClosureTypeNullableFilter<$PrismaModel = never> = {
     equals?: $Enums.LeadClosureType | EnumLeadClosureTypeFieldRefInput<$PrismaModel> | null
     in?: $Enums.LeadClosureType[] | ListEnumLeadClosureTypeFieldRefInput<$PrismaModel> | null
@@ -44024,6 +45888,9 @@ export namespace Prisma {
     stageExpiresAt?: SortOrder
     slaAction?: SortOrder
     slaWarningDays?: SortOrder
+    approvalState?: SortOrder
+    pendingApprovalToStageId?: SortOrder
+    pendingApprovalRequestedAt?: SortOrder
     isClosed?: SortOrder
     isLOB?: SortOrder
     closedAt?: SortOrder
@@ -44058,6 +45925,9 @@ export namespace Prisma {
     stageExpiresAt?: SortOrder
     slaAction?: SortOrder
     slaWarningDays?: SortOrder
+    approvalState?: SortOrder
+    pendingApprovalToStageId?: SortOrder
+    pendingApprovalRequestedAt?: SortOrder
     isClosed?: SortOrder
     isLOB?: SortOrder
     closedAt?: SortOrder
@@ -44086,6 +45956,9 @@ export namespace Prisma {
     stageExpiresAt?: SortOrder
     slaAction?: SortOrder
     slaWarningDays?: SortOrder
+    approvalState?: SortOrder
+    pendingApprovalToStageId?: SortOrder
+    pendingApprovalRequestedAt?: SortOrder
     isClosed?: SortOrder
     isLOB?: SortOrder
     closedAt?: SortOrder
@@ -44162,6 +46035,16 @@ export namespace Prisma {
     _max?: NestedIntNullableFilter<$PrismaModel>
   }
 
+  export type EnumLeadApprovalStateWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.LeadApprovalState | EnumLeadApprovalStateFieldRefInput<$PrismaModel>
+    in?: $Enums.LeadApprovalState[] | ListEnumLeadApprovalStateFieldRefInput<$PrismaModel>
+    notIn?: $Enums.LeadApprovalState[] | ListEnumLeadApprovalStateFieldRefInput<$PrismaModel>
+    not?: NestedEnumLeadApprovalStateWithAggregatesFilter<$PrismaModel> | $Enums.LeadApprovalState
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumLeadApprovalStateFilter<$PrismaModel>
+    _max?: NestedEnumLeadApprovalStateFilter<$PrismaModel>
+  }
+
   export type EnumLeadClosureTypeNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: $Enums.LeadClosureType | EnumLeadClosureTypeFieldRefInput<$PrismaModel> | null
     in?: $Enums.LeadClosureType[] | ListEnumLeadClosureTypeFieldRefInput<$PrismaModel> | null
@@ -44205,6 +46088,124 @@ export namespace Prisma {
     changedById?: SortOrder
     changedAt?: SortOrder
     workspaceId?: SortOrder
+  }
+
+  export type EnumLeadApprovalStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.LeadApprovalStatus | EnumLeadApprovalStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.LeadApprovalStatus[] | ListEnumLeadApprovalStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.LeadApprovalStatus[] | ListEnumLeadApprovalStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumLeadApprovalStatusFilter<$PrismaModel> | $Enums.LeadApprovalStatus
+  }
+  export type JsonNullableFilter<$PrismaModel = never> = 
+    | PatchUndefined<
+        Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
+
+  export type LeadStageRelationFilter = {
+    is?: LeadStageWhereInput
+    isNot?: LeadStageWhereInput
+  }
+
+  export type LeadStageApprovalCountOrderByAggregateInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    leadId?: SortOrder
+    fromStageId?: SortOrder
+    toStageId?: SortOrder
+    requestedById?: SortOrder
+    assignedToId?: SortOrder
+    status?: SortOrder
+    comment?: SortOrder
+    requestData?: SortOrder
+    approvedById?: SortOrder
+    approvedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type LeadStageApprovalMaxOrderByAggregateInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    leadId?: SortOrder
+    fromStageId?: SortOrder
+    toStageId?: SortOrder
+    requestedById?: SortOrder
+    assignedToId?: SortOrder
+    status?: SortOrder
+    comment?: SortOrder
+    approvedById?: SortOrder
+    approvedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type LeadStageApprovalMinOrderByAggregateInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    leadId?: SortOrder
+    fromStageId?: SortOrder
+    toStageId?: SortOrder
+    requestedById?: SortOrder
+    assignedToId?: SortOrder
+    status?: SortOrder
+    comment?: SortOrder
+    approvedById?: SortOrder
+    approvedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type EnumLeadApprovalStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.LeadApprovalStatus | EnumLeadApprovalStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.LeadApprovalStatus[] | ListEnumLeadApprovalStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.LeadApprovalStatus[] | ListEnumLeadApprovalStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumLeadApprovalStatusWithAggregatesFilter<$PrismaModel> | $Enums.LeadApprovalStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumLeadApprovalStatusFilter<$PrismaModel>
+    _max?: NestedEnumLeadApprovalStatusFilter<$PrismaModel>
+  }
+  export type JsonNullableWithAggregatesFilter<$PrismaModel = never> = 
+    | PatchUndefined<
+        Either<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableWithAggregatesFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedJsonNullableFilter<$PrismaModel>
+    _max?: NestedJsonNullableFilter<$PrismaModel>
   }
 
   export type EnumLeadExpiryActionFilter<$PrismaModel = never> = {
@@ -44409,28 +46410,6 @@ export namespace Prisma {
     value?: SortOrder
     createdAt?: SortOrder
   }
-  export type JsonNullableFilter<$PrismaModel = never> = 
-    | PatchUndefined<
-        Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
-        Required<JsonNullableFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>
-
-  export type JsonNullableFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    path?: string[]
-    string_contains?: string | StringFieldRefInput<$PrismaModel>
-    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
-    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
-    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-  }
 
   export type LeadActivityCountOrderByAggregateInput = {
     id?: SortOrder
@@ -44458,31 +46437,6 @@ export namespace Prisma {
     workspaceId?: SortOrder
     action?: SortOrder
     createdAt?: SortOrder
-  }
-  export type JsonNullableWithAggregatesFilter<$PrismaModel = never> = 
-    | PatchUndefined<
-        Either<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
-        Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
-
-  export type JsonNullableWithAggregatesFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    path?: string[]
-    string_contains?: string | StringFieldRefInput<$PrismaModel>
-    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
-    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
-    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedJsonNullableFilter<$PrismaModel>
-    _max?: NestedJsonNullableFilter<$PrismaModel>
   }
 
   export type EnumTargetSettingCycleFilter<$PrismaModel = never> = {
@@ -45264,6 +47218,13 @@ export namespace Prisma {
     connect?: LeadActivityWhereUniqueInput | LeadActivityWhereUniqueInput[]
   }
 
+  export type LeadStageApprovalCreateNestedManyWithoutWorkspaceInput = {
+    create?: XOR<LeadStageApprovalCreateWithoutWorkspaceInput, LeadStageApprovalUncheckedCreateWithoutWorkspaceInput> | LeadStageApprovalCreateWithoutWorkspaceInput[] | LeadStageApprovalUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: LeadStageApprovalCreateOrConnectWithoutWorkspaceInput | LeadStageApprovalCreateOrConnectWithoutWorkspaceInput[]
+    createMany?: LeadStageApprovalCreateManyWorkspaceInputEnvelope
+    connect?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+  }
+
   export type UserUncheckedCreateNestedManyWithoutWorkspaceInput = {
     create?: XOR<UserCreateWithoutWorkspaceInput, UserUncheckedCreateWithoutWorkspaceInput> | UserCreateWithoutWorkspaceInput[] | UserUncheckedCreateWithoutWorkspaceInput[]
     connectOrCreate?: UserCreateOrConnectWithoutWorkspaceInput | UserCreateOrConnectWithoutWorkspaceInput[]
@@ -45311,6 +47272,13 @@ export namespace Prisma {
     connectOrCreate?: LeadActivityCreateOrConnectWithoutWorkspaceInput | LeadActivityCreateOrConnectWithoutWorkspaceInput[]
     createMany?: LeadActivityCreateManyWorkspaceInputEnvelope
     connect?: LeadActivityWhereUniqueInput | LeadActivityWhereUniqueInput[]
+  }
+
+  export type LeadStageApprovalUncheckedCreateNestedManyWithoutWorkspaceInput = {
+    create?: XOR<LeadStageApprovalCreateWithoutWorkspaceInput, LeadStageApprovalUncheckedCreateWithoutWorkspaceInput> | LeadStageApprovalCreateWithoutWorkspaceInput[] | LeadStageApprovalUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: LeadStageApprovalCreateOrConnectWithoutWorkspaceInput | LeadStageApprovalCreateOrConnectWithoutWorkspaceInput[]
+    createMany?: LeadStageApprovalCreateManyWorkspaceInputEnvelope
+    connect?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
   }
 
   export type BoolFieldUpdateOperationsInput = {
@@ -45423,6 +47391,20 @@ export namespace Prisma {
     deleteMany?: LeadActivityScalarWhereInput | LeadActivityScalarWhereInput[]
   }
 
+  export type LeadStageApprovalUpdateManyWithoutWorkspaceNestedInput = {
+    create?: XOR<LeadStageApprovalCreateWithoutWorkspaceInput, LeadStageApprovalUncheckedCreateWithoutWorkspaceInput> | LeadStageApprovalCreateWithoutWorkspaceInput[] | LeadStageApprovalUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: LeadStageApprovalCreateOrConnectWithoutWorkspaceInput | LeadStageApprovalCreateOrConnectWithoutWorkspaceInput[]
+    upsert?: LeadStageApprovalUpsertWithWhereUniqueWithoutWorkspaceInput | LeadStageApprovalUpsertWithWhereUniqueWithoutWorkspaceInput[]
+    createMany?: LeadStageApprovalCreateManyWorkspaceInputEnvelope
+    set?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+    disconnect?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+    delete?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+    connect?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+    update?: LeadStageApprovalUpdateWithWhereUniqueWithoutWorkspaceInput | LeadStageApprovalUpdateWithWhereUniqueWithoutWorkspaceInput[]
+    updateMany?: LeadStageApprovalUpdateManyWithWhereWithoutWorkspaceInput | LeadStageApprovalUpdateManyWithWhereWithoutWorkspaceInput[]
+    deleteMany?: LeadStageApprovalScalarWhereInput | LeadStageApprovalScalarWhereInput[]
+  }
+
   export type UserUncheckedUpdateManyWithoutWorkspaceNestedInput = {
     create?: XOR<UserCreateWithoutWorkspaceInput, UserUncheckedCreateWithoutWorkspaceInput> | UserCreateWithoutWorkspaceInput[] | UserUncheckedCreateWithoutWorkspaceInput[]
     connectOrCreate?: UserCreateOrConnectWithoutWorkspaceInput | UserCreateOrConnectWithoutWorkspaceInput[]
@@ -45519,6 +47501,20 @@ export namespace Prisma {
     update?: LeadActivityUpdateWithWhereUniqueWithoutWorkspaceInput | LeadActivityUpdateWithWhereUniqueWithoutWorkspaceInput[]
     updateMany?: LeadActivityUpdateManyWithWhereWithoutWorkspaceInput | LeadActivityUpdateManyWithWhereWithoutWorkspaceInput[]
     deleteMany?: LeadActivityScalarWhereInput | LeadActivityScalarWhereInput[]
+  }
+
+  export type LeadStageApprovalUncheckedUpdateManyWithoutWorkspaceNestedInput = {
+    create?: XOR<LeadStageApprovalCreateWithoutWorkspaceInput, LeadStageApprovalUncheckedCreateWithoutWorkspaceInput> | LeadStageApprovalCreateWithoutWorkspaceInput[] | LeadStageApprovalUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: LeadStageApprovalCreateOrConnectWithoutWorkspaceInput | LeadStageApprovalCreateOrConnectWithoutWorkspaceInput[]
+    upsert?: LeadStageApprovalUpsertWithWhereUniqueWithoutWorkspaceInput | LeadStageApprovalUpsertWithWhereUniqueWithoutWorkspaceInput[]
+    createMany?: LeadStageApprovalCreateManyWorkspaceInputEnvelope
+    set?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+    disconnect?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+    delete?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+    connect?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+    update?: LeadStageApprovalUpdateWithWhereUniqueWithoutWorkspaceInput | LeadStageApprovalUpdateWithWhereUniqueWithoutWorkspaceInput[]
+    updateMany?: LeadStageApprovalUpdateManyWithWhereWithoutWorkspaceInput | LeadStageApprovalUpdateManyWithWhereWithoutWorkspaceInput[]
+    deleteMany?: LeadStageApprovalScalarWhereInput | LeadStageApprovalScalarWhereInput[]
   }
 
   export type WorkspaceCreateNestedOneWithoutDepartmentsInput = {
@@ -45647,6 +47643,20 @@ export namespace Prisma {
     connect?: LeadWhereUniqueInput | LeadWhereUniqueInput[]
   }
 
+  export type LeadStageApprovalCreateNestedManyWithoutFromStageInput = {
+    create?: XOR<LeadStageApprovalCreateWithoutFromStageInput, LeadStageApprovalUncheckedCreateWithoutFromStageInput> | LeadStageApprovalCreateWithoutFromStageInput[] | LeadStageApprovalUncheckedCreateWithoutFromStageInput[]
+    connectOrCreate?: LeadStageApprovalCreateOrConnectWithoutFromStageInput | LeadStageApprovalCreateOrConnectWithoutFromStageInput[]
+    createMany?: LeadStageApprovalCreateManyFromStageInputEnvelope
+    connect?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+  }
+
+  export type LeadStageApprovalCreateNestedManyWithoutToStageInput = {
+    create?: XOR<LeadStageApprovalCreateWithoutToStageInput, LeadStageApprovalUncheckedCreateWithoutToStageInput> | LeadStageApprovalCreateWithoutToStageInput[] | LeadStageApprovalUncheckedCreateWithoutToStageInput[]
+    connectOrCreate?: LeadStageApprovalCreateOrConnectWithoutToStageInput | LeadStageApprovalCreateOrConnectWithoutToStageInput[]
+    createMany?: LeadStageApprovalCreateManyToStageInputEnvelope
+    connect?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+  }
+
   export type StageRuleUncheckedCreateNestedManyWithoutStageInput = {
     create?: XOR<StageRuleCreateWithoutStageInput, StageRuleUncheckedCreateWithoutStageInput> | StageRuleCreateWithoutStageInput[] | StageRuleUncheckedCreateWithoutStageInput[]
     connectOrCreate?: StageRuleCreateOrConnectWithoutStageInput | StageRuleCreateOrConnectWithoutStageInput[]
@@ -45659,6 +47669,20 @@ export namespace Prisma {
     connectOrCreate?: LeadCreateOrConnectWithoutStageInput | LeadCreateOrConnectWithoutStageInput[]
     createMany?: LeadCreateManyStageInputEnvelope
     connect?: LeadWhereUniqueInput | LeadWhereUniqueInput[]
+  }
+
+  export type LeadStageApprovalUncheckedCreateNestedManyWithoutFromStageInput = {
+    create?: XOR<LeadStageApprovalCreateWithoutFromStageInput, LeadStageApprovalUncheckedCreateWithoutFromStageInput> | LeadStageApprovalCreateWithoutFromStageInput[] | LeadStageApprovalUncheckedCreateWithoutFromStageInput[]
+    connectOrCreate?: LeadStageApprovalCreateOrConnectWithoutFromStageInput | LeadStageApprovalCreateOrConnectWithoutFromStageInput[]
+    createMany?: LeadStageApprovalCreateManyFromStageInputEnvelope
+    connect?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+  }
+
+  export type LeadStageApprovalUncheckedCreateNestedManyWithoutToStageInput = {
+    create?: XOR<LeadStageApprovalCreateWithoutToStageInput, LeadStageApprovalUncheckedCreateWithoutToStageInput> | LeadStageApprovalCreateWithoutToStageInput[] | LeadStageApprovalUncheckedCreateWithoutToStageInput[]
+    connectOrCreate?: LeadStageApprovalCreateOrConnectWithoutToStageInput | LeadStageApprovalCreateOrConnectWithoutToStageInput[]
+    createMany?: LeadStageApprovalCreateManyToStageInputEnvelope
+    connect?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
   }
 
   export type IntFieldUpdateOperationsInput = {
@@ -45701,6 +47725,34 @@ export namespace Prisma {
     deleteMany?: LeadScalarWhereInput | LeadScalarWhereInput[]
   }
 
+  export type LeadStageApprovalUpdateManyWithoutFromStageNestedInput = {
+    create?: XOR<LeadStageApprovalCreateWithoutFromStageInput, LeadStageApprovalUncheckedCreateWithoutFromStageInput> | LeadStageApprovalCreateWithoutFromStageInput[] | LeadStageApprovalUncheckedCreateWithoutFromStageInput[]
+    connectOrCreate?: LeadStageApprovalCreateOrConnectWithoutFromStageInput | LeadStageApprovalCreateOrConnectWithoutFromStageInput[]
+    upsert?: LeadStageApprovalUpsertWithWhereUniqueWithoutFromStageInput | LeadStageApprovalUpsertWithWhereUniqueWithoutFromStageInput[]
+    createMany?: LeadStageApprovalCreateManyFromStageInputEnvelope
+    set?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+    disconnect?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+    delete?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+    connect?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+    update?: LeadStageApprovalUpdateWithWhereUniqueWithoutFromStageInput | LeadStageApprovalUpdateWithWhereUniqueWithoutFromStageInput[]
+    updateMany?: LeadStageApprovalUpdateManyWithWhereWithoutFromStageInput | LeadStageApprovalUpdateManyWithWhereWithoutFromStageInput[]
+    deleteMany?: LeadStageApprovalScalarWhereInput | LeadStageApprovalScalarWhereInput[]
+  }
+
+  export type LeadStageApprovalUpdateManyWithoutToStageNestedInput = {
+    create?: XOR<LeadStageApprovalCreateWithoutToStageInput, LeadStageApprovalUncheckedCreateWithoutToStageInput> | LeadStageApprovalCreateWithoutToStageInput[] | LeadStageApprovalUncheckedCreateWithoutToStageInput[]
+    connectOrCreate?: LeadStageApprovalCreateOrConnectWithoutToStageInput | LeadStageApprovalCreateOrConnectWithoutToStageInput[]
+    upsert?: LeadStageApprovalUpsertWithWhereUniqueWithoutToStageInput | LeadStageApprovalUpsertWithWhereUniqueWithoutToStageInput[]
+    createMany?: LeadStageApprovalCreateManyToStageInputEnvelope
+    set?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+    disconnect?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+    delete?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+    connect?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+    update?: LeadStageApprovalUpdateWithWhereUniqueWithoutToStageInput | LeadStageApprovalUpdateWithWhereUniqueWithoutToStageInput[]
+    updateMany?: LeadStageApprovalUpdateManyWithWhereWithoutToStageInput | LeadStageApprovalUpdateManyWithWhereWithoutToStageInput[]
+    deleteMany?: LeadStageApprovalScalarWhereInput | LeadStageApprovalScalarWhereInput[]
+  }
+
   export type StageRuleUncheckedUpdateManyWithoutStageNestedInput = {
     create?: XOR<StageRuleCreateWithoutStageInput, StageRuleUncheckedCreateWithoutStageInput> | StageRuleCreateWithoutStageInput[] | StageRuleUncheckedCreateWithoutStageInput[]
     connectOrCreate?: StageRuleCreateOrConnectWithoutStageInput | StageRuleCreateOrConnectWithoutStageInput[]
@@ -45727,6 +47779,34 @@ export namespace Prisma {
     update?: LeadUpdateWithWhereUniqueWithoutStageInput | LeadUpdateWithWhereUniqueWithoutStageInput[]
     updateMany?: LeadUpdateManyWithWhereWithoutStageInput | LeadUpdateManyWithWhereWithoutStageInput[]
     deleteMany?: LeadScalarWhereInput | LeadScalarWhereInput[]
+  }
+
+  export type LeadStageApprovalUncheckedUpdateManyWithoutFromStageNestedInput = {
+    create?: XOR<LeadStageApprovalCreateWithoutFromStageInput, LeadStageApprovalUncheckedCreateWithoutFromStageInput> | LeadStageApprovalCreateWithoutFromStageInput[] | LeadStageApprovalUncheckedCreateWithoutFromStageInput[]
+    connectOrCreate?: LeadStageApprovalCreateOrConnectWithoutFromStageInput | LeadStageApprovalCreateOrConnectWithoutFromStageInput[]
+    upsert?: LeadStageApprovalUpsertWithWhereUniqueWithoutFromStageInput | LeadStageApprovalUpsertWithWhereUniqueWithoutFromStageInput[]
+    createMany?: LeadStageApprovalCreateManyFromStageInputEnvelope
+    set?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+    disconnect?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+    delete?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+    connect?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+    update?: LeadStageApprovalUpdateWithWhereUniqueWithoutFromStageInput | LeadStageApprovalUpdateWithWhereUniqueWithoutFromStageInput[]
+    updateMany?: LeadStageApprovalUpdateManyWithWhereWithoutFromStageInput | LeadStageApprovalUpdateManyWithWhereWithoutFromStageInput[]
+    deleteMany?: LeadStageApprovalScalarWhereInput | LeadStageApprovalScalarWhereInput[]
+  }
+
+  export type LeadStageApprovalUncheckedUpdateManyWithoutToStageNestedInput = {
+    create?: XOR<LeadStageApprovalCreateWithoutToStageInput, LeadStageApprovalUncheckedCreateWithoutToStageInput> | LeadStageApprovalCreateWithoutToStageInput[] | LeadStageApprovalUncheckedCreateWithoutToStageInput[]
+    connectOrCreate?: LeadStageApprovalCreateOrConnectWithoutToStageInput | LeadStageApprovalCreateOrConnectWithoutToStageInput[]
+    upsert?: LeadStageApprovalUpsertWithWhereUniqueWithoutToStageInput | LeadStageApprovalUpsertWithWhereUniqueWithoutToStageInput[]
+    createMany?: LeadStageApprovalCreateManyToStageInputEnvelope
+    set?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+    disconnect?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+    delete?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+    connect?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+    update?: LeadStageApprovalUpdateWithWhereUniqueWithoutToStageInput | LeadStageApprovalUpdateWithWhereUniqueWithoutToStageInput[]
+    updateMany?: LeadStageApprovalUpdateManyWithWhereWithoutToStageInput | LeadStageApprovalUpdateManyWithWhereWithoutToStageInput[]
+    deleteMany?: LeadStageApprovalScalarWhereInput | LeadStageApprovalScalarWhereInput[]
   }
 
   export type LeadStageCreateNestedOneWithoutRulesInput = {
@@ -46428,6 +48508,13 @@ export namespace Prisma {
     connect?: LeadActivityWhereUniqueInput | LeadActivityWhereUniqueInput[]
   }
 
+  export type LeadStageApprovalCreateNestedManyWithoutLeadInput = {
+    create?: XOR<LeadStageApprovalCreateWithoutLeadInput, LeadStageApprovalUncheckedCreateWithoutLeadInput> | LeadStageApprovalCreateWithoutLeadInput[] | LeadStageApprovalUncheckedCreateWithoutLeadInput[]
+    connectOrCreate?: LeadStageApprovalCreateOrConnectWithoutLeadInput | LeadStageApprovalCreateOrConnectWithoutLeadInput[]
+    createMany?: LeadStageApprovalCreateManyLeadInputEnvelope
+    connect?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+  }
+
   export type FollowUpUncheckedCreateNestedManyWithoutLeadInput = {
     create?: XOR<FollowUpCreateWithoutLeadInput, FollowUpUncheckedCreateWithoutLeadInput> | FollowUpCreateWithoutLeadInput[] | FollowUpUncheckedCreateWithoutLeadInput[]
     connectOrCreate?: FollowUpCreateOrConnectWithoutLeadInput | FollowUpCreateOrConnectWithoutLeadInput[]
@@ -46447,6 +48534,13 @@ export namespace Prisma {
     connectOrCreate?: LeadActivityCreateOrConnectWithoutLeadInput | LeadActivityCreateOrConnectWithoutLeadInput[]
     createMany?: LeadActivityCreateManyLeadInputEnvelope
     connect?: LeadActivityWhereUniqueInput | LeadActivityWhereUniqueInput[]
+  }
+
+  export type LeadStageApprovalUncheckedCreateNestedManyWithoutLeadInput = {
+    create?: XOR<LeadStageApprovalCreateWithoutLeadInput, LeadStageApprovalUncheckedCreateWithoutLeadInput> | LeadStageApprovalCreateWithoutLeadInput[] | LeadStageApprovalUncheckedCreateWithoutLeadInput[]
+    connectOrCreate?: LeadStageApprovalCreateOrConnectWithoutLeadInput | LeadStageApprovalCreateOrConnectWithoutLeadInput[]
+    createMany?: LeadStageApprovalCreateManyLeadInputEnvelope
+    connect?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
   }
 
   export type NullableFloatFieldUpdateOperationsInput = {
@@ -46475,6 +48569,10 @@ export namespace Prisma {
     decrement?: number
     multiply?: number
     divide?: number
+  }
+
+  export type EnumLeadApprovalStateFieldUpdateOperationsInput = {
+    set?: $Enums.LeadApprovalState
   }
 
   export type NullableEnumLeadClosureTypeFieldUpdateOperationsInput = {
@@ -46589,6 +48687,20 @@ export namespace Prisma {
     deleteMany?: LeadActivityScalarWhereInput | LeadActivityScalarWhereInput[]
   }
 
+  export type LeadStageApprovalUpdateManyWithoutLeadNestedInput = {
+    create?: XOR<LeadStageApprovalCreateWithoutLeadInput, LeadStageApprovalUncheckedCreateWithoutLeadInput> | LeadStageApprovalCreateWithoutLeadInput[] | LeadStageApprovalUncheckedCreateWithoutLeadInput[]
+    connectOrCreate?: LeadStageApprovalCreateOrConnectWithoutLeadInput | LeadStageApprovalCreateOrConnectWithoutLeadInput[]
+    upsert?: LeadStageApprovalUpsertWithWhereUniqueWithoutLeadInput | LeadStageApprovalUpsertWithWhereUniqueWithoutLeadInput[]
+    createMany?: LeadStageApprovalCreateManyLeadInputEnvelope
+    set?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+    disconnect?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+    delete?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+    connect?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+    update?: LeadStageApprovalUpdateWithWhereUniqueWithoutLeadInput | LeadStageApprovalUpdateWithWhereUniqueWithoutLeadInput[]
+    updateMany?: LeadStageApprovalUpdateManyWithWhereWithoutLeadInput | LeadStageApprovalUpdateManyWithWhereWithoutLeadInput[]
+    deleteMany?: LeadStageApprovalScalarWhereInput | LeadStageApprovalScalarWhereInput[]
+  }
+
   export type FollowUpUncheckedUpdateManyWithoutLeadNestedInput = {
     create?: XOR<FollowUpCreateWithoutLeadInput, FollowUpUncheckedCreateWithoutLeadInput> | FollowUpCreateWithoutLeadInput[] | FollowUpUncheckedCreateWithoutLeadInput[]
     connectOrCreate?: FollowUpCreateOrConnectWithoutLeadInput | FollowUpCreateOrConnectWithoutLeadInput[]
@@ -46631,6 +48743,20 @@ export namespace Prisma {
     deleteMany?: LeadActivityScalarWhereInput | LeadActivityScalarWhereInput[]
   }
 
+  export type LeadStageApprovalUncheckedUpdateManyWithoutLeadNestedInput = {
+    create?: XOR<LeadStageApprovalCreateWithoutLeadInput, LeadStageApprovalUncheckedCreateWithoutLeadInput> | LeadStageApprovalCreateWithoutLeadInput[] | LeadStageApprovalUncheckedCreateWithoutLeadInput[]
+    connectOrCreate?: LeadStageApprovalCreateOrConnectWithoutLeadInput | LeadStageApprovalCreateOrConnectWithoutLeadInput[]
+    upsert?: LeadStageApprovalUpsertWithWhereUniqueWithoutLeadInput | LeadStageApprovalUpsertWithWhereUniqueWithoutLeadInput[]
+    createMany?: LeadStageApprovalCreateManyLeadInputEnvelope
+    set?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+    disconnect?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+    delete?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+    connect?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+    update?: LeadStageApprovalUpdateWithWhereUniqueWithoutLeadInput | LeadStageApprovalUpdateWithWhereUniqueWithoutLeadInput[]
+    updateMany?: LeadStageApprovalUpdateManyWithWhereWithoutLeadInput | LeadStageApprovalUpdateManyWithWhereWithoutLeadInput[]
+    deleteMany?: LeadStageApprovalScalarWhereInput | LeadStageApprovalScalarWhereInput[]
+  }
+
   export type LeadCreateNestedOneWithoutLobLogsInput = {
     create?: XOR<LeadCreateWithoutLobLogsInput, LeadUncheckedCreateWithoutLobLogsInput>
     connectOrCreate?: LeadCreateOrConnectWithoutLobLogsInput
@@ -46643,6 +48769,112 @@ export namespace Prisma {
     upsert?: LeadUpsertWithoutLobLogsInput
     connect?: LeadWhereUniqueInput
     update?: XOR<XOR<LeadUpdateToOneWithWhereWithoutLobLogsInput, LeadUpdateWithoutLobLogsInput>, LeadUncheckedUpdateWithoutLobLogsInput>
+  }
+
+  export type WorkspaceCreateNestedOneWithoutLeadStageApprovalsInput = {
+    create?: XOR<WorkspaceCreateWithoutLeadStageApprovalsInput, WorkspaceUncheckedCreateWithoutLeadStageApprovalsInput>
+    connectOrCreate?: WorkspaceCreateOrConnectWithoutLeadStageApprovalsInput
+    connect?: WorkspaceWhereUniqueInput
+  }
+
+  export type LeadCreateNestedOneWithoutStageApprovalsInput = {
+    create?: XOR<LeadCreateWithoutStageApprovalsInput, LeadUncheckedCreateWithoutStageApprovalsInput>
+    connectOrCreate?: LeadCreateOrConnectWithoutStageApprovalsInput
+    connect?: LeadWhereUniqueInput
+  }
+
+  export type LeadStageCreateNestedOneWithoutApprovalsFromInput = {
+    create?: XOR<LeadStageCreateWithoutApprovalsFromInput, LeadStageUncheckedCreateWithoutApprovalsFromInput>
+    connectOrCreate?: LeadStageCreateOrConnectWithoutApprovalsFromInput
+    connect?: LeadStageWhereUniqueInput
+  }
+
+  export type LeadStageCreateNestedOneWithoutApprovalsToInput = {
+    create?: XOR<LeadStageCreateWithoutApprovalsToInput, LeadStageUncheckedCreateWithoutApprovalsToInput>
+    connectOrCreate?: LeadStageCreateOrConnectWithoutApprovalsToInput
+    connect?: LeadStageWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutRequestedLeadStageApprovalsInput = {
+    create?: XOR<UserCreateWithoutRequestedLeadStageApprovalsInput, UserUncheckedCreateWithoutRequestedLeadStageApprovalsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutRequestedLeadStageApprovalsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutAssignedLeadStageApprovalsInput = {
+    create?: XOR<UserCreateWithoutAssignedLeadStageApprovalsInput, UserUncheckedCreateWithoutAssignedLeadStageApprovalsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutAssignedLeadStageApprovalsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutApprovedLeadStageApprovalsInput = {
+    create?: XOR<UserCreateWithoutApprovedLeadStageApprovalsInput, UserUncheckedCreateWithoutApprovedLeadStageApprovalsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutApprovedLeadStageApprovalsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type EnumLeadApprovalStatusFieldUpdateOperationsInput = {
+    set?: $Enums.LeadApprovalStatus
+  }
+
+  export type WorkspaceUpdateOneRequiredWithoutLeadStageApprovalsNestedInput = {
+    create?: XOR<WorkspaceCreateWithoutLeadStageApprovalsInput, WorkspaceUncheckedCreateWithoutLeadStageApprovalsInput>
+    connectOrCreate?: WorkspaceCreateOrConnectWithoutLeadStageApprovalsInput
+    upsert?: WorkspaceUpsertWithoutLeadStageApprovalsInput
+    connect?: WorkspaceWhereUniqueInput
+    update?: XOR<XOR<WorkspaceUpdateToOneWithWhereWithoutLeadStageApprovalsInput, WorkspaceUpdateWithoutLeadStageApprovalsInput>, WorkspaceUncheckedUpdateWithoutLeadStageApprovalsInput>
+  }
+
+  export type LeadUpdateOneRequiredWithoutStageApprovalsNestedInput = {
+    create?: XOR<LeadCreateWithoutStageApprovalsInput, LeadUncheckedCreateWithoutStageApprovalsInput>
+    connectOrCreate?: LeadCreateOrConnectWithoutStageApprovalsInput
+    upsert?: LeadUpsertWithoutStageApprovalsInput
+    connect?: LeadWhereUniqueInput
+    update?: XOR<XOR<LeadUpdateToOneWithWhereWithoutStageApprovalsInput, LeadUpdateWithoutStageApprovalsInput>, LeadUncheckedUpdateWithoutStageApprovalsInput>
+  }
+
+  export type LeadStageUpdateOneRequiredWithoutApprovalsFromNestedInput = {
+    create?: XOR<LeadStageCreateWithoutApprovalsFromInput, LeadStageUncheckedCreateWithoutApprovalsFromInput>
+    connectOrCreate?: LeadStageCreateOrConnectWithoutApprovalsFromInput
+    upsert?: LeadStageUpsertWithoutApprovalsFromInput
+    connect?: LeadStageWhereUniqueInput
+    update?: XOR<XOR<LeadStageUpdateToOneWithWhereWithoutApprovalsFromInput, LeadStageUpdateWithoutApprovalsFromInput>, LeadStageUncheckedUpdateWithoutApprovalsFromInput>
+  }
+
+  export type LeadStageUpdateOneRequiredWithoutApprovalsToNestedInput = {
+    create?: XOR<LeadStageCreateWithoutApprovalsToInput, LeadStageUncheckedCreateWithoutApprovalsToInput>
+    connectOrCreate?: LeadStageCreateOrConnectWithoutApprovalsToInput
+    upsert?: LeadStageUpsertWithoutApprovalsToInput
+    connect?: LeadStageWhereUniqueInput
+    update?: XOR<XOR<LeadStageUpdateToOneWithWhereWithoutApprovalsToInput, LeadStageUpdateWithoutApprovalsToInput>, LeadStageUncheckedUpdateWithoutApprovalsToInput>
+  }
+
+  export type UserUpdateOneRequiredWithoutRequestedLeadStageApprovalsNestedInput = {
+    create?: XOR<UserCreateWithoutRequestedLeadStageApprovalsInput, UserUncheckedCreateWithoutRequestedLeadStageApprovalsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutRequestedLeadStageApprovalsInput
+    upsert?: UserUpsertWithoutRequestedLeadStageApprovalsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutRequestedLeadStageApprovalsInput, UserUpdateWithoutRequestedLeadStageApprovalsInput>, UserUncheckedUpdateWithoutRequestedLeadStageApprovalsInput>
+  }
+
+  export type UserUpdateOneWithoutAssignedLeadStageApprovalsNestedInput = {
+    create?: XOR<UserCreateWithoutAssignedLeadStageApprovalsInput, UserUncheckedCreateWithoutAssignedLeadStageApprovalsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutAssignedLeadStageApprovalsInput
+    upsert?: UserUpsertWithoutAssignedLeadStageApprovalsInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutAssignedLeadStageApprovalsInput, UserUpdateWithoutAssignedLeadStageApprovalsInput>, UserUncheckedUpdateWithoutAssignedLeadStageApprovalsInput>
+  }
+
+  export type UserUpdateOneWithoutApprovedLeadStageApprovalsNestedInput = {
+    create?: XOR<UserCreateWithoutApprovedLeadStageApprovalsInput, UserUncheckedCreateWithoutApprovedLeadStageApprovalsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutApprovedLeadStageApprovalsInput
+    upsert?: UserUpsertWithoutApprovedLeadStageApprovalsInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutApprovedLeadStageApprovalsInput, UserUpdateWithoutApprovedLeadStageApprovalsInput>, UserUncheckedUpdateWithoutApprovedLeadStageApprovalsInput>
   }
 
   export type LeadLifeCycleCreateNestedOneWithoutTransitionsInput = {
@@ -47002,6 +49234,27 @@ export namespace Prisma {
     connect?: LeadActivityWhereUniqueInput | LeadActivityWhereUniqueInput[]
   }
 
+  export type LeadStageApprovalCreateNestedManyWithoutRequestedByInput = {
+    create?: XOR<LeadStageApprovalCreateWithoutRequestedByInput, LeadStageApprovalUncheckedCreateWithoutRequestedByInput> | LeadStageApprovalCreateWithoutRequestedByInput[] | LeadStageApprovalUncheckedCreateWithoutRequestedByInput[]
+    connectOrCreate?: LeadStageApprovalCreateOrConnectWithoutRequestedByInput | LeadStageApprovalCreateOrConnectWithoutRequestedByInput[]
+    createMany?: LeadStageApprovalCreateManyRequestedByInputEnvelope
+    connect?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+  }
+
+  export type LeadStageApprovalCreateNestedManyWithoutAssignedToInput = {
+    create?: XOR<LeadStageApprovalCreateWithoutAssignedToInput, LeadStageApprovalUncheckedCreateWithoutAssignedToInput> | LeadStageApprovalCreateWithoutAssignedToInput[] | LeadStageApprovalUncheckedCreateWithoutAssignedToInput[]
+    connectOrCreate?: LeadStageApprovalCreateOrConnectWithoutAssignedToInput | LeadStageApprovalCreateOrConnectWithoutAssignedToInput[]
+    createMany?: LeadStageApprovalCreateManyAssignedToInputEnvelope
+    connect?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+  }
+
+  export type LeadStageApprovalCreateNestedManyWithoutApprovedByInput = {
+    create?: XOR<LeadStageApprovalCreateWithoutApprovedByInput, LeadStageApprovalUncheckedCreateWithoutApprovedByInput> | LeadStageApprovalCreateWithoutApprovedByInput[] | LeadStageApprovalUncheckedCreateWithoutApprovedByInput[]
+    connectOrCreate?: LeadStageApprovalCreateOrConnectWithoutApprovedByInput | LeadStageApprovalCreateOrConnectWithoutApprovedByInput[]
+    createMany?: LeadStageApprovalCreateManyApprovedByInputEnvelope
+    connect?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+  }
+
   export type RosterEntryCreateNestedManyWithoutUserInput = {
     create?: XOR<RosterEntryCreateWithoutUserInput, RosterEntryUncheckedCreateWithoutUserInput> | RosterEntryCreateWithoutUserInput[] | RosterEntryUncheckedCreateWithoutUserInput[]
     connectOrCreate?: RosterEntryCreateOrConnectWithoutUserInput | RosterEntryCreateOrConnectWithoutUserInput[]
@@ -47090,6 +49343,27 @@ export namespace Prisma {
     connectOrCreate?: LeadActivityCreateOrConnectWithoutPerformedByInput | LeadActivityCreateOrConnectWithoutPerformedByInput[]
     createMany?: LeadActivityCreateManyPerformedByInputEnvelope
     connect?: LeadActivityWhereUniqueInput | LeadActivityWhereUniqueInput[]
+  }
+
+  export type LeadStageApprovalUncheckedCreateNestedManyWithoutRequestedByInput = {
+    create?: XOR<LeadStageApprovalCreateWithoutRequestedByInput, LeadStageApprovalUncheckedCreateWithoutRequestedByInput> | LeadStageApprovalCreateWithoutRequestedByInput[] | LeadStageApprovalUncheckedCreateWithoutRequestedByInput[]
+    connectOrCreate?: LeadStageApprovalCreateOrConnectWithoutRequestedByInput | LeadStageApprovalCreateOrConnectWithoutRequestedByInput[]
+    createMany?: LeadStageApprovalCreateManyRequestedByInputEnvelope
+    connect?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+  }
+
+  export type LeadStageApprovalUncheckedCreateNestedManyWithoutAssignedToInput = {
+    create?: XOR<LeadStageApprovalCreateWithoutAssignedToInput, LeadStageApprovalUncheckedCreateWithoutAssignedToInput> | LeadStageApprovalCreateWithoutAssignedToInput[] | LeadStageApprovalUncheckedCreateWithoutAssignedToInput[]
+    connectOrCreate?: LeadStageApprovalCreateOrConnectWithoutAssignedToInput | LeadStageApprovalCreateOrConnectWithoutAssignedToInput[]
+    createMany?: LeadStageApprovalCreateManyAssignedToInputEnvelope
+    connect?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+  }
+
+  export type LeadStageApprovalUncheckedCreateNestedManyWithoutApprovedByInput = {
+    create?: XOR<LeadStageApprovalCreateWithoutApprovedByInput, LeadStageApprovalUncheckedCreateWithoutApprovedByInput> | LeadStageApprovalCreateWithoutApprovedByInput[] | LeadStageApprovalUncheckedCreateWithoutApprovedByInput[]
+    connectOrCreate?: LeadStageApprovalCreateOrConnectWithoutApprovedByInput | LeadStageApprovalCreateOrConnectWithoutApprovedByInput[]
+    createMany?: LeadStageApprovalCreateManyApprovedByInputEnvelope
+    connect?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
   }
 
   export type RosterEntryUncheckedCreateNestedManyWithoutUserInput = {
@@ -47315,6 +49589,48 @@ export namespace Prisma {
     deleteMany?: LeadActivityScalarWhereInput | LeadActivityScalarWhereInput[]
   }
 
+  export type LeadStageApprovalUpdateManyWithoutRequestedByNestedInput = {
+    create?: XOR<LeadStageApprovalCreateWithoutRequestedByInput, LeadStageApprovalUncheckedCreateWithoutRequestedByInput> | LeadStageApprovalCreateWithoutRequestedByInput[] | LeadStageApprovalUncheckedCreateWithoutRequestedByInput[]
+    connectOrCreate?: LeadStageApprovalCreateOrConnectWithoutRequestedByInput | LeadStageApprovalCreateOrConnectWithoutRequestedByInput[]
+    upsert?: LeadStageApprovalUpsertWithWhereUniqueWithoutRequestedByInput | LeadStageApprovalUpsertWithWhereUniqueWithoutRequestedByInput[]
+    createMany?: LeadStageApprovalCreateManyRequestedByInputEnvelope
+    set?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+    disconnect?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+    delete?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+    connect?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+    update?: LeadStageApprovalUpdateWithWhereUniqueWithoutRequestedByInput | LeadStageApprovalUpdateWithWhereUniqueWithoutRequestedByInput[]
+    updateMany?: LeadStageApprovalUpdateManyWithWhereWithoutRequestedByInput | LeadStageApprovalUpdateManyWithWhereWithoutRequestedByInput[]
+    deleteMany?: LeadStageApprovalScalarWhereInput | LeadStageApprovalScalarWhereInput[]
+  }
+
+  export type LeadStageApprovalUpdateManyWithoutAssignedToNestedInput = {
+    create?: XOR<LeadStageApprovalCreateWithoutAssignedToInput, LeadStageApprovalUncheckedCreateWithoutAssignedToInput> | LeadStageApprovalCreateWithoutAssignedToInput[] | LeadStageApprovalUncheckedCreateWithoutAssignedToInput[]
+    connectOrCreate?: LeadStageApprovalCreateOrConnectWithoutAssignedToInput | LeadStageApprovalCreateOrConnectWithoutAssignedToInput[]
+    upsert?: LeadStageApprovalUpsertWithWhereUniqueWithoutAssignedToInput | LeadStageApprovalUpsertWithWhereUniqueWithoutAssignedToInput[]
+    createMany?: LeadStageApprovalCreateManyAssignedToInputEnvelope
+    set?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+    disconnect?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+    delete?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+    connect?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+    update?: LeadStageApprovalUpdateWithWhereUniqueWithoutAssignedToInput | LeadStageApprovalUpdateWithWhereUniqueWithoutAssignedToInput[]
+    updateMany?: LeadStageApprovalUpdateManyWithWhereWithoutAssignedToInput | LeadStageApprovalUpdateManyWithWhereWithoutAssignedToInput[]
+    deleteMany?: LeadStageApprovalScalarWhereInput | LeadStageApprovalScalarWhereInput[]
+  }
+
+  export type LeadStageApprovalUpdateManyWithoutApprovedByNestedInput = {
+    create?: XOR<LeadStageApprovalCreateWithoutApprovedByInput, LeadStageApprovalUncheckedCreateWithoutApprovedByInput> | LeadStageApprovalCreateWithoutApprovedByInput[] | LeadStageApprovalUncheckedCreateWithoutApprovedByInput[]
+    connectOrCreate?: LeadStageApprovalCreateOrConnectWithoutApprovedByInput | LeadStageApprovalCreateOrConnectWithoutApprovedByInput[]
+    upsert?: LeadStageApprovalUpsertWithWhereUniqueWithoutApprovedByInput | LeadStageApprovalUpsertWithWhereUniqueWithoutApprovedByInput[]
+    createMany?: LeadStageApprovalCreateManyApprovedByInputEnvelope
+    set?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+    disconnect?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+    delete?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+    connect?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+    update?: LeadStageApprovalUpdateWithWhereUniqueWithoutApprovedByInput | LeadStageApprovalUpdateWithWhereUniqueWithoutApprovedByInput[]
+    updateMany?: LeadStageApprovalUpdateManyWithWhereWithoutApprovedByInput | LeadStageApprovalUpdateManyWithWhereWithoutApprovedByInput[]
+    deleteMany?: LeadStageApprovalScalarWhereInput | LeadStageApprovalScalarWhereInput[]
+  }
+
   export type RosterEntryUpdateManyWithoutUserNestedInput = {
     create?: XOR<RosterEntryCreateWithoutUserInput, RosterEntryUncheckedCreateWithoutUserInput> | RosterEntryCreateWithoutUserInput[] | RosterEntryUncheckedCreateWithoutUserInput[]
     connectOrCreate?: RosterEntryCreateOrConnectWithoutUserInput | RosterEntryCreateOrConnectWithoutUserInput[]
@@ -47491,6 +49807,48 @@ export namespace Prisma {
     update?: LeadActivityUpdateWithWhereUniqueWithoutPerformedByInput | LeadActivityUpdateWithWhereUniqueWithoutPerformedByInput[]
     updateMany?: LeadActivityUpdateManyWithWhereWithoutPerformedByInput | LeadActivityUpdateManyWithWhereWithoutPerformedByInput[]
     deleteMany?: LeadActivityScalarWhereInput | LeadActivityScalarWhereInput[]
+  }
+
+  export type LeadStageApprovalUncheckedUpdateManyWithoutRequestedByNestedInput = {
+    create?: XOR<LeadStageApprovalCreateWithoutRequestedByInput, LeadStageApprovalUncheckedCreateWithoutRequestedByInput> | LeadStageApprovalCreateWithoutRequestedByInput[] | LeadStageApprovalUncheckedCreateWithoutRequestedByInput[]
+    connectOrCreate?: LeadStageApprovalCreateOrConnectWithoutRequestedByInput | LeadStageApprovalCreateOrConnectWithoutRequestedByInput[]
+    upsert?: LeadStageApprovalUpsertWithWhereUniqueWithoutRequestedByInput | LeadStageApprovalUpsertWithWhereUniqueWithoutRequestedByInput[]
+    createMany?: LeadStageApprovalCreateManyRequestedByInputEnvelope
+    set?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+    disconnect?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+    delete?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+    connect?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+    update?: LeadStageApprovalUpdateWithWhereUniqueWithoutRequestedByInput | LeadStageApprovalUpdateWithWhereUniqueWithoutRequestedByInput[]
+    updateMany?: LeadStageApprovalUpdateManyWithWhereWithoutRequestedByInput | LeadStageApprovalUpdateManyWithWhereWithoutRequestedByInput[]
+    deleteMany?: LeadStageApprovalScalarWhereInput | LeadStageApprovalScalarWhereInput[]
+  }
+
+  export type LeadStageApprovalUncheckedUpdateManyWithoutAssignedToNestedInput = {
+    create?: XOR<LeadStageApprovalCreateWithoutAssignedToInput, LeadStageApprovalUncheckedCreateWithoutAssignedToInput> | LeadStageApprovalCreateWithoutAssignedToInput[] | LeadStageApprovalUncheckedCreateWithoutAssignedToInput[]
+    connectOrCreate?: LeadStageApprovalCreateOrConnectWithoutAssignedToInput | LeadStageApprovalCreateOrConnectWithoutAssignedToInput[]
+    upsert?: LeadStageApprovalUpsertWithWhereUniqueWithoutAssignedToInput | LeadStageApprovalUpsertWithWhereUniqueWithoutAssignedToInput[]
+    createMany?: LeadStageApprovalCreateManyAssignedToInputEnvelope
+    set?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+    disconnect?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+    delete?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+    connect?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+    update?: LeadStageApprovalUpdateWithWhereUniqueWithoutAssignedToInput | LeadStageApprovalUpdateWithWhereUniqueWithoutAssignedToInput[]
+    updateMany?: LeadStageApprovalUpdateManyWithWhereWithoutAssignedToInput | LeadStageApprovalUpdateManyWithWhereWithoutAssignedToInput[]
+    deleteMany?: LeadStageApprovalScalarWhereInput | LeadStageApprovalScalarWhereInput[]
+  }
+
+  export type LeadStageApprovalUncheckedUpdateManyWithoutApprovedByNestedInput = {
+    create?: XOR<LeadStageApprovalCreateWithoutApprovedByInput, LeadStageApprovalUncheckedCreateWithoutApprovedByInput> | LeadStageApprovalCreateWithoutApprovedByInput[] | LeadStageApprovalUncheckedCreateWithoutApprovedByInput[]
+    connectOrCreate?: LeadStageApprovalCreateOrConnectWithoutApprovedByInput | LeadStageApprovalCreateOrConnectWithoutApprovedByInput[]
+    upsert?: LeadStageApprovalUpsertWithWhereUniqueWithoutApprovedByInput | LeadStageApprovalUpsertWithWhereUniqueWithoutApprovedByInput[]
+    createMany?: LeadStageApprovalCreateManyApprovedByInputEnvelope
+    set?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+    disconnect?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+    delete?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+    connect?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+    update?: LeadStageApprovalUpdateWithWhereUniqueWithoutApprovedByInput | LeadStageApprovalUpdateWithWhereUniqueWithoutApprovedByInput[]
+    updateMany?: LeadStageApprovalUpdateManyWithWhereWithoutApprovedByInput | LeadStageApprovalUpdateManyWithWhereWithoutApprovedByInput[]
+    deleteMany?: LeadStageApprovalScalarWhereInput | LeadStageApprovalScalarWhereInput[]
   }
 
   export type RosterEntryUncheckedUpdateManyWithoutUserNestedInput = {
@@ -48027,6 +50385,13 @@ export namespace Prisma {
     not?: NestedEnumLeadExpiryActionNullableFilter<$PrismaModel> | $Enums.LeadExpiryAction | null
   }
 
+  export type NestedEnumLeadApprovalStateFilter<$PrismaModel = never> = {
+    equals?: $Enums.LeadApprovalState | EnumLeadApprovalStateFieldRefInput<$PrismaModel>
+    in?: $Enums.LeadApprovalState[] | ListEnumLeadApprovalStateFieldRefInput<$PrismaModel>
+    notIn?: $Enums.LeadApprovalState[] | ListEnumLeadApprovalStateFieldRefInput<$PrismaModel>
+    not?: NestedEnumLeadApprovalStateFilter<$PrismaModel> | $Enums.LeadApprovalState
+  }
+
   export type NestedEnumLeadClosureTypeNullableFilter<$PrismaModel = never> = {
     equals?: $Enums.LeadClosureType | EnumLeadClosureTypeFieldRefInput<$PrismaModel> | null
     in?: $Enums.LeadClosureType[] | ListEnumLeadClosureTypeFieldRefInput<$PrismaModel> | null
@@ -48092,6 +50457,16 @@ export namespace Prisma {
     _max?: NestedIntNullableFilter<$PrismaModel>
   }
 
+  export type NestedEnumLeadApprovalStateWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.LeadApprovalState | EnumLeadApprovalStateFieldRefInput<$PrismaModel>
+    in?: $Enums.LeadApprovalState[] | ListEnumLeadApprovalStateFieldRefInput<$PrismaModel>
+    notIn?: $Enums.LeadApprovalState[] | ListEnumLeadApprovalStateFieldRefInput<$PrismaModel>
+    not?: NestedEnumLeadApprovalStateWithAggregatesFilter<$PrismaModel> | $Enums.LeadApprovalState
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumLeadApprovalStateFilter<$PrismaModel>
+    _max?: NestedEnumLeadApprovalStateFilter<$PrismaModel>
+  }
+
   export type NestedEnumLeadClosureTypeNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: $Enums.LeadClosureType | EnumLeadClosureTypeFieldRefInput<$PrismaModel> | null
     in?: $Enums.LeadClosureType[] | ListEnumLeadClosureTypeFieldRefInput<$PrismaModel> | null
@@ -48102,21 +50477,21 @@ export namespace Prisma {
     _max?: NestedEnumLeadClosureTypeNullableFilter<$PrismaModel>
   }
 
-  export type NestedEnumLeadExpiryActionFilter<$PrismaModel = never> = {
-    equals?: $Enums.LeadExpiryAction | EnumLeadExpiryActionFieldRefInput<$PrismaModel>
-    in?: $Enums.LeadExpiryAction[] | ListEnumLeadExpiryActionFieldRefInput<$PrismaModel>
-    notIn?: $Enums.LeadExpiryAction[] | ListEnumLeadExpiryActionFieldRefInput<$PrismaModel>
-    not?: NestedEnumLeadExpiryActionFilter<$PrismaModel> | $Enums.LeadExpiryAction
+  export type NestedEnumLeadApprovalStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.LeadApprovalStatus | EnumLeadApprovalStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.LeadApprovalStatus[] | ListEnumLeadApprovalStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.LeadApprovalStatus[] | ListEnumLeadApprovalStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumLeadApprovalStatusFilter<$PrismaModel> | $Enums.LeadApprovalStatus
   }
 
-  export type NestedEnumLeadExpiryActionWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.LeadExpiryAction | EnumLeadExpiryActionFieldRefInput<$PrismaModel>
-    in?: $Enums.LeadExpiryAction[] | ListEnumLeadExpiryActionFieldRefInput<$PrismaModel>
-    notIn?: $Enums.LeadExpiryAction[] | ListEnumLeadExpiryActionFieldRefInput<$PrismaModel>
-    not?: NestedEnumLeadExpiryActionWithAggregatesFilter<$PrismaModel> | $Enums.LeadExpiryAction
+  export type NestedEnumLeadApprovalStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.LeadApprovalStatus | EnumLeadApprovalStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.LeadApprovalStatus[] | ListEnumLeadApprovalStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.LeadApprovalStatus[] | ListEnumLeadApprovalStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumLeadApprovalStatusWithAggregatesFilter<$PrismaModel> | $Enums.LeadApprovalStatus
     _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumLeadExpiryActionFilter<$PrismaModel>
-    _max?: NestedEnumLeadExpiryActionFilter<$PrismaModel>
+    _min?: NestedEnumLeadApprovalStatusFilter<$PrismaModel>
+    _max?: NestedEnumLeadApprovalStatusFilter<$PrismaModel>
   }
   export type NestedJsonNullableFilter<$PrismaModel = never> = 
     | PatchUndefined<
@@ -48139,6 +50514,23 @@ export namespace Prisma {
     gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
     gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
     not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
+
+  export type NestedEnumLeadExpiryActionFilter<$PrismaModel = never> = {
+    equals?: $Enums.LeadExpiryAction | EnumLeadExpiryActionFieldRefInput<$PrismaModel>
+    in?: $Enums.LeadExpiryAction[] | ListEnumLeadExpiryActionFieldRefInput<$PrismaModel>
+    notIn?: $Enums.LeadExpiryAction[] | ListEnumLeadExpiryActionFieldRefInput<$PrismaModel>
+    not?: NestedEnumLeadExpiryActionFilter<$PrismaModel> | $Enums.LeadExpiryAction
+  }
+
+  export type NestedEnumLeadExpiryActionWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.LeadExpiryAction | EnumLeadExpiryActionFieldRefInput<$PrismaModel>
+    in?: $Enums.LeadExpiryAction[] | ListEnumLeadExpiryActionFieldRefInput<$PrismaModel>
+    notIn?: $Enums.LeadExpiryAction[] | ListEnumLeadExpiryActionFieldRefInput<$PrismaModel>
+    not?: NestedEnumLeadExpiryActionWithAggregatesFilter<$PrismaModel> | $Enums.LeadExpiryAction
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumLeadExpiryActionFilter<$PrismaModel>
+    _max?: NestedEnumLeadExpiryActionFilter<$PrismaModel>
   }
 
   export type NestedEnumTargetSettingCycleFilter<$PrismaModel = never> = {
@@ -48278,6 +50670,9 @@ export namespace Prisma {
     devices?: DeviceCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     performedLeadActivities?: LeadActivityCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutApprovedByInput
     rosterEntries?: RosterEntryCreateNestedManyWithoutUserInput
     followUps?: FollowUpCreateNestedManyWithoutUserInput
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
@@ -48319,6 +50714,9 @@ export namespace Prisma {
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     performedLeadActivities?: LeadActivityUncheckedCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutApprovedByInput
     rosterEntries?: RosterEntryUncheckedCreateNestedManyWithoutUserInput
     followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -48584,6 +50982,9 @@ export namespace Prisma {
     devices?: DeviceCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     performedLeadActivities?: LeadActivityCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutApprovedByInput
     rosterEntries?: RosterEntryCreateNestedManyWithoutUserInput
     followUps?: FollowUpCreateNestedManyWithoutUserInput
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
@@ -48625,6 +51026,9 @@ export namespace Prisma {
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     performedLeadActivities?: LeadActivityUncheckedCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutApprovedByInput
     rosterEntries?: RosterEntryUncheckedCreateNestedManyWithoutUserInput
     followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -48671,6 +51075,9 @@ export namespace Prisma {
     devices?: DeviceCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     performedLeadActivities?: LeadActivityCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutApprovedByInput
     rosterEntries?: RosterEntryCreateNestedManyWithoutUserInput
     followUps?: FollowUpCreateNestedManyWithoutUserInput
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
@@ -48712,6 +51119,9 @@ export namespace Prisma {
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     performedLeadActivities?: LeadActivityUncheckedCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutApprovedByInput
     rosterEntries?: RosterEntryUncheckedCreateNestedManyWithoutUserInput
     followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -48877,6 +51287,9 @@ export namespace Prisma {
     stageExpiresAt?: Date | string | null
     slaAction?: $Enums.LeadExpiryAction | null
     slaWarningDays?: number | null
+    approvalState?: $Enums.LeadApprovalState
+    pendingApprovalToStageId?: string | null
+    pendingApprovalRequestedAt?: Date | string | null
     isClosed?: boolean
     isLOB?: boolean
     closedAt?: Date | string | null
@@ -48893,6 +51306,7 @@ export namespace Prisma {
     followUps?: FollowUpCreateNestedManyWithoutLeadInput
     lobLogs?: LeadLOBLogCreateNestedManyWithoutLeadInput
     activities?: LeadActivityCreateNestedManyWithoutLeadInput
+    stageApprovals?: LeadStageApprovalCreateNestedManyWithoutLeadInput
   }
 
   export type LeadUncheckedCreateWithoutWorkspaceInput = {
@@ -48911,6 +51325,9 @@ export namespace Prisma {
     stageExpiresAt?: Date | string | null
     slaAction?: $Enums.LeadExpiryAction | null
     slaWarningDays?: number | null
+    approvalState?: $Enums.LeadApprovalState
+    pendingApprovalToStageId?: string | null
+    pendingApprovalRequestedAt?: Date | string | null
     isClosed?: boolean
     isLOB?: boolean
     closedAt?: Date | string | null
@@ -48923,6 +51340,7 @@ export namespace Prisma {
     followUps?: FollowUpUncheckedCreateNestedManyWithoutLeadInput
     lobLogs?: LeadLOBLogUncheckedCreateNestedManyWithoutLeadInput
     activities?: LeadActivityUncheckedCreateNestedManyWithoutLeadInput
+    stageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutLeadInput
   }
 
   export type LeadCreateOrConnectWithoutWorkspaceInput = {
@@ -48960,6 +51378,48 @@ export namespace Prisma {
 
   export type LeadActivityCreateManyWorkspaceInputEnvelope = {
     data: LeadActivityCreateManyWorkspaceInput | LeadActivityCreateManyWorkspaceInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type LeadStageApprovalCreateWithoutWorkspaceInput = {
+    id?: string
+    status?: $Enums.LeadApprovalStatus
+    comment?: string | null
+    requestData?: NullableJsonNullValueInput | InputJsonValue
+    approvedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    lead: LeadCreateNestedOneWithoutStageApprovalsInput
+    fromStage: LeadStageCreateNestedOneWithoutApprovalsFromInput
+    toStage: LeadStageCreateNestedOneWithoutApprovalsToInput
+    requestedBy: UserCreateNestedOneWithoutRequestedLeadStageApprovalsInput
+    assignedTo?: UserCreateNestedOneWithoutAssignedLeadStageApprovalsInput
+    approvedBy?: UserCreateNestedOneWithoutApprovedLeadStageApprovalsInput
+  }
+
+  export type LeadStageApprovalUncheckedCreateWithoutWorkspaceInput = {
+    id?: string
+    leadId: string
+    fromStageId: string
+    toStageId: string
+    requestedById: string
+    assignedToId?: string | null
+    status?: $Enums.LeadApprovalStatus
+    comment?: string | null
+    requestData?: NullableJsonNullValueInput | InputJsonValue
+    approvedById?: string | null
+    approvedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type LeadStageApprovalCreateOrConnectWithoutWorkspaceInput = {
+    where: LeadStageApprovalWhereUniqueInput
+    create: XOR<LeadStageApprovalCreateWithoutWorkspaceInput, LeadStageApprovalUncheckedCreateWithoutWorkspaceInput>
+  }
+
+  export type LeadStageApprovalCreateManyWorkspaceInputEnvelope = {
+    data: LeadStageApprovalCreateManyWorkspaceInput | LeadStageApprovalCreateManyWorkspaceInput[]
     skipDuplicates?: boolean
   }
 
@@ -49008,6 +51468,9 @@ export namespace Prisma {
     devices?: DeviceUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     performedLeadActivities?: LeadActivityUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutApprovedByNestedInput
     rosterEntries?: RosterEntryUpdateManyWithoutUserNestedInput
     followUps?: FollowUpUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
@@ -49049,6 +51512,9 @@ export namespace Prisma {
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     performedLeadActivities?: LeadActivityUncheckedUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
     rosterEntries?: RosterEntryUncheckedUpdateManyWithoutUserNestedInput
     followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -49228,6 +51694,9 @@ export namespace Prisma {
     stageExpiresAt?: DateTimeNullableFilter<"Lead"> | Date | string | null
     slaAction?: EnumLeadExpiryActionNullableFilter<"Lead"> | $Enums.LeadExpiryAction | null
     slaWarningDays?: IntNullableFilter<"Lead"> | number | null
+    approvalState?: EnumLeadApprovalStateFilter<"Lead"> | $Enums.LeadApprovalState
+    pendingApprovalToStageId?: StringNullableFilter<"Lead"> | string | null
+    pendingApprovalRequestedAt?: DateTimeNullableFilter<"Lead"> | Date | string | null
     isClosed?: BoolFilter<"Lead"> | boolean
     isLOB?: BoolFilter<"Lead"> | boolean
     closedAt?: DateTimeNullableFilter<"Lead"> | Date | string | null
@@ -49269,6 +51738,42 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"LeadActivity"> | Date | string
   }
 
+  export type LeadStageApprovalUpsertWithWhereUniqueWithoutWorkspaceInput = {
+    where: LeadStageApprovalWhereUniqueInput
+    update: XOR<LeadStageApprovalUpdateWithoutWorkspaceInput, LeadStageApprovalUncheckedUpdateWithoutWorkspaceInput>
+    create: XOR<LeadStageApprovalCreateWithoutWorkspaceInput, LeadStageApprovalUncheckedCreateWithoutWorkspaceInput>
+  }
+
+  export type LeadStageApprovalUpdateWithWhereUniqueWithoutWorkspaceInput = {
+    where: LeadStageApprovalWhereUniqueInput
+    data: XOR<LeadStageApprovalUpdateWithoutWorkspaceInput, LeadStageApprovalUncheckedUpdateWithoutWorkspaceInput>
+  }
+
+  export type LeadStageApprovalUpdateManyWithWhereWithoutWorkspaceInput = {
+    where: LeadStageApprovalScalarWhereInput
+    data: XOR<LeadStageApprovalUpdateManyMutationInput, LeadStageApprovalUncheckedUpdateManyWithoutWorkspaceInput>
+  }
+
+  export type LeadStageApprovalScalarWhereInput = {
+    AND?: LeadStageApprovalScalarWhereInput | LeadStageApprovalScalarWhereInput[]
+    OR?: LeadStageApprovalScalarWhereInput[]
+    NOT?: LeadStageApprovalScalarWhereInput | LeadStageApprovalScalarWhereInput[]
+    id?: StringFilter<"LeadStageApproval"> | string
+    workspaceId?: StringFilter<"LeadStageApproval"> | string
+    leadId?: StringFilter<"LeadStageApproval"> | string
+    fromStageId?: StringFilter<"LeadStageApproval"> | string
+    toStageId?: StringFilter<"LeadStageApproval"> | string
+    requestedById?: StringFilter<"LeadStageApproval"> | string
+    assignedToId?: StringNullableFilter<"LeadStageApproval"> | string | null
+    status?: EnumLeadApprovalStatusFilter<"LeadStageApproval"> | $Enums.LeadApprovalStatus
+    comment?: StringNullableFilter<"LeadStageApproval"> | string | null
+    requestData?: JsonNullableFilter<"LeadStageApproval">
+    approvedById?: StringNullableFilter<"LeadStageApproval"> | string | null
+    approvedAt?: DateTimeNullableFilter<"LeadStageApproval"> | Date | string | null
+    createdAt?: DateTimeFilter<"LeadStageApproval"> | Date | string
+    updatedAt?: DateTimeFilter<"LeadStageApproval"> | Date | string
+  }
+
   export type WorkspaceCreateWithoutDepartmentsInput = {
     id?: string
     companyName: string
@@ -49286,6 +51791,7 @@ export namespace Prisma {
     leadDynamicFields?: LeadDynamicFieldCreateNestedManyWithoutWorkspaceInput
     leads?: LeadCreateNestedManyWithoutWorkspaceInput
     leadActivities?: LeadActivityCreateNestedManyWithoutWorkspaceInput
+    leadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateWithoutDepartmentsInput = {
@@ -49305,6 +51811,7 @@ export namespace Prisma {
     leadDynamicFields?: LeadDynamicFieldUncheckedCreateNestedManyWithoutWorkspaceInput
     leads?: LeadUncheckedCreateNestedManyWithoutWorkspaceInput
     leadActivities?: LeadActivityUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceCreateOrConnectWithoutDepartmentsInput = {
@@ -49346,6 +51853,9 @@ export namespace Prisma {
     devices?: DeviceCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     performedLeadActivities?: LeadActivityCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutApprovedByInput
     rosterEntries?: RosterEntryCreateNestedManyWithoutUserInput
     followUps?: FollowUpCreateNestedManyWithoutUserInput
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
@@ -49387,6 +51897,9 @@ export namespace Prisma {
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     performedLeadActivities?: LeadActivityUncheckedCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutApprovedByInput
     rosterEntries?: RosterEntryUncheckedCreateNestedManyWithoutUserInput
     followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -49432,6 +51945,7 @@ export namespace Prisma {
     leadDynamicFields?: LeadDynamicFieldUpdateManyWithoutWorkspaceNestedInput
     leads?: LeadUpdateManyWithoutWorkspaceNestedInput
     leadActivities?: LeadActivityUpdateManyWithoutWorkspaceNestedInput
+    leadStageApprovals?: LeadStageApprovalUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateWithoutDepartmentsInput = {
@@ -49451,6 +51965,7 @@ export namespace Prisma {
     leadDynamicFields?: LeadDynamicFieldUncheckedUpdateManyWithoutWorkspaceNestedInput
     leads?: LeadUncheckedUpdateManyWithoutWorkspaceNestedInput
     leadActivities?: LeadActivityUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type UserUpsertWithWhereUniqueWithoutDepartmentInput = {
@@ -49481,6 +51996,9 @@ export namespace Prisma {
     stageExpiresAt?: Date | string | null
     slaAction?: $Enums.LeadExpiryAction | null
     slaWarningDays?: number | null
+    approvalState?: $Enums.LeadApprovalState
+    pendingApprovalToStageId?: string | null
+    pendingApprovalRequestedAt?: Date | string | null
     isClosed?: boolean
     isLOB?: boolean
     closedAt?: Date | string | null
@@ -49497,6 +52015,7 @@ export namespace Prisma {
     followUps?: FollowUpCreateNestedManyWithoutLeadInput
     lobLogs?: LeadLOBLogCreateNestedManyWithoutLeadInput
     activities?: LeadActivityCreateNestedManyWithoutLeadInput
+    stageApprovals?: LeadStageApprovalCreateNestedManyWithoutLeadInput
   }
 
   export type LeadUncheckedCreateWithoutSourceInput = {
@@ -49514,6 +52033,9 @@ export namespace Prisma {
     stageExpiresAt?: Date | string | null
     slaAction?: $Enums.LeadExpiryAction | null
     slaWarningDays?: number | null
+    approvalState?: $Enums.LeadApprovalState
+    pendingApprovalToStageId?: string | null
+    pendingApprovalRequestedAt?: Date | string | null
     isClosed?: boolean
     isLOB?: boolean
     closedAt?: Date | string | null
@@ -49527,6 +52049,7 @@ export namespace Prisma {
     followUps?: FollowUpUncheckedCreateNestedManyWithoutLeadInput
     lobLogs?: LeadLOBLogUncheckedCreateNestedManyWithoutLeadInput
     activities?: LeadActivityUncheckedCreateNestedManyWithoutLeadInput
+    stageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutLeadInput
   }
 
   export type LeadCreateOrConnectWithoutSourceInput = {
@@ -49613,6 +52136,9 @@ export namespace Prisma {
     stageExpiresAt?: Date | string | null
     slaAction?: $Enums.LeadExpiryAction | null
     slaWarningDays?: number | null
+    approvalState?: $Enums.LeadApprovalState
+    pendingApprovalToStageId?: string | null
+    pendingApprovalRequestedAt?: Date | string | null
     isClosed?: boolean
     isLOB?: boolean
     closedAt?: Date | string | null
@@ -49629,6 +52155,7 @@ export namespace Prisma {
     followUps?: FollowUpCreateNestedManyWithoutLeadInput
     lobLogs?: LeadLOBLogCreateNestedManyWithoutLeadInput
     activities?: LeadActivityCreateNestedManyWithoutLeadInput
+    stageApprovals?: LeadStageApprovalCreateNestedManyWithoutLeadInput
   }
 
   export type LeadUncheckedCreateWithoutStageInput = {
@@ -49646,6 +52173,9 @@ export namespace Prisma {
     stageExpiresAt?: Date | string | null
     slaAction?: $Enums.LeadExpiryAction | null
     slaWarningDays?: number | null
+    approvalState?: $Enums.LeadApprovalState
+    pendingApprovalToStageId?: string | null
+    pendingApprovalRequestedAt?: Date | string | null
     isClosed?: boolean
     isLOB?: boolean
     closedAt?: Date | string | null
@@ -49659,6 +52189,7 @@ export namespace Prisma {
     followUps?: FollowUpUncheckedCreateNestedManyWithoutLeadInput
     lobLogs?: LeadLOBLogUncheckedCreateNestedManyWithoutLeadInput
     activities?: LeadActivityUncheckedCreateNestedManyWithoutLeadInput
+    stageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutLeadInput
   }
 
   export type LeadCreateOrConnectWithoutStageInput = {
@@ -49668,6 +52199,90 @@ export namespace Prisma {
 
   export type LeadCreateManyStageInputEnvelope = {
     data: LeadCreateManyStageInput | LeadCreateManyStageInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type LeadStageApprovalCreateWithoutFromStageInput = {
+    id?: string
+    status?: $Enums.LeadApprovalStatus
+    comment?: string | null
+    requestData?: NullableJsonNullValueInput | InputJsonValue
+    approvedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    workspace: WorkspaceCreateNestedOneWithoutLeadStageApprovalsInput
+    lead: LeadCreateNestedOneWithoutStageApprovalsInput
+    toStage: LeadStageCreateNestedOneWithoutApprovalsToInput
+    requestedBy: UserCreateNestedOneWithoutRequestedLeadStageApprovalsInput
+    assignedTo?: UserCreateNestedOneWithoutAssignedLeadStageApprovalsInput
+    approvedBy?: UserCreateNestedOneWithoutApprovedLeadStageApprovalsInput
+  }
+
+  export type LeadStageApprovalUncheckedCreateWithoutFromStageInput = {
+    id?: string
+    workspaceId: string
+    leadId: string
+    toStageId: string
+    requestedById: string
+    assignedToId?: string | null
+    status?: $Enums.LeadApprovalStatus
+    comment?: string | null
+    requestData?: NullableJsonNullValueInput | InputJsonValue
+    approvedById?: string | null
+    approvedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type LeadStageApprovalCreateOrConnectWithoutFromStageInput = {
+    where: LeadStageApprovalWhereUniqueInput
+    create: XOR<LeadStageApprovalCreateWithoutFromStageInput, LeadStageApprovalUncheckedCreateWithoutFromStageInput>
+  }
+
+  export type LeadStageApprovalCreateManyFromStageInputEnvelope = {
+    data: LeadStageApprovalCreateManyFromStageInput | LeadStageApprovalCreateManyFromStageInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type LeadStageApprovalCreateWithoutToStageInput = {
+    id?: string
+    status?: $Enums.LeadApprovalStatus
+    comment?: string | null
+    requestData?: NullableJsonNullValueInput | InputJsonValue
+    approvedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    workspace: WorkspaceCreateNestedOneWithoutLeadStageApprovalsInput
+    lead: LeadCreateNestedOneWithoutStageApprovalsInput
+    fromStage: LeadStageCreateNestedOneWithoutApprovalsFromInput
+    requestedBy: UserCreateNestedOneWithoutRequestedLeadStageApprovalsInput
+    assignedTo?: UserCreateNestedOneWithoutAssignedLeadStageApprovalsInput
+    approvedBy?: UserCreateNestedOneWithoutApprovedLeadStageApprovalsInput
+  }
+
+  export type LeadStageApprovalUncheckedCreateWithoutToStageInput = {
+    id?: string
+    workspaceId: string
+    leadId: string
+    fromStageId: string
+    requestedById: string
+    assignedToId?: string | null
+    status?: $Enums.LeadApprovalStatus
+    comment?: string | null
+    requestData?: NullableJsonNullValueInput | InputJsonValue
+    approvedById?: string | null
+    approvedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type LeadStageApprovalCreateOrConnectWithoutToStageInput = {
+    where: LeadStageApprovalWhereUniqueInput
+    create: XOR<LeadStageApprovalCreateWithoutToStageInput, LeadStageApprovalUncheckedCreateWithoutToStageInput>
+  }
+
+  export type LeadStageApprovalCreateManyToStageInputEnvelope = {
+    data: LeadStageApprovalCreateManyToStageInput | LeadStageApprovalCreateManyToStageInput[]
     skipDuplicates?: boolean
   }
 
@@ -49724,6 +52339,38 @@ export namespace Prisma {
     data: XOR<LeadUpdateManyMutationInput, LeadUncheckedUpdateManyWithoutStageInput>
   }
 
+  export type LeadStageApprovalUpsertWithWhereUniqueWithoutFromStageInput = {
+    where: LeadStageApprovalWhereUniqueInput
+    update: XOR<LeadStageApprovalUpdateWithoutFromStageInput, LeadStageApprovalUncheckedUpdateWithoutFromStageInput>
+    create: XOR<LeadStageApprovalCreateWithoutFromStageInput, LeadStageApprovalUncheckedCreateWithoutFromStageInput>
+  }
+
+  export type LeadStageApprovalUpdateWithWhereUniqueWithoutFromStageInput = {
+    where: LeadStageApprovalWhereUniqueInput
+    data: XOR<LeadStageApprovalUpdateWithoutFromStageInput, LeadStageApprovalUncheckedUpdateWithoutFromStageInput>
+  }
+
+  export type LeadStageApprovalUpdateManyWithWhereWithoutFromStageInput = {
+    where: LeadStageApprovalScalarWhereInput
+    data: XOR<LeadStageApprovalUpdateManyMutationInput, LeadStageApprovalUncheckedUpdateManyWithoutFromStageInput>
+  }
+
+  export type LeadStageApprovalUpsertWithWhereUniqueWithoutToStageInput = {
+    where: LeadStageApprovalWhereUniqueInput
+    update: XOR<LeadStageApprovalUpdateWithoutToStageInput, LeadStageApprovalUncheckedUpdateWithoutToStageInput>
+    create: XOR<LeadStageApprovalCreateWithoutToStageInput, LeadStageApprovalUncheckedCreateWithoutToStageInput>
+  }
+
+  export type LeadStageApprovalUpdateWithWhereUniqueWithoutToStageInput = {
+    where: LeadStageApprovalWhereUniqueInput
+    data: XOR<LeadStageApprovalUpdateWithoutToStageInput, LeadStageApprovalUncheckedUpdateWithoutToStageInput>
+  }
+
+  export type LeadStageApprovalUpdateManyWithWhereWithoutToStageInput = {
+    where: LeadStageApprovalScalarWhereInput
+    data: XOR<LeadStageApprovalUpdateManyMutationInput, LeadStageApprovalUncheckedUpdateManyWithoutToStageInput>
+  }
+
   export type LeadStageCreateWithoutRulesInput = {
     id?: string
     name: string
@@ -49738,6 +52385,8 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     leads?: LeadCreateNestedManyWithoutStageInput
+    approvalsFrom?: LeadStageApprovalCreateNestedManyWithoutFromStageInput
+    approvalsTo?: LeadStageApprovalCreateNestedManyWithoutToStageInput
   }
 
   export type LeadStageUncheckedCreateWithoutRulesInput = {
@@ -49754,6 +52403,8 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     leads?: LeadUncheckedCreateNestedManyWithoutStageInput
+    approvalsFrom?: LeadStageApprovalUncheckedCreateNestedManyWithoutFromStageInput
+    approvalsTo?: LeadStageApprovalUncheckedCreateNestedManyWithoutToStageInput
   }
 
   export type LeadStageCreateOrConnectWithoutRulesInput = {
@@ -49810,6 +52461,8 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     leads?: LeadUpdateManyWithoutStageNestedInput
+    approvalsFrom?: LeadStageApprovalUpdateManyWithoutFromStageNestedInput
+    approvalsTo?: LeadStageApprovalUpdateManyWithoutToStageNestedInput
   }
 
   export type LeadStageUncheckedUpdateWithoutRulesInput = {
@@ -49826,6 +52479,8 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     leads?: LeadUncheckedUpdateManyWithoutStageNestedInput
+    approvalsFrom?: LeadStageApprovalUncheckedUpdateManyWithoutFromStageNestedInput
+    approvalsTo?: LeadStageApprovalUncheckedUpdateManyWithoutToStageNestedInput
   }
 
   export type LeadStageInputUpsertWithWhereUniqueWithoutRuleInput = {
@@ -49977,6 +52632,9 @@ export namespace Prisma {
     devices?: DeviceCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     performedLeadActivities?: LeadActivityCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutApprovedByInput
     rosterEntries?: RosterEntryCreateNestedManyWithoutUserInput
     followUps?: FollowUpCreateNestedManyWithoutUserInput
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
@@ -50018,6 +52676,9 @@ export namespace Prisma {
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     performedLeadActivities?: LeadActivityUncheckedCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutApprovedByInput
     rosterEntries?: RosterEntryUncheckedCreateNestedManyWithoutUserInput
     followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -50182,6 +52843,9 @@ export namespace Prisma {
     devices?: DeviceCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     performedLeadActivities?: LeadActivityCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutApprovedByInput
     rosterEntries?: RosterEntryCreateNestedManyWithoutUserInput
     followUps?: FollowUpCreateNestedManyWithoutUserInput
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
@@ -50223,6 +52887,9 @@ export namespace Prisma {
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     performedLeadActivities?: LeadActivityUncheckedCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutApprovedByInput
     rosterEntries?: RosterEntryUncheckedCreateNestedManyWithoutUserInput
     followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -50274,6 +52941,9 @@ export namespace Prisma {
     devices?: DeviceCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     performedLeadActivities?: LeadActivityCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutApprovedByInput
     rosterEntries?: RosterEntryCreateNestedManyWithoutUserInput
     followUps?: FollowUpCreateNestedManyWithoutUserInput
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
@@ -50315,6 +52985,9 @@ export namespace Prisma {
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     performedLeadActivities?: LeadActivityUncheckedCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutApprovedByInput
     rosterEntries?: RosterEntryUncheckedCreateNestedManyWithoutUserInput
     followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -50366,6 +53039,9 @@ export namespace Prisma {
     devices?: DeviceCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     performedLeadActivities?: LeadActivityCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutApprovedByInput
     rosterEntries?: RosterEntryCreateNestedManyWithoutUserInput
     followUps?: FollowUpCreateNestedManyWithoutUserInput
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
@@ -50407,6 +53083,9 @@ export namespace Prisma {
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     performedLeadActivities?: LeadActivityUncheckedCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutApprovedByInput
     rosterEntries?: RosterEntryUncheckedCreateNestedManyWithoutUserInput
     followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -50602,6 +53281,9 @@ export namespace Prisma {
     devices?: DeviceCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     performedLeadActivities?: LeadActivityCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutApprovedByInput
     rosterEntries?: RosterEntryCreateNestedManyWithoutUserInput
     followUps?: FollowUpCreateNestedManyWithoutUserInput
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
@@ -50643,6 +53325,9 @@ export namespace Prisma {
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     performedLeadActivities?: LeadActivityUncheckedCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutApprovedByInput
     rosterEntries?: RosterEntryUncheckedCreateNestedManyWithoutUserInput
     followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -50733,6 +53418,9 @@ export namespace Prisma {
     devices?: DeviceUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     performedLeadActivities?: LeadActivityUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutApprovedByNestedInput
     rosterEntries?: RosterEntryUpdateManyWithoutUserNestedInput
     followUps?: FollowUpUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
@@ -50774,6 +53462,9 @@ export namespace Prisma {
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     performedLeadActivities?: LeadActivityUncheckedUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
     rosterEntries?: RosterEntryUncheckedUpdateManyWithoutUserNestedInput
     followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -50912,6 +53603,7 @@ export namespace Prisma {
     leadDynamicFields?: LeadDynamicFieldCreateNestedManyWithoutWorkspaceInput
     leads?: LeadCreateNestedManyWithoutWorkspaceInput
     leadActivities?: LeadActivityCreateNestedManyWithoutWorkspaceInput
+    leadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateWithoutTargetCyclesInput = {
@@ -50931,6 +53623,7 @@ export namespace Prisma {
     leadDynamicFields?: LeadDynamicFieldUncheckedCreateNestedManyWithoutWorkspaceInput
     leads?: LeadUncheckedCreateNestedManyWithoutWorkspaceInput
     leadActivities?: LeadActivityUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceCreateOrConnectWithoutTargetCyclesInput = {
@@ -51030,6 +53723,7 @@ export namespace Prisma {
     leadDynamicFields?: LeadDynamicFieldUpdateManyWithoutWorkspaceNestedInput
     leads?: LeadUpdateManyWithoutWorkspaceNestedInput
     leadActivities?: LeadActivityUpdateManyWithoutWorkspaceNestedInput
+    leadStageApprovals?: LeadStageApprovalUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateWithoutTargetCyclesInput = {
@@ -51049,6 +53743,7 @@ export namespace Prisma {
     leadDynamicFields?: LeadDynamicFieldUncheckedUpdateManyWithoutWorkspaceNestedInput
     leads?: LeadUncheckedUpdateManyWithoutWorkspaceNestedInput
     leadActivities?: LeadActivityUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type TargetCycleRangeUpsertWithWhereUniqueWithoutTargetCycleInput = {
@@ -51179,6 +53874,7 @@ export namespace Prisma {
     leadDynamicFields?: LeadDynamicFieldCreateNestedManyWithoutWorkspaceInput
     leads?: LeadCreateNestedManyWithoutWorkspaceInput
     leadActivities?: LeadActivityCreateNestedManyWithoutWorkspaceInput
+    leadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateWithoutLeadLifeCyclesInput = {
@@ -51198,6 +53894,7 @@ export namespace Prisma {
     leadDynamicFields?: LeadDynamicFieldUncheckedCreateNestedManyWithoutWorkspaceInput
     leads?: LeadUncheckedCreateNestedManyWithoutWorkspaceInput
     leadActivities?: LeadActivityUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceCreateOrConnectWithoutLeadLifeCyclesInput = {
@@ -51253,6 +53950,9 @@ export namespace Prisma {
     stageExpiresAt?: Date | string | null
     slaAction?: $Enums.LeadExpiryAction | null
     slaWarningDays?: number | null
+    approvalState?: $Enums.LeadApprovalState
+    pendingApprovalToStageId?: string | null
+    pendingApprovalRequestedAt?: Date | string | null
     isClosed?: boolean
     isLOB?: boolean
     closedAt?: Date | string | null
@@ -51269,6 +53969,7 @@ export namespace Prisma {
     followUps?: FollowUpCreateNestedManyWithoutLeadInput
     lobLogs?: LeadLOBLogCreateNestedManyWithoutLeadInput
     activities?: LeadActivityCreateNestedManyWithoutLeadInput
+    stageApprovals?: LeadStageApprovalCreateNestedManyWithoutLeadInput
   }
 
   export type LeadUncheckedCreateWithoutLifecycleInput = {
@@ -51286,6 +53987,9 @@ export namespace Prisma {
     stageExpiresAt?: Date | string | null
     slaAction?: $Enums.LeadExpiryAction | null
     slaWarningDays?: number | null
+    approvalState?: $Enums.LeadApprovalState
+    pendingApprovalToStageId?: string | null
+    pendingApprovalRequestedAt?: Date | string | null
     isClosed?: boolean
     isLOB?: boolean
     closedAt?: Date | string | null
@@ -51299,6 +54003,7 @@ export namespace Prisma {
     followUps?: FollowUpUncheckedCreateNestedManyWithoutLeadInput
     lobLogs?: LeadLOBLogUncheckedCreateNestedManyWithoutLeadInput
     activities?: LeadActivityUncheckedCreateNestedManyWithoutLeadInput
+    stageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutLeadInput
   }
 
   export type LeadCreateOrConnectWithoutLifecycleInput = {
@@ -51339,6 +54044,7 @@ export namespace Prisma {
     leadDynamicFields?: LeadDynamicFieldUpdateManyWithoutWorkspaceNestedInput
     leads?: LeadUpdateManyWithoutWorkspaceNestedInput
     leadActivities?: LeadActivityUpdateManyWithoutWorkspaceNestedInput
+    leadStageApprovals?: LeadStageApprovalUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateWithoutLeadLifeCyclesInput = {
@@ -51358,6 +54064,7 @@ export namespace Prisma {
     leadDynamicFields?: LeadDynamicFieldUncheckedUpdateManyWithoutWorkspaceNestedInput
     leads?: LeadUncheckedUpdateManyWithoutWorkspaceNestedInput
     leadActivities?: LeadActivityUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type LeadLifeCycleTransitionUpsertWithWhereUniqueWithoutLifecycleInput = {
@@ -51444,6 +54151,9 @@ export namespace Prisma {
     devices?: DeviceCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     performedLeadActivities?: LeadActivityCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutApprovedByInput
     rosterEntries?: RosterEntryCreateNestedManyWithoutUserInput
     followUps?: FollowUpCreateNestedManyWithoutUserInput
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
@@ -51485,6 +54195,9 @@ export namespace Prisma {
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     performedLeadActivities?: LeadActivityUncheckedCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutApprovedByInput
     rosterEntries?: RosterEntryUncheckedCreateNestedManyWithoutUserInput
     followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -51510,6 +54223,8 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     rules?: StageRuleCreateNestedManyWithoutStageInput
+    approvalsFrom?: LeadStageApprovalCreateNestedManyWithoutFromStageInput
+    approvalsTo?: LeadStageApprovalCreateNestedManyWithoutToStageInput
   }
 
   export type LeadStageUncheckedCreateWithoutLeadsInput = {
@@ -51526,6 +54241,8 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     rules?: StageRuleUncheckedCreateNestedManyWithoutStageInput
+    approvalsFrom?: LeadStageApprovalUncheckedCreateNestedManyWithoutFromStageInput
+    approvalsTo?: LeadStageApprovalUncheckedCreateNestedManyWithoutToStageInput
   }
 
   export type LeadStageCreateOrConnectWithoutLeadsInput = {
@@ -51620,6 +54337,9 @@ export namespace Prisma {
     devices?: DeviceCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     performedLeadActivities?: LeadActivityCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutApprovedByInput
     rosterEntries?: RosterEntryCreateNestedManyWithoutUserInput
     followUps?: FollowUpCreateNestedManyWithoutUserInput
     assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
@@ -51661,6 +54381,9 @@ export namespace Prisma {
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     performedLeadActivities?: LeadActivityUncheckedCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutApprovedByInput
     rosterEntries?: RosterEntryUncheckedCreateNestedManyWithoutUserInput
     followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
     assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
@@ -51707,6 +54430,9 @@ export namespace Prisma {
     devices?: DeviceCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     performedLeadActivities?: LeadActivityCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutApprovedByInput
     rosterEntries?: RosterEntryCreateNestedManyWithoutUserInput
     followUps?: FollowUpCreateNestedManyWithoutUserInput
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
@@ -51748,6 +54474,9 @@ export namespace Prisma {
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     performedLeadActivities?: LeadActivityUncheckedCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutApprovedByInput
     rosterEntries?: RosterEntryUncheckedCreateNestedManyWithoutUserInput
     followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -51776,6 +54505,7 @@ export namespace Prisma {
     leadLifeCycles?: LeadLifeCycleCreateNestedManyWithoutWorkspaceInput
     leadDynamicFields?: LeadDynamicFieldCreateNestedManyWithoutWorkspaceInput
     leadActivities?: LeadActivityCreateNestedManyWithoutWorkspaceInput
+    leadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateWithoutLeadsInput = {
@@ -51795,6 +54525,7 @@ export namespace Prisma {
     leadLifeCycles?: LeadLifeCycleUncheckedCreateNestedManyWithoutWorkspaceInput
     leadDynamicFields?: LeadDynamicFieldUncheckedCreateNestedManyWithoutWorkspaceInput
     leadActivities?: LeadActivityUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceCreateOrConnectWithoutLeadsInput = {
@@ -51896,6 +54627,48 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type LeadStageApprovalCreateWithoutLeadInput = {
+    id?: string
+    status?: $Enums.LeadApprovalStatus
+    comment?: string | null
+    requestData?: NullableJsonNullValueInput | InputJsonValue
+    approvedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    workspace: WorkspaceCreateNestedOneWithoutLeadStageApprovalsInput
+    fromStage: LeadStageCreateNestedOneWithoutApprovalsFromInput
+    toStage: LeadStageCreateNestedOneWithoutApprovalsToInput
+    requestedBy: UserCreateNestedOneWithoutRequestedLeadStageApprovalsInput
+    assignedTo?: UserCreateNestedOneWithoutAssignedLeadStageApprovalsInput
+    approvedBy?: UserCreateNestedOneWithoutApprovedLeadStageApprovalsInput
+  }
+
+  export type LeadStageApprovalUncheckedCreateWithoutLeadInput = {
+    id?: string
+    workspaceId: string
+    fromStageId: string
+    toStageId: string
+    requestedById: string
+    assignedToId?: string | null
+    status?: $Enums.LeadApprovalStatus
+    comment?: string | null
+    requestData?: NullableJsonNullValueInput | InputJsonValue
+    approvedById?: string | null
+    approvedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type LeadStageApprovalCreateOrConnectWithoutLeadInput = {
+    where: LeadStageApprovalWhereUniqueInput
+    create: XOR<LeadStageApprovalCreateWithoutLeadInput, LeadStageApprovalUncheckedCreateWithoutLeadInput>
+  }
+
+  export type LeadStageApprovalCreateManyLeadInputEnvelope = {
+    data: LeadStageApprovalCreateManyLeadInput | LeadStageApprovalCreateManyLeadInput[]
+    skipDuplicates?: boolean
+  }
+
   export type UserUpsertWithoutAssignedLeadsInput = {
     update: XOR<UserUpdateWithoutAssignedLeadsInput, UserUncheckedUpdateWithoutAssignedLeadsInput>
     create: XOR<UserCreateWithoutAssignedLeadsInput, UserUncheckedCreateWithoutAssignedLeadsInput>
@@ -51942,6 +54715,9 @@ export namespace Prisma {
     devices?: DeviceUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     performedLeadActivities?: LeadActivityUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutApprovedByNestedInput
     rosterEntries?: RosterEntryUpdateManyWithoutUserNestedInput
     followUps?: FollowUpUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
@@ -51983,6 +54759,9 @@ export namespace Prisma {
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     performedLeadActivities?: LeadActivityUncheckedUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
     rosterEntries?: RosterEntryUncheckedUpdateManyWithoutUserNestedInput
     followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -52014,6 +54793,8 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     rules?: StageRuleUpdateManyWithoutStageNestedInput
+    approvalsFrom?: LeadStageApprovalUpdateManyWithoutFromStageNestedInput
+    approvalsTo?: LeadStageApprovalUpdateManyWithoutToStageNestedInput
   }
 
   export type LeadStageUncheckedUpdateWithoutLeadsInput = {
@@ -52030,6 +54811,8 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     rules?: StageRuleUncheckedUpdateManyWithoutStageNestedInput
+    approvalsFrom?: LeadStageApprovalUncheckedUpdateManyWithoutFromStageNestedInput
+    approvalsTo?: LeadStageApprovalUncheckedUpdateManyWithoutToStageNestedInput
   }
 
   export type LeadLifeCycleUpsertWithoutLeadsInput = {
@@ -52142,6 +54925,9 @@ export namespace Prisma {
     devices?: DeviceUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     performedLeadActivities?: LeadActivityUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutApprovedByNestedInput
     rosterEntries?: RosterEntryUpdateManyWithoutUserNestedInput
     followUps?: FollowUpUpdateManyWithoutUserNestedInput
     assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
@@ -52183,6 +54969,9 @@ export namespace Prisma {
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     performedLeadActivities?: LeadActivityUncheckedUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
     rosterEntries?: RosterEntryUncheckedUpdateManyWithoutUserNestedInput
     followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
     assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
@@ -52235,6 +55024,9 @@ export namespace Prisma {
     devices?: DeviceUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     performedLeadActivities?: LeadActivityUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutApprovedByNestedInput
     rosterEntries?: RosterEntryUpdateManyWithoutUserNestedInput
     followUps?: FollowUpUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
@@ -52276,6 +55068,9 @@ export namespace Prisma {
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     performedLeadActivities?: LeadActivityUncheckedUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
     rosterEntries?: RosterEntryUncheckedUpdateManyWithoutUserNestedInput
     followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -52310,6 +55105,7 @@ export namespace Prisma {
     leadLifeCycles?: LeadLifeCycleUpdateManyWithoutWorkspaceNestedInput
     leadDynamicFields?: LeadDynamicFieldUpdateManyWithoutWorkspaceNestedInput
     leadActivities?: LeadActivityUpdateManyWithoutWorkspaceNestedInput
+    leadStageApprovals?: LeadStageApprovalUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateWithoutLeadsInput = {
@@ -52329,6 +55125,7 @@ export namespace Prisma {
     leadLifeCycles?: LeadLifeCycleUncheckedUpdateManyWithoutWorkspaceNestedInput
     leadDynamicFields?: LeadDynamicFieldUncheckedUpdateManyWithoutWorkspaceNestedInput
     leadActivities?: LeadActivityUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type FollowUpUpsertWithWhereUniqueWithoutLeadInput = {
@@ -52409,6 +55206,22 @@ export namespace Prisma {
     data: XOR<LeadActivityUpdateManyMutationInput, LeadActivityUncheckedUpdateManyWithoutLeadInput>
   }
 
+  export type LeadStageApprovalUpsertWithWhereUniqueWithoutLeadInput = {
+    where: LeadStageApprovalWhereUniqueInput
+    update: XOR<LeadStageApprovalUpdateWithoutLeadInput, LeadStageApprovalUncheckedUpdateWithoutLeadInput>
+    create: XOR<LeadStageApprovalCreateWithoutLeadInput, LeadStageApprovalUncheckedCreateWithoutLeadInput>
+  }
+
+  export type LeadStageApprovalUpdateWithWhereUniqueWithoutLeadInput = {
+    where: LeadStageApprovalWhereUniqueInput
+    data: XOR<LeadStageApprovalUpdateWithoutLeadInput, LeadStageApprovalUncheckedUpdateWithoutLeadInput>
+  }
+
+  export type LeadStageApprovalUpdateManyWithWhereWithoutLeadInput = {
+    where: LeadStageApprovalScalarWhereInput
+    data: XOR<LeadStageApprovalUpdateManyMutationInput, LeadStageApprovalUncheckedUpdateManyWithoutLeadInput>
+  }
+
   export type LeadCreateWithoutLobLogsInput = {
     id?: string
     name: string
@@ -52421,6 +55234,9 @@ export namespace Prisma {
     stageExpiresAt?: Date | string | null
     slaAction?: $Enums.LeadExpiryAction | null
     slaWarningDays?: number | null
+    approvalState?: $Enums.LeadApprovalState
+    pendingApprovalToStageId?: string | null
+    pendingApprovalRequestedAt?: Date | string | null
     isClosed?: boolean
     isLOB?: boolean
     closedAt?: Date | string | null
@@ -52437,6 +55253,7 @@ export namespace Prisma {
     workspace: WorkspaceCreateNestedOneWithoutLeadsInput
     followUps?: FollowUpCreateNestedManyWithoutLeadInput
     activities?: LeadActivityCreateNestedManyWithoutLeadInput
+    stageApprovals?: LeadStageApprovalCreateNestedManyWithoutLeadInput
   }
 
   export type LeadUncheckedCreateWithoutLobLogsInput = {
@@ -52455,6 +55272,9 @@ export namespace Prisma {
     stageExpiresAt?: Date | string | null
     slaAction?: $Enums.LeadExpiryAction | null
     slaWarningDays?: number | null
+    approvalState?: $Enums.LeadApprovalState
+    pendingApprovalToStageId?: string | null
+    pendingApprovalRequestedAt?: Date | string | null
     isClosed?: boolean
     isLOB?: boolean
     closedAt?: Date | string | null
@@ -52467,6 +55287,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     followUps?: FollowUpUncheckedCreateNestedManyWithoutLeadInput
     activities?: LeadActivityUncheckedCreateNestedManyWithoutLeadInput
+    stageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutLeadInput
   }
 
   export type LeadCreateOrConnectWithoutLobLogsInput = {
@@ -52497,6 +55318,9 @@ export namespace Prisma {
     stageExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     slaAction?: NullableEnumLeadExpiryActionFieldUpdateOperationsInput | $Enums.LeadExpiryAction | null
     slaWarningDays?: NullableIntFieldUpdateOperationsInput | number | null
+    approvalState?: EnumLeadApprovalStateFieldUpdateOperationsInput | $Enums.LeadApprovalState
+    pendingApprovalToStageId?: NullableStringFieldUpdateOperationsInput | string | null
+    pendingApprovalRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isClosed?: BoolFieldUpdateOperationsInput | boolean
     isLOB?: BoolFieldUpdateOperationsInput | boolean
     closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -52513,6 +55337,7 @@ export namespace Prisma {
     workspace?: WorkspaceUpdateOneRequiredWithoutLeadsNestedInput
     followUps?: FollowUpUpdateManyWithoutLeadNestedInput
     activities?: LeadActivityUpdateManyWithoutLeadNestedInput
+    stageApprovals?: LeadStageApprovalUpdateManyWithoutLeadNestedInput
   }
 
   export type LeadUncheckedUpdateWithoutLobLogsInput = {
@@ -52531,6 +55356,9 @@ export namespace Prisma {
     stageExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     slaAction?: NullableEnumLeadExpiryActionFieldUpdateOperationsInput | $Enums.LeadExpiryAction | null
     slaWarningDays?: NullableIntFieldUpdateOperationsInput | number | null
+    approvalState?: EnumLeadApprovalStateFieldUpdateOperationsInput | $Enums.LeadApprovalState
+    pendingApprovalToStageId?: NullableStringFieldUpdateOperationsInput | string | null
+    pendingApprovalRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isClosed?: BoolFieldUpdateOperationsInput | boolean
     isLOB?: BoolFieldUpdateOperationsInput | boolean
     closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -52543,6 +55371,1007 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     followUps?: FollowUpUncheckedUpdateManyWithoutLeadNestedInput
     activities?: LeadActivityUncheckedUpdateManyWithoutLeadNestedInput
+    stageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutLeadNestedInput
+  }
+
+  export type WorkspaceCreateWithoutLeadStageApprovalsInput = {
+    id?: string
+    companyName: string
+    employeeCount: string
+    timeZone?: string
+    language?: string
+    currencyLocale?: string
+    loadSampleData?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    owner: UserCreateNestedOneWithoutOwnedWorkspaceInput
+    users?: UserCreateNestedManyWithoutWorkspaceInput
+    departments?: DepartmentCreateNestedManyWithoutWorkspaceInput
+    targetCycles?: TargetCycleCreateNestedManyWithoutWorkspaceInput
+    leadLifeCycles?: LeadLifeCycleCreateNestedManyWithoutWorkspaceInput
+    leadDynamicFields?: LeadDynamicFieldCreateNestedManyWithoutWorkspaceInput
+    leads?: LeadCreateNestedManyWithoutWorkspaceInput
+    leadActivities?: LeadActivityCreateNestedManyWithoutWorkspaceInput
+  }
+
+  export type WorkspaceUncheckedCreateWithoutLeadStageApprovalsInput = {
+    id?: string
+    companyName: string
+    employeeCount: string
+    timeZone?: string
+    language?: string
+    currencyLocale?: string
+    loadSampleData?: boolean
+    ownerId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    users?: UserUncheckedCreateNestedManyWithoutWorkspaceInput
+    departments?: DepartmentUncheckedCreateNestedManyWithoutWorkspaceInput
+    targetCycles?: TargetCycleUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadLifeCycles?: LeadLifeCycleUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadDynamicFields?: LeadDynamicFieldUncheckedCreateNestedManyWithoutWorkspaceInput
+    leads?: LeadUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadActivities?: LeadActivityUncheckedCreateNestedManyWithoutWorkspaceInput
+  }
+
+  export type WorkspaceCreateOrConnectWithoutLeadStageApprovalsInput = {
+    where: WorkspaceWhereUniqueInput
+    create: XOR<WorkspaceCreateWithoutLeadStageApprovalsInput, WorkspaceUncheckedCreateWithoutLeadStageApprovalsInput>
+  }
+
+  export type LeadCreateWithoutStageApprovalsInput = {
+    id?: string
+    name: string
+    email?: string | null
+    phone?: string | null
+    expectedRevenue?: number | null
+    generatedRevenue?: number
+    nextFollowUpAt?: Date | string | null
+    stageEnteredAt?: Date | string | null
+    stageExpiresAt?: Date | string | null
+    slaAction?: $Enums.LeadExpiryAction | null
+    slaWarningDays?: number | null
+    approvalState?: $Enums.LeadApprovalState
+    pendingApprovalToStageId?: string | null
+    pendingApprovalRequestedAt?: Date | string | null
+    isClosed?: boolean
+    isLOB?: boolean
+    closedAt?: Date | string | null
+    closureType?: $Enums.LeadClosureType | null
+    deletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    assignedTo?: UserCreateNestedOneWithoutAssignedLeadsInput
+    stage?: LeadStageCreateNestedOneWithoutLeadsInput
+    lifecycle?: LeadLifeCycleCreateNestedOneWithoutLeadsInput
+    source?: LeadSourceCreateNestedOneWithoutLeadsInput
+    createdBy: UserCreateNestedOneWithoutCreatedLeadsInput
+    closedBy?: UserCreateNestedOneWithoutClosedLeadsInput
+    workspace: WorkspaceCreateNestedOneWithoutLeadsInput
+    followUps?: FollowUpCreateNestedManyWithoutLeadInput
+    lobLogs?: LeadLOBLogCreateNestedManyWithoutLeadInput
+    activities?: LeadActivityCreateNestedManyWithoutLeadInput
+  }
+
+  export type LeadUncheckedCreateWithoutStageApprovalsInput = {
+    id?: string
+    name: string
+    email?: string | null
+    phone?: string | null
+    expectedRevenue?: number | null
+    generatedRevenue?: number
+    assignedToId?: string | null
+    stageId?: string | null
+    lifecycleId?: string | null
+    sourceId?: string | null
+    nextFollowUpAt?: Date | string | null
+    stageEnteredAt?: Date | string | null
+    stageExpiresAt?: Date | string | null
+    slaAction?: $Enums.LeadExpiryAction | null
+    slaWarningDays?: number | null
+    approvalState?: $Enums.LeadApprovalState
+    pendingApprovalToStageId?: string | null
+    pendingApprovalRequestedAt?: Date | string | null
+    isClosed?: boolean
+    isLOB?: boolean
+    closedAt?: Date | string | null
+    closedById?: string | null
+    closureType?: $Enums.LeadClosureType | null
+    workspaceId: string
+    createdById: string
+    deletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    followUps?: FollowUpUncheckedCreateNestedManyWithoutLeadInput
+    lobLogs?: LeadLOBLogUncheckedCreateNestedManyWithoutLeadInput
+    activities?: LeadActivityUncheckedCreateNestedManyWithoutLeadInput
+  }
+
+  export type LeadCreateOrConnectWithoutStageApprovalsInput = {
+    where: LeadWhereUniqueInput
+    create: XOR<LeadCreateWithoutStageApprovalsInput, LeadUncheckedCreateWithoutStageApprovalsInput>
+  }
+
+  export type LeadStageCreateWithoutApprovalsFromInput = {
+    id?: string
+    name: string
+    color?: string
+    isApprovalRequired?: boolean
+    isLOB?: boolean
+    isClosed?: boolean
+    order: number
+    status?: $Enums.StageStatus
+    createdBy?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    rules?: StageRuleCreateNestedManyWithoutStageInput
+    leads?: LeadCreateNestedManyWithoutStageInput
+    approvalsTo?: LeadStageApprovalCreateNestedManyWithoutToStageInput
+  }
+
+  export type LeadStageUncheckedCreateWithoutApprovalsFromInput = {
+    id?: string
+    name: string
+    color?: string
+    isApprovalRequired?: boolean
+    isLOB?: boolean
+    isClosed?: boolean
+    order: number
+    status?: $Enums.StageStatus
+    createdBy?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    rules?: StageRuleUncheckedCreateNestedManyWithoutStageInput
+    leads?: LeadUncheckedCreateNestedManyWithoutStageInput
+    approvalsTo?: LeadStageApprovalUncheckedCreateNestedManyWithoutToStageInput
+  }
+
+  export type LeadStageCreateOrConnectWithoutApprovalsFromInput = {
+    where: LeadStageWhereUniqueInput
+    create: XOR<LeadStageCreateWithoutApprovalsFromInput, LeadStageUncheckedCreateWithoutApprovalsFromInput>
+  }
+
+  export type LeadStageCreateWithoutApprovalsToInput = {
+    id?: string
+    name: string
+    color?: string
+    isApprovalRequired?: boolean
+    isLOB?: boolean
+    isClosed?: boolean
+    order: number
+    status?: $Enums.StageStatus
+    createdBy?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    rules?: StageRuleCreateNestedManyWithoutStageInput
+    leads?: LeadCreateNestedManyWithoutStageInput
+    approvalsFrom?: LeadStageApprovalCreateNestedManyWithoutFromStageInput
+  }
+
+  export type LeadStageUncheckedCreateWithoutApprovalsToInput = {
+    id?: string
+    name: string
+    color?: string
+    isApprovalRequired?: boolean
+    isLOB?: boolean
+    isClosed?: boolean
+    order: number
+    status?: $Enums.StageStatus
+    createdBy?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    rules?: StageRuleUncheckedCreateNestedManyWithoutStageInput
+    leads?: LeadUncheckedCreateNestedManyWithoutStageInput
+    approvalsFrom?: LeadStageApprovalUncheckedCreateNestedManyWithoutFromStageInput
+  }
+
+  export type LeadStageCreateOrConnectWithoutApprovalsToInput = {
+    where: LeadStageWhereUniqueInput
+    create: XOR<LeadStageCreateWithoutApprovalsToInput, LeadStageUncheckedCreateWithoutApprovalsToInput>
+  }
+
+  export type UserCreateWithoutRequestedLeadStageApprovalsInput = {
+    id?: string
+    name?: string | null
+    username?: string | null
+    email: string
+    password?: string | null
+    phone?: string | null
+    googleId?: string | null
+    isOnboarded?: boolean
+    isActive?: boolean
+    isEmailVerified?: boolean
+    isLocked?: boolean
+    verificationToken?: string | null
+    verificationTokenExpires?: Date | string | null
+    invitationToken?: string | null
+    invitationExpires?: Date | string | null
+    deletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    role?: RoleCreateNestedOneWithoutUsersInput
+    workspace?: WorkspaceCreateNestedOneWithoutUsersInput
+    ownedWorkspace?: WorkspaceCreateNestedOneWithoutOwnerInput
+    department?: DepartmentCreateNestedOneWithoutUsersInput
+    office?: OfficeCreateNestedOneWithoutUsersInput
+    country?: LocationCreateNestedOneWithoutUsersAtCountryInput
+    state?: LocationCreateNestedOneWithoutUsersAtStateInput
+    district?: LocationCreateNestedOneWithoutUsersAtDistrictInput
+    assignedLocations?: UserLocationAssignmentCreateNestedManyWithoutUserInput
+    supervisor?: UserCreateNestedOneWithoutSubordinatesInput
+    subordinates?: UserCreateNestedManyWithoutSupervisorInput
+    targetSettings?: TargetSettingCreateNestedManyWithoutUserInput
+    violations?: TargetViolationCreateNestedManyWithoutUserInput
+    devices?: DeviceCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogCreateNestedManyWithoutUserInput
+    performedLeadActivities?: LeadActivityCreateNestedManyWithoutPerformedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutApprovedByInput
+    rosterEntries?: RosterEntryCreateNestedManyWithoutUserInput
+    followUps?: FollowUpCreateNestedManyWithoutUserInput
+    createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
+    assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadCreateNestedManyWithoutClosedByInput
+  }
+
+  export type UserUncheckedCreateWithoutRequestedLeadStageApprovalsInput = {
+    id?: string
+    name?: string | null
+    username?: string | null
+    email: string
+    password?: string | null
+    phone?: string | null
+    googleId?: string | null
+    isOnboarded?: boolean
+    isActive?: boolean
+    isEmailVerified?: boolean
+    isLocked?: boolean
+    verificationToken?: string | null
+    verificationTokenExpires?: Date | string | null
+    invitationToken?: string | null
+    invitationExpires?: Date | string | null
+    deletedAt?: Date | string | null
+    roleId?: string | null
+    workspaceId?: string | null
+    departmentId?: string | null
+    officeId?: string | null
+    countryId?: string | null
+    stateId?: string | null
+    districtId?: string | null
+    supervisorId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    ownedWorkspace?: WorkspaceUncheckedCreateNestedOneWithoutOwnerInput
+    assignedLocations?: UserLocationAssignmentUncheckedCreateNestedManyWithoutUserInput
+    subordinates?: UserUncheckedCreateNestedManyWithoutSupervisorInput
+    targetSettings?: TargetSettingUncheckedCreateNestedManyWithoutUserInput
+    violations?: TargetViolationUncheckedCreateNestedManyWithoutUserInput
+    devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
+    performedLeadActivities?: LeadActivityUncheckedCreateNestedManyWithoutPerformedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutApprovedByInput
+    rosterEntries?: RosterEntryUncheckedCreateNestedManyWithoutUserInput
+    followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
+    createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
+    assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
+  }
+
+  export type UserCreateOrConnectWithoutRequestedLeadStageApprovalsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutRequestedLeadStageApprovalsInput, UserUncheckedCreateWithoutRequestedLeadStageApprovalsInput>
+  }
+
+  export type UserCreateWithoutAssignedLeadStageApprovalsInput = {
+    id?: string
+    name?: string | null
+    username?: string | null
+    email: string
+    password?: string | null
+    phone?: string | null
+    googleId?: string | null
+    isOnboarded?: boolean
+    isActive?: boolean
+    isEmailVerified?: boolean
+    isLocked?: boolean
+    verificationToken?: string | null
+    verificationTokenExpires?: Date | string | null
+    invitationToken?: string | null
+    invitationExpires?: Date | string | null
+    deletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    role?: RoleCreateNestedOneWithoutUsersInput
+    workspace?: WorkspaceCreateNestedOneWithoutUsersInput
+    ownedWorkspace?: WorkspaceCreateNestedOneWithoutOwnerInput
+    department?: DepartmentCreateNestedOneWithoutUsersInput
+    office?: OfficeCreateNestedOneWithoutUsersInput
+    country?: LocationCreateNestedOneWithoutUsersAtCountryInput
+    state?: LocationCreateNestedOneWithoutUsersAtStateInput
+    district?: LocationCreateNestedOneWithoutUsersAtDistrictInput
+    assignedLocations?: UserLocationAssignmentCreateNestedManyWithoutUserInput
+    supervisor?: UserCreateNestedOneWithoutSubordinatesInput
+    subordinates?: UserCreateNestedManyWithoutSupervisorInput
+    targetSettings?: TargetSettingCreateNestedManyWithoutUserInput
+    violations?: TargetViolationCreateNestedManyWithoutUserInput
+    devices?: DeviceCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogCreateNestedManyWithoutUserInput
+    performedLeadActivities?: LeadActivityCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutRequestedByInput
+    approvedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutApprovedByInput
+    rosterEntries?: RosterEntryCreateNestedManyWithoutUserInput
+    followUps?: FollowUpCreateNestedManyWithoutUserInput
+    createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
+    assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadCreateNestedManyWithoutClosedByInput
+  }
+
+  export type UserUncheckedCreateWithoutAssignedLeadStageApprovalsInput = {
+    id?: string
+    name?: string | null
+    username?: string | null
+    email: string
+    password?: string | null
+    phone?: string | null
+    googleId?: string | null
+    isOnboarded?: boolean
+    isActive?: boolean
+    isEmailVerified?: boolean
+    isLocked?: boolean
+    verificationToken?: string | null
+    verificationTokenExpires?: Date | string | null
+    invitationToken?: string | null
+    invitationExpires?: Date | string | null
+    deletedAt?: Date | string | null
+    roleId?: string | null
+    workspaceId?: string | null
+    departmentId?: string | null
+    officeId?: string | null
+    countryId?: string | null
+    stateId?: string | null
+    districtId?: string | null
+    supervisorId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    ownedWorkspace?: WorkspaceUncheckedCreateNestedOneWithoutOwnerInput
+    assignedLocations?: UserLocationAssignmentUncheckedCreateNestedManyWithoutUserInput
+    subordinates?: UserUncheckedCreateNestedManyWithoutSupervisorInput
+    targetSettings?: TargetSettingUncheckedCreateNestedManyWithoutUserInput
+    violations?: TargetViolationUncheckedCreateNestedManyWithoutUserInput
+    devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
+    performedLeadActivities?: LeadActivityUncheckedCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutRequestedByInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutApprovedByInput
+    rosterEntries?: RosterEntryUncheckedCreateNestedManyWithoutUserInput
+    followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
+    createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
+    assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
+  }
+
+  export type UserCreateOrConnectWithoutAssignedLeadStageApprovalsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutAssignedLeadStageApprovalsInput, UserUncheckedCreateWithoutAssignedLeadStageApprovalsInput>
+  }
+
+  export type UserCreateWithoutApprovedLeadStageApprovalsInput = {
+    id?: string
+    name?: string | null
+    username?: string | null
+    email: string
+    password?: string | null
+    phone?: string | null
+    googleId?: string | null
+    isOnboarded?: boolean
+    isActive?: boolean
+    isEmailVerified?: boolean
+    isLocked?: boolean
+    verificationToken?: string | null
+    verificationTokenExpires?: Date | string | null
+    invitationToken?: string | null
+    invitationExpires?: Date | string | null
+    deletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    role?: RoleCreateNestedOneWithoutUsersInput
+    workspace?: WorkspaceCreateNestedOneWithoutUsersInput
+    ownedWorkspace?: WorkspaceCreateNestedOneWithoutOwnerInput
+    department?: DepartmentCreateNestedOneWithoutUsersInput
+    office?: OfficeCreateNestedOneWithoutUsersInput
+    country?: LocationCreateNestedOneWithoutUsersAtCountryInput
+    state?: LocationCreateNestedOneWithoutUsersAtStateInput
+    district?: LocationCreateNestedOneWithoutUsersAtDistrictInput
+    assignedLocations?: UserLocationAssignmentCreateNestedManyWithoutUserInput
+    supervisor?: UserCreateNestedOneWithoutSubordinatesInput
+    subordinates?: UserCreateNestedManyWithoutSupervisorInput
+    targetSettings?: TargetSettingCreateNestedManyWithoutUserInput
+    violations?: TargetViolationCreateNestedManyWithoutUserInput
+    devices?: DeviceCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogCreateNestedManyWithoutUserInput
+    performedLeadActivities?: LeadActivityCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutAssignedToInput
+    rosterEntries?: RosterEntryCreateNestedManyWithoutUserInput
+    followUps?: FollowUpCreateNestedManyWithoutUserInput
+    createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
+    assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadCreateNestedManyWithoutClosedByInput
+  }
+
+  export type UserUncheckedCreateWithoutApprovedLeadStageApprovalsInput = {
+    id?: string
+    name?: string | null
+    username?: string | null
+    email: string
+    password?: string | null
+    phone?: string | null
+    googleId?: string | null
+    isOnboarded?: boolean
+    isActive?: boolean
+    isEmailVerified?: boolean
+    isLocked?: boolean
+    verificationToken?: string | null
+    verificationTokenExpires?: Date | string | null
+    invitationToken?: string | null
+    invitationExpires?: Date | string | null
+    deletedAt?: Date | string | null
+    roleId?: string | null
+    workspaceId?: string | null
+    departmentId?: string | null
+    officeId?: string | null
+    countryId?: string | null
+    stateId?: string | null
+    districtId?: string | null
+    supervisorId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    ownedWorkspace?: WorkspaceUncheckedCreateNestedOneWithoutOwnerInput
+    assignedLocations?: UserLocationAssignmentUncheckedCreateNestedManyWithoutUserInput
+    subordinates?: UserUncheckedCreateNestedManyWithoutSupervisorInput
+    targetSettings?: TargetSettingUncheckedCreateNestedManyWithoutUserInput
+    violations?: TargetViolationUncheckedCreateNestedManyWithoutUserInput
+    devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
+    performedLeadActivities?: LeadActivityUncheckedCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutAssignedToInput
+    rosterEntries?: RosterEntryUncheckedCreateNestedManyWithoutUserInput
+    followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
+    createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
+    assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
+  }
+
+  export type UserCreateOrConnectWithoutApprovedLeadStageApprovalsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutApprovedLeadStageApprovalsInput, UserUncheckedCreateWithoutApprovedLeadStageApprovalsInput>
+  }
+
+  export type WorkspaceUpsertWithoutLeadStageApprovalsInput = {
+    update: XOR<WorkspaceUpdateWithoutLeadStageApprovalsInput, WorkspaceUncheckedUpdateWithoutLeadStageApprovalsInput>
+    create: XOR<WorkspaceCreateWithoutLeadStageApprovalsInput, WorkspaceUncheckedCreateWithoutLeadStageApprovalsInput>
+    where?: WorkspaceWhereInput
+  }
+
+  export type WorkspaceUpdateToOneWithWhereWithoutLeadStageApprovalsInput = {
+    where?: WorkspaceWhereInput
+    data: XOR<WorkspaceUpdateWithoutLeadStageApprovalsInput, WorkspaceUncheckedUpdateWithoutLeadStageApprovalsInput>
+  }
+
+  export type WorkspaceUpdateWithoutLeadStageApprovalsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    companyName?: StringFieldUpdateOperationsInput | string
+    employeeCount?: StringFieldUpdateOperationsInput | string
+    timeZone?: StringFieldUpdateOperationsInput | string
+    language?: StringFieldUpdateOperationsInput | string
+    currencyLocale?: StringFieldUpdateOperationsInput | string
+    loadSampleData?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    owner?: UserUpdateOneRequiredWithoutOwnedWorkspaceNestedInput
+    users?: UserUpdateManyWithoutWorkspaceNestedInput
+    departments?: DepartmentUpdateManyWithoutWorkspaceNestedInput
+    targetCycles?: TargetCycleUpdateManyWithoutWorkspaceNestedInput
+    leadLifeCycles?: LeadLifeCycleUpdateManyWithoutWorkspaceNestedInput
+    leadDynamicFields?: LeadDynamicFieldUpdateManyWithoutWorkspaceNestedInput
+    leads?: LeadUpdateManyWithoutWorkspaceNestedInput
+    leadActivities?: LeadActivityUpdateManyWithoutWorkspaceNestedInput
+  }
+
+  export type WorkspaceUncheckedUpdateWithoutLeadStageApprovalsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    companyName?: StringFieldUpdateOperationsInput | string
+    employeeCount?: StringFieldUpdateOperationsInput | string
+    timeZone?: StringFieldUpdateOperationsInput | string
+    language?: StringFieldUpdateOperationsInput | string
+    currencyLocale?: StringFieldUpdateOperationsInput | string
+    loadSampleData?: BoolFieldUpdateOperationsInput | boolean
+    ownerId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    users?: UserUncheckedUpdateManyWithoutWorkspaceNestedInput
+    departments?: DepartmentUncheckedUpdateManyWithoutWorkspaceNestedInput
+    targetCycles?: TargetCycleUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadLifeCycles?: LeadLifeCycleUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadDynamicFields?: LeadDynamicFieldUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leads?: LeadUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadActivities?: LeadActivityUncheckedUpdateManyWithoutWorkspaceNestedInput
+  }
+
+  export type LeadUpsertWithoutStageApprovalsInput = {
+    update: XOR<LeadUpdateWithoutStageApprovalsInput, LeadUncheckedUpdateWithoutStageApprovalsInput>
+    create: XOR<LeadCreateWithoutStageApprovalsInput, LeadUncheckedCreateWithoutStageApprovalsInput>
+    where?: LeadWhereInput
+  }
+
+  export type LeadUpdateToOneWithWhereWithoutStageApprovalsInput = {
+    where?: LeadWhereInput
+    data: XOR<LeadUpdateWithoutStageApprovalsInput, LeadUncheckedUpdateWithoutStageApprovalsInput>
+  }
+
+  export type LeadUpdateWithoutStageApprovalsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    expectedRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
+    generatedRevenue?: FloatFieldUpdateOperationsInput | number
+    nextFollowUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    stageEnteredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    stageExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    slaAction?: NullableEnumLeadExpiryActionFieldUpdateOperationsInput | $Enums.LeadExpiryAction | null
+    slaWarningDays?: NullableIntFieldUpdateOperationsInput | number | null
+    approvalState?: EnumLeadApprovalStateFieldUpdateOperationsInput | $Enums.LeadApprovalState
+    pendingApprovalToStageId?: NullableStringFieldUpdateOperationsInput | string | null
+    pendingApprovalRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isClosed?: BoolFieldUpdateOperationsInput | boolean
+    isLOB?: BoolFieldUpdateOperationsInput | boolean
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    closureType?: NullableEnumLeadClosureTypeFieldUpdateOperationsInput | $Enums.LeadClosureType | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    assignedTo?: UserUpdateOneWithoutAssignedLeadsNestedInput
+    stage?: LeadStageUpdateOneWithoutLeadsNestedInput
+    lifecycle?: LeadLifeCycleUpdateOneWithoutLeadsNestedInput
+    source?: LeadSourceUpdateOneWithoutLeadsNestedInput
+    createdBy?: UserUpdateOneRequiredWithoutCreatedLeadsNestedInput
+    closedBy?: UserUpdateOneWithoutClosedLeadsNestedInput
+    workspace?: WorkspaceUpdateOneRequiredWithoutLeadsNestedInput
+    followUps?: FollowUpUpdateManyWithoutLeadNestedInput
+    lobLogs?: LeadLOBLogUpdateManyWithoutLeadNestedInput
+    activities?: LeadActivityUpdateManyWithoutLeadNestedInput
+  }
+
+  export type LeadUncheckedUpdateWithoutStageApprovalsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    expectedRevenue?: NullableFloatFieldUpdateOperationsInput | number | null
+    generatedRevenue?: FloatFieldUpdateOperationsInput | number
+    assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
+    stageId?: NullableStringFieldUpdateOperationsInput | string | null
+    lifecycleId?: NullableStringFieldUpdateOperationsInput | string | null
+    sourceId?: NullableStringFieldUpdateOperationsInput | string | null
+    nextFollowUpAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    stageEnteredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    stageExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    slaAction?: NullableEnumLeadExpiryActionFieldUpdateOperationsInput | $Enums.LeadExpiryAction | null
+    slaWarningDays?: NullableIntFieldUpdateOperationsInput | number | null
+    approvalState?: EnumLeadApprovalStateFieldUpdateOperationsInput | $Enums.LeadApprovalState
+    pendingApprovalToStageId?: NullableStringFieldUpdateOperationsInput | string | null
+    pendingApprovalRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isClosed?: BoolFieldUpdateOperationsInput | boolean
+    isLOB?: BoolFieldUpdateOperationsInput | boolean
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    closedById?: NullableStringFieldUpdateOperationsInput | string | null
+    closureType?: NullableEnumLeadClosureTypeFieldUpdateOperationsInput | $Enums.LeadClosureType | null
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    createdById?: StringFieldUpdateOperationsInput | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    followUps?: FollowUpUncheckedUpdateManyWithoutLeadNestedInput
+    lobLogs?: LeadLOBLogUncheckedUpdateManyWithoutLeadNestedInput
+    activities?: LeadActivityUncheckedUpdateManyWithoutLeadNestedInput
+  }
+
+  export type LeadStageUpsertWithoutApprovalsFromInput = {
+    update: XOR<LeadStageUpdateWithoutApprovalsFromInput, LeadStageUncheckedUpdateWithoutApprovalsFromInput>
+    create: XOR<LeadStageCreateWithoutApprovalsFromInput, LeadStageUncheckedCreateWithoutApprovalsFromInput>
+    where?: LeadStageWhereInput
+  }
+
+  export type LeadStageUpdateToOneWithWhereWithoutApprovalsFromInput = {
+    where?: LeadStageWhereInput
+    data: XOR<LeadStageUpdateWithoutApprovalsFromInput, LeadStageUncheckedUpdateWithoutApprovalsFromInput>
+  }
+
+  export type LeadStageUpdateWithoutApprovalsFromInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    color?: StringFieldUpdateOperationsInput | string
+    isApprovalRequired?: BoolFieldUpdateOperationsInput | boolean
+    isLOB?: BoolFieldUpdateOperationsInput | boolean
+    isClosed?: BoolFieldUpdateOperationsInput | boolean
+    order?: IntFieldUpdateOperationsInput | number
+    status?: EnumStageStatusFieldUpdateOperationsInput | $Enums.StageStatus
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    rules?: StageRuleUpdateManyWithoutStageNestedInput
+    leads?: LeadUpdateManyWithoutStageNestedInput
+    approvalsTo?: LeadStageApprovalUpdateManyWithoutToStageNestedInput
+  }
+
+  export type LeadStageUncheckedUpdateWithoutApprovalsFromInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    color?: StringFieldUpdateOperationsInput | string
+    isApprovalRequired?: BoolFieldUpdateOperationsInput | boolean
+    isLOB?: BoolFieldUpdateOperationsInput | boolean
+    isClosed?: BoolFieldUpdateOperationsInput | boolean
+    order?: IntFieldUpdateOperationsInput | number
+    status?: EnumStageStatusFieldUpdateOperationsInput | $Enums.StageStatus
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    rules?: StageRuleUncheckedUpdateManyWithoutStageNestedInput
+    leads?: LeadUncheckedUpdateManyWithoutStageNestedInput
+    approvalsTo?: LeadStageApprovalUncheckedUpdateManyWithoutToStageNestedInput
+  }
+
+  export type LeadStageUpsertWithoutApprovalsToInput = {
+    update: XOR<LeadStageUpdateWithoutApprovalsToInput, LeadStageUncheckedUpdateWithoutApprovalsToInput>
+    create: XOR<LeadStageCreateWithoutApprovalsToInput, LeadStageUncheckedCreateWithoutApprovalsToInput>
+    where?: LeadStageWhereInput
+  }
+
+  export type LeadStageUpdateToOneWithWhereWithoutApprovalsToInput = {
+    where?: LeadStageWhereInput
+    data: XOR<LeadStageUpdateWithoutApprovalsToInput, LeadStageUncheckedUpdateWithoutApprovalsToInput>
+  }
+
+  export type LeadStageUpdateWithoutApprovalsToInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    color?: StringFieldUpdateOperationsInput | string
+    isApprovalRequired?: BoolFieldUpdateOperationsInput | boolean
+    isLOB?: BoolFieldUpdateOperationsInput | boolean
+    isClosed?: BoolFieldUpdateOperationsInput | boolean
+    order?: IntFieldUpdateOperationsInput | number
+    status?: EnumStageStatusFieldUpdateOperationsInput | $Enums.StageStatus
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    rules?: StageRuleUpdateManyWithoutStageNestedInput
+    leads?: LeadUpdateManyWithoutStageNestedInput
+    approvalsFrom?: LeadStageApprovalUpdateManyWithoutFromStageNestedInput
+  }
+
+  export type LeadStageUncheckedUpdateWithoutApprovalsToInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    color?: StringFieldUpdateOperationsInput | string
+    isApprovalRequired?: BoolFieldUpdateOperationsInput | boolean
+    isLOB?: BoolFieldUpdateOperationsInput | boolean
+    isClosed?: BoolFieldUpdateOperationsInput | boolean
+    order?: IntFieldUpdateOperationsInput | number
+    status?: EnumStageStatusFieldUpdateOperationsInput | $Enums.StageStatus
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    rules?: StageRuleUncheckedUpdateManyWithoutStageNestedInput
+    leads?: LeadUncheckedUpdateManyWithoutStageNestedInput
+    approvalsFrom?: LeadStageApprovalUncheckedUpdateManyWithoutFromStageNestedInput
+  }
+
+  export type UserUpsertWithoutRequestedLeadStageApprovalsInput = {
+    update: XOR<UserUpdateWithoutRequestedLeadStageApprovalsInput, UserUncheckedUpdateWithoutRequestedLeadStageApprovalsInput>
+    create: XOR<UserCreateWithoutRequestedLeadStageApprovalsInput, UserUncheckedCreateWithoutRequestedLeadStageApprovalsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutRequestedLeadStageApprovalsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutRequestedLeadStageApprovalsInput, UserUncheckedUpdateWithoutRequestedLeadStageApprovalsInput>
+  }
+
+  export type UserUpdateWithoutRequestedLeadStageApprovalsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    username?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    googleId?: NullableStringFieldUpdateOperationsInput | string | null
+    isOnboarded?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isEmailVerified?: BoolFieldUpdateOperationsInput | boolean
+    isLocked?: BoolFieldUpdateOperationsInput | boolean
+    verificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    verificationTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    invitationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    invitationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    role?: RoleUpdateOneWithoutUsersNestedInput
+    workspace?: WorkspaceUpdateOneWithoutUsersNestedInput
+    ownedWorkspace?: WorkspaceUpdateOneWithoutOwnerNestedInput
+    department?: DepartmentUpdateOneWithoutUsersNestedInput
+    office?: OfficeUpdateOneWithoutUsersNestedInput
+    country?: LocationUpdateOneWithoutUsersAtCountryNestedInput
+    state?: LocationUpdateOneWithoutUsersAtStateNestedInput
+    district?: LocationUpdateOneWithoutUsersAtDistrictNestedInput
+    assignedLocations?: UserLocationAssignmentUpdateManyWithoutUserNestedInput
+    supervisor?: UserUpdateOneWithoutSubordinatesNestedInput
+    subordinates?: UserUpdateManyWithoutSupervisorNestedInput
+    targetSettings?: TargetSettingUpdateManyWithoutUserNestedInput
+    violations?: TargetViolationUpdateManyWithoutUserNestedInput
+    devices?: DeviceUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
+    performedLeadActivities?: LeadActivityUpdateManyWithoutPerformedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutApprovedByNestedInput
+    rosterEntries?: RosterEntryUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUpdateManyWithoutUserNestedInput
+    createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
+    assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutRequestedLeadStageApprovalsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    username?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    googleId?: NullableStringFieldUpdateOperationsInput | string | null
+    isOnboarded?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isEmailVerified?: BoolFieldUpdateOperationsInput | boolean
+    isLocked?: BoolFieldUpdateOperationsInput | boolean
+    verificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    verificationTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    invitationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    invitationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    roleId?: NullableStringFieldUpdateOperationsInput | string | null
+    workspaceId?: NullableStringFieldUpdateOperationsInput | string | null
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    officeId?: NullableStringFieldUpdateOperationsInput | string | null
+    countryId?: NullableStringFieldUpdateOperationsInput | string | null
+    stateId?: NullableStringFieldUpdateOperationsInput | string | null
+    districtId?: NullableStringFieldUpdateOperationsInput | string | null
+    supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ownedWorkspace?: WorkspaceUncheckedUpdateOneWithoutOwnerNestedInput
+    assignedLocations?: UserLocationAssignmentUncheckedUpdateManyWithoutUserNestedInput
+    subordinates?: UserUncheckedUpdateManyWithoutSupervisorNestedInput
+    targetSettings?: TargetSettingUncheckedUpdateManyWithoutUserNestedInput
+    violations?: TargetViolationUncheckedUpdateManyWithoutUserNestedInput
+    devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
+    performedLeadActivities?: LeadActivityUncheckedUpdateManyWithoutPerformedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
+    rosterEntries?: RosterEntryUncheckedUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
+    createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
+    assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
+  }
+
+  export type UserUpsertWithoutAssignedLeadStageApprovalsInput = {
+    update: XOR<UserUpdateWithoutAssignedLeadStageApprovalsInput, UserUncheckedUpdateWithoutAssignedLeadStageApprovalsInput>
+    create: XOR<UserCreateWithoutAssignedLeadStageApprovalsInput, UserUncheckedCreateWithoutAssignedLeadStageApprovalsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutAssignedLeadStageApprovalsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutAssignedLeadStageApprovalsInput, UserUncheckedUpdateWithoutAssignedLeadStageApprovalsInput>
+  }
+
+  export type UserUpdateWithoutAssignedLeadStageApprovalsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    username?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    googleId?: NullableStringFieldUpdateOperationsInput | string | null
+    isOnboarded?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isEmailVerified?: BoolFieldUpdateOperationsInput | boolean
+    isLocked?: BoolFieldUpdateOperationsInput | boolean
+    verificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    verificationTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    invitationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    invitationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    role?: RoleUpdateOneWithoutUsersNestedInput
+    workspace?: WorkspaceUpdateOneWithoutUsersNestedInput
+    ownedWorkspace?: WorkspaceUpdateOneWithoutOwnerNestedInput
+    department?: DepartmentUpdateOneWithoutUsersNestedInput
+    office?: OfficeUpdateOneWithoutUsersNestedInput
+    country?: LocationUpdateOneWithoutUsersAtCountryNestedInput
+    state?: LocationUpdateOneWithoutUsersAtStateNestedInput
+    district?: LocationUpdateOneWithoutUsersAtDistrictNestedInput
+    assignedLocations?: UserLocationAssignmentUpdateManyWithoutUserNestedInput
+    supervisor?: UserUpdateOneWithoutSubordinatesNestedInput
+    subordinates?: UserUpdateManyWithoutSupervisorNestedInput
+    targetSettings?: TargetSettingUpdateManyWithoutUserNestedInput
+    violations?: TargetViolationUpdateManyWithoutUserNestedInput
+    devices?: DeviceUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
+    performedLeadActivities?: LeadActivityUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutRequestedByNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutApprovedByNestedInput
+    rosterEntries?: RosterEntryUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUpdateManyWithoutUserNestedInput
+    createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
+    assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutAssignedLeadStageApprovalsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    username?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    googleId?: NullableStringFieldUpdateOperationsInput | string | null
+    isOnboarded?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isEmailVerified?: BoolFieldUpdateOperationsInput | boolean
+    isLocked?: BoolFieldUpdateOperationsInput | boolean
+    verificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    verificationTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    invitationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    invitationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    roleId?: NullableStringFieldUpdateOperationsInput | string | null
+    workspaceId?: NullableStringFieldUpdateOperationsInput | string | null
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    officeId?: NullableStringFieldUpdateOperationsInput | string | null
+    countryId?: NullableStringFieldUpdateOperationsInput | string | null
+    stateId?: NullableStringFieldUpdateOperationsInput | string | null
+    districtId?: NullableStringFieldUpdateOperationsInput | string | null
+    supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ownedWorkspace?: WorkspaceUncheckedUpdateOneWithoutOwnerNestedInput
+    assignedLocations?: UserLocationAssignmentUncheckedUpdateManyWithoutUserNestedInput
+    subordinates?: UserUncheckedUpdateManyWithoutSupervisorNestedInput
+    targetSettings?: TargetSettingUncheckedUpdateManyWithoutUserNestedInput
+    violations?: TargetViolationUncheckedUpdateManyWithoutUserNestedInput
+    devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
+    performedLeadActivities?: LeadActivityUncheckedUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutRequestedByNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
+    rosterEntries?: RosterEntryUncheckedUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
+    createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
+    assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
+  }
+
+  export type UserUpsertWithoutApprovedLeadStageApprovalsInput = {
+    update: XOR<UserUpdateWithoutApprovedLeadStageApprovalsInput, UserUncheckedUpdateWithoutApprovedLeadStageApprovalsInput>
+    create: XOR<UserCreateWithoutApprovedLeadStageApprovalsInput, UserUncheckedCreateWithoutApprovedLeadStageApprovalsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutApprovedLeadStageApprovalsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutApprovedLeadStageApprovalsInput, UserUncheckedUpdateWithoutApprovedLeadStageApprovalsInput>
+  }
+
+  export type UserUpdateWithoutApprovedLeadStageApprovalsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    username?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    googleId?: NullableStringFieldUpdateOperationsInput | string | null
+    isOnboarded?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isEmailVerified?: BoolFieldUpdateOperationsInput | boolean
+    isLocked?: BoolFieldUpdateOperationsInput | boolean
+    verificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    verificationTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    invitationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    invitationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    role?: RoleUpdateOneWithoutUsersNestedInput
+    workspace?: WorkspaceUpdateOneWithoutUsersNestedInput
+    ownedWorkspace?: WorkspaceUpdateOneWithoutOwnerNestedInput
+    department?: DepartmentUpdateOneWithoutUsersNestedInput
+    office?: OfficeUpdateOneWithoutUsersNestedInput
+    country?: LocationUpdateOneWithoutUsersAtCountryNestedInput
+    state?: LocationUpdateOneWithoutUsersAtStateNestedInput
+    district?: LocationUpdateOneWithoutUsersAtDistrictNestedInput
+    assignedLocations?: UserLocationAssignmentUpdateManyWithoutUserNestedInput
+    supervisor?: UserUpdateOneWithoutSubordinatesNestedInput
+    subordinates?: UserUpdateManyWithoutSupervisorNestedInput
+    targetSettings?: TargetSettingUpdateManyWithoutUserNestedInput
+    violations?: TargetViolationUpdateManyWithoutUserNestedInput
+    devices?: DeviceUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
+    performedLeadActivities?: LeadActivityUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutAssignedToNestedInput
+    rosterEntries?: RosterEntryUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUpdateManyWithoutUserNestedInput
+    createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
+    assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutApprovedLeadStageApprovalsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    username?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    googleId?: NullableStringFieldUpdateOperationsInput | string | null
+    isOnboarded?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isEmailVerified?: BoolFieldUpdateOperationsInput | boolean
+    isLocked?: BoolFieldUpdateOperationsInput | boolean
+    verificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    verificationTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    invitationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    invitationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    roleId?: NullableStringFieldUpdateOperationsInput | string | null
+    workspaceId?: NullableStringFieldUpdateOperationsInput | string | null
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    officeId?: NullableStringFieldUpdateOperationsInput | string | null
+    countryId?: NullableStringFieldUpdateOperationsInput | string | null
+    stateId?: NullableStringFieldUpdateOperationsInput | string | null
+    districtId?: NullableStringFieldUpdateOperationsInput | string | null
+    supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ownedWorkspace?: WorkspaceUncheckedUpdateOneWithoutOwnerNestedInput
+    assignedLocations?: UserLocationAssignmentUncheckedUpdateManyWithoutUserNestedInput
+    subordinates?: UserUncheckedUpdateManyWithoutSupervisorNestedInput
+    targetSettings?: TargetSettingUncheckedUpdateManyWithoutUserNestedInput
+    violations?: TargetViolationUncheckedUpdateManyWithoutUserNestedInput
+    devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
+    performedLeadActivities?: LeadActivityUncheckedUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutAssignedToNestedInput
+    rosterEntries?: RosterEntryUncheckedUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
+    createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
+    assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
   }
 
   export type LeadLifeCycleCreateWithoutTransitionsInput = {
@@ -52622,6 +56451,7 @@ export namespace Prisma {
     leadLifeCycles?: LeadLifeCycleCreateNestedManyWithoutWorkspaceInput
     leads?: LeadCreateNestedManyWithoutWorkspaceInput
     leadActivities?: LeadActivityCreateNestedManyWithoutWorkspaceInput
+    leadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateWithoutLeadDynamicFieldsInput = {
@@ -52641,6 +56471,7 @@ export namespace Prisma {
     leadLifeCycles?: LeadLifeCycleUncheckedCreateNestedManyWithoutWorkspaceInput
     leads?: LeadUncheckedCreateNestedManyWithoutWorkspaceInput
     leadActivities?: LeadActivityUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceCreateOrConnectWithoutLeadDynamicFieldsInput = {
@@ -52722,6 +56553,7 @@ export namespace Prisma {
     leadLifeCycles?: LeadLifeCycleUpdateManyWithoutWorkspaceNestedInput
     leads?: LeadUpdateManyWithoutWorkspaceNestedInput
     leadActivities?: LeadActivityUpdateManyWithoutWorkspaceNestedInput
+    leadStageApprovals?: LeadStageApprovalUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateWithoutLeadDynamicFieldsInput = {
@@ -52741,6 +56573,7 @@ export namespace Prisma {
     leadLifeCycles?: LeadLifeCycleUncheckedUpdateManyWithoutWorkspaceNestedInput
     leads?: LeadUncheckedUpdateManyWithoutWorkspaceNestedInput
     leadActivities?: LeadActivityUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type LeadDynamicOptionUpsertWithWhereUniqueWithoutFieldInput = {
@@ -52944,6 +56777,9 @@ export namespace Prisma {
     stageExpiresAt?: Date | string | null
     slaAction?: $Enums.LeadExpiryAction | null
     slaWarningDays?: number | null
+    approvalState?: $Enums.LeadApprovalState
+    pendingApprovalToStageId?: string | null
+    pendingApprovalRequestedAt?: Date | string | null
     isClosed?: boolean
     isLOB?: boolean
     closedAt?: Date | string | null
@@ -52960,6 +56796,7 @@ export namespace Prisma {
     workspace: WorkspaceCreateNestedOneWithoutLeadsInput
     followUps?: FollowUpCreateNestedManyWithoutLeadInput
     lobLogs?: LeadLOBLogCreateNestedManyWithoutLeadInput
+    stageApprovals?: LeadStageApprovalCreateNestedManyWithoutLeadInput
   }
 
   export type LeadUncheckedCreateWithoutActivitiesInput = {
@@ -52978,6 +56815,9 @@ export namespace Prisma {
     stageExpiresAt?: Date | string | null
     slaAction?: $Enums.LeadExpiryAction | null
     slaWarningDays?: number | null
+    approvalState?: $Enums.LeadApprovalState
+    pendingApprovalToStageId?: string | null
+    pendingApprovalRequestedAt?: Date | string | null
     isClosed?: boolean
     isLOB?: boolean
     closedAt?: Date | string | null
@@ -52990,6 +56830,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     followUps?: FollowUpUncheckedCreateNestedManyWithoutLeadInput
     lobLogs?: LeadLOBLogUncheckedCreateNestedManyWithoutLeadInput
+    stageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutLeadInput
   }
 
   export type LeadCreateOrConnectWithoutActivitiesInput = {
@@ -53031,6 +56872,9 @@ export namespace Prisma {
     violations?: TargetViolationCreateNestedManyWithoutUserInput
     devices?: DeviceCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
+    requestedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutApprovedByInput
     rosterEntries?: RosterEntryCreateNestedManyWithoutUserInput
     followUps?: FollowUpCreateNestedManyWithoutUserInput
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
@@ -53072,6 +56916,9 @@ export namespace Prisma {
     violations?: TargetViolationUncheckedCreateNestedManyWithoutUserInput
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutApprovedByInput
     rosterEntries?: RosterEntryUncheckedCreateNestedManyWithoutUserInput
     followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -53101,6 +56948,7 @@ export namespace Prisma {
     leadLifeCycles?: LeadLifeCycleCreateNestedManyWithoutWorkspaceInput
     leadDynamicFields?: LeadDynamicFieldCreateNestedManyWithoutWorkspaceInput
     leads?: LeadCreateNestedManyWithoutWorkspaceInput
+    leadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateWithoutLeadActivitiesInput = {
@@ -53120,6 +56968,7 @@ export namespace Prisma {
     leadLifeCycles?: LeadLifeCycleUncheckedCreateNestedManyWithoutWorkspaceInput
     leadDynamicFields?: LeadDynamicFieldUncheckedCreateNestedManyWithoutWorkspaceInput
     leads?: LeadUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceCreateOrConnectWithoutLeadActivitiesInput = {
@@ -53150,6 +56999,9 @@ export namespace Prisma {
     stageExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     slaAction?: NullableEnumLeadExpiryActionFieldUpdateOperationsInput | $Enums.LeadExpiryAction | null
     slaWarningDays?: NullableIntFieldUpdateOperationsInput | number | null
+    approvalState?: EnumLeadApprovalStateFieldUpdateOperationsInput | $Enums.LeadApprovalState
+    pendingApprovalToStageId?: NullableStringFieldUpdateOperationsInput | string | null
+    pendingApprovalRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isClosed?: BoolFieldUpdateOperationsInput | boolean
     isLOB?: BoolFieldUpdateOperationsInput | boolean
     closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -53166,6 +57018,7 @@ export namespace Prisma {
     workspace?: WorkspaceUpdateOneRequiredWithoutLeadsNestedInput
     followUps?: FollowUpUpdateManyWithoutLeadNestedInput
     lobLogs?: LeadLOBLogUpdateManyWithoutLeadNestedInput
+    stageApprovals?: LeadStageApprovalUpdateManyWithoutLeadNestedInput
   }
 
   export type LeadUncheckedUpdateWithoutActivitiesInput = {
@@ -53184,6 +57037,9 @@ export namespace Prisma {
     stageExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     slaAction?: NullableEnumLeadExpiryActionFieldUpdateOperationsInput | $Enums.LeadExpiryAction | null
     slaWarningDays?: NullableIntFieldUpdateOperationsInput | number | null
+    approvalState?: EnumLeadApprovalStateFieldUpdateOperationsInput | $Enums.LeadApprovalState
+    pendingApprovalToStageId?: NullableStringFieldUpdateOperationsInput | string | null
+    pendingApprovalRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isClosed?: BoolFieldUpdateOperationsInput | boolean
     isLOB?: BoolFieldUpdateOperationsInput | boolean
     closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -53196,6 +57052,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     followUps?: FollowUpUncheckedUpdateManyWithoutLeadNestedInput
     lobLogs?: LeadLOBLogUncheckedUpdateManyWithoutLeadNestedInput
+    stageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutLeadNestedInput
   }
 
   export type UserUpsertWithoutPerformedLeadActivitiesInput = {
@@ -53243,6 +57100,9 @@ export namespace Prisma {
     violations?: TargetViolationUpdateManyWithoutUserNestedInput
     devices?: DeviceUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutApprovedByNestedInput
     rosterEntries?: RosterEntryUpdateManyWithoutUserNestedInput
     followUps?: FollowUpUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
@@ -53284,6 +57144,9 @@ export namespace Prisma {
     violations?: TargetViolationUncheckedUpdateManyWithoutUserNestedInput
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
     rosterEntries?: RosterEntryUncheckedUpdateManyWithoutUserNestedInput
     followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -53319,6 +57182,7 @@ export namespace Prisma {
     leadLifeCycles?: LeadLifeCycleUpdateManyWithoutWorkspaceNestedInput
     leadDynamicFields?: LeadDynamicFieldUpdateManyWithoutWorkspaceNestedInput
     leads?: LeadUpdateManyWithoutWorkspaceNestedInput
+    leadStageApprovals?: LeadStageApprovalUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateWithoutLeadActivitiesInput = {
@@ -53338,6 +57202,7 @@ export namespace Prisma {
     leadLifeCycles?: LeadLifeCycleUncheckedUpdateManyWithoutWorkspaceNestedInput
     leadDynamicFields?: LeadDynamicFieldUncheckedUpdateManyWithoutWorkspaceNestedInput
     leads?: LeadUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type UserCreateWithoutTargetSettingsInput = {
@@ -53374,6 +57239,9 @@ export namespace Prisma {
     devices?: DeviceCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     performedLeadActivities?: LeadActivityCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutApprovedByInput
     rosterEntries?: RosterEntryCreateNestedManyWithoutUserInput
     followUps?: FollowUpCreateNestedManyWithoutUserInput
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
@@ -53415,6 +57283,9 @@ export namespace Prisma {
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     performedLeadActivities?: LeadActivityUncheckedCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutApprovedByInput
     rosterEntries?: RosterEntryUncheckedCreateNestedManyWithoutUserInput
     followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -53526,6 +57397,9 @@ export namespace Prisma {
     devices?: DeviceUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     performedLeadActivities?: LeadActivityUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutApprovedByNestedInput
     rosterEntries?: RosterEntryUpdateManyWithoutUserNestedInput
     followUps?: FollowUpUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
@@ -53567,6 +57441,9 @@ export namespace Prisma {
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     performedLeadActivities?: LeadActivityUncheckedUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
     rosterEntries?: RosterEntryUncheckedUpdateManyWithoutUserNestedInput
     followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -53674,6 +57551,9 @@ export namespace Prisma {
     devices?: DeviceCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     performedLeadActivities?: LeadActivityCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutApprovedByInput
     rosterEntries?: RosterEntryCreateNestedManyWithoutUserInput
     followUps?: FollowUpCreateNestedManyWithoutUserInput
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
@@ -53715,6 +57595,9 @@ export namespace Prisma {
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     performedLeadActivities?: LeadActivityUncheckedCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutApprovedByInput
     rosterEntries?: RosterEntryUncheckedCreateNestedManyWithoutUserInput
     followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -53772,6 +57655,9 @@ export namespace Prisma {
     devices?: DeviceUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     performedLeadActivities?: LeadActivityUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutApprovedByNestedInput
     rosterEntries?: RosterEntryUpdateManyWithoutUserNestedInput
     followUps?: FollowUpUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
@@ -53813,6 +57699,9 @@ export namespace Prisma {
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     performedLeadActivities?: LeadActivityUncheckedUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
     rosterEntries?: RosterEntryUncheckedUpdateManyWithoutUserNestedInput
     followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -53864,6 +57753,7 @@ export namespace Prisma {
     leadDynamicFields?: LeadDynamicFieldCreateNestedManyWithoutWorkspaceInput
     leads?: LeadCreateNestedManyWithoutWorkspaceInput
     leadActivities?: LeadActivityCreateNestedManyWithoutWorkspaceInput
+    leadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateWithoutUsersInput = {
@@ -53883,6 +57773,7 @@ export namespace Prisma {
     leadDynamicFields?: LeadDynamicFieldUncheckedCreateNestedManyWithoutWorkspaceInput
     leads?: LeadUncheckedCreateNestedManyWithoutWorkspaceInput
     leadActivities?: LeadActivityUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceCreateOrConnectWithoutUsersInput = {
@@ -53907,6 +57798,7 @@ export namespace Prisma {
     leadDynamicFields?: LeadDynamicFieldCreateNestedManyWithoutWorkspaceInput
     leads?: LeadCreateNestedManyWithoutWorkspaceInput
     leadActivities?: LeadActivityCreateNestedManyWithoutWorkspaceInput
+    leadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateWithoutOwnerInput = {
@@ -53926,6 +57818,7 @@ export namespace Prisma {
     leadDynamicFields?: LeadDynamicFieldUncheckedCreateNestedManyWithoutWorkspaceInput
     leads?: LeadUncheckedCreateNestedManyWithoutWorkspaceInput
     leadActivities?: LeadActivityUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceCreateOrConnectWithoutOwnerInput = {
@@ -54152,6 +58045,9 @@ export namespace Prisma {
     devices?: DeviceCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     performedLeadActivities?: LeadActivityCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutApprovedByInput
     rosterEntries?: RosterEntryCreateNestedManyWithoutUserInput
     followUps?: FollowUpCreateNestedManyWithoutUserInput
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
@@ -54193,6 +58089,9 @@ export namespace Prisma {
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     performedLeadActivities?: LeadActivityUncheckedCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutApprovedByInput
     rosterEntries?: RosterEntryUncheckedCreateNestedManyWithoutUserInput
     followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -54239,6 +58138,9 @@ export namespace Prisma {
     devices?: DeviceCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     performedLeadActivities?: LeadActivityCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutApprovedByInput
     rosterEntries?: RosterEntryCreateNestedManyWithoutUserInput
     followUps?: FollowUpCreateNestedManyWithoutUserInput
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
@@ -54280,6 +58182,9 @@ export namespace Prisma {
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     performedLeadActivities?: LeadActivityUncheckedCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutApprovedByInput
     rosterEntries?: RosterEntryUncheckedCreateNestedManyWithoutUserInput
     followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -54467,6 +58372,132 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type LeadStageApprovalCreateWithoutRequestedByInput = {
+    id?: string
+    status?: $Enums.LeadApprovalStatus
+    comment?: string | null
+    requestData?: NullableJsonNullValueInput | InputJsonValue
+    approvedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    workspace: WorkspaceCreateNestedOneWithoutLeadStageApprovalsInput
+    lead: LeadCreateNestedOneWithoutStageApprovalsInput
+    fromStage: LeadStageCreateNestedOneWithoutApprovalsFromInput
+    toStage: LeadStageCreateNestedOneWithoutApprovalsToInput
+    assignedTo?: UserCreateNestedOneWithoutAssignedLeadStageApprovalsInput
+    approvedBy?: UserCreateNestedOneWithoutApprovedLeadStageApprovalsInput
+  }
+
+  export type LeadStageApprovalUncheckedCreateWithoutRequestedByInput = {
+    id?: string
+    workspaceId: string
+    leadId: string
+    fromStageId: string
+    toStageId: string
+    assignedToId?: string | null
+    status?: $Enums.LeadApprovalStatus
+    comment?: string | null
+    requestData?: NullableJsonNullValueInput | InputJsonValue
+    approvedById?: string | null
+    approvedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type LeadStageApprovalCreateOrConnectWithoutRequestedByInput = {
+    where: LeadStageApprovalWhereUniqueInput
+    create: XOR<LeadStageApprovalCreateWithoutRequestedByInput, LeadStageApprovalUncheckedCreateWithoutRequestedByInput>
+  }
+
+  export type LeadStageApprovalCreateManyRequestedByInputEnvelope = {
+    data: LeadStageApprovalCreateManyRequestedByInput | LeadStageApprovalCreateManyRequestedByInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type LeadStageApprovalCreateWithoutAssignedToInput = {
+    id?: string
+    status?: $Enums.LeadApprovalStatus
+    comment?: string | null
+    requestData?: NullableJsonNullValueInput | InputJsonValue
+    approvedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    workspace: WorkspaceCreateNestedOneWithoutLeadStageApprovalsInput
+    lead: LeadCreateNestedOneWithoutStageApprovalsInput
+    fromStage: LeadStageCreateNestedOneWithoutApprovalsFromInput
+    toStage: LeadStageCreateNestedOneWithoutApprovalsToInput
+    requestedBy: UserCreateNestedOneWithoutRequestedLeadStageApprovalsInput
+    approvedBy?: UserCreateNestedOneWithoutApprovedLeadStageApprovalsInput
+  }
+
+  export type LeadStageApprovalUncheckedCreateWithoutAssignedToInput = {
+    id?: string
+    workspaceId: string
+    leadId: string
+    fromStageId: string
+    toStageId: string
+    requestedById: string
+    status?: $Enums.LeadApprovalStatus
+    comment?: string | null
+    requestData?: NullableJsonNullValueInput | InputJsonValue
+    approvedById?: string | null
+    approvedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type LeadStageApprovalCreateOrConnectWithoutAssignedToInput = {
+    where: LeadStageApprovalWhereUniqueInput
+    create: XOR<LeadStageApprovalCreateWithoutAssignedToInput, LeadStageApprovalUncheckedCreateWithoutAssignedToInput>
+  }
+
+  export type LeadStageApprovalCreateManyAssignedToInputEnvelope = {
+    data: LeadStageApprovalCreateManyAssignedToInput | LeadStageApprovalCreateManyAssignedToInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type LeadStageApprovalCreateWithoutApprovedByInput = {
+    id?: string
+    status?: $Enums.LeadApprovalStatus
+    comment?: string | null
+    requestData?: NullableJsonNullValueInput | InputJsonValue
+    approvedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    workspace: WorkspaceCreateNestedOneWithoutLeadStageApprovalsInput
+    lead: LeadCreateNestedOneWithoutStageApprovalsInput
+    fromStage: LeadStageCreateNestedOneWithoutApprovalsFromInput
+    toStage: LeadStageCreateNestedOneWithoutApprovalsToInput
+    requestedBy: UserCreateNestedOneWithoutRequestedLeadStageApprovalsInput
+    assignedTo?: UserCreateNestedOneWithoutAssignedLeadStageApprovalsInput
+  }
+
+  export type LeadStageApprovalUncheckedCreateWithoutApprovedByInput = {
+    id?: string
+    workspaceId: string
+    leadId: string
+    fromStageId: string
+    toStageId: string
+    requestedById: string
+    assignedToId?: string | null
+    status?: $Enums.LeadApprovalStatus
+    comment?: string | null
+    requestData?: NullableJsonNullValueInput | InputJsonValue
+    approvedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type LeadStageApprovalCreateOrConnectWithoutApprovedByInput = {
+    where: LeadStageApprovalWhereUniqueInput
+    create: XOR<LeadStageApprovalCreateWithoutApprovedByInput, LeadStageApprovalUncheckedCreateWithoutApprovedByInput>
+  }
+
+  export type LeadStageApprovalCreateManyApprovedByInputEnvelope = {
+    data: LeadStageApprovalCreateManyApprovedByInput | LeadStageApprovalCreateManyApprovedByInput[]
+    skipDuplicates?: boolean
+  }
+
   export type RosterEntryCreateWithoutUserInput = {
     id?: string
     rosterType: $Enums.RosterType
@@ -54559,6 +58590,9 @@ export namespace Prisma {
     stageExpiresAt?: Date | string | null
     slaAction?: $Enums.LeadExpiryAction | null
     slaWarningDays?: number | null
+    approvalState?: $Enums.LeadApprovalState
+    pendingApprovalToStageId?: string | null
+    pendingApprovalRequestedAt?: Date | string | null
     isClosed?: boolean
     isLOB?: boolean
     closedAt?: Date | string | null
@@ -54575,6 +58609,7 @@ export namespace Prisma {
     followUps?: FollowUpCreateNestedManyWithoutLeadInput
     lobLogs?: LeadLOBLogCreateNestedManyWithoutLeadInput
     activities?: LeadActivityCreateNestedManyWithoutLeadInput
+    stageApprovals?: LeadStageApprovalCreateNestedManyWithoutLeadInput
   }
 
   export type LeadUncheckedCreateWithoutCreatedByInput = {
@@ -54593,6 +58628,9 @@ export namespace Prisma {
     stageExpiresAt?: Date | string | null
     slaAction?: $Enums.LeadExpiryAction | null
     slaWarningDays?: number | null
+    approvalState?: $Enums.LeadApprovalState
+    pendingApprovalToStageId?: string | null
+    pendingApprovalRequestedAt?: Date | string | null
     isClosed?: boolean
     isLOB?: boolean
     closedAt?: Date | string | null
@@ -54605,6 +58643,7 @@ export namespace Prisma {
     followUps?: FollowUpUncheckedCreateNestedManyWithoutLeadInput
     lobLogs?: LeadLOBLogUncheckedCreateNestedManyWithoutLeadInput
     activities?: LeadActivityUncheckedCreateNestedManyWithoutLeadInput
+    stageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutLeadInput
   }
 
   export type LeadCreateOrConnectWithoutCreatedByInput = {
@@ -54629,6 +58668,9 @@ export namespace Prisma {
     stageExpiresAt?: Date | string | null
     slaAction?: $Enums.LeadExpiryAction | null
     slaWarningDays?: number | null
+    approvalState?: $Enums.LeadApprovalState
+    pendingApprovalToStageId?: string | null
+    pendingApprovalRequestedAt?: Date | string | null
     isClosed?: boolean
     isLOB?: boolean
     closedAt?: Date | string | null
@@ -54645,6 +58687,7 @@ export namespace Prisma {
     followUps?: FollowUpCreateNestedManyWithoutLeadInput
     lobLogs?: LeadLOBLogCreateNestedManyWithoutLeadInput
     activities?: LeadActivityCreateNestedManyWithoutLeadInput
+    stageApprovals?: LeadStageApprovalCreateNestedManyWithoutLeadInput
   }
 
   export type LeadUncheckedCreateWithoutAssignedToInput = {
@@ -54662,6 +58705,9 @@ export namespace Prisma {
     stageExpiresAt?: Date | string | null
     slaAction?: $Enums.LeadExpiryAction | null
     slaWarningDays?: number | null
+    approvalState?: $Enums.LeadApprovalState
+    pendingApprovalToStageId?: string | null
+    pendingApprovalRequestedAt?: Date | string | null
     isClosed?: boolean
     isLOB?: boolean
     closedAt?: Date | string | null
@@ -54675,6 +58721,7 @@ export namespace Prisma {
     followUps?: FollowUpUncheckedCreateNestedManyWithoutLeadInput
     lobLogs?: LeadLOBLogUncheckedCreateNestedManyWithoutLeadInput
     activities?: LeadActivityUncheckedCreateNestedManyWithoutLeadInput
+    stageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutLeadInput
   }
 
   export type LeadCreateOrConnectWithoutAssignedToInput = {
@@ -54699,6 +58746,9 @@ export namespace Prisma {
     stageExpiresAt?: Date | string | null
     slaAction?: $Enums.LeadExpiryAction | null
     slaWarningDays?: number | null
+    approvalState?: $Enums.LeadApprovalState
+    pendingApprovalToStageId?: string | null
+    pendingApprovalRequestedAt?: Date | string | null
     isClosed?: boolean
     isLOB?: boolean
     closedAt?: Date | string | null
@@ -54715,6 +58765,7 @@ export namespace Prisma {
     followUps?: FollowUpCreateNestedManyWithoutLeadInput
     lobLogs?: LeadLOBLogCreateNestedManyWithoutLeadInput
     activities?: LeadActivityCreateNestedManyWithoutLeadInput
+    stageApprovals?: LeadStageApprovalCreateNestedManyWithoutLeadInput
   }
 
   export type LeadUncheckedCreateWithoutClosedByInput = {
@@ -54733,6 +58784,9 @@ export namespace Prisma {
     stageExpiresAt?: Date | string | null
     slaAction?: $Enums.LeadExpiryAction | null
     slaWarningDays?: number | null
+    approvalState?: $Enums.LeadApprovalState
+    pendingApprovalToStageId?: string | null
+    pendingApprovalRequestedAt?: Date | string | null
     isClosed?: boolean
     isLOB?: boolean
     closedAt?: Date | string | null
@@ -54745,6 +58799,7 @@ export namespace Prisma {
     followUps?: FollowUpUncheckedCreateNestedManyWithoutLeadInput
     lobLogs?: LeadLOBLogUncheckedCreateNestedManyWithoutLeadInput
     activities?: LeadActivityUncheckedCreateNestedManyWithoutLeadInput
+    stageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutLeadInput
   }
 
   export type LeadCreateOrConnectWithoutClosedByInput = {
@@ -54818,6 +58873,7 @@ export namespace Prisma {
     leadDynamicFields?: LeadDynamicFieldUpdateManyWithoutWorkspaceNestedInput
     leads?: LeadUpdateManyWithoutWorkspaceNestedInput
     leadActivities?: LeadActivityUpdateManyWithoutWorkspaceNestedInput
+    leadStageApprovals?: LeadStageApprovalUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateWithoutUsersInput = {
@@ -54837,6 +58893,7 @@ export namespace Prisma {
     leadDynamicFields?: LeadDynamicFieldUncheckedUpdateManyWithoutWorkspaceNestedInput
     leads?: LeadUncheckedUpdateManyWithoutWorkspaceNestedInput
     leadActivities?: LeadActivityUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUpsertWithoutOwnerInput = {
@@ -54867,6 +58924,7 @@ export namespace Prisma {
     leadDynamicFields?: LeadDynamicFieldUpdateManyWithoutWorkspaceNestedInput
     leads?: LeadUpdateManyWithoutWorkspaceNestedInput
     leadActivities?: LeadActivityUpdateManyWithoutWorkspaceNestedInput
+    leadStageApprovals?: LeadStageApprovalUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateWithoutOwnerInput = {
@@ -54886,6 +58944,7 @@ export namespace Prisma {
     leadDynamicFields?: LeadDynamicFieldUncheckedUpdateManyWithoutWorkspaceNestedInput
     leads?: LeadUncheckedUpdateManyWithoutWorkspaceNestedInput
     leadActivities?: LeadActivityUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type DepartmentUpsertWithoutUsersInput = {
@@ -55138,6 +59197,9 @@ export namespace Prisma {
     devices?: DeviceUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     performedLeadActivities?: LeadActivityUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutApprovedByNestedInput
     rosterEntries?: RosterEntryUpdateManyWithoutUserNestedInput
     followUps?: FollowUpUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
@@ -55179,6 +59241,9 @@ export namespace Prisma {
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     performedLeadActivities?: LeadActivityUncheckedUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
     rosterEntries?: RosterEntryUncheckedUpdateManyWithoutUserNestedInput
     followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -55330,6 +59395,54 @@ export namespace Prisma {
     data: XOR<LeadActivityUpdateManyMutationInput, LeadActivityUncheckedUpdateManyWithoutPerformedByInput>
   }
 
+  export type LeadStageApprovalUpsertWithWhereUniqueWithoutRequestedByInput = {
+    where: LeadStageApprovalWhereUniqueInput
+    update: XOR<LeadStageApprovalUpdateWithoutRequestedByInput, LeadStageApprovalUncheckedUpdateWithoutRequestedByInput>
+    create: XOR<LeadStageApprovalCreateWithoutRequestedByInput, LeadStageApprovalUncheckedCreateWithoutRequestedByInput>
+  }
+
+  export type LeadStageApprovalUpdateWithWhereUniqueWithoutRequestedByInput = {
+    where: LeadStageApprovalWhereUniqueInput
+    data: XOR<LeadStageApprovalUpdateWithoutRequestedByInput, LeadStageApprovalUncheckedUpdateWithoutRequestedByInput>
+  }
+
+  export type LeadStageApprovalUpdateManyWithWhereWithoutRequestedByInput = {
+    where: LeadStageApprovalScalarWhereInput
+    data: XOR<LeadStageApprovalUpdateManyMutationInput, LeadStageApprovalUncheckedUpdateManyWithoutRequestedByInput>
+  }
+
+  export type LeadStageApprovalUpsertWithWhereUniqueWithoutAssignedToInput = {
+    where: LeadStageApprovalWhereUniqueInput
+    update: XOR<LeadStageApprovalUpdateWithoutAssignedToInput, LeadStageApprovalUncheckedUpdateWithoutAssignedToInput>
+    create: XOR<LeadStageApprovalCreateWithoutAssignedToInput, LeadStageApprovalUncheckedCreateWithoutAssignedToInput>
+  }
+
+  export type LeadStageApprovalUpdateWithWhereUniqueWithoutAssignedToInput = {
+    where: LeadStageApprovalWhereUniqueInput
+    data: XOR<LeadStageApprovalUpdateWithoutAssignedToInput, LeadStageApprovalUncheckedUpdateWithoutAssignedToInput>
+  }
+
+  export type LeadStageApprovalUpdateManyWithWhereWithoutAssignedToInput = {
+    where: LeadStageApprovalScalarWhereInput
+    data: XOR<LeadStageApprovalUpdateManyMutationInput, LeadStageApprovalUncheckedUpdateManyWithoutAssignedToInput>
+  }
+
+  export type LeadStageApprovalUpsertWithWhereUniqueWithoutApprovedByInput = {
+    where: LeadStageApprovalWhereUniqueInput
+    update: XOR<LeadStageApprovalUpdateWithoutApprovedByInput, LeadStageApprovalUncheckedUpdateWithoutApprovedByInput>
+    create: XOR<LeadStageApprovalCreateWithoutApprovedByInput, LeadStageApprovalUncheckedCreateWithoutApprovedByInput>
+  }
+
+  export type LeadStageApprovalUpdateWithWhereUniqueWithoutApprovedByInput = {
+    where: LeadStageApprovalWhereUniqueInput
+    data: XOR<LeadStageApprovalUpdateWithoutApprovedByInput, LeadStageApprovalUncheckedUpdateWithoutApprovedByInput>
+  }
+
+  export type LeadStageApprovalUpdateManyWithWhereWithoutApprovedByInput = {
+    where: LeadStageApprovalScalarWhereInput
+    data: XOR<LeadStageApprovalUpdateManyMutationInput, LeadStageApprovalUncheckedUpdateManyWithoutApprovedByInput>
+  }
+
   export type RosterEntryUpsertWithWhereUniqueWithoutUserInput = {
     where: RosterEntryWhereUniqueInput
     update: XOR<RosterEntryUpdateWithoutUserInput, RosterEntryUncheckedUpdateWithoutUserInput>
@@ -55465,6 +59578,9 @@ export namespace Prisma {
     devices?: DeviceCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     performedLeadActivities?: LeadActivityCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutApprovedByInput
     rosterEntries?: RosterEntryCreateNestedManyWithoutUserInput
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
@@ -55506,6 +59622,9 @@ export namespace Prisma {
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     performedLeadActivities?: LeadActivityUncheckedCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutApprovedByInput
     rosterEntries?: RosterEntryUncheckedCreateNestedManyWithoutUserInput
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
@@ -55529,6 +59648,9 @@ export namespace Prisma {
     stageExpiresAt?: Date | string | null
     slaAction?: $Enums.LeadExpiryAction | null
     slaWarningDays?: number | null
+    approvalState?: $Enums.LeadApprovalState
+    pendingApprovalToStageId?: string | null
+    pendingApprovalRequestedAt?: Date | string | null
     isClosed?: boolean
     isLOB?: boolean
     closedAt?: Date | string | null
@@ -55545,6 +59667,7 @@ export namespace Prisma {
     workspace: WorkspaceCreateNestedOneWithoutLeadsInput
     lobLogs?: LeadLOBLogCreateNestedManyWithoutLeadInput
     activities?: LeadActivityCreateNestedManyWithoutLeadInput
+    stageApprovals?: LeadStageApprovalCreateNestedManyWithoutLeadInput
   }
 
   export type LeadUncheckedCreateWithoutFollowUpsInput = {
@@ -55563,6 +59686,9 @@ export namespace Prisma {
     stageExpiresAt?: Date | string | null
     slaAction?: $Enums.LeadExpiryAction | null
     slaWarningDays?: number | null
+    approvalState?: $Enums.LeadApprovalState
+    pendingApprovalToStageId?: string | null
+    pendingApprovalRequestedAt?: Date | string | null
     isClosed?: boolean
     isLOB?: boolean
     closedAt?: Date | string | null
@@ -55575,6 +59701,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     lobLogs?: LeadLOBLogUncheckedCreateNestedManyWithoutLeadInput
     activities?: LeadActivityUncheckedCreateNestedManyWithoutLeadInput
+    stageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutLeadInput
   }
 
   export type LeadCreateOrConnectWithoutFollowUpsInput = {
@@ -55650,6 +59777,9 @@ export namespace Prisma {
     devices?: DeviceUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     performedLeadActivities?: LeadActivityUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutApprovedByNestedInput
     rosterEntries?: RosterEntryUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
@@ -55691,6 +59821,9 @@ export namespace Prisma {
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     performedLeadActivities?: LeadActivityUncheckedUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
     rosterEntries?: RosterEntryUncheckedUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
@@ -55720,6 +59853,9 @@ export namespace Prisma {
     stageExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     slaAction?: NullableEnumLeadExpiryActionFieldUpdateOperationsInput | $Enums.LeadExpiryAction | null
     slaWarningDays?: NullableIntFieldUpdateOperationsInput | number | null
+    approvalState?: EnumLeadApprovalStateFieldUpdateOperationsInput | $Enums.LeadApprovalState
+    pendingApprovalToStageId?: NullableStringFieldUpdateOperationsInput | string | null
+    pendingApprovalRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isClosed?: BoolFieldUpdateOperationsInput | boolean
     isLOB?: BoolFieldUpdateOperationsInput | boolean
     closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -55736,6 +59872,7 @@ export namespace Prisma {
     workspace?: WorkspaceUpdateOneRequiredWithoutLeadsNestedInput
     lobLogs?: LeadLOBLogUpdateManyWithoutLeadNestedInput
     activities?: LeadActivityUpdateManyWithoutLeadNestedInput
+    stageApprovals?: LeadStageApprovalUpdateManyWithoutLeadNestedInput
   }
 
   export type LeadUncheckedUpdateWithoutFollowUpsInput = {
@@ -55754,6 +59891,9 @@ export namespace Prisma {
     stageExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     slaAction?: NullableEnumLeadExpiryActionFieldUpdateOperationsInput | $Enums.LeadExpiryAction | null
     slaWarningDays?: NullableIntFieldUpdateOperationsInput | number | null
+    approvalState?: EnumLeadApprovalStateFieldUpdateOperationsInput | $Enums.LeadApprovalState
+    pendingApprovalToStageId?: NullableStringFieldUpdateOperationsInput | string | null
+    pendingApprovalRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isClosed?: BoolFieldUpdateOperationsInput | boolean
     isLOB?: BoolFieldUpdateOperationsInput | boolean
     closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -55766,6 +59906,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lobLogs?: LeadLOBLogUncheckedUpdateManyWithoutLeadNestedInput
     activities?: LeadActivityUncheckedUpdateManyWithoutLeadNestedInput
+    stageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutLeadNestedInput
   }
 
   export type FollowUpImageUpsertWithWhereUniqueWithoutFollowUpInput = {
@@ -55901,6 +60042,9 @@ export namespace Prisma {
     devices?: DeviceCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     performedLeadActivities?: LeadActivityCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutApprovedByInput
     followUps?: FollowUpCreateNestedManyWithoutUserInput
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
@@ -55942,6 +60086,9 @@ export namespace Prisma {
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     performedLeadActivities?: LeadActivityUncheckedCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutApprovedByInput
     followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
@@ -55999,6 +60146,9 @@ export namespace Prisma {
     devices?: DeviceUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     performedLeadActivities?: LeadActivityUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutApprovedByNestedInput
     followUps?: FollowUpUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
@@ -56040,6 +60190,9 @@ export namespace Prisma {
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     performedLeadActivities?: LeadActivityUncheckedUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
     followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
@@ -56080,6 +60233,9 @@ export namespace Prisma {
     violations?: TargetViolationCreateNestedManyWithoutUserInput
     devices?: DeviceCreateNestedManyWithoutUserInput
     performedLeadActivities?: LeadActivityCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutApprovedByInput
     rosterEntries?: RosterEntryCreateNestedManyWithoutUserInput
     followUps?: FollowUpCreateNestedManyWithoutUserInput
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
@@ -56121,6 +60277,9 @@ export namespace Prisma {
     violations?: TargetViolationUncheckedCreateNestedManyWithoutUserInput
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
     performedLeadActivities?: LeadActivityUncheckedCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutApprovedByInput
     rosterEntries?: RosterEntryUncheckedCreateNestedManyWithoutUserInput
     followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -56178,6 +60337,9 @@ export namespace Prisma {
     violations?: TargetViolationUpdateManyWithoutUserNestedInput
     devices?: DeviceUpdateManyWithoutUserNestedInput
     performedLeadActivities?: LeadActivityUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutApprovedByNestedInput
     rosterEntries?: RosterEntryUpdateManyWithoutUserNestedInput
     followUps?: FollowUpUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
@@ -56219,6 +60381,9 @@ export namespace Prisma {
     violations?: TargetViolationUncheckedUpdateManyWithoutUserNestedInput
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
     performedLeadActivities?: LeadActivityUncheckedUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
     rosterEntries?: RosterEntryUncheckedUpdateManyWithoutUserNestedInput
     followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -56260,6 +60425,9 @@ export namespace Prisma {
     violations?: TargetViolationCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     performedLeadActivities?: LeadActivityCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutApprovedByInput
     rosterEntries?: RosterEntryCreateNestedManyWithoutUserInput
     followUps?: FollowUpCreateNestedManyWithoutUserInput
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
@@ -56301,6 +60469,9 @@ export namespace Prisma {
     violations?: TargetViolationUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     performedLeadActivities?: LeadActivityUncheckedCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutApprovedByInput
     rosterEntries?: RosterEntryUncheckedCreateNestedManyWithoutUserInput
     followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -56358,6 +60529,9 @@ export namespace Prisma {
     violations?: TargetViolationUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     performedLeadActivities?: LeadActivityUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutApprovedByNestedInput
     rosterEntries?: RosterEntryUpdateManyWithoutUserNestedInput
     followUps?: FollowUpUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
@@ -56399,6 +60573,9 @@ export namespace Prisma {
     violations?: TargetViolationUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     performedLeadActivities?: LeadActivityUncheckedUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
     rosterEntries?: RosterEntryUncheckedUpdateManyWithoutUserNestedInput
     followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -56484,6 +60661,9 @@ export namespace Prisma {
     devices?: DeviceUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     performedLeadActivities?: LeadActivityUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutApprovedByNestedInput
     rosterEntries?: RosterEntryUpdateManyWithoutUserNestedInput
     followUps?: FollowUpUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
@@ -56525,6 +60705,9 @@ export namespace Prisma {
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     performedLeadActivities?: LeadActivityUncheckedUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
     rosterEntries?: RosterEntryUncheckedUpdateManyWithoutUserNestedInput
     followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -56661,6 +60844,9 @@ export namespace Prisma {
     stageExpiresAt?: Date | string | null
     slaAction?: $Enums.LeadExpiryAction | null
     slaWarningDays?: number | null
+    approvalState?: $Enums.LeadApprovalState
+    pendingApprovalToStageId?: string | null
+    pendingApprovalRequestedAt?: Date | string | null
     isClosed?: boolean
     isLOB?: boolean
     closedAt?: Date | string | null
@@ -56679,6 +60865,22 @@ export namespace Prisma {
     action: string
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
+  }
+
+  export type LeadStageApprovalCreateManyWorkspaceInput = {
+    id?: string
+    leadId: string
+    fromStageId: string
+    toStageId: string
+    requestedById: string
+    assignedToId?: string | null
+    status?: $Enums.LeadApprovalStatus
+    comment?: string | null
+    requestData?: NullableJsonNullValueInput | InputJsonValue
+    approvedById?: string | null
+    approvedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type UserUpdateWithoutWorkspaceInput = {
@@ -56715,6 +60917,9 @@ export namespace Prisma {
     devices?: DeviceUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     performedLeadActivities?: LeadActivityUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutApprovedByNestedInput
     rosterEntries?: RosterEntryUpdateManyWithoutUserNestedInput
     followUps?: FollowUpUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
@@ -56756,6 +60961,9 @@ export namespace Prisma {
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     performedLeadActivities?: LeadActivityUncheckedUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
     rosterEntries?: RosterEntryUncheckedUpdateManyWithoutUserNestedInput
     followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -56940,6 +61148,9 @@ export namespace Prisma {
     stageExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     slaAction?: NullableEnumLeadExpiryActionFieldUpdateOperationsInput | $Enums.LeadExpiryAction | null
     slaWarningDays?: NullableIntFieldUpdateOperationsInput | number | null
+    approvalState?: EnumLeadApprovalStateFieldUpdateOperationsInput | $Enums.LeadApprovalState
+    pendingApprovalToStageId?: NullableStringFieldUpdateOperationsInput | string | null
+    pendingApprovalRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isClosed?: BoolFieldUpdateOperationsInput | boolean
     isLOB?: BoolFieldUpdateOperationsInput | boolean
     closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -56956,6 +61167,7 @@ export namespace Prisma {
     followUps?: FollowUpUpdateManyWithoutLeadNestedInput
     lobLogs?: LeadLOBLogUpdateManyWithoutLeadNestedInput
     activities?: LeadActivityUpdateManyWithoutLeadNestedInput
+    stageApprovals?: LeadStageApprovalUpdateManyWithoutLeadNestedInput
   }
 
   export type LeadUncheckedUpdateWithoutWorkspaceInput = {
@@ -56974,6 +61186,9 @@ export namespace Prisma {
     stageExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     slaAction?: NullableEnumLeadExpiryActionFieldUpdateOperationsInput | $Enums.LeadExpiryAction | null
     slaWarningDays?: NullableIntFieldUpdateOperationsInput | number | null
+    approvalState?: EnumLeadApprovalStateFieldUpdateOperationsInput | $Enums.LeadApprovalState
+    pendingApprovalToStageId?: NullableStringFieldUpdateOperationsInput | string | null
+    pendingApprovalRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isClosed?: BoolFieldUpdateOperationsInput | boolean
     isLOB?: BoolFieldUpdateOperationsInput | boolean
     closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -56986,6 +61201,7 @@ export namespace Prisma {
     followUps?: FollowUpUncheckedUpdateManyWithoutLeadNestedInput
     lobLogs?: LeadLOBLogUncheckedUpdateManyWithoutLeadNestedInput
     activities?: LeadActivityUncheckedUpdateManyWithoutLeadNestedInput
+    stageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutLeadNestedInput
   }
 
   export type LeadUncheckedUpdateManyWithoutWorkspaceInput = {
@@ -57004,6 +61220,9 @@ export namespace Prisma {
     stageExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     slaAction?: NullableEnumLeadExpiryActionFieldUpdateOperationsInput | $Enums.LeadExpiryAction | null
     slaWarningDays?: NullableIntFieldUpdateOperationsInput | number | null
+    approvalState?: EnumLeadApprovalStateFieldUpdateOperationsInput | $Enums.LeadApprovalState
+    pendingApprovalToStageId?: NullableStringFieldUpdateOperationsInput | string | null
+    pendingApprovalRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isClosed?: BoolFieldUpdateOperationsInput | boolean
     isLOB?: BoolFieldUpdateOperationsInput | boolean
     closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -57040,6 +61259,54 @@ export namespace Prisma {
     action?: StringFieldUpdateOperationsInput | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LeadStageApprovalUpdateWithoutWorkspaceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: EnumLeadApprovalStatusFieldUpdateOperationsInput | $Enums.LeadApprovalStatus
+    comment?: NullableStringFieldUpdateOperationsInput | string | null
+    requestData?: NullableJsonNullValueInput | InputJsonValue
+    approvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lead?: LeadUpdateOneRequiredWithoutStageApprovalsNestedInput
+    fromStage?: LeadStageUpdateOneRequiredWithoutApprovalsFromNestedInput
+    toStage?: LeadStageUpdateOneRequiredWithoutApprovalsToNestedInput
+    requestedBy?: UserUpdateOneRequiredWithoutRequestedLeadStageApprovalsNestedInput
+    assignedTo?: UserUpdateOneWithoutAssignedLeadStageApprovalsNestedInput
+    approvedBy?: UserUpdateOneWithoutApprovedLeadStageApprovalsNestedInput
+  }
+
+  export type LeadStageApprovalUncheckedUpdateWithoutWorkspaceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    leadId?: StringFieldUpdateOperationsInput | string
+    fromStageId?: StringFieldUpdateOperationsInput | string
+    toStageId?: StringFieldUpdateOperationsInput | string
+    requestedById?: StringFieldUpdateOperationsInput | string
+    assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumLeadApprovalStatusFieldUpdateOperationsInput | $Enums.LeadApprovalStatus
+    comment?: NullableStringFieldUpdateOperationsInput | string | null
+    requestData?: NullableJsonNullValueInput | InputJsonValue
+    approvedById?: NullableStringFieldUpdateOperationsInput | string | null
+    approvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LeadStageApprovalUncheckedUpdateManyWithoutWorkspaceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    leadId?: StringFieldUpdateOperationsInput | string
+    fromStageId?: StringFieldUpdateOperationsInput | string
+    toStageId?: StringFieldUpdateOperationsInput | string
+    requestedById?: StringFieldUpdateOperationsInput | string
+    assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumLeadApprovalStatusFieldUpdateOperationsInput | $Enums.LeadApprovalStatus
+    comment?: NullableStringFieldUpdateOperationsInput | string | null
+    requestData?: NullableJsonNullValueInput | InputJsonValue
+    approvedById?: NullableStringFieldUpdateOperationsInput | string | null
+    approvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type UserCreateManyDepartmentInput = {
@@ -57104,6 +61371,9 @@ export namespace Prisma {
     devices?: DeviceUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     performedLeadActivities?: LeadActivityUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutApprovedByNestedInput
     rosterEntries?: RosterEntryUpdateManyWithoutUserNestedInput
     followUps?: FollowUpUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
@@ -57145,6 +61415,9 @@ export namespace Prisma {
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     performedLeadActivities?: LeadActivityUncheckedUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
     rosterEntries?: RosterEntryUncheckedUpdateManyWithoutUserNestedInput
     followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -57195,6 +61468,9 @@ export namespace Prisma {
     stageExpiresAt?: Date | string | null
     slaAction?: $Enums.LeadExpiryAction | null
     slaWarningDays?: number | null
+    approvalState?: $Enums.LeadApprovalState
+    pendingApprovalToStageId?: string | null
+    pendingApprovalRequestedAt?: Date | string | null
     isClosed?: boolean
     isLOB?: boolean
     closedAt?: Date | string | null
@@ -57219,6 +61495,9 @@ export namespace Prisma {
     stageExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     slaAction?: NullableEnumLeadExpiryActionFieldUpdateOperationsInput | $Enums.LeadExpiryAction | null
     slaWarningDays?: NullableIntFieldUpdateOperationsInput | number | null
+    approvalState?: EnumLeadApprovalStateFieldUpdateOperationsInput | $Enums.LeadApprovalState
+    pendingApprovalToStageId?: NullableStringFieldUpdateOperationsInput | string | null
+    pendingApprovalRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isClosed?: BoolFieldUpdateOperationsInput | boolean
     isLOB?: BoolFieldUpdateOperationsInput | boolean
     closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -57235,6 +61514,7 @@ export namespace Prisma {
     followUps?: FollowUpUpdateManyWithoutLeadNestedInput
     lobLogs?: LeadLOBLogUpdateManyWithoutLeadNestedInput
     activities?: LeadActivityUpdateManyWithoutLeadNestedInput
+    stageApprovals?: LeadStageApprovalUpdateManyWithoutLeadNestedInput
   }
 
   export type LeadUncheckedUpdateWithoutSourceInput = {
@@ -57252,6 +61532,9 @@ export namespace Prisma {
     stageExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     slaAction?: NullableEnumLeadExpiryActionFieldUpdateOperationsInput | $Enums.LeadExpiryAction | null
     slaWarningDays?: NullableIntFieldUpdateOperationsInput | number | null
+    approvalState?: EnumLeadApprovalStateFieldUpdateOperationsInput | $Enums.LeadApprovalState
+    pendingApprovalToStageId?: NullableStringFieldUpdateOperationsInput | string | null
+    pendingApprovalRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isClosed?: BoolFieldUpdateOperationsInput | boolean
     isLOB?: BoolFieldUpdateOperationsInput | boolean
     closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -57265,6 +61548,7 @@ export namespace Prisma {
     followUps?: FollowUpUncheckedUpdateManyWithoutLeadNestedInput
     lobLogs?: LeadLOBLogUncheckedUpdateManyWithoutLeadNestedInput
     activities?: LeadActivityUncheckedUpdateManyWithoutLeadNestedInput
+    stageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutLeadNestedInput
   }
 
   export type LeadUncheckedUpdateManyWithoutSourceInput = {
@@ -57282,6 +61566,9 @@ export namespace Prisma {
     stageExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     slaAction?: NullableEnumLeadExpiryActionFieldUpdateOperationsInput | $Enums.LeadExpiryAction | null
     slaWarningDays?: NullableIntFieldUpdateOperationsInput | number | null
+    approvalState?: EnumLeadApprovalStateFieldUpdateOperationsInput | $Enums.LeadApprovalState
+    pendingApprovalToStageId?: NullableStringFieldUpdateOperationsInput | string | null
+    pendingApprovalRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isClosed?: BoolFieldUpdateOperationsInput | boolean
     isLOB?: BoolFieldUpdateOperationsInput | boolean
     closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -57326,6 +61613,9 @@ export namespace Prisma {
     stageExpiresAt?: Date | string | null
     slaAction?: $Enums.LeadExpiryAction | null
     slaWarningDays?: number | null
+    approvalState?: $Enums.LeadApprovalState
+    pendingApprovalToStageId?: string | null
+    pendingApprovalRequestedAt?: Date | string | null
     isClosed?: boolean
     isLOB?: boolean
     closedAt?: Date | string | null
@@ -57334,6 +61624,38 @@ export namespace Prisma {
     workspaceId: string
     createdById: string
     deletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type LeadStageApprovalCreateManyFromStageInput = {
+    id?: string
+    workspaceId: string
+    leadId: string
+    toStageId: string
+    requestedById: string
+    assignedToId?: string | null
+    status?: $Enums.LeadApprovalStatus
+    comment?: string | null
+    requestData?: NullableJsonNullValueInput | InputJsonValue
+    approvedById?: string | null
+    approvedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type LeadStageApprovalCreateManyToStageInput = {
+    id?: string
+    workspaceId: string
+    leadId: string
+    fromStageId: string
+    requestedById: string
+    assignedToId?: string | null
+    status?: $Enums.LeadApprovalStatus
+    comment?: string | null
+    requestData?: NullableJsonNullValueInput | InputJsonValue
+    approvedById?: string | null
+    approvedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -57403,6 +61725,9 @@ export namespace Prisma {
     stageExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     slaAction?: NullableEnumLeadExpiryActionFieldUpdateOperationsInput | $Enums.LeadExpiryAction | null
     slaWarningDays?: NullableIntFieldUpdateOperationsInput | number | null
+    approvalState?: EnumLeadApprovalStateFieldUpdateOperationsInput | $Enums.LeadApprovalState
+    pendingApprovalToStageId?: NullableStringFieldUpdateOperationsInput | string | null
+    pendingApprovalRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isClosed?: BoolFieldUpdateOperationsInput | boolean
     isLOB?: BoolFieldUpdateOperationsInput | boolean
     closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -57419,6 +61744,7 @@ export namespace Prisma {
     followUps?: FollowUpUpdateManyWithoutLeadNestedInput
     lobLogs?: LeadLOBLogUpdateManyWithoutLeadNestedInput
     activities?: LeadActivityUpdateManyWithoutLeadNestedInput
+    stageApprovals?: LeadStageApprovalUpdateManyWithoutLeadNestedInput
   }
 
   export type LeadUncheckedUpdateWithoutStageInput = {
@@ -57436,6 +61762,9 @@ export namespace Prisma {
     stageExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     slaAction?: NullableEnumLeadExpiryActionFieldUpdateOperationsInput | $Enums.LeadExpiryAction | null
     slaWarningDays?: NullableIntFieldUpdateOperationsInput | number | null
+    approvalState?: EnumLeadApprovalStateFieldUpdateOperationsInput | $Enums.LeadApprovalState
+    pendingApprovalToStageId?: NullableStringFieldUpdateOperationsInput | string | null
+    pendingApprovalRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isClosed?: BoolFieldUpdateOperationsInput | boolean
     isLOB?: BoolFieldUpdateOperationsInput | boolean
     closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -57449,6 +61778,7 @@ export namespace Prisma {
     followUps?: FollowUpUncheckedUpdateManyWithoutLeadNestedInput
     lobLogs?: LeadLOBLogUncheckedUpdateManyWithoutLeadNestedInput
     activities?: LeadActivityUncheckedUpdateManyWithoutLeadNestedInput
+    stageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutLeadNestedInput
   }
 
   export type LeadUncheckedUpdateManyWithoutStageInput = {
@@ -57466,6 +61796,9 @@ export namespace Prisma {
     stageExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     slaAction?: NullableEnumLeadExpiryActionFieldUpdateOperationsInput | $Enums.LeadExpiryAction | null
     slaWarningDays?: NullableIntFieldUpdateOperationsInput | number | null
+    approvalState?: EnumLeadApprovalStateFieldUpdateOperationsInput | $Enums.LeadApprovalState
+    pendingApprovalToStageId?: NullableStringFieldUpdateOperationsInput | string | null
+    pendingApprovalRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isClosed?: BoolFieldUpdateOperationsInput | boolean
     isLOB?: BoolFieldUpdateOperationsInput | boolean
     closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -57474,6 +61807,102 @@ export namespace Prisma {
     workspaceId?: StringFieldUpdateOperationsInput | string
     createdById?: StringFieldUpdateOperationsInput | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LeadStageApprovalUpdateWithoutFromStageInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: EnumLeadApprovalStatusFieldUpdateOperationsInput | $Enums.LeadApprovalStatus
+    comment?: NullableStringFieldUpdateOperationsInput | string | null
+    requestData?: NullableJsonNullValueInput | InputJsonValue
+    approvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    workspace?: WorkspaceUpdateOneRequiredWithoutLeadStageApprovalsNestedInput
+    lead?: LeadUpdateOneRequiredWithoutStageApprovalsNestedInput
+    toStage?: LeadStageUpdateOneRequiredWithoutApprovalsToNestedInput
+    requestedBy?: UserUpdateOneRequiredWithoutRequestedLeadStageApprovalsNestedInput
+    assignedTo?: UserUpdateOneWithoutAssignedLeadStageApprovalsNestedInput
+    approvedBy?: UserUpdateOneWithoutApprovedLeadStageApprovalsNestedInput
+  }
+
+  export type LeadStageApprovalUncheckedUpdateWithoutFromStageInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    leadId?: StringFieldUpdateOperationsInput | string
+    toStageId?: StringFieldUpdateOperationsInput | string
+    requestedById?: StringFieldUpdateOperationsInput | string
+    assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumLeadApprovalStatusFieldUpdateOperationsInput | $Enums.LeadApprovalStatus
+    comment?: NullableStringFieldUpdateOperationsInput | string | null
+    requestData?: NullableJsonNullValueInput | InputJsonValue
+    approvedById?: NullableStringFieldUpdateOperationsInput | string | null
+    approvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LeadStageApprovalUncheckedUpdateManyWithoutFromStageInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    leadId?: StringFieldUpdateOperationsInput | string
+    toStageId?: StringFieldUpdateOperationsInput | string
+    requestedById?: StringFieldUpdateOperationsInput | string
+    assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumLeadApprovalStatusFieldUpdateOperationsInput | $Enums.LeadApprovalStatus
+    comment?: NullableStringFieldUpdateOperationsInput | string | null
+    requestData?: NullableJsonNullValueInput | InputJsonValue
+    approvedById?: NullableStringFieldUpdateOperationsInput | string | null
+    approvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LeadStageApprovalUpdateWithoutToStageInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: EnumLeadApprovalStatusFieldUpdateOperationsInput | $Enums.LeadApprovalStatus
+    comment?: NullableStringFieldUpdateOperationsInput | string | null
+    requestData?: NullableJsonNullValueInput | InputJsonValue
+    approvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    workspace?: WorkspaceUpdateOneRequiredWithoutLeadStageApprovalsNestedInput
+    lead?: LeadUpdateOneRequiredWithoutStageApprovalsNestedInput
+    fromStage?: LeadStageUpdateOneRequiredWithoutApprovalsFromNestedInput
+    requestedBy?: UserUpdateOneRequiredWithoutRequestedLeadStageApprovalsNestedInput
+    assignedTo?: UserUpdateOneWithoutAssignedLeadStageApprovalsNestedInput
+    approvedBy?: UserUpdateOneWithoutApprovedLeadStageApprovalsNestedInput
+  }
+
+  export type LeadStageApprovalUncheckedUpdateWithoutToStageInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    leadId?: StringFieldUpdateOperationsInput | string
+    fromStageId?: StringFieldUpdateOperationsInput | string
+    requestedById?: StringFieldUpdateOperationsInput | string
+    assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumLeadApprovalStatusFieldUpdateOperationsInput | $Enums.LeadApprovalStatus
+    comment?: NullableStringFieldUpdateOperationsInput | string | null
+    requestData?: NullableJsonNullValueInput | InputJsonValue
+    approvedById?: NullableStringFieldUpdateOperationsInput | string | null
+    approvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LeadStageApprovalUncheckedUpdateManyWithoutToStageInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    leadId?: StringFieldUpdateOperationsInput | string
+    fromStageId?: StringFieldUpdateOperationsInput | string
+    requestedById?: StringFieldUpdateOperationsInput | string
+    assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumLeadApprovalStatusFieldUpdateOperationsInput | $Enums.LeadApprovalStatus
+    comment?: NullableStringFieldUpdateOperationsInput | string | null
+    requestData?: NullableJsonNullValueInput | InputJsonValue
+    approvedById?: NullableStringFieldUpdateOperationsInput | string | null
+    approvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -57568,6 +61997,9 @@ export namespace Prisma {
     devices?: DeviceUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     performedLeadActivities?: LeadActivityUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutApprovedByNestedInput
     rosterEntries?: RosterEntryUpdateManyWithoutUserNestedInput
     followUps?: FollowUpUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
@@ -57609,6 +62041,9 @@ export namespace Prisma {
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     performedLeadActivities?: LeadActivityUncheckedUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
     rosterEntries?: RosterEntryUncheckedUpdateManyWithoutUserNestedInput
     followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -57840,6 +62275,9 @@ export namespace Prisma {
     devices?: DeviceUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     performedLeadActivities?: LeadActivityUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutApprovedByNestedInput
     rosterEntries?: RosterEntryUpdateManyWithoutUserNestedInput
     followUps?: FollowUpUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
@@ -57881,6 +62319,9 @@ export namespace Prisma {
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     performedLeadActivities?: LeadActivityUncheckedUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
     rosterEntries?: RosterEntryUncheckedUpdateManyWithoutUserNestedInput
     followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -57950,6 +62391,9 @@ export namespace Prisma {
     devices?: DeviceUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     performedLeadActivities?: LeadActivityUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutApprovedByNestedInput
     rosterEntries?: RosterEntryUpdateManyWithoutUserNestedInput
     followUps?: FollowUpUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
@@ -57991,6 +62435,9 @@ export namespace Prisma {
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     performedLeadActivities?: LeadActivityUncheckedUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
     rosterEntries?: RosterEntryUncheckedUpdateManyWithoutUserNestedInput
     followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -58060,6 +62507,9 @@ export namespace Prisma {
     devices?: DeviceUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     performedLeadActivities?: LeadActivityUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutApprovedByNestedInput
     rosterEntries?: RosterEntryUpdateManyWithoutUserNestedInput
     followUps?: FollowUpUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
@@ -58101,6 +62551,9 @@ export namespace Prisma {
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     performedLeadActivities?: LeadActivityUncheckedUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
     rosterEntries?: RosterEntryUncheckedUpdateManyWithoutUserNestedInput
     followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -58312,6 +62765,9 @@ export namespace Prisma {
     stageExpiresAt?: Date | string | null
     slaAction?: $Enums.LeadExpiryAction | null
     slaWarningDays?: number | null
+    approvalState?: $Enums.LeadApprovalState
+    pendingApprovalToStageId?: string | null
+    pendingApprovalRequestedAt?: Date | string | null
     isClosed?: boolean
     isLOB?: boolean
     closedAt?: Date | string | null
@@ -58375,6 +62831,9 @@ export namespace Prisma {
     stageExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     slaAction?: NullableEnumLeadExpiryActionFieldUpdateOperationsInput | $Enums.LeadExpiryAction | null
     slaWarningDays?: NullableIntFieldUpdateOperationsInput | number | null
+    approvalState?: EnumLeadApprovalStateFieldUpdateOperationsInput | $Enums.LeadApprovalState
+    pendingApprovalToStageId?: NullableStringFieldUpdateOperationsInput | string | null
+    pendingApprovalRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isClosed?: BoolFieldUpdateOperationsInput | boolean
     isLOB?: BoolFieldUpdateOperationsInput | boolean
     closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -58391,6 +62850,7 @@ export namespace Prisma {
     followUps?: FollowUpUpdateManyWithoutLeadNestedInput
     lobLogs?: LeadLOBLogUpdateManyWithoutLeadNestedInput
     activities?: LeadActivityUpdateManyWithoutLeadNestedInput
+    stageApprovals?: LeadStageApprovalUpdateManyWithoutLeadNestedInput
   }
 
   export type LeadUncheckedUpdateWithoutLifecycleInput = {
@@ -58408,6 +62868,9 @@ export namespace Prisma {
     stageExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     slaAction?: NullableEnumLeadExpiryActionFieldUpdateOperationsInput | $Enums.LeadExpiryAction | null
     slaWarningDays?: NullableIntFieldUpdateOperationsInput | number | null
+    approvalState?: EnumLeadApprovalStateFieldUpdateOperationsInput | $Enums.LeadApprovalState
+    pendingApprovalToStageId?: NullableStringFieldUpdateOperationsInput | string | null
+    pendingApprovalRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isClosed?: BoolFieldUpdateOperationsInput | boolean
     isLOB?: BoolFieldUpdateOperationsInput | boolean
     closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -58421,6 +62884,7 @@ export namespace Prisma {
     followUps?: FollowUpUncheckedUpdateManyWithoutLeadNestedInput
     lobLogs?: LeadLOBLogUncheckedUpdateManyWithoutLeadNestedInput
     activities?: LeadActivityUncheckedUpdateManyWithoutLeadNestedInput
+    stageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutLeadNestedInput
   }
 
   export type LeadUncheckedUpdateManyWithoutLifecycleInput = {
@@ -58438,6 +62902,9 @@ export namespace Prisma {
     stageExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     slaAction?: NullableEnumLeadExpiryActionFieldUpdateOperationsInput | $Enums.LeadExpiryAction | null
     slaWarningDays?: NullableIntFieldUpdateOperationsInput | number | null
+    approvalState?: EnumLeadApprovalStateFieldUpdateOperationsInput | $Enums.LeadApprovalState
+    pendingApprovalToStageId?: NullableStringFieldUpdateOperationsInput | string | null
+    pendingApprovalRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isClosed?: BoolFieldUpdateOperationsInput | boolean
     isLOB?: BoolFieldUpdateOperationsInput | boolean
     closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -58479,6 +62946,22 @@ export namespace Prisma {
     action: string
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
+  }
+
+  export type LeadStageApprovalCreateManyLeadInput = {
+    id?: string
+    workspaceId: string
+    fromStageId: string
+    toStageId: string
+    requestedById: string
+    assignedToId?: string | null
+    status?: $Enums.LeadApprovalStatus
+    comment?: string | null
+    requestData?: NullableJsonNullValueInput | InputJsonValue
+    approvedById?: string | null
+    approvedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type FollowUpUpdateWithoutLeadInput = {
@@ -58574,6 +63057,54 @@ export namespace Prisma {
     action?: StringFieldUpdateOperationsInput | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LeadStageApprovalUpdateWithoutLeadInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: EnumLeadApprovalStatusFieldUpdateOperationsInput | $Enums.LeadApprovalStatus
+    comment?: NullableStringFieldUpdateOperationsInput | string | null
+    requestData?: NullableJsonNullValueInput | InputJsonValue
+    approvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    workspace?: WorkspaceUpdateOneRequiredWithoutLeadStageApprovalsNestedInput
+    fromStage?: LeadStageUpdateOneRequiredWithoutApprovalsFromNestedInput
+    toStage?: LeadStageUpdateOneRequiredWithoutApprovalsToNestedInput
+    requestedBy?: UserUpdateOneRequiredWithoutRequestedLeadStageApprovalsNestedInput
+    assignedTo?: UserUpdateOneWithoutAssignedLeadStageApprovalsNestedInput
+    approvedBy?: UserUpdateOneWithoutApprovedLeadStageApprovalsNestedInput
+  }
+
+  export type LeadStageApprovalUncheckedUpdateWithoutLeadInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    fromStageId?: StringFieldUpdateOperationsInput | string
+    toStageId?: StringFieldUpdateOperationsInput | string
+    requestedById?: StringFieldUpdateOperationsInput | string
+    assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumLeadApprovalStatusFieldUpdateOperationsInput | $Enums.LeadApprovalStatus
+    comment?: NullableStringFieldUpdateOperationsInput | string | null
+    requestData?: NullableJsonNullValueInput | InputJsonValue
+    approvedById?: NullableStringFieldUpdateOperationsInput | string | null
+    approvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LeadStageApprovalUncheckedUpdateManyWithoutLeadInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    fromStageId?: StringFieldUpdateOperationsInput | string
+    toStageId?: StringFieldUpdateOperationsInput | string
+    requestedById?: StringFieldUpdateOperationsInput | string
+    assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumLeadApprovalStatusFieldUpdateOperationsInput | $Enums.LeadApprovalStatus
+    comment?: NullableStringFieldUpdateOperationsInput | string | null
+    requestData?: NullableJsonNullValueInput | InputJsonValue
+    approvedById?: NullableStringFieldUpdateOperationsInput | string | null
+    approvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type LeadDynamicOptionCreateManyFieldInput = {
@@ -58724,6 +63255,54 @@ export namespace Prisma {
     createdAt?: Date | string
   }
 
+  export type LeadStageApprovalCreateManyRequestedByInput = {
+    id?: string
+    workspaceId: string
+    leadId: string
+    fromStageId: string
+    toStageId: string
+    assignedToId?: string | null
+    status?: $Enums.LeadApprovalStatus
+    comment?: string | null
+    requestData?: NullableJsonNullValueInput | InputJsonValue
+    approvedById?: string | null
+    approvedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type LeadStageApprovalCreateManyAssignedToInput = {
+    id?: string
+    workspaceId: string
+    leadId: string
+    fromStageId: string
+    toStageId: string
+    requestedById: string
+    status?: $Enums.LeadApprovalStatus
+    comment?: string | null
+    requestData?: NullableJsonNullValueInput | InputJsonValue
+    approvedById?: string | null
+    approvedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type LeadStageApprovalCreateManyApprovedByInput = {
+    id?: string
+    workspaceId: string
+    leadId: string
+    fromStageId: string
+    toStageId: string
+    requestedById: string
+    assignedToId?: string | null
+    status?: $Enums.LeadApprovalStatus
+    comment?: string | null
+    requestData?: NullableJsonNullValueInput | InputJsonValue
+    approvedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type RosterEntryCreateManyUserInput = {
     id?: string
     rosterType: $Enums.RosterType
@@ -58769,6 +63348,9 @@ export namespace Prisma {
     stageExpiresAt?: Date | string | null
     slaAction?: $Enums.LeadExpiryAction | null
     slaWarningDays?: number | null
+    approvalState?: $Enums.LeadApprovalState
+    pendingApprovalToStageId?: string | null
+    pendingApprovalRequestedAt?: Date | string | null
     isClosed?: boolean
     isLOB?: boolean
     closedAt?: Date | string | null
@@ -58795,6 +63377,9 @@ export namespace Prisma {
     stageExpiresAt?: Date | string | null
     slaAction?: $Enums.LeadExpiryAction | null
     slaWarningDays?: number | null
+    approvalState?: $Enums.LeadApprovalState
+    pendingApprovalToStageId?: string | null
+    pendingApprovalRequestedAt?: Date | string | null
     isClosed?: boolean
     isLOB?: boolean
     closedAt?: Date | string | null
@@ -58823,6 +63408,9 @@ export namespace Prisma {
     stageExpiresAt?: Date | string | null
     slaAction?: $Enums.LeadExpiryAction | null
     slaWarningDays?: number | null
+    approvalState?: $Enums.LeadApprovalState
+    pendingApprovalToStageId?: string | null
+    pendingApprovalRequestedAt?: Date | string | null
     isClosed?: boolean
     isLOB?: boolean
     closedAt?: Date | string | null
@@ -58892,6 +63480,9 @@ export namespace Prisma {
     devices?: DeviceUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     performedLeadActivities?: LeadActivityUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutApprovedByNestedInput
     rosterEntries?: RosterEntryUpdateManyWithoutUserNestedInput
     followUps?: FollowUpUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
@@ -58933,6 +63524,9 @@ export namespace Prisma {
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     performedLeadActivities?: LeadActivityUncheckedUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
     rosterEntries?: RosterEntryUncheckedUpdateManyWithoutUserNestedInput
     followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -59148,6 +63742,150 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type LeadStageApprovalUpdateWithoutRequestedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: EnumLeadApprovalStatusFieldUpdateOperationsInput | $Enums.LeadApprovalStatus
+    comment?: NullableStringFieldUpdateOperationsInput | string | null
+    requestData?: NullableJsonNullValueInput | InputJsonValue
+    approvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    workspace?: WorkspaceUpdateOneRequiredWithoutLeadStageApprovalsNestedInput
+    lead?: LeadUpdateOneRequiredWithoutStageApprovalsNestedInput
+    fromStage?: LeadStageUpdateOneRequiredWithoutApprovalsFromNestedInput
+    toStage?: LeadStageUpdateOneRequiredWithoutApprovalsToNestedInput
+    assignedTo?: UserUpdateOneWithoutAssignedLeadStageApprovalsNestedInput
+    approvedBy?: UserUpdateOneWithoutApprovedLeadStageApprovalsNestedInput
+  }
+
+  export type LeadStageApprovalUncheckedUpdateWithoutRequestedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    leadId?: StringFieldUpdateOperationsInput | string
+    fromStageId?: StringFieldUpdateOperationsInput | string
+    toStageId?: StringFieldUpdateOperationsInput | string
+    assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumLeadApprovalStatusFieldUpdateOperationsInput | $Enums.LeadApprovalStatus
+    comment?: NullableStringFieldUpdateOperationsInput | string | null
+    requestData?: NullableJsonNullValueInput | InputJsonValue
+    approvedById?: NullableStringFieldUpdateOperationsInput | string | null
+    approvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LeadStageApprovalUncheckedUpdateManyWithoutRequestedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    leadId?: StringFieldUpdateOperationsInput | string
+    fromStageId?: StringFieldUpdateOperationsInput | string
+    toStageId?: StringFieldUpdateOperationsInput | string
+    assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumLeadApprovalStatusFieldUpdateOperationsInput | $Enums.LeadApprovalStatus
+    comment?: NullableStringFieldUpdateOperationsInput | string | null
+    requestData?: NullableJsonNullValueInput | InputJsonValue
+    approvedById?: NullableStringFieldUpdateOperationsInput | string | null
+    approvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LeadStageApprovalUpdateWithoutAssignedToInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: EnumLeadApprovalStatusFieldUpdateOperationsInput | $Enums.LeadApprovalStatus
+    comment?: NullableStringFieldUpdateOperationsInput | string | null
+    requestData?: NullableJsonNullValueInput | InputJsonValue
+    approvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    workspace?: WorkspaceUpdateOneRequiredWithoutLeadStageApprovalsNestedInput
+    lead?: LeadUpdateOneRequiredWithoutStageApprovalsNestedInput
+    fromStage?: LeadStageUpdateOneRequiredWithoutApprovalsFromNestedInput
+    toStage?: LeadStageUpdateOneRequiredWithoutApprovalsToNestedInput
+    requestedBy?: UserUpdateOneRequiredWithoutRequestedLeadStageApprovalsNestedInput
+    approvedBy?: UserUpdateOneWithoutApprovedLeadStageApprovalsNestedInput
+  }
+
+  export type LeadStageApprovalUncheckedUpdateWithoutAssignedToInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    leadId?: StringFieldUpdateOperationsInput | string
+    fromStageId?: StringFieldUpdateOperationsInput | string
+    toStageId?: StringFieldUpdateOperationsInput | string
+    requestedById?: StringFieldUpdateOperationsInput | string
+    status?: EnumLeadApprovalStatusFieldUpdateOperationsInput | $Enums.LeadApprovalStatus
+    comment?: NullableStringFieldUpdateOperationsInput | string | null
+    requestData?: NullableJsonNullValueInput | InputJsonValue
+    approvedById?: NullableStringFieldUpdateOperationsInput | string | null
+    approvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LeadStageApprovalUncheckedUpdateManyWithoutAssignedToInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    leadId?: StringFieldUpdateOperationsInput | string
+    fromStageId?: StringFieldUpdateOperationsInput | string
+    toStageId?: StringFieldUpdateOperationsInput | string
+    requestedById?: StringFieldUpdateOperationsInput | string
+    status?: EnumLeadApprovalStatusFieldUpdateOperationsInput | $Enums.LeadApprovalStatus
+    comment?: NullableStringFieldUpdateOperationsInput | string | null
+    requestData?: NullableJsonNullValueInput | InputJsonValue
+    approvedById?: NullableStringFieldUpdateOperationsInput | string | null
+    approvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LeadStageApprovalUpdateWithoutApprovedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: EnumLeadApprovalStatusFieldUpdateOperationsInput | $Enums.LeadApprovalStatus
+    comment?: NullableStringFieldUpdateOperationsInput | string | null
+    requestData?: NullableJsonNullValueInput | InputJsonValue
+    approvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    workspace?: WorkspaceUpdateOneRequiredWithoutLeadStageApprovalsNestedInput
+    lead?: LeadUpdateOneRequiredWithoutStageApprovalsNestedInput
+    fromStage?: LeadStageUpdateOneRequiredWithoutApprovalsFromNestedInput
+    toStage?: LeadStageUpdateOneRequiredWithoutApprovalsToNestedInput
+    requestedBy?: UserUpdateOneRequiredWithoutRequestedLeadStageApprovalsNestedInput
+    assignedTo?: UserUpdateOneWithoutAssignedLeadStageApprovalsNestedInput
+  }
+
+  export type LeadStageApprovalUncheckedUpdateWithoutApprovedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    leadId?: StringFieldUpdateOperationsInput | string
+    fromStageId?: StringFieldUpdateOperationsInput | string
+    toStageId?: StringFieldUpdateOperationsInput | string
+    requestedById?: StringFieldUpdateOperationsInput | string
+    assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumLeadApprovalStatusFieldUpdateOperationsInput | $Enums.LeadApprovalStatus
+    comment?: NullableStringFieldUpdateOperationsInput | string | null
+    requestData?: NullableJsonNullValueInput | InputJsonValue
+    approvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LeadStageApprovalUncheckedUpdateManyWithoutApprovedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    leadId?: StringFieldUpdateOperationsInput | string
+    fromStageId?: StringFieldUpdateOperationsInput | string
+    toStageId?: StringFieldUpdateOperationsInput | string
+    requestedById?: StringFieldUpdateOperationsInput | string
+    assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumLeadApprovalStatusFieldUpdateOperationsInput | $Enums.LeadApprovalStatus
+    comment?: NullableStringFieldUpdateOperationsInput | string | null
+    requestData?: NullableJsonNullValueInput | InputJsonValue
+    approvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type RosterEntryUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     rosterType?: EnumRosterTypeFieldUpdateOperationsInput | $Enums.RosterType
@@ -59249,6 +63987,9 @@ export namespace Prisma {
     stageExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     slaAction?: NullableEnumLeadExpiryActionFieldUpdateOperationsInput | $Enums.LeadExpiryAction | null
     slaWarningDays?: NullableIntFieldUpdateOperationsInput | number | null
+    approvalState?: EnumLeadApprovalStateFieldUpdateOperationsInput | $Enums.LeadApprovalState
+    pendingApprovalToStageId?: NullableStringFieldUpdateOperationsInput | string | null
+    pendingApprovalRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isClosed?: BoolFieldUpdateOperationsInput | boolean
     isLOB?: BoolFieldUpdateOperationsInput | boolean
     closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -59265,6 +64006,7 @@ export namespace Prisma {
     followUps?: FollowUpUpdateManyWithoutLeadNestedInput
     lobLogs?: LeadLOBLogUpdateManyWithoutLeadNestedInput
     activities?: LeadActivityUpdateManyWithoutLeadNestedInput
+    stageApprovals?: LeadStageApprovalUpdateManyWithoutLeadNestedInput
   }
 
   export type LeadUncheckedUpdateWithoutCreatedByInput = {
@@ -59283,6 +64025,9 @@ export namespace Prisma {
     stageExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     slaAction?: NullableEnumLeadExpiryActionFieldUpdateOperationsInput | $Enums.LeadExpiryAction | null
     slaWarningDays?: NullableIntFieldUpdateOperationsInput | number | null
+    approvalState?: EnumLeadApprovalStateFieldUpdateOperationsInput | $Enums.LeadApprovalState
+    pendingApprovalToStageId?: NullableStringFieldUpdateOperationsInput | string | null
+    pendingApprovalRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isClosed?: BoolFieldUpdateOperationsInput | boolean
     isLOB?: BoolFieldUpdateOperationsInput | boolean
     closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -59295,6 +64040,7 @@ export namespace Prisma {
     followUps?: FollowUpUncheckedUpdateManyWithoutLeadNestedInput
     lobLogs?: LeadLOBLogUncheckedUpdateManyWithoutLeadNestedInput
     activities?: LeadActivityUncheckedUpdateManyWithoutLeadNestedInput
+    stageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutLeadNestedInput
   }
 
   export type LeadUncheckedUpdateManyWithoutCreatedByInput = {
@@ -59313,6 +64059,9 @@ export namespace Prisma {
     stageExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     slaAction?: NullableEnumLeadExpiryActionFieldUpdateOperationsInput | $Enums.LeadExpiryAction | null
     slaWarningDays?: NullableIntFieldUpdateOperationsInput | number | null
+    approvalState?: EnumLeadApprovalStateFieldUpdateOperationsInput | $Enums.LeadApprovalState
+    pendingApprovalToStageId?: NullableStringFieldUpdateOperationsInput | string | null
+    pendingApprovalRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isClosed?: BoolFieldUpdateOperationsInput | boolean
     isLOB?: BoolFieldUpdateOperationsInput | boolean
     closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -59336,6 +64085,9 @@ export namespace Prisma {
     stageExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     slaAction?: NullableEnumLeadExpiryActionFieldUpdateOperationsInput | $Enums.LeadExpiryAction | null
     slaWarningDays?: NullableIntFieldUpdateOperationsInput | number | null
+    approvalState?: EnumLeadApprovalStateFieldUpdateOperationsInput | $Enums.LeadApprovalState
+    pendingApprovalToStageId?: NullableStringFieldUpdateOperationsInput | string | null
+    pendingApprovalRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isClosed?: BoolFieldUpdateOperationsInput | boolean
     isLOB?: BoolFieldUpdateOperationsInput | boolean
     closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -59352,6 +64104,7 @@ export namespace Prisma {
     followUps?: FollowUpUpdateManyWithoutLeadNestedInput
     lobLogs?: LeadLOBLogUpdateManyWithoutLeadNestedInput
     activities?: LeadActivityUpdateManyWithoutLeadNestedInput
+    stageApprovals?: LeadStageApprovalUpdateManyWithoutLeadNestedInput
   }
 
   export type LeadUncheckedUpdateWithoutAssignedToInput = {
@@ -59369,6 +64122,9 @@ export namespace Prisma {
     stageExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     slaAction?: NullableEnumLeadExpiryActionFieldUpdateOperationsInput | $Enums.LeadExpiryAction | null
     slaWarningDays?: NullableIntFieldUpdateOperationsInput | number | null
+    approvalState?: EnumLeadApprovalStateFieldUpdateOperationsInput | $Enums.LeadApprovalState
+    pendingApprovalToStageId?: NullableStringFieldUpdateOperationsInput | string | null
+    pendingApprovalRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isClosed?: BoolFieldUpdateOperationsInput | boolean
     isLOB?: BoolFieldUpdateOperationsInput | boolean
     closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -59382,6 +64138,7 @@ export namespace Prisma {
     followUps?: FollowUpUncheckedUpdateManyWithoutLeadNestedInput
     lobLogs?: LeadLOBLogUncheckedUpdateManyWithoutLeadNestedInput
     activities?: LeadActivityUncheckedUpdateManyWithoutLeadNestedInput
+    stageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutLeadNestedInput
   }
 
   export type LeadUncheckedUpdateManyWithoutAssignedToInput = {
@@ -59399,6 +64156,9 @@ export namespace Prisma {
     stageExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     slaAction?: NullableEnumLeadExpiryActionFieldUpdateOperationsInput | $Enums.LeadExpiryAction | null
     slaWarningDays?: NullableIntFieldUpdateOperationsInput | number | null
+    approvalState?: EnumLeadApprovalStateFieldUpdateOperationsInput | $Enums.LeadApprovalState
+    pendingApprovalToStageId?: NullableStringFieldUpdateOperationsInput | string | null
+    pendingApprovalRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isClosed?: BoolFieldUpdateOperationsInput | boolean
     isLOB?: BoolFieldUpdateOperationsInput | boolean
     closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -59423,6 +64183,9 @@ export namespace Prisma {
     stageExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     slaAction?: NullableEnumLeadExpiryActionFieldUpdateOperationsInput | $Enums.LeadExpiryAction | null
     slaWarningDays?: NullableIntFieldUpdateOperationsInput | number | null
+    approvalState?: EnumLeadApprovalStateFieldUpdateOperationsInput | $Enums.LeadApprovalState
+    pendingApprovalToStageId?: NullableStringFieldUpdateOperationsInput | string | null
+    pendingApprovalRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isClosed?: BoolFieldUpdateOperationsInput | boolean
     isLOB?: BoolFieldUpdateOperationsInput | boolean
     closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -59439,6 +64202,7 @@ export namespace Prisma {
     followUps?: FollowUpUpdateManyWithoutLeadNestedInput
     lobLogs?: LeadLOBLogUpdateManyWithoutLeadNestedInput
     activities?: LeadActivityUpdateManyWithoutLeadNestedInput
+    stageApprovals?: LeadStageApprovalUpdateManyWithoutLeadNestedInput
   }
 
   export type LeadUncheckedUpdateWithoutClosedByInput = {
@@ -59457,6 +64221,9 @@ export namespace Prisma {
     stageExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     slaAction?: NullableEnumLeadExpiryActionFieldUpdateOperationsInput | $Enums.LeadExpiryAction | null
     slaWarningDays?: NullableIntFieldUpdateOperationsInput | number | null
+    approvalState?: EnumLeadApprovalStateFieldUpdateOperationsInput | $Enums.LeadApprovalState
+    pendingApprovalToStageId?: NullableStringFieldUpdateOperationsInput | string | null
+    pendingApprovalRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isClosed?: BoolFieldUpdateOperationsInput | boolean
     isLOB?: BoolFieldUpdateOperationsInput | boolean
     closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -59469,6 +64236,7 @@ export namespace Prisma {
     followUps?: FollowUpUncheckedUpdateManyWithoutLeadNestedInput
     lobLogs?: LeadLOBLogUncheckedUpdateManyWithoutLeadNestedInput
     activities?: LeadActivityUncheckedUpdateManyWithoutLeadNestedInput
+    stageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutLeadNestedInput
   }
 
   export type LeadUncheckedUpdateManyWithoutClosedByInput = {
@@ -59487,6 +64255,9 @@ export namespace Prisma {
     stageExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     slaAction?: NullableEnumLeadExpiryActionFieldUpdateOperationsInput | $Enums.LeadExpiryAction | null
     slaWarningDays?: NullableIntFieldUpdateOperationsInput | number | null
+    approvalState?: EnumLeadApprovalStateFieldUpdateOperationsInput | $Enums.LeadApprovalState
+    pendingApprovalToStageId?: NullableStringFieldUpdateOperationsInput | string | null
+    pendingApprovalRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isClosed?: BoolFieldUpdateOperationsInput | boolean
     isLOB?: BoolFieldUpdateOperationsInput | boolean
     closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -59663,6 +64434,10 @@ export namespace Prisma {
      * @deprecated Use LeadLOBLogDefaultArgs instead
      */
     export type LeadLOBLogArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = LeadLOBLogDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use LeadStageApprovalDefaultArgs instead
+     */
+    export type LeadStageApprovalArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = LeadStageApprovalDefaultArgs<ExtArgs>
     /**
      * @deprecated Use LeadLifeCycleTransitionDefaultArgs instead
      */

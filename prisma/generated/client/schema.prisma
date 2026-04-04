@@ -80,24 +80,25 @@ model RolePermission {
 }
 
 model Workspace {
-  id                String             @id @default(cuid())
-  companyName       String
-  employeeCount     String
-  timeZone          String             @default("UTC")
-  language          String             @default("en-US")
-  currencyLocale    String             @default("USD")
-  loadSampleData    Boolean            @default(false)
-  owner             User               @relation("WorkspaceOwner", fields: [ownerId], references: [id])
-  ownerId           String             @unique
-  users             User[]             @relation("WorkspaceMembers")
-  departments       Department[]
-  targetCycles      TargetCycle[]
-  leadLifeCycles    LeadLifeCycle[]
-  leadDynamicFields LeadDynamicField[]
-  leads             Lead[]
-  leadActivities    LeadActivity[]
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
+  id                 String              @id @default(cuid())
+  companyName        String
+  employeeCount      String
+  timeZone           String              @default("UTC")
+  language           String              @default("en-US")
+  currencyLocale     String              @default("USD")
+  loadSampleData     Boolean             @default(false)
+  owner              User                @relation("WorkspaceOwner", fields: [ownerId], references: [id])
+  ownerId            String              @unique
+  users              User[]              @relation("WorkspaceMembers")
+  departments        Department[]
+  targetCycles       TargetCycle[]
+  leadLifeCycles     LeadLifeCycle[]
+  leadDynamicFields  LeadDynamicField[]
+  leads              Lead[]
+  leadActivities     LeadActivity[]
+  leadStageApprovals LeadStageApproval[]
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
 
   @@map("workspaces")
 }
@@ -126,6 +127,17 @@ enum LeadClosureType {
 enum LeadExpiryAction {
   AUTO_LOB
   WARN_AND_CHOOSE
+}
+
+enum LeadApprovalStatus {
+  PENDING
+  APPROVED
+  DENIED
+}
+
+enum LeadApprovalState {
+  NONE
+  PENDING
 }
 
 enum InputType {
@@ -197,20 +209,22 @@ model LeadSource {
 }
 
 model LeadStage {
-  id                 String      @id @default(uuid())
+  id                 String              @id @default(uuid())
   name               String
-  color              String      @default("#10b981")
-  isApprovalRequired Boolean     @default(false)
-  isLOB              Boolean     @default(false)
-  isClosed           Boolean     @default(false)
+  color              String              @default("#10b981")
+  isApprovalRequired Boolean             @default(false)
+  isLOB              Boolean             @default(false)
+  isClosed           Boolean             @default(false)
   order              Int
-  status             StageStatus @default(ACTIVE)
+  status             StageStatus         @default(ACTIVE)
   createdBy          String?
-  createdAt          DateTime    @default(now())
-  updatedAt          DateTime    @updatedAt
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
   deletedAt          DateTime?
   rules              StageRule[]
   leads              Lead[]
+  approvalsFrom      LeadStageApproval[] @relation("LeadStageApprovalFromStage")
+  approvalsTo        LeadStageApproval[] @relation("LeadStageApprovalToStage")
 
   @@index([name])
   @@index([status])
@@ -395,42 +409,46 @@ model LeadLifeCycle {
 }
 
 model Lead {
-  id               String            @id @default(cuid())
-  name             String
-  email            String?
-  phone            String?
-  expectedRevenue  Float?
-  generatedRevenue Float             @default(0)
-  assignedToId     String?
-  stageId          String?
-  lifecycleId      String?
-  sourceId         String?
-  nextFollowUpAt   DateTime?
-  stageEnteredAt   DateTime?
-  stageExpiresAt   DateTime?
-  slaAction        LeadExpiryAction?
-  slaWarningDays   Int?
-  isClosed         Boolean           @default(false)
-  isLOB            Boolean           @default(false)
-  closedAt         DateTime?
-  closedById       String?
-  closureType      LeadClosureType?
-  workspaceId      String
-  createdById      String
-  deletedAt        DateTime?
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
+  id                         String            @id @default(cuid())
+  name                       String
+  email                      String?
+  phone                      String?
+  expectedRevenue            Float?
+  generatedRevenue           Float             @default(0)
+  assignedToId               String?
+  stageId                    String?
+  lifecycleId                String?
+  sourceId                   String?
+  nextFollowUpAt             DateTime?
+  stageEnteredAt             DateTime?
+  stageExpiresAt             DateTime?
+  slaAction                  LeadExpiryAction?
+  slaWarningDays             Int?
+  approvalState              LeadApprovalState @default(NONE)
+  pendingApprovalToStageId   String?
+  pendingApprovalRequestedAt DateTime?
+  isClosed                   Boolean           @default(false)
+  isLOB                      Boolean           @default(false)
+  closedAt                   DateTime?
+  closedById                 String?
+  closureType                LeadClosureType?
+  workspaceId                String
+  createdById                String
+  deletedAt                  DateTime?
+  createdAt                  DateTime          @default(now())
+  updatedAt                  DateTime          @updatedAt
 
-  assignedTo User?          @relation("LeadAssignedTo", fields: [assignedToId], references: [id], onDelete: SetNull)
-  stage      LeadStage?     @relation(fields: [stageId], references: [id], onDelete: SetNull)
-  lifecycle  LeadLifeCycle? @relation(fields: [lifecycleId], references: [id], onDelete: SetNull)
-  source     LeadSource?    @relation(fields: [sourceId], references: [id], onDelete: SetNull)
-  createdBy  User           @relation("LeadCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
-  closedBy   User?          @relation("LeadClosedBy", fields: [closedById], references: [id], onDelete: SetNull)
-  workspace  Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  followUps  FollowUp[]
-  lobLogs    LeadLOBLog[]
-  activities LeadActivity[]
+  assignedTo     User?               @relation("LeadAssignedTo", fields: [assignedToId], references: [id], onDelete: SetNull)
+  stage          LeadStage?          @relation(fields: [stageId], references: [id], onDelete: SetNull)
+  lifecycle      LeadLifeCycle?      @relation(fields: [lifecycleId], references: [id], onDelete: SetNull)
+  source         LeadSource?         @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+  createdBy      User                @relation("LeadCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  closedBy       User?               @relation("LeadClosedBy", fields: [closedById], references: [id], onDelete: SetNull)
+  workspace      Workspace           @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  followUps      FollowUp[]
+  lobLogs        LeadLOBLog[]
+  activities     LeadActivity[]
+  stageApprovals LeadStageApproval[]
 
   @@index([workspaceId, assignedToId, stageId])
   @@index([workspaceId, sourceId, createdAt])
@@ -448,6 +466,7 @@ model Lead {
   @@index([workspaceId, lifecycleId, deletedAt, isClosed])
   @@index([workspaceId, nextFollowUpAt, deletedAt, isClosed])
   @@index([workspaceId, createdAt(sort: Desc), deletedAt, isClosed])
+  @@index([workspaceId, approvalState, pendingApprovalRequestedAt])
   @@map("leads")
 }
 
@@ -465,6 +484,39 @@ model LeadLOBLog {
   @@index([leadId, changedAt])
   @@index([workspaceId, reasonId])
   @@map("lead_lob_logs")
+}
+
+model LeadStageApproval {
+  id            String             @id @default(cuid())
+  workspaceId   String
+  leadId        String
+  fromStageId   String
+  toStageId     String
+  requestedById String
+  assignedToId  String?
+  status        LeadApprovalStatus @default(PENDING)
+  comment       String?
+  requestData   Json?
+  approvedById  String?
+  approvedAt    DateTime?
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  lead        Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  fromStage   LeadStage @relation("LeadStageApprovalFromStage", fields: [fromStageId], references: [id], onDelete: Restrict)
+  toStage     LeadStage @relation("LeadStageApprovalToStage", fields: [toStageId], references: [id], onDelete: Restrict)
+  requestedBy User      @relation("LeadStageApprovalRequestedBy", fields: [requestedById], references: [id], onDelete: Restrict)
+  assignedTo  User?     @relation("LeadStageApprovalAssignedTo", fields: [assignedToId], references: [id], onDelete: SetNull)
+  approvedBy  User?     @relation("LeadStageApprovalApprovedBy", fields: [approvedById], references: [id], onDelete: SetNull)
+
+  @@index([workspaceId])
+  @@index([status])
+  @@index([leadId])
+  @@index([assignedToId])
+  @@index([workspaceId, status, createdAt(sort: Desc)])
+  @@index([workspaceId, requestedById, createdAt(sort: Desc)])
+  @@map("lead_stage_approvals")
 }
 
 model LeadLifeCycleTransition {
@@ -666,13 +718,16 @@ model User {
   devices Device[]
 
   // Audit logs relation
-  auditLogs               AuditLog[]
-  performedLeadActivities LeadActivity[] @relation("LeadActivityPerformedBy")
-  rosterEntries           RosterEntry[]
-  followUps               FollowUp[]
-  createdLeads            Lead[]         @relation("LeadCreatedBy")
-  assignedLeads           Lead[]         @relation("LeadAssignedTo")
-  closedLeads             Lead[]         @relation("LeadClosedBy")
+  auditLogs                   AuditLog[]
+  performedLeadActivities     LeadActivity[]      @relation("LeadActivityPerformedBy")
+  requestedLeadStageApprovals LeadStageApproval[] @relation("LeadStageApprovalRequestedBy")
+  assignedLeadStageApprovals  LeadStageApproval[] @relation("LeadStageApprovalAssignedTo")
+  approvedLeadStageApprovals  LeadStageApproval[] @relation("LeadStageApprovalApprovedBy")
+  rosterEntries               RosterEntry[]
+  followUps                   FollowUp[]
+  createdLeads                Lead[]              @relation("LeadCreatedBy")
+  assignedLeads               Lead[]              @relation("LeadAssignedTo")
+  closedLeads                 Lead[]              @relation("LeadClosedBy")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

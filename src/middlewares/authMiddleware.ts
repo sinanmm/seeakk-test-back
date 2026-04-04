@@ -225,3 +225,70 @@ export const checkPermission = (permissionKey: string) => {
     }
   };
 };
+
+export const checkAnyPermission = (permissionKeys: string[]) => {
+  return async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    if (!req.user || !req.user.roleId) {
+      logger.warn('Permission denied. User has no assigned role.', {
+        userId: req.user?.id,
+        action: 'permission_denied_no_role',
+      });
+      return res.status(403).json({
+        success: false,
+        message: 'Forbidden: You do not have an assigned role.',
+      });
+    }
+
+    const roleId = req.user.roleId;
+    const cacheKey = `role_permissions:${roleId}`;
+
+    try {
+      const roleName = normalizeRoleKey(req.user.role?.name || '');
+      if (roleName === 'superadmin') {
+        return next();
+      }
+
+      let permissions: string[] = [];
+
+      if (redisClient.isOpen) {
+        const cached = await redisClient.get(cacheKey);
+        if (cached) {
+          permissions = JSON.parse(cached);
+        }
+      }
+
+      if (permissions.length === 0) {
+        const rolePermissions = await (prisma as any).rolePermission.findMany({
+          where: { roleId },
+          include: { permission: { select: { key: true } } },
+        });
+
+        permissions = rolePermissions.map((rp: any) => rp.permission.key);
+
+        if (redisClient.isOpen && permissions.length > 0) {
+          await redisClient.setEx(cacheKey, 3600, JSON.stringify(permissions));
+        }
+      }
+
+      const hasMatch = permissionKeys.some((permissionKey) => permissions.includes(permissionKey));
+      if (!hasMatch) {
+        logger.warn(`Permission denied. Required one of: ${permissionKeys.join(', ')}`, {
+          userId: req.user.id,
+          roleId,
+          action: 'permission_denied_any',
+        });
+
+        return res.status(403).json({
+          success: false,
+          errorCode: 'PERMISSION_DENIED',
+          message: `Access denied. You need one of these permissions: ${permissionKeys.join(', ')}.`,
+        });
+      }
+
+      next();
+    } catch (error: any) {
+      logger.error('Error checking permissions', { error: error.message, userId: req.user.id });
+      return res.status(500).json({ success: false, message: 'Internal server error while checking permissions.' });
+    }
+  };
+};

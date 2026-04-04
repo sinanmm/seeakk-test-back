@@ -210,7 +210,21 @@ export const changeStage = async (req: Request, res: Response, next: NextFunctio
   if (!input) return;
 
   try {
-    const lead = await leadService.changeStage(workspaceId, getActor(req), params.id, input);
+    const result = await leadService.changeStage(workspaceId, getActor(req), params.id, input);
+
+    if (result.approvalRequired) {
+      return res.status(202).json({
+        success: true,
+        message: 'Approval required. Stage change request created successfully.',
+        approvalRequired: true,
+        data: {
+          lead: result.lead,
+          approval: result.approval,
+        },
+      });
+    }
+
+    const lead = result.lead;
     const isClosureStage = Boolean(lead.stage?.isClosed || normalizeStageKey(lead.stage?.name) === 'closure');
     const action = lead.isLOB
       ? 'LEAD_LOB_APPLIED'
@@ -239,6 +253,7 @@ export const changeStage = async (req: Request, res: Response, next: NextFunctio
     return res.status(200).json({
       success: true,
       message: 'Lead stage updated successfully',
+      approvalRequired: false,
       data: lead,
     });
   } catch (error) {

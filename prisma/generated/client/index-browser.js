@@ -308,6 +308,9 @@ exports.Prisma.LeadScalarFieldEnum = {
   stageExpiresAt: 'stageExpiresAt',
   slaAction: 'slaAction',
   slaWarningDays: 'slaWarningDays',
+  approvalState: 'approvalState',
+  pendingApprovalToStageId: 'pendingApprovalToStageId',
+  pendingApprovalRequestedAt: 'pendingApprovalRequestedAt',
   isClosed: 'isClosed',
   isLOB: 'isLOB',
   closedAt: 'closedAt',
@@ -328,6 +331,23 @@ exports.Prisma.LeadLOBLogScalarFieldEnum = {
   changedById: 'changedById',
   changedAt: 'changedAt',
   workspaceId: 'workspaceId'
+};
+
+exports.Prisma.LeadStageApprovalScalarFieldEnum = {
+  id: 'id',
+  workspaceId: 'workspaceId',
+  leadId: 'leadId',
+  fromStageId: 'fromStageId',
+  toStageId: 'toStageId',
+  requestedById: 'requestedById',
+  assignedToId: 'assignedToId',
+  status: 'status',
+  comment: 'comment',
+  requestData: 'requestData',
+  approvedById: 'approvedById',
+  approvedAt: 'approvedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.LeadLifeCycleTransitionScalarFieldEnum = {
@@ -575,10 +595,21 @@ exports.LeadExpiryAction = exports.$Enums.LeadExpiryAction = {
   WARN_AND_CHOOSE: 'WARN_AND_CHOOSE'
 };
 
+exports.LeadApprovalState = exports.$Enums.LeadApprovalState = {
+  NONE: 'NONE',
+  PENDING: 'PENDING'
+};
+
 exports.LeadClosureType = exports.$Enums.LeadClosureType = {
   WON: 'WON',
   LOST: 'LOST',
   CANCELLED: 'CANCELLED'
+};
+
+exports.LeadApprovalStatus = exports.$Enums.LeadApprovalStatus = {
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  DENIED: 'DENIED'
 };
 
 exports.TargetSettingCycle = exports.$Enums.TargetSettingCycle = {
@@ -629,6 +660,7 @@ exports.Prisma.ModelName = {
   LeadLifeCycle: 'LeadLifeCycle',
   Lead: 'Lead',
   LeadLOBLog: 'LeadLOBLog',
+  LeadStageApproval: 'LeadStageApproval',
   LeadLifeCycleTransition: 'LeadLifeCycleTransition',
   LeadDynamicField: 'LeadDynamicField',
   LeadDynamicOption: 'LeadDynamicOption',
