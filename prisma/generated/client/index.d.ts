@@ -173,6 +173,26 @@ export type AuditLog = $Result.DefaultSelection<Prisma.$AuditLogPayload>
  * 
  */
 export type Device = $Result.DefaultSelection<Prisma.$DevicePayload>
+/**
+ * Model Holiday
+ * 
+ */
+export type Holiday = $Result.DefaultSelection<Prisma.$HolidayPayload>
+/**
+ * Model HolidaySyncLog
+ * 
+ */
+export type HolidaySyncLog = $Result.DefaultSelection<Prisma.$HolidaySyncLogPayload>
+/**
+ * Model ReportType
+ * 
+ */
+export type ReportType = $Result.DefaultSelection<Prisma.$ReportTypePayload>
+/**
+ * Model ReportLog
+ * 
+ */
+export type ReportLog = $Result.DefaultSelection<Prisma.$ReportLogPayload>
 
 /**
  * Enums
@@ -318,6 +338,52 @@ export const RosterStatus: {
 
 export type RosterStatus = (typeof RosterStatus)[keyof typeof RosterStatus]
 
+
+export const HolidaySource: {
+  MANUAL: 'MANUAL',
+  API: 'API',
+  AI: 'AI',
+  GOOGLE: 'GOOGLE'
+};
+
+export type HolidaySource = (typeof HolidaySource)[keyof typeof HolidaySource]
+
+
+export const HolidayStatus: {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE'
+};
+
+export type HolidayStatus = (typeof HolidayStatus)[keyof typeof HolidayStatus]
+
+
+export const ReportModule: {
+  LEADS: 'LEADS',
+  USERS: 'USERS',
+  REPORTS: 'REPORTS',
+  TARGETS: 'TARGETS',
+  FOLLOWUPS: 'FOLLOWUPS'
+};
+
+export type ReportModule = (typeof ReportModule)[keyof typeof ReportModule]
+
+
+export const ReportBaseDataSource: {
+  LEADS: 'LEADS',
+  USERS: 'USERS',
+  FOLLOWUPS: 'FOLLOWUPS'
+};
+
+export type ReportBaseDataSource = (typeof ReportBaseDataSource)[keyof typeof ReportBaseDataSource]
+
+
+export const ReportTypeStatus: {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE'
+};
+
+export type ReportTypeStatus = (typeof ReportTypeStatus)[keyof typeof ReportTypeStatus]
+
 }
 
 export type RoleStatus = $Enums.RoleStatus
@@ -383,6 +449,26 @@ export const ShiftSession: typeof $Enums.ShiftSession
 export type RosterStatus = $Enums.RosterStatus
 
 export const RosterStatus: typeof $Enums.RosterStatus
+
+export type HolidaySource = $Enums.HolidaySource
+
+export const HolidaySource: typeof $Enums.HolidaySource
+
+export type HolidayStatus = $Enums.HolidayStatus
+
+export const HolidayStatus: typeof $Enums.HolidayStatus
+
+export type ReportModule = $Enums.ReportModule
+
+export const ReportModule: typeof $Enums.ReportModule
+
+export type ReportBaseDataSource = $Enums.ReportBaseDataSource
+
+export const ReportBaseDataSource: typeof $Enums.ReportBaseDataSource
+
+export type ReportTypeStatus = $Enums.ReportTypeStatus
+
+export const ReportTypeStatus: typeof $Enums.ReportTypeStatus
 
 /**
  * ##  Prisma Client ʲˢ
@@ -826,6 +912,46 @@ export class PrismaClient<
     * ```
     */
   get device(): Prisma.DeviceDelegate<ExtArgs>;
+
+  /**
+   * `prisma.holiday`: Exposes CRUD operations for the **Holiday** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Holidays
+    * const holidays = await prisma.holiday.findMany()
+    * ```
+    */
+  get holiday(): Prisma.HolidayDelegate<ExtArgs>;
+
+  /**
+   * `prisma.holidaySyncLog`: Exposes CRUD operations for the **HolidaySyncLog** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more HolidaySyncLogs
+    * const holidaySyncLogs = await prisma.holidaySyncLog.findMany()
+    * ```
+    */
+  get holidaySyncLog(): Prisma.HolidaySyncLogDelegate<ExtArgs>;
+
+  /**
+   * `prisma.reportType`: Exposes CRUD operations for the **ReportType** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more ReportTypes
+    * const reportTypes = await prisma.reportType.findMany()
+    * ```
+    */
+  get reportType(): Prisma.ReportTypeDelegate<ExtArgs>;
+
+  /**
+   * `prisma.reportLog`: Exposes CRUD operations for the **ReportLog** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more ReportLogs
+    * const reportLogs = await prisma.reportLog.findMany()
+    * ```
+    */
+  get reportLog(): Prisma.ReportLogDelegate<ExtArgs>;
 }
 
 export namespace Prisma {
@@ -1298,7 +1424,11 @@ export namespace Prisma {
     FollowUpImage: 'FollowUpImage',
     RosterEntry: 'RosterEntry',
     AuditLog: 'AuditLog',
-    Device: 'Device'
+    Device: 'Device',
+    Holiday: 'Holiday',
+    HolidaySyncLog: 'HolidaySyncLog',
+    ReportType: 'ReportType',
+    ReportLog: 'ReportLog'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1314,7 +1444,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "role" | "permission" | "rolePermission" | "workspace" | "department" | "leadSource" | "leadStage" | "stageRule" | "leadStageInput" | "office" | "location" | "userLocationAssignment" | "targetType" | "targetCycle" | "targetCycleRange" | "leadLifeCycle" | "lead" | "leadLOBLog" | "leadStageApproval" | "leadLifeCycleTransition" | "leadDynamicField" | "leadDynamicOption" | "leadDynamicValue" | "leadActivity" | "targetSetting" | "targetViolation" | "user" | "followUp" | "followUpImage" | "rosterEntry" | "auditLog" | "device"
+      modelProps: "role" | "permission" | "rolePermission" | "workspace" | "department" | "leadSource" | "leadStage" | "stageRule" | "leadStageInput" | "office" | "location" | "userLocationAssignment" | "targetType" | "targetCycle" | "targetCycleRange" | "leadLifeCycle" | "lead" | "leadLOBLog" | "leadStageApproval" | "leadLifeCycleTransition" | "leadDynamicField" | "leadDynamicOption" | "leadDynamicValue" | "leadActivity" | "targetSetting" | "targetViolation" | "user" | "followUp" | "followUpImage" | "rosterEntry" | "auditLog" | "device" | "holiday" | "holidaySyncLog" | "reportType" | "reportLog"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -3558,6 +3688,286 @@ export namespace Prisma {
           }
         }
       }
+      Holiday: {
+        payload: Prisma.$HolidayPayload<ExtArgs>
+        fields: Prisma.HolidayFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.HolidayFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HolidayPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.HolidayFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HolidayPayload>
+          }
+          findFirst: {
+            args: Prisma.HolidayFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HolidayPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.HolidayFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HolidayPayload>
+          }
+          findMany: {
+            args: Prisma.HolidayFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HolidayPayload>[]
+          }
+          create: {
+            args: Prisma.HolidayCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HolidayPayload>
+          }
+          createMany: {
+            args: Prisma.HolidayCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.HolidayCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HolidayPayload>[]
+          }
+          delete: {
+            args: Prisma.HolidayDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HolidayPayload>
+          }
+          update: {
+            args: Prisma.HolidayUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HolidayPayload>
+          }
+          deleteMany: {
+            args: Prisma.HolidayDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.HolidayUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.HolidayUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HolidayPayload>
+          }
+          aggregate: {
+            args: Prisma.HolidayAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateHoliday>
+          }
+          groupBy: {
+            args: Prisma.HolidayGroupByArgs<ExtArgs>
+            result: $Utils.Optional<HolidayGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.HolidayCountArgs<ExtArgs>
+            result: $Utils.Optional<HolidayCountAggregateOutputType> | number
+          }
+        }
+      }
+      HolidaySyncLog: {
+        payload: Prisma.$HolidaySyncLogPayload<ExtArgs>
+        fields: Prisma.HolidaySyncLogFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.HolidaySyncLogFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HolidaySyncLogPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.HolidaySyncLogFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HolidaySyncLogPayload>
+          }
+          findFirst: {
+            args: Prisma.HolidaySyncLogFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HolidaySyncLogPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.HolidaySyncLogFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HolidaySyncLogPayload>
+          }
+          findMany: {
+            args: Prisma.HolidaySyncLogFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HolidaySyncLogPayload>[]
+          }
+          create: {
+            args: Prisma.HolidaySyncLogCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HolidaySyncLogPayload>
+          }
+          createMany: {
+            args: Prisma.HolidaySyncLogCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.HolidaySyncLogCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HolidaySyncLogPayload>[]
+          }
+          delete: {
+            args: Prisma.HolidaySyncLogDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HolidaySyncLogPayload>
+          }
+          update: {
+            args: Prisma.HolidaySyncLogUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HolidaySyncLogPayload>
+          }
+          deleteMany: {
+            args: Prisma.HolidaySyncLogDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.HolidaySyncLogUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.HolidaySyncLogUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HolidaySyncLogPayload>
+          }
+          aggregate: {
+            args: Prisma.HolidaySyncLogAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateHolidaySyncLog>
+          }
+          groupBy: {
+            args: Prisma.HolidaySyncLogGroupByArgs<ExtArgs>
+            result: $Utils.Optional<HolidaySyncLogGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.HolidaySyncLogCountArgs<ExtArgs>
+            result: $Utils.Optional<HolidaySyncLogCountAggregateOutputType> | number
+          }
+        }
+      }
+      ReportType: {
+        payload: Prisma.$ReportTypePayload<ExtArgs>
+        fields: Prisma.ReportTypeFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ReportTypeFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportTypePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ReportTypeFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportTypePayload>
+          }
+          findFirst: {
+            args: Prisma.ReportTypeFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportTypePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ReportTypeFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportTypePayload>
+          }
+          findMany: {
+            args: Prisma.ReportTypeFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportTypePayload>[]
+          }
+          create: {
+            args: Prisma.ReportTypeCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportTypePayload>
+          }
+          createMany: {
+            args: Prisma.ReportTypeCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.ReportTypeCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportTypePayload>[]
+          }
+          delete: {
+            args: Prisma.ReportTypeDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportTypePayload>
+          }
+          update: {
+            args: Prisma.ReportTypeUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportTypePayload>
+          }
+          deleteMany: {
+            args: Prisma.ReportTypeDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ReportTypeUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.ReportTypeUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportTypePayload>
+          }
+          aggregate: {
+            args: Prisma.ReportTypeAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateReportType>
+          }
+          groupBy: {
+            args: Prisma.ReportTypeGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ReportTypeGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.ReportTypeCountArgs<ExtArgs>
+            result: $Utils.Optional<ReportTypeCountAggregateOutputType> | number
+          }
+        }
+      }
+      ReportLog: {
+        payload: Prisma.$ReportLogPayload<ExtArgs>
+        fields: Prisma.ReportLogFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ReportLogFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportLogPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ReportLogFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportLogPayload>
+          }
+          findFirst: {
+            args: Prisma.ReportLogFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportLogPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ReportLogFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportLogPayload>
+          }
+          findMany: {
+            args: Prisma.ReportLogFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportLogPayload>[]
+          }
+          create: {
+            args: Prisma.ReportLogCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportLogPayload>
+          }
+          createMany: {
+            args: Prisma.ReportLogCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.ReportLogCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportLogPayload>[]
+          }
+          delete: {
+            args: Prisma.ReportLogDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportLogPayload>
+          }
+          update: {
+            args: Prisma.ReportLogUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportLogPayload>
+          }
+          deleteMany: {
+            args: Prisma.ReportLogDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ReportLogUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.ReportLogUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportLogPayload>
+          }
+          aggregate: {
+            args: Prisma.ReportLogAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateReportLog>
+          }
+          groupBy: {
+            args: Prisma.ReportLogGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ReportLogGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.ReportLogCountArgs<ExtArgs>
+            result: $Utils.Optional<ReportLogCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -3802,6 +4212,10 @@ export namespace Prisma {
     leads: number
     leadActivities: number
     leadStageApprovals: number
+    holidays: number
+    holidaySyncLogs: number
+    reportTypes: number
+    reportLogs: number
   }
 
   export type WorkspaceCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3813,6 +4227,10 @@ export namespace Prisma {
     leads?: boolean | WorkspaceCountOutputTypeCountLeadsArgs
     leadActivities?: boolean | WorkspaceCountOutputTypeCountLeadActivitiesArgs
     leadStageApprovals?: boolean | WorkspaceCountOutputTypeCountLeadStageApprovalsArgs
+    holidays?: boolean | WorkspaceCountOutputTypeCountHolidaysArgs
+    holidaySyncLogs?: boolean | WorkspaceCountOutputTypeCountHolidaySyncLogsArgs
+    reportTypes?: boolean | WorkspaceCountOutputTypeCountReportTypesArgs
+    reportLogs?: boolean | WorkspaceCountOutputTypeCountReportLogsArgs
   }
 
   // Custom InputTypes
@@ -3880,6 +4298,34 @@ export namespace Prisma {
    */
   export type WorkspaceCountOutputTypeCountLeadStageApprovalsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: LeadStageApprovalWhereInput
+  }
+
+  /**
+   * WorkspaceCountOutputType without action
+   */
+  export type WorkspaceCountOutputTypeCountHolidaysArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: HolidayWhereInput
+  }
+
+  /**
+   * WorkspaceCountOutputType without action
+   */
+  export type WorkspaceCountOutputTypeCountHolidaySyncLogsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: HolidaySyncLogWhereInput
+  }
+
+  /**
+   * WorkspaceCountOutputType without action
+   */
+  export type WorkspaceCountOutputTypeCountReportTypesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ReportTypeWhereInput
+  }
+
+  /**
+   * WorkspaceCountOutputType without action
+   */
+  export type WorkspaceCountOutputTypeCountReportLogsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ReportLogWhereInput
   }
 
 
@@ -4075,6 +4521,9 @@ export namespace Prisma {
     usersAtCountry: number
     usersAtState: number
     usersAtDistrict: number
+    holidaysAtCountry: number
+    holidaysAtState: number
+    holidaysAtDistrict: number
   }
 
   export type LocationCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -4083,6 +4532,9 @@ export namespace Prisma {
     usersAtCountry?: boolean | LocationCountOutputTypeCountUsersAtCountryArgs
     usersAtState?: boolean | LocationCountOutputTypeCountUsersAtStateArgs
     usersAtDistrict?: boolean | LocationCountOutputTypeCountUsersAtDistrictArgs
+    holidaysAtCountry?: boolean | LocationCountOutputTypeCountHolidaysAtCountryArgs
+    holidaysAtState?: boolean | LocationCountOutputTypeCountHolidaysAtStateArgs
+    holidaysAtDistrict?: boolean | LocationCountOutputTypeCountHolidaysAtDistrictArgs
   }
 
   // Custom InputTypes
@@ -4129,6 +4581,27 @@ export namespace Prisma {
    */
   export type LocationCountOutputTypeCountUsersAtDistrictArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: UserWhereInput
+  }
+
+  /**
+   * LocationCountOutputType without action
+   */
+  export type LocationCountOutputTypeCountHolidaysAtCountryArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: HolidayWhereInput
+  }
+
+  /**
+   * LocationCountOutputType without action
+   */
+  export type LocationCountOutputTypeCountHolidaysAtStateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: HolidayWhereInput
+  }
+
+  /**
+   * LocationCountOutputType without action
+   */
+  export type LocationCountOutputTypeCountHolidaysAtDistrictArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: HolidayWhereInput
   }
 
 
@@ -4361,6 +4834,11 @@ export namespace Prisma {
     createdLeads: number
     assignedLeads: number
     closedLeads: number
+    createdHolidays: number
+    updatedHolidays: number
+    createdReportTypes: number
+    updatedReportTypes: number
+    generatedReportLogs: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -4379,6 +4857,11 @@ export namespace Prisma {
     createdLeads?: boolean | UserCountOutputTypeCountCreatedLeadsArgs
     assignedLeads?: boolean | UserCountOutputTypeCountAssignedLeadsArgs
     closedLeads?: boolean | UserCountOutputTypeCountClosedLeadsArgs
+    createdHolidays?: boolean | UserCountOutputTypeCountCreatedHolidaysArgs
+    updatedHolidays?: boolean | UserCountOutputTypeCountUpdatedHolidaysArgs
+    createdReportTypes?: boolean | UserCountOutputTypeCountCreatedReportTypesArgs
+    updatedReportTypes?: boolean | UserCountOutputTypeCountUpdatedReportTypesArgs
+    generatedReportLogs?: boolean | UserCountOutputTypeCountGeneratedReportLogsArgs
   }
 
   // Custom InputTypes
@@ -4497,6 +4980,41 @@ export namespace Prisma {
     where?: LeadWhereInput
   }
 
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountCreatedHolidaysArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: HolidayWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountUpdatedHolidaysArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: HolidayWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountCreatedReportTypesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ReportTypeWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountUpdatedReportTypesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ReportTypeWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountGeneratedReportLogsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ReportLogWhereInput
+  }
+
 
   /**
    * Count Type FollowUpCountOutputType
@@ -4526,6 +5044,37 @@ export namespace Prisma {
    */
   export type FollowUpCountOutputTypeCountImagesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: FollowUpImageWhereInput
+  }
+
+
+  /**
+   * Count Type ReportTypeCountOutputType
+   */
+
+  export type ReportTypeCountOutputType = {
+    logs: number
+  }
+
+  export type ReportTypeCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    logs?: boolean | ReportTypeCountOutputTypeCountLogsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * ReportTypeCountOutputType without action
+   */
+  export type ReportTypeCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReportTypeCountOutputType
+     */
+    select?: ReportTypeCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * ReportTypeCountOutputType without action
+   */
+  export type ReportTypeCountOutputTypeCountLogsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ReportLogWhereInput
   }
 
 
@@ -7593,6 +8142,10 @@ export namespace Prisma {
     leads?: boolean | Workspace$leadsArgs<ExtArgs>
     leadActivities?: boolean | Workspace$leadActivitiesArgs<ExtArgs>
     leadStageApprovals?: boolean | Workspace$leadStageApprovalsArgs<ExtArgs>
+    holidays?: boolean | Workspace$holidaysArgs<ExtArgs>
+    holidaySyncLogs?: boolean | Workspace$holidaySyncLogsArgs<ExtArgs>
+    reportTypes?: boolean | Workspace$reportTypesArgs<ExtArgs>
+    reportLogs?: boolean | Workspace$reportLogsArgs<ExtArgs>
     _count?: boolean | WorkspaceCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["workspace"]>
 
@@ -7633,6 +8186,10 @@ export namespace Prisma {
     leads?: boolean | Workspace$leadsArgs<ExtArgs>
     leadActivities?: boolean | Workspace$leadActivitiesArgs<ExtArgs>
     leadStageApprovals?: boolean | Workspace$leadStageApprovalsArgs<ExtArgs>
+    holidays?: boolean | Workspace$holidaysArgs<ExtArgs>
+    holidaySyncLogs?: boolean | Workspace$holidaySyncLogsArgs<ExtArgs>
+    reportTypes?: boolean | Workspace$reportTypesArgs<ExtArgs>
+    reportLogs?: boolean | Workspace$reportLogsArgs<ExtArgs>
     _count?: boolean | WorkspaceCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type WorkspaceIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -7651,6 +8208,10 @@ export namespace Prisma {
       leads: Prisma.$LeadPayload<ExtArgs>[]
       leadActivities: Prisma.$LeadActivityPayload<ExtArgs>[]
       leadStageApprovals: Prisma.$LeadStageApprovalPayload<ExtArgs>[]
+      holidays: Prisma.$HolidayPayload<ExtArgs>[]
+      holidaySyncLogs: Prisma.$HolidaySyncLogPayload<ExtArgs>[]
+      reportTypes: Prisma.$ReportTypePayload<ExtArgs>[]
+      reportLogs: Prisma.$ReportLogPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -8036,6 +8597,10 @@ export namespace Prisma {
     leads<T extends Workspace$leadsArgs<ExtArgs> = {}>(args?: Subset<T, Workspace$leadsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadPayload<ExtArgs>, T, "findMany"> | Null>
     leadActivities<T extends Workspace$leadActivitiesArgs<ExtArgs> = {}>(args?: Subset<T, Workspace$leadActivitiesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadActivityPayload<ExtArgs>, T, "findMany"> | Null>
     leadStageApprovals<T extends Workspace$leadStageApprovalsArgs<ExtArgs> = {}>(args?: Subset<T, Workspace$leadStageApprovalsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadStageApprovalPayload<ExtArgs>, T, "findMany"> | Null>
+    holidays<T extends Workspace$holidaysArgs<ExtArgs> = {}>(args?: Subset<T, Workspace$holidaysArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$HolidayPayload<ExtArgs>, T, "findMany"> | Null>
+    holidaySyncLogs<T extends Workspace$holidaySyncLogsArgs<ExtArgs> = {}>(args?: Subset<T, Workspace$holidaySyncLogsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$HolidaySyncLogPayload<ExtArgs>, T, "findMany"> | Null>
+    reportTypes<T extends Workspace$reportTypesArgs<ExtArgs> = {}>(args?: Subset<T, Workspace$reportTypesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReportTypePayload<ExtArgs>, T, "findMany"> | Null>
+    reportLogs<T extends Workspace$reportLogsArgs<ExtArgs> = {}>(args?: Subset<T, Workspace$reportLogsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReportLogPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -8550,6 +9115,86 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: LeadStageApprovalScalarFieldEnum | LeadStageApprovalScalarFieldEnum[]
+  }
+
+  /**
+   * Workspace.holidays
+   */
+  export type Workspace$holidaysArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Holiday
+     */
+    select?: HolidaySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HolidayInclude<ExtArgs> | null
+    where?: HolidayWhereInput
+    orderBy?: HolidayOrderByWithRelationInput | HolidayOrderByWithRelationInput[]
+    cursor?: HolidayWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: HolidayScalarFieldEnum | HolidayScalarFieldEnum[]
+  }
+
+  /**
+   * Workspace.holidaySyncLogs
+   */
+  export type Workspace$holidaySyncLogsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HolidaySyncLog
+     */
+    select?: HolidaySyncLogSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HolidaySyncLogInclude<ExtArgs> | null
+    where?: HolidaySyncLogWhereInput
+    orderBy?: HolidaySyncLogOrderByWithRelationInput | HolidaySyncLogOrderByWithRelationInput[]
+    cursor?: HolidaySyncLogWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: HolidaySyncLogScalarFieldEnum | HolidaySyncLogScalarFieldEnum[]
+  }
+
+  /**
+   * Workspace.reportTypes
+   */
+  export type Workspace$reportTypesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReportType
+     */
+    select?: ReportTypeSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReportTypeInclude<ExtArgs> | null
+    where?: ReportTypeWhereInput
+    orderBy?: ReportTypeOrderByWithRelationInput | ReportTypeOrderByWithRelationInput[]
+    cursor?: ReportTypeWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ReportTypeScalarFieldEnum | ReportTypeScalarFieldEnum[]
+  }
+
+  /**
+   * Workspace.reportLogs
+   */
+  export type Workspace$reportLogsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReportLog
+     */
+    select?: ReportLogSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReportLogInclude<ExtArgs> | null
+    where?: ReportLogWhereInput
+    orderBy?: ReportLogOrderByWithRelationInput | ReportLogOrderByWithRelationInput[]
+    cursor?: ReportLogWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ReportLogScalarFieldEnum | ReportLogScalarFieldEnum[]
   }
 
   /**
@@ -14954,6 +15599,9 @@ export namespace Prisma {
     usersAtCountry?: boolean | Location$usersAtCountryArgs<ExtArgs>
     usersAtState?: boolean | Location$usersAtStateArgs<ExtArgs>
     usersAtDistrict?: boolean | Location$usersAtDistrictArgs<ExtArgs>
+    holidaysAtCountry?: boolean | Location$holidaysAtCountryArgs<ExtArgs>
+    holidaysAtState?: boolean | Location$holidaysAtStateArgs<ExtArgs>
+    holidaysAtDistrict?: boolean | Location$holidaysAtDistrictArgs<ExtArgs>
     _count?: boolean | LocationCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["location"]>
 
@@ -14985,6 +15633,9 @@ export namespace Prisma {
     usersAtCountry?: boolean | Location$usersAtCountryArgs<ExtArgs>
     usersAtState?: boolean | Location$usersAtStateArgs<ExtArgs>
     usersAtDistrict?: boolean | Location$usersAtDistrictArgs<ExtArgs>
+    holidaysAtCountry?: boolean | Location$holidaysAtCountryArgs<ExtArgs>
+    holidaysAtState?: boolean | Location$holidaysAtStateArgs<ExtArgs>
+    holidaysAtDistrict?: boolean | Location$holidaysAtDistrictArgs<ExtArgs>
     _count?: boolean | LocationCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type LocationIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -15000,6 +15651,9 @@ export namespace Prisma {
       usersAtCountry: Prisma.$UserPayload<ExtArgs>[]
       usersAtState: Prisma.$UserPayload<ExtArgs>[]
       usersAtDistrict: Prisma.$UserPayload<ExtArgs>[]
+      holidaysAtCountry: Prisma.$HolidayPayload<ExtArgs>[]
+      holidaysAtState: Prisma.$HolidayPayload<ExtArgs>[]
+      holidaysAtDistrict: Prisma.$HolidayPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -15379,6 +16033,9 @@ export namespace Prisma {
     usersAtCountry<T extends Location$usersAtCountryArgs<ExtArgs> = {}>(args?: Subset<T, Location$usersAtCountryArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany"> | Null>
     usersAtState<T extends Location$usersAtStateArgs<ExtArgs> = {}>(args?: Subset<T, Location$usersAtStateArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany"> | Null>
     usersAtDistrict<T extends Location$usersAtDistrictArgs<ExtArgs> = {}>(args?: Subset<T, Location$usersAtDistrictArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany"> | Null>
+    holidaysAtCountry<T extends Location$holidaysAtCountryArgs<ExtArgs> = {}>(args?: Subset<T, Location$holidaysAtCountryArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$HolidayPayload<ExtArgs>, T, "findMany"> | Null>
+    holidaysAtState<T extends Location$holidaysAtStateArgs<ExtArgs> = {}>(args?: Subset<T, Location$holidaysAtStateArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$HolidayPayload<ExtArgs>, T, "findMany"> | Null>
+    holidaysAtDistrict<T extends Location$holidaysAtDistrictArgs<ExtArgs> = {}>(args?: Subset<T, Location$holidaysAtDistrictArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$HolidayPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -15845,6 +16502,66 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: UserScalarFieldEnum | UserScalarFieldEnum[]
+  }
+
+  /**
+   * Location.holidaysAtCountry
+   */
+  export type Location$holidaysAtCountryArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Holiday
+     */
+    select?: HolidaySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HolidayInclude<ExtArgs> | null
+    where?: HolidayWhereInput
+    orderBy?: HolidayOrderByWithRelationInput | HolidayOrderByWithRelationInput[]
+    cursor?: HolidayWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: HolidayScalarFieldEnum | HolidayScalarFieldEnum[]
+  }
+
+  /**
+   * Location.holidaysAtState
+   */
+  export type Location$holidaysAtStateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Holiday
+     */
+    select?: HolidaySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HolidayInclude<ExtArgs> | null
+    where?: HolidayWhereInput
+    orderBy?: HolidayOrderByWithRelationInput | HolidayOrderByWithRelationInput[]
+    cursor?: HolidayWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: HolidayScalarFieldEnum | HolidayScalarFieldEnum[]
+  }
+
+  /**
+   * Location.holidaysAtDistrict
+   */
+  export type Location$holidaysAtDistrictArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Holiday
+     */
+    select?: HolidaySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HolidayInclude<ExtArgs> | null
+    where?: HolidayWhereInput
+    orderBy?: HolidayOrderByWithRelationInput | HolidayOrderByWithRelationInput[]
+    cursor?: HolidayWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: HolidayScalarFieldEnum | HolidayScalarFieldEnum[]
   }
 
   /**
@@ -31797,6 +32514,11 @@ export namespace Prisma {
     createdLeads?: boolean | User$createdLeadsArgs<ExtArgs>
     assignedLeads?: boolean | User$assignedLeadsArgs<ExtArgs>
     closedLeads?: boolean | User$closedLeadsArgs<ExtArgs>
+    createdHolidays?: boolean | User$createdHolidaysArgs<ExtArgs>
+    updatedHolidays?: boolean | User$updatedHolidaysArgs<ExtArgs>
+    createdReportTypes?: boolean | User$createdReportTypesArgs<ExtArgs>
+    updatedReportTypes?: boolean | User$updatedReportTypesArgs<ExtArgs>
+    generatedReportLogs?: boolean | User$generatedReportLogsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -31891,6 +32613,11 @@ export namespace Prisma {
     createdLeads?: boolean | User$createdLeadsArgs<ExtArgs>
     assignedLeads?: boolean | User$assignedLeadsArgs<ExtArgs>
     closedLeads?: boolean | User$closedLeadsArgs<ExtArgs>
+    createdHolidays?: boolean | User$createdHolidaysArgs<ExtArgs>
+    updatedHolidays?: boolean | User$updatedHolidaysArgs<ExtArgs>
+    createdReportTypes?: boolean | User$createdReportTypesArgs<ExtArgs>
+    updatedReportTypes?: boolean | User$updatedReportTypesArgs<ExtArgs>
+    generatedReportLogs?: boolean | User$generatedReportLogsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -31931,6 +32658,11 @@ export namespace Prisma {
       createdLeads: Prisma.$LeadPayload<ExtArgs>[]
       assignedLeads: Prisma.$LeadPayload<ExtArgs>[]
       closedLeads: Prisma.$LeadPayload<ExtArgs>[]
+      createdHolidays: Prisma.$HolidayPayload<ExtArgs>[]
+      updatedHolidays: Prisma.$HolidayPayload<ExtArgs>[]
+      createdReportTypes: Prisma.$ReportTypePayload<ExtArgs>[]
+      updatedReportTypes: Prisma.$ReportTypePayload<ExtArgs>[]
+      generatedReportLogs: Prisma.$ReportLogPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -32347,6 +33079,11 @@ export namespace Prisma {
     createdLeads<T extends User$createdLeadsArgs<ExtArgs> = {}>(args?: Subset<T, User$createdLeadsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadPayload<ExtArgs>, T, "findMany"> | Null>
     assignedLeads<T extends User$assignedLeadsArgs<ExtArgs> = {}>(args?: Subset<T, User$assignedLeadsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadPayload<ExtArgs>, T, "findMany"> | Null>
     closedLeads<T extends User$closedLeadsArgs<ExtArgs> = {}>(args?: Subset<T, User$closedLeadsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadPayload<ExtArgs>, T, "findMany"> | Null>
+    createdHolidays<T extends User$createdHolidaysArgs<ExtArgs> = {}>(args?: Subset<T, User$createdHolidaysArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$HolidayPayload<ExtArgs>, T, "findMany"> | Null>
+    updatedHolidays<T extends User$updatedHolidaysArgs<ExtArgs> = {}>(args?: Subset<T, User$updatedHolidaysArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$HolidayPayload<ExtArgs>, T, "findMany"> | Null>
+    createdReportTypes<T extends User$createdReportTypesArgs<ExtArgs> = {}>(args?: Subset<T, User$createdReportTypesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReportTypePayload<ExtArgs>, T, "findMany"> | Null>
+    updatedReportTypes<T extends User$updatedReportTypesArgs<ExtArgs> = {}>(args?: Subset<T, User$updatedReportTypesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReportTypePayload<ExtArgs>, T, "findMany"> | Null>
+    generatedReportLogs<T extends User$generatedReportLogsArgs<ExtArgs> = {}>(args?: Subset<T, User$generatedReportLogsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReportLogPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -33152,6 +33889,106 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: LeadScalarFieldEnum | LeadScalarFieldEnum[]
+  }
+
+  /**
+   * User.createdHolidays
+   */
+  export type User$createdHolidaysArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Holiday
+     */
+    select?: HolidaySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HolidayInclude<ExtArgs> | null
+    where?: HolidayWhereInput
+    orderBy?: HolidayOrderByWithRelationInput | HolidayOrderByWithRelationInput[]
+    cursor?: HolidayWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: HolidayScalarFieldEnum | HolidayScalarFieldEnum[]
+  }
+
+  /**
+   * User.updatedHolidays
+   */
+  export type User$updatedHolidaysArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Holiday
+     */
+    select?: HolidaySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HolidayInclude<ExtArgs> | null
+    where?: HolidayWhereInput
+    orderBy?: HolidayOrderByWithRelationInput | HolidayOrderByWithRelationInput[]
+    cursor?: HolidayWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: HolidayScalarFieldEnum | HolidayScalarFieldEnum[]
+  }
+
+  /**
+   * User.createdReportTypes
+   */
+  export type User$createdReportTypesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReportType
+     */
+    select?: ReportTypeSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReportTypeInclude<ExtArgs> | null
+    where?: ReportTypeWhereInput
+    orderBy?: ReportTypeOrderByWithRelationInput | ReportTypeOrderByWithRelationInput[]
+    cursor?: ReportTypeWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ReportTypeScalarFieldEnum | ReportTypeScalarFieldEnum[]
+  }
+
+  /**
+   * User.updatedReportTypes
+   */
+  export type User$updatedReportTypesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReportType
+     */
+    select?: ReportTypeSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReportTypeInclude<ExtArgs> | null
+    where?: ReportTypeWhereInput
+    orderBy?: ReportTypeOrderByWithRelationInput | ReportTypeOrderByWithRelationInput[]
+    cursor?: ReportTypeWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ReportTypeScalarFieldEnum | ReportTypeScalarFieldEnum[]
+  }
+
+  /**
+   * User.generatedReportLogs
+   */
+  export type User$generatedReportLogsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReportLog
+     */
+    select?: ReportLogSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReportLogInclude<ExtArgs> | null
+    where?: ReportLogWhereInput
+    orderBy?: ReportLogOrderByWithRelationInput | ReportLogOrderByWithRelationInput[]
+    cursor?: ReportLogWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ReportLogScalarFieldEnum | ReportLogScalarFieldEnum[]
   }
 
   /**
@@ -38166,6 +39003,4216 @@ export namespace Prisma {
 
 
   /**
+   * Model Holiday
+   */
+
+  export type AggregateHoliday = {
+    _count: HolidayCountAggregateOutputType | null
+    _min: HolidayMinAggregateOutputType | null
+    _max: HolidayMaxAggregateOutputType | null
+  }
+
+  export type HolidayMinAggregateOutputType = {
+    id: string | null
+    workspaceId: string | null
+    name: string | null
+    holidayDate: Date | null
+    countryId: string | null
+    stateId: string | null
+    districtId: string | null
+    isRecurring: boolean | null
+    recurrenceRule: string | null
+    source: $Enums.HolidaySource | null
+    status: $Enums.HolidayStatus | null
+    createdById: string | null
+    updatedById: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type HolidayMaxAggregateOutputType = {
+    id: string | null
+    workspaceId: string | null
+    name: string | null
+    holidayDate: Date | null
+    countryId: string | null
+    stateId: string | null
+    districtId: string | null
+    isRecurring: boolean | null
+    recurrenceRule: string | null
+    source: $Enums.HolidaySource | null
+    status: $Enums.HolidayStatus | null
+    createdById: string | null
+    updatedById: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type HolidayCountAggregateOutputType = {
+    id: number
+    workspaceId: number
+    name: number
+    holidayDate: number
+    countryId: number
+    stateId: number
+    districtId: number
+    isRecurring: number
+    recurrenceRule: number
+    source: number
+    status: number
+    createdById: number
+    updatedById: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type HolidayMinAggregateInputType = {
+    id?: true
+    workspaceId?: true
+    name?: true
+    holidayDate?: true
+    countryId?: true
+    stateId?: true
+    districtId?: true
+    isRecurring?: true
+    recurrenceRule?: true
+    source?: true
+    status?: true
+    createdById?: true
+    updatedById?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type HolidayMaxAggregateInputType = {
+    id?: true
+    workspaceId?: true
+    name?: true
+    holidayDate?: true
+    countryId?: true
+    stateId?: true
+    districtId?: true
+    isRecurring?: true
+    recurrenceRule?: true
+    source?: true
+    status?: true
+    createdById?: true
+    updatedById?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type HolidayCountAggregateInputType = {
+    id?: true
+    workspaceId?: true
+    name?: true
+    holidayDate?: true
+    countryId?: true
+    stateId?: true
+    districtId?: true
+    isRecurring?: true
+    recurrenceRule?: true
+    source?: true
+    status?: true
+    createdById?: true
+    updatedById?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type HolidayAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Holiday to aggregate.
+     */
+    where?: HolidayWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Holidays to fetch.
+     */
+    orderBy?: HolidayOrderByWithRelationInput | HolidayOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: HolidayWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Holidays from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Holidays.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Holidays
+    **/
+    _count?: true | HolidayCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: HolidayMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: HolidayMaxAggregateInputType
+  }
+
+  export type GetHolidayAggregateType<T extends HolidayAggregateArgs> = {
+        [P in keyof T & keyof AggregateHoliday]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateHoliday[P]>
+      : GetScalarType<T[P], AggregateHoliday[P]>
+  }
+
+
+
+
+  export type HolidayGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: HolidayWhereInput
+    orderBy?: HolidayOrderByWithAggregationInput | HolidayOrderByWithAggregationInput[]
+    by: HolidayScalarFieldEnum[] | HolidayScalarFieldEnum
+    having?: HolidayScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: HolidayCountAggregateInputType | true
+    _min?: HolidayMinAggregateInputType
+    _max?: HolidayMaxAggregateInputType
+  }
+
+  export type HolidayGroupByOutputType = {
+    id: string
+    workspaceId: string
+    name: string
+    holidayDate: Date
+    countryId: string | null
+    stateId: string | null
+    districtId: string | null
+    isRecurring: boolean
+    recurrenceRule: string | null
+    source: $Enums.HolidaySource
+    status: $Enums.HolidayStatus
+    createdById: string | null
+    updatedById: string | null
+    createdAt: Date
+    updatedAt: Date
+    _count: HolidayCountAggregateOutputType | null
+    _min: HolidayMinAggregateOutputType | null
+    _max: HolidayMaxAggregateOutputType | null
+  }
+
+  type GetHolidayGroupByPayload<T extends HolidayGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<HolidayGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof HolidayGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], HolidayGroupByOutputType[P]>
+            : GetScalarType<T[P], HolidayGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type HolidaySelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    workspaceId?: boolean
+    name?: boolean
+    holidayDate?: boolean
+    countryId?: boolean
+    stateId?: boolean
+    districtId?: boolean
+    isRecurring?: boolean
+    recurrenceRule?: boolean
+    source?: boolean
+    status?: boolean
+    createdById?: boolean
+    updatedById?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+    country?: boolean | Holiday$countryArgs<ExtArgs>
+    state?: boolean | Holiday$stateArgs<ExtArgs>
+    district?: boolean | Holiday$districtArgs<ExtArgs>
+    createdBy?: boolean | Holiday$createdByArgs<ExtArgs>
+    updatedBy?: boolean | Holiday$updatedByArgs<ExtArgs>
+  }, ExtArgs["result"]["holiday"]>
+
+  export type HolidaySelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    workspaceId?: boolean
+    name?: boolean
+    holidayDate?: boolean
+    countryId?: boolean
+    stateId?: boolean
+    districtId?: boolean
+    isRecurring?: boolean
+    recurrenceRule?: boolean
+    source?: boolean
+    status?: boolean
+    createdById?: boolean
+    updatedById?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+    country?: boolean | Holiday$countryArgs<ExtArgs>
+    state?: boolean | Holiday$stateArgs<ExtArgs>
+    district?: boolean | Holiday$districtArgs<ExtArgs>
+    createdBy?: boolean | Holiday$createdByArgs<ExtArgs>
+    updatedBy?: boolean | Holiday$updatedByArgs<ExtArgs>
+  }, ExtArgs["result"]["holiday"]>
+
+  export type HolidaySelectScalar = {
+    id?: boolean
+    workspaceId?: boolean
+    name?: boolean
+    holidayDate?: boolean
+    countryId?: boolean
+    stateId?: boolean
+    districtId?: boolean
+    isRecurring?: boolean
+    recurrenceRule?: boolean
+    source?: boolean
+    status?: boolean
+    createdById?: boolean
+    updatedById?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type HolidayInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+    country?: boolean | Holiday$countryArgs<ExtArgs>
+    state?: boolean | Holiday$stateArgs<ExtArgs>
+    district?: boolean | Holiday$districtArgs<ExtArgs>
+    createdBy?: boolean | Holiday$createdByArgs<ExtArgs>
+    updatedBy?: boolean | Holiday$updatedByArgs<ExtArgs>
+  }
+  export type HolidayIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+    country?: boolean | Holiday$countryArgs<ExtArgs>
+    state?: boolean | Holiday$stateArgs<ExtArgs>
+    district?: boolean | Holiday$districtArgs<ExtArgs>
+    createdBy?: boolean | Holiday$createdByArgs<ExtArgs>
+    updatedBy?: boolean | Holiday$updatedByArgs<ExtArgs>
+  }
+
+  export type $HolidayPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Holiday"
+    objects: {
+      workspace: Prisma.$WorkspacePayload<ExtArgs>
+      country: Prisma.$LocationPayload<ExtArgs> | null
+      state: Prisma.$LocationPayload<ExtArgs> | null
+      district: Prisma.$LocationPayload<ExtArgs> | null
+      createdBy: Prisma.$UserPayload<ExtArgs> | null
+      updatedBy: Prisma.$UserPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      workspaceId: string
+      name: string
+      holidayDate: Date
+      countryId: string | null
+      stateId: string | null
+      districtId: string | null
+      isRecurring: boolean
+      recurrenceRule: string | null
+      source: $Enums.HolidaySource
+      status: $Enums.HolidayStatus
+      createdById: string | null
+      updatedById: string | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["holiday"]>
+    composites: {}
+  }
+
+  type HolidayGetPayload<S extends boolean | null | undefined | HolidayDefaultArgs> = $Result.GetResult<Prisma.$HolidayPayload, S>
+
+  type HolidayCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<HolidayFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: HolidayCountAggregateInputType | true
+    }
+
+  export interface HolidayDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Holiday'], meta: { name: 'Holiday' } }
+    /**
+     * Find zero or one Holiday that matches the filter.
+     * @param {HolidayFindUniqueArgs} args - Arguments to find a Holiday
+     * @example
+     * // Get one Holiday
+     * const holiday = await prisma.holiday.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends HolidayFindUniqueArgs>(args: SelectSubset<T, HolidayFindUniqueArgs<ExtArgs>>): Prisma__HolidayClient<$Result.GetResult<Prisma.$HolidayPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one Holiday that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {HolidayFindUniqueOrThrowArgs} args - Arguments to find a Holiday
+     * @example
+     * // Get one Holiday
+     * const holiday = await prisma.holiday.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends HolidayFindUniqueOrThrowArgs>(args: SelectSubset<T, HolidayFindUniqueOrThrowArgs<ExtArgs>>): Prisma__HolidayClient<$Result.GetResult<Prisma.$HolidayPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first Holiday that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {HolidayFindFirstArgs} args - Arguments to find a Holiday
+     * @example
+     * // Get one Holiday
+     * const holiday = await prisma.holiday.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends HolidayFindFirstArgs>(args?: SelectSubset<T, HolidayFindFirstArgs<ExtArgs>>): Prisma__HolidayClient<$Result.GetResult<Prisma.$HolidayPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first Holiday that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {HolidayFindFirstOrThrowArgs} args - Arguments to find a Holiday
+     * @example
+     * // Get one Holiday
+     * const holiday = await prisma.holiday.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends HolidayFindFirstOrThrowArgs>(args?: SelectSubset<T, HolidayFindFirstOrThrowArgs<ExtArgs>>): Prisma__HolidayClient<$Result.GetResult<Prisma.$HolidayPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more Holidays that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {HolidayFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Holidays
+     * const holidays = await prisma.holiday.findMany()
+     * 
+     * // Get first 10 Holidays
+     * const holidays = await prisma.holiday.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const holidayWithIdOnly = await prisma.holiday.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends HolidayFindManyArgs>(args?: SelectSubset<T, HolidayFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$HolidayPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a Holiday.
+     * @param {HolidayCreateArgs} args - Arguments to create a Holiday.
+     * @example
+     * // Create one Holiday
+     * const Holiday = await prisma.holiday.create({
+     *   data: {
+     *     // ... data to create a Holiday
+     *   }
+     * })
+     * 
+     */
+    create<T extends HolidayCreateArgs>(args: SelectSubset<T, HolidayCreateArgs<ExtArgs>>): Prisma__HolidayClient<$Result.GetResult<Prisma.$HolidayPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many Holidays.
+     * @param {HolidayCreateManyArgs} args - Arguments to create many Holidays.
+     * @example
+     * // Create many Holidays
+     * const holiday = await prisma.holiday.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends HolidayCreateManyArgs>(args?: SelectSubset<T, HolidayCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Holidays and returns the data saved in the database.
+     * @param {HolidayCreateManyAndReturnArgs} args - Arguments to create many Holidays.
+     * @example
+     * // Create many Holidays
+     * const holiday = await prisma.holiday.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Holidays and only return the `id`
+     * const holidayWithIdOnly = await prisma.holiday.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends HolidayCreateManyAndReturnArgs>(args?: SelectSubset<T, HolidayCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$HolidayPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a Holiday.
+     * @param {HolidayDeleteArgs} args - Arguments to delete one Holiday.
+     * @example
+     * // Delete one Holiday
+     * const Holiday = await prisma.holiday.delete({
+     *   where: {
+     *     // ... filter to delete one Holiday
+     *   }
+     * })
+     * 
+     */
+    delete<T extends HolidayDeleteArgs>(args: SelectSubset<T, HolidayDeleteArgs<ExtArgs>>): Prisma__HolidayClient<$Result.GetResult<Prisma.$HolidayPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one Holiday.
+     * @param {HolidayUpdateArgs} args - Arguments to update one Holiday.
+     * @example
+     * // Update one Holiday
+     * const holiday = await prisma.holiday.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends HolidayUpdateArgs>(args: SelectSubset<T, HolidayUpdateArgs<ExtArgs>>): Prisma__HolidayClient<$Result.GetResult<Prisma.$HolidayPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more Holidays.
+     * @param {HolidayDeleteManyArgs} args - Arguments to filter Holidays to delete.
+     * @example
+     * // Delete a few Holidays
+     * const { count } = await prisma.holiday.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends HolidayDeleteManyArgs>(args?: SelectSubset<T, HolidayDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Holidays.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {HolidayUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Holidays
+     * const holiday = await prisma.holiday.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends HolidayUpdateManyArgs>(args: SelectSubset<T, HolidayUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one Holiday.
+     * @param {HolidayUpsertArgs} args - Arguments to update or create a Holiday.
+     * @example
+     * // Update or create a Holiday
+     * const holiday = await prisma.holiday.upsert({
+     *   create: {
+     *     // ... data to create a Holiday
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Holiday we want to update
+     *   }
+     * })
+     */
+    upsert<T extends HolidayUpsertArgs>(args: SelectSubset<T, HolidayUpsertArgs<ExtArgs>>): Prisma__HolidayClient<$Result.GetResult<Prisma.$HolidayPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of Holidays.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {HolidayCountArgs} args - Arguments to filter Holidays to count.
+     * @example
+     * // Count the number of Holidays
+     * const count = await prisma.holiday.count({
+     *   where: {
+     *     // ... the filter for the Holidays we want to count
+     *   }
+     * })
+    **/
+    count<T extends HolidayCountArgs>(
+      args?: Subset<T, HolidayCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], HolidayCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Holiday.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {HolidayAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends HolidayAggregateArgs>(args: Subset<T, HolidayAggregateArgs>): Prisma.PrismaPromise<GetHolidayAggregateType<T>>
+
+    /**
+     * Group by Holiday.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {HolidayGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends HolidayGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: HolidayGroupByArgs['orderBy'] }
+        : { orderBy?: HolidayGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, HolidayGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetHolidayGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Holiday model
+   */
+  readonly fields: HolidayFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Holiday.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__HolidayClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    workspace<T extends WorkspaceDefaultArgs<ExtArgs> = {}>(args?: Subset<T, WorkspaceDefaultArgs<ExtArgs>>): Prisma__WorkspaceClient<$Result.GetResult<Prisma.$WorkspacePayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    country<T extends Holiday$countryArgs<ExtArgs> = {}>(args?: Subset<T, Holiday$countryArgs<ExtArgs>>): Prisma__LocationClient<$Result.GetResult<Prisma.$LocationPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    state<T extends Holiday$stateArgs<ExtArgs> = {}>(args?: Subset<T, Holiday$stateArgs<ExtArgs>>): Prisma__LocationClient<$Result.GetResult<Prisma.$LocationPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    district<T extends Holiday$districtArgs<ExtArgs> = {}>(args?: Subset<T, Holiday$districtArgs<ExtArgs>>): Prisma__LocationClient<$Result.GetResult<Prisma.$LocationPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    createdBy<T extends Holiday$createdByArgs<ExtArgs> = {}>(args?: Subset<T, Holiday$createdByArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    updatedBy<T extends Holiday$updatedByArgs<ExtArgs> = {}>(args?: Subset<T, Holiday$updatedByArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Holiday model
+   */ 
+  interface HolidayFieldRefs {
+    readonly id: FieldRef<"Holiday", 'String'>
+    readonly workspaceId: FieldRef<"Holiday", 'String'>
+    readonly name: FieldRef<"Holiday", 'String'>
+    readonly holidayDate: FieldRef<"Holiday", 'DateTime'>
+    readonly countryId: FieldRef<"Holiday", 'String'>
+    readonly stateId: FieldRef<"Holiday", 'String'>
+    readonly districtId: FieldRef<"Holiday", 'String'>
+    readonly isRecurring: FieldRef<"Holiday", 'Boolean'>
+    readonly recurrenceRule: FieldRef<"Holiday", 'String'>
+    readonly source: FieldRef<"Holiday", 'HolidaySource'>
+    readonly status: FieldRef<"Holiday", 'HolidayStatus'>
+    readonly createdById: FieldRef<"Holiday", 'String'>
+    readonly updatedById: FieldRef<"Holiday", 'String'>
+    readonly createdAt: FieldRef<"Holiday", 'DateTime'>
+    readonly updatedAt: FieldRef<"Holiday", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Holiday findUnique
+   */
+  export type HolidayFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Holiday
+     */
+    select?: HolidaySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HolidayInclude<ExtArgs> | null
+    /**
+     * Filter, which Holiday to fetch.
+     */
+    where: HolidayWhereUniqueInput
+  }
+
+  /**
+   * Holiday findUniqueOrThrow
+   */
+  export type HolidayFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Holiday
+     */
+    select?: HolidaySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HolidayInclude<ExtArgs> | null
+    /**
+     * Filter, which Holiday to fetch.
+     */
+    where: HolidayWhereUniqueInput
+  }
+
+  /**
+   * Holiday findFirst
+   */
+  export type HolidayFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Holiday
+     */
+    select?: HolidaySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HolidayInclude<ExtArgs> | null
+    /**
+     * Filter, which Holiday to fetch.
+     */
+    where?: HolidayWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Holidays to fetch.
+     */
+    orderBy?: HolidayOrderByWithRelationInput | HolidayOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Holidays.
+     */
+    cursor?: HolidayWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Holidays from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Holidays.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Holidays.
+     */
+    distinct?: HolidayScalarFieldEnum | HolidayScalarFieldEnum[]
+  }
+
+  /**
+   * Holiday findFirstOrThrow
+   */
+  export type HolidayFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Holiday
+     */
+    select?: HolidaySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HolidayInclude<ExtArgs> | null
+    /**
+     * Filter, which Holiday to fetch.
+     */
+    where?: HolidayWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Holidays to fetch.
+     */
+    orderBy?: HolidayOrderByWithRelationInput | HolidayOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Holidays.
+     */
+    cursor?: HolidayWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Holidays from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Holidays.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Holidays.
+     */
+    distinct?: HolidayScalarFieldEnum | HolidayScalarFieldEnum[]
+  }
+
+  /**
+   * Holiday findMany
+   */
+  export type HolidayFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Holiday
+     */
+    select?: HolidaySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HolidayInclude<ExtArgs> | null
+    /**
+     * Filter, which Holidays to fetch.
+     */
+    where?: HolidayWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Holidays to fetch.
+     */
+    orderBy?: HolidayOrderByWithRelationInput | HolidayOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Holidays.
+     */
+    cursor?: HolidayWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Holidays from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Holidays.
+     */
+    skip?: number
+    distinct?: HolidayScalarFieldEnum | HolidayScalarFieldEnum[]
+  }
+
+  /**
+   * Holiday create
+   */
+  export type HolidayCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Holiday
+     */
+    select?: HolidaySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HolidayInclude<ExtArgs> | null
+    /**
+     * The data needed to create a Holiday.
+     */
+    data: XOR<HolidayCreateInput, HolidayUncheckedCreateInput>
+  }
+
+  /**
+   * Holiday createMany
+   */
+  export type HolidayCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Holidays.
+     */
+    data: HolidayCreateManyInput | HolidayCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Holiday createManyAndReturn
+   */
+  export type HolidayCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Holiday
+     */
+    select?: HolidaySelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many Holidays.
+     */
+    data: HolidayCreateManyInput | HolidayCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HolidayIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Holiday update
+   */
+  export type HolidayUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Holiday
+     */
+    select?: HolidaySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HolidayInclude<ExtArgs> | null
+    /**
+     * The data needed to update a Holiday.
+     */
+    data: XOR<HolidayUpdateInput, HolidayUncheckedUpdateInput>
+    /**
+     * Choose, which Holiday to update.
+     */
+    where: HolidayWhereUniqueInput
+  }
+
+  /**
+   * Holiday updateMany
+   */
+  export type HolidayUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Holidays.
+     */
+    data: XOR<HolidayUpdateManyMutationInput, HolidayUncheckedUpdateManyInput>
+    /**
+     * Filter which Holidays to update
+     */
+    where?: HolidayWhereInput
+  }
+
+  /**
+   * Holiday upsert
+   */
+  export type HolidayUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Holiday
+     */
+    select?: HolidaySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HolidayInclude<ExtArgs> | null
+    /**
+     * The filter to search for the Holiday to update in case it exists.
+     */
+    where: HolidayWhereUniqueInput
+    /**
+     * In case the Holiday found by the `where` argument doesn't exist, create a new Holiday with this data.
+     */
+    create: XOR<HolidayCreateInput, HolidayUncheckedCreateInput>
+    /**
+     * In case the Holiday was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<HolidayUpdateInput, HolidayUncheckedUpdateInput>
+  }
+
+  /**
+   * Holiday delete
+   */
+  export type HolidayDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Holiday
+     */
+    select?: HolidaySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HolidayInclude<ExtArgs> | null
+    /**
+     * Filter which Holiday to delete.
+     */
+    where: HolidayWhereUniqueInput
+  }
+
+  /**
+   * Holiday deleteMany
+   */
+  export type HolidayDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Holidays to delete
+     */
+    where?: HolidayWhereInput
+  }
+
+  /**
+   * Holiday.country
+   */
+  export type Holiday$countryArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Location
+     */
+    select?: LocationSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LocationInclude<ExtArgs> | null
+    where?: LocationWhereInput
+  }
+
+  /**
+   * Holiday.state
+   */
+  export type Holiday$stateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Location
+     */
+    select?: LocationSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LocationInclude<ExtArgs> | null
+    where?: LocationWhereInput
+  }
+
+  /**
+   * Holiday.district
+   */
+  export type Holiday$districtArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Location
+     */
+    select?: LocationSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LocationInclude<ExtArgs> | null
+    where?: LocationWhereInput
+  }
+
+  /**
+   * Holiday.createdBy
+   */
+  export type Holiday$createdByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+  }
+
+  /**
+   * Holiday.updatedBy
+   */
+  export type Holiday$updatedByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+  }
+
+  /**
+   * Holiday without action
+   */
+  export type HolidayDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Holiday
+     */
+    select?: HolidaySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HolidayInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model HolidaySyncLog
+   */
+
+  export type AggregateHolidaySyncLog = {
+    _count: HolidaySyncLogCountAggregateOutputType | null
+    _min: HolidaySyncLogMinAggregateOutputType | null
+    _max: HolidaySyncLogMaxAggregateOutputType | null
+  }
+
+  export type HolidaySyncLogMinAggregateOutputType = {
+    id: string | null
+    workspaceId: string | null
+    source: $Enums.HolidaySource | null
+    status: string | null
+    message: string | null
+    syncedAt: Date | null
+  }
+
+  export type HolidaySyncLogMaxAggregateOutputType = {
+    id: string | null
+    workspaceId: string | null
+    source: $Enums.HolidaySource | null
+    status: string | null
+    message: string | null
+    syncedAt: Date | null
+  }
+
+  export type HolidaySyncLogCountAggregateOutputType = {
+    id: number
+    workspaceId: number
+    source: number
+    status: number
+    message: number
+    syncedAt: number
+    _all: number
+  }
+
+
+  export type HolidaySyncLogMinAggregateInputType = {
+    id?: true
+    workspaceId?: true
+    source?: true
+    status?: true
+    message?: true
+    syncedAt?: true
+  }
+
+  export type HolidaySyncLogMaxAggregateInputType = {
+    id?: true
+    workspaceId?: true
+    source?: true
+    status?: true
+    message?: true
+    syncedAt?: true
+  }
+
+  export type HolidaySyncLogCountAggregateInputType = {
+    id?: true
+    workspaceId?: true
+    source?: true
+    status?: true
+    message?: true
+    syncedAt?: true
+    _all?: true
+  }
+
+  export type HolidaySyncLogAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which HolidaySyncLog to aggregate.
+     */
+    where?: HolidaySyncLogWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of HolidaySyncLogs to fetch.
+     */
+    orderBy?: HolidaySyncLogOrderByWithRelationInput | HolidaySyncLogOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: HolidaySyncLogWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` HolidaySyncLogs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` HolidaySyncLogs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned HolidaySyncLogs
+    **/
+    _count?: true | HolidaySyncLogCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: HolidaySyncLogMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: HolidaySyncLogMaxAggregateInputType
+  }
+
+  export type GetHolidaySyncLogAggregateType<T extends HolidaySyncLogAggregateArgs> = {
+        [P in keyof T & keyof AggregateHolidaySyncLog]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateHolidaySyncLog[P]>
+      : GetScalarType<T[P], AggregateHolidaySyncLog[P]>
+  }
+
+
+
+
+  export type HolidaySyncLogGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: HolidaySyncLogWhereInput
+    orderBy?: HolidaySyncLogOrderByWithAggregationInput | HolidaySyncLogOrderByWithAggregationInput[]
+    by: HolidaySyncLogScalarFieldEnum[] | HolidaySyncLogScalarFieldEnum
+    having?: HolidaySyncLogScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: HolidaySyncLogCountAggregateInputType | true
+    _min?: HolidaySyncLogMinAggregateInputType
+    _max?: HolidaySyncLogMaxAggregateInputType
+  }
+
+  export type HolidaySyncLogGroupByOutputType = {
+    id: string
+    workspaceId: string
+    source: $Enums.HolidaySource
+    status: string
+    message: string | null
+    syncedAt: Date
+    _count: HolidaySyncLogCountAggregateOutputType | null
+    _min: HolidaySyncLogMinAggregateOutputType | null
+    _max: HolidaySyncLogMaxAggregateOutputType | null
+  }
+
+  type GetHolidaySyncLogGroupByPayload<T extends HolidaySyncLogGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<HolidaySyncLogGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof HolidaySyncLogGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], HolidaySyncLogGroupByOutputType[P]>
+            : GetScalarType<T[P], HolidaySyncLogGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type HolidaySyncLogSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    workspaceId?: boolean
+    source?: boolean
+    status?: boolean
+    message?: boolean
+    syncedAt?: boolean
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["holidaySyncLog"]>
+
+  export type HolidaySyncLogSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    workspaceId?: boolean
+    source?: boolean
+    status?: boolean
+    message?: boolean
+    syncedAt?: boolean
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["holidaySyncLog"]>
+
+  export type HolidaySyncLogSelectScalar = {
+    id?: boolean
+    workspaceId?: boolean
+    source?: boolean
+    status?: boolean
+    message?: boolean
+    syncedAt?: boolean
+  }
+
+  export type HolidaySyncLogInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+  }
+  export type HolidaySyncLogIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+  }
+
+  export type $HolidaySyncLogPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "HolidaySyncLog"
+    objects: {
+      workspace: Prisma.$WorkspacePayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      workspaceId: string
+      source: $Enums.HolidaySource
+      status: string
+      message: string | null
+      syncedAt: Date
+    }, ExtArgs["result"]["holidaySyncLog"]>
+    composites: {}
+  }
+
+  type HolidaySyncLogGetPayload<S extends boolean | null | undefined | HolidaySyncLogDefaultArgs> = $Result.GetResult<Prisma.$HolidaySyncLogPayload, S>
+
+  type HolidaySyncLogCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<HolidaySyncLogFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: HolidaySyncLogCountAggregateInputType | true
+    }
+
+  export interface HolidaySyncLogDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['HolidaySyncLog'], meta: { name: 'HolidaySyncLog' } }
+    /**
+     * Find zero or one HolidaySyncLog that matches the filter.
+     * @param {HolidaySyncLogFindUniqueArgs} args - Arguments to find a HolidaySyncLog
+     * @example
+     * // Get one HolidaySyncLog
+     * const holidaySyncLog = await prisma.holidaySyncLog.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends HolidaySyncLogFindUniqueArgs>(args: SelectSubset<T, HolidaySyncLogFindUniqueArgs<ExtArgs>>): Prisma__HolidaySyncLogClient<$Result.GetResult<Prisma.$HolidaySyncLogPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one HolidaySyncLog that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {HolidaySyncLogFindUniqueOrThrowArgs} args - Arguments to find a HolidaySyncLog
+     * @example
+     * // Get one HolidaySyncLog
+     * const holidaySyncLog = await prisma.holidaySyncLog.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends HolidaySyncLogFindUniqueOrThrowArgs>(args: SelectSubset<T, HolidaySyncLogFindUniqueOrThrowArgs<ExtArgs>>): Prisma__HolidaySyncLogClient<$Result.GetResult<Prisma.$HolidaySyncLogPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first HolidaySyncLog that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {HolidaySyncLogFindFirstArgs} args - Arguments to find a HolidaySyncLog
+     * @example
+     * // Get one HolidaySyncLog
+     * const holidaySyncLog = await prisma.holidaySyncLog.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends HolidaySyncLogFindFirstArgs>(args?: SelectSubset<T, HolidaySyncLogFindFirstArgs<ExtArgs>>): Prisma__HolidaySyncLogClient<$Result.GetResult<Prisma.$HolidaySyncLogPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first HolidaySyncLog that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {HolidaySyncLogFindFirstOrThrowArgs} args - Arguments to find a HolidaySyncLog
+     * @example
+     * // Get one HolidaySyncLog
+     * const holidaySyncLog = await prisma.holidaySyncLog.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends HolidaySyncLogFindFirstOrThrowArgs>(args?: SelectSubset<T, HolidaySyncLogFindFirstOrThrowArgs<ExtArgs>>): Prisma__HolidaySyncLogClient<$Result.GetResult<Prisma.$HolidaySyncLogPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more HolidaySyncLogs that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {HolidaySyncLogFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all HolidaySyncLogs
+     * const holidaySyncLogs = await prisma.holidaySyncLog.findMany()
+     * 
+     * // Get first 10 HolidaySyncLogs
+     * const holidaySyncLogs = await prisma.holidaySyncLog.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const holidaySyncLogWithIdOnly = await prisma.holidaySyncLog.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends HolidaySyncLogFindManyArgs>(args?: SelectSubset<T, HolidaySyncLogFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$HolidaySyncLogPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a HolidaySyncLog.
+     * @param {HolidaySyncLogCreateArgs} args - Arguments to create a HolidaySyncLog.
+     * @example
+     * // Create one HolidaySyncLog
+     * const HolidaySyncLog = await prisma.holidaySyncLog.create({
+     *   data: {
+     *     // ... data to create a HolidaySyncLog
+     *   }
+     * })
+     * 
+     */
+    create<T extends HolidaySyncLogCreateArgs>(args: SelectSubset<T, HolidaySyncLogCreateArgs<ExtArgs>>): Prisma__HolidaySyncLogClient<$Result.GetResult<Prisma.$HolidaySyncLogPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many HolidaySyncLogs.
+     * @param {HolidaySyncLogCreateManyArgs} args - Arguments to create many HolidaySyncLogs.
+     * @example
+     * // Create many HolidaySyncLogs
+     * const holidaySyncLog = await prisma.holidaySyncLog.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends HolidaySyncLogCreateManyArgs>(args?: SelectSubset<T, HolidaySyncLogCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many HolidaySyncLogs and returns the data saved in the database.
+     * @param {HolidaySyncLogCreateManyAndReturnArgs} args - Arguments to create many HolidaySyncLogs.
+     * @example
+     * // Create many HolidaySyncLogs
+     * const holidaySyncLog = await prisma.holidaySyncLog.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many HolidaySyncLogs and only return the `id`
+     * const holidaySyncLogWithIdOnly = await prisma.holidaySyncLog.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends HolidaySyncLogCreateManyAndReturnArgs>(args?: SelectSubset<T, HolidaySyncLogCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$HolidaySyncLogPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a HolidaySyncLog.
+     * @param {HolidaySyncLogDeleteArgs} args - Arguments to delete one HolidaySyncLog.
+     * @example
+     * // Delete one HolidaySyncLog
+     * const HolidaySyncLog = await prisma.holidaySyncLog.delete({
+     *   where: {
+     *     // ... filter to delete one HolidaySyncLog
+     *   }
+     * })
+     * 
+     */
+    delete<T extends HolidaySyncLogDeleteArgs>(args: SelectSubset<T, HolidaySyncLogDeleteArgs<ExtArgs>>): Prisma__HolidaySyncLogClient<$Result.GetResult<Prisma.$HolidaySyncLogPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one HolidaySyncLog.
+     * @param {HolidaySyncLogUpdateArgs} args - Arguments to update one HolidaySyncLog.
+     * @example
+     * // Update one HolidaySyncLog
+     * const holidaySyncLog = await prisma.holidaySyncLog.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends HolidaySyncLogUpdateArgs>(args: SelectSubset<T, HolidaySyncLogUpdateArgs<ExtArgs>>): Prisma__HolidaySyncLogClient<$Result.GetResult<Prisma.$HolidaySyncLogPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more HolidaySyncLogs.
+     * @param {HolidaySyncLogDeleteManyArgs} args - Arguments to filter HolidaySyncLogs to delete.
+     * @example
+     * // Delete a few HolidaySyncLogs
+     * const { count } = await prisma.holidaySyncLog.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends HolidaySyncLogDeleteManyArgs>(args?: SelectSubset<T, HolidaySyncLogDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more HolidaySyncLogs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {HolidaySyncLogUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many HolidaySyncLogs
+     * const holidaySyncLog = await prisma.holidaySyncLog.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends HolidaySyncLogUpdateManyArgs>(args: SelectSubset<T, HolidaySyncLogUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one HolidaySyncLog.
+     * @param {HolidaySyncLogUpsertArgs} args - Arguments to update or create a HolidaySyncLog.
+     * @example
+     * // Update or create a HolidaySyncLog
+     * const holidaySyncLog = await prisma.holidaySyncLog.upsert({
+     *   create: {
+     *     // ... data to create a HolidaySyncLog
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the HolidaySyncLog we want to update
+     *   }
+     * })
+     */
+    upsert<T extends HolidaySyncLogUpsertArgs>(args: SelectSubset<T, HolidaySyncLogUpsertArgs<ExtArgs>>): Prisma__HolidaySyncLogClient<$Result.GetResult<Prisma.$HolidaySyncLogPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of HolidaySyncLogs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {HolidaySyncLogCountArgs} args - Arguments to filter HolidaySyncLogs to count.
+     * @example
+     * // Count the number of HolidaySyncLogs
+     * const count = await prisma.holidaySyncLog.count({
+     *   where: {
+     *     // ... the filter for the HolidaySyncLogs we want to count
+     *   }
+     * })
+    **/
+    count<T extends HolidaySyncLogCountArgs>(
+      args?: Subset<T, HolidaySyncLogCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], HolidaySyncLogCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a HolidaySyncLog.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {HolidaySyncLogAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends HolidaySyncLogAggregateArgs>(args: Subset<T, HolidaySyncLogAggregateArgs>): Prisma.PrismaPromise<GetHolidaySyncLogAggregateType<T>>
+
+    /**
+     * Group by HolidaySyncLog.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {HolidaySyncLogGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends HolidaySyncLogGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: HolidaySyncLogGroupByArgs['orderBy'] }
+        : { orderBy?: HolidaySyncLogGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, HolidaySyncLogGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetHolidaySyncLogGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the HolidaySyncLog model
+   */
+  readonly fields: HolidaySyncLogFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for HolidaySyncLog.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__HolidaySyncLogClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    workspace<T extends WorkspaceDefaultArgs<ExtArgs> = {}>(args?: Subset<T, WorkspaceDefaultArgs<ExtArgs>>): Prisma__WorkspaceClient<$Result.GetResult<Prisma.$WorkspacePayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the HolidaySyncLog model
+   */ 
+  interface HolidaySyncLogFieldRefs {
+    readonly id: FieldRef<"HolidaySyncLog", 'String'>
+    readonly workspaceId: FieldRef<"HolidaySyncLog", 'String'>
+    readonly source: FieldRef<"HolidaySyncLog", 'HolidaySource'>
+    readonly status: FieldRef<"HolidaySyncLog", 'String'>
+    readonly message: FieldRef<"HolidaySyncLog", 'String'>
+    readonly syncedAt: FieldRef<"HolidaySyncLog", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * HolidaySyncLog findUnique
+   */
+  export type HolidaySyncLogFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HolidaySyncLog
+     */
+    select?: HolidaySyncLogSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HolidaySyncLogInclude<ExtArgs> | null
+    /**
+     * Filter, which HolidaySyncLog to fetch.
+     */
+    where: HolidaySyncLogWhereUniqueInput
+  }
+
+  /**
+   * HolidaySyncLog findUniqueOrThrow
+   */
+  export type HolidaySyncLogFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HolidaySyncLog
+     */
+    select?: HolidaySyncLogSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HolidaySyncLogInclude<ExtArgs> | null
+    /**
+     * Filter, which HolidaySyncLog to fetch.
+     */
+    where: HolidaySyncLogWhereUniqueInput
+  }
+
+  /**
+   * HolidaySyncLog findFirst
+   */
+  export type HolidaySyncLogFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HolidaySyncLog
+     */
+    select?: HolidaySyncLogSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HolidaySyncLogInclude<ExtArgs> | null
+    /**
+     * Filter, which HolidaySyncLog to fetch.
+     */
+    where?: HolidaySyncLogWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of HolidaySyncLogs to fetch.
+     */
+    orderBy?: HolidaySyncLogOrderByWithRelationInput | HolidaySyncLogOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for HolidaySyncLogs.
+     */
+    cursor?: HolidaySyncLogWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` HolidaySyncLogs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` HolidaySyncLogs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of HolidaySyncLogs.
+     */
+    distinct?: HolidaySyncLogScalarFieldEnum | HolidaySyncLogScalarFieldEnum[]
+  }
+
+  /**
+   * HolidaySyncLog findFirstOrThrow
+   */
+  export type HolidaySyncLogFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HolidaySyncLog
+     */
+    select?: HolidaySyncLogSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HolidaySyncLogInclude<ExtArgs> | null
+    /**
+     * Filter, which HolidaySyncLog to fetch.
+     */
+    where?: HolidaySyncLogWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of HolidaySyncLogs to fetch.
+     */
+    orderBy?: HolidaySyncLogOrderByWithRelationInput | HolidaySyncLogOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for HolidaySyncLogs.
+     */
+    cursor?: HolidaySyncLogWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` HolidaySyncLogs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` HolidaySyncLogs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of HolidaySyncLogs.
+     */
+    distinct?: HolidaySyncLogScalarFieldEnum | HolidaySyncLogScalarFieldEnum[]
+  }
+
+  /**
+   * HolidaySyncLog findMany
+   */
+  export type HolidaySyncLogFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HolidaySyncLog
+     */
+    select?: HolidaySyncLogSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HolidaySyncLogInclude<ExtArgs> | null
+    /**
+     * Filter, which HolidaySyncLogs to fetch.
+     */
+    where?: HolidaySyncLogWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of HolidaySyncLogs to fetch.
+     */
+    orderBy?: HolidaySyncLogOrderByWithRelationInput | HolidaySyncLogOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing HolidaySyncLogs.
+     */
+    cursor?: HolidaySyncLogWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` HolidaySyncLogs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` HolidaySyncLogs.
+     */
+    skip?: number
+    distinct?: HolidaySyncLogScalarFieldEnum | HolidaySyncLogScalarFieldEnum[]
+  }
+
+  /**
+   * HolidaySyncLog create
+   */
+  export type HolidaySyncLogCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HolidaySyncLog
+     */
+    select?: HolidaySyncLogSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HolidaySyncLogInclude<ExtArgs> | null
+    /**
+     * The data needed to create a HolidaySyncLog.
+     */
+    data: XOR<HolidaySyncLogCreateInput, HolidaySyncLogUncheckedCreateInput>
+  }
+
+  /**
+   * HolidaySyncLog createMany
+   */
+  export type HolidaySyncLogCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many HolidaySyncLogs.
+     */
+    data: HolidaySyncLogCreateManyInput | HolidaySyncLogCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * HolidaySyncLog createManyAndReturn
+   */
+  export type HolidaySyncLogCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HolidaySyncLog
+     */
+    select?: HolidaySyncLogSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many HolidaySyncLogs.
+     */
+    data: HolidaySyncLogCreateManyInput | HolidaySyncLogCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HolidaySyncLogIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * HolidaySyncLog update
+   */
+  export type HolidaySyncLogUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HolidaySyncLog
+     */
+    select?: HolidaySyncLogSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HolidaySyncLogInclude<ExtArgs> | null
+    /**
+     * The data needed to update a HolidaySyncLog.
+     */
+    data: XOR<HolidaySyncLogUpdateInput, HolidaySyncLogUncheckedUpdateInput>
+    /**
+     * Choose, which HolidaySyncLog to update.
+     */
+    where: HolidaySyncLogWhereUniqueInput
+  }
+
+  /**
+   * HolidaySyncLog updateMany
+   */
+  export type HolidaySyncLogUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update HolidaySyncLogs.
+     */
+    data: XOR<HolidaySyncLogUpdateManyMutationInput, HolidaySyncLogUncheckedUpdateManyInput>
+    /**
+     * Filter which HolidaySyncLogs to update
+     */
+    where?: HolidaySyncLogWhereInput
+  }
+
+  /**
+   * HolidaySyncLog upsert
+   */
+  export type HolidaySyncLogUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HolidaySyncLog
+     */
+    select?: HolidaySyncLogSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HolidaySyncLogInclude<ExtArgs> | null
+    /**
+     * The filter to search for the HolidaySyncLog to update in case it exists.
+     */
+    where: HolidaySyncLogWhereUniqueInput
+    /**
+     * In case the HolidaySyncLog found by the `where` argument doesn't exist, create a new HolidaySyncLog with this data.
+     */
+    create: XOR<HolidaySyncLogCreateInput, HolidaySyncLogUncheckedCreateInput>
+    /**
+     * In case the HolidaySyncLog was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<HolidaySyncLogUpdateInput, HolidaySyncLogUncheckedUpdateInput>
+  }
+
+  /**
+   * HolidaySyncLog delete
+   */
+  export type HolidaySyncLogDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HolidaySyncLog
+     */
+    select?: HolidaySyncLogSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HolidaySyncLogInclude<ExtArgs> | null
+    /**
+     * Filter which HolidaySyncLog to delete.
+     */
+    where: HolidaySyncLogWhereUniqueInput
+  }
+
+  /**
+   * HolidaySyncLog deleteMany
+   */
+  export type HolidaySyncLogDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which HolidaySyncLogs to delete
+     */
+    where?: HolidaySyncLogWhereInput
+  }
+
+  /**
+   * HolidaySyncLog without action
+   */
+  export type HolidaySyncLogDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HolidaySyncLog
+     */
+    select?: HolidaySyncLogSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HolidaySyncLogInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model ReportType
+   */
+
+  export type AggregateReportType = {
+    _count: ReportTypeCountAggregateOutputType | null
+    _min: ReportTypeMinAggregateOutputType | null
+    _max: ReportTypeMaxAggregateOutputType | null
+  }
+
+  export type ReportTypeMinAggregateOutputType = {
+    id: string | null
+    workspaceId: string | null
+    name: string | null
+    module: $Enums.ReportModule | null
+    baseDataSource: $Enums.ReportBaseDataSource | null
+    description: string | null
+    status: $Enums.ReportTypeStatus | null
+    createdById: string | null
+    updatedById: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    deletedAt: Date | null
+  }
+
+  export type ReportTypeMaxAggregateOutputType = {
+    id: string | null
+    workspaceId: string | null
+    name: string | null
+    module: $Enums.ReportModule | null
+    baseDataSource: $Enums.ReportBaseDataSource | null
+    description: string | null
+    status: $Enums.ReportTypeStatus | null
+    createdById: string | null
+    updatedById: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    deletedAt: Date | null
+  }
+
+  export type ReportTypeCountAggregateOutputType = {
+    id: number
+    workspaceId: number
+    name: number
+    module: number
+    baseDataSource: number
+    description: number
+    allowedFilters: number
+    status: number
+    createdById: number
+    updatedById: number
+    createdAt: number
+    updatedAt: number
+    deletedAt: number
+    _all: number
+  }
+
+
+  export type ReportTypeMinAggregateInputType = {
+    id?: true
+    workspaceId?: true
+    name?: true
+    module?: true
+    baseDataSource?: true
+    description?: true
+    status?: true
+    createdById?: true
+    updatedById?: true
+    createdAt?: true
+    updatedAt?: true
+    deletedAt?: true
+  }
+
+  export type ReportTypeMaxAggregateInputType = {
+    id?: true
+    workspaceId?: true
+    name?: true
+    module?: true
+    baseDataSource?: true
+    description?: true
+    status?: true
+    createdById?: true
+    updatedById?: true
+    createdAt?: true
+    updatedAt?: true
+    deletedAt?: true
+  }
+
+  export type ReportTypeCountAggregateInputType = {
+    id?: true
+    workspaceId?: true
+    name?: true
+    module?: true
+    baseDataSource?: true
+    description?: true
+    allowedFilters?: true
+    status?: true
+    createdById?: true
+    updatedById?: true
+    createdAt?: true
+    updatedAt?: true
+    deletedAt?: true
+    _all?: true
+  }
+
+  export type ReportTypeAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ReportType to aggregate.
+     */
+    where?: ReportTypeWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ReportTypes to fetch.
+     */
+    orderBy?: ReportTypeOrderByWithRelationInput | ReportTypeOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ReportTypeWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ReportTypes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ReportTypes.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned ReportTypes
+    **/
+    _count?: true | ReportTypeCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ReportTypeMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ReportTypeMaxAggregateInputType
+  }
+
+  export type GetReportTypeAggregateType<T extends ReportTypeAggregateArgs> = {
+        [P in keyof T & keyof AggregateReportType]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateReportType[P]>
+      : GetScalarType<T[P], AggregateReportType[P]>
+  }
+
+
+
+
+  export type ReportTypeGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ReportTypeWhereInput
+    orderBy?: ReportTypeOrderByWithAggregationInput | ReportTypeOrderByWithAggregationInput[]
+    by: ReportTypeScalarFieldEnum[] | ReportTypeScalarFieldEnum
+    having?: ReportTypeScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ReportTypeCountAggregateInputType | true
+    _min?: ReportTypeMinAggregateInputType
+    _max?: ReportTypeMaxAggregateInputType
+  }
+
+  export type ReportTypeGroupByOutputType = {
+    id: string
+    workspaceId: string
+    name: string
+    module: $Enums.ReportModule
+    baseDataSource: $Enums.ReportBaseDataSource
+    description: string | null
+    allowedFilters: JsonValue
+    status: $Enums.ReportTypeStatus
+    createdById: string | null
+    updatedById: string | null
+    createdAt: Date
+    updatedAt: Date
+    deletedAt: Date | null
+    _count: ReportTypeCountAggregateOutputType | null
+    _min: ReportTypeMinAggregateOutputType | null
+    _max: ReportTypeMaxAggregateOutputType | null
+  }
+
+  type GetReportTypeGroupByPayload<T extends ReportTypeGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ReportTypeGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ReportTypeGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ReportTypeGroupByOutputType[P]>
+            : GetScalarType<T[P], ReportTypeGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ReportTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    workspaceId?: boolean
+    name?: boolean
+    module?: boolean
+    baseDataSource?: boolean
+    description?: boolean
+    allowedFilters?: boolean
+    status?: boolean
+    createdById?: boolean
+    updatedById?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    deletedAt?: boolean
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+    createdBy?: boolean | ReportType$createdByArgs<ExtArgs>
+    updatedBy?: boolean | ReportType$updatedByArgs<ExtArgs>
+    logs?: boolean | ReportType$logsArgs<ExtArgs>
+    _count?: boolean | ReportTypeCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["reportType"]>
+
+  export type ReportTypeSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    workspaceId?: boolean
+    name?: boolean
+    module?: boolean
+    baseDataSource?: boolean
+    description?: boolean
+    allowedFilters?: boolean
+    status?: boolean
+    createdById?: boolean
+    updatedById?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    deletedAt?: boolean
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+    createdBy?: boolean | ReportType$createdByArgs<ExtArgs>
+    updatedBy?: boolean | ReportType$updatedByArgs<ExtArgs>
+  }, ExtArgs["result"]["reportType"]>
+
+  export type ReportTypeSelectScalar = {
+    id?: boolean
+    workspaceId?: boolean
+    name?: boolean
+    module?: boolean
+    baseDataSource?: boolean
+    description?: boolean
+    allowedFilters?: boolean
+    status?: boolean
+    createdById?: boolean
+    updatedById?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    deletedAt?: boolean
+  }
+
+  export type ReportTypeInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+    createdBy?: boolean | ReportType$createdByArgs<ExtArgs>
+    updatedBy?: boolean | ReportType$updatedByArgs<ExtArgs>
+    logs?: boolean | ReportType$logsArgs<ExtArgs>
+    _count?: boolean | ReportTypeCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type ReportTypeIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+    createdBy?: boolean | ReportType$createdByArgs<ExtArgs>
+    updatedBy?: boolean | ReportType$updatedByArgs<ExtArgs>
+  }
+
+  export type $ReportTypePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "ReportType"
+    objects: {
+      workspace: Prisma.$WorkspacePayload<ExtArgs>
+      createdBy: Prisma.$UserPayload<ExtArgs> | null
+      updatedBy: Prisma.$UserPayload<ExtArgs> | null
+      logs: Prisma.$ReportLogPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      workspaceId: string
+      name: string
+      module: $Enums.ReportModule
+      baseDataSource: $Enums.ReportBaseDataSource
+      description: string | null
+      allowedFilters: Prisma.JsonValue
+      status: $Enums.ReportTypeStatus
+      createdById: string | null
+      updatedById: string | null
+      createdAt: Date
+      updatedAt: Date
+      deletedAt: Date | null
+    }, ExtArgs["result"]["reportType"]>
+    composites: {}
+  }
+
+  type ReportTypeGetPayload<S extends boolean | null | undefined | ReportTypeDefaultArgs> = $Result.GetResult<Prisma.$ReportTypePayload, S>
+
+  type ReportTypeCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<ReportTypeFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: ReportTypeCountAggregateInputType | true
+    }
+
+  export interface ReportTypeDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ReportType'], meta: { name: 'ReportType' } }
+    /**
+     * Find zero or one ReportType that matches the filter.
+     * @param {ReportTypeFindUniqueArgs} args - Arguments to find a ReportType
+     * @example
+     * // Get one ReportType
+     * const reportType = await prisma.reportType.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ReportTypeFindUniqueArgs>(args: SelectSubset<T, ReportTypeFindUniqueArgs<ExtArgs>>): Prisma__ReportTypeClient<$Result.GetResult<Prisma.$ReportTypePayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one ReportType that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {ReportTypeFindUniqueOrThrowArgs} args - Arguments to find a ReportType
+     * @example
+     * // Get one ReportType
+     * const reportType = await prisma.reportType.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ReportTypeFindUniqueOrThrowArgs>(args: SelectSubset<T, ReportTypeFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ReportTypeClient<$Result.GetResult<Prisma.$ReportTypePayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first ReportType that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReportTypeFindFirstArgs} args - Arguments to find a ReportType
+     * @example
+     * // Get one ReportType
+     * const reportType = await prisma.reportType.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ReportTypeFindFirstArgs>(args?: SelectSubset<T, ReportTypeFindFirstArgs<ExtArgs>>): Prisma__ReportTypeClient<$Result.GetResult<Prisma.$ReportTypePayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first ReportType that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReportTypeFindFirstOrThrowArgs} args - Arguments to find a ReportType
+     * @example
+     * // Get one ReportType
+     * const reportType = await prisma.reportType.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ReportTypeFindFirstOrThrowArgs>(args?: SelectSubset<T, ReportTypeFindFirstOrThrowArgs<ExtArgs>>): Prisma__ReportTypeClient<$Result.GetResult<Prisma.$ReportTypePayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more ReportTypes that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReportTypeFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all ReportTypes
+     * const reportTypes = await prisma.reportType.findMany()
+     * 
+     * // Get first 10 ReportTypes
+     * const reportTypes = await prisma.reportType.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const reportTypeWithIdOnly = await prisma.reportType.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ReportTypeFindManyArgs>(args?: SelectSubset<T, ReportTypeFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReportTypePayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a ReportType.
+     * @param {ReportTypeCreateArgs} args - Arguments to create a ReportType.
+     * @example
+     * // Create one ReportType
+     * const ReportType = await prisma.reportType.create({
+     *   data: {
+     *     // ... data to create a ReportType
+     *   }
+     * })
+     * 
+     */
+    create<T extends ReportTypeCreateArgs>(args: SelectSubset<T, ReportTypeCreateArgs<ExtArgs>>): Prisma__ReportTypeClient<$Result.GetResult<Prisma.$ReportTypePayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many ReportTypes.
+     * @param {ReportTypeCreateManyArgs} args - Arguments to create many ReportTypes.
+     * @example
+     * // Create many ReportTypes
+     * const reportType = await prisma.reportType.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ReportTypeCreateManyArgs>(args?: SelectSubset<T, ReportTypeCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many ReportTypes and returns the data saved in the database.
+     * @param {ReportTypeCreateManyAndReturnArgs} args - Arguments to create many ReportTypes.
+     * @example
+     * // Create many ReportTypes
+     * const reportType = await prisma.reportType.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many ReportTypes and only return the `id`
+     * const reportTypeWithIdOnly = await prisma.reportType.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends ReportTypeCreateManyAndReturnArgs>(args?: SelectSubset<T, ReportTypeCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReportTypePayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a ReportType.
+     * @param {ReportTypeDeleteArgs} args - Arguments to delete one ReportType.
+     * @example
+     * // Delete one ReportType
+     * const ReportType = await prisma.reportType.delete({
+     *   where: {
+     *     // ... filter to delete one ReportType
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ReportTypeDeleteArgs>(args: SelectSubset<T, ReportTypeDeleteArgs<ExtArgs>>): Prisma__ReportTypeClient<$Result.GetResult<Prisma.$ReportTypePayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one ReportType.
+     * @param {ReportTypeUpdateArgs} args - Arguments to update one ReportType.
+     * @example
+     * // Update one ReportType
+     * const reportType = await prisma.reportType.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ReportTypeUpdateArgs>(args: SelectSubset<T, ReportTypeUpdateArgs<ExtArgs>>): Prisma__ReportTypeClient<$Result.GetResult<Prisma.$ReportTypePayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more ReportTypes.
+     * @param {ReportTypeDeleteManyArgs} args - Arguments to filter ReportTypes to delete.
+     * @example
+     * // Delete a few ReportTypes
+     * const { count } = await prisma.reportType.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ReportTypeDeleteManyArgs>(args?: SelectSubset<T, ReportTypeDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ReportTypes.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReportTypeUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many ReportTypes
+     * const reportType = await prisma.reportType.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ReportTypeUpdateManyArgs>(args: SelectSubset<T, ReportTypeUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one ReportType.
+     * @param {ReportTypeUpsertArgs} args - Arguments to update or create a ReportType.
+     * @example
+     * // Update or create a ReportType
+     * const reportType = await prisma.reportType.upsert({
+     *   create: {
+     *     // ... data to create a ReportType
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the ReportType we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ReportTypeUpsertArgs>(args: SelectSubset<T, ReportTypeUpsertArgs<ExtArgs>>): Prisma__ReportTypeClient<$Result.GetResult<Prisma.$ReportTypePayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of ReportTypes.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReportTypeCountArgs} args - Arguments to filter ReportTypes to count.
+     * @example
+     * // Count the number of ReportTypes
+     * const count = await prisma.reportType.count({
+     *   where: {
+     *     // ... the filter for the ReportTypes we want to count
+     *   }
+     * })
+    **/
+    count<T extends ReportTypeCountArgs>(
+      args?: Subset<T, ReportTypeCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ReportTypeCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a ReportType.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReportTypeAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ReportTypeAggregateArgs>(args: Subset<T, ReportTypeAggregateArgs>): Prisma.PrismaPromise<GetReportTypeAggregateType<T>>
+
+    /**
+     * Group by ReportType.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReportTypeGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ReportTypeGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ReportTypeGroupByArgs['orderBy'] }
+        : { orderBy?: ReportTypeGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ReportTypeGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetReportTypeGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the ReportType model
+   */
+  readonly fields: ReportTypeFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for ReportType.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ReportTypeClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    workspace<T extends WorkspaceDefaultArgs<ExtArgs> = {}>(args?: Subset<T, WorkspaceDefaultArgs<ExtArgs>>): Prisma__WorkspaceClient<$Result.GetResult<Prisma.$WorkspacePayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    createdBy<T extends ReportType$createdByArgs<ExtArgs> = {}>(args?: Subset<T, ReportType$createdByArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    updatedBy<T extends ReportType$updatedByArgs<ExtArgs> = {}>(args?: Subset<T, ReportType$updatedByArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    logs<T extends ReportType$logsArgs<ExtArgs> = {}>(args?: Subset<T, ReportType$logsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReportLogPayload<ExtArgs>, T, "findMany"> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the ReportType model
+   */ 
+  interface ReportTypeFieldRefs {
+    readonly id: FieldRef<"ReportType", 'String'>
+    readonly workspaceId: FieldRef<"ReportType", 'String'>
+    readonly name: FieldRef<"ReportType", 'String'>
+    readonly module: FieldRef<"ReportType", 'ReportModule'>
+    readonly baseDataSource: FieldRef<"ReportType", 'ReportBaseDataSource'>
+    readonly description: FieldRef<"ReportType", 'String'>
+    readonly allowedFilters: FieldRef<"ReportType", 'Json'>
+    readonly status: FieldRef<"ReportType", 'ReportTypeStatus'>
+    readonly createdById: FieldRef<"ReportType", 'String'>
+    readonly updatedById: FieldRef<"ReportType", 'String'>
+    readonly createdAt: FieldRef<"ReportType", 'DateTime'>
+    readonly updatedAt: FieldRef<"ReportType", 'DateTime'>
+    readonly deletedAt: FieldRef<"ReportType", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * ReportType findUnique
+   */
+  export type ReportTypeFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReportType
+     */
+    select?: ReportTypeSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReportTypeInclude<ExtArgs> | null
+    /**
+     * Filter, which ReportType to fetch.
+     */
+    where: ReportTypeWhereUniqueInput
+  }
+
+  /**
+   * ReportType findUniqueOrThrow
+   */
+  export type ReportTypeFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReportType
+     */
+    select?: ReportTypeSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReportTypeInclude<ExtArgs> | null
+    /**
+     * Filter, which ReportType to fetch.
+     */
+    where: ReportTypeWhereUniqueInput
+  }
+
+  /**
+   * ReportType findFirst
+   */
+  export type ReportTypeFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReportType
+     */
+    select?: ReportTypeSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReportTypeInclude<ExtArgs> | null
+    /**
+     * Filter, which ReportType to fetch.
+     */
+    where?: ReportTypeWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ReportTypes to fetch.
+     */
+    orderBy?: ReportTypeOrderByWithRelationInput | ReportTypeOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ReportTypes.
+     */
+    cursor?: ReportTypeWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ReportTypes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ReportTypes.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ReportTypes.
+     */
+    distinct?: ReportTypeScalarFieldEnum | ReportTypeScalarFieldEnum[]
+  }
+
+  /**
+   * ReportType findFirstOrThrow
+   */
+  export type ReportTypeFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReportType
+     */
+    select?: ReportTypeSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReportTypeInclude<ExtArgs> | null
+    /**
+     * Filter, which ReportType to fetch.
+     */
+    where?: ReportTypeWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ReportTypes to fetch.
+     */
+    orderBy?: ReportTypeOrderByWithRelationInput | ReportTypeOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ReportTypes.
+     */
+    cursor?: ReportTypeWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ReportTypes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ReportTypes.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ReportTypes.
+     */
+    distinct?: ReportTypeScalarFieldEnum | ReportTypeScalarFieldEnum[]
+  }
+
+  /**
+   * ReportType findMany
+   */
+  export type ReportTypeFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReportType
+     */
+    select?: ReportTypeSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReportTypeInclude<ExtArgs> | null
+    /**
+     * Filter, which ReportTypes to fetch.
+     */
+    where?: ReportTypeWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ReportTypes to fetch.
+     */
+    orderBy?: ReportTypeOrderByWithRelationInput | ReportTypeOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing ReportTypes.
+     */
+    cursor?: ReportTypeWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ReportTypes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ReportTypes.
+     */
+    skip?: number
+    distinct?: ReportTypeScalarFieldEnum | ReportTypeScalarFieldEnum[]
+  }
+
+  /**
+   * ReportType create
+   */
+  export type ReportTypeCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReportType
+     */
+    select?: ReportTypeSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReportTypeInclude<ExtArgs> | null
+    /**
+     * The data needed to create a ReportType.
+     */
+    data: XOR<ReportTypeCreateInput, ReportTypeUncheckedCreateInput>
+  }
+
+  /**
+   * ReportType createMany
+   */
+  export type ReportTypeCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many ReportTypes.
+     */
+    data: ReportTypeCreateManyInput | ReportTypeCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ReportType createManyAndReturn
+   */
+  export type ReportTypeCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReportType
+     */
+    select?: ReportTypeSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many ReportTypes.
+     */
+    data: ReportTypeCreateManyInput | ReportTypeCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReportTypeIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * ReportType update
+   */
+  export type ReportTypeUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReportType
+     */
+    select?: ReportTypeSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReportTypeInclude<ExtArgs> | null
+    /**
+     * The data needed to update a ReportType.
+     */
+    data: XOR<ReportTypeUpdateInput, ReportTypeUncheckedUpdateInput>
+    /**
+     * Choose, which ReportType to update.
+     */
+    where: ReportTypeWhereUniqueInput
+  }
+
+  /**
+   * ReportType updateMany
+   */
+  export type ReportTypeUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update ReportTypes.
+     */
+    data: XOR<ReportTypeUpdateManyMutationInput, ReportTypeUncheckedUpdateManyInput>
+    /**
+     * Filter which ReportTypes to update
+     */
+    where?: ReportTypeWhereInput
+  }
+
+  /**
+   * ReportType upsert
+   */
+  export type ReportTypeUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReportType
+     */
+    select?: ReportTypeSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReportTypeInclude<ExtArgs> | null
+    /**
+     * The filter to search for the ReportType to update in case it exists.
+     */
+    where: ReportTypeWhereUniqueInput
+    /**
+     * In case the ReportType found by the `where` argument doesn't exist, create a new ReportType with this data.
+     */
+    create: XOR<ReportTypeCreateInput, ReportTypeUncheckedCreateInput>
+    /**
+     * In case the ReportType was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ReportTypeUpdateInput, ReportTypeUncheckedUpdateInput>
+  }
+
+  /**
+   * ReportType delete
+   */
+  export type ReportTypeDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReportType
+     */
+    select?: ReportTypeSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReportTypeInclude<ExtArgs> | null
+    /**
+     * Filter which ReportType to delete.
+     */
+    where: ReportTypeWhereUniqueInput
+  }
+
+  /**
+   * ReportType deleteMany
+   */
+  export type ReportTypeDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ReportTypes to delete
+     */
+    where?: ReportTypeWhereInput
+  }
+
+  /**
+   * ReportType.createdBy
+   */
+  export type ReportType$createdByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+  }
+
+  /**
+   * ReportType.updatedBy
+   */
+  export type ReportType$updatedByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+  }
+
+  /**
+   * ReportType.logs
+   */
+  export type ReportType$logsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReportLog
+     */
+    select?: ReportLogSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReportLogInclude<ExtArgs> | null
+    where?: ReportLogWhereInput
+    orderBy?: ReportLogOrderByWithRelationInput | ReportLogOrderByWithRelationInput[]
+    cursor?: ReportLogWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ReportLogScalarFieldEnum | ReportLogScalarFieldEnum[]
+  }
+
+  /**
+   * ReportType without action
+   */
+  export type ReportTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReportType
+     */
+    select?: ReportTypeSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReportTypeInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model ReportLog
+   */
+
+  export type AggregateReportLog = {
+    _count: ReportLogCountAggregateOutputType | null
+    _avg: ReportLogAvgAggregateOutputType | null
+    _sum: ReportLogSumAggregateOutputType | null
+    _min: ReportLogMinAggregateOutputType | null
+    _max: ReportLogMaxAggregateOutputType | null
+  }
+
+  export type ReportLogAvgAggregateOutputType = {
+    resultCount: number | null
+  }
+
+  export type ReportLogSumAggregateOutputType = {
+    resultCount: number | null
+  }
+
+  export type ReportLogMinAggregateOutputType = {
+    id: string | null
+    workspaceId: string | null
+    reportTypeId: string | null
+    generatedById: string | null
+    resultCount: number | null
+    createdAt: Date | null
+  }
+
+  export type ReportLogMaxAggregateOutputType = {
+    id: string | null
+    workspaceId: string | null
+    reportTypeId: string | null
+    generatedById: string | null
+    resultCount: number | null
+    createdAt: Date | null
+  }
+
+  export type ReportLogCountAggregateOutputType = {
+    id: number
+    workspaceId: number
+    reportTypeId: number
+    generatedById: number
+    filters: number
+    resultCount: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type ReportLogAvgAggregateInputType = {
+    resultCount?: true
+  }
+
+  export type ReportLogSumAggregateInputType = {
+    resultCount?: true
+  }
+
+  export type ReportLogMinAggregateInputType = {
+    id?: true
+    workspaceId?: true
+    reportTypeId?: true
+    generatedById?: true
+    resultCount?: true
+    createdAt?: true
+  }
+
+  export type ReportLogMaxAggregateInputType = {
+    id?: true
+    workspaceId?: true
+    reportTypeId?: true
+    generatedById?: true
+    resultCount?: true
+    createdAt?: true
+  }
+
+  export type ReportLogCountAggregateInputType = {
+    id?: true
+    workspaceId?: true
+    reportTypeId?: true
+    generatedById?: true
+    filters?: true
+    resultCount?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type ReportLogAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ReportLog to aggregate.
+     */
+    where?: ReportLogWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ReportLogs to fetch.
+     */
+    orderBy?: ReportLogOrderByWithRelationInput | ReportLogOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ReportLogWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ReportLogs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ReportLogs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned ReportLogs
+    **/
+    _count?: true | ReportLogCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: ReportLogAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: ReportLogSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ReportLogMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ReportLogMaxAggregateInputType
+  }
+
+  export type GetReportLogAggregateType<T extends ReportLogAggregateArgs> = {
+        [P in keyof T & keyof AggregateReportLog]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateReportLog[P]>
+      : GetScalarType<T[P], AggregateReportLog[P]>
+  }
+
+
+
+
+  export type ReportLogGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ReportLogWhereInput
+    orderBy?: ReportLogOrderByWithAggregationInput | ReportLogOrderByWithAggregationInput[]
+    by: ReportLogScalarFieldEnum[] | ReportLogScalarFieldEnum
+    having?: ReportLogScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ReportLogCountAggregateInputType | true
+    _avg?: ReportLogAvgAggregateInputType
+    _sum?: ReportLogSumAggregateInputType
+    _min?: ReportLogMinAggregateInputType
+    _max?: ReportLogMaxAggregateInputType
+  }
+
+  export type ReportLogGroupByOutputType = {
+    id: string
+    workspaceId: string
+    reportTypeId: string
+    generatedById: string | null
+    filters: JsonValue
+    resultCount: number
+    createdAt: Date
+    _count: ReportLogCountAggregateOutputType | null
+    _avg: ReportLogAvgAggregateOutputType | null
+    _sum: ReportLogSumAggregateOutputType | null
+    _min: ReportLogMinAggregateOutputType | null
+    _max: ReportLogMaxAggregateOutputType | null
+  }
+
+  type GetReportLogGroupByPayload<T extends ReportLogGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ReportLogGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ReportLogGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ReportLogGroupByOutputType[P]>
+            : GetScalarType<T[P], ReportLogGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ReportLogSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    workspaceId?: boolean
+    reportTypeId?: boolean
+    generatedById?: boolean
+    filters?: boolean
+    resultCount?: boolean
+    createdAt?: boolean
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+    reportType?: boolean | ReportTypeDefaultArgs<ExtArgs>
+    generatedBy?: boolean | ReportLog$generatedByArgs<ExtArgs>
+  }, ExtArgs["result"]["reportLog"]>
+
+  export type ReportLogSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    workspaceId?: boolean
+    reportTypeId?: boolean
+    generatedById?: boolean
+    filters?: boolean
+    resultCount?: boolean
+    createdAt?: boolean
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+    reportType?: boolean | ReportTypeDefaultArgs<ExtArgs>
+    generatedBy?: boolean | ReportLog$generatedByArgs<ExtArgs>
+  }, ExtArgs["result"]["reportLog"]>
+
+  export type ReportLogSelectScalar = {
+    id?: boolean
+    workspaceId?: boolean
+    reportTypeId?: boolean
+    generatedById?: boolean
+    filters?: boolean
+    resultCount?: boolean
+    createdAt?: boolean
+  }
+
+  export type ReportLogInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+    reportType?: boolean | ReportTypeDefaultArgs<ExtArgs>
+    generatedBy?: boolean | ReportLog$generatedByArgs<ExtArgs>
+  }
+  export type ReportLogIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+    reportType?: boolean | ReportTypeDefaultArgs<ExtArgs>
+    generatedBy?: boolean | ReportLog$generatedByArgs<ExtArgs>
+  }
+
+  export type $ReportLogPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "ReportLog"
+    objects: {
+      workspace: Prisma.$WorkspacePayload<ExtArgs>
+      reportType: Prisma.$ReportTypePayload<ExtArgs>
+      generatedBy: Prisma.$UserPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      workspaceId: string
+      reportTypeId: string
+      generatedById: string | null
+      filters: Prisma.JsonValue
+      resultCount: number
+      createdAt: Date
+    }, ExtArgs["result"]["reportLog"]>
+    composites: {}
+  }
+
+  type ReportLogGetPayload<S extends boolean | null | undefined | ReportLogDefaultArgs> = $Result.GetResult<Prisma.$ReportLogPayload, S>
+
+  type ReportLogCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<ReportLogFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: ReportLogCountAggregateInputType | true
+    }
+
+  export interface ReportLogDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ReportLog'], meta: { name: 'ReportLog' } }
+    /**
+     * Find zero or one ReportLog that matches the filter.
+     * @param {ReportLogFindUniqueArgs} args - Arguments to find a ReportLog
+     * @example
+     * // Get one ReportLog
+     * const reportLog = await prisma.reportLog.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ReportLogFindUniqueArgs>(args: SelectSubset<T, ReportLogFindUniqueArgs<ExtArgs>>): Prisma__ReportLogClient<$Result.GetResult<Prisma.$ReportLogPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one ReportLog that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {ReportLogFindUniqueOrThrowArgs} args - Arguments to find a ReportLog
+     * @example
+     * // Get one ReportLog
+     * const reportLog = await prisma.reportLog.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ReportLogFindUniqueOrThrowArgs>(args: SelectSubset<T, ReportLogFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ReportLogClient<$Result.GetResult<Prisma.$ReportLogPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first ReportLog that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReportLogFindFirstArgs} args - Arguments to find a ReportLog
+     * @example
+     * // Get one ReportLog
+     * const reportLog = await prisma.reportLog.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ReportLogFindFirstArgs>(args?: SelectSubset<T, ReportLogFindFirstArgs<ExtArgs>>): Prisma__ReportLogClient<$Result.GetResult<Prisma.$ReportLogPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first ReportLog that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReportLogFindFirstOrThrowArgs} args - Arguments to find a ReportLog
+     * @example
+     * // Get one ReportLog
+     * const reportLog = await prisma.reportLog.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ReportLogFindFirstOrThrowArgs>(args?: SelectSubset<T, ReportLogFindFirstOrThrowArgs<ExtArgs>>): Prisma__ReportLogClient<$Result.GetResult<Prisma.$ReportLogPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more ReportLogs that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReportLogFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all ReportLogs
+     * const reportLogs = await prisma.reportLog.findMany()
+     * 
+     * // Get first 10 ReportLogs
+     * const reportLogs = await prisma.reportLog.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const reportLogWithIdOnly = await prisma.reportLog.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ReportLogFindManyArgs>(args?: SelectSubset<T, ReportLogFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReportLogPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a ReportLog.
+     * @param {ReportLogCreateArgs} args - Arguments to create a ReportLog.
+     * @example
+     * // Create one ReportLog
+     * const ReportLog = await prisma.reportLog.create({
+     *   data: {
+     *     // ... data to create a ReportLog
+     *   }
+     * })
+     * 
+     */
+    create<T extends ReportLogCreateArgs>(args: SelectSubset<T, ReportLogCreateArgs<ExtArgs>>): Prisma__ReportLogClient<$Result.GetResult<Prisma.$ReportLogPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many ReportLogs.
+     * @param {ReportLogCreateManyArgs} args - Arguments to create many ReportLogs.
+     * @example
+     * // Create many ReportLogs
+     * const reportLog = await prisma.reportLog.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ReportLogCreateManyArgs>(args?: SelectSubset<T, ReportLogCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many ReportLogs and returns the data saved in the database.
+     * @param {ReportLogCreateManyAndReturnArgs} args - Arguments to create many ReportLogs.
+     * @example
+     * // Create many ReportLogs
+     * const reportLog = await prisma.reportLog.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many ReportLogs and only return the `id`
+     * const reportLogWithIdOnly = await prisma.reportLog.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends ReportLogCreateManyAndReturnArgs>(args?: SelectSubset<T, ReportLogCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReportLogPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a ReportLog.
+     * @param {ReportLogDeleteArgs} args - Arguments to delete one ReportLog.
+     * @example
+     * // Delete one ReportLog
+     * const ReportLog = await prisma.reportLog.delete({
+     *   where: {
+     *     // ... filter to delete one ReportLog
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ReportLogDeleteArgs>(args: SelectSubset<T, ReportLogDeleteArgs<ExtArgs>>): Prisma__ReportLogClient<$Result.GetResult<Prisma.$ReportLogPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one ReportLog.
+     * @param {ReportLogUpdateArgs} args - Arguments to update one ReportLog.
+     * @example
+     * // Update one ReportLog
+     * const reportLog = await prisma.reportLog.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ReportLogUpdateArgs>(args: SelectSubset<T, ReportLogUpdateArgs<ExtArgs>>): Prisma__ReportLogClient<$Result.GetResult<Prisma.$ReportLogPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more ReportLogs.
+     * @param {ReportLogDeleteManyArgs} args - Arguments to filter ReportLogs to delete.
+     * @example
+     * // Delete a few ReportLogs
+     * const { count } = await prisma.reportLog.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ReportLogDeleteManyArgs>(args?: SelectSubset<T, ReportLogDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ReportLogs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReportLogUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many ReportLogs
+     * const reportLog = await prisma.reportLog.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ReportLogUpdateManyArgs>(args: SelectSubset<T, ReportLogUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one ReportLog.
+     * @param {ReportLogUpsertArgs} args - Arguments to update or create a ReportLog.
+     * @example
+     * // Update or create a ReportLog
+     * const reportLog = await prisma.reportLog.upsert({
+     *   create: {
+     *     // ... data to create a ReportLog
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the ReportLog we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ReportLogUpsertArgs>(args: SelectSubset<T, ReportLogUpsertArgs<ExtArgs>>): Prisma__ReportLogClient<$Result.GetResult<Prisma.$ReportLogPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of ReportLogs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReportLogCountArgs} args - Arguments to filter ReportLogs to count.
+     * @example
+     * // Count the number of ReportLogs
+     * const count = await prisma.reportLog.count({
+     *   where: {
+     *     // ... the filter for the ReportLogs we want to count
+     *   }
+     * })
+    **/
+    count<T extends ReportLogCountArgs>(
+      args?: Subset<T, ReportLogCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ReportLogCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a ReportLog.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReportLogAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ReportLogAggregateArgs>(args: Subset<T, ReportLogAggregateArgs>): Prisma.PrismaPromise<GetReportLogAggregateType<T>>
+
+    /**
+     * Group by ReportLog.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReportLogGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ReportLogGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ReportLogGroupByArgs['orderBy'] }
+        : { orderBy?: ReportLogGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ReportLogGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetReportLogGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the ReportLog model
+   */
+  readonly fields: ReportLogFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for ReportLog.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ReportLogClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    workspace<T extends WorkspaceDefaultArgs<ExtArgs> = {}>(args?: Subset<T, WorkspaceDefaultArgs<ExtArgs>>): Prisma__WorkspaceClient<$Result.GetResult<Prisma.$WorkspacePayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    reportType<T extends ReportTypeDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ReportTypeDefaultArgs<ExtArgs>>): Prisma__ReportTypeClient<$Result.GetResult<Prisma.$ReportTypePayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    generatedBy<T extends ReportLog$generatedByArgs<ExtArgs> = {}>(args?: Subset<T, ReportLog$generatedByArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the ReportLog model
+   */ 
+  interface ReportLogFieldRefs {
+    readonly id: FieldRef<"ReportLog", 'String'>
+    readonly workspaceId: FieldRef<"ReportLog", 'String'>
+    readonly reportTypeId: FieldRef<"ReportLog", 'String'>
+    readonly generatedById: FieldRef<"ReportLog", 'String'>
+    readonly filters: FieldRef<"ReportLog", 'Json'>
+    readonly resultCount: FieldRef<"ReportLog", 'Int'>
+    readonly createdAt: FieldRef<"ReportLog", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * ReportLog findUnique
+   */
+  export type ReportLogFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReportLog
+     */
+    select?: ReportLogSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReportLogInclude<ExtArgs> | null
+    /**
+     * Filter, which ReportLog to fetch.
+     */
+    where: ReportLogWhereUniqueInput
+  }
+
+  /**
+   * ReportLog findUniqueOrThrow
+   */
+  export type ReportLogFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReportLog
+     */
+    select?: ReportLogSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReportLogInclude<ExtArgs> | null
+    /**
+     * Filter, which ReportLog to fetch.
+     */
+    where: ReportLogWhereUniqueInput
+  }
+
+  /**
+   * ReportLog findFirst
+   */
+  export type ReportLogFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReportLog
+     */
+    select?: ReportLogSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReportLogInclude<ExtArgs> | null
+    /**
+     * Filter, which ReportLog to fetch.
+     */
+    where?: ReportLogWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ReportLogs to fetch.
+     */
+    orderBy?: ReportLogOrderByWithRelationInput | ReportLogOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ReportLogs.
+     */
+    cursor?: ReportLogWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ReportLogs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ReportLogs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ReportLogs.
+     */
+    distinct?: ReportLogScalarFieldEnum | ReportLogScalarFieldEnum[]
+  }
+
+  /**
+   * ReportLog findFirstOrThrow
+   */
+  export type ReportLogFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReportLog
+     */
+    select?: ReportLogSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReportLogInclude<ExtArgs> | null
+    /**
+     * Filter, which ReportLog to fetch.
+     */
+    where?: ReportLogWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ReportLogs to fetch.
+     */
+    orderBy?: ReportLogOrderByWithRelationInput | ReportLogOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ReportLogs.
+     */
+    cursor?: ReportLogWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ReportLogs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ReportLogs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ReportLogs.
+     */
+    distinct?: ReportLogScalarFieldEnum | ReportLogScalarFieldEnum[]
+  }
+
+  /**
+   * ReportLog findMany
+   */
+  export type ReportLogFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReportLog
+     */
+    select?: ReportLogSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReportLogInclude<ExtArgs> | null
+    /**
+     * Filter, which ReportLogs to fetch.
+     */
+    where?: ReportLogWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ReportLogs to fetch.
+     */
+    orderBy?: ReportLogOrderByWithRelationInput | ReportLogOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing ReportLogs.
+     */
+    cursor?: ReportLogWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ReportLogs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ReportLogs.
+     */
+    skip?: number
+    distinct?: ReportLogScalarFieldEnum | ReportLogScalarFieldEnum[]
+  }
+
+  /**
+   * ReportLog create
+   */
+  export type ReportLogCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReportLog
+     */
+    select?: ReportLogSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReportLogInclude<ExtArgs> | null
+    /**
+     * The data needed to create a ReportLog.
+     */
+    data: XOR<ReportLogCreateInput, ReportLogUncheckedCreateInput>
+  }
+
+  /**
+   * ReportLog createMany
+   */
+  export type ReportLogCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many ReportLogs.
+     */
+    data: ReportLogCreateManyInput | ReportLogCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ReportLog createManyAndReturn
+   */
+  export type ReportLogCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReportLog
+     */
+    select?: ReportLogSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many ReportLogs.
+     */
+    data: ReportLogCreateManyInput | ReportLogCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReportLogIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * ReportLog update
+   */
+  export type ReportLogUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReportLog
+     */
+    select?: ReportLogSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReportLogInclude<ExtArgs> | null
+    /**
+     * The data needed to update a ReportLog.
+     */
+    data: XOR<ReportLogUpdateInput, ReportLogUncheckedUpdateInput>
+    /**
+     * Choose, which ReportLog to update.
+     */
+    where: ReportLogWhereUniqueInput
+  }
+
+  /**
+   * ReportLog updateMany
+   */
+  export type ReportLogUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update ReportLogs.
+     */
+    data: XOR<ReportLogUpdateManyMutationInput, ReportLogUncheckedUpdateManyInput>
+    /**
+     * Filter which ReportLogs to update
+     */
+    where?: ReportLogWhereInput
+  }
+
+  /**
+   * ReportLog upsert
+   */
+  export type ReportLogUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReportLog
+     */
+    select?: ReportLogSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReportLogInclude<ExtArgs> | null
+    /**
+     * The filter to search for the ReportLog to update in case it exists.
+     */
+    where: ReportLogWhereUniqueInput
+    /**
+     * In case the ReportLog found by the `where` argument doesn't exist, create a new ReportLog with this data.
+     */
+    create: XOR<ReportLogCreateInput, ReportLogUncheckedCreateInput>
+    /**
+     * In case the ReportLog was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ReportLogUpdateInput, ReportLogUncheckedUpdateInput>
+  }
+
+  /**
+   * ReportLog delete
+   */
+  export type ReportLogDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReportLog
+     */
+    select?: ReportLogSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReportLogInclude<ExtArgs> | null
+    /**
+     * Filter which ReportLog to delete.
+     */
+    where: ReportLogWhereUniqueInput
+  }
+
+  /**
+   * ReportLog deleteMany
+   */
+  export type ReportLogDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ReportLogs to delete
+     */
+    where?: ReportLogWhereInput
+  }
+
+  /**
+   * ReportLog.generatedBy
+   */
+  export type ReportLog$generatedByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+  }
+
+  /**
+   * ReportLog without action
+   */
+  export type ReportLogDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReportLog
+     */
+    select?: ReportLogSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReportLogInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -38676,6 +43723,71 @@ export namespace Prisma {
   export type DeviceScalarFieldEnum = (typeof DeviceScalarFieldEnum)[keyof typeof DeviceScalarFieldEnum]
 
 
+  export const HolidayScalarFieldEnum: {
+    id: 'id',
+    workspaceId: 'workspaceId',
+    name: 'name',
+    holidayDate: 'holidayDate',
+    countryId: 'countryId',
+    stateId: 'stateId',
+    districtId: 'districtId',
+    isRecurring: 'isRecurring',
+    recurrenceRule: 'recurrenceRule',
+    source: 'source',
+    status: 'status',
+    createdById: 'createdById',
+    updatedById: 'updatedById',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type HolidayScalarFieldEnum = (typeof HolidayScalarFieldEnum)[keyof typeof HolidayScalarFieldEnum]
+
+
+  export const HolidaySyncLogScalarFieldEnum: {
+    id: 'id',
+    workspaceId: 'workspaceId',
+    source: 'source',
+    status: 'status',
+    message: 'message',
+    syncedAt: 'syncedAt'
+  };
+
+  export type HolidaySyncLogScalarFieldEnum = (typeof HolidaySyncLogScalarFieldEnum)[keyof typeof HolidaySyncLogScalarFieldEnum]
+
+
+  export const ReportTypeScalarFieldEnum: {
+    id: 'id',
+    workspaceId: 'workspaceId',
+    name: 'name',
+    module: 'module',
+    baseDataSource: 'baseDataSource',
+    description: 'description',
+    allowedFilters: 'allowedFilters',
+    status: 'status',
+    createdById: 'createdById',
+    updatedById: 'updatedById',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
+    deletedAt: 'deletedAt'
+  };
+
+  export type ReportTypeScalarFieldEnum = (typeof ReportTypeScalarFieldEnum)[keyof typeof ReportTypeScalarFieldEnum]
+
+
+  export const ReportLogScalarFieldEnum: {
+    id: 'id',
+    workspaceId: 'workspaceId',
+    reportTypeId: 'reportTypeId',
+    generatedById: 'generatedById',
+    filters: 'filters',
+    resultCount: 'resultCount',
+    createdAt: 'createdAt'
+  };
+
+  export type ReportLogScalarFieldEnum = (typeof ReportLogScalarFieldEnum)[keyof typeof ReportLogScalarFieldEnum]
+
+
   export const SortOrder: {
     asc: 'asc',
     desc: 'desc'
@@ -38690,6 +43802,13 @@ export namespace Prisma {
   };
 
   export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
+
+
+  export const JsonNullValueInput: {
+    JsonNull: typeof JsonNull
+  };
+
+  export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
 
 
   export const QueryMode: {
@@ -39014,6 +44133,76 @@ export namespace Prisma {
    */
   export type ListEnumRosterStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RosterStatus[]'>
     
+
+
+  /**
+   * Reference to a field of type 'HolidaySource'
+   */
+  export type EnumHolidaySourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'HolidaySource'>
+    
+
+
+  /**
+   * Reference to a field of type 'HolidaySource[]'
+   */
+  export type ListEnumHolidaySourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'HolidaySource[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'HolidayStatus'
+   */
+  export type EnumHolidayStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'HolidayStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'HolidayStatus[]'
+   */
+  export type ListEnumHolidayStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'HolidayStatus[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'ReportModule'
+   */
+  export type EnumReportModuleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ReportModule'>
+    
+
+
+  /**
+   * Reference to a field of type 'ReportModule[]'
+   */
+  export type ListEnumReportModuleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ReportModule[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'ReportBaseDataSource'
+   */
+  export type EnumReportBaseDataSourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ReportBaseDataSource'>
+    
+
+
+  /**
+   * Reference to a field of type 'ReportBaseDataSource[]'
+   */
+  export type ListEnumReportBaseDataSourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ReportBaseDataSource[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'ReportTypeStatus'
+   */
+  export type EnumReportTypeStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ReportTypeStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'ReportTypeStatus[]'
+   */
+  export type ListEnumReportTypeStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ReportTypeStatus[]'>
+    
   /**
    * Deep Input Types
    */
@@ -39209,6 +44398,10 @@ export namespace Prisma {
     leads?: LeadListRelationFilter
     leadActivities?: LeadActivityListRelationFilter
     leadStageApprovals?: LeadStageApprovalListRelationFilter
+    holidays?: HolidayListRelationFilter
+    holidaySyncLogs?: HolidaySyncLogListRelationFilter
+    reportTypes?: ReportTypeListRelationFilter
+    reportLogs?: ReportLogListRelationFilter
   }
 
   export type WorkspaceOrderByWithRelationInput = {
@@ -39231,6 +44424,10 @@ export namespace Prisma {
     leads?: LeadOrderByRelationAggregateInput
     leadActivities?: LeadActivityOrderByRelationAggregateInput
     leadStageApprovals?: LeadStageApprovalOrderByRelationAggregateInput
+    holidays?: HolidayOrderByRelationAggregateInput
+    holidaySyncLogs?: HolidaySyncLogOrderByRelationAggregateInput
+    reportTypes?: ReportTypeOrderByRelationAggregateInput
+    reportLogs?: ReportLogOrderByRelationAggregateInput
   }
 
   export type WorkspaceWhereUniqueInput = Prisma.AtLeast<{
@@ -39256,6 +44453,10 @@ export namespace Prisma {
     leads?: LeadListRelationFilter
     leadActivities?: LeadActivityListRelationFilter
     leadStageApprovals?: LeadStageApprovalListRelationFilter
+    holidays?: HolidayListRelationFilter
+    holidaySyncLogs?: HolidaySyncLogListRelationFilter
+    reportTypes?: ReportTypeListRelationFilter
+    reportLogs?: ReportLogListRelationFilter
   }, "id" | "ownerId">
 
   export type WorkspaceOrderByWithAggregationInput = {
@@ -39797,6 +44998,9 @@ export namespace Prisma {
     usersAtCountry?: UserListRelationFilter
     usersAtState?: UserListRelationFilter
     usersAtDistrict?: UserListRelationFilter
+    holidaysAtCountry?: HolidayListRelationFilter
+    holidaysAtState?: HolidayListRelationFilter
+    holidaysAtDistrict?: HolidayListRelationFilter
   }
 
   export type LocationOrderByWithRelationInput = {
@@ -39813,6 +45017,9 @@ export namespace Prisma {
     usersAtCountry?: UserOrderByRelationAggregateInput
     usersAtState?: UserOrderByRelationAggregateInput
     usersAtDistrict?: UserOrderByRelationAggregateInput
+    holidaysAtCountry?: HolidayOrderByRelationAggregateInput
+    holidaysAtState?: HolidayOrderByRelationAggregateInput
+    holidaysAtDistrict?: HolidayOrderByRelationAggregateInput
   }
 
   export type LocationWhereUniqueInput = Prisma.AtLeast<{
@@ -39832,6 +45039,9 @@ export namespace Prisma {
     usersAtCountry?: UserListRelationFilter
     usersAtState?: UserListRelationFilter
     usersAtDistrict?: UserListRelationFilter
+    holidaysAtCountry?: HolidayListRelationFilter
+    holidaysAtState?: HolidayListRelationFilter
+    holidaysAtDistrict?: HolidayListRelationFilter
   }, "id">
 
   export type LocationOrderByWithAggregationInput = {
@@ -41170,6 +46380,11 @@ export namespace Prisma {
     createdLeads?: LeadListRelationFilter
     assignedLeads?: LeadListRelationFilter
     closedLeads?: LeadListRelationFilter
+    createdHolidays?: HolidayListRelationFilter
+    updatedHolidays?: HolidayListRelationFilter
+    createdReportTypes?: ReportTypeListRelationFilter
+    updatedReportTypes?: ReportTypeListRelationFilter
+    generatedReportLogs?: ReportLogListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -41223,6 +46438,11 @@ export namespace Prisma {
     createdLeads?: LeadOrderByRelationAggregateInput
     assignedLeads?: LeadOrderByRelationAggregateInput
     closedLeads?: LeadOrderByRelationAggregateInput
+    createdHolidays?: HolidayOrderByRelationAggregateInput
+    updatedHolidays?: HolidayOrderByRelationAggregateInput
+    createdReportTypes?: ReportTypeOrderByRelationAggregateInput
+    updatedReportTypes?: ReportTypeOrderByRelationAggregateInput
+    generatedReportLogs?: ReportLogOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -41279,6 +46499,11 @@ export namespace Prisma {
     createdLeads?: LeadListRelationFilter
     assignedLeads?: LeadListRelationFilter
     closedLeads?: LeadListRelationFilter
+    createdHolidays?: HolidayListRelationFilter
+    updatedHolidays?: HolidayListRelationFilter
+    createdReportTypes?: ReportTypeListRelationFilter
+    updatedReportTypes?: ReportTypeListRelationFilter
+    generatedReportLogs?: ReportLogListRelationFilter
   }, "id" | "username" | "email" | "googleId">
 
   export type UserOrderByWithAggregationInput = {
@@ -41747,6 +46972,363 @@ export namespace Prisma {
     updatedAt?: DateTimeWithAggregatesFilter<"Device"> | Date | string
   }
 
+  export type HolidayWhereInput = {
+    AND?: HolidayWhereInput | HolidayWhereInput[]
+    OR?: HolidayWhereInput[]
+    NOT?: HolidayWhereInput | HolidayWhereInput[]
+    id?: StringFilter<"Holiday"> | string
+    workspaceId?: StringFilter<"Holiday"> | string
+    name?: StringFilter<"Holiday"> | string
+    holidayDate?: DateTimeFilter<"Holiday"> | Date | string
+    countryId?: StringNullableFilter<"Holiday"> | string | null
+    stateId?: StringNullableFilter<"Holiday"> | string | null
+    districtId?: StringNullableFilter<"Holiday"> | string | null
+    isRecurring?: BoolFilter<"Holiday"> | boolean
+    recurrenceRule?: StringNullableFilter<"Holiday"> | string | null
+    source?: EnumHolidaySourceFilter<"Holiday"> | $Enums.HolidaySource
+    status?: EnumHolidayStatusFilter<"Holiday"> | $Enums.HolidayStatus
+    createdById?: StringNullableFilter<"Holiday"> | string | null
+    updatedById?: StringNullableFilter<"Holiday"> | string | null
+    createdAt?: DateTimeFilter<"Holiday"> | Date | string
+    updatedAt?: DateTimeFilter<"Holiday"> | Date | string
+    workspace?: XOR<WorkspaceRelationFilter, WorkspaceWhereInput>
+    country?: XOR<LocationNullableRelationFilter, LocationWhereInput> | null
+    state?: XOR<LocationNullableRelationFilter, LocationWhereInput> | null
+    district?: XOR<LocationNullableRelationFilter, LocationWhereInput> | null
+    createdBy?: XOR<UserNullableRelationFilter, UserWhereInput> | null
+    updatedBy?: XOR<UserNullableRelationFilter, UserWhereInput> | null
+  }
+
+  export type HolidayOrderByWithRelationInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    name?: SortOrder
+    holidayDate?: SortOrder
+    countryId?: SortOrderInput | SortOrder
+    stateId?: SortOrderInput | SortOrder
+    districtId?: SortOrderInput | SortOrder
+    isRecurring?: SortOrder
+    recurrenceRule?: SortOrderInput | SortOrder
+    source?: SortOrder
+    status?: SortOrder
+    createdById?: SortOrderInput | SortOrder
+    updatedById?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    workspace?: WorkspaceOrderByWithRelationInput
+    country?: LocationOrderByWithRelationInput
+    state?: LocationOrderByWithRelationInput
+    district?: LocationOrderByWithRelationInput
+    createdBy?: UserOrderByWithRelationInput
+    updatedBy?: UserOrderByWithRelationInput
+  }
+
+  export type HolidayWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: HolidayWhereInput | HolidayWhereInput[]
+    OR?: HolidayWhereInput[]
+    NOT?: HolidayWhereInput | HolidayWhereInput[]
+    workspaceId?: StringFilter<"Holiday"> | string
+    name?: StringFilter<"Holiday"> | string
+    holidayDate?: DateTimeFilter<"Holiday"> | Date | string
+    countryId?: StringNullableFilter<"Holiday"> | string | null
+    stateId?: StringNullableFilter<"Holiday"> | string | null
+    districtId?: StringNullableFilter<"Holiday"> | string | null
+    isRecurring?: BoolFilter<"Holiday"> | boolean
+    recurrenceRule?: StringNullableFilter<"Holiday"> | string | null
+    source?: EnumHolidaySourceFilter<"Holiday"> | $Enums.HolidaySource
+    status?: EnumHolidayStatusFilter<"Holiday"> | $Enums.HolidayStatus
+    createdById?: StringNullableFilter<"Holiday"> | string | null
+    updatedById?: StringNullableFilter<"Holiday"> | string | null
+    createdAt?: DateTimeFilter<"Holiday"> | Date | string
+    updatedAt?: DateTimeFilter<"Holiday"> | Date | string
+    workspace?: XOR<WorkspaceRelationFilter, WorkspaceWhereInput>
+    country?: XOR<LocationNullableRelationFilter, LocationWhereInput> | null
+    state?: XOR<LocationNullableRelationFilter, LocationWhereInput> | null
+    district?: XOR<LocationNullableRelationFilter, LocationWhereInput> | null
+    createdBy?: XOR<UserNullableRelationFilter, UserWhereInput> | null
+    updatedBy?: XOR<UserNullableRelationFilter, UserWhereInput> | null
+  }, "id">
+
+  export type HolidayOrderByWithAggregationInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    name?: SortOrder
+    holidayDate?: SortOrder
+    countryId?: SortOrderInput | SortOrder
+    stateId?: SortOrderInput | SortOrder
+    districtId?: SortOrderInput | SortOrder
+    isRecurring?: SortOrder
+    recurrenceRule?: SortOrderInput | SortOrder
+    source?: SortOrder
+    status?: SortOrder
+    createdById?: SortOrderInput | SortOrder
+    updatedById?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: HolidayCountOrderByAggregateInput
+    _max?: HolidayMaxOrderByAggregateInput
+    _min?: HolidayMinOrderByAggregateInput
+  }
+
+  export type HolidayScalarWhereWithAggregatesInput = {
+    AND?: HolidayScalarWhereWithAggregatesInput | HolidayScalarWhereWithAggregatesInput[]
+    OR?: HolidayScalarWhereWithAggregatesInput[]
+    NOT?: HolidayScalarWhereWithAggregatesInput | HolidayScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"Holiday"> | string
+    workspaceId?: StringWithAggregatesFilter<"Holiday"> | string
+    name?: StringWithAggregatesFilter<"Holiday"> | string
+    holidayDate?: DateTimeWithAggregatesFilter<"Holiday"> | Date | string
+    countryId?: StringNullableWithAggregatesFilter<"Holiday"> | string | null
+    stateId?: StringNullableWithAggregatesFilter<"Holiday"> | string | null
+    districtId?: StringNullableWithAggregatesFilter<"Holiday"> | string | null
+    isRecurring?: BoolWithAggregatesFilter<"Holiday"> | boolean
+    recurrenceRule?: StringNullableWithAggregatesFilter<"Holiday"> | string | null
+    source?: EnumHolidaySourceWithAggregatesFilter<"Holiday"> | $Enums.HolidaySource
+    status?: EnumHolidayStatusWithAggregatesFilter<"Holiday"> | $Enums.HolidayStatus
+    createdById?: StringNullableWithAggregatesFilter<"Holiday"> | string | null
+    updatedById?: StringNullableWithAggregatesFilter<"Holiday"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"Holiday"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"Holiday"> | Date | string
+  }
+
+  export type HolidaySyncLogWhereInput = {
+    AND?: HolidaySyncLogWhereInput | HolidaySyncLogWhereInput[]
+    OR?: HolidaySyncLogWhereInput[]
+    NOT?: HolidaySyncLogWhereInput | HolidaySyncLogWhereInput[]
+    id?: StringFilter<"HolidaySyncLog"> | string
+    workspaceId?: StringFilter<"HolidaySyncLog"> | string
+    source?: EnumHolidaySourceFilter<"HolidaySyncLog"> | $Enums.HolidaySource
+    status?: StringFilter<"HolidaySyncLog"> | string
+    message?: StringNullableFilter<"HolidaySyncLog"> | string | null
+    syncedAt?: DateTimeFilter<"HolidaySyncLog"> | Date | string
+    workspace?: XOR<WorkspaceRelationFilter, WorkspaceWhereInput>
+  }
+
+  export type HolidaySyncLogOrderByWithRelationInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    source?: SortOrder
+    status?: SortOrder
+    message?: SortOrderInput | SortOrder
+    syncedAt?: SortOrder
+    workspace?: WorkspaceOrderByWithRelationInput
+  }
+
+  export type HolidaySyncLogWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: HolidaySyncLogWhereInput | HolidaySyncLogWhereInput[]
+    OR?: HolidaySyncLogWhereInput[]
+    NOT?: HolidaySyncLogWhereInput | HolidaySyncLogWhereInput[]
+    workspaceId?: StringFilter<"HolidaySyncLog"> | string
+    source?: EnumHolidaySourceFilter<"HolidaySyncLog"> | $Enums.HolidaySource
+    status?: StringFilter<"HolidaySyncLog"> | string
+    message?: StringNullableFilter<"HolidaySyncLog"> | string | null
+    syncedAt?: DateTimeFilter<"HolidaySyncLog"> | Date | string
+    workspace?: XOR<WorkspaceRelationFilter, WorkspaceWhereInput>
+  }, "id">
+
+  export type HolidaySyncLogOrderByWithAggregationInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    source?: SortOrder
+    status?: SortOrder
+    message?: SortOrderInput | SortOrder
+    syncedAt?: SortOrder
+    _count?: HolidaySyncLogCountOrderByAggregateInput
+    _max?: HolidaySyncLogMaxOrderByAggregateInput
+    _min?: HolidaySyncLogMinOrderByAggregateInput
+  }
+
+  export type HolidaySyncLogScalarWhereWithAggregatesInput = {
+    AND?: HolidaySyncLogScalarWhereWithAggregatesInput | HolidaySyncLogScalarWhereWithAggregatesInput[]
+    OR?: HolidaySyncLogScalarWhereWithAggregatesInput[]
+    NOT?: HolidaySyncLogScalarWhereWithAggregatesInput | HolidaySyncLogScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"HolidaySyncLog"> | string
+    workspaceId?: StringWithAggregatesFilter<"HolidaySyncLog"> | string
+    source?: EnumHolidaySourceWithAggregatesFilter<"HolidaySyncLog"> | $Enums.HolidaySource
+    status?: StringWithAggregatesFilter<"HolidaySyncLog"> | string
+    message?: StringNullableWithAggregatesFilter<"HolidaySyncLog"> | string | null
+    syncedAt?: DateTimeWithAggregatesFilter<"HolidaySyncLog"> | Date | string
+  }
+
+  export type ReportTypeWhereInput = {
+    AND?: ReportTypeWhereInput | ReportTypeWhereInput[]
+    OR?: ReportTypeWhereInput[]
+    NOT?: ReportTypeWhereInput | ReportTypeWhereInput[]
+    id?: StringFilter<"ReportType"> | string
+    workspaceId?: StringFilter<"ReportType"> | string
+    name?: StringFilter<"ReportType"> | string
+    module?: EnumReportModuleFilter<"ReportType"> | $Enums.ReportModule
+    baseDataSource?: EnumReportBaseDataSourceFilter<"ReportType"> | $Enums.ReportBaseDataSource
+    description?: StringNullableFilter<"ReportType"> | string | null
+    allowedFilters?: JsonFilter<"ReportType">
+    status?: EnumReportTypeStatusFilter<"ReportType"> | $Enums.ReportTypeStatus
+    createdById?: StringNullableFilter<"ReportType"> | string | null
+    updatedById?: StringNullableFilter<"ReportType"> | string | null
+    createdAt?: DateTimeFilter<"ReportType"> | Date | string
+    updatedAt?: DateTimeFilter<"ReportType"> | Date | string
+    deletedAt?: DateTimeNullableFilter<"ReportType"> | Date | string | null
+    workspace?: XOR<WorkspaceRelationFilter, WorkspaceWhereInput>
+    createdBy?: XOR<UserNullableRelationFilter, UserWhereInput> | null
+    updatedBy?: XOR<UserNullableRelationFilter, UserWhereInput> | null
+    logs?: ReportLogListRelationFilter
+  }
+
+  export type ReportTypeOrderByWithRelationInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    name?: SortOrder
+    module?: SortOrder
+    baseDataSource?: SortOrder
+    description?: SortOrderInput | SortOrder
+    allowedFilters?: SortOrder
+    status?: SortOrder
+    createdById?: SortOrderInput | SortOrder
+    updatedById?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrderInput | SortOrder
+    workspace?: WorkspaceOrderByWithRelationInput
+    createdBy?: UserOrderByWithRelationInput
+    updatedBy?: UserOrderByWithRelationInput
+    logs?: ReportLogOrderByRelationAggregateInput
+  }
+
+  export type ReportTypeWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: ReportTypeWhereInput | ReportTypeWhereInput[]
+    OR?: ReportTypeWhereInput[]
+    NOT?: ReportTypeWhereInput | ReportTypeWhereInput[]
+    workspaceId?: StringFilter<"ReportType"> | string
+    name?: StringFilter<"ReportType"> | string
+    module?: EnumReportModuleFilter<"ReportType"> | $Enums.ReportModule
+    baseDataSource?: EnumReportBaseDataSourceFilter<"ReportType"> | $Enums.ReportBaseDataSource
+    description?: StringNullableFilter<"ReportType"> | string | null
+    allowedFilters?: JsonFilter<"ReportType">
+    status?: EnumReportTypeStatusFilter<"ReportType"> | $Enums.ReportTypeStatus
+    createdById?: StringNullableFilter<"ReportType"> | string | null
+    updatedById?: StringNullableFilter<"ReportType"> | string | null
+    createdAt?: DateTimeFilter<"ReportType"> | Date | string
+    updatedAt?: DateTimeFilter<"ReportType"> | Date | string
+    deletedAt?: DateTimeNullableFilter<"ReportType"> | Date | string | null
+    workspace?: XOR<WorkspaceRelationFilter, WorkspaceWhereInput>
+    createdBy?: XOR<UserNullableRelationFilter, UserWhereInput> | null
+    updatedBy?: XOR<UserNullableRelationFilter, UserWhereInput> | null
+    logs?: ReportLogListRelationFilter
+  }, "id">
+
+  export type ReportTypeOrderByWithAggregationInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    name?: SortOrder
+    module?: SortOrder
+    baseDataSource?: SortOrder
+    description?: SortOrderInput | SortOrder
+    allowedFilters?: SortOrder
+    status?: SortOrder
+    createdById?: SortOrderInput | SortOrder
+    updatedById?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrderInput | SortOrder
+    _count?: ReportTypeCountOrderByAggregateInput
+    _max?: ReportTypeMaxOrderByAggregateInput
+    _min?: ReportTypeMinOrderByAggregateInput
+  }
+
+  export type ReportTypeScalarWhereWithAggregatesInput = {
+    AND?: ReportTypeScalarWhereWithAggregatesInput | ReportTypeScalarWhereWithAggregatesInput[]
+    OR?: ReportTypeScalarWhereWithAggregatesInput[]
+    NOT?: ReportTypeScalarWhereWithAggregatesInput | ReportTypeScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"ReportType"> | string
+    workspaceId?: StringWithAggregatesFilter<"ReportType"> | string
+    name?: StringWithAggregatesFilter<"ReportType"> | string
+    module?: EnumReportModuleWithAggregatesFilter<"ReportType"> | $Enums.ReportModule
+    baseDataSource?: EnumReportBaseDataSourceWithAggregatesFilter<"ReportType"> | $Enums.ReportBaseDataSource
+    description?: StringNullableWithAggregatesFilter<"ReportType"> | string | null
+    allowedFilters?: JsonWithAggregatesFilter<"ReportType">
+    status?: EnumReportTypeStatusWithAggregatesFilter<"ReportType"> | $Enums.ReportTypeStatus
+    createdById?: StringNullableWithAggregatesFilter<"ReportType"> | string | null
+    updatedById?: StringNullableWithAggregatesFilter<"ReportType"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"ReportType"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"ReportType"> | Date | string
+    deletedAt?: DateTimeNullableWithAggregatesFilter<"ReportType"> | Date | string | null
+  }
+
+  export type ReportLogWhereInput = {
+    AND?: ReportLogWhereInput | ReportLogWhereInput[]
+    OR?: ReportLogWhereInput[]
+    NOT?: ReportLogWhereInput | ReportLogWhereInput[]
+    id?: StringFilter<"ReportLog"> | string
+    workspaceId?: StringFilter<"ReportLog"> | string
+    reportTypeId?: StringFilter<"ReportLog"> | string
+    generatedById?: StringNullableFilter<"ReportLog"> | string | null
+    filters?: JsonFilter<"ReportLog">
+    resultCount?: IntFilter<"ReportLog"> | number
+    createdAt?: DateTimeFilter<"ReportLog"> | Date | string
+    workspace?: XOR<WorkspaceRelationFilter, WorkspaceWhereInput>
+    reportType?: XOR<ReportTypeRelationFilter, ReportTypeWhereInput>
+    generatedBy?: XOR<UserNullableRelationFilter, UserWhereInput> | null
+  }
+
+  export type ReportLogOrderByWithRelationInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    reportTypeId?: SortOrder
+    generatedById?: SortOrderInput | SortOrder
+    filters?: SortOrder
+    resultCount?: SortOrder
+    createdAt?: SortOrder
+    workspace?: WorkspaceOrderByWithRelationInput
+    reportType?: ReportTypeOrderByWithRelationInput
+    generatedBy?: UserOrderByWithRelationInput
+  }
+
+  export type ReportLogWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: ReportLogWhereInput | ReportLogWhereInput[]
+    OR?: ReportLogWhereInput[]
+    NOT?: ReportLogWhereInput | ReportLogWhereInput[]
+    workspaceId?: StringFilter<"ReportLog"> | string
+    reportTypeId?: StringFilter<"ReportLog"> | string
+    generatedById?: StringNullableFilter<"ReportLog"> | string | null
+    filters?: JsonFilter<"ReportLog">
+    resultCount?: IntFilter<"ReportLog"> | number
+    createdAt?: DateTimeFilter<"ReportLog"> | Date | string
+    workspace?: XOR<WorkspaceRelationFilter, WorkspaceWhereInput>
+    reportType?: XOR<ReportTypeRelationFilter, ReportTypeWhereInput>
+    generatedBy?: XOR<UserNullableRelationFilter, UserWhereInput> | null
+  }, "id">
+
+  export type ReportLogOrderByWithAggregationInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    reportTypeId?: SortOrder
+    generatedById?: SortOrderInput | SortOrder
+    filters?: SortOrder
+    resultCount?: SortOrder
+    createdAt?: SortOrder
+    _count?: ReportLogCountOrderByAggregateInput
+    _avg?: ReportLogAvgOrderByAggregateInput
+    _max?: ReportLogMaxOrderByAggregateInput
+    _min?: ReportLogMinOrderByAggregateInput
+    _sum?: ReportLogSumOrderByAggregateInput
+  }
+
+  export type ReportLogScalarWhereWithAggregatesInput = {
+    AND?: ReportLogScalarWhereWithAggregatesInput | ReportLogScalarWhereWithAggregatesInput[]
+    OR?: ReportLogScalarWhereWithAggregatesInput[]
+    NOT?: ReportLogScalarWhereWithAggregatesInput | ReportLogScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"ReportLog"> | string
+    workspaceId?: StringWithAggregatesFilter<"ReportLog"> | string
+    reportTypeId?: StringWithAggregatesFilter<"ReportLog"> | string
+    generatedById?: StringNullableWithAggregatesFilter<"ReportLog"> | string | null
+    filters?: JsonWithAggregatesFilter<"ReportLog">
+    resultCount?: IntWithAggregatesFilter<"ReportLog"> | number
+    createdAt?: DateTimeWithAggregatesFilter<"ReportLog"> | Date | string
+  }
+
   export type RoleCreateInput = {
     id?: string
     name: string
@@ -41938,6 +47520,10 @@ export namespace Prisma {
     leads?: LeadCreateNestedManyWithoutWorkspaceInput
     leadActivities?: LeadActivityCreateNestedManyWithoutWorkspaceInput
     leadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutWorkspaceInput
+    holidays?: HolidayCreateNestedManyWithoutWorkspaceInput
+    holidaySyncLogs?: HolidaySyncLogCreateNestedManyWithoutWorkspaceInput
+    reportTypes?: ReportTypeCreateNestedManyWithoutWorkspaceInput
+    reportLogs?: ReportLogCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateInput = {
@@ -41959,6 +47545,10 @@ export namespace Prisma {
     leads?: LeadUncheckedCreateNestedManyWithoutWorkspaceInput
     leadActivities?: LeadActivityUncheckedCreateNestedManyWithoutWorkspaceInput
     leadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutWorkspaceInput
+    holidays?: HolidayUncheckedCreateNestedManyWithoutWorkspaceInput
+    holidaySyncLogs?: HolidaySyncLogUncheckedCreateNestedManyWithoutWorkspaceInput
+    reportTypes?: ReportTypeUncheckedCreateNestedManyWithoutWorkspaceInput
+    reportLogs?: ReportLogUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUpdateInput = {
@@ -41980,6 +47570,10 @@ export namespace Prisma {
     leads?: LeadUpdateManyWithoutWorkspaceNestedInput
     leadActivities?: LeadActivityUpdateManyWithoutWorkspaceNestedInput
     leadStageApprovals?: LeadStageApprovalUpdateManyWithoutWorkspaceNestedInput
+    holidays?: HolidayUpdateManyWithoutWorkspaceNestedInput
+    holidaySyncLogs?: HolidaySyncLogUpdateManyWithoutWorkspaceNestedInput
+    reportTypes?: ReportTypeUpdateManyWithoutWorkspaceNestedInput
+    reportLogs?: ReportLogUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateInput = {
@@ -42001,6 +47595,10 @@ export namespace Prisma {
     leads?: LeadUncheckedUpdateManyWithoutWorkspaceNestedInput
     leadActivities?: LeadActivityUncheckedUpdateManyWithoutWorkspaceNestedInput
     leadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutWorkspaceNestedInput
+    holidays?: HolidayUncheckedUpdateManyWithoutWorkspaceNestedInput
+    holidaySyncLogs?: HolidaySyncLogUncheckedUpdateManyWithoutWorkspaceNestedInput
+    reportTypes?: ReportTypeUncheckedUpdateManyWithoutWorkspaceNestedInput
+    reportLogs?: ReportLogUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceCreateManyInput = {
@@ -42615,6 +48213,9 @@ export namespace Prisma {
     usersAtCountry?: UserCreateNestedManyWithoutCountryInput
     usersAtState?: UserCreateNestedManyWithoutStateInput
     usersAtDistrict?: UserCreateNestedManyWithoutDistrictInput
+    holidaysAtCountry?: HolidayCreateNestedManyWithoutCountryInput
+    holidaysAtState?: HolidayCreateNestedManyWithoutStateInput
+    holidaysAtDistrict?: HolidayCreateNestedManyWithoutDistrictInput
   }
 
   export type LocationUncheckedCreateInput = {
@@ -42630,6 +48231,9 @@ export namespace Prisma {
     usersAtCountry?: UserUncheckedCreateNestedManyWithoutCountryInput
     usersAtState?: UserUncheckedCreateNestedManyWithoutStateInput
     usersAtDistrict?: UserUncheckedCreateNestedManyWithoutDistrictInput
+    holidaysAtCountry?: HolidayUncheckedCreateNestedManyWithoutCountryInput
+    holidaysAtState?: HolidayUncheckedCreateNestedManyWithoutStateInput
+    holidaysAtDistrict?: HolidayUncheckedCreateNestedManyWithoutDistrictInput
   }
 
   export type LocationUpdateInput = {
@@ -42645,6 +48249,9 @@ export namespace Prisma {
     usersAtCountry?: UserUpdateManyWithoutCountryNestedInput
     usersAtState?: UserUpdateManyWithoutStateNestedInput
     usersAtDistrict?: UserUpdateManyWithoutDistrictNestedInput
+    holidaysAtCountry?: HolidayUpdateManyWithoutCountryNestedInput
+    holidaysAtState?: HolidayUpdateManyWithoutStateNestedInput
+    holidaysAtDistrict?: HolidayUpdateManyWithoutDistrictNestedInput
   }
 
   export type LocationUncheckedUpdateInput = {
@@ -42660,6 +48267,9 @@ export namespace Prisma {
     usersAtCountry?: UserUncheckedUpdateManyWithoutCountryNestedInput
     usersAtState?: UserUncheckedUpdateManyWithoutStateNestedInput
     usersAtDistrict?: UserUncheckedUpdateManyWithoutDistrictNestedInput
+    holidaysAtCountry?: HolidayUncheckedUpdateManyWithoutCountryNestedInput
+    holidaysAtState?: HolidayUncheckedUpdateManyWithoutStateNestedInput
+    holidaysAtDistrict?: HolidayUncheckedUpdateManyWithoutDistrictNestedInput
   }
 
   export type LocationCreateManyInput = {
@@ -44049,6 +49659,11 @@ export namespace Prisma {
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
     closedLeads?: LeadCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -44094,6 +49709,11 @@ export namespace Prisma {
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
     closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
   }
 
   export type UserUpdateInput = {
@@ -44139,6 +49759,11 @@ export namespace Prisma {
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
     closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -44184,6 +49809,11 @@ export namespace Prisma {
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
     closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -44711,6 +50341,368 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type HolidayCreateInput = {
+    id?: string
+    name: string
+    holidayDate: Date | string
+    isRecurring?: boolean
+    recurrenceRule?: string | null
+    source?: $Enums.HolidaySource
+    status?: $Enums.HolidayStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    workspace: WorkspaceCreateNestedOneWithoutHolidaysInput
+    country?: LocationCreateNestedOneWithoutHolidaysAtCountryInput
+    state?: LocationCreateNestedOneWithoutHolidaysAtStateInput
+    district?: LocationCreateNestedOneWithoutHolidaysAtDistrictInput
+    createdBy?: UserCreateNestedOneWithoutCreatedHolidaysInput
+    updatedBy?: UserCreateNestedOneWithoutUpdatedHolidaysInput
+  }
+
+  export type HolidayUncheckedCreateInput = {
+    id?: string
+    workspaceId: string
+    name: string
+    holidayDate: Date | string
+    countryId?: string | null
+    stateId?: string | null
+    districtId?: string | null
+    isRecurring?: boolean
+    recurrenceRule?: string | null
+    source?: $Enums.HolidaySource
+    status?: $Enums.HolidayStatus
+    createdById?: string | null
+    updatedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type HolidayUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    holidayDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    isRecurring?: BoolFieldUpdateOperationsInput | boolean
+    recurrenceRule?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: EnumHolidaySourceFieldUpdateOperationsInput | $Enums.HolidaySource
+    status?: EnumHolidayStatusFieldUpdateOperationsInput | $Enums.HolidayStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    workspace?: WorkspaceUpdateOneRequiredWithoutHolidaysNestedInput
+    country?: LocationUpdateOneWithoutHolidaysAtCountryNestedInput
+    state?: LocationUpdateOneWithoutHolidaysAtStateNestedInput
+    district?: LocationUpdateOneWithoutHolidaysAtDistrictNestedInput
+    createdBy?: UserUpdateOneWithoutCreatedHolidaysNestedInput
+    updatedBy?: UserUpdateOneWithoutUpdatedHolidaysNestedInput
+  }
+
+  export type HolidayUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    holidayDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    countryId?: NullableStringFieldUpdateOperationsInput | string | null
+    stateId?: NullableStringFieldUpdateOperationsInput | string | null
+    districtId?: NullableStringFieldUpdateOperationsInput | string | null
+    isRecurring?: BoolFieldUpdateOperationsInput | boolean
+    recurrenceRule?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: EnumHolidaySourceFieldUpdateOperationsInput | $Enums.HolidaySource
+    status?: EnumHolidayStatusFieldUpdateOperationsInput | $Enums.HolidayStatus
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type HolidayCreateManyInput = {
+    id?: string
+    workspaceId: string
+    name: string
+    holidayDate: Date | string
+    countryId?: string | null
+    stateId?: string | null
+    districtId?: string | null
+    isRecurring?: boolean
+    recurrenceRule?: string | null
+    source?: $Enums.HolidaySource
+    status?: $Enums.HolidayStatus
+    createdById?: string | null
+    updatedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type HolidayUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    holidayDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    isRecurring?: BoolFieldUpdateOperationsInput | boolean
+    recurrenceRule?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: EnumHolidaySourceFieldUpdateOperationsInput | $Enums.HolidaySource
+    status?: EnumHolidayStatusFieldUpdateOperationsInput | $Enums.HolidayStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type HolidayUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    holidayDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    countryId?: NullableStringFieldUpdateOperationsInput | string | null
+    stateId?: NullableStringFieldUpdateOperationsInput | string | null
+    districtId?: NullableStringFieldUpdateOperationsInput | string | null
+    isRecurring?: BoolFieldUpdateOperationsInput | boolean
+    recurrenceRule?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: EnumHolidaySourceFieldUpdateOperationsInput | $Enums.HolidaySource
+    status?: EnumHolidayStatusFieldUpdateOperationsInput | $Enums.HolidayStatus
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type HolidaySyncLogCreateInput = {
+    id?: string
+    source: $Enums.HolidaySource
+    status: string
+    message?: string | null
+    syncedAt?: Date | string
+    workspace: WorkspaceCreateNestedOneWithoutHolidaySyncLogsInput
+  }
+
+  export type HolidaySyncLogUncheckedCreateInput = {
+    id?: string
+    workspaceId: string
+    source: $Enums.HolidaySource
+    status: string
+    message?: string | null
+    syncedAt?: Date | string
+  }
+
+  export type HolidaySyncLogUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    source?: EnumHolidaySourceFieldUpdateOperationsInput | $Enums.HolidaySource
+    status?: StringFieldUpdateOperationsInput | string
+    message?: NullableStringFieldUpdateOperationsInput | string | null
+    syncedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    workspace?: WorkspaceUpdateOneRequiredWithoutHolidaySyncLogsNestedInput
+  }
+
+  export type HolidaySyncLogUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    source?: EnumHolidaySourceFieldUpdateOperationsInput | $Enums.HolidaySource
+    status?: StringFieldUpdateOperationsInput | string
+    message?: NullableStringFieldUpdateOperationsInput | string | null
+    syncedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type HolidaySyncLogCreateManyInput = {
+    id?: string
+    workspaceId: string
+    source: $Enums.HolidaySource
+    status: string
+    message?: string | null
+    syncedAt?: Date | string
+  }
+
+  export type HolidaySyncLogUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    source?: EnumHolidaySourceFieldUpdateOperationsInput | $Enums.HolidaySource
+    status?: StringFieldUpdateOperationsInput | string
+    message?: NullableStringFieldUpdateOperationsInput | string | null
+    syncedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type HolidaySyncLogUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    source?: EnumHolidaySourceFieldUpdateOperationsInput | $Enums.HolidaySource
+    status?: StringFieldUpdateOperationsInput | string
+    message?: NullableStringFieldUpdateOperationsInput | string | null
+    syncedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ReportTypeCreateInput = {
+    id?: string
+    name: string
+    module: $Enums.ReportModule
+    baseDataSource: $Enums.ReportBaseDataSource
+    description?: string | null
+    allowedFilters?: JsonNullValueInput | InputJsonValue
+    status?: $Enums.ReportTypeStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    workspace: WorkspaceCreateNestedOneWithoutReportTypesInput
+    createdBy?: UserCreateNestedOneWithoutCreatedReportTypesInput
+    updatedBy?: UserCreateNestedOneWithoutUpdatedReportTypesInput
+    logs?: ReportLogCreateNestedManyWithoutReportTypeInput
+  }
+
+  export type ReportTypeUncheckedCreateInput = {
+    id?: string
+    workspaceId: string
+    name: string
+    module: $Enums.ReportModule
+    baseDataSource: $Enums.ReportBaseDataSource
+    description?: string | null
+    allowedFilters?: JsonNullValueInput | InputJsonValue
+    status?: $Enums.ReportTypeStatus
+    createdById?: string | null
+    updatedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    logs?: ReportLogUncheckedCreateNestedManyWithoutReportTypeInput
+  }
+
+  export type ReportTypeUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    module?: EnumReportModuleFieldUpdateOperationsInput | $Enums.ReportModule
+    baseDataSource?: EnumReportBaseDataSourceFieldUpdateOperationsInput | $Enums.ReportBaseDataSource
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    allowedFilters?: JsonNullValueInput | InputJsonValue
+    status?: EnumReportTypeStatusFieldUpdateOperationsInput | $Enums.ReportTypeStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    workspace?: WorkspaceUpdateOneRequiredWithoutReportTypesNestedInput
+    createdBy?: UserUpdateOneWithoutCreatedReportTypesNestedInput
+    updatedBy?: UserUpdateOneWithoutUpdatedReportTypesNestedInput
+    logs?: ReportLogUpdateManyWithoutReportTypeNestedInput
+  }
+
+  export type ReportTypeUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    module?: EnumReportModuleFieldUpdateOperationsInput | $Enums.ReportModule
+    baseDataSource?: EnumReportBaseDataSourceFieldUpdateOperationsInput | $Enums.ReportBaseDataSource
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    allowedFilters?: JsonNullValueInput | InputJsonValue
+    status?: EnumReportTypeStatusFieldUpdateOperationsInput | $Enums.ReportTypeStatus
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    logs?: ReportLogUncheckedUpdateManyWithoutReportTypeNestedInput
+  }
+
+  export type ReportTypeCreateManyInput = {
+    id?: string
+    workspaceId: string
+    name: string
+    module: $Enums.ReportModule
+    baseDataSource: $Enums.ReportBaseDataSource
+    description?: string | null
+    allowedFilters?: JsonNullValueInput | InputJsonValue
+    status?: $Enums.ReportTypeStatus
+    createdById?: string | null
+    updatedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type ReportTypeUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    module?: EnumReportModuleFieldUpdateOperationsInput | $Enums.ReportModule
+    baseDataSource?: EnumReportBaseDataSourceFieldUpdateOperationsInput | $Enums.ReportBaseDataSource
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    allowedFilters?: JsonNullValueInput | InputJsonValue
+    status?: EnumReportTypeStatusFieldUpdateOperationsInput | $Enums.ReportTypeStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type ReportTypeUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    module?: EnumReportModuleFieldUpdateOperationsInput | $Enums.ReportModule
+    baseDataSource?: EnumReportBaseDataSourceFieldUpdateOperationsInput | $Enums.ReportBaseDataSource
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    allowedFilters?: JsonNullValueInput | InputJsonValue
+    status?: EnumReportTypeStatusFieldUpdateOperationsInput | $Enums.ReportTypeStatus
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type ReportLogCreateInput = {
+    id?: string
+    filters?: JsonNullValueInput | InputJsonValue
+    resultCount?: number
+    createdAt?: Date | string
+    workspace: WorkspaceCreateNestedOneWithoutReportLogsInput
+    reportType: ReportTypeCreateNestedOneWithoutLogsInput
+    generatedBy?: UserCreateNestedOneWithoutGeneratedReportLogsInput
+  }
+
+  export type ReportLogUncheckedCreateInput = {
+    id?: string
+    workspaceId: string
+    reportTypeId: string
+    generatedById?: string | null
+    filters?: JsonNullValueInput | InputJsonValue
+    resultCount?: number
+    createdAt?: Date | string
+  }
+
+  export type ReportLogUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    filters?: JsonNullValueInput | InputJsonValue
+    resultCount?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    workspace?: WorkspaceUpdateOneRequiredWithoutReportLogsNestedInput
+    reportType?: ReportTypeUpdateOneRequiredWithoutLogsNestedInput
+    generatedBy?: UserUpdateOneWithoutGeneratedReportLogsNestedInput
+  }
+
+  export type ReportLogUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    reportTypeId?: StringFieldUpdateOperationsInput | string
+    generatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    filters?: JsonNullValueInput | InputJsonValue
+    resultCount?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ReportLogCreateManyInput = {
+    id?: string
+    workspaceId: string
+    reportTypeId: string
+    generatedById?: string | null
+    filters?: JsonNullValueInput | InputJsonValue
+    resultCount?: number
+    createdAt?: Date | string
+  }
+
+  export type ReportLogUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    filters?: JsonNullValueInput | InputJsonValue
+    resultCount?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ReportLogUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    reportTypeId?: StringFieldUpdateOperationsInput | string
+    generatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    filters?: JsonNullValueInput | InputJsonValue
+    resultCount?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -44980,6 +50972,30 @@ export namespace Prisma {
     none?: LeadStageApprovalWhereInput
   }
 
+  export type HolidayListRelationFilter = {
+    every?: HolidayWhereInput
+    some?: HolidayWhereInput
+    none?: HolidayWhereInput
+  }
+
+  export type HolidaySyncLogListRelationFilter = {
+    every?: HolidaySyncLogWhereInput
+    some?: HolidaySyncLogWhereInput
+    none?: HolidaySyncLogWhereInput
+  }
+
+  export type ReportTypeListRelationFilter = {
+    every?: ReportTypeWhereInput
+    some?: ReportTypeWhereInput
+    none?: ReportTypeWhereInput
+  }
+
+  export type ReportLogListRelationFilter = {
+    every?: ReportLogWhereInput
+    some?: ReportLogWhereInput
+    none?: ReportLogWhereInput
+  }
+
   export type DepartmentOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -45005,6 +51021,22 @@ export namespace Prisma {
   }
 
   export type LeadStageApprovalOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type HolidayOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type HolidaySyncLogOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type ReportTypeOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type ReportLogOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -46993,6 +53025,306 @@ export namespace Prisma {
     updatedAt?: SortOrder
   }
 
+  export type EnumHolidaySourceFilter<$PrismaModel = never> = {
+    equals?: $Enums.HolidaySource | EnumHolidaySourceFieldRefInput<$PrismaModel>
+    in?: $Enums.HolidaySource[] | ListEnumHolidaySourceFieldRefInput<$PrismaModel>
+    notIn?: $Enums.HolidaySource[] | ListEnumHolidaySourceFieldRefInput<$PrismaModel>
+    not?: NestedEnumHolidaySourceFilter<$PrismaModel> | $Enums.HolidaySource
+  }
+
+  export type EnumHolidayStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.HolidayStatus | EnumHolidayStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.HolidayStatus[] | ListEnumHolidayStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.HolidayStatus[] | ListEnumHolidayStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumHolidayStatusFilter<$PrismaModel> | $Enums.HolidayStatus
+  }
+
+  export type HolidayCountOrderByAggregateInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    name?: SortOrder
+    holidayDate?: SortOrder
+    countryId?: SortOrder
+    stateId?: SortOrder
+    districtId?: SortOrder
+    isRecurring?: SortOrder
+    recurrenceRule?: SortOrder
+    source?: SortOrder
+    status?: SortOrder
+    createdById?: SortOrder
+    updatedById?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type HolidayMaxOrderByAggregateInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    name?: SortOrder
+    holidayDate?: SortOrder
+    countryId?: SortOrder
+    stateId?: SortOrder
+    districtId?: SortOrder
+    isRecurring?: SortOrder
+    recurrenceRule?: SortOrder
+    source?: SortOrder
+    status?: SortOrder
+    createdById?: SortOrder
+    updatedById?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type HolidayMinOrderByAggregateInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    name?: SortOrder
+    holidayDate?: SortOrder
+    countryId?: SortOrder
+    stateId?: SortOrder
+    districtId?: SortOrder
+    isRecurring?: SortOrder
+    recurrenceRule?: SortOrder
+    source?: SortOrder
+    status?: SortOrder
+    createdById?: SortOrder
+    updatedById?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type EnumHolidaySourceWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.HolidaySource | EnumHolidaySourceFieldRefInput<$PrismaModel>
+    in?: $Enums.HolidaySource[] | ListEnumHolidaySourceFieldRefInput<$PrismaModel>
+    notIn?: $Enums.HolidaySource[] | ListEnumHolidaySourceFieldRefInput<$PrismaModel>
+    not?: NestedEnumHolidaySourceWithAggregatesFilter<$PrismaModel> | $Enums.HolidaySource
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumHolidaySourceFilter<$PrismaModel>
+    _max?: NestedEnumHolidaySourceFilter<$PrismaModel>
+  }
+
+  export type EnumHolidayStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.HolidayStatus | EnumHolidayStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.HolidayStatus[] | ListEnumHolidayStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.HolidayStatus[] | ListEnumHolidayStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumHolidayStatusWithAggregatesFilter<$PrismaModel> | $Enums.HolidayStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumHolidayStatusFilter<$PrismaModel>
+    _max?: NestedEnumHolidayStatusFilter<$PrismaModel>
+  }
+
+  export type HolidaySyncLogCountOrderByAggregateInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    source?: SortOrder
+    status?: SortOrder
+    message?: SortOrder
+    syncedAt?: SortOrder
+  }
+
+  export type HolidaySyncLogMaxOrderByAggregateInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    source?: SortOrder
+    status?: SortOrder
+    message?: SortOrder
+    syncedAt?: SortOrder
+  }
+
+  export type HolidaySyncLogMinOrderByAggregateInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    source?: SortOrder
+    status?: SortOrder
+    message?: SortOrder
+    syncedAt?: SortOrder
+  }
+
+  export type EnumReportModuleFilter<$PrismaModel = never> = {
+    equals?: $Enums.ReportModule | EnumReportModuleFieldRefInput<$PrismaModel>
+    in?: $Enums.ReportModule[] | ListEnumReportModuleFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ReportModule[] | ListEnumReportModuleFieldRefInput<$PrismaModel>
+    not?: NestedEnumReportModuleFilter<$PrismaModel> | $Enums.ReportModule
+  }
+
+  export type EnumReportBaseDataSourceFilter<$PrismaModel = never> = {
+    equals?: $Enums.ReportBaseDataSource | EnumReportBaseDataSourceFieldRefInput<$PrismaModel>
+    in?: $Enums.ReportBaseDataSource[] | ListEnumReportBaseDataSourceFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ReportBaseDataSource[] | ListEnumReportBaseDataSourceFieldRefInput<$PrismaModel>
+    not?: NestedEnumReportBaseDataSourceFilter<$PrismaModel> | $Enums.ReportBaseDataSource
+  }
+  export type JsonFilter<$PrismaModel = never> = 
+    | PatchUndefined<
+        Either<Required<JsonFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
+
+  export type EnumReportTypeStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.ReportTypeStatus | EnumReportTypeStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ReportTypeStatus[] | ListEnumReportTypeStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ReportTypeStatus[] | ListEnumReportTypeStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumReportTypeStatusFilter<$PrismaModel> | $Enums.ReportTypeStatus
+  }
+
+  export type ReportTypeCountOrderByAggregateInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    name?: SortOrder
+    module?: SortOrder
+    baseDataSource?: SortOrder
+    description?: SortOrder
+    allowedFilters?: SortOrder
+    status?: SortOrder
+    createdById?: SortOrder
+    updatedById?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrder
+  }
+
+  export type ReportTypeMaxOrderByAggregateInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    name?: SortOrder
+    module?: SortOrder
+    baseDataSource?: SortOrder
+    description?: SortOrder
+    status?: SortOrder
+    createdById?: SortOrder
+    updatedById?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrder
+  }
+
+  export type ReportTypeMinOrderByAggregateInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    name?: SortOrder
+    module?: SortOrder
+    baseDataSource?: SortOrder
+    description?: SortOrder
+    status?: SortOrder
+    createdById?: SortOrder
+    updatedById?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrder
+  }
+
+  export type EnumReportModuleWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ReportModule | EnumReportModuleFieldRefInput<$PrismaModel>
+    in?: $Enums.ReportModule[] | ListEnumReportModuleFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ReportModule[] | ListEnumReportModuleFieldRefInput<$PrismaModel>
+    not?: NestedEnumReportModuleWithAggregatesFilter<$PrismaModel> | $Enums.ReportModule
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumReportModuleFilter<$PrismaModel>
+    _max?: NestedEnumReportModuleFilter<$PrismaModel>
+  }
+
+  export type EnumReportBaseDataSourceWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ReportBaseDataSource | EnumReportBaseDataSourceFieldRefInput<$PrismaModel>
+    in?: $Enums.ReportBaseDataSource[] | ListEnumReportBaseDataSourceFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ReportBaseDataSource[] | ListEnumReportBaseDataSourceFieldRefInput<$PrismaModel>
+    not?: NestedEnumReportBaseDataSourceWithAggregatesFilter<$PrismaModel> | $Enums.ReportBaseDataSource
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumReportBaseDataSourceFilter<$PrismaModel>
+    _max?: NestedEnumReportBaseDataSourceFilter<$PrismaModel>
+  }
+  export type JsonWithAggregatesFilter<$PrismaModel = never> = 
+    | PatchUndefined<
+        Either<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonWithAggregatesFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonWithAggregatesFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedJsonFilter<$PrismaModel>
+    _max?: NestedJsonFilter<$PrismaModel>
+  }
+
+  export type EnumReportTypeStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ReportTypeStatus | EnumReportTypeStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ReportTypeStatus[] | ListEnumReportTypeStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ReportTypeStatus[] | ListEnumReportTypeStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumReportTypeStatusWithAggregatesFilter<$PrismaModel> | $Enums.ReportTypeStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumReportTypeStatusFilter<$PrismaModel>
+    _max?: NestedEnumReportTypeStatusFilter<$PrismaModel>
+  }
+
+  export type ReportTypeRelationFilter = {
+    is?: ReportTypeWhereInput
+    isNot?: ReportTypeWhereInput
+  }
+
+  export type ReportLogCountOrderByAggregateInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    reportTypeId?: SortOrder
+    generatedById?: SortOrder
+    filters?: SortOrder
+    resultCount?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type ReportLogAvgOrderByAggregateInput = {
+    resultCount?: SortOrder
+  }
+
+  export type ReportLogMaxOrderByAggregateInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    reportTypeId?: SortOrder
+    generatedById?: SortOrder
+    resultCount?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type ReportLogMinOrderByAggregateInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    reportTypeId?: SortOrder
+    generatedById?: SortOrder
+    resultCount?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type ReportLogSumOrderByAggregateInput = {
+    resultCount?: SortOrder
+  }
+
   export type RolePermissionCreateNestedManyWithoutRoleInput = {
     create?: XOR<RolePermissionCreateWithoutRoleInput, RolePermissionUncheckedCreateWithoutRoleInput> | RolePermissionCreateWithoutRoleInput[] | RolePermissionUncheckedCreateWithoutRoleInput[]
     connectOrCreate?: RolePermissionCreateOrConnectWithoutRoleInput | RolePermissionCreateOrConnectWithoutRoleInput[]
@@ -47225,6 +53557,34 @@ export namespace Prisma {
     connect?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
   }
 
+  export type HolidayCreateNestedManyWithoutWorkspaceInput = {
+    create?: XOR<HolidayCreateWithoutWorkspaceInput, HolidayUncheckedCreateWithoutWorkspaceInput> | HolidayCreateWithoutWorkspaceInput[] | HolidayUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: HolidayCreateOrConnectWithoutWorkspaceInput | HolidayCreateOrConnectWithoutWorkspaceInput[]
+    createMany?: HolidayCreateManyWorkspaceInputEnvelope
+    connect?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
+  }
+
+  export type HolidaySyncLogCreateNestedManyWithoutWorkspaceInput = {
+    create?: XOR<HolidaySyncLogCreateWithoutWorkspaceInput, HolidaySyncLogUncheckedCreateWithoutWorkspaceInput> | HolidaySyncLogCreateWithoutWorkspaceInput[] | HolidaySyncLogUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: HolidaySyncLogCreateOrConnectWithoutWorkspaceInput | HolidaySyncLogCreateOrConnectWithoutWorkspaceInput[]
+    createMany?: HolidaySyncLogCreateManyWorkspaceInputEnvelope
+    connect?: HolidaySyncLogWhereUniqueInput | HolidaySyncLogWhereUniqueInput[]
+  }
+
+  export type ReportTypeCreateNestedManyWithoutWorkspaceInput = {
+    create?: XOR<ReportTypeCreateWithoutWorkspaceInput, ReportTypeUncheckedCreateWithoutWorkspaceInput> | ReportTypeCreateWithoutWorkspaceInput[] | ReportTypeUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: ReportTypeCreateOrConnectWithoutWorkspaceInput | ReportTypeCreateOrConnectWithoutWorkspaceInput[]
+    createMany?: ReportTypeCreateManyWorkspaceInputEnvelope
+    connect?: ReportTypeWhereUniqueInput | ReportTypeWhereUniqueInput[]
+  }
+
+  export type ReportLogCreateNestedManyWithoutWorkspaceInput = {
+    create?: XOR<ReportLogCreateWithoutWorkspaceInput, ReportLogUncheckedCreateWithoutWorkspaceInput> | ReportLogCreateWithoutWorkspaceInput[] | ReportLogUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: ReportLogCreateOrConnectWithoutWorkspaceInput | ReportLogCreateOrConnectWithoutWorkspaceInput[]
+    createMany?: ReportLogCreateManyWorkspaceInputEnvelope
+    connect?: ReportLogWhereUniqueInput | ReportLogWhereUniqueInput[]
+  }
+
   export type UserUncheckedCreateNestedManyWithoutWorkspaceInput = {
     create?: XOR<UserCreateWithoutWorkspaceInput, UserUncheckedCreateWithoutWorkspaceInput> | UserCreateWithoutWorkspaceInput[] | UserUncheckedCreateWithoutWorkspaceInput[]
     connectOrCreate?: UserCreateOrConnectWithoutWorkspaceInput | UserCreateOrConnectWithoutWorkspaceInput[]
@@ -47279,6 +53639,34 @@ export namespace Prisma {
     connectOrCreate?: LeadStageApprovalCreateOrConnectWithoutWorkspaceInput | LeadStageApprovalCreateOrConnectWithoutWorkspaceInput[]
     createMany?: LeadStageApprovalCreateManyWorkspaceInputEnvelope
     connect?: LeadStageApprovalWhereUniqueInput | LeadStageApprovalWhereUniqueInput[]
+  }
+
+  export type HolidayUncheckedCreateNestedManyWithoutWorkspaceInput = {
+    create?: XOR<HolidayCreateWithoutWorkspaceInput, HolidayUncheckedCreateWithoutWorkspaceInput> | HolidayCreateWithoutWorkspaceInput[] | HolidayUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: HolidayCreateOrConnectWithoutWorkspaceInput | HolidayCreateOrConnectWithoutWorkspaceInput[]
+    createMany?: HolidayCreateManyWorkspaceInputEnvelope
+    connect?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
+  }
+
+  export type HolidaySyncLogUncheckedCreateNestedManyWithoutWorkspaceInput = {
+    create?: XOR<HolidaySyncLogCreateWithoutWorkspaceInput, HolidaySyncLogUncheckedCreateWithoutWorkspaceInput> | HolidaySyncLogCreateWithoutWorkspaceInput[] | HolidaySyncLogUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: HolidaySyncLogCreateOrConnectWithoutWorkspaceInput | HolidaySyncLogCreateOrConnectWithoutWorkspaceInput[]
+    createMany?: HolidaySyncLogCreateManyWorkspaceInputEnvelope
+    connect?: HolidaySyncLogWhereUniqueInput | HolidaySyncLogWhereUniqueInput[]
+  }
+
+  export type ReportTypeUncheckedCreateNestedManyWithoutWorkspaceInput = {
+    create?: XOR<ReportTypeCreateWithoutWorkspaceInput, ReportTypeUncheckedCreateWithoutWorkspaceInput> | ReportTypeCreateWithoutWorkspaceInput[] | ReportTypeUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: ReportTypeCreateOrConnectWithoutWorkspaceInput | ReportTypeCreateOrConnectWithoutWorkspaceInput[]
+    createMany?: ReportTypeCreateManyWorkspaceInputEnvelope
+    connect?: ReportTypeWhereUniqueInput | ReportTypeWhereUniqueInput[]
+  }
+
+  export type ReportLogUncheckedCreateNestedManyWithoutWorkspaceInput = {
+    create?: XOR<ReportLogCreateWithoutWorkspaceInput, ReportLogUncheckedCreateWithoutWorkspaceInput> | ReportLogCreateWithoutWorkspaceInput[] | ReportLogUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: ReportLogCreateOrConnectWithoutWorkspaceInput | ReportLogCreateOrConnectWithoutWorkspaceInput[]
+    createMany?: ReportLogCreateManyWorkspaceInputEnvelope
+    connect?: ReportLogWhereUniqueInput | ReportLogWhereUniqueInput[]
   }
 
   export type BoolFieldUpdateOperationsInput = {
@@ -47405,6 +53793,62 @@ export namespace Prisma {
     deleteMany?: LeadStageApprovalScalarWhereInput | LeadStageApprovalScalarWhereInput[]
   }
 
+  export type HolidayUpdateManyWithoutWorkspaceNestedInput = {
+    create?: XOR<HolidayCreateWithoutWorkspaceInput, HolidayUncheckedCreateWithoutWorkspaceInput> | HolidayCreateWithoutWorkspaceInput[] | HolidayUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: HolidayCreateOrConnectWithoutWorkspaceInput | HolidayCreateOrConnectWithoutWorkspaceInput[]
+    upsert?: HolidayUpsertWithWhereUniqueWithoutWorkspaceInput | HolidayUpsertWithWhereUniqueWithoutWorkspaceInput[]
+    createMany?: HolidayCreateManyWorkspaceInputEnvelope
+    set?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
+    disconnect?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
+    delete?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
+    connect?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
+    update?: HolidayUpdateWithWhereUniqueWithoutWorkspaceInput | HolidayUpdateWithWhereUniqueWithoutWorkspaceInput[]
+    updateMany?: HolidayUpdateManyWithWhereWithoutWorkspaceInput | HolidayUpdateManyWithWhereWithoutWorkspaceInput[]
+    deleteMany?: HolidayScalarWhereInput | HolidayScalarWhereInput[]
+  }
+
+  export type HolidaySyncLogUpdateManyWithoutWorkspaceNestedInput = {
+    create?: XOR<HolidaySyncLogCreateWithoutWorkspaceInput, HolidaySyncLogUncheckedCreateWithoutWorkspaceInput> | HolidaySyncLogCreateWithoutWorkspaceInput[] | HolidaySyncLogUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: HolidaySyncLogCreateOrConnectWithoutWorkspaceInput | HolidaySyncLogCreateOrConnectWithoutWorkspaceInput[]
+    upsert?: HolidaySyncLogUpsertWithWhereUniqueWithoutWorkspaceInput | HolidaySyncLogUpsertWithWhereUniqueWithoutWorkspaceInput[]
+    createMany?: HolidaySyncLogCreateManyWorkspaceInputEnvelope
+    set?: HolidaySyncLogWhereUniqueInput | HolidaySyncLogWhereUniqueInput[]
+    disconnect?: HolidaySyncLogWhereUniqueInput | HolidaySyncLogWhereUniqueInput[]
+    delete?: HolidaySyncLogWhereUniqueInput | HolidaySyncLogWhereUniqueInput[]
+    connect?: HolidaySyncLogWhereUniqueInput | HolidaySyncLogWhereUniqueInput[]
+    update?: HolidaySyncLogUpdateWithWhereUniqueWithoutWorkspaceInput | HolidaySyncLogUpdateWithWhereUniqueWithoutWorkspaceInput[]
+    updateMany?: HolidaySyncLogUpdateManyWithWhereWithoutWorkspaceInput | HolidaySyncLogUpdateManyWithWhereWithoutWorkspaceInput[]
+    deleteMany?: HolidaySyncLogScalarWhereInput | HolidaySyncLogScalarWhereInput[]
+  }
+
+  export type ReportTypeUpdateManyWithoutWorkspaceNestedInput = {
+    create?: XOR<ReportTypeCreateWithoutWorkspaceInput, ReportTypeUncheckedCreateWithoutWorkspaceInput> | ReportTypeCreateWithoutWorkspaceInput[] | ReportTypeUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: ReportTypeCreateOrConnectWithoutWorkspaceInput | ReportTypeCreateOrConnectWithoutWorkspaceInput[]
+    upsert?: ReportTypeUpsertWithWhereUniqueWithoutWorkspaceInput | ReportTypeUpsertWithWhereUniqueWithoutWorkspaceInput[]
+    createMany?: ReportTypeCreateManyWorkspaceInputEnvelope
+    set?: ReportTypeWhereUniqueInput | ReportTypeWhereUniqueInput[]
+    disconnect?: ReportTypeWhereUniqueInput | ReportTypeWhereUniqueInput[]
+    delete?: ReportTypeWhereUniqueInput | ReportTypeWhereUniqueInput[]
+    connect?: ReportTypeWhereUniqueInput | ReportTypeWhereUniqueInput[]
+    update?: ReportTypeUpdateWithWhereUniqueWithoutWorkspaceInput | ReportTypeUpdateWithWhereUniqueWithoutWorkspaceInput[]
+    updateMany?: ReportTypeUpdateManyWithWhereWithoutWorkspaceInput | ReportTypeUpdateManyWithWhereWithoutWorkspaceInput[]
+    deleteMany?: ReportTypeScalarWhereInput | ReportTypeScalarWhereInput[]
+  }
+
+  export type ReportLogUpdateManyWithoutWorkspaceNestedInput = {
+    create?: XOR<ReportLogCreateWithoutWorkspaceInput, ReportLogUncheckedCreateWithoutWorkspaceInput> | ReportLogCreateWithoutWorkspaceInput[] | ReportLogUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: ReportLogCreateOrConnectWithoutWorkspaceInput | ReportLogCreateOrConnectWithoutWorkspaceInput[]
+    upsert?: ReportLogUpsertWithWhereUniqueWithoutWorkspaceInput | ReportLogUpsertWithWhereUniqueWithoutWorkspaceInput[]
+    createMany?: ReportLogCreateManyWorkspaceInputEnvelope
+    set?: ReportLogWhereUniqueInput | ReportLogWhereUniqueInput[]
+    disconnect?: ReportLogWhereUniqueInput | ReportLogWhereUniqueInput[]
+    delete?: ReportLogWhereUniqueInput | ReportLogWhereUniqueInput[]
+    connect?: ReportLogWhereUniqueInput | ReportLogWhereUniqueInput[]
+    update?: ReportLogUpdateWithWhereUniqueWithoutWorkspaceInput | ReportLogUpdateWithWhereUniqueWithoutWorkspaceInput[]
+    updateMany?: ReportLogUpdateManyWithWhereWithoutWorkspaceInput | ReportLogUpdateManyWithWhereWithoutWorkspaceInput[]
+    deleteMany?: ReportLogScalarWhereInput | ReportLogScalarWhereInput[]
+  }
+
   export type UserUncheckedUpdateManyWithoutWorkspaceNestedInput = {
     create?: XOR<UserCreateWithoutWorkspaceInput, UserUncheckedCreateWithoutWorkspaceInput> | UserCreateWithoutWorkspaceInput[] | UserUncheckedCreateWithoutWorkspaceInput[]
     connectOrCreate?: UserCreateOrConnectWithoutWorkspaceInput | UserCreateOrConnectWithoutWorkspaceInput[]
@@ -47515,6 +53959,62 @@ export namespace Prisma {
     update?: LeadStageApprovalUpdateWithWhereUniqueWithoutWorkspaceInput | LeadStageApprovalUpdateWithWhereUniqueWithoutWorkspaceInput[]
     updateMany?: LeadStageApprovalUpdateManyWithWhereWithoutWorkspaceInput | LeadStageApprovalUpdateManyWithWhereWithoutWorkspaceInput[]
     deleteMany?: LeadStageApprovalScalarWhereInput | LeadStageApprovalScalarWhereInput[]
+  }
+
+  export type HolidayUncheckedUpdateManyWithoutWorkspaceNestedInput = {
+    create?: XOR<HolidayCreateWithoutWorkspaceInput, HolidayUncheckedCreateWithoutWorkspaceInput> | HolidayCreateWithoutWorkspaceInput[] | HolidayUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: HolidayCreateOrConnectWithoutWorkspaceInput | HolidayCreateOrConnectWithoutWorkspaceInput[]
+    upsert?: HolidayUpsertWithWhereUniqueWithoutWorkspaceInput | HolidayUpsertWithWhereUniqueWithoutWorkspaceInput[]
+    createMany?: HolidayCreateManyWorkspaceInputEnvelope
+    set?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
+    disconnect?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
+    delete?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
+    connect?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
+    update?: HolidayUpdateWithWhereUniqueWithoutWorkspaceInput | HolidayUpdateWithWhereUniqueWithoutWorkspaceInput[]
+    updateMany?: HolidayUpdateManyWithWhereWithoutWorkspaceInput | HolidayUpdateManyWithWhereWithoutWorkspaceInput[]
+    deleteMany?: HolidayScalarWhereInput | HolidayScalarWhereInput[]
+  }
+
+  export type HolidaySyncLogUncheckedUpdateManyWithoutWorkspaceNestedInput = {
+    create?: XOR<HolidaySyncLogCreateWithoutWorkspaceInput, HolidaySyncLogUncheckedCreateWithoutWorkspaceInput> | HolidaySyncLogCreateWithoutWorkspaceInput[] | HolidaySyncLogUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: HolidaySyncLogCreateOrConnectWithoutWorkspaceInput | HolidaySyncLogCreateOrConnectWithoutWorkspaceInput[]
+    upsert?: HolidaySyncLogUpsertWithWhereUniqueWithoutWorkspaceInput | HolidaySyncLogUpsertWithWhereUniqueWithoutWorkspaceInput[]
+    createMany?: HolidaySyncLogCreateManyWorkspaceInputEnvelope
+    set?: HolidaySyncLogWhereUniqueInput | HolidaySyncLogWhereUniqueInput[]
+    disconnect?: HolidaySyncLogWhereUniqueInput | HolidaySyncLogWhereUniqueInput[]
+    delete?: HolidaySyncLogWhereUniqueInput | HolidaySyncLogWhereUniqueInput[]
+    connect?: HolidaySyncLogWhereUniqueInput | HolidaySyncLogWhereUniqueInput[]
+    update?: HolidaySyncLogUpdateWithWhereUniqueWithoutWorkspaceInput | HolidaySyncLogUpdateWithWhereUniqueWithoutWorkspaceInput[]
+    updateMany?: HolidaySyncLogUpdateManyWithWhereWithoutWorkspaceInput | HolidaySyncLogUpdateManyWithWhereWithoutWorkspaceInput[]
+    deleteMany?: HolidaySyncLogScalarWhereInput | HolidaySyncLogScalarWhereInput[]
+  }
+
+  export type ReportTypeUncheckedUpdateManyWithoutWorkspaceNestedInput = {
+    create?: XOR<ReportTypeCreateWithoutWorkspaceInput, ReportTypeUncheckedCreateWithoutWorkspaceInput> | ReportTypeCreateWithoutWorkspaceInput[] | ReportTypeUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: ReportTypeCreateOrConnectWithoutWorkspaceInput | ReportTypeCreateOrConnectWithoutWorkspaceInput[]
+    upsert?: ReportTypeUpsertWithWhereUniqueWithoutWorkspaceInput | ReportTypeUpsertWithWhereUniqueWithoutWorkspaceInput[]
+    createMany?: ReportTypeCreateManyWorkspaceInputEnvelope
+    set?: ReportTypeWhereUniqueInput | ReportTypeWhereUniqueInput[]
+    disconnect?: ReportTypeWhereUniqueInput | ReportTypeWhereUniqueInput[]
+    delete?: ReportTypeWhereUniqueInput | ReportTypeWhereUniqueInput[]
+    connect?: ReportTypeWhereUniqueInput | ReportTypeWhereUniqueInput[]
+    update?: ReportTypeUpdateWithWhereUniqueWithoutWorkspaceInput | ReportTypeUpdateWithWhereUniqueWithoutWorkspaceInput[]
+    updateMany?: ReportTypeUpdateManyWithWhereWithoutWorkspaceInput | ReportTypeUpdateManyWithWhereWithoutWorkspaceInput[]
+    deleteMany?: ReportTypeScalarWhereInput | ReportTypeScalarWhereInput[]
+  }
+
+  export type ReportLogUncheckedUpdateManyWithoutWorkspaceNestedInput = {
+    create?: XOR<ReportLogCreateWithoutWorkspaceInput, ReportLogUncheckedCreateWithoutWorkspaceInput> | ReportLogCreateWithoutWorkspaceInput[] | ReportLogUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: ReportLogCreateOrConnectWithoutWorkspaceInput | ReportLogCreateOrConnectWithoutWorkspaceInput[]
+    upsert?: ReportLogUpsertWithWhereUniqueWithoutWorkspaceInput | ReportLogUpsertWithWhereUniqueWithoutWorkspaceInput[]
+    createMany?: ReportLogCreateManyWorkspaceInputEnvelope
+    set?: ReportLogWhereUniqueInput | ReportLogWhereUniqueInput[]
+    disconnect?: ReportLogWhereUniqueInput | ReportLogWhereUniqueInput[]
+    delete?: ReportLogWhereUniqueInput | ReportLogWhereUniqueInput[]
+    connect?: ReportLogWhereUniqueInput | ReportLogWhereUniqueInput[]
+    update?: ReportLogUpdateWithWhereUniqueWithoutWorkspaceInput | ReportLogUpdateWithWhereUniqueWithoutWorkspaceInput[]
+    updateMany?: ReportLogUpdateManyWithWhereWithoutWorkspaceInput | ReportLogUpdateManyWithWhereWithoutWorkspaceInput[]
+    deleteMany?: ReportLogScalarWhereInput | ReportLogScalarWhereInput[]
   }
 
   export type WorkspaceCreateNestedOneWithoutDepartmentsInput = {
@@ -47976,6 +54476,27 @@ export namespace Prisma {
     connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
   }
 
+  export type HolidayCreateNestedManyWithoutCountryInput = {
+    create?: XOR<HolidayCreateWithoutCountryInput, HolidayUncheckedCreateWithoutCountryInput> | HolidayCreateWithoutCountryInput[] | HolidayUncheckedCreateWithoutCountryInput[]
+    connectOrCreate?: HolidayCreateOrConnectWithoutCountryInput | HolidayCreateOrConnectWithoutCountryInput[]
+    createMany?: HolidayCreateManyCountryInputEnvelope
+    connect?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
+  }
+
+  export type HolidayCreateNestedManyWithoutStateInput = {
+    create?: XOR<HolidayCreateWithoutStateInput, HolidayUncheckedCreateWithoutStateInput> | HolidayCreateWithoutStateInput[] | HolidayUncheckedCreateWithoutStateInput[]
+    connectOrCreate?: HolidayCreateOrConnectWithoutStateInput | HolidayCreateOrConnectWithoutStateInput[]
+    createMany?: HolidayCreateManyStateInputEnvelope
+    connect?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
+  }
+
+  export type HolidayCreateNestedManyWithoutDistrictInput = {
+    create?: XOR<HolidayCreateWithoutDistrictInput, HolidayUncheckedCreateWithoutDistrictInput> | HolidayCreateWithoutDistrictInput[] | HolidayUncheckedCreateWithoutDistrictInput[]
+    connectOrCreate?: HolidayCreateOrConnectWithoutDistrictInput | HolidayCreateOrConnectWithoutDistrictInput[]
+    createMany?: HolidayCreateManyDistrictInputEnvelope
+    connect?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
+  }
+
   export type LocationUncheckedCreateNestedManyWithoutParentInput = {
     create?: XOR<LocationCreateWithoutParentInput, LocationUncheckedCreateWithoutParentInput> | LocationCreateWithoutParentInput[] | LocationUncheckedCreateWithoutParentInput[]
     connectOrCreate?: LocationCreateOrConnectWithoutParentInput | LocationCreateOrConnectWithoutParentInput[]
@@ -48009,6 +54530,27 @@ export namespace Prisma {
     connectOrCreate?: UserCreateOrConnectWithoutDistrictInput | UserCreateOrConnectWithoutDistrictInput[]
     createMany?: UserCreateManyDistrictInputEnvelope
     connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
+  }
+
+  export type HolidayUncheckedCreateNestedManyWithoutCountryInput = {
+    create?: XOR<HolidayCreateWithoutCountryInput, HolidayUncheckedCreateWithoutCountryInput> | HolidayCreateWithoutCountryInput[] | HolidayUncheckedCreateWithoutCountryInput[]
+    connectOrCreate?: HolidayCreateOrConnectWithoutCountryInput | HolidayCreateOrConnectWithoutCountryInput[]
+    createMany?: HolidayCreateManyCountryInputEnvelope
+    connect?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
+  }
+
+  export type HolidayUncheckedCreateNestedManyWithoutStateInput = {
+    create?: XOR<HolidayCreateWithoutStateInput, HolidayUncheckedCreateWithoutStateInput> | HolidayCreateWithoutStateInput[] | HolidayUncheckedCreateWithoutStateInput[]
+    connectOrCreate?: HolidayCreateOrConnectWithoutStateInput | HolidayCreateOrConnectWithoutStateInput[]
+    createMany?: HolidayCreateManyStateInputEnvelope
+    connect?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
+  }
+
+  export type HolidayUncheckedCreateNestedManyWithoutDistrictInput = {
+    create?: XOR<HolidayCreateWithoutDistrictInput, HolidayUncheckedCreateWithoutDistrictInput> | HolidayCreateWithoutDistrictInput[] | HolidayUncheckedCreateWithoutDistrictInput[]
+    connectOrCreate?: HolidayCreateOrConnectWithoutDistrictInput | HolidayCreateOrConnectWithoutDistrictInput[]
+    createMany?: HolidayCreateManyDistrictInputEnvelope
+    connect?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
   }
 
   export type EnumLocationTypeFieldUpdateOperationsInput = {
@@ -48095,6 +54637,48 @@ export namespace Prisma {
     deleteMany?: UserScalarWhereInput | UserScalarWhereInput[]
   }
 
+  export type HolidayUpdateManyWithoutCountryNestedInput = {
+    create?: XOR<HolidayCreateWithoutCountryInput, HolidayUncheckedCreateWithoutCountryInput> | HolidayCreateWithoutCountryInput[] | HolidayUncheckedCreateWithoutCountryInput[]
+    connectOrCreate?: HolidayCreateOrConnectWithoutCountryInput | HolidayCreateOrConnectWithoutCountryInput[]
+    upsert?: HolidayUpsertWithWhereUniqueWithoutCountryInput | HolidayUpsertWithWhereUniqueWithoutCountryInput[]
+    createMany?: HolidayCreateManyCountryInputEnvelope
+    set?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
+    disconnect?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
+    delete?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
+    connect?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
+    update?: HolidayUpdateWithWhereUniqueWithoutCountryInput | HolidayUpdateWithWhereUniqueWithoutCountryInput[]
+    updateMany?: HolidayUpdateManyWithWhereWithoutCountryInput | HolidayUpdateManyWithWhereWithoutCountryInput[]
+    deleteMany?: HolidayScalarWhereInput | HolidayScalarWhereInput[]
+  }
+
+  export type HolidayUpdateManyWithoutStateNestedInput = {
+    create?: XOR<HolidayCreateWithoutStateInput, HolidayUncheckedCreateWithoutStateInput> | HolidayCreateWithoutStateInput[] | HolidayUncheckedCreateWithoutStateInput[]
+    connectOrCreate?: HolidayCreateOrConnectWithoutStateInput | HolidayCreateOrConnectWithoutStateInput[]
+    upsert?: HolidayUpsertWithWhereUniqueWithoutStateInput | HolidayUpsertWithWhereUniqueWithoutStateInput[]
+    createMany?: HolidayCreateManyStateInputEnvelope
+    set?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
+    disconnect?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
+    delete?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
+    connect?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
+    update?: HolidayUpdateWithWhereUniqueWithoutStateInput | HolidayUpdateWithWhereUniqueWithoutStateInput[]
+    updateMany?: HolidayUpdateManyWithWhereWithoutStateInput | HolidayUpdateManyWithWhereWithoutStateInput[]
+    deleteMany?: HolidayScalarWhereInput | HolidayScalarWhereInput[]
+  }
+
+  export type HolidayUpdateManyWithoutDistrictNestedInput = {
+    create?: XOR<HolidayCreateWithoutDistrictInput, HolidayUncheckedCreateWithoutDistrictInput> | HolidayCreateWithoutDistrictInput[] | HolidayUncheckedCreateWithoutDistrictInput[]
+    connectOrCreate?: HolidayCreateOrConnectWithoutDistrictInput | HolidayCreateOrConnectWithoutDistrictInput[]
+    upsert?: HolidayUpsertWithWhereUniqueWithoutDistrictInput | HolidayUpsertWithWhereUniqueWithoutDistrictInput[]
+    createMany?: HolidayCreateManyDistrictInputEnvelope
+    set?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
+    disconnect?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
+    delete?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
+    connect?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
+    update?: HolidayUpdateWithWhereUniqueWithoutDistrictInput | HolidayUpdateWithWhereUniqueWithoutDistrictInput[]
+    updateMany?: HolidayUpdateManyWithWhereWithoutDistrictInput | HolidayUpdateManyWithWhereWithoutDistrictInput[]
+    deleteMany?: HolidayScalarWhereInput | HolidayScalarWhereInput[]
+  }
+
   export type LocationUncheckedUpdateManyWithoutParentNestedInput = {
     create?: XOR<LocationCreateWithoutParentInput, LocationUncheckedCreateWithoutParentInput> | LocationCreateWithoutParentInput[] | LocationUncheckedCreateWithoutParentInput[]
     connectOrCreate?: LocationCreateOrConnectWithoutParentInput | LocationCreateOrConnectWithoutParentInput[]
@@ -48163,6 +54747,48 @@ export namespace Prisma {
     update?: UserUpdateWithWhereUniqueWithoutDistrictInput | UserUpdateWithWhereUniqueWithoutDistrictInput[]
     updateMany?: UserUpdateManyWithWhereWithoutDistrictInput | UserUpdateManyWithWhereWithoutDistrictInput[]
     deleteMany?: UserScalarWhereInput | UserScalarWhereInput[]
+  }
+
+  export type HolidayUncheckedUpdateManyWithoutCountryNestedInput = {
+    create?: XOR<HolidayCreateWithoutCountryInput, HolidayUncheckedCreateWithoutCountryInput> | HolidayCreateWithoutCountryInput[] | HolidayUncheckedCreateWithoutCountryInput[]
+    connectOrCreate?: HolidayCreateOrConnectWithoutCountryInput | HolidayCreateOrConnectWithoutCountryInput[]
+    upsert?: HolidayUpsertWithWhereUniqueWithoutCountryInput | HolidayUpsertWithWhereUniqueWithoutCountryInput[]
+    createMany?: HolidayCreateManyCountryInputEnvelope
+    set?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
+    disconnect?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
+    delete?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
+    connect?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
+    update?: HolidayUpdateWithWhereUniqueWithoutCountryInput | HolidayUpdateWithWhereUniqueWithoutCountryInput[]
+    updateMany?: HolidayUpdateManyWithWhereWithoutCountryInput | HolidayUpdateManyWithWhereWithoutCountryInput[]
+    deleteMany?: HolidayScalarWhereInput | HolidayScalarWhereInput[]
+  }
+
+  export type HolidayUncheckedUpdateManyWithoutStateNestedInput = {
+    create?: XOR<HolidayCreateWithoutStateInput, HolidayUncheckedCreateWithoutStateInput> | HolidayCreateWithoutStateInput[] | HolidayUncheckedCreateWithoutStateInput[]
+    connectOrCreate?: HolidayCreateOrConnectWithoutStateInput | HolidayCreateOrConnectWithoutStateInput[]
+    upsert?: HolidayUpsertWithWhereUniqueWithoutStateInput | HolidayUpsertWithWhereUniqueWithoutStateInput[]
+    createMany?: HolidayCreateManyStateInputEnvelope
+    set?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
+    disconnect?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
+    delete?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
+    connect?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
+    update?: HolidayUpdateWithWhereUniqueWithoutStateInput | HolidayUpdateWithWhereUniqueWithoutStateInput[]
+    updateMany?: HolidayUpdateManyWithWhereWithoutStateInput | HolidayUpdateManyWithWhereWithoutStateInput[]
+    deleteMany?: HolidayScalarWhereInput | HolidayScalarWhereInput[]
+  }
+
+  export type HolidayUncheckedUpdateManyWithoutDistrictNestedInput = {
+    create?: XOR<HolidayCreateWithoutDistrictInput, HolidayUncheckedCreateWithoutDistrictInput> | HolidayCreateWithoutDistrictInput[] | HolidayUncheckedCreateWithoutDistrictInput[]
+    connectOrCreate?: HolidayCreateOrConnectWithoutDistrictInput | HolidayCreateOrConnectWithoutDistrictInput[]
+    upsert?: HolidayUpsertWithWhereUniqueWithoutDistrictInput | HolidayUpsertWithWhereUniqueWithoutDistrictInput[]
+    createMany?: HolidayCreateManyDistrictInputEnvelope
+    set?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
+    disconnect?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
+    delete?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
+    connect?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
+    update?: HolidayUpdateWithWhereUniqueWithoutDistrictInput | HolidayUpdateWithWhereUniqueWithoutDistrictInput[]
+    updateMany?: HolidayUpdateManyWithWhereWithoutDistrictInput | HolidayUpdateManyWithWhereWithoutDistrictInput[]
+    deleteMany?: HolidayScalarWhereInput | HolidayScalarWhereInput[]
   }
 
   export type UserCreateNestedOneWithoutAssignedLocationsInput = {
@@ -49290,6 +55916,41 @@ export namespace Prisma {
     connect?: LeadWhereUniqueInput | LeadWhereUniqueInput[]
   }
 
+  export type HolidayCreateNestedManyWithoutCreatedByInput = {
+    create?: XOR<HolidayCreateWithoutCreatedByInput, HolidayUncheckedCreateWithoutCreatedByInput> | HolidayCreateWithoutCreatedByInput[] | HolidayUncheckedCreateWithoutCreatedByInput[]
+    connectOrCreate?: HolidayCreateOrConnectWithoutCreatedByInput | HolidayCreateOrConnectWithoutCreatedByInput[]
+    createMany?: HolidayCreateManyCreatedByInputEnvelope
+    connect?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
+  }
+
+  export type HolidayCreateNestedManyWithoutUpdatedByInput = {
+    create?: XOR<HolidayCreateWithoutUpdatedByInput, HolidayUncheckedCreateWithoutUpdatedByInput> | HolidayCreateWithoutUpdatedByInput[] | HolidayUncheckedCreateWithoutUpdatedByInput[]
+    connectOrCreate?: HolidayCreateOrConnectWithoutUpdatedByInput | HolidayCreateOrConnectWithoutUpdatedByInput[]
+    createMany?: HolidayCreateManyUpdatedByInputEnvelope
+    connect?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
+  }
+
+  export type ReportTypeCreateNestedManyWithoutCreatedByInput = {
+    create?: XOR<ReportTypeCreateWithoutCreatedByInput, ReportTypeUncheckedCreateWithoutCreatedByInput> | ReportTypeCreateWithoutCreatedByInput[] | ReportTypeUncheckedCreateWithoutCreatedByInput[]
+    connectOrCreate?: ReportTypeCreateOrConnectWithoutCreatedByInput | ReportTypeCreateOrConnectWithoutCreatedByInput[]
+    createMany?: ReportTypeCreateManyCreatedByInputEnvelope
+    connect?: ReportTypeWhereUniqueInput | ReportTypeWhereUniqueInput[]
+  }
+
+  export type ReportTypeCreateNestedManyWithoutUpdatedByInput = {
+    create?: XOR<ReportTypeCreateWithoutUpdatedByInput, ReportTypeUncheckedCreateWithoutUpdatedByInput> | ReportTypeCreateWithoutUpdatedByInput[] | ReportTypeUncheckedCreateWithoutUpdatedByInput[]
+    connectOrCreate?: ReportTypeCreateOrConnectWithoutUpdatedByInput | ReportTypeCreateOrConnectWithoutUpdatedByInput[]
+    createMany?: ReportTypeCreateManyUpdatedByInputEnvelope
+    connect?: ReportTypeWhereUniqueInput | ReportTypeWhereUniqueInput[]
+  }
+
+  export type ReportLogCreateNestedManyWithoutGeneratedByInput = {
+    create?: XOR<ReportLogCreateWithoutGeneratedByInput, ReportLogUncheckedCreateWithoutGeneratedByInput> | ReportLogCreateWithoutGeneratedByInput[] | ReportLogUncheckedCreateWithoutGeneratedByInput[]
+    connectOrCreate?: ReportLogCreateOrConnectWithoutGeneratedByInput | ReportLogCreateOrConnectWithoutGeneratedByInput[]
+    createMany?: ReportLogCreateManyGeneratedByInputEnvelope
+    connect?: ReportLogWhereUniqueInput | ReportLogWhereUniqueInput[]
+  }
+
   export type WorkspaceUncheckedCreateNestedOneWithoutOwnerInput = {
     create?: XOR<WorkspaceCreateWithoutOwnerInput, WorkspaceUncheckedCreateWithoutOwnerInput>
     connectOrCreate?: WorkspaceCreateOrConnectWithoutOwnerInput
@@ -49399,6 +56060,41 @@ export namespace Prisma {
     connectOrCreate?: LeadCreateOrConnectWithoutClosedByInput | LeadCreateOrConnectWithoutClosedByInput[]
     createMany?: LeadCreateManyClosedByInputEnvelope
     connect?: LeadWhereUniqueInput | LeadWhereUniqueInput[]
+  }
+
+  export type HolidayUncheckedCreateNestedManyWithoutCreatedByInput = {
+    create?: XOR<HolidayCreateWithoutCreatedByInput, HolidayUncheckedCreateWithoutCreatedByInput> | HolidayCreateWithoutCreatedByInput[] | HolidayUncheckedCreateWithoutCreatedByInput[]
+    connectOrCreate?: HolidayCreateOrConnectWithoutCreatedByInput | HolidayCreateOrConnectWithoutCreatedByInput[]
+    createMany?: HolidayCreateManyCreatedByInputEnvelope
+    connect?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
+  }
+
+  export type HolidayUncheckedCreateNestedManyWithoutUpdatedByInput = {
+    create?: XOR<HolidayCreateWithoutUpdatedByInput, HolidayUncheckedCreateWithoutUpdatedByInput> | HolidayCreateWithoutUpdatedByInput[] | HolidayUncheckedCreateWithoutUpdatedByInput[]
+    connectOrCreate?: HolidayCreateOrConnectWithoutUpdatedByInput | HolidayCreateOrConnectWithoutUpdatedByInput[]
+    createMany?: HolidayCreateManyUpdatedByInputEnvelope
+    connect?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
+  }
+
+  export type ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput = {
+    create?: XOR<ReportTypeCreateWithoutCreatedByInput, ReportTypeUncheckedCreateWithoutCreatedByInput> | ReportTypeCreateWithoutCreatedByInput[] | ReportTypeUncheckedCreateWithoutCreatedByInput[]
+    connectOrCreate?: ReportTypeCreateOrConnectWithoutCreatedByInput | ReportTypeCreateOrConnectWithoutCreatedByInput[]
+    createMany?: ReportTypeCreateManyCreatedByInputEnvelope
+    connect?: ReportTypeWhereUniqueInput | ReportTypeWhereUniqueInput[]
+  }
+
+  export type ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput = {
+    create?: XOR<ReportTypeCreateWithoutUpdatedByInput, ReportTypeUncheckedCreateWithoutUpdatedByInput> | ReportTypeCreateWithoutUpdatedByInput[] | ReportTypeUncheckedCreateWithoutUpdatedByInput[]
+    connectOrCreate?: ReportTypeCreateOrConnectWithoutUpdatedByInput | ReportTypeCreateOrConnectWithoutUpdatedByInput[]
+    createMany?: ReportTypeCreateManyUpdatedByInputEnvelope
+    connect?: ReportTypeWhereUniqueInput | ReportTypeWhereUniqueInput[]
+  }
+
+  export type ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput = {
+    create?: XOR<ReportLogCreateWithoutGeneratedByInput, ReportLogUncheckedCreateWithoutGeneratedByInput> | ReportLogCreateWithoutGeneratedByInput[] | ReportLogUncheckedCreateWithoutGeneratedByInput[]
+    connectOrCreate?: ReportLogCreateOrConnectWithoutGeneratedByInput | ReportLogCreateOrConnectWithoutGeneratedByInput[]
+    createMany?: ReportLogCreateManyGeneratedByInputEnvelope
+    connect?: ReportLogWhereUniqueInput | ReportLogWhereUniqueInput[]
   }
 
   export type RoleUpdateOneWithoutUsersNestedInput = {
@@ -49701,6 +56397,76 @@ export namespace Prisma {
     deleteMany?: LeadScalarWhereInput | LeadScalarWhereInput[]
   }
 
+  export type HolidayUpdateManyWithoutCreatedByNestedInput = {
+    create?: XOR<HolidayCreateWithoutCreatedByInput, HolidayUncheckedCreateWithoutCreatedByInput> | HolidayCreateWithoutCreatedByInput[] | HolidayUncheckedCreateWithoutCreatedByInput[]
+    connectOrCreate?: HolidayCreateOrConnectWithoutCreatedByInput | HolidayCreateOrConnectWithoutCreatedByInput[]
+    upsert?: HolidayUpsertWithWhereUniqueWithoutCreatedByInput | HolidayUpsertWithWhereUniqueWithoutCreatedByInput[]
+    createMany?: HolidayCreateManyCreatedByInputEnvelope
+    set?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
+    disconnect?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
+    delete?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
+    connect?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
+    update?: HolidayUpdateWithWhereUniqueWithoutCreatedByInput | HolidayUpdateWithWhereUniqueWithoutCreatedByInput[]
+    updateMany?: HolidayUpdateManyWithWhereWithoutCreatedByInput | HolidayUpdateManyWithWhereWithoutCreatedByInput[]
+    deleteMany?: HolidayScalarWhereInput | HolidayScalarWhereInput[]
+  }
+
+  export type HolidayUpdateManyWithoutUpdatedByNestedInput = {
+    create?: XOR<HolidayCreateWithoutUpdatedByInput, HolidayUncheckedCreateWithoutUpdatedByInput> | HolidayCreateWithoutUpdatedByInput[] | HolidayUncheckedCreateWithoutUpdatedByInput[]
+    connectOrCreate?: HolidayCreateOrConnectWithoutUpdatedByInput | HolidayCreateOrConnectWithoutUpdatedByInput[]
+    upsert?: HolidayUpsertWithWhereUniqueWithoutUpdatedByInput | HolidayUpsertWithWhereUniqueWithoutUpdatedByInput[]
+    createMany?: HolidayCreateManyUpdatedByInputEnvelope
+    set?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
+    disconnect?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
+    delete?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
+    connect?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
+    update?: HolidayUpdateWithWhereUniqueWithoutUpdatedByInput | HolidayUpdateWithWhereUniqueWithoutUpdatedByInput[]
+    updateMany?: HolidayUpdateManyWithWhereWithoutUpdatedByInput | HolidayUpdateManyWithWhereWithoutUpdatedByInput[]
+    deleteMany?: HolidayScalarWhereInput | HolidayScalarWhereInput[]
+  }
+
+  export type ReportTypeUpdateManyWithoutCreatedByNestedInput = {
+    create?: XOR<ReportTypeCreateWithoutCreatedByInput, ReportTypeUncheckedCreateWithoutCreatedByInput> | ReportTypeCreateWithoutCreatedByInput[] | ReportTypeUncheckedCreateWithoutCreatedByInput[]
+    connectOrCreate?: ReportTypeCreateOrConnectWithoutCreatedByInput | ReportTypeCreateOrConnectWithoutCreatedByInput[]
+    upsert?: ReportTypeUpsertWithWhereUniqueWithoutCreatedByInput | ReportTypeUpsertWithWhereUniqueWithoutCreatedByInput[]
+    createMany?: ReportTypeCreateManyCreatedByInputEnvelope
+    set?: ReportTypeWhereUniqueInput | ReportTypeWhereUniqueInput[]
+    disconnect?: ReportTypeWhereUniqueInput | ReportTypeWhereUniqueInput[]
+    delete?: ReportTypeWhereUniqueInput | ReportTypeWhereUniqueInput[]
+    connect?: ReportTypeWhereUniqueInput | ReportTypeWhereUniqueInput[]
+    update?: ReportTypeUpdateWithWhereUniqueWithoutCreatedByInput | ReportTypeUpdateWithWhereUniqueWithoutCreatedByInput[]
+    updateMany?: ReportTypeUpdateManyWithWhereWithoutCreatedByInput | ReportTypeUpdateManyWithWhereWithoutCreatedByInput[]
+    deleteMany?: ReportTypeScalarWhereInput | ReportTypeScalarWhereInput[]
+  }
+
+  export type ReportTypeUpdateManyWithoutUpdatedByNestedInput = {
+    create?: XOR<ReportTypeCreateWithoutUpdatedByInput, ReportTypeUncheckedCreateWithoutUpdatedByInput> | ReportTypeCreateWithoutUpdatedByInput[] | ReportTypeUncheckedCreateWithoutUpdatedByInput[]
+    connectOrCreate?: ReportTypeCreateOrConnectWithoutUpdatedByInput | ReportTypeCreateOrConnectWithoutUpdatedByInput[]
+    upsert?: ReportTypeUpsertWithWhereUniqueWithoutUpdatedByInput | ReportTypeUpsertWithWhereUniqueWithoutUpdatedByInput[]
+    createMany?: ReportTypeCreateManyUpdatedByInputEnvelope
+    set?: ReportTypeWhereUniqueInput | ReportTypeWhereUniqueInput[]
+    disconnect?: ReportTypeWhereUniqueInput | ReportTypeWhereUniqueInput[]
+    delete?: ReportTypeWhereUniqueInput | ReportTypeWhereUniqueInput[]
+    connect?: ReportTypeWhereUniqueInput | ReportTypeWhereUniqueInput[]
+    update?: ReportTypeUpdateWithWhereUniqueWithoutUpdatedByInput | ReportTypeUpdateWithWhereUniqueWithoutUpdatedByInput[]
+    updateMany?: ReportTypeUpdateManyWithWhereWithoutUpdatedByInput | ReportTypeUpdateManyWithWhereWithoutUpdatedByInput[]
+    deleteMany?: ReportTypeScalarWhereInput | ReportTypeScalarWhereInput[]
+  }
+
+  export type ReportLogUpdateManyWithoutGeneratedByNestedInput = {
+    create?: XOR<ReportLogCreateWithoutGeneratedByInput, ReportLogUncheckedCreateWithoutGeneratedByInput> | ReportLogCreateWithoutGeneratedByInput[] | ReportLogUncheckedCreateWithoutGeneratedByInput[]
+    connectOrCreate?: ReportLogCreateOrConnectWithoutGeneratedByInput | ReportLogCreateOrConnectWithoutGeneratedByInput[]
+    upsert?: ReportLogUpsertWithWhereUniqueWithoutGeneratedByInput | ReportLogUpsertWithWhereUniqueWithoutGeneratedByInput[]
+    createMany?: ReportLogCreateManyGeneratedByInputEnvelope
+    set?: ReportLogWhereUniqueInput | ReportLogWhereUniqueInput[]
+    disconnect?: ReportLogWhereUniqueInput | ReportLogWhereUniqueInput[]
+    delete?: ReportLogWhereUniqueInput | ReportLogWhereUniqueInput[]
+    connect?: ReportLogWhereUniqueInput | ReportLogWhereUniqueInput[]
+    update?: ReportLogUpdateWithWhereUniqueWithoutGeneratedByInput | ReportLogUpdateWithWhereUniqueWithoutGeneratedByInput[]
+    updateMany?: ReportLogUpdateManyWithWhereWithoutGeneratedByInput | ReportLogUpdateManyWithWhereWithoutGeneratedByInput[]
+    deleteMany?: ReportLogScalarWhereInput | ReportLogScalarWhereInput[]
+  }
+
   export type WorkspaceUncheckedUpdateOneWithoutOwnerNestedInput = {
     create?: XOR<WorkspaceCreateWithoutOwnerInput, WorkspaceUncheckedCreateWithoutOwnerInput>
     connectOrCreate?: WorkspaceCreateOrConnectWithoutOwnerInput
@@ -49921,6 +56687,76 @@ export namespace Prisma {
     deleteMany?: LeadScalarWhereInput | LeadScalarWhereInput[]
   }
 
+  export type HolidayUncheckedUpdateManyWithoutCreatedByNestedInput = {
+    create?: XOR<HolidayCreateWithoutCreatedByInput, HolidayUncheckedCreateWithoutCreatedByInput> | HolidayCreateWithoutCreatedByInput[] | HolidayUncheckedCreateWithoutCreatedByInput[]
+    connectOrCreate?: HolidayCreateOrConnectWithoutCreatedByInput | HolidayCreateOrConnectWithoutCreatedByInput[]
+    upsert?: HolidayUpsertWithWhereUniqueWithoutCreatedByInput | HolidayUpsertWithWhereUniqueWithoutCreatedByInput[]
+    createMany?: HolidayCreateManyCreatedByInputEnvelope
+    set?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
+    disconnect?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
+    delete?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
+    connect?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
+    update?: HolidayUpdateWithWhereUniqueWithoutCreatedByInput | HolidayUpdateWithWhereUniqueWithoutCreatedByInput[]
+    updateMany?: HolidayUpdateManyWithWhereWithoutCreatedByInput | HolidayUpdateManyWithWhereWithoutCreatedByInput[]
+    deleteMany?: HolidayScalarWhereInput | HolidayScalarWhereInput[]
+  }
+
+  export type HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput = {
+    create?: XOR<HolidayCreateWithoutUpdatedByInput, HolidayUncheckedCreateWithoutUpdatedByInput> | HolidayCreateWithoutUpdatedByInput[] | HolidayUncheckedCreateWithoutUpdatedByInput[]
+    connectOrCreate?: HolidayCreateOrConnectWithoutUpdatedByInput | HolidayCreateOrConnectWithoutUpdatedByInput[]
+    upsert?: HolidayUpsertWithWhereUniqueWithoutUpdatedByInput | HolidayUpsertWithWhereUniqueWithoutUpdatedByInput[]
+    createMany?: HolidayCreateManyUpdatedByInputEnvelope
+    set?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
+    disconnect?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
+    delete?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
+    connect?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
+    update?: HolidayUpdateWithWhereUniqueWithoutUpdatedByInput | HolidayUpdateWithWhereUniqueWithoutUpdatedByInput[]
+    updateMany?: HolidayUpdateManyWithWhereWithoutUpdatedByInput | HolidayUpdateManyWithWhereWithoutUpdatedByInput[]
+    deleteMany?: HolidayScalarWhereInput | HolidayScalarWhereInput[]
+  }
+
+  export type ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput = {
+    create?: XOR<ReportTypeCreateWithoutCreatedByInput, ReportTypeUncheckedCreateWithoutCreatedByInput> | ReportTypeCreateWithoutCreatedByInput[] | ReportTypeUncheckedCreateWithoutCreatedByInput[]
+    connectOrCreate?: ReportTypeCreateOrConnectWithoutCreatedByInput | ReportTypeCreateOrConnectWithoutCreatedByInput[]
+    upsert?: ReportTypeUpsertWithWhereUniqueWithoutCreatedByInput | ReportTypeUpsertWithWhereUniqueWithoutCreatedByInput[]
+    createMany?: ReportTypeCreateManyCreatedByInputEnvelope
+    set?: ReportTypeWhereUniqueInput | ReportTypeWhereUniqueInput[]
+    disconnect?: ReportTypeWhereUniqueInput | ReportTypeWhereUniqueInput[]
+    delete?: ReportTypeWhereUniqueInput | ReportTypeWhereUniqueInput[]
+    connect?: ReportTypeWhereUniqueInput | ReportTypeWhereUniqueInput[]
+    update?: ReportTypeUpdateWithWhereUniqueWithoutCreatedByInput | ReportTypeUpdateWithWhereUniqueWithoutCreatedByInput[]
+    updateMany?: ReportTypeUpdateManyWithWhereWithoutCreatedByInput | ReportTypeUpdateManyWithWhereWithoutCreatedByInput[]
+    deleteMany?: ReportTypeScalarWhereInput | ReportTypeScalarWhereInput[]
+  }
+
+  export type ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput = {
+    create?: XOR<ReportTypeCreateWithoutUpdatedByInput, ReportTypeUncheckedCreateWithoutUpdatedByInput> | ReportTypeCreateWithoutUpdatedByInput[] | ReportTypeUncheckedCreateWithoutUpdatedByInput[]
+    connectOrCreate?: ReportTypeCreateOrConnectWithoutUpdatedByInput | ReportTypeCreateOrConnectWithoutUpdatedByInput[]
+    upsert?: ReportTypeUpsertWithWhereUniqueWithoutUpdatedByInput | ReportTypeUpsertWithWhereUniqueWithoutUpdatedByInput[]
+    createMany?: ReportTypeCreateManyUpdatedByInputEnvelope
+    set?: ReportTypeWhereUniqueInput | ReportTypeWhereUniqueInput[]
+    disconnect?: ReportTypeWhereUniqueInput | ReportTypeWhereUniqueInput[]
+    delete?: ReportTypeWhereUniqueInput | ReportTypeWhereUniqueInput[]
+    connect?: ReportTypeWhereUniqueInput | ReportTypeWhereUniqueInput[]
+    update?: ReportTypeUpdateWithWhereUniqueWithoutUpdatedByInput | ReportTypeUpdateWithWhereUniqueWithoutUpdatedByInput[]
+    updateMany?: ReportTypeUpdateManyWithWhereWithoutUpdatedByInput | ReportTypeUpdateManyWithWhereWithoutUpdatedByInput[]
+    deleteMany?: ReportTypeScalarWhereInput | ReportTypeScalarWhereInput[]
+  }
+
+  export type ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput = {
+    create?: XOR<ReportLogCreateWithoutGeneratedByInput, ReportLogUncheckedCreateWithoutGeneratedByInput> | ReportLogCreateWithoutGeneratedByInput[] | ReportLogUncheckedCreateWithoutGeneratedByInput[]
+    connectOrCreate?: ReportLogCreateOrConnectWithoutGeneratedByInput | ReportLogCreateOrConnectWithoutGeneratedByInput[]
+    upsert?: ReportLogUpsertWithWhereUniqueWithoutGeneratedByInput | ReportLogUpsertWithWhereUniqueWithoutGeneratedByInput[]
+    createMany?: ReportLogCreateManyGeneratedByInputEnvelope
+    set?: ReportLogWhereUniqueInput | ReportLogWhereUniqueInput[]
+    disconnect?: ReportLogWhereUniqueInput | ReportLogWhereUniqueInput[]
+    delete?: ReportLogWhereUniqueInput | ReportLogWhereUniqueInput[]
+    connect?: ReportLogWhereUniqueInput | ReportLogWhereUniqueInput[]
+    update?: ReportLogUpdateWithWhereUniqueWithoutGeneratedByInput | ReportLogUpdateWithWhereUniqueWithoutGeneratedByInput[]
+    updateMany?: ReportLogUpdateManyWithWhereWithoutGeneratedByInput | ReportLogUpdateManyWithWhereWithoutGeneratedByInput[]
+    deleteMany?: ReportLogScalarWhereInput | ReportLogScalarWhereInput[]
+  }
+
   export type UserCreateNestedOneWithoutFollowUpsInput = {
     create?: XOR<UserCreateWithoutFollowUpsInput, UserUncheckedCreateWithoutFollowUpsInput>
     connectOrCreate?: UserCreateOrConnectWithoutFollowUpsInput
@@ -50059,6 +56895,266 @@ export namespace Prisma {
     upsert?: UserUpsertWithoutDevicesInput
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutDevicesInput, UserUpdateWithoutDevicesInput>, UserUncheckedUpdateWithoutDevicesInput>
+  }
+
+  export type WorkspaceCreateNestedOneWithoutHolidaysInput = {
+    create?: XOR<WorkspaceCreateWithoutHolidaysInput, WorkspaceUncheckedCreateWithoutHolidaysInput>
+    connectOrCreate?: WorkspaceCreateOrConnectWithoutHolidaysInput
+    connect?: WorkspaceWhereUniqueInput
+  }
+
+  export type LocationCreateNestedOneWithoutHolidaysAtCountryInput = {
+    create?: XOR<LocationCreateWithoutHolidaysAtCountryInput, LocationUncheckedCreateWithoutHolidaysAtCountryInput>
+    connectOrCreate?: LocationCreateOrConnectWithoutHolidaysAtCountryInput
+    connect?: LocationWhereUniqueInput
+  }
+
+  export type LocationCreateNestedOneWithoutHolidaysAtStateInput = {
+    create?: XOR<LocationCreateWithoutHolidaysAtStateInput, LocationUncheckedCreateWithoutHolidaysAtStateInput>
+    connectOrCreate?: LocationCreateOrConnectWithoutHolidaysAtStateInput
+    connect?: LocationWhereUniqueInput
+  }
+
+  export type LocationCreateNestedOneWithoutHolidaysAtDistrictInput = {
+    create?: XOR<LocationCreateWithoutHolidaysAtDistrictInput, LocationUncheckedCreateWithoutHolidaysAtDistrictInput>
+    connectOrCreate?: LocationCreateOrConnectWithoutHolidaysAtDistrictInput
+    connect?: LocationWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutCreatedHolidaysInput = {
+    create?: XOR<UserCreateWithoutCreatedHolidaysInput, UserUncheckedCreateWithoutCreatedHolidaysInput>
+    connectOrCreate?: UserCreateOrConnectWithoutCreatedHolidaysInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutUpdatedHolidaysInput = {
+    create?: XOR<UserCreateWithoutUpdatedHolidaysInput, UserUncheckedCreateWithoutUpdatedHolidaysInput>
+    connectOrCreate?: UserCreateOrConnectWithoutUpdatedHolidaysInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type EnumHolidaySourceFieldUpdateOperationsInput = {
+    set?: $Enums.HolidaySource
+  }
+
+  export type EnumHolidayStatusFieldUpdateOperationsInput = {
+    set?: $Enums.HolidayStatus
+  }
+
+  export type WorkspaceUpdateOneRequiredWithoutHolidaysNestedInput = {
+    create?: XOR<WorkspaceCreateWithoutHolidaysInput, WorkspaceUncheckedCreateWithoutHolidaysInput>
+    connectOrCreate?: WorkspaceCreateOrConnectWithoutHolidaysInput
+    upsert?: WorkspaceUpsertWithoutHolidaysInput
+    connect?: WorkspaceWhereUniqueInput
+    update?: XOR<XOR<WorkspaceUpdateToOneWithWhereWithoutHolidaysInput, WorkspaceUpdateWithoutHolidaysInput>, WorkspaceUncheckedUpdateWithoutHolidaysInput>
+  }
+
+  export type LocationUpdateOneWithoutHolidaysAtCountryNestedInput = {
+    create?: XOR<LocationCreateWithoutHolidaysAtCountryInput, LocationUncheckedCreateWithoutHolidaysAtCountryInput>
+    connectOrCreate?: LocationCreateOrConnectWithoutHolidaysAtCountryInput
+    upsert?: LocationUpsertWithoutHolidaysAtCountryInput
+    disconnect?: LocationWhereInput | boolean
+    delete?: LocationWhereInput | boolean
+    connect?: LocationWhereUniqueInput
+    update?: XOR<XOR<LocationUpdateToOneWithWhereWithoutHolidaysAtCountryInput, LocationUpdateWithoutHolidaysAtCountryInput>, LocationUncheckedUpdateWithoutHolidaysAtCountryInput>
+  }
+
+  export type LocationUpdateOneWithoutHolidaysAtStateNestedInput = {
+    create?: XOR<LocationCreateWithoutHolidaysAtStateInput, LocationUncheckedCreateWithoutHolidaysAtStateInput>
+    connectOrCreate?: LocationCreateOrConnectWithoutHolidaysAtStateInput
+    upsert?: LocationUpsertWithoutHolidaysAtStateInput
+    disconnect?: LocationWhereInput | boolean
+    delete?: LocationWhereInput | boolean
+    connect?: LocationWhereUniqueInput
+    update?: XOR<XOR<LocationUpdateToOneWithWhereWithoutHolidaysAtStateInput, LocationUpdateWithoutHolidaysAtStateInput>, LocationUncheckedUpdateWithoutHolidaysAtStateInput>
+  }
+
+  export type LocationUpdateOneWithoutHolidaysAtDistrictNestedInput = {
+    create?: XOR<LocationCreateWithoutHolidaysAtDistrictInput, LocationUncheckedCreateWithoutHolidaysAtDistrictInput>
+    connectOrCreate?: LocationCreateOrConnectWithoutHolidaysAtDistrictInput
+    upsert?: LocationUpsertWithoutHolidaysAtDistrictInput
+    disconnect?: LocationWhereInput | boolean
+    delete?: LocationWhereInput | boolean
+    connect?: LocationWhereUniqueInput
+    update?: XOR<XOR<LocationUpdateToOneWithWhereWithoutHolidaysAtDistrictInput, LocationUpdateWithoutHolidaysAtDistrictInput>, LocationUncheckedUpdateWithoutHolidaysAtDistrictInput>
+  }
+
+  export type UserUpdateOneWithoutCreatedHolidaysNestedInput = {
+    create?: XOR<UserCreateWithoutCreatedHolidaysInput, UserUncheckedCreateWithoutCreatedHolidaysInput>
+    connectOrCreate?: UserCreateOrConnectWithoutCreatedHolidaysInput
+    upsert?: UserUpsertWithoutCreatedHolidaysInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutCreatedHolidaysInput, UserUpdateWithoutCreatedHolidaysInput>, UserUncheckedUpdateWithoutCreatedHolidaysInput>
+  }
+
+  export type UserUpdateOneWithoutUpdatedHolidaysNestedInput = {
+    create?: XOR<UserCreateWithoutUpdatedHolidaysInput, UserUncheckedCreateWithoutUpdatedHolidaysInput>
+    connectOrCreate?: UserCreateOrConnectWithoutUpdatedHolidaysInput
+    upsert?: UserUpsertWithoutUpdatedHolidaysInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutUpdatedHolidaysInput, UserUpdateWithoutUpdatedHolidaysInput>, UserUncheckedUpdateWithoutUpdatedHolidaysInput>
+  }
+
+  export type WorkspaceCreateNestedOneWithoutHolidaySyncLogsInput = {
+    create?: XOR<WorkspaceCreateWithoutHolidaySyncLogsInput, WorkspaceUncheckedCreateWithoutHolidaySyncLogsInput>
+    connectOrCreate?: WorkspaceCreateOrConnectWithoutHolidaySyncLogsInput
+    connect?: WorkspaceWhereUniqueInput
+  }
+
+  export type WorkspaceUpdateOneRequiredWithoutHolidaySyncLogsNestedInput = {
+    create?: XOR<WorkspaceCreateWithoutHolidaySyncLogsInput, WorkspaceUncheckedCreateWithoutHolidaySyncLogsInput>
+    connectOrCreate?: WorkspaceCreateOrConnectWithoutHolidaySyncLogsInput
+    upsert?: WorkspaceUpsertWithoutHolidaySyncLogsInput
+    connect?: WorkspaceWhereUniqueInput
+    update?: XOR<XOR<WorkspaceUpdateToOneWithWhereWithoutHolidaySyncLogsInput, WorkspaceUpdateWithoutHolidaySyncLogsInput>, WorkspaceUncheckedUpdateWithoutHolidaySyncLogsInput>
+  }
+
+  export type WorkspaceCreateNestedOneWithoutReportTypesInput = {
+    create?: XOR<WorkspaceCreateWithoutReportTypesInput, WorkspaceUncheckedCreateWithoutReportTypesInput>
+    connectOrCreate?: WorkspaceCreateOrConnectWithoutReportTypesInput
+    connect?: WorkspaceWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutCreatedReportTypesInput = {
+    create?: XOR<UserCreateWithoutCreatedReportTypesInput, UserUncheckedCreateWithoutCreatedReportTypesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutCreatedReportTypesInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutUpdatedReportTypesInput = {
+    create?: XOR<UserCreateWithoutUpdatedReportTypesInput, UserUncheckedCreateWithoutUpdatedReportTypesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutUpdatedReportTypesInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type ReportLogCreateNestedManyWithoutReportTypeInput = {
+    create?: XOR<ReportLogCreateWithoutReportTypeInput, ReportLogUncheckedCreateWithoutReportTypeInput> | ReportLogCreateWithoutReportTypeInput[] | ReportLogUncheckedCreateWithoutReportTypeInput[]
+    connectOrCreate?: ReportLogCreateOrConnectWithoutReportTypeInput | ReportLogCreateOrConnectWithoutReportTypeInput[]
+    createMany?: ReportLogCreateManyReportTypeInputEnvelope
+    connect?: ReportLogWhereUniqueInput | ReportLogWhereUniqueInput[]
+  }
+
+  export type ReportLogUncheckedCreateNestedManyWithoutReportTypeInput = {
+    create?: XOR<ReportLogCreateWithoutReportTypeInput, ReportLogUncheckedCreateWithoutReportTypeInput> | ReportLogCreateWithoutReportTypeInput[] | ReportLogUncheckedCreateWithoutReportTypeInput[]
+    connectOrCreate?: ReportLogCreateOrConnectWithoutReportTypeInput | ReportLogCreateOrConnectWithoutReportTypeInput[]
+    createMany?: ReportLogCreateManyReportTypeInputEnvelope
+    connect?: ReportLogWhereUniqueInput | ReportLogWhereUniqueInput[]
+  }
+
+  export type EnumReportModuleFieldUpdateOperationsInput = {
+    set?: $Enums.ReportModule
+  }
+
+  export type EnumReportBaseDataSourceFieldUpdateOperationsInput = {
+    set?: $Enums.ReportBaseDataSource
+  }
+
+  export type EnumReportTypeStatusFieldUpdateOperationsInput = {
+    set?: $Enums.ReportTypeStatus
+  }
+
+  export type WorkspaceUpdateOneRequiredWithoutReportTypesNestedInput = {
+    create?: XOR<WorkspaceCreateWithoutReportTypesInput, WorkspaceUncheckedCreateWithoutReportTypesInput>
+    connectOrCreate?: WorkspaceCreateOrConnectWithoutReportTypesInput
+    upsert?: WorkspaceUpsertWithoutReportTypesInput
+    connect?: WorkspaceWhereUniqueInput
+    update?: XOR<XOR<WorkspaceUpdateToOneWithWhereWithoutReportTypesInput, WorkspaceUpdateWithoutReportTypesInput>, WorkspaceUncheckedUpdateWithoutReportTypesInput>
+  }
+
+  export type UserUpdateOneWithoutCreatedReportTypesNestedInput = {
+    create?: XOR<UserCreateWithoutCreatedReportTypesInput, UserUncheckedCreateWithoutCreatedReportTypesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutCreatedReportTypesInput
+    upsert?: UserUpsertWithoutCreatedReportTypesInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutCreatedReportTypesInput, UserUpdateWithoutCreatedReportTypesInput>, UserUncheckedUpdateWithoutCreatedReportTypesInput>
+  }
+
+  export type UserUpdateOneWithoutUpdatedReportTypesNestedInput = {
+    create?: XOR<UserCreateWithoutUpdatedReportTypesInput, UserUncheckedCreateWithoutUpdatedReportTypesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutUpdatedReportTypesInput
+    upsert?: UserUpsertWithoutUpdatedReportTypesInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutUpdatedReportTypesInput, UserUpdateWithoutUpdatedReportTypesInput>, UserUncheckedUpdateWithoutUpdatedReportTypesInput>
+  }
+
+  export type ReportLogUpdateManyWithoutReportTypeNestedInput = {
+    create?: XOR<ReportLogCreateWithoutReportTypeInput, ReportLogUncheckedCreateWithoutReportTypeInput> | ReportLogCreateWithoutReportTypeInput[] | ReportLogUncheckedCreateWithoutReportTypeInput[]
+    connectOrCreate?: ReportLogCreateOrConnectWithoutReportTypeInput | ReportLogCreateOrConnectWithoutReportTypeInput[]
+    upsert?: ReportLogUpsertWithWhereUniqueWithoutReportTypeInput | ReportLogUpsertWithWhereUniqueWithoutReportTypeInput[]
+    createMany?: ReportLogCreateManyReportTypeInputEnvelope
+    set?: ReportLogWhereUniqueInput | ReportLogWhereUniqueInput[]
+    disconnect?: ReportLogWhereUniqueInput | ReportLogWhereUniqueInput[]
+    delete?: ReportLogWhereUniqueInput | ReportLogWhereUniqueInput[]
+    connect?: ReportLogWhereUniqueInput | ReportLogWhereUniqueInput[]
+    update?: ReportLogUpdateWithWhereUniqueWithoutReportTypeInput | ReportLogUpdateWithWhereUniqueWithoutReportTypeInput[]
+    updateMany?: ReportLogUpdateManyWithWhereWithoutReportTypeInput | ReportLogUpdateManyWithWhereWithoutReportTypeInput[]
+    deleteMany?: ReportLogScalarWhereInput | ReportLogScalarWhereInput[]
+  }
+
+  export type ReportLogUncheckedUpdateManyWithoutReportTypeNestedInput = {
+    create?: XOR<ReportLogCreateWithoutReportTypeInput, ReportLogUncheckedCreateWithoutReportTypeInput> | ReportLogCreateWithoutReportTypeInput[] | ReportLogUncheckedCreateWithoutReportTypeInput[]
+    connectOrCreate?: ReportLogCreateOrConnectWithoutReportTypeInput | ReportLogCreateOrConnectWithoutReportTypeInput[]
+    upsert?: ReportLogUpsertWithWhereUniqueWithoutReportTypeInput | ReportLogUpsertWithWhereUniqueWithoutReportTypeInput[]
+    createMany?: ReportLogCreateManyReportTypeInputEnvelope
+    set?: ReportLogWhereUniqueInput | ReportLogWhereUniqueInput[]
+    disconnect?: ReportLogWhereUniqueInput | ReportLogWhereUniqueInput[]
+    delete?: ReportLogWhereUniqueInput | ReportLogWhereUniqueInput[]
+    connect?: ReportLogWhereUniqueInput | ReportLogWhereUniqueInput[]
+    update?: ReportLogUpdateWithWhereUniqueWithoutReportTypeInput | ReportLogUpdateWithWhereUniqueWithoutReportTypeInput[]
+    updateMany?: ReportLogUpdateManyWithWhereWithoutReportTypeInput | ReportLogUpdateManyWithWhereWithoutReportTypeInput[]
+    deleteMany?: ReportLogScalarWhereInput | ReportLogScalarWhereInput[]
+  }
+
+  export type WorkspaceCreateNestedOneWithoutReportLogsInput = {
+    create?: XOR<WorkspaceCreateWithoutReportLogsInput, WorkspaceUncheckedCreateWithoutReportLogsInput>
+    connectOrCreate?: WorkspaceCreateOrConnectWithoutReportLogsInput
+    connect?: WorkspaceWhereUniqueInput
+  }
+
+  export type ReportTypeCreateNestedOneWithoutLogsInput = {
+    create?: XOR<ReportTypeCreateWithoutLogsInput, ReportTypeUncheckedCreateWithoutLogsInput>
+    connectOrCreate?: ReportTypeCreateOrConnectWithoutLogsInput
+    connect?: ReportTypeWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutGeneratedReportLogsInput = {
+    create?: XOR<UserCreateWithoutGeneratedReportLogsInput, UserUncheckedCreateWithoutGeneratedReportLogsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutGeneratedReportLogsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type WorkspaceUpdateOneRequiredWithoutReportLogsNestedInput = {
+    create?: XOR<WorkspaceCreateWithoutReportLogsInput, WorkspaceUncheckedCreateWithoutReportLogsInput>
+    connectOrCreate?: WorkspaceCreateOrConnectWithoutReportLogsInput
+    upsert?: WorkspaceUpsertWithoutReportLogsInput
+    connect?: WorkspaceWhereUniqueInput
+    update?: XOR<XOR<WorkspaceUpdateToOneWithWhereWithoutReportLogsInput, WorkspaceUpdateWithoutReportLogsInput>, WorkspaceUncheckedUpdateWithoutReportLogsInput>
+  }
+
+  export type ReportTypeUpdateOneRequiredWithoutLogsNestedInput = {
+    create?: XOR<ReportTypeCreateWithoutLogsInput, ReportTypeUncheckedCreateWithoutLogsInput>
+    connectOrCreate?: ReportTypeCreateOrConnectWithoutLogsInput
+    upsert?: ReportTypeUpsertWithoutLogsInput
+    connect?: ReportTypeWhereUniqueInput
+    update?: XOR<XOR<ReportTypeUpdateToOneWithWhereWithoutLogsInput, ReportTypeUpdateWithoutLogsInput>, ReportTypeUncheckedUpdateWithoutLogsInput>
+  }
+
+  export type UserUpdateOneWithoutGeneratedReportLogsNestedInput = {
+    create?: XOR<UserCreateWithoutGeneratedReportLogsInput, UserUncheckedCreateWithoutGeneratedReportLogsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutGeneratedReportLogsInput
+    upsert?: UserUpsertWithoutGeneratedReportLogsInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutGeneratedReportLogsInput, UserUpdateWithoutGeneratedReportLogsInput>, UserUncheckedUpdateWithoutGeneratedReportLogsInput>
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -50618,6 +57714,113 @@ export namespace Prisma {
     _max?: NestedEnumRosterStatusFilter<$PrismaModel>
   }
 
+  export type NestedEnumHolidaySourceFilter<$PrismaModel = never> = {
+    equals?: $Enums.HolidaySource | EnumHolidaySourceFieldRefInput<$PrismaModel>
+    in?: $Enums.HolidaySource[] | ListEnumHolidaySourceFieldRefInput<$PrismaModel>
+    notIn?: $Enums.HolidaySource[] | ListEnumHolidaySourceFieldRefInput<$PrismaModel>
+    not?: NestedEnumHolidaySourceFilter<$PrismaModel> | $Enums.HolidaySource
+  }
+
+  export type NestedEnumHolidayStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.HolidayStatus | EnumHolidayStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.HolidayStatus[] | ListEnumHolidayStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.HolidayStatus[] | ListEnumHolidayStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumHolidayStatusFilter<$PrismaModel> | $Enums.HolidayStatus
+  }
+
+  export type NestedEnumHolidaySourceWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.HolidaySource | EnumHolidaySourceFieldRefInput<$PrismaModel>
+    in?: $Enums.HolidaySource[] | ListEnumHolidaySourceFieldRefInput<$PrismaModel>
+    notIn?: $Enums.HolidaySource[] | ListEnumHolidaySourceFieldRefInput<$PrismaModel>
+    not?: NestedEnumHolidaySourceWithAggregatesFilter<$PrismaModel> | $Enums.HolidaySource
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumHolidaySourceFilter<$PrismaModel>
+    _max?: NestedEnumHolidaySourceFilter<$PrismaModel>
+  }
+
+  export type NestedEnumHolidayStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.HolidayStatus | EnumHolidayStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.HolidayStatus[] | ListEnumHolidayStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.HolidayStatus[] | ListEnumHolidayStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumHolidayStatusWithAggregatesFilter<$PrismaModel> | $Enums.HolidayStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumHolidayStatusFilter<$PrismaModel>
+    _max?: NestedEnumHolidayStatusFilter<$PrismaModel>
+  }
+
+  export type NestedEnumReportModuleFilter<$PrismaModel = never> = {
+    equals?: $Enums.ReportModule | EnumReportModuleFieldRefInput<$PrismaModel>
+    in?: $Enums.ReportModule[] | ListEnumReportModuleFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ReportModule[] | ListEnumReportModuleFieldRefInput<$PrismaModel>
+    not?: NestedEnumReportModuleFilter<$PrismaModel> | $Enums.ReportModule
+  }
+
+  export type NestedEnumReportBaseDataSourceFilter<$PrismaModel = never> = {
+    equals?: $Enums.ReportBaseDataSource | EnumReportBaseDataSourceFieldRefInput<$PrismaModel>
+    in?: $Enums.ReportBaseDataSource[] | ListEnumReportBaseDataSourceFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ReportBaseDataSource[] | ListEnumReportBaseDataSourceFieldRefInput<$PrismaModel>
+    not?: NestedEnumReportBaseDataSourceFilter<$PrismaModel> | $Enums.ReportBaseDataSource
+  }
+
+  export type NestedEnumReportTypeStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.ReportTypeStatus | EnumReportTypeStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ReportTypeStatus[] | ListEnumReportTypeStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ReportTypeStatus[] | ListEnumReportTypeStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumReportTypeStatusFilter<$PrismaModel> | $Enums.ReportTypeStatus
+  }
+
+  export type NestedEnumReportModuleWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ReportModule | EnumReportModuleFieldRefInput<$PrismaModel>
+    in?: $Enums.ReportModule[] | ListEnumReportModuleFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ReportModule[] | ListEnumReportModuleFieldRefInput<$PrismaModel>
+    not?: NestedEnumReportModuleWithAggregatesFilter<$PrismaModel> | $Enums.ReportModule
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumReportModuleFilter<$PrismaModel>
+    _max?: NestedEnumReportModuleFilter<$PrismaModel>
+  }
+
+  export type NestedEnumReportBaseDataSourceWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ReportBaseDataSource | EnumReportBaseDataSourceFieldRefInput<$PrismaModel>
+    in?: $Enums.ReportBaseDataSource[] | ListEnumReportBaseDataSourceFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ReportBaseDataSource[] | ListEnumReportBaseDataSourceFieldRefInput<$PrismaModel>
+    not?: NestedEnumReportBaseDataSourceWithAggregatesFilter<$PrismaModel> | $Enums.ReportBaseDataSource
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumReportBaseDataSourceFilter<$PrismaModel>
+    _max?: NestedEnumReportBaseDataSourceFilter<$PrismaModel>
+  }
+  export type NestedJsonFilter<$PrismaModel = never> = 
+    | PatchUndefined<
+        Either<Required<NestedJsonFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>,
+        Required<NestedJsonFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>
+
+  export type NestedJsonFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
+
+  export type NestedEnumReportTypeStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ReportTypeStatus | EnumReportTypeStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ReportTypeStatus[] | ListEnumReportTypeStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ReportTypeStatus[] | ListEnumReportTypeStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumReportTypeStatusWithAggregatesFilter<$PrismaModel> | $Enums.ReportTypeStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumReportTypeStatusFilter<$PrismaModel>
+    _max?: NestedEnumReportTypeStatusFilter<$PrismaModel>
+  }
+
   export type RolePermissionCreateWithoutRoleInput = {
     permission: PermissionCreateNestedOneWithoutRolesInput
   }
@@ -50678,6 +57881,11 @@ export namespace Prisma {
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
     closedLeads?: LeadCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
   }
 
   export type UserUncheckedCreateWithoutRoleInput = {
@@ -50722,6 +57930,11 @@ export namespace Prisma {
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
     closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
   }
 
   export type UserCreateOrConnectWithoutRoleInput = {
@@ -50990,6 +58203,11 @@ export namespace Prisma {
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
     closedLeads?: LeadCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
   }
 
   export type UserUncheckedCreateWithoutOwnedWorkspaceInput = {
@@ -51034,6 +58252,11 @@ export namespace Prisma {
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
     closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
   }
 
   export type UserCreateOrConnectWithoutOwnedWorkspaceInput = {
@@ -51083,6 +58306,11 @@ export namespace Prisma {
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
     closedLeads?: LeadCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
   }
 
   export type UserUncheckedCreateWithoutWorkspaceInput = {
@@ -51127,6 +58355,11 @@ export namespace Prisma {
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
     closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
   }
 
   export type UserCreateOrConnectWithoutWorkspaceInput = {
@@ -51423,6 +58656,146 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type HolidayCreateWithoutWorkspaceInput = {
+    id?: string
+    name: string
+    holidayDate: Date | string
+    isRecurring?: boolean
+    recurrenceRule?: string | null
+    source?: $Enums.HolidaySource
+    status?: $Enums.HolidayStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    country?: LocationCreateNestedOneWithoutHolidaysAtCountryInput
+    state?: LocationCreateNestedOneWithoutHolidaysAtStateInput
+    district?: LocationCreateNestedOneWithoutHolidaysAtDistrictInput
+    createdBy?: UserCreateNestedOneWithoutCreatedHolidaysInput
+    updatedBy?: UserCreateNestedOneWithoutUpdatedHolidaysInput
+  }
+
+  export type HolidayUncheckedCreateWithoutWorkspaceInput = {
+    id?: string
+    name: string
+    holidayDate: Date | string
+    countryId?: string | null
+    stateId?: string | null
+    districtId?: string | null
+    isRecurring?: boolean
+    recurrenceRule?: string | null
+    source?: $Enums.HolidaySource
+    status?: $Enums.HolidayStatus
+    createdById?: string | null
+    updatedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type HolidayCreateOrConnectWithoutWorkspaceInput = {
+    where: HolidayWhereUniqueInput
+    create: XOR<HolidayCreateWithoutWorkspaceInput, HolidayUncheckedCreateWithoutWorkspaceInput>
+  }
+
+  export type HolidayCreateManyWorkspaceInputEnvelope = {
+    data: HolidayCreateManyWorkspaceInput | HolidayCreateManyWorkspaceInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type HolidaySyncLogCreateWithoutWorkspaceInput = {
+    id?: string
+    source: $Enums.HolidaySource
+    status: string
+    message?: string | null
+    syncedAt?: Date | string
+  }
+
+  export type HolidaySyncLogUncheckedCreateWithoutWorkspaceInput = {
+    id?: string
+    source: $Enums.HolidaySource
+    status: string
+    message?: string | null
+    syncedAt?: Date | string
+  }
+
+  export type HolidaySyncLogCreateOrConnectWithoutWorkspaceInput = {
+    where: HolidaySyncLogWhereUniqueInput
+    create: XOR<HolidaySyncLogCreateWithoutWorkspaceInput, HolidaySyncLogUncheckedCreateWithoutWorkspaceInput>
+  }
+
+  export type HolidaySyncLogCreateManyWorkspaceInputEnvelope = {
+    data: HolidaySyncLogCreateManyWorkspaceInput | HolidaySyncLogCreateManyWorkspaceInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type ReportTypeCreateWithoutWorkspaceInput = {
+    id?: string
+    name: string
+    module: $Enums.ReportModule
+    baseDataSource: $Enums.ReportBaseDataSource
+    description?: string | null
+    allowedFilters?: JsonNullValueInput | InputJsonValue
+    status?: $Enums.ReportTypeStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    createdBy?: UserCreateNestedOneWithoutCreatedReportTypesInput
+    updatedBy?: UserCreateNestedOneWithoutUpdatedReportTypesInput
+    logs?: ReportLogCreateNestedManyWithoutReportTypeInput
+  }
+
+  export type ReportTypeUncheckedCreateWithoutWorkspaceInput = {
+    id?: string
+    name: string
+    module: $Enums.ReportModule
+    baseDataSource: $Enums.ReportBaseDataSource
+    description?: string | null
+    allowedFilters?: JsonNullValueInput | InputJsonValue
+    status?: $Enums.ReportTypeStatus
+    createdById?: string | null
+    updatedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    logs?: ReportLogUncheckedCreateNestedManyWithoutReportTypeInput
+  }
+
+  export type ReportTypeCreateOrConnectWithoutWorkspaceInput = {
+    where: ReportTypeWhereUniqueInput
+    create: XOR<ReportTypeCreateWithoutWorkspaceInput, ReportTypeUncheckedCreateWithoutWorkspaceInput>
+  }
+
+  export type ReportTypeCreateManyWorkspaceInputEnvelope = {
+    data: ReportTypeCreateManyWorkspaceInput | ReportTypeCreateManyWorkspaceInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type ReportLogCreateWithoutWorkspaceInput = {
+    id?: string
+    filters?: JsonNullValueInput | InputJsonValue
+    resultCount?: number
+    createdAt?: Date | string
+    reportType: ReportTypeCreateNestedOneWithoutLogsInput
+    generatedBy?: UserCreateNestedOneWithoutGeneratedReportLogsInput
+  }
+
+  export type ReportLogUncheckedCreateWithoutWorkspaceInput = {
+    id?: string
+    reportTypeId: string
+    generatedById?: string | null
+    filters?: JsonNullValueInput | InputJsonValue
+    resultCount?: number
+    createdAt?: Date | string
+  }
+
+  export type ReportLogCreateOrConnectWithoutWorkspaceInput = {
+    where: ReportLogWhereUniqueInput
+    create: XOR<ReportLogCreateWithoutWorkspaceInput, ReportLogUncheckedCreateWithoutWorkspaceInput>
+  }
+
+  export type ReportLogCreateManyWorkspaceInputEnvelope = {
+    data: ReportLogCreateManyWorkspaceInput | ReportLogCreateManyWorkspaceInput[]
+    skipDuplicates?: boolean
+  }
+
   export type UserUpsertWithoutOwnedWorkspaceInput = {
     update: XOR<UserUpdateWithoutOwnedWorkspaceInput, UserUncheckedUpdateWithoutOwnedWorkspaceInput>
     create: XOR<UserCreateWithoutOwnedWorkspaceInput, UserUncheckedCreateWithoutOwnedWorkspaceInput>
@@ -51476,6 +58849,11 @@ export namespace Prisma {
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
     closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutOwnedWorkspaceInput = {
@@ -51520,6 +58898,11 @@ export namespace Prisma {
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
     closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
   }
 
   export type UserUpsertWithWhereUniqueWithoutWorkspaceInput = {
@@ -51774,6 +59157,135 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"LeadStageApproval"> | Date | string
   }
 
+  export type HolidayUpsertWithWhereUniqueWithoutWorkspaceInput = {
+    where: HolidayWhereUniqueInput
+    update: XOR<HolidayUpdateWithoutWorkspaceInput, HolidayUncheckedUpdateWithoutWorkspaceInput>
+    create: XOR<HolidayCreateWithoutWorkspaceInput, HolidayUncheckedCreateWithoutWorkspaceInput>
+  }
+
+  export type HolidayUpdateWithWhereUniqueWithoutWorkspaceInput = {
+    where: HolidayWhereUniqueInput
+    data: XOR<HolidayUpdateWithoutWorkspaceInput, HolidayUncheckedUpdateWithoutWorkspaceInput>
+  }
+
+  export type HolidayUpdateManyWithWhereWithoutWorkspaceInput = {
+    where: HolidayScalarWhereInput
+    data: XOR<HolidayUpdateManyMutationInput, HolidayUncheckedUpdateManyWithoutWorkspaceInput>
+  }
+
+  export type HolidayScalarWhereInput = {
+    AND?: HolidayScalarWhereInput | HolidayScalarWhereInput[]
+    OR?: HolidayScalarWhereInput[]
+    NOT?: HolidayScalarWhereInput | HolidayScalarWhereInput[]
+    id?: StringFilter<"Holiday"> | string
+    workspaceId?: StringFilter<"Holiday"> | string
+    name?: StringFilter<"Holiday"> | string
+    holidayDate?: DateTimeFilter<"Holiday"> | Date | string
+    countryId?: StringNullableFilter<"Holiday"> | string | null
+    stateId?: StringNullableFilter<"Holiday"> | string | null
+    districtId?: StringNullableFilter<"Holiday"> | string | null
+    isRecurring?: BoolFilter<"Holiday"> | boolean
+    recurrenceRule?: StringNullableFilter<"Holiday"> | string | null
+    source?: EnumHolidaySourceFilter<"Holiday"> | $Enums.HolidaySource
+    status?: EnumHolidayStatusFilter<"Holiday"> | $Enums.HolidayStatus
+    createdById?: StringNullableFilter<"Holiday"> | string | null
+    updatedById?: StringNullableFilter<"Holiday"> | string | null
+    createdAt?: DateTimeFilter<"Holiday"> | Date | string
+    updatedAt?: DateTimeFilter<"Holiday"> | Date | string
+  }
+
+  export type HolidaySyncLogUpsertWithWhereUniqueWithoutWorkspaceInput = {
+    where: HolidaySyncLogWhereUniqueInput
+    update: XOR<HolidaySyncLogUpdateWithoutWorkspaceInput, HolidaySyncLogUncheckedUpdateWithoutWorkspaceInput>
+    create: XOR<HolidaySyncLogCreateWithoutWorkspaceInput, HolidaySyncLogUncheckedCreateWithoutWorkspaceInput>
+  }
+
+  export type HolidaySyncLogUpdateWithWhereUniqueWithoutWorkspaceInput = {
+    where: HolidaySyncLogWhereUniqueInput
+    data: XOR<HolidaySyncLogUpdateWithoutWorkspaceInput, HolidaySyncLogUncheckedUpdateWithoutWorkspaceInput>
+  }
+
+  export type HolidaySyncLogUpdateManyWithWhereWithoutWorkspaceInput = {
+    where: HolidaySyncLogScalarWhereInput
+    data: XOR<HolidaySyncLogUpdateManyMutationInput, HolidaySyncLogUncheckedUpdateManyWithoutWorkspaceInput>
+  }
+
+  export type HolidaySyncLogScalarWhereInput = {
+    AND?: HolidaySyncLogScalarWhereInput | HolidaySyncLogScalarWhereInput[]
+    OR?: HolidaySyncLogScalarWhereInput[]
+    NOT?: HolidaySyncLogScalarWhereInput | HolidaySyncLogScalarWhereInput[]
+    id?: StringFilter<"HolidaySyncLog"> | string
+    workspaceId?: StringFilter<"HolidaySyncLog"> | string
+    source?: EnumHolidaySourceFilter<"HolidaySyncLog"> | $Enums.HolidaySource
+    status?: StringFilter<"HolidaySyncLog"> | string
+    message?: StringNullableFilter<"HolidaySyncLog"> | string | null
+    syncedAt?: DateTimeFilter<"HolidaySyncLog"> | Date | string
+  }
+
+  export type ReportTypeUpsertWithWhereUniqueWithoutWorkspaceInput = {
+    where: ReportTypeWhereUniqueInput
+    update: XOR<ReportTypeUpdateWithoutWorkspaceInput, ReportTypeUncheckedUpdateWithoutWorkspaceInput>
+    create: XOR<ReportTypeCreateWithoutWorkspaceInput, ReportTypeUncheckedCreateWithoutWorkspaceInput>
+  }
+
+  export type ReportTypeUpdateWithWhereUniqueWithoutWorkspaceInput = {
+    where: ReportTypeWhereUniqueInput
+    data: XOR<ReportTypeUpdateWithoutWorkspaceInput, ReportTypeUncheckedUpdateWithoutWorkspaceInput>
+  }
+
+  export type ReportTypeUpdateManyWithWhereWithoutWorkspaceInput = {
+    where: ReportTypeScalarWhereInput
+    data: XOR<ReportTypeUpdateManyMutationInput, ReportTypeUncheckedUpdateManyWithoutWorkspaceInput>
+  }
+
+  export type ReportTypeScalarWhereInput = {
+    AND?: ReportTypeScalarWhereInput | ReportTypeScalarWhereInput[]
+    OR?: ReportTypeScalarWhereInput[]
+    NOT?: ReportTypeScalarWhereInput | ReportTypeScalarWhereInput[]
+    id?: StringFilter<"ReportType"> | string
+    workspaceId?: StringFilter<"ReportType"> | string
+    name?: StringFilter<"ReportType"> | string
+    module?: EnumReportModuleFilter<"ReportType"> | $Enums.ReportModule
+    baseDataSource?: EnumReportBaseDataSourceFilter<"ReportType"> | $Enums.ReportBaseDataSource
+    description?: StringNullableFilter<"ReportType"> | string | null
+    allowedFilters?: JsonFilter<"ReportType">
+    status?: EnumReportTypeStatusFilter<"ReportType"> | $Enums.ReportTypeStatus
+    createdById?: StringNullableFilter<"ReportType"> | string | null
+    updatedById?: StringNullableFilter<"ReportType"> | string | null
+    createdAt?: DateTimeFilter<"ReportType"> | Date | string
+    updatedAt?: DateTimeFilter<"ReportType"> | Date | string
+    deletedAt?: DateTimeNullableFilter<"ReportType"> | Date | string | null
+  }
+
+  export type ReportLogUpsertWithWhereUniqueWithoutWorkspaceInput = {
+    where: ReportLogWhereUniqueInput
+    update: XOR<ReportLogUpdateWithoutWorkspaceInput, ReportLogUncheckedUpdateWithoutWorkspaceInput>
+    create: XOR<ReportLogCreateWithoutWorkspaceInput, ReportLogUncheckedCreateWithoutWorkspaceInput>
+  }
+
+  export type ReportLogUpdateWithWhereUniqueWithoutWorkspaceInput = {
+    where: ReportLogWhereUniqueInput
+    data: XOR<ReportLogUpdateWithoutWorkspaceInput, ReportLogUncheckedUpdateWithoutWorkspaceInput>
+  }
+
+  export type ReportLogUpdateManyWithWhereWithoutWorkspaceInput = {
+    where: ReportLogScalarWhereInput
+    data: XOR<ReportLogUpdateManyMutationInput, ReportLogUncheckedUpdateManyWithoutWorkspaceInput>
+  }
+
+  export type ReportLogScalarWhereInput = {
+    AND?: ReportLogScalarWhereInput | ReportLogScalarWhereInput[]
+    OR?: ReportLogScalarWhereInput[]
+    NOT?: ReportLogScalarWhereInput | ReportLogScalarWhereInput[]
+    id?: StringFilter<"ReportLog"> | string
+    workspaceId?: StringFilter<"ReportLog"> | string
+    reportTypeId?: StringFilter<"ReportLog"> | string
+    generatedById?: StringNullableFilter<"ReportLog"> | string | null
+    filters?: JsonFilter<"ReportLog">
+    resultCount?: IntFilter<"ReportLog"> | number
+    createdAt?: DateTimeFilter<"ReportLog"> | Date | string
+  }
+
   export type WorkspaceCreateWithoutDepartmentsInput = {
     id?: string
     companyName: string
@@ -51792,6 +59304,10 @@ export namespace Prisma {
     leads?: LeadCreateNestedManyWithoutWorkspaceInput
     leadActivities?: LeadActivityCreateNestedManyWithoutWorkspaceInput
     leadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutWorkspaceInput
+    holidays?: HolidayCreateNestedManyWithoutWorkspaceInput
+    holidaySyncLogs?: HolidaySyncLogCreateNestedManyWithoutWorkspaceInput
+    reportTypes?: ReportTypeCreateNestedManyWithoutWorkspaceInput
+    reportLogs?: ReportLogCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateWithoutDepartmentsInput = {
@@ -51812,6 +59328,10 @@ export namespace Prisma {
     leads?: LeadUncheckedCreateNestedManyWithoutWorkspaceInput
     leadActivities?: LeadActivityUncheckedCreateNestedManyWithoutWorkspaceInput
     leadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutWorkspaceInput
+    holidays?: HolidayUncheckedCreateNestedManyWithoutWorkspaceInput
+    holidaySyncLogs?: HolidaySyncLogUncheckedCreateNestedManyWithoutWorkspaceInput
+    reportTypes?: ReportTypeUncheckedCreateNestedManyWithoutWorkspaceInput
+    reportLogs?: ReportLogUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceCreateOrConnectWithoutDepartmentsInput = {
@@ -51861,6 +59381,11 @@ export namespace Prisma {
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
     closedLeads?: LeadCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
   }
 
   export type UserUncheckedCreateWithoutDepartmentInput = {
@@ -51905,6 +59430,11 @@ export namespace Prisma {
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
     closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
   }
 
   export type UserCreateOrConnectWithoutDepartmentInput = {
@@ -51946,6 +59476,10 @@ export namespace Prisma {
     leads?: LeadUpdateManyWithoutWorkspaceNestedInput
     leadActivities?: LeadActivityUpdateManyWithoutWorkspaceNestedInput
     leadStageApprovals?: LeadStageApprovalUpdateManyWithoutWorkspaceNestedInput
+    holidays?: HolidayUpdateManyWithoutWorkspaceNestedInput
+    holidaySyncLogs?: HolidaySyncLogUpdateManyWithoutWorkspaceNestedInput
+    reportTypes?: ReportTypeUpdateManyWithoutWorkspaceNestedInput
+    reportLogs?: ReportLogUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateWithoutDepartmentsInput = {
@@ -51966,6 +59500,10 @@ export namespace Prisma {
     leads?: LeadUncheckedUpdateManyWithoutWorkspaceNestedInput
     leadActivities?: LeadActivityUncheckedUpdateManyWithoutWorkspaceNestedInput
     leadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutWorkspaceNestedInput
+    holidays?: HolidayUncheckedUpdateManyWithoutWorkspaceNestedInput
+    holidaySyncLogs?: HolidaySyncLogUncheckedUpdateManyWithoutWorkspaceNestedInput
+    reportTypes?: ReportTypeUncheckedUpdateManyWithoutWorkspaceNestedInput
+    reportLogs?: ReportLogUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type UserUpsertWithWhereUniqueWithoutDepartmentInput = {
@@ -52640,6 +60178,11 @@ export namespace Prisma {
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
     closedLeads?: LeadCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
   }
 
   export type UserUncheckedCreateWithoutOfficeInput = {
@@ -52684,6 +60227,11 @@ export namespace Prisma {
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
     closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
   }
 
   export type UserCreateOrConnectWithoutOfficeInput = {
@@ -52724,6 +60272,9 @@ export namespace Prisma {
     usersAtCountry?: UserCreateNestedManyWithoutCountryInput
     usersAtState?: UserCreateNestedManyWithoutStateInput
     usersAtDistrict?: UserCreateNestedManyWithoutDistrictInput
+    holidaysAtCountry?: HolidayCreateNestedManyWithoutCountryInput
+    holidaysAtState?: HolidayCreateNestedManyWithoutStateInput
+    holidaysAtDistrict?: HolidayCreateNestedManyWithoutDistrictInput
   }
 
   export type LocationUncheckedCreateWithoutChildrenInput = {
@@ -52738,6 +60289,9 @@ export namespace Prisma {
     usersAtCountry?: UserUncheckedCreateNestedManyWithoutCountryInput
     usersAtState?: UserUncheckedCreateNestedManyWithoutStateInput
     usersAtDistrict?: UserUncheckedCreateNestedManyWithoutDistrictInput
+    holidaysAtCountry?: HolidayUncheckedCreateNestedManyWithoutCountryInput
+    holidaysAtState?: HolidayUncheckedCreateNestedManyWithoutStateInput
+    holidaysAtDistrict?: HolidayUncheckedCreateNestedManyWithoutDistrictInput
   }
 
   export type LocationCreateOrConnectWithoutChildrenInput = {
@@ -52757,6 +60311,9 @@ export namespace Prisma {
     usersAtCountry?: UserCreateNestedManyWithoutCountryInput
     usersAtState?: UserCreateNestedManyWithoutStateInput
     usersAtDistrict?: UserCreateNestedManyWithoutDistrictInput
+    holidaysAtCountry?: HolidayCreateNestedManyWithoutCountryInput
+    holidaysAtState?: HolidayCreateNestedManyWithoutStateInput
+    holidaysAtDistrict?: HolidayCreateNestedManyWithoutDistrictInput
   }
 
   export type LocationUncheckedCreateWithoutParentInput = {
@@ -52771,6 +60328,9 @@ export namespace Prisma {
     usersAtCountry?: UserUncheckedCreateNestedManyWithoutCountryInput
     usersAtState?: UserUncheckedCreateNestedManyWithoutStateInput
     usersAtDistrict?: UserUncheckedCreateNestedManyWithoutDistrictInput
+    holidaysAtCountry?: HolidayUncheckedCreateNestedManyWithoutCountryInput
+    holidaysAtState?: HolidayUncheckedCreateNestedManyWithoutStateInput
+    holidaysAtDistrict?: HolidayUncheckedCreateNestedManyWithoutDistrictInput
   }
 
   export type LocationCreateOrConnectWithoutParentInput = {
@@ -52851,6 +60411,11 @@ export namespace Prisma {
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
     closedLeads?: LeadCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
   }
 
   export type UserUncheckedCreateWithoutCountryInput = {
@@ -52895,6 +60460,11 @@ export namespace Prisma {
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
     closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
   }
 
   export type UserCreateOrConnectWithoutCountryInput = {
@@ -52949,6 +60519,11 @@ export namespace Prisma {
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
     closedLeads?: LeadCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
   }
 
   export type UserUncheckedCreateWithoutStateInput = {
@@ -52993,6 +60568,11 @@ export namespace Prisma {
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
     closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
   }
 
   export type UserCreateOrConnectWithoutStateInput = {
@@ -53047,6 +60627,11 @@ export namespace Prisma {
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
     closedLeads?: LeadCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
   }
 
   export type UserUncheckedCreateWithoutDistrictInput = {
@@ -53091,6 +60676,11 @@ export namespace Prisma {
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
     closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
   }
 
   export type UserCreateOrConnectWithoutDistrictInput = {
@@ -53100,6 +60690,138 @@ export namespace Prisma {
 
   export type UserCreateManyDistrictInputEnvelope = {
     data: UserCreateManyDistrictInput | UserCreateManyDistrictInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type HolidayCreateWithoutCountryInput = {
+    id?: string
+    name: string
+    holidayDate: Date | string
+    isRecurring?: boolean
+    recurrenceRule?: string | null
+    source?: $Enums.HolidaySource
+    status?: $Enums.HolidayStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    workspace: WorkspaceCreateNestedOneWithoutHolidaysInput
+    state?: LocationCreateNestedOneWithoutHolidaysAtStateInput
+    district?: LocationCreateNestedOneWithoutHolidaysAtDistrictInput
+    createdBy?: UserCreateNestedOneWithoutCreatedHolidaysInput
+    updatedBy?: UserCreateNestedOneWithoutUpdatedHolidaysInput
+  }
+
+  export type HolidayUncheckedCreateWithoutCountryInput = {
+    id?: string
+    workspaceId: string
+    name: string
+    holidayDate: Date | string
+    stateId?: string | null
+    districtId?: string | null
+    isRecurring?: boolean
+    recurrenceRule?: string | null
+    source?: $Enums.HolidaySource
+    status?: $Enums.HolidayStatus
+    createdById?: string | null
+    updatedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type HolidayCreateOrConnectWithoutCountryInput = {
+    where: HolidayWhereUniqueInput
+    create: XOR<HolidayCreateWithoutCountryInput, HolidayUncheckedCreateWithoutCountryInput>
+  }
+
+  export type HolidayCreateManyCountryInputEnvelope = {
+    data: HolidayCreateManyCountryInput | HolidayCreateManyCountryInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type HolidayCreateWithoutStateInput = {
+    id?: string
+    name: string
+    holidayDate: Date | string
+    isRecurring?: boolean
+    recurrenceRule?: string | null
+    source?: $Enums.HolidaySource
+    status?: $Enums.HolidayStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    workspace: WorkspaceCreateNestedOneWithoutHolidaysInput
+    country?: LocationCreateNestedOneWithoutHolidaysAtCountryInput
+    district?: LocationCreateNestedOneWithoutHolidaysAtDistrictInput
+    createdBy?: UserCreateNestedOneWithoutCreatedHolidaysInput
+    updatedBy?: UserCreateNestedOneWithoutUpdatedHolidaysInput
+  }
+
+  export type HolidayUncheckedCreateWithoutStateInput = {
+    id?: string
+    workspaceId: string
+    name: string
+    holidayDate: Date | string
+    countryId?: string | null
+    districtId?: string | null
+    isRecurring?: boolean
+    recurrenceRule?: string | null
+    source?: $Enums.HolidaySource
+    status?: $Enums.HolidayStatus
+    createdById?: string | null
+    updatedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type HolidayCreateOrConnectWithoutStateInput = {
+    where: HolidayWhereUniqueInput
+    create: XOR<HolidayCreateWithoutStateInput, HolidayUncheckedCreateWithoutStateInput>
+  }
+
+  export type HolidayCreateManyStateInputEnvelope = {
+    data: HolidayCreateManyStateInput | HolidayCreateManyStateInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type HolidayCreateWithoutDistrictInput = {
+    id?: string
+    name: string
+    holidayDate: Date | string
+    isRecurring?: boolean
+    recurrenceRule?: string | null
+    source?: $Enums.HolidaySource
+    status?: $Enums.HolidayStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    workspace: WorkspaceCreateNestedOneWithoutHolidaysInput
+    country?: LocationCreateNestedOneWithoutHolidaysAtCountryInput
+    state?: LocationCreateNestedOneWithoutHolidaysAtStateInput
+    createdBy?: UserCreateNestedOneWithoutCreatedHolidaysInput
+    updatedBy?: UserCreateNestedOneWithoutUpdatedHolidaysInput
+  }
+
+  export type HolidayUncheckedCreateWithoutDistrictInput = {
+    id?: string
+    workspaceId: string
+    name: string
+    holidayDate: Date | string
+    countryId?: string | null
+    stateId?: string | null
+    isRecurring?: boolean
+    recurrenceRule?: string | null
+    source?: $Enums.HolidaySource
+    status?: $Enums.HolidayStatus
+    createdById?: string | null
+    updatedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type HolidayCreateOrConnectWithoutDistrictInput = {
+    where: HolidayWhereUniqueInput
+    create: XOR<HolidayCreateWithoutDistrictInput, HolidayUncheckedCreateWithoutDistrictInput>
+  }
+
+  export type HolidayCreateManyDistrictInputEnvelope = {
+    data: HolidayCreateManyDistrictInput | HolidayCreateManyDistrictInput[]
     skipDuplicates?: boolean
   }
 
@@ -53126,6 +60848,9 @@ export namespace Prisma {
     usersAtCountry?: UserUpdateManyWithoutCountryNestedInput
     usersAtState?: UserUpdateManyWithoutStateNestedInput
     usersAtDistrict?: UserUpdateManyWithoutDistrictNestedInput
+    holidaysAtCountry?: HolidayUpdateManyWithoutCountryNestedInput
+    holidaysAtState?: HolidayUpdateManyWithoutStateNestedInput
+    holidaysAtDistrict?: HolidayUpdateManyWithoutDistrictNestedInput
   }
 
   export type LocationUncheckedUpdateWithoutChildrenInput = {
@@ -53140,6 +60865,9 @@ export namespace Prisma {
     usersAtCountry?: UserUncheckedUpdateManyWithoutCountryNestedInput
     usersAtState?: UserUncheckedUpdateManyWithoutStateNestedInput
     usersAtDistrict?: UserUncheckedUpdateManyWithoutDistrictNestedInput
+    holidaysAtCountry?: HolidayUncheckedUpdateManyWithoutCountryNestedInput
+    holidaysAtState?: HolidayUncheckedUpdateManyWithoutStateNestedInput
+    holidaysAtDistrict?: HolidayUncheckedUpdateManyWithoutDistrictNestedInput
   }
 
   export type LocationUpsertWithWhereUniqueWithoutParentInput = {
@@ -53247,6 +60975,54 @@ export namespace Prisma {
     data: XOR<UserUpdateManyMutationInput, UserUncheckedUpdateManyWithoutDistrictInput>
   }
 
+  export type HolidayUpsertWithWhereUniqueWithoutCountryInput = {
+    where: HolidayWhereUniqueInput
+    update: XOR<HolidayUpdateWithoutCountryInput, HolidayUncheckedUpdateWithoutCountryInput>
+    create: XOR<HolidayCreateWithoutCountryInput, HolidayUncheckedCreateWithoutCountryInput>
+  }
+
+  export type HolidayUpdateWithWhereUniqueWithoutCountryInput = {
+    where: HolidayWhereUniqueInput
+    data: XOR<HolidayUpdateWithoutCountryInput, HolidayUncheckedUpdateWithoutCountryInput>
+  }
+
+  export type HolidayUpdateManyWithWhereWithoutCountryInput = {
+    where: HolidayScalarWhereInput
+    data: XOR<HolidayUpdateManyMutationInput, HolidayUncheckedUpdateManyWithoutCountryInput>
+  }
+
+  export type HolidayUpsertWithWhereUniqueWithoutStateInput = {
+    where: HolidayWhereUniqueInput
+    update: XOR<HolidayUpdateWithoutStateInput, HolidayUncheckedUpdateWithoutStateInput>
+    create: XOR<HolidayCreateWithoutStateInput, HolidayUncheckedCreateWithoutStateInput>
+  }
+
+  export type HolidayUpdateWithWhereUniqueWithoutStateInput = {
+    where: HolidayWhereUniqueInput
+    data: XOR<HolidayUpdateWithoutStateInput, HolidayUncheckedUpdateWithoutStateInput>
+  }
+
+  export type HolidayUpdateManyWithWhereWithoutStateInput = {
+    where: HolidayScalarWhereInput
+    data: XOR<HolidayUpdateManyMutationInput, HolidayUncheckedUpdateManyWithoutStateInput>
+  }
+
+  export type HolidayUpsertWithWhereUniqueWithoutDistrictInput = {
+    where: HolidayWhereUniqueInput
+    update: XOR<HolidayUpdateWithoutDistrictInput, HolidayUncheckedUpdateWithoutDistrictInput>
+    create: XOR<HolidayCreateWithoutDistrictInput, HolidayUncheckedCreateWithoutDistrictInput>
+  }
+
+  export type HolidayUpdateWithWhereUniqueWithoutDistrictInput = {
+    where: HolidayWhereUniqueInput
+    data: XOR<HolidayUpdateWithoutDistrictInput, HolidayUncheckedUpdateWithoutDistrictInput>
+  }
+
+  export type HolidayUpdateManyWithWhereWithoutDistrictInput = {
+    where: HolidayScalarWhereInput
+    data: XOR<HolidayUpdateManyMutationInput, HolidayUncheckedUpdateManyWithoutDistrictInput>
+  }
+
   export type UserCreateWithoutAssignedLocationsInput = {
     id?: string
     name?: string | null
@@ -53289,6 +61065,11 @@ export namespace Prisma {
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
     closedLeads?: LeadCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
   }
 
   export type UserUncheckedCreateWithoutAssignedLocationsInput = {
@@ -53333,6 +61114,11 @@ export namespace Prisma {
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
     closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
   }
 
   export type UserCreateOrConnectWithoutAssignedLocationsInput = {
@@ -53352,6 +61138,9 @@ export namespace Prisma {
     usersAtCountry?: UserCreateNestedManyWithoutCountryInput
     usersAtState?: UserCreateNestedManyWithoutStateInput
     usersAtDistrict?: UserCreateNestedManyWithoutDistrictInput
+    holidaysAtCountry?: HolidayCreateNestedManyWithoutCountryInput
+    holidaysAtState?: HolidayCreateNestedManyWithoutStateInput
+    holidaysAtDistrict?: HolidayCreateNestedManyWithoutDistrictInput
   }
 
   export type LocationUncheckedCreateWithoutAssignedUsersInput = {
@@ -53366,6 +61155,9 @@ export namespace Prisma {
     usersAtCountry?: UserUncheckedCreateNestedManyWithoutCountryInput
     usersAtState?: UserUncheckedCreateNestedManyWithoutStateInput
     usersAtDistrict?: UserUncheckedCreateNestedManyWithoutDistrictInput
+    holidaysAtCountry?: HolidayUncheckedCreateNestedManyWithoutCountryInput
+    holidaysAtState?: HolidayUncheckedCreateNestedManyWithoutStateInput
+    holidaysAtDistrict?: HolidayUncheckedCreateNestedManyWithoutDistrictInput
   }
 
   export type LocationCreateOrConnectWithoutAssignedUsersInput = {
@@ -53426,6 +61218,11 @@ export namespace Prisma {
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
     closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAssignedLocationsInput = {
@@ -53470,6 +61267,11 @@ export namespace Prisma {
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
     closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
   }
 
   export type LocationUpsertWithoutAssignedUsersInput = {
@@ -53495,6 +61297,9 @@ export namespace Prisma {
     usersAtCountry?: UserUpdateManyWithoutCountryNestedInput
     usersAtState?: UserUpdateManyWithoutStateNestedInput
     usersAtDistrict?: UserUpdateManyWithoutDistrictNestedInput
+    holidaysAtCountry?: HolidayUpdateManyWithoutCountryNestedInput
+    holidaysAtState?: HolidayUpdateManyWithoutStateNestedInput
+    holidaysAtDistrict?: HolidayUpdateManyWithoutDistrictNestedInput
   }
 
   export type LocationUncheckedUpdateWithoutAssignedUsersInput = {
@@ -53509,6 +61314,9 @@ export namespace Prisma {
     usersAtCountry?: UserUncheckedUpdateManyWithoutCountryNestedInput
     usersAtState?: UserUncheckedUpdateManyWithoutStateNestedInput
     usersAtDistrict?: UserUncheckedUpdateManyWithoutDistrictNestedInput
+    holidaysAtCountry?: HolidayUncheckedUpdateManyWithoutCountryNestedInput
+    holidaysAtState?: HolidayUncheckedUpdateManyWithoutStateNestedInput
+    holidaysAtDistrict?: HolidayUncheckedUpdateManyWithoutDistrictNestedInput
   }
 
   export type TargetSettingCreateWithoutTargetTypeInput = {
@@ -53604,6 +61412,10 @@ export namespace Prisma {
     leads?: LeadCreateNestedManyWithoutWorkspaceInput
     leadActivities?: LeadActivityCreateNestedManyWithoutWorkspaceInput
     leadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutWorkspaceInput
+    holidays?: HolidayCreateNestedManyWithoutWorkspaceInput
+    holidaySyncLogs?: HolidaySyncLogCreateNestedManyWithoutWorkspaceInput
+    reportTypes?: ReportTypeCreateNestedManyWithoutWorkspaceInput
+    reportLogs?: ReportLogCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateWithoutTargetCyclesInput = {
@@ -53624,6 +61436,10 @@ export namespace Prisma {
     leads?: LeadUncheckedCreateNestedManyWithoutWorkspaceInput
     leadActivities?: LeadActivityUncheckedCreateNestedManyWithoutWorkspaceInput
     leadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutWorkspaceInput
+    holidays?: HolidayUncheckedCreateNestedManyWithoutWorkspaceInput
+    holidaySyncLogs?: HolidaySyncLogUncheckedCreateNestedManyWithoutWorkspaceInput
+    reportTypes?: ReportTypeUncheckedCreateNestedManyWithoutWorkspaceInput
+    reportLogs?: ReportLogUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceCreateOrConnectWithoutTargetCyclesInput = {
@@ -53724,6 +61540,10 @@ export namespace Prisma {
     leads?: LeadUpdateManyWithoutWorkspaceNestedInput
     leadActivities?: LeadActivityUpdateManyWithoutWorkspaceNestedInput
     leadStageApprovals?: LeadStageApprovalUpdateManyWithoutWorkspaceNestedInput
+    holidays?: HolidayUpdateManyWithoutWorkspaceNestedInput
+    holidaySyncLogs?: HolidaySyncLogUpdateManyWithoutWorkspaceNestedInput
+    reportTypes?: ReportTypeUpdateManyWithoutWorkspaceNestedInput
+    reportLogs?: ReportLogUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateWithoutTargetCyclesInput = {
@@ -53744,6 +61564,10 @@ export namespace Prisma {
     leads?: LeadUncheckedUpdateManyWithoutWorkspaceNestedInput
     leadActivities?: LeadActivityUncheckedUpdateManyWithoutWorkspaceNestedInput
     leadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutWorkspaceNestedInput
+    holidays?: HolidayUncheckedUpdateManyWithoutWorkspaceNestedInput
+    holidaySyncLogs?: HolidaySyncLogUncheckedUpdateManyWithoutWorkspaceNestedInput
+    reportTypes?: ReportTypeUncheckedUpdateManyWithoutWorkspaceNestedInput
+    reportLogs?: ReportLogUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type TargetCycleRangeUpsertWithWhereUniqueWithoutTargetCycleInput = {
@@ -53875,6 +61699,10 @@ export namespace Prisma {
     leads?: LeadCreateNestedManyWithoutWorkspaceInput
     leadActivities?: LeadActivityCreateNestedManyWithoutWorkspaceInput
     leadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutWorkspaceInput
+    holidays?: HolidayCreateNestedManyWithoutWorkspaceInput
+    holidaySyncLogs?: HolidaySyncLogCreateNestedManyWithoutWorkspaceInput
+    reportTypes?: ReportTypeCreateNestedManyWithoutWorkspaceInput
+    reportLogs?: ReportLogCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateWithoutLeadLifeCyclesInput = {
@@ -53895,6 +61723,10 @@ export namespace Prisma {
     leads?: LeadUncheckedCreateNestedManyWithoutWorkspaceInput
     leadActivities?: LeadActivityUncheckedCreateNestedManyWithoutWorkspaceInput
     leadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutWorkspaceInput
+    holidays?: HolidayUncheckedCreateNestedManyWithoutWorkspaceInput
+    holidaySyncLogs?: HolidaySyncLogUncheckedCreateNestedManyWithoutWorkspaceInput
+    reportTypes?: ReportTypeUncheckedCreateNestedManyWithoutWorkspaceInput
+    reportLogs?: ReportLogUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceCreateOrConnectWithoutLeadLifeCyclesInput = {
@@ -54045,6 +61877,10 @@ export namespace Prisma {
     leads?: LeadUpdateManyWithoutWorkspaceNestedInput
     leadActivities?: LeadActivityUpdateManyWithoutWorkspaceNestedInput
     leadStageApprovals?: LeadStageApprovalUpdateManyWithoutWorkspaceNestedInput
+    holidays?: HolidayUpdateManyWithoutWorkspaceNestedInput
+    holidaySyncLogs?: HolidaySyncLogUpdateManyWithoutWorkspaceNestedInput
+    reportTypes?: ReportTypeUpdateManyWithoutWorkspaceNestedInput
+    reportLogs?: ReportLogUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateWithoutLeadLifeCyclesInput = {
@@ -54065,6 +61901,10 @@ export namespace Prisma {
     leads?: LeadUncheckedUpdateManyWithoutWorkspaceNestedInput
     leadActivities?: LeadActivityUncheckedUpdateManyWithoutWorkspaceNestedInput
     leadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutWorkspaceNestedInput
+    holidays?: HolidayUncheckedUpdateManyWithoutWorkspaceNestedInput
+    holidaySyncLogs?: HolidaySyncLogUncheckedUpdateManyWithoutWorkspaceNestedInput
+    reportTypes?: ReportTypeUncheckedUpdateManyWithoutWorkspaceNestedInput
+    reportLogs?: ReportLogUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type LeadLifeCycleTransitionUpsertWithWhereUniqueWithoutLifecycleInput = {
@@ -54158,6 +61998,11 @@ export namespace Prisma {
     followUps?: FollowUpCreateNestedManyWithoutUserInput
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
     closedLeads?: LeadCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
   }
 
   export type UserUncheckedCreateWithoutAssignedLeadsInput = {
@@ -54202,6 +62047,11 @@ export namespace Prisma {
     followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
     closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
   }
 
   export type UserCreateOrConnectWithoutAssignedLeadsInput = {
@@ -54344,6 +62194,11 @@ export namespace Prisma {
     followUps?: FollowUpCreateNestedManyWithoutUserInput
     assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
     closedLeads?: LeadCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
   }
 
   export type UserUncheckedCreateWithoutCreatedLeadsInput = {
@@ -54388,6 +62243,11 @@ export namespace Prisma {
     followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
     assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
     closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
   }
 
   export type UserCreateOrConnectWithoutCreatedLeadsInput = {
@@ -54437,6 +62297,11 @@ export namespace Prisma {
     followUps?: FollowUpCreateNestedManyWithoutUserInput
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
+    createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
   }
 
   export type UserUncheckedCreateWithoutClosedLeadsInput = {
@@ -54481,6 +62346,11 @@ export namespace Prisma {
     followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
+    createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
   }
 
   export type UserCreateOrConnectWithoutClosedLeadsInput = {
@@ -54506,6 +62376,10 @@ export namespace Prisma {
     leadDynamicFields?: LeadDynamicFieldCreateNestedManyWithoutWorkspaceInput
     leadActivities?: LeadActivityCreateNestedManyWithoutWorkspaceInput
     leadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutWorkspaceInput
+    holidays?: HolidayCreateNestedManyWithoutWorkspaceInput
+    holidaySyncLogs?: HolidaySyncLogCreateNestedManyWithoutWorkspaceInput
+    reportTypes?: ReportTypeCreateNestedManyWithoutWorkspaceInput
+    reportLogs?: ReportLogCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateWithoutLeadsInput = {
@@ -54526,6 +62400,10 @@ export namespace Prisma {
     leadDynamicFields?: LeadDynamicFieldUncheckedCreateNestedManyWithoutWorkspaceInput
     leadActivities?: LeadActivityUncheckedCreateNestedManyWithoutWorkspaceInput
     leadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutWorkspaceInput
+    holidays?: HolidayUncheckedCreateNestedManyWithoutWorkspaceInput
+    holidaySyncLogs?: HolidaySyncLogUncheckedCreateNestedManyWithoutWorkspaceInput
+    reportTypes?: ReportTypeUncheckedCreateNestedManyWithoutWorkspaceInput
+    reportLogs?: ReportLogUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceCreateOrConnectWithoutLeadsInput = {
@@ -54722,6 +62600,11 @@ export namespace Prisma {
     followUps?: FollowUpUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
     closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAssignedLeadsInput = {
@@ -54766,6 +62649,11 @@ export namespace Prisma {
     followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
     closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
   }
 
   export type LeadStageUpsertWithoutLeadsInput = {
@@ -54932,6 +62820,11 @@ export namespace Prisma {
     followUps?: FollowUpUpdateManyWithoutUserNestedInput
     assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
     closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCreatedLeadsInput = {
@@ -54976,6 +62869,11 @@ export namespace Prisma {
     followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
     assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
     closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
   }
 
   export type UserUpsertWithoutClosedLeadsInput = {
@@ -55031,6 +62929,11 @@ export namespace Prisma {
     followUps?: FollowUpUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
+    createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutClosedLeadsInput = {
@@ -55075,6 +62978,11 @@ export namespace Prisma {
     followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
+    createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
   }
 
   export type WorkspaceUpsertWithoutLeadsInput = {
@@ -55106,6 +63014,10 @@ export namespace Prisma {
     leadDynamicFields?: LeadDynamicFieldUpdateManyWithoutWorkspaceNestedInput
     leadActivities?: LeadActivityUpdateManyWithoutWorkspaceNestedInput
     leadStageApprovals?: LeadStageApprovalUpdateManyWithoutWorkspaceNestedInput
+    holidays?: HolidayUpdateManyWithoutWorkspaceNestedInput
+    holidaySyncLogs?: HolidaySyncLogUpdateManyWithoutWorkspaceNestedInput
+    reportTypes?: ReportTypeUpdateManyWithoutWorkspaceNestedInput
+    reportLogs?: ReportLogUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateWithoutLeadsInput = {
@@ -55126,6 +63038,10 @@ export namespace Prisma {
     leadDynamicFields?: LeadDynamicFieldUncheckedUpdateManyWithoutWorkspaceNestedInput
     leadActivities?: LeadActivityUncheckedUpdateManyWithoutWorkspaceNestedInput
     leadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutWorkspaceNestedInput
+    holidays?: HolidayUncheckedUpdateManyWithoutWorkspaceNestedInput
+    holidaySyncLogs?: HolidaySyncLogUncheckedUpdateManyWithoutWorkspaceNestedInput
+    reportTypes?: ReportTypeUncheckedUpdateManyWithoutWorkspaceNestedInput
+    reportLogs?: ReportLogUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type FollowUpUpsertWithWhereUniqueWithoutLeadInput = {
@@ -55392,6 +63308,10 @@ export namespace Prisma {
     leadDynamicFields?: LeadDynamicFieldCreateNestedManyWithoutWorkspaceInput
     leads?: LeadCreateNestedManyWithoutWorkspaceInput
     leadActivities?: LeadActivityCreateNestedManyWithoutWorkspaceInput
+    holidays?: HolidayCreateNestedManyWithoutWorkspaceInput
+    holidaySyncLogs?: HolidaySyncLogCreateNestedManyWithoutWorkspaceInput
+    reportTypes?: ReportTypeCreateNestedManyWithoutWorkspaceInput
+    reportLogs?: ReportLogCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateWithoutLeadStageApprovalsInput = {
@@ -55412,6 +63332,10 @@ export namespace Prisma {
     leadDynamicFields?: LeadDynamicFieldUncheckedCreateNestedManyWithoutWorkspaceInput
     leads?: LeadUncheckedCreateNestedManyWithoutWorkspaceInput
     leadActivities?: LeadActivityUncheckedCreateNestedManyWithoutWorkspaceInput
+    holidays?: HolidayUncheckedCreateNestedManyWithoutWorkspaceInput
+    holidaySyncLogs?: HolidaySyncLogUncheckedCreateNestedManyWithoutWorkspaceInput
+    reportTypes?: ReportTypeUncheckedCreateNestedManyWithoutWorkspaceInput
+    reportLogs?: ReportLogUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceCreateOrConnectWithoutLeadStageApprovalsInput = {
@@ -55616,6 +63540,11 @@ export namespace Prisma {
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
     closedLeads?: LeadCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
   }
 
   export type UserUncheckedCreateWithoutRequestedLeadStageApprovalsInput = {
@@ -55660,6 +63589,11 @@ export namespace Prisma {
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
     closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
   }
 
   export type UserCreateOrConnectWithoutRequestedLeadStageApprovalsInput = {
@@ -55709,6 +63643,11 @@ export namespace Prisma {
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
     closedLeads?: LeadCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
   }
 
   export type UserUncheckedCreateWithoutAssignedLeadStageApprovalsInput = {
@@ -55753,6 +63692,11 @@ export namespace Prisma {
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
     closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
   }
 
   export type UserCreateOrConnectWithoutAssignedLeadStageApprovalsInput = {
@@ -55802,6 +63746,11 @@ export namespace Prisma {
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
     closedLeads?: LeadCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
   }
 
   export type UserUncheckedCreateWithoutApprovedLeadStageApprovalsInput = {
@@ -55846,6 +63795,11 @@ export namespace Prisma {
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
     closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
   }
 
   export type UserCreateOrConnectWithoutApprovedLeadStageApprovalsInput = {
@@ -55882,6 +63836,10 @@ export namespace Prisma {
     leadDynamicFields?: LeadDynamicFieldUpdateManyWithoutWorkspaceNestedInput
     leads?: LeadUpdateManyWithoutWorkspaceNestedInput
     leadActivities?: LeadActivityUpdateManyWithoutWorkspaceNestedInput
+    holidays?: HolidayUpdateManyWithoutWorkspaceNestedInput
+    holidaySyncLogs?: HolidaySyncLogUpdateManyWithoutWorkspaceNestedInput
+    reportTypes?: ReportTypeUpdateManyWithoutWorkspaceNestedInput
+    reportLogs?: ReportLogUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateWithoutLeadStageApprovalsInput = {
@@ -55902,6 +63860,10 @@ export namespace Prisma {
     leadDynamicFields?: LeadDynamicFieldUncheckedUpdateManyWithoutWorkspaceNestedInput
     leads?: LeadUncheckedUpdateManyWithoutWorkspaceNestedInput
     leadActivities?: LeadActivityUncheckedUpdateManyWithoutWorkspaceNestedInput
+    holidays?: HolidayUncheckedUpdateManyWithoutWorkspaceNestedInput
+    holidaySyncLogs?: HolidaySyncLogUncheckedUpdateManyWithoutWorkspaceNestedInput
+    reportTypes?: ReportTypeUncheckedUpdateManyWithoutWorkspaceNestedInput
+    reportLogs?: ReportLogUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type LeadUpsertWithoutStageApprovalsInput = {
@@ -56130,6 +64092,11 @@ export namespace Prisma {
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
     closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutRequestedLeadStageApprovalsInput = {
@@ -56174,6 +64141,11 @@ export namespace Prisma {
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
     closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
   }
 
   export type UserUpsertWithoutAssignedLeadStageApprovalsInput = {
@@ -56229,6 +64201,11 @@ export namespace Prisma {
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
     closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAssignedLeadStageApprovalsInput = {
@@ -56273,6 +64250,11 @@ export namespace Prisma {
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
     closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
   }
 
   export type UserUpsertWithoutApprovedLeadStageApprovalsInput = {
@@ -56328,6 +64310,11 @@ export namespace Prisma {
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
     closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutApprovedLeadStageApprovalsInput = {
@@ -56372,6 +64359,11 @@ export namespace Prisma {
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
     closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
   }
 
   export type LeadLifeCycleCreateWithoutTransitionsInput = {
@@ -56452,6 +64444,10 @@ export namespace Prisma {
     leads?: LeadCreateNestedManyWithoutWorkspaceInput
     leadActivities?: LeadActivityCreateNestedManyWithoutWorkspaceInput
     leadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutWorkspaceInput
+    holidays?: HolidayCreateNestedManyWithoutWorkspaceInput
+    holidaySyncLogs?: HolidaySyncLogCreateNestedManyWithoutWorkspaceInput
+    reportTypes?: ReportTypeCreateNestedManyWithoutWorkspaceInput
+    reportLogs?: ReportLogCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateWithoutLeadDynamicFieldsInput = {
@@ -56472,6 +64468,10 @@ export namespace Prisma {
     leads?: LeadUncheckedCreateNestedManyWithoutWorkspaceInput
     leadActivities?: LeadActivityUncheckedCreateNestedManyWithoutWorkspaceInput
     leadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutWorkspaceInput
+    holidays?: HolidayUncheckedCreateNestedManyWithoutWorkspaceInput
+    holidaySyncLogs?: HolidaySyncLogUncheckedCreateNestedManyWithoutWorkspaceInput
+    reportTypes?: ReportTypeUncheckedCreateNestedManyWithoutWorkspaceInput
+    reportLogs?: ReportLogUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceCreateOrConnectWithoutLeadDynamicFieldsInput = {
@@ -56554,6 +64554,10 @@ export namespace Prisma {
     leads?: LeadUpdateManyWithoutWorkspaceNestedInput
     leadActivities?: LeadActivityUpdateManyWithoutWorkspaceNestedInput
     leadStageApprovals?: LeadStageApprovalUpdateManyWithoutWorkspaceNestedInput
+    holidays?: HolidayUpdateManyWithoutWorkspaceNestedInput
+    holidaySyncLogs?: HolidaySyncLogUpdateManyWithoutWorkspaceNestedInput
+    reportTypes?: ReportTypeUpdateManyWithoutWorkspaceNestedInput
+    reportLogs?: ReportLogUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateWithoutLeadDynamicFieldsInput = {
@@ -56574,6 +64578,10 @@ export namespace Prisma {
     leads?: LeadUncheckedUpdateManyWithoutWorkspaceNestedInput
     leadActivities?: LeadActivityUncheckedUpdateManyWithoutWorkspaceNestedInput
     leadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutWorkspaceNestedInput
+    holidays?: HolidayUncheckedUpdateManyWithoutWorkspaceNestedInput
+    holidaySyncLogs?: HolidaySyncLogUncheckedUpdateManyWithoutWorkspaceNestedInput
+    reportTypes?: ReportTypeUncheckedUpdateManyWithoutWorkspaceNestedInput
+    reportLogs?: ReportLogUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type LeadDynamicOptionUpsertWithWhereUniqueWithoutFieldInput = {
@@ -56880,6 +64888,11 @@ export namespace Prisma {
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
     closedLeads?: LeadCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
   }
 
   export type UserUncheckedCreateWithoutPerformedLeadActivitiesInput = {
@@ -56924,6 +64937,11 @@ export namespace Prisma {
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
     closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
   }
 
   export type UserCreateOrConnectWithoutPerformedLeadActivitiesInput = {
@@ -56949,6 +64967,10 @@ export namespace Prisma {
     leadDynamicFields?: LeadDynamicFieldCreateNestedManyWithoutWorkspaceInput
     leads?: LeadCreateNestedManyWithoutWorkspaceInput
     leadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutWorkspaceInput
+    holidays?: HolidayCreateNestedManyWithoutWorkspaceInput
+    holidaySyncLogs?: HolidaySyncLogCreateNestedManyWithoutWorkspaceInput
+    reportTypes?: ReportTypeCreateNestedManyWithoutWorkspaceInput
+    reportLogs?: ReportLogCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateWithoutLeadActivitiesInput = {
@@ -56969,6 +64991,10 @@ export namespace Prisma {
     leadDynamicFields?: LeadDynamicFieldUncheckedCreateNestedManyWithoutWorkspaceInput
     leads?: LeadUncheckedCreateNestedManyWithoutWorkspaceInput
     leadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutWorkspaceInput
+    holidays?: HolidayUncheckedCreateNestedManyWithoutWorkspaceInput
+    holidaySyncLogs?: HolidaySyncLogUncheckedCreateNestedManyWithoutWorkspaceInput
+    reportTypes?: ReportTypeUncheckedCreateNestedManyWithoutWorkspaceInput
+    reportLogs?: ReportLogUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceCreateOrConnectWithoutLeadActivitiesInput = {
@@ -57108,6 +65134,11 @@ export namespace Prisma {
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
     closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutPerformedLeadActivitiesInput = {
@@ -57152,6 +65183,11 @@ export namespace Prisma {
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
     closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
   }
 
   export type WorkspaceUpsertWithoutLeadActivitiesInput = {
@@ -57183,6 +65219,10 @@ export namespace Prisma {
     leadDynamicFields?: LeadDynamicFieldUpdateManyWithoutWorkspaceNestedInput
     leads?: LeadUpdateManyWithoutWorkspaceNestedInput
     leadStageApprovals?: LeadStageApprovalUpdateManyWithoutWorkspaceNestedInput
+    holidays?: HolidayUpdateManyWithoutWorkspaceNestedInput
+    holidaySyncLogs?: HolidaySyncLogUpdateManyWithoutWorkspaceNestedInput
+    reportTypes?: ReportTypeUpdateManyWithoutWorkspaceNestedInput
+    reportLogs?: ReportLogUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateWithoutLeadActivitiesInput = {
@@ -57203,6 +65243,10 @@ export namespace Prisma {
     leadDynamicFields?: LeadDynamicFieldUncheckedUpdateManyWithoutWorkspaceNestedInput
     leads?: LeadUncheckedUpdateManyWithoutWorkspaceNestedInput
     leadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutWorkspaceNestedInput
+    holidays?: HolidayUncheckedUpdateManyWithoutWorkspaceNestedInput
+    holidaySyncLogs?: HolidaySyncLogUncheckedUpdateManyWithoutWorkspaceNestedInput
+    reportTypes?: ReportTypeUncheckedUpdateManyWithoutWorkspaceNestedInput
+    reportLogs?: ReportLogUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type UserCreateWithoutTargetSettingsInput = {
@@ -57247,6 +65291,11 @@ export namespace Prisma {
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
     closedLeads?: LeadCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
   }
 
   export type UserUncheckedCreateWithoutTargetSettingsInput = {
@@ -57291,6 +65340,11 @@ export namespace Prisma {
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
     closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
   }
 
   export type UserCreateOrConnectWithoutTargetSettingsInput = {
@@ -57405,6 +65459,11 @@ export namespace Prisma {
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
     closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutTargetSettingsInput = {
@@ -57449,6 +65508,11 @@ export namespace Prisma {
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
     closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
   }
 
   export type TargetTypeUpsertWithoutSettingsInput = {
@@ -57559,6 +65623,11 @@ export namespace Prisma {
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
     closedLeads?: LeadCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
   }
 
   export type UserUncheckedCreateWithoutViolationsInput = {
@@ -57603,6 +65672,11 @@ export namespace Prisma {
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
     closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
   }
 
   export type UserCreateOrConnectWithoutViolationsInput = {
@@ -57663,6 +65737,11 @@ export namespace Prisma {
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
     closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutViolationsInput = {
@@ -57707,6 +65786,11 @@ export namespace Prisma {
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
     closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
   }
 
   export type RoleCreateWithoutUsersInput = {
@@ -57754,6 +65838,10 @@ export namespace Prisma {
     leads?: LeadCreateNestedManyWithoutWorkspaceInput
     leadActivities?: LeadActivityCreateNestedManyWithoutWorkspaceInput
     leadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutWorkspaceInput
+    holidays?: HolidayCreateNestedManyWithoutWorkspaceInput
+    holidaySyncLogs?: HolidaySyncLogCreateNestedManyWithoutWorkspaceInput
+    reportTypes?: ReportTypeCreateNestedManyWithoutWorkspaceInput
+    reportLogs?: ReportLogCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateWithoutUsersInput = {
@@ -57774,6 +65862,10 @@ export namespace Prisma {
     leads?: LeadUncheckedCreateNestedManyWithoutWorkspaceInput
     leadActivities?: LeadActivityUncheckedCreateNestedManyWithoutWorkspaceInput
     leadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutWorkspaceInput
+    holidays?: HolidayUncheckedCreateNestedManyWithoutWorkspaceInput
+    holidaySyncLogs?: HolidaySyncLogUncheckedCreateNestedManyWithoutWorkspaceInput
+    reportTypes?: ReportTypeUncheckedCreateNestedManyWithoutWorkspaceInput
+    reportLogs?: ReportLogUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceCreateOrConnectWithoutUsersInput = {
@@ -57799,6 +65891,10 @@ export namespace Prisma {
     leads?: LeadCreateNestedManyWithoutWorkspaceInput
     leadActivities?: LeadActivityCreateNestedManyWithoutWorkspaceInput
     leadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutWorkspaceInput
+    holidays?: HolidayCreateNestedManyWithoutWorkspaceInput
+    holidaySyncLogs?: HolidaySyncLogCreateNestedManyWithoutWorkspaceInput
+    reportTypes?: ReportTypeCreateNestedManyWithoutWorkspaceInput
+    reportLogs?: ReportLogCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateWithoutOwnerInput = {
@@ -57819,6 +65915,10 @@ export namespace Prisma {
     leads?: LeadUncheckedCreateNestedManyWithoutWorkspaceInput
     leadActivities?: LeadActivityUncheckedCreateNestedManyWithoutWorkspaceInput
     leadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutWorkspaceInput
+    holidays?: HolidayUncheckedCreateNestedManyWithoutWorkspaceInput
+    holidaySyncLogs?: HolidaySyncLogUncheckedCreateNestedManyWithoutWorkspaceInput
+    reportTypes?: ReportTypeUncheckedCreateNestedManyWithoutWorkspaceInput
+    reportLogs?: ReportLogUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceCreateOrConnectWithoutOwnerInput = {
@@ -57898,6 +65998,9 @@ export namespace Prisma {
     assignedUsers?: UserLocationAssignmentCreateNestedManyWithoutLocationInput
     usersAtState?: UserCreateNestedManyWithoutStateInput
     usersAtDistrict?: UserCreateNestedManyWithoutDistrictInput
+    holidaysAtCountry?: HolidayCreateNestedManyWithoutCountryInput
+    holidaysAtState?: HolidayCreateNestedManyWithoutStateInput
+    holidaysAtDistrict?: HolidayCreateNestedManyWithoutDistrictInput
   }
 
   export type LocationUncheckedCreateWithoutUsersAtCountryInput = {
@@ -57912,6 +66015,9 @@ export namespace Prisma {
     assignedUsers?: UserLocationAssignmentUncheckedCreateNestedManyWithoutLocationInput
     usersAtState?: UserUncheckedCreateNestedManyWithoutStateInput
     usersAtDistrict?: UserUncheckedCreateNestedManyWithoutDistrictInput
+    holidaysAtCountry?: HolidayUncheckedCreateNestedManyWithoutCountryInput
+    holidaysAtState?: HolidayUncheckedCreateNestedManyWithoutStateInput
+    holidaysAtDistrict?: HolidayUncheckedCreateNestedManyWithoutDistrictInput
   }
 
   export type LocationCreateOrConnectWithoutUsersAtCountryInput = {
@@ -57931,6 +66037,9 @@ export namespace Prisma {
     assignedUsers?: UserLocationAssignmentCreateNestedManyWithoutLocationInput
     usersAtCountry?: UserCreateNestedManyWithoutCountryInput
     usersAtDistrict?: UserCreateNestedManyWithoutDistrictInput
+    holidaysAtCountry?: HolidayCreateNestedManyWithoutCountryInput
+    holidaysAtState?: HolidayCreateNestedManyWithoutStateInput
+    holidaysAtDistrict?: HolidayCreateNestedManyWithoutDistrictInput
   }
 
   export type LocationUncheckedCreateWithoutUsersAtStateInput = {
@@ -57945,6 +66054,9 @@ export namespace Prisma {
     assignedUsers?: UserLocationAssignmentUncheckedCreateNestedManyWithoutLocationInput
     usersAtCountry?: UserUncheckedCreateNestedManyWithoutCountryInput
     usersAtDistrict?: UserUncheckedCreateNestedManyWithoutDistrictInput
+    holidaysAtCountry?: HolidayUncheckedCreateNestedManyWithoutCountryInput
+    holidaysAtState?: HolidayUncheckedCreateNestedManyWithoutStateInput
+    holidaysAtDistrict?: HolidayUncheckedCreateNestedManyWithoutDistrictInput
   }
 
   export type LocationCreateOrConnectWithoutUsersAtStateInput = {
@@ -57964,6 +66076,9 @@ export namespace Prisma {
     assignedUsers?: UserLocationAssignmentCreateNestedManyWithoutLocationInput
     usersAtCountry?: UserCreateNestedManyWithoutCountryInput
     usersAtState?: UserCreateNestedManyWithoutStateInput
+    holidaysAtCountry?: HolidayCreateNestedManyWithoutCountryInput
+    holidaysAtState?: HolidayCreateNestedManyWithoutStateInput
+    holidaysAtDistrict?: HolidayCreateNestedManyWithoutDistrictInput
   }
 
   export type LocationUncheckedCreateWithoutUsersAtDistrictInput = {
@@ -57978,6 +66093,9 @@ export namespace Prisma {
     assignedUsers?: UserLocationAssignmentUncheckedCreateNestedManyWithoutLocationInput
     usersAtCountry?: UserUncheckedCreateNestedManyWithoutCountryInput
     usersAtState?: UserUncheckedCreateNestedManyWithoutStateInput
+    holidaysAtCountry?: HolidayUncheckedCreateNestedManyWithoutCountryInput
+    holidaysAtState?: HolidayUncheckedCreateNestedManyWithoutStateInput
+    holidaysAtDistrict?: HolidayUncheckedCreateNestedManyWithoutDistrictInput
   }
 
   export type LocationCreateOrConnectWithoutUsersAtDistrictInput = {
@@ -58053,6 +66171,11 @@ export namespace Prisma {
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
     closedLeads?: LeadCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
   }
 
   export type UserUncheckedCreateWithoutSubordinatesInput = {
@@ -58097,6 +66220,11 @@ export namespace Prisma {
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
     closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
   }
 
   export type UserCreateOrConnectWithoutSubordinatesInput = {
@@ -58146,6 +66274,11 @@ export namespace Prisma {
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
     closedLeads?: LeadCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
   }
 
   export type UserUncheckedCreateWithoutSupervisorInput = {
@@ -58190,6 +66323,11 @@ export namespace Prisma {
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
     closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
   }
 
   export type UserCreateOrConnectWithoutSupervisorInput = {
@@ -58812,6 +66950,206 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type HolidayCreateWithoutCreatedByInput = {
+    id?: string
+    name: string
+    holidayDate: Date | string
+    isRecurring?: boolean
+    recurrenceRule?: string | null
+    source?: $Enums.HolidaySource
+    status?: $Enums.HolidayStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    workspace: WorkspaceCreateNestedOneWithoutHolidaysInput
+    country?: LocationCreateNestedOneWithoutHolidaysAtCountryInput
+    state?: LocationCreateNestedOneWithoutHolidaysAtStateInput
+    district?: LocationCreateNestedOneWithoutHolidaysAtDistrictInput
+    updatedBy?: UserCreateNestedOneWithoutUpdatedHolidaysInput
+  }
+
+  export type HolidayUncheckedCreateWithoutCreatedByInput = {
+    id?: string
+    workspaceId: string
+    name: string
+    holidayDate: Date | string
+    countryId?: string | null
+    stateId?: string | null
+    districtId?: string | null
+    isRecurring?: boolean
+    recurrenceRule?: string | null
+    source?: $Enums.HolidaySource
+    status?: $Enums.HolidayStatus
+    updatedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type HolidayCreateOrConnectWithoutCreatedByInput = {
+    where: HolidayWhereUniqueInput
+    create: XOR<HolidayCreateWithoutCreatedByInput, HolidayUncheckedCreateWithoutCreatedByInput>
+  }
+
+  export type HolidayCreateManyCreatedByInputEnvelope = {
+    data: HolidayCreateManyCreatedByInput | HolidayCreateManyCreatedByInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type HolidayCreateWithoutUpdatedByInput = {
+    id?: string
+    name: string
+    holidayDate: Date | string
+    isRecurring?: boolean
+    recurrenceRule?: string | null
+    source?: $Enums.HolidaySource
+    status?: $Enums.HolidayStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    workspace: WorkspaceCreateNestedOneWithoutHolidaysInput
+    country?: LocationCreateNestedOneWithoutHolidaysAtCountryInput
+    state?: LocationCreateNestedOneWithoutHolidaysAtStateInput
+    district?: LocationCreateNestedOneWithoutHolidaysAtDistrictInput
+    createdBy?: UserCreateNestedOneWithoutCreatedHolidaysInput
+  }
+
+  export type HolidayUncheckedCreateWithoutUpdatedByInput = {
+    id?: string
+    workspaceId: string
+    name: string
+    holidayDate: Date | string
+    countryId?: string | null
+    stateId?: string | null
+    districtId?: string | null
+    isRecurring?: boolean
+    recurrenceRule?: string | null
+    source?: $Enums.HolidaySource
+    status?: $Enums.HolidayStatus
+    createdById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type HolidayCreateOrConnectWithoutUpdatedByInput = {
+    where: HolidayWhereUniqueInput
+    create: XOR<HolidayCreateWithoutUpdatedByInput, HolidayUncheckedCreateWithoutUpdatedByInput>
+  }
+
+  export type HolidayCreateManyUpdatedByInputEnvelope = {
+    data: HolidayCreateManyUpdatedByInput | HolidayCreateManyUpdatedByInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type ReportTypeCreateWithoutCreatedByInput = {
+    id?: string
+    name: string
+    module: $Enums.ReportModule
+    baseDataSource: $Enums.ReportBaseDataSource
+    description?: string | null
+    allowedFilters?: JsonNullValueInput | InputJsonValue
+    status?: $Enums.ReportTypeStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    workspace: WorkspaceCreateNestedOneWithoutReportTypesInput
+    updatedBy?: UserCreateNestedOneWithoutUpdatedReportTypesInput
+    logs?: ReportLogCreateNestedManyWithoutReportTypeInput
+  }
+
+  export type ReportTypeUncheckedCreateWithoutCreatedByInput = {
+    id?: string
+    workspaceId: string
+    name: string
+    module: $Enums.ReportModule
+    baseDataSource: $Enums.ReportBaseDataSource
+    description?: string | null
+    allowedFilters?: JsonNullValueInput | InputJsonValue
+    status?: $Enums.ReportTypeStatus
+    updatedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    logs?: ReportLogUncheckedCreateNestedManyWithoutReportTypeInput
+  }
+
+  export type ReportTypeCreateOrConnectWithoutCreatedByInput = {
+    where: ReportTypeWhereUniqueInput
+    create: XOR<ReportTypeCreateWithoutCreatedByInput, ReportTypeUncheckedCreateWithoutCreatedByInput>
+  }
+
+  export type ReportTypeCreateManyCreatedByInputEnvelope = {
+    data: ReportTypeCreateManyCreatedByInput | ReportTypeCreateManyCreatedByInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type ReportTypeCreateWithoutUpdatedByInput = {
+    id?: string
+    name: string
+    module: $Enums.ReportModule
+    baseDataSource: $Enums.ReportBaseDataSource
+    description?: string | null
+    allowedFilters?: JsonNullValueInput | InputJsonValue
+    status?: $Enums.ReportTypeStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    workspace: WorkspaceCreateNestedOneWithoutReportTypesInput
+    createdBy?: UserCreateNestedOneWithoutCreatedReportTypesInput
+    logs?: ReportLogCreateNestedManyWithoutReportTypeInput
+  }
+
+  export type ReportTypeUncheckedCreateWithoutUpdatedByInput = {
+    id?: string
+    workspaceId: string
+    name: string
+    module: $Enums.ReportModule
+    baseDataSource: $Enums.ReportBaseDataSource
+    description?: string | null
+    allowedFilters?: JsonNullValueInput | InputJsonValue
+    status?: $Enums.ReportTypeStatus
+    createdById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    logs?: ReportLogUncheckedCreateNestedManyWithoutReportTypeInput
+  }
+
+  export type ReportTypeCreateOrConnectWithoutUpdatedByInput = {
+    where: ReportTypeWhereUniqueInput
+    create: XOR<ReportTypeCreateWithoutUpdatedByInput, ReportTypeUncheckedCreateWithoutUpdatedByInput>
+  }
+
+  export type ReportTypeCreateManyUpdatedByInputEnvelope = {
+    data: ReportTypeCreateManyUpdatedByInput | ReportTypeCreateManyUpdatedByInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type ReportLogCreateWithoutGeneratedByInput = {
+    id?: string
+    filters?: JsonNullValueInput | InputJsonValue
+    resultCount?: number
+    createdAt?: Date | string
+    workspace: WorkspaceCreateNestedOneWithoutReportLogsInput
+    reportType: ReportTypeCreateNestedOneWithoutLogsInput
+  }
+
+  export type ReportLogUncheckedCreateWithoutGeneratedByInput = {
+    id?: string
+    workspaceId: string
+    reportTypeId: string
+    filters?: JsonNullValueInput | InputJsonValue
+    resultCount?: number
+    createdAt?: Date | string
+  }
+
+  export type ReportLogCreateOrConnectWithoutGeneratedByInput = {
+    where: ReportLogWhereUniqueInput
+    create: XOR<ReportLogCreateWithoutGeneratedByInput, ReportLogUncheckedCreateWithoutGeneratedByInput>
+  }
+
+  export type ReportLogCreateManyGeneratedByInputEnvelope = {
+    data: ReportLogCreateManyGeneratedByInput | ReportLogCreateManyGeneratedByInput[]
+    skipDuplicates?: boolean
+  }
+
   export type RoleUpsertWithoutUsersInput = {
     update: XOR<RoleUpdateWithoutUsersInput, RoleUncheckedUpdateWithoutUsersInput>
     create: XOR<RoleCreateWithoutUsersInput, RoleUncheckedCreateWithoutUsersInput>
@@ -58874,6 +67212,10 @@ export namespace Prisma {
     leads?: LeadUpdateManyWithoutWorkspaceNestedInput
     leadActivities?: LeadActivityUpdateManyWithoutWorkspaceNestedInput
     leadStageApprovals?: LeadStageApprovalUpdateManyWithoutWorkspaceNestedInput
+    holidays?: HolidayUpdateManyWithoutWorkspaceNestedInput
+    holidaySyncLogs?: HolidaySyncLogUpdateManyWithoutWorkspaceNestedInput
+    reportTypes?: ReportTypeUpdateManyWithoutWorkspaceNestedInput
+    reportLogs?: ReportLogUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateWithoutUsersInput = {
@@ -58894,6 +67236,10 @@ export namespace Prisma {
     leads?: LeadUncheckedUpdateManyWithoutWorkspaceNestedInput
     leadActivities?: LeadActivityUncheckedUpdateManyWithoutWorkspaceNestedInput
     leadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutWorkspaceNestedInput
+    holidays?: HolidayUncheckedUpdateManyWithoutWorkspaceNestedInput
+    holidaySyncLogs?: HolidaySyncLogUncheckedUpdateManyWithoutWorkspaceNestedInput
+    reportTypes?: ReportTypeUncheckedUpdateManyWithoutWorkspaceNestedInput
+    reportLogs?: ReportLogUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUpsertWithoutOwnerInput = {
@@ -58925,6 +67271,10 @@ export namespace Prisma {
     leads?: LeadUpdateManyWithoutWorkspaceNestedInput
     leadActivities?: LeadActivityUpdateManyWithoutWorkspaceNestedInput
     leadStageApprovals?: LeadStageApprovalUpdateManyWithoutWorkspaceNestedInput
+    holidays?: HolidayUpdateManyWithoutWorkspaceNestedInput
+    holidaySyncLogs?: HolidaySyncLogUpdateManyWithoutWorkspaceNestedInput
+    reportTypes?: ReportTypeUpdateManyWithoutWorkspaceNestedInput
+    reportLogs?: ReportLogUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateWithoutOwnerInput = {
@@ -58945,6 +67295,10 @@ export namespace Prisma {
     leads?: LeadUncheckedUpdateManyWithoutWorkspaceNestedInput
     leadActivities?: LeadActivityUncheckedUpdateManyWithoutWorkspaceNestedInput
     leadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutWorkspaceNestedInput
+    holidays?: HolidayUncheckedUpdateManyWithoutWorkspaceNestedInput
+    holidaySyncLogs?: HolidaySyncLogUncheckedUpdateManyWithoutWorkspaceNestedInput
+    reportTypes?: ReportTypeUncheckedUpdateManyWithoutWorkspaceNestedInput
+    reportLogs?: ReportLogUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type DepartmentUpsertWithoutUsersInput = {
@@ -59042,6 +67396,9 @@ export namespace Prisma {
     assignedUsers?: UserLocationAssignmentUpdateManyWithoutLocationNestedInput
     usersAtState?: UserUpdateManyWithoutStateNestedInput
     usersAtDistrict?: UserUpdateManyWithoutDistrictNestedInput
+    holidaysAtCountry?: HolidayUpdateManyWithoutCountryNestedInput
+    holidaysAtState?: HolidayUpdateManyWithoutStateNestedInput
+    holidaysAtDistrict?: HolidayUpdateManyWithoutDistrictNestedInput
   }
 
   export type LocationUncheckedUpdateWithoutUsersAtCountryInput = {
@@ -59056,6 +67413,9 @@ export namespace Prisma {
     assignedUsers?: UserLocationAssignmentUncheckedUpdateManyWithoutLocationNestedInput
     usersAtState?: UserUncheckedUpdateManyWithoutStateNestedInput
     usersAtDistrict?: UserUncheckedUpdateManyWithoutDistrictNestedInput
+    holidaysAtCountry?: HolidayUncheckedUpdateManyWithoutCountryNestedInput
+    holidaysAtState?: HolidayUncheckedUpdateManyWithoutStateNestedInput
+    holidaysAtDistrict?: HolidayUncheckedUpdateManyWithoutDistrictNestedInput
   }
 
   export type LocationUpsertWithoutUsersAtStateInput = {
@@ -59081,6 +67441,9 @@ export namespace Prisma {
     assignedUsers?: UserLocationAssignmentUpdateManyWithoutLocationNestedInput
     usersAtCountry?: UserUpdateManyWithoutCountryNestedInput
     usersAtDistrict?: UserUpdateManyWithoutDistrictNestedInput
+    holidaysAtCountry?: HolidayUpdateManyWithoutCountryNestedInput
+    holidaysAtState?: HolidayUpdateManyWithoutStateNestedInput
+    holidaysAtDistrict?: HolidayUpdateManyWithoutDistrictNestedInput
   }
 
   export type LocationUncheckedUpdateWithoutUsersAtStateInput = {
@@ -59095,6 +67458,9 @@ export namespace Prisma {
     assignedUsers?: UserLocationAssignmentUncheckedUpdateManyWithoutLocationNestedInput
     usersAtCountry?: UserUncheckedUpdateManyWithoutCountryNestedInput
     usersAtDistrict?: UserUncheckedUpdateManyWithoutDistrictNestedInput
+    holidaysAtCountry?: HolidayUncheckedUpdateManyWithoutCountryNestedInput
+    holidaysAtState?: HolidayUncheckedUpdateManyWithoutStateNestedInput
+    holidaysAtDistrict?: HolidayUncheckedUpdateManyWithoutDistrictNestedInput
   }
 
   export type LocationUpsertWithoutUsersAtDistrictInput = {
@@ -59120,6 +67486,9 @@ export namespace Prisma {
     assignedUsers?: UserLocationAssignmentUpdateManyWithoutLocationNestedInput
     usersAtCountry?: UserUpdateManyWithoutCountryNestedInput
     usersAtState?: UserUpdateManyWithoutStateNestedInput
+    holidaysAtCountry?: HolidayUpdateManyWithoutCountryNestedInput
+    holidaysAtState?: HolidayUpdateManyWithoutStateNestedInput
+    holidaysAtDistrict?: HolidayUpdateManyWithoutDistrictNestedInput
   }
 
   export type LocationUncheckedUpdateWithoutUsersAtDistrictInput = {
@@ -59134,6 +67503,9 @@ export namespace Prisma {
     assignedUsers?: UserLocationAssignmentUncheckedUpdateManyWithoutLocationNestedInput
     usersAtCountry?: UserUncheckedUpdateManyWithoutCountryNestedInput
     usersAtState?: UserUncheckedUpdateManyWithoutStateNestedInput
+    holidaysAtCountry?: HolidayUncheckedUpdateManyWithoutCountryNestedInput
+    holidaysAtState?: HolidayUncheckedUpdateManyWithoutStateNestedInput
+    holidaysAtDistrict?: HolidayUncheckedUpdateManyWithoutDistrictNestedInput
   }
 
   export type UserLocationAssignmentUpsertWithWhereUniqueWithoutUserInput = {
@@ -59205,6 +67577,11 @@ export namespace Prisma {
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
     closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSubordinatesInput = {
@@ -59249,6 +67626,11 @@ export namespace Prisma {
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
     closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
   }
 
   export type UserUpsertWithWhereUniqueWithoutSupervisorInput = {
@@ -59543,6 +67925,86 @@ export namespace Prisma {
     data: XOR<LeadUpdateManyMutationInput, LeadUncheckedUpdateManyWithoutClosedByInput>
   }
 
+  export type HolidayUpsertWithWhereUniqueWithoutCreatedByInput = {
+    where: HolidayWhereUniqueInput
+    update: XOR<HolidayUpdateWithoutCreatedByInput, HolidayUncheckedUpdateWithoutCreatedByInput>
+    create: XOR<HolidayCreateWithoutCreatedByInput, HolidayUncheckedCreateWithoutCreatedByInput>
+  }
+
+  export type HolidayUpdateWithWhereUniqueWithoutCreatedByInput = {
+    where: HolidayWhereUniqueInput
+    data: XOR<HolidayUpdateWithoutCreatedByInput, HolidayUncheckedUpdateWithoutCreatedByInput>
+  }
+
+  export type HolidayUpdateManyWithWhereWithoutCreatedByInput = {
+    where: HolidayScalarWhereInput
+    data: XOR<HolidayUpdateManyMutationInput, HolidayUncheckedUpdateManyWithoutCreatedByInput>
+  }
+
+  export type HolidayUpsertWithWhereUniqueWithoutUpdatedByInput = {
+    where: HolidayWhereUniqueInput
+    update: XOR<HolidayUpdateWithoutUpdatedByInput, HolidayUncheckedUpdateWithoutUpdatedByInput>
+    create: XOR<HolidayCreateWithoutUpdatedByInput, HolidayUncheckedCreateWithoutUpdatedByInput>
+  }
+
+  export type HolidayUpdateWithWhereUniqueWithoutUpdatedByInput = {
+    where: HolidayWhereUniqueInput
+    data: XOR<HolidayUpdateWithoutUpdatedByInput, HolidayUncheckedUpdateWithoutUpdatedByInput>
+  }
+
+  export type HolidayUpdateManyWithWhereWithoutUpdatedByInput = {
+    where: HolidayScalarWhereInput
+    data: XOR<HolidayUpdateManyMutationInput, HolidayUncheckedUpdateManyWithoutUpdatedByInput>
+  }
+
+  export type ReportTypeUpsertWithWhereUniqueWithoutCreatedByInput = {
+    where: ReportTypeWhereUniqueInput
+    update: XOR<ReportTypeUpdateWithoutCreatedByInput, ReportTypeUncheckedUpdateWithoutCreatedByInput>
+    create: XOR<ReportTypeCreateWithoutCreatedByInput, ReportTypeUncheckedCreateWithoutCreatedByInput>
+  }
+
+  export type ReportTypeUpdateWithWhereUniqueWithoutCreatedByInput = {
+    where: ReportTypeWhereUniqueInput
+    data: XOR<ReportTypeUpdateWithoutCreatedByInput, ReportTypeUncheckedUpdateWithoutCreatedByInput>
+  }
+
+  export type ReportTypeUpdateManyWithWhereWithoutCreatedByInput = {
+    where: ReportTypeScalarWhereInput
+    data: XOR<ReportTypeUpdateManyMutationInput, ReportTypeUncheckedUpdateManyWithoutCreatedByInput>
+  }
+
+  export type ReportTypeUpsertWithWhereUniqueWithoutUpdatedByInput = {
+    where: ReportTypeWhereUniqueInput
+    update: XOR<ReportTypeUpdateWithoutUpdatedByInput, ReportTypeUncheckedUpdateWithoutUpdatedByInput>
+    create: XOR<ReportTypeCreateWithoutUpdatedByInput, ReportTypeUncheckedCreateWithoutUpdatedByInput>
+  }
+
+  export type ReportTypeUpdateWithWhereUniqueWithoutUpdatedByInput = {
+    where: ReportTypeWhereUniqueInput
+    data: XOR<ReportTypeUpdateWithoutUpdatedByInput, ReportTypeUncheckedUpdateWithoutUpdatedByInput>
+  }
+
+  export type ReportTypeUpdateManyWithWhereWithoutUpdatedByInput = {
+    where: ReportTypeScalarWhereInput
+    data: XOR<ReportTypeUpdateManyMutationInput, ReportTypeUncheckedUpdateManyWithoutUpdatedByInput>
+  }
+
+  export type ReportLogUpsertWithWhereUniqueWithoutGeneratedByInput = {
+    where: ReportLogWhereUniqueInput
+    update: XOR<ReportLogUpdateWithoutGeneratedByInput, ReportLogUncheckedUpdateWithoutGeneratedByInput>
+    create: XOR<ReportLogCreateWithoutGeneratedByInput, ReportLogUncheckedCreateWithoutGeneratedByInput>
+  }
+
+  export type ReportLogUpdateWithWhereUniqueWithoutGeneratedByInput = {
+    where: ReportLogWhereUniqueInput
+    data: XOR<ReportLogUpdateWithoutGeneratedByInput, ReportLogUncheckedUpdateWithoutGeneratedByInput>
+  }
+
+  export type ReportLogUpdateManyWithWhereWithoutGeneratedByInput = {
+    where: ReportLogScalarWhereInput
+    data: XOR<ReportLogUpdateManyMutationInput, ReportLogUncheckedUpdateManyWithoutGeneratedByInput>
+  }
+
   export type UserCreateWithoutFollowUpsInput = {
     id?: string
     name?: string | null
@@ -59585,6 +68047,11 @@ export namespace Prisma {
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
     closedLeads?: LeadCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
   }
 
   export type UserUncheckedCreateWithoutFollowUpsInput = {
@@ -59629,6 +68096,11 @@ export namespace Prisma {
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
     closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
   }
 
   export type UserCreateOrConnectWithoutFollowUpsInput = {
@@ -59784,6 +68256,11 @@ export namespace Prisma {
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
     closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutFollowUpsInput = {
@@ -59828,6 +68305,11 @@ export namespace Prisma {
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
     closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
   }
 
   export type LeadUpsertWithoutFollowUpsInput = {
@@ -60049,6 +68531,11 @@ export namespace Prisma {
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
     closedLeads?: LeadCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
   }
 
   export type UserUncheckedCreateWithoutRosterEntriesInput = {
@@ -60093,6 +68580,11 @@ export namespace Prisma {
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
     closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
   }
 
   export type UserCreateOrConnectWithoutRosterEntriesInput = {
@@ -60153,6 +68645,11 @@ export namespace Prisma {
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
     closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutRosterEntriesInput = {
@@ -60197,6 +68694,11 @@ export namespace Prisma {
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
     closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
   }
 
   export type UserCreateWithoutAuditLogsInput = {
@@ -60241,6 +68743,11 @@ export namespace Prisma {
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
     closedLeads?: LeadCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
   }
 
   export type UserUncheckedCreateWithoutAuditLogsInput = {
@@ -60285,6 +68792,11 @@ export namespace Prisma {
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
     closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
   }
 
   export type UserCreateOrConnectWithoutAuditLogsInput = {
@@ -60345,6 +68857,11 @@ export namespace Prisma {
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
     closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAuditLogsInput = {
@@ -60389,6 +68906,11 @@ export namespace Prisma {
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
     closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
   }
 
   export type UserCreateWithoutDevicesInput = {
@@ -60433,6 +68955,11 @@ export namespace Prisma {
     createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
     closedLeads?: LeadCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
   }
 
   export type UserUncheckedCreateWithoutDevicesInput = {
@@ -60477,6 +69004,11 @@ export namespace Prisma {
     createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
     assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
     closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
   }
 
   export type UserCreateOrConnectWithoutDevicesInput = {
@@ -60537,6 +69069,11 @@ export namespace Prisma {
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
     closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutDevicesInput = {
@@ -60581,6 +69118,1895 @@ export namespace Prisma {
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
     closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
+  }
+
+  export type WorkspaceCreateWithoutHolidaysInput = {
+    id?: string
+    companyName: string
+    employeeCount: string
+    timeZone?: string
+    language?: string
+    currencyLocale?: string
+    loadSampleData?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    owner: UserCreateNestedOneWithoutOwnedWorkspaceInput
+    users?: UserCreateNestedManyWithoutWorkspaceInput
+    departments?: DepartmentCreateNestedManyWithoutWorkspaceInput
+    targetCycles?: TargetCycleCreateNestedManyWithoutWorkspaceInput
+    leadLifeCycles?: LeadLifeCycleCreateNestedManyWithoutWorkspaceInput
+    leadDynamicFields?: LeadDynamicFieldCreateNestedManyWithoutWorkspaceInput
+    leads?: LeadCreateNestedManyWithoutWorkspaceInput
+    leadActivities?: LeadActivityCreateNestedManyWithoutWorkspaceInput
+    leadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutWorkspaceInput
+    holidaySyncLogs?: HolidaySyncLogCreateNestedManyWithoutWorkspaceInput
+    reportTypes?: ReportTypeCreateNestedManyWithoutWorkspaceInput
+    reportLogs?: ReportLogCreateNestedManyWithoutWorkspaceInput
+  }
+
+  export type WorkspaceUncheckedCreateWithoutHolidaysInput = {
+    id?: string
+    companyName: string
+    employeeCount: string
+    timeZone?: string
+    language?: string
+    currencyLocale?: string
+    loadSampleData?: boolean
+    ownerId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    users?: UserUncheckedCreateNestedManyWithoutWorkspaceInput
+    departments?: DepartmentUncheckedCreateNestedManyWithoutWorkspaceInput
+    targetCycles?: TargetCycleUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadLifeCycles?: LeadLifeCycleUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadDynamicFields?: LeadDynamicFieldUncheckedCreateNestedManyWithoutWorkspaceInput
+    leads?: LeadUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadActivities?: LeadActivityUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutWorkspaceInput
+    holidaySyncLogs?: HolidaySyncLogUncheckedCreateNestedManyWithoutWorkspaceInput
+    reportTypes?: ReportTypeUncheckedCreateNestedManyWithoutWorkspaceInput
+    reportLogs?: ReportLogUncheckedCreateNestedManyWithoutWorkspaceInput
+  }
+
+  export type WorkspaceCreateOrConnectWithoutHolidaysInput = {
+    where: WorkspaceWhereUniqueInput
+    create: XOR<WorkspaceCreateWithoutHolidaysInput, WorkspaceUncheckedCreateWithoutHolidaysInput>
+  }
+
+  export type LocationCreateWithoutHolidaysAtCountryInput = {
+    id?: string
+    name: string
+    type: $Enums.LocationType
+    workspaceId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    parent?: LocationCreateNestedOneWithoutChildrenInput
+    children?: LocationCreateNestedManyWithoutParentInput
+    assignedUsers?: UserLocationAssignmentCreateNestedManyWithoutLocationInput
+    usersAtCountry?: UserCreateNestedManyWithoutCountryInput
+    usersAtState?: UserCreateNestedManyWithoutStateInput
+    usersAtDistrict?: UserCreateNestedManyWithoutDistrictInput
+    holidaysAtState?: HolidayCreateNestedManyWithoutStateInput
+    holidaysAtDistrict?: HolidayCreateNestedManyWithoutDistrictInput
+  }
+
+  export type LocationUncheckedCreateWithoutHolidaysAtCountryInput = {
+    id?: string
+    name: string
+    type: $Enums.LocationType
+    workspaceId: string
+    parentId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    children?: LocationUncheckedCreateNestedManyWithoutParentInput
+    assignedUsers?: UserLocationAssignmentUncheckedCreateNestedManyWithoutLocationInput
+    usersAtCountry?: UserUncheckedCreateNestedManyWithoutCountryInput
+    usersAtState?: UserUncheckedCreateNestedManyWithoutStateInput
+    usersAtDistrict?: UserUncheckedCreateNestedManyWithoutDistrictInput
+    holidaysAtState?: HolidayUncheckedCreateNestedManyWithoutStateInput
+    holidaysAtDistrict?: HolidayUncheckedCreateNestedManyWithoutDistrictInput
+  }
+
+  export type LocationCreateOrConnectWithoutHolidaysAtCountryInput = {
+    where: LocationWhereUniqueInput
+    create: XOR<LocationCreateWithoutHolidaysAtCountryInput, LocationUncheckedCreateWithoutHolidaysAtCountryInput>
+  }
+
+  export type LocationCreateWithoutHolidaysAtStateInput = {
+    id?: string
+    name: string
+    type: $Enums.LocationType
+    workspaceId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    parent?: LocationCreateNestedOneWithoutChildrenInput
+    children?: LocationCreateNestedManyWithoutParentInput
+    assignedUsers?: UserLocationAssignmentCreateNestedManyWithoutLocationInput
+    usersAtCountry?: UserCreateNestedManyWithoutCountryInput
+    usersAtState?: UserCreateNestedManyWithoutStateInput
+    usersAtDistrict?: UserCreateNestedManyWithoutDistrictInput
+    holidaysAtCountry?: HolidayCreateNestedManyWithoutCountryInput
+    holidaysAtDistrict?: HolidayCreateNestedManyWithoutDistrictInput
+  }
+
+  export type LocationUncheckedCreateWithoutHolidaysAtStateInput = {
+    id?: string
+    name: string
+    type: $Enums.LocationType
+    workspaceId: string
+    parentId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    children?: LocationUncheckedCreateNestedManyWithoutParentInput
+    assignedUsers?: UserLocationAssignmentUncheckedCreateNestedManyWithoutLocationInput
+    usersAtCountry?: UserUncheckedCreateNestedManyWithoutCountryInput
+    usersAtState?: UserUncheckedCreateNestedManyWithoutStateInput
+    usersAtDistrict?: UserUncheckedCreateNestedManyWithoutDistrictInput
+    holidaysAtCountry?: HolidayUncheckedCreateNestedManyWithoutCountryInput
+    holidaysAtDistrict?: HolidayUncheckedCreateNestedManyWithoutDistrictInput
+  }
+
+  export type LocationCreateOrConnectWithoutHolidaysAtStateInput = {
+    where: LocationWhereUniqueInput
+    create: XOR<LocationCreateWithoutHolidaysAtStateInput, LocationUncheckedCreateWithoutHolidaysAtStateInput>
+  }
+
+  export type LocationCreateWithoutHolidaysAtDistrictInput = {
+    id?: string
+    name: string
+    type: $Enums.LocationType
+    workspaceId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    parent?: LocationCreateNestedOneWithoutChildrenInput
+    children?: LocationCreateNestedManyWithoutParentInput
+    assignedUsers?: UserLocationAssignmentCreateNestedManyWithoutLocationInput
+    usersAtCountry?: UserCreateNestedManyWithoutCountryInput
+    usersAtState?: UserCreateNestedManyWithoutStateInput
+    usersAtDistrict?: UserCreateNestedManyWithoutDistrictInput
+    holidaysAtCountry?: HolidayCreateNestedManyWithoutCountryInput
+    holidaysAtState?: HolidayCreateNestedManyWithoutStateInput
+  }
+
+  export type LocationUncheckedCreateWithoutHolidaysAtDistrictInput = {
+    id?: string
+    name: string
+    type: $Enums.LocationType
+    workspaceId: string
+    parentId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    children?: LocationUncheckedCreateNestedManyWithoutParentInput
+    assignedUsers?: UserLocationAssignmentUncheckedCreateNestedManyWithoutLocationInput
+    usersAtCountry?: UserUncheckedCreateNestedManyWithoutCountryInput
+    usersAtState?: UserUncheckedCreateNestedManyWithoutStateInput
+    usersAtDistrict?: UserUncheckedCreateNestedManyWithoutDistrictInput
+    holidaysAtCountry?: HolidayUncheckedCreateNestedManyWithoutCountryInput
+    holidaysAtState?: HolidayUncheckedCreateNestedManyWithoutStateInput
+  }
+
+  export type LocationCreateOrConnectWithoutHolidaysAtDistrictInput = {
+    where: LocationWhereUniqueInput
+    create: XOR<LocationCreateWithoutHolidaysAtDistrictInput, LocationUncheckedCreateWithoutHolidaysAtDistrictInput>
+  }
+
+  export type UserCreateWithoutCreatedHolidaysInput = {
+    id?: string
+    name?: string | null
+    username?: string | null
+    email: string
+    password?: string | null
+    phone?: string | null
+    googleId?: string | null
+    isOnboarded?: boolean
+    isActive?: boolean
+    isEmailVerified?: boolean
+    isLocked?: boolean
+    verificationToken?: string | null
+    verificationTokenExpires?: Date | string | null
+    invitationToken?: string | null
+    invitationExpires?: Date | string | null
+    deletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    role?: RoleCreateNestedOneWithoutUsersInput
+    workspace?: WorkspaceCreateNestedOneWithoutUsersInput
+    ownedWorkspace?: WorkspaceCreateNestedOneWithoutOwnerInput
+    department?: DepartmentCreateNestedOneWithoutUsersInput
+    office?: OfficeCreateNestedOneWithoutUsersInput
+    country?: LocationCreateNestedOneWithoutUsersAtCountryInput
+    state?: LocationCreateNestedOneWithoutUsersAtStateInput
+    district?: LocationCreateNestedOneWithoutUsersAtDistrictInput
+    assignedLocations?: UserLocationAssignmentCreateNestedManyWithoutUserInput
+    supervisor?: UserCreateNestedOneWithoutSubordinatesInput
+    subordinates?: UserCreateNestedManyWithoutSupervisorInput
+    targetSettings?: TargetSettingCreateNestedManyWithoutUserInput
+    violations?: TargetViolationCreateNestedManyWithoutUserInput
+    devices?: DeviceCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogCreateNestedManyWithoutUserInput
+    performedLeadActivities?: LeadActivityCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutApprovedByInput
+    rosterEntries?: RosterEntryCreateNestedManyWithoutUserInput
+    followUps?: FollowUpCreateNestedManyWithoutUserInput
+    createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
+    assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadCreateNestedManyWithoutClosedByInput
+    updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
+  }
+
+  export type UserUncheckedCreateWithoutCreatedHolidaysInput = {
+    id?: string
+    name?: string | null
+    username?: string | null
+    email: string
+    password?: string | null
+    phone?: string | null
+    googleId?: string | null
+    isOnboarded?: boolean
+    isActive?: boolean
+    isEmailVerified?: boolean
+    isLocked?: boolean
+    verificationToken?: string | null
+    verificationTokenExpires?: Date | string | null
+    invitationToken?: string | null
+    invitationExpires?: Date | string | null
+    deletedAt?: Date | string | null
+    roleId?: string | null
+    workspaceId?: string | null
+    departmentId?: string | null
+    officeId?: string | null
+    countryId?: string | null
+    stateId?: string | null
+    districtId?: string | null
+    supervisorId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    ownedWorkspace?: WorkspaceUncheckedCreateNestedOneWithoutOwnerInput
+    assignedLocations?: UserLocationAssignmentUncheckedCreateNestedManyWithoutUserInput
+    subordinates?: UserUncheckedCreateNestedManyWithoutSupervisorInput
+    targetSettings?: TargetSettingUncheckedCreateNestedManyWithoutUserInput
+    violations?: TargetViolationUncheckedCreateNestedManyWithoutUserInput
+    devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
+    performedLeadActivities?: LeadActivityUncheckedCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutApprovedByInput
+    rosterEntries?: RosterEntryUncheckedCreateNestedManyWithoutUserInput
+    followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
+    createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
+    assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
+    updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
+  }
+
+  export type UserCreateOrConnectWithoutCreatedHolidaysInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutCreatedHolidaysInput, UserUncheckedCreateWithoutCreatedHolidaysInput>
+  }
+
+  export type UserCreateWithoutUpdatedHolidaysInput = {
+    id?: string
+    name?: string | null
+    username?: string | null
+    email: string
+    password?: string | null
+    phone?: string | null
+    googleId?: string | null
+    isOnboarded?: boolean
+    isActive?: boolean
+    isEmailVerified?: boolean
+    isLocked?: boolean
+    verificationToken?: string | null
+    verificationTokenExpires?: Date | string | null
+    invitationToken?: string | null
+    invitationExpires?: Date | string | null
+    deletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    role?: RoleCreateNestedOneWithoutUsersInput
+    workspace?: WorkspaceCreateNestedOneWithoutUsersInput
+    ownedWorkspace?: WorkspaceCreateNestedOneWithoutOwnerInput
+    department?: DepartmentCreateNestedOneWithoutUsersInput
+    office?: OfficeCreateNestedOneWithoutUsersInput
+    country?: LocationCreateNestedOneWithoutUsersAtCountryInput
+    state?: LocationCreateNestedOneWithoutUsersAtStateInput
+    district?: LocationCreateNestedOneWithoutUsersAtDistrictInput
+    assignedLocations?: UserLocationAssignmentCreateNestedManyWithoutUserInput
+    supervisor?: UserCreateNestedOneWithoutSubordinatesInput
+    subordinates?: UserCreateNestedManyWithoutSupervisorInput
+    targetSettings?: TargetSettingCreateNestedManyWithoutUserInput
+    violations?: TargetViolationCreateNestedManyWithoutUserInput
+    devices?: DeviceCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogCreateNestedManyWithoutUserInput
+    performedLeadActivities?: LeadActivityCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutApprovedByInput
+    rosterEntries?: RosterEntryCreateNestedManyWithoutUserInput
+    followUps?: FollowUpCreateNestedManyWithoutUserInput
+    createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
+    assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
+    createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
+  }
+
+  export type UserUncheckedCreateWithoutUpdatedHolidaysInput = {
+    id?: string
+    name?: string | null
+    username?: string | null
+    email: string
+    password?: string | null
+    phone?: string | null
+    googleId?: string | null
+    isOnboarded?: boolean
+    isActive?: boolean
+    isEmailVerified?: boolean
+    isLocked?: boolean
+    verificationToken?: string | null
+    verificationTokenExpires?: Date | string | null
+    invitationToken?: string | null
+    invitationExpires?: Date | string | null
+    deletedAt?: Date | string | null
+    roleId?: string | null
+    workspaceId?: string | null
+    departmentId?: string | null
+    officeId?: string | null
+    countryId?: string | null
+    stateId?: string | null
+    districtId?: string | null
+    supervisorId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    ownedWorkspace?: WorkspaceUncheckedCreateNestedOneWithoutOwnerInput
+    assignedLocations?: UserLocationAssignmentUncheckedCreateNestedManyWithoutUserInput
+    subordinates?: UserUncheckedCreateNestedManyWithoutSupervisorInput
+    targetSettings?: TargetSettingUncheckedCreateNestedManyWithoutUserInput
+    violations?: TargetViolationUncheckedCreateNestedManyWithoutUserInput
+    devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
+    performedLeadActivities?: LeadActivityUncheckedCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutApprovedByInput
+    rosterEntries?: RosterEntryUncheckedCreateNestedManyWithoutUserInput
+    followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
+    createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
+    assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
+    createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
+  }
+
+  export type UserCreateOrConnectWithoutUpdatedHolidaysInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutUpdatedHolidaysInput, UserUncheckedCreateWithoutUpdatedHolidaysInput>
+  }
+
+  export type WorkspaceUpsertWithoutHolidaysInput = {
+    update: XOR<WorkspaceUpdateWithoutHolidaysInput, WorkspaceUncheckedUpdateWithoutHolidaysInput>
+    create: XOR<WorkspaceCreateWithoutHolidaysInput, WorkspaceUncheckedCreateWithoutHolidaysInput>
+    where?: WorkspaceWhereInput
+  }
+
+  export type WorkspaceUpdateToOneWithWhereWithoutHolidaysInput = {
+    where?: WorkspaceWhereInput
+    data: XOR<WorkspaceUpdateWithoutHolidaysInput, WorkspaceUncheckedUpdateWithoutHolidaysInput>
+  }
+
+  export type WorkspaceUpdateWithoutHolidaysInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    companyName?: StringFieldUpdateOperationsInput | string
+    employeeCount?: StringFieldUpdateOperationsInput | string
+    timeZone?: StringFieldUpdateOperationsInput | string
+    language?: StringFieldUpdateOperationsInput | string
+    currencyLocale?: StringFieldUpdateOperationsInput | string
+    loadSampleData?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    owner?: UserUpdateOneRequiredWithoutOwnedWorkspaceNestedInput
+    users?: UserUpdateManyWithoutWorkspaceNestedInput
+    departments?: DepartmentUpdateManyWithoutWorkspaceNestedInput
+    targetCycles?: TargetCycleUpdateManyWithoutWorkspaceNestedInput
+    leadLifeCycles?: LeadLifeCycleUpdateManyWithoutWorkspaceNestedInput
+    leadDynamicFields?: LeadDynamicFieldUpdateManyWithoutWorkspaceNestedInput
+    leads?: LeadUpdateManyWithoutWorkspaceNestedInput
+    leadActivities?: LeadActivityUpdateManyWithoutWorkspaceNestedInput
+    leadStageApprovals?: LeadStageApprovalUpdateManyWithoutWorkspaceNestedInput
+    holidaySyncLogs?: HolidaySyncLogUpdateManyWithoutWorkspaceNestedInput
+    reportTypes?: ReportTypeUpdateManyWithoutWorkspaceNestedInput
+    reportLogs?: ReportLogUpdateManyWithoutWorkspaceNestedInput
+  }
+
+  export type WorkspaceUncheckedUpdateWithoutHolidaysInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    companyName?: StringFieldUpdateOperationsInput | string
+    employeeCount?: StringFieldUpdateOperationsInput | string
+    timeZone?: StringFieldUpdateOperationsInput | string
+    language?: StringFieldUpdateOperationsInput | string
+    currencyLocale?: StringFieldUpdateOperationsInput | string
+    loadSampleData?: BoolFieldUpdateOperationsInput | boolean
+    ownerId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    users?: UserUncheckedUpdateManyWithoutWorkspaceNestedInput
+    departments?: DepartmentUncheckedUpdateManyWithoutWorkspaceNestedInput
+    targetCycles?: TargetCycleUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadLifeCycles?: LeadLifeCycleUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadDynamicFields?: LeadDynamicFieldUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leads?: LeadUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadActivities?: LeadActivityUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutWorkspaceNestedInput
+    holidaySyncLogs?: HolidaySyncLogUncheckedUpdateManyWithoutWorkspaceNestedInput
+    reportTypes?: ReportTypeUncheckedUpdateManyWithoutWorkspaceNestedInput
+    reportLogs?: ReportLogUncheckedUpdateManyWithoutWorkspaceNestedInput
+  }
+
+  export type LocationUpsertWithoutHolidaysAtCountryInput = {
+    update: XOR<LocationUpdateWithoutHolidaysAtCountryInput, LocationUncheckedUpdateWithoutHolidaysAtCountryInput>
+    create: XOR<LocationCreateWithoutHolidaysAtCountryInput, LocationUncheckedCreateWithoutHolidaysAtCountryInput>
+    where?: LocationWhereInput
+  }
+
+  export type LocationUpdateToOneWithWhereWithoutHolidaysAtCountryInput = {
+    where?: LocationWhereInput
+    data: XOR<LocationUpdateWithoutHolidaysAtCountryInput, LocationUncheckedUpdateWithoutHolidaysAtCountryInput>
+  }
+
+  export type LocationUpdateWithoutHolidaysAtCountryInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    type?: EnumLocationTypeFieldUpdateOperationsInput | $Enums.LocationType
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    parent?: LocationUpdateOneWithoutChildrenNestedInput
+    children?: LocationUpdateManyWithoutParentNestedInput
+    assignedUsers?: UserLocationAssignmentUpdateManyWithoutLocationNestedInput
+    usersAtCountry?: UserUpdateManyWithoutCountryNestedInput
+    usersAtState?: UserUpdateManyWithoutStateNestedInput
+    usersAtDistrict?: UserUpdateManyWithoutDistrictNestedInput
+    holidaysAtState?: HolidayUpdateManyWithoutStateNestedInput
+    holidaysAtDistrict?: HolidayUpdateManyWithoutDistrictNestedInput
+  }
+
+  export type LocationUncheckedUpdateWithoutHolidaysAtCountryInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    type?: EnumLocationTypeFieldUpdateOperationsInput | $Enums.LocationType
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    children?: LocationUncheckedUpdateManyWithoutParentNestedInput
+    assignedUsers?: UserLocationAssignmentUncheckedUpdateManyWithoutLocationNestedInput
+    usersAtCountry?: UserUncheckedUpdateManyWithoutCountryNestedInput
+    usersAtState?: UserUncheckedUpdateManyWithoutStateNestedInput
+    usersAtDistrict?: UserUncheckedUpdateManyWithoutDistrictNestedInput
+    holidaysAtState?: HolidayUncheckedUpdateManyWithoutStateNestedInput
+    holidaysAtDistrict?: HolidayUncheckedUpdateManyWithoutDistrictNestedInput
+  }
+
+  export type LocationUpsertWithoutHolidaysAtStateInput = {
+    update: XOR<LocationUpdateWithoutHolidaysAtStateInput, LocationUncheckedUpdateWithoutHolidaysAtStateInput>
+    create: XOR<LocationCreateWithoutHolidaysAtStateInput, LocationUncheckedCreateWithoutHolidaysAtStateInput>
+    where?: LocationWhereInput
+  }
+
+  export type LocationUpdateToOneWithWhereWithoutHolidaysAtStateInput = {
+    where?: LocationWhereInput
+    data: XOR<LocationUpdateWithoutHolidaysAtStateInput, LocationUncheckedUpdateWithoutHolidaysAtStateInput>
+  }
+
+  export type LocationUpdateWithoutHolidaysAtStateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    type?: EnumLocationTypeFieldUpdateOperationsInput | $Enums.LocationType
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    parent?: LocationUpdateOneWithoutChildrenNestedInput
+    children?: LocationUpdateManyWithoutParentNestedInput
+    assignedUsers?: UserLocationAssignmentUpdateManyWithoutLocationNestedInput
+    usersAtCountry?: UserUpdateManyWithoutCountryNestedInput
+    usersAtState?: UserUpdateManyWithoutStateNestedInput
+    usersAtDistrict?: UserUpdateManyWithoutDistrictNestedInput
+    holidaysAtCountry?: HolidayUpdateManyWithoutCountryNestedInput
+    holidaysAtDistrict?: HolidayUpdateManyWithoutDistrictNestedInput
+  }
+
+  export type LocationUncheckedUpdateWithoutHolidaysAtStateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    type?: EnumLocationTypeFieldUpdateOperationsInput | $Enums.LocationType
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    children?: LocationUncheckedUpdateManyWithoutParentNestedInput
+    assignedUsers?: UserLocationAssignmentUncheckedUpdateManyWithoutLocationNestedInput
+    usersAtCountry?: UserUncheckedUpdateManyWithoutCountryNestedInput
+    usersAtState?: UserUncheckedUpdateManyWithoutStateNestedInput
+    usersAtDistrict?: UserUncheckedUpdateManyWithoutDistrictNestedInput
+    holidaysAtCountry?: HolidayUncheckedUpdateManyWithoutCountryNestedInput
+    holidaysAtDistrict?: HolidayUncheckedUpdateManyWithoutDistrictNestedInput
+  }
+
+  export type LocationUpsertWithoutHolidaysAtDistrictInput = {
+    update: XOR<LocationUpdateWithoutHolidaysAtDistrictInput, LocationUncheckedUpdateWithoutHolidaysAtDistrictInput>
+    create: XOR<LocationCreateWithoutHolidaysAtDistrictInput, LocationUncheckedCreateWithoutHolidaysAtDistrictInput>
+    where?: LocationWhereInput
+  }
+
+  export type LocationUpdateToOneWithWhereWithoutHolidaysAtDistrictInput = {
+    where?: LocationWhereInput
+    data: XOR<LocationUpdateWithoutHolidaysAtDistrictInput, LocationUncheckedUpdateWithoutHolidaysAtDistrictInput>
+  }
+
+  export type LocationUpdateWithoutHolidaysAtDistrictInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    type?: EnumLocationTypeFieldUpdateOperationsInput | $Enums.LocationType
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    parent?: LocationUpdateOneWithoutChildrenNestedInput
+    children?: LocationUpdateManyWithoutParentNestedInput
+    assignedUsers?: UserLocationAssignmentUpdateManyWithoutLocationNestedInput
+    usersAtCountry?: UserUpdateManyWithoutCountryNestedInput
+    usersAtState?: UserUpdateManyWithoutStateNestedInput
+    usersAtDistrict?: UserUpdateManyWithoutDistrictNestedInput
+    holidaysAtCountry?: HolidayUpdateManyWithoutCountryNestedInput
+    holidaysAtState?: HolidayUpdateManyWithoutStateNestedInput
+  }
+
+  export type LocationUncheckedUpdateWithoutHolidaysAtDistrictInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    type?: EnumLocationTypeFieldUpdateOperationsInput | $Enums.LocationType
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    children?: LocationUncheckedUpdateManyWithoutParentNestedInput
+    assignedUsers?: UserLocationAssignmentUncheckedUpdateManyWithoutLocationNestedInput
+    usersAtCountry?: UserUncheckedUpdateManyWithoutCountryNestedInput
+    usersAtState?: UserUncheckedUpdateManyWithoutStateNestedInput
+    usersAtDistrict?: UserUncheckedUpdateManyWithoutDistrictNestedInput
+    holidaysAtCountry?: HolidayUncheckedUpdateManyWithoutCountryNestedInput
+    holidaysAtState?: HolidayUncheckedUpdateManyWithoutStateNestedInput
+  }
+
+  export type UserUpsertWithoutCreatedHolidaysInput = {
+    update: XOR<UserUpdateWithoutCreatedHolidaysInput, UserUncheckedUpdateWithoutCreatedHolidaysInput>
+    create: XOR<UserCreateWithoutCreatedHolidaysInput, UserUncheckedCreateWithoutCreatedHolidaysInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutCreatedHolidaysInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutCreatedHolidaysInput, UserUncheckedUpdateWithoutCreatedHolidaysInput>
+  }
+
+  export type UserUpdateWithoutCreatedHolidaysInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    username?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    googleId?: NullableStringFieldUpdateOperationsInput | string | null
+    isOnboarded?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isEmailVerified?: BoolFieldUpdateOperationsInput | boolean
+    isLocked?: BoolFieldUpdateOperationsInput | boolean
+    verificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    verificationTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    invitationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    invitationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    role?: RoleUpdateOneWithoutUsersNestedInput
+    workspace?: WorkspaceUpdateOneWithoutUsersNestedInput
+    ownedWorkspace?: WorkspaceUpdateOneWithoutOwnerNestedInput
+    department?: DepartmentUpdateOneWithoutUsersNestedInput
+    office?: OfficeUpdateOneWithoutUsersNestedInput
+    country?: LocationUpdateOneWithoutUsersAtCountryNestedInput
+    state?: LocationUpdateOneWithoutUsersAtStateNestedInput
+    district?: LocationUpdateOneWithoutUsersAtDistrictNestedInput
+    assignedLocations?: UserLocationAssignmentUpdateManyWithoutUserNestedInput
+    supervisor?: UserUpdateOneWithoutSubordinatesNestedInput
+    subordinates?: UserUpdateManyWithoutSupervisorNestedInput
+    targetSettings?: TargetSettingUpdateManyWithoutUserNestedInput
+    violations?: TargetViolationUpdateManyWithoutUserNestedInput
+    devices?: DeviceUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
+    performedLeadActivities?: LeadActivityUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutApprovedByNestedInput
+    rosterEntries?: RosterEntryUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUpdateManyWithoutUserNestedInput
+    createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
+    assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
+    updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutCreatedHolidaysInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    username?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    googleId?: NullableStringFieldUpdateOperationsInput | string | null
+    isOnboarded?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isEmailVerified?: BoolFieldUpdateOperationsInput | boolean
+    isLocked?: BoolFieldUpdateOperationsInput | boolean
+    verificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    verificationTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    invitationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    invitationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    roleId?: NullableStringFieldUpdateOperationsInput | string | null
+    workspaceId?: NullableStringFieldUpdateOperationsInput | string | null
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    officeId?: NullableStringFieldUpdateOperationsInput | string | null
+    countryId?: NullableStringFieldUpdateOperationsInput | string | null
+    stateId?: NullableStringFieldUpdateOperationsInput | string | null
+    districtId?: NullableStringFieldUpdateOperationsInput | string | null
+    supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ownedWorkspace?: WorkspaceUncheckedUpdateOneWithoutOwnerNestedInput
+    assignedLocations?: UserLocationAssignmentUncheckedUpdateManyWithoutUserNestedInput
+    subordinates?: UserUncheckedUpdateManyWithoutSupervisorNestedInput
+    targetSettings?: TargetSettingUncheckedUpdateManyWithoutUserNestedInput
+    violations?: TargetViolationUncheckedUpdateManyWithoutUserNestedInput
+    devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
+    performedLeadActivities?: LeadActivityUncheckedUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
+    rosterEntries?: RosterEntryUncheckedUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
+    createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
+    assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
+    updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
+  }
+
+  export type UserUpsertWithoutUpdatedHolidaysInput = {
+    update: XOR<UserUpdateWithoutUpdatedHolidaysInput, UserUncheckedUpdateWithoutUpdatedHolidaysInput>
+    create: XOR<UserCreateWithoutUpdatedHolidaysInput, UserUncheckedCreateWithoutUpdatedHolidaysInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutUpdatedHolidaysInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutUpdatedHolidaysInput, UserUncheckedUpdateWithoutUpdatedHolidaysInput>
+  }
+
+  export type UserUpdateWithoutUpdatedHolidaysInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    username?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    googleId?: NullableStringFieldUpdateOperationsInput | string | null
+    isOnboarded?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isEmailVerified?: BoolFieldUpdateOperationsInput | boolean
+    isLocked?: BoolFieldUpdateOperationsInput | boolean
+    verificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    verificationTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    invitationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    invitationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    role?: RoleUpdateOneWithoutUsersNestedInput
+    workspace?: WorkspaceUpdateOneWithoutUsersNestedInput
+    ownedWorkspace?: WorkspaceUpdateOneWithoutOwnerNestedInput
+    department?: DepartmentUpdateOneWithoutUsersNestedInput
+    office?: OfficeUpdateOneWithoutUsersNestedInput
+    country?: LocationUpdateOneWithoutUsersAtCountryNestedInput
+    state?: LocationUpdateOneWithoutUsersAtStateNestedInput
+    district?: LocationUpdateOneWithoutUsersAtDistrictNestedInput
+    assignedLocations?: UserLocationAssignmentUpdateManyWithoutUserNestedInput
+    supervisor?: UserUpdateOneWithoutSubordinatesNestedInput
+    subordinates?: UserUpdateManyWithoutSupervisorNestedInput
+    targetSettings?: TargetSettingUpdateManyWithoutUserNestedInput
+    violations?: TargetViolationUpdateManyWithoutUserNestedInput
+    devices?: DeviceUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
+    performedLeadActivities?: LeadActivityUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutApprovedByNestedInput
+    rosterEntries?: RosterEntryUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUpdateManyWithoutUserNestedInput
+    createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
+    assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
+    createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutUpdatedHolidaysInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    username?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    googleId?: NullableStringFieldUpdateOperationsInput | string | null
+    isOnboarded?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isEmailVerified?: BoolFieldUpdateOperationsInput | boolean
+    isLocked?: BoolFieldUpdateOperationsInput | boolean
+    verificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    verificationTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    invitationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    invitationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    roleId?: NullableStringFieldUpdateOperationsInput | string | null
+    workspaceId?: NullableStringFieldUpdateOperationsInput | string | null
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    officeId?: NullableStringFieldUpdateOperationsInput | string | null
+    countryId?: NullableStringFieldUpdateOperationsInput | string | null
+    stateId?: NullableStringFieldUpdateOperationsInput | string | null
+    districtId?: NullableStringFieldUpdateOperationsInput | string | null
+    supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ownedWorkspace?: WorkspaceUncheckedUpdateOneWithoutOwnerNestedInput
+    assignedLocations?: UserLocationAssignmentUncheckedUpdateManyWithoutUserNestedInput
+    subordinates?: UserUncheckedUpdateManyWithoutSupervisorNestedInput
+    targetSettings?: TargetSettingUncheckedUpdateManyWithoutUserNestedInput
+    violations?: TargetViolationUncheckedUpdateManyWithoutUserNestedInput
+    devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
+    performedLeadActivities?: LeadActivityUncheckedUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
+    rosterEntries?: RosterEntryUncheckedUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
+    createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
+    assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
+    createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
+  }
+
+  export type WorkspaceCreateWithoutHolidaySyncLogsInput = {
+    id?: string
+    companyName: string
+    employeeCount: string
+    timeZone?: string
+    language?: string
+    currencyLocale?: string
+    loadSampleData?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    owner: UserCreateNestedOneWithoutOwnedWorkspaceInput
+    users?: UserCreateNestedManyWithoutWorkspaceInput
+    departments?: DepartmentCreateNestedManyWithoutWorkspaceInput
+    targetCycles?: TargetCycleCreateNestedManyWithoutWorkspaceInput
+    leadLifeCycles?: LeadLifeCycleCreateNestedManyWithoutWorkspaceInput
+    leadDynamicFields?: LeadDynamicFieldCreateNestedManyWithoutWorkspaceInput
+    leads?: LeadCreateNestedManyWithoutWorkspaceInput
+    leadActivities?: LeadActivityCreateNestedManyWithoutWorkspaceInput
+    leadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutWorkspaceInput
+    holidays?: HolidayCreateNestedManyWithoutWorkspaceInput
+    reportTypes?: ReportTypeCreateNestedManyWithoutWorkspaceInput
+    reportLogs?: ReportLogCreateNestedManyWithoutWorkspaceInput
+  }
+
+  export type WorkspaceUncheckedCreateWithoutHolidaySyncLogsInput = {
+    id?: string
+    companyName: string
+    employeeCount: string
+    timeZone?: string
+    language?: string
+    currencyLocale?: string
+    loadSampleData?: boolean
+    ownerId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    users?: UserUncheckedCreateNestedManyWithoutWorkspaceInput
+    departments?: DepartmentUncheckedCreateNestedManyWithoutWorkspaceInput
+    targetCycles?: TargetCycleUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadLifeCycles?: LeadLifeCycleUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadDynamicFields?: LeadDynamicFieldUncheckedCreateNestedManyWithoutWorkspaceInput
+    leads?: LeadUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadActivities?: LeadActivityUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutWorkspaceInput
+    holidays?: HolidayUncheckedCreateNestedManyWithoutWorkspaceInput
+    reportTypes?: ReportTypeUncheckedCreateNestedManyWithoutWorkspaceInput
+    reportLogs?: ReportLogUncheckedCreateNestedManyWithoutWorkspaceInput
+  }
+
+  export type WorkspaceCreateOrConnectWithoutHolidaySyncLogsInput = {
+    where: WorkspaceWhereUniqueInput
+    create: XOR<WorkspaceCreateWithoutHolidaySyncLogsInput, WorkspaceUncheckedCreateWithoutHolidaySyncLogsInput>
+  }
+
+  export type WorkspaceUpsertWithoutHolidaySyncLogsInput = {
+    update: XOR<WorkspaceUpdateWithoutHolidaySyncLogsInput, WorkspaceUncheckedUpdateWithoutHolidaySyncLogsInput>
+    create: XOR<WorkspaceCreateWithoutHolidaySyncLogsInput, WorkspaceUncheckedCreateWithoutHolidaySyncLogsInput>
+    where?: WorkspaceWhereInput
+  }
+
+  export type WorkspaceUpdateToOneWithWhereWithoutHolidaySyncLogsInput = {
+    where?: WorkspaceWhereInput
+    data: XOR<WorkspaceUpdateWithoutHolidaySyncLogsInput, WorkspaceUncheckedUpdateWithoutHolidaySyncLogsInput>
+  }
+
+  export type WorkspaceUpdateWithoutHolidaySyncLogsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    companyName?: StringFieldUpdateOperationsInput | string
+    employeeCount?: StringFieldUpdateOperationsInput | string
+    timeZone?: StringFieldUpdateOperationsInput | string
+    language?: StringFieldUpdateOperationsInput | string
+    currencyLocale?: StringFieldUpdateOperationsInput | string
+    loadSampleData?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    owner?: UserUpdateOneRequiredWithoutOwnedWorkspaceNestedInput
+    users?: UserUpdateManyWithoutWorkspaceNestedInput
+    departments?: DepartmentUpdateManyWithoutWorkspaceNestedInput
+    targetCycles?: TargetCycleUpdateManyWithoutWorkspaceNestedInput
+    leadLifeCycles?: LeadLifeCycleUpdateManyWithoutWorkspaceNestedInput
+    leadDynamicFields?: LeadDynamicFieldUpdateManyWithoutWorkspaceNestedInput
+    leads?: LeadUpdateManyWithoutWorkspaceNestedInput
+    leadActivities?: LeadActivityUpdateManyWithoutWorkspaceNestedInput
+    leadStageApprovals?: LeadStageApprovalUpdateManyWithoutWorkspaceNestedInput
+    holidays?: HolidayUpdateManyWithoutWorkspaceNestedInput
+    reportTypes?: ReportTypeUpdateManyWithoutWorkspaceNestedInput
+    reportLogs?: ReportLogUpdateManyWithoutWorkspaceNestedInput
+  }
+
+  export type WorkspaceUncheckedUpdateWithoutHolidaySyncLogsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    companyName?: StringFieldUpdateOperationsInput | string
+    employeeCount?: StringFieldUpdateOperationsInput | string
+    timeZone?: StringFieldUpdateOperationsInput | string
+    language?: StringFieldUpdateOperationsInput | string
+    currencyLocale?: StringFieldUpdateOperationsInput | string
+    loadSampleData?: BoolFieldUpdateOperationsInput | boolean
+    ownerId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    users?: UserUncheckedUpdateManyWithoutWorkspaceNestedInput
+    departments?: DepartmentUncheckedUpdateManyWithoutWorkspaceNestedInput
+    targetCycles?: TargetCycleUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadLifeCycles?: LeadLifeCycleUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadDynamicFields?: LeadDynamicFieldUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leads?: LeadUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadActivities?: LeadActivityUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutWorkspaceNestedInput
+    holidays?: HolidayUncheckedUpdateManyWithoutWorkspaceNestedInput
+    reportTypes?: ReportTypeUncheckedUpdateManyWithoutWorkspaceNestedInput
+    reportLogs?: ReportLogUncheckedUpdateManyWithoutWorkspaceNestedInput
+  }
+
+  export type WorkspaceCreateWithoutReportTypesInput = {
+    id?: string
+    companyName: string
+    employeeCount: string
+    timeZone?: string
+    language?: string
+    currencyLocale?: string
+    loadSampleData?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    owner: UserCreateNestedOneWithoutOwnedWorkspaceInput
+    users?: UserCreateNestedManyWithoutWorkspaceInput
+    departments?: DepartmentCreateNestedManyWithoutWorkspaceInput
+    targetCycles?: TargetCycleCreateNestedManyWithoutWorkspaceInput
+    leadLifeCycles?: LeadLifeCycleCreateNestedManyWithoutWorkspaceInput
+    leadDynamicFields?: LeadDynamicFieldCreateNestedManyWithoutWorkspaceInput
+    leads?: LeadCreateNestedManyWithoutWorkspaceInput
+    leadActivities?: LeadActivityCreateNestedManyWithoutWorkspaceInput
+    leadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutWorkspaceInput
+    holidays?: HolidayCreateNestedManyWithoutWorkspaceInput
+    holidaySyncLogs?: HolidaySyncLogCreateNestedManyWithoutWorkspaceInput
+    reportLogs?: ReportLogCreateNestedManyWithoutWorkspaceInput
+  }
+
+  export type WorkspaceUncheckedCreateWithoutReportTypesInput = {
+    id?: string
+    companyName: string
+    employeeCount: string
+    timeZone?: string
+    language?: string
+    currencyLocale?: string
+    loadSampleData?: boolean
+    ownerId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    users?: UserUncheckedCreateNestedManyWithoutWorkspaceInput
+    departments?: DepartmentUncheckedCreateNestedManyWithoutWorkspaceInput
+    targetCycles?: TargetCycleUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadLifeCycles?: LeadLifeCycleUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadDynamicFields?: LeadDynamicFieldUncheckedCreateNestedManyWithoutWorkspaceInput
+    leads?: LeadUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadActivities?: LeadActivityUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutWorkspaceInput
+    holidays?: HolidayUncheckedCreateNestedManyWithoutWorkspaceInput
+    holidaySyncLogs?: HolidaySyncLogUncheckedCreateNestedManyWithoutWorkspaceInput
+    reportLogs?: ReportLogUncheckedCreateNestedManyWithoutWorkspaceInput
+  }
+
+  export type WorkspaceCreateOrConnectWithoutReportTypesInput = {
+    where: WorkspaceWhereUniqueInput
+    create: XOR<WorkspaceCreateWithoutReportTypesInput, WorkspaceUncheckedCreateWithoutReportTypesInput>
+  }
+
+  export type UserCreateWithoutCreatedReportTypesInput = {
+    id?: string
+    name?: string | null
+    username?: string | null
+    email: string
+    password?: string | null
+    phone?: string | null
+    googleId?: string | null
+    isOnboarded?: boolean
+    isActive?: boolean
+    isEmailVerified?: boolean
+    isLocked?: boolean
+    verificationToken?: string | null
+    verificationTokenExpires?: Date | string | null
+    invitationToken?: string | null
+    invitationExpires?: Date | string | null
+    deletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    role?: RoleCreateNestedOneWithoutUsersInput
+    workspace?: WorkspaceCreateNestedOneWithoutUsersInput
+    ownedWorkspace?: WorkspaceCreateNestedOneWithoutOwnerInput
+    department?: DepartmentCreateNestedOneWithoutUsersInput
+    office?: OfficeCreateNestedOneWithoutUsersInput
+    country?: LocationCreateNestedOneWithoutUsersAtCountryInput
+    state?: LocationCreateNestedOneWithoutUsersAtStateInput
+    district?: LocationCreateNestedOneWithoutUsersAtDistrictInput
+    assignedLocations?: UserLocationAssignmentCreateNestedManyWithoutUserInput
+    supervisor?: UserCreateNestedOneWithoutSubordinatesInput
+    subordinates?: UserCreateNestedManyWithoutSupervisorInput
+    targetSettings?: TargetSettingCreateNestedManyWithoutUserInput
+    violations?: TargetViolationCreateNestedManyWithoutUserInput
+    devices?: DeviceCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogCreateNestedManyWithoutUserInput
+    performedLeadActivities?: LeadActivityCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutApprovedByInput
+    rosterEntries?: RosterEntryCreateNestedManyWithoutUserInput
+    followUps?: FollowUpCreateNestedManyWithoutUserInput
+    createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
+    assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
+  }
+
+  export type UserUncheckedCreateWithoutCreatedReportTypesInput = {
+    id?: string
+    name?: string | null
+    username?: string | null
+    email: string
+    password?: string | null
+    phone?: string | null
+    googleId?: string | null
+    isOnboarded?: boolean
+    isActive?: boolean
+    isEmailVerified?: boolean
+    isLocked?: boolean
+    verificationToken?: string | null
+    verificationTokenExpires?: Date | string | null
+    invitationToken?: string | null
+    invitationExpires?: Date | string | null
+    deletedAt?: Date | string | null
+    roleId?: string | null
+    workspaceId?: string | null
+    departmentId?: string | null
+    officeId?: string | null
+    countryId?: string | null
+    stateId?: string | null
+    districtId?: string | null
+    supervisorId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    ownedWorkspace?: WorkspaceUncheckedCreateNestedOneWithoutOwnerInput
+    assignedLocations?: UserLocationAssignmentUncheckedCreateNestedManyWithoutUserInput
+    subordinates?: UserUncheckedCreateNestedManyWithoutSupervisorInput
+    targetSettings?: TargetSettingUncheckedCreateNestedManyWithoutUserInput
+    violations?: TargetViolationUncheckedCreateNestedManyWithoutUserInput
+    devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
+    performedLeadActivities?: LeadActivityUncheckedCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutApprovedByInput
+    rosterEntries?: RosterEntryUncheckedCreateNestedManyWithoutUserInput
+    followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
+    createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
+    assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
+  }
+
+  export type UserCreateOrConnectWithoutCreatedReportTypesInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutCreatedReportTypesInput, UserUncheckedCreateWithoutCreatedReportTypesInput>
+  }
+
+  export type UserCreateWithoutUpdatedReportTypesInput = {
+    id?: string
+    name?: string | null
+    username?: string | null
+    email: string
+    password?: string | null
+    phone?: string | null
+    googleId?: string | null
+    isOnboarded?: boolean
+    isActive?: boolean
+    isEmailVerified?: boolean
+    isLocked?: boolean
+    verificationToken?: string | null
+    verificationTokenExpires?: Date | string | null
+    invitationToken?: string | null
+    invitationExpires?: Date | string | null
+    deletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    role?: RoleCreateNestedOneWithoutUsersInput
+    workspace?: WorkspaceCreateNestedOneWithoutUsersInput
+    ownedWorkspace?: WorkspaceCreateNestedOneWithoutOwnerInput
+    department?: DepartmentCreateNestedOneWithoutUsersInput
+    office?: OfficeCreateNestedOneWithoutUsersInput
+    country?: LocationCreateNestedOneWithoutUsersAtCountryInput
+    state?: LocationCreateNestedOneWithoutUsersAtStateInput
+    district?: LocationCreateNestedOneWithoutUsersAtDistrictInput
+    assignedLocations?: UserLocationAssignmentCreateNestedManyWithoutUserInput
+    supervisor?: UserCreateNestedOneWithoutSubordinatesInput
+    subordinates?: UserCreateNestedManyWithoutSupervisorInput
+    targetSettings?: TargetSettingCreateNestedManyWithoutUserInput
+    violations?: TargetViolationCreateNestedManyWithoutUserInput
+    devices?: DeviceCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogCreateNestedManyWithoutUserInput
+    performedLeadActivities?: LeadActivityCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutApprovedByInput
+    rosterEntries?: RosterEntryCreateNestedManyWithoutUserInput
+    followUps?: FollowUpCreateNestedManyWithoutUserInput
+    createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
+    assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
+    generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
+  }
+
+  export type UserUncheckedCreateWithoutUpdatedReportTypesInput = {
+    id?: string
+    name?: string | null
+    username?: string | null
+    email: string
+    password?: string | null
+    phone?: string | null
+    googleId?: string | null
+    isOnboarded?: boolean
+    isActive?: boolean
+    isEmailVerified?: boolean
+    isLocked?: boolean
+    verificationToken?: string | null
+    verificationTokenExpires?: Date | string | null
+    invitationToken?: string | null
+    invitationExpires?: Date | string | null
+    deletedAt?: Date | string | null
+    roleId?: string | null
+    workspaceId?: string | null
+    departmentId?: string | null
+    officeId?: string | null
+    countryId?: string | null
+    stateId?: string | null
+    districtId?: string | null
+    supervisorId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    ownedWorkspace?: WorkspaceUncheckedCreateNestedOneWithoutOwnerInput
+    assignedLocations?: UserLocationAssignmentUncheckedCreateNestedManyWithoutUserInput
+    subordinates?: UserUncheckedCreateNestedManyWithoutSupervisorInput
+    targetSettings?: TargetSettingUncheckedCreateNestedManyWithoutUserInput
+    violations?: TargetViolationUncheckedCreateNestedManyWithoutUserInput
+    devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
+    performedLeadActivities?: LeadActivityUncheckedCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutApprovedByInput
+    rosterEntries?: RosterEntryUncheckedCreateNestedManyWithoutUserInput
+    followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
+    createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
+    assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
+    generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
+  }
+
+  export type UserCreateOrConnectWithoutUpdatedReportTypesInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutUpdatedReportTypesInput, UserUncheckedCreateWithoutUpdatedReportTypesInput>
+  }
+
+  export type ReportLogCreateWithoutReportTypeInput = {
+    id?: string
+    filters?: JsonNullValueInput | InputJsonValue
+    resultCount?: number
+    createdAt?: Date | string
+    workspace: WorkspaceCreateNestedOneWithoutReportLogsInput
+    generatedBy?: UserCreateNestedOneWithoutGeneratedReportLogsInput
+  }
+
+  export type ReportLogUncheckedCreateWithoutReportTypeInput = {
+    id?: string
+    workspaceId: string
+    generatedById?: string | null
+    filters?: JsonNullValueInput | InputJsonValue
+    resultCount?: number
+    createdAt?: Date | string
+  }
+
+  export type ReportLogCreateOrConnectWithoutReportTypeInput = {
+    where: ReportLogWhereUniqueInput
+    create: XOR<ReportLogCreateWithoutReportTypeInput, ReportLogUncheckedCreateWithoutReportTypeInput>
+  }
+
+  export type ReportLogCreateManyReportTypeInputEnvelope = {
+    data: ReportLogCreateManyReportTypeInput | ReportLogCreateManyReportTypeInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type WorkspaceUpsertWithoutReportTypesInput = {
+    update: XOR<WorkspaceUpdateWithoutReportTypesInput, WorkspaceUncheckedUpdateWithoutReportTypesInput>
+    create: XOR<WorkspaceCreateWithoutReportTypesInput, WorkspaceUncheckedCreateWithoutReportTypesInput>
+    where?: WorkspaceWhereInput
+  }
+
+  export type WorkspaceUpdateToOneWithWhereWithoutReportTypesInput = {
+    where?: WorkspaceWhereInput
+    data: XOR<WorkspaceUpdateWithoutReportTypesInput, WorkspaceUncheckedUpdateWithoutReportTypesInput>
+  }
+
+  export type WorkspaceUpdateWithoutReportTypesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    companyName?: StringFieldUpdateOperationsInput | string
+    employeeCount?: StringFieldUpdateOperationsInput | string
+    timeZone?: StringFieldUpdateOperationsInput | string
+    language?: StringFieldUpdateOperationsInput | string
+    currencyLocale?: StringFieldUpdateOperationsInput | string
+    loadSampleData?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    owner?: UserUpdateOneRequiredWithoutOwnedWorkspaceNestedInput
+    users?: UserUpdateManyWithoutWorkspaceNestedInput
+    departments?: DepartmentUpdateManyWithoutWorkspaceNestedInput
+    targetCycles?: TargetCycleUpdateManyWithoutWorkspaceNestedInput
+    leadLifeCycles?: LeadLifeCycleUpdateManyWithoutWorkspaceNestedInput
+    leadDynamicFields?: LeadDynamicFieldUpdateManyWithoutWorkspaceNestedInput
+    leads?: LeadUpdateManyWithoutWorkspaceNestedInput
+    leadActivities?: LeadActivityUpdateManyWithoutWorkspaceNestedInput
+    leadStageApprovals?: LeadStageApprovalUpdateManyWithoutWorkspaceNestedInput
+    holidays?: HolidayUpdateManyWithoutWorkspaceNestedInput
+    holidaySyncLogs?: HolidaySyncLogUpdateManyWithoutWorkspaceNestedInput
+    reportLogs?: ReportLogUpdateManyWithoutWorkspaceNestedInput
+  }
+
+  export type WorkspaceUncheckedUpdateWithoutReportTypesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    companyName?: StringFieldUpdateOperationsInput | string
+    employeeCount?: StringFieldUpdateOperationsInput | string
+    timeZone?: StringFieldUpdateOperationsInput | string
+    language?: StringFieldUpdateOperationsInput | string
+    currencyLocale?: StringFieldUpdateOperationsInput | string
+    loadSampleData?: BoolFieldUpdateOperationsInput | boolean
+    ownerId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    users?: UserUncheckedUpdateManyWithoutWorkspaceNestedInput
+    departments?: DepartmentUncheckedUpdateManyWithoutWorkspaceNestedInput
+    targetCycles?: TargetCycleUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadLifeCycles?: LeadLifeCycleUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadDynamicFields?: LeadDynamicFieldUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leads?: LeadUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadActivities?: LeadActivityUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutWorkspaceNestedInput
+    holidays?: HolidayUncheckedUpdateManyWithoutWorkspaceNestedInput
+    holidaySyncLogs?: HolidaySyncLogUncheckedUpdateManyWithoutWorkspaceNestedInput
+    reportLogs?: ReportLogUncheckedUpdateManyWithoutWorkspaceNestedInput
+  }
+
+  export type UserUpsertWithoutCreatedReportTypesInput = {
+    update: XOR<UserUpdateWithoutCreatedReportTypesInput, UserUncheckedUpdateWithoutCreatedReportTypesInput>
+    create: XOR<UserCreateWithoutCreatedReportTypesInput, UserUncheckedCreateWithoutCreatedReportTypesInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutCreatedReportTypesInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutCreatedReportTypesInput, UserUncheckedUpdateWithoutCreatedReportTypesInput>
+  }
+
+  export type UserUpdateWithoutCreatedReportTypesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    username?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    googleId?: NullableStringFieldUpdateOperationsInput | string | null
+    isOnboarded?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isEmailVerified?: BoolFieldUpdateOperationsInput | boolean
+    isLocked?: BoolFieldUpdateOperationsInput | boolean
+    verificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    verificationTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    invitationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    invitationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    role?: RoleUpdateOneWithoutUsersNestedInput
+    workspace?: WorkspaceUpdateOneWithoutUsersNestedInput
+    ownedWorkspace?: WorkspaceUpdateOneWithoutOwnerNestedInput
+    department?: DepartmentUpdateOneWithoutUsersNestedInput
+    office?: OfficeUpdateOneWithoutUsersNestedInput
+    country?: LocationUpdateOneWithoutUsersAtCountryNestedInput
+    state?: LocationUpdateOneWithoutUsersAtStateNestedInput
+    district?: LocationUpdateOneWithoutUsersAtDistrictNestedInput
+    assignedLocations?: UserLocationAssignmentUpdateManyWithoutUserNestedInput
+    supervisor?: UserUpdateOneWithoutSubordinatesNestedInput
+    subordinates?: UserUpdateManyWithoutSupervisorNestedInput
+    targetSettings?: TargetSettingUpdateManyWithoutUserNestedInput
+    violations?: TargetViolationUpdateManyWithoutUserNestedInput
+    devices?: DeviceUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
+    performedLeadActivities?: LeadActivityUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutApprovedByNestedInput
+    rosterEntries?: RosterEntryUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUpdateManyWithoutUserNestedInput
+    createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
+    assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutCreatedReportTypesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    username?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    googleId?: NullableStringFieldUpdateOperationsInput | string | null
+    isOnboarded?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isEmailVerified?: BoolFieldUpdateOperationsInput | boolean
+    isLocked?: BoolFieldUpdateOperationsInput | boolean
+    verificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    verificationTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    invitationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    invitationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    roleId?: NullableStringFieldUpdateOperationsInput | string | null
+    workspaceId?: NullableStringFieldUpdateOperationsInput | string | null
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    officeId?: NullableStringFieldUpdateOperationsInput | string | null
+    countryId?: NullableStringFieldUpdateOperationsInput | string | null
+    stateId?: NullableStringFieldUpdateOperationsInput | string | null
+    districtId?: NullableStringFieldUpdateOperationsInput | string | null
+    supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ownedWorkspace?: WorkspaceUncheckedUpdateOneWithoutOwnerNestedInput
+    assignedLocations?: UserLocationAssignmentUncheckedUpdateManyWithoutUserNestedInput
+    subordinates?: UserUncheckedUpdateManyWithoutSupervisorNestedInput
+    targetSettings?: TargetSettingUncheckedUpdateManyWithoutUserNestedInput
+    violations?: TargetViolationUncheckedUpdateManyWithoutUserNestedInput
+    devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
+    performedLeadActivities?: LeadActivityUncheckedUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
+    rosterEntries?: RosterEntryUncheckedUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
+    createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
+    assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
+  }
+
+  export type UserUpsertWithoutUpdatedReportTypesInput = {
+    update: XOR<UserUpdateWithoutUpdatedReportTypesInput, UserUncheckedUpdateWithoutUpdatedReportTypesInput>
+    create: XOR<UserCreateWithoutUpdatedReportTypesInput, UserUncheckedCreateWithoutUpdatedReportTypesInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutUpdatedReportTypesInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutUpdatedReportTypesInput, UserUncheckedUpdateWithoutUpdatedReportTypesInput>
+  }
+
+  export type UserUpdateWithoutUpdatedReportTypesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    username?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    googleId?: NullableStringFieldUpdateOperationsInput | string | null
+    isOnboarded?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isEmailVerified?: BoolFieldUpdateOperationsInput | boolean
+    isLocked?: BoolFieldUpdateOperationsInput | boolean
+    verificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    verificationTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    invitationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    invitationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    role?: RoleUpdateOneWithoutUsersNestedInput
+    workspace?: WorkspaceUpdateOneWithoutUsersNestedInput
+    ownedWorkspace?: WorkspaceUpdateOneWithoutOwnerNestedInput
+    department?: DepartmentUpdateOneWithoutUsersNestedInput
+    office?: OfficeUpdateOneWithoutUsersNestedInput
+    country?: LocationUpdateOneWithoutUsersAtCountryNestedInput
+    state?: LocationUpdateOneWithoutUsersAtStateNestedInput
+    district?: LocationUpdateOneWithoutUsersAtDistrictNestedInput
+    assignedLocations?: UserLocationAssignmentUpdateManyWithoutUserNestedInput
+    supervisor?: UserUpdateOneWithoutSubordinatesNestedInput
+    subordinates?: UserUpdateManyWithoutSupervisorNestedInput
+    targetSettings?: TargetSettingUpdateManyWithoutUserNestedInput
+    violations?: TargetViolationUpdateManyWithoutUserNestedInput
+    devices?: DeviceUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
+    performedLeadActivities?: LeadActivityUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutApprovedByNestedInput
+    rosterEntries?: RosterEntryUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUpdateManyWithoutUserNestedInput
+    createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
+    assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
+    generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutUpdatedReportTypesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    username?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    googleId?: NullableStringFieldUpdateOperationsInput | string | null
+    isOnboarded?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isEmailVerified?: BoolFieldUpdateOperationsInput | boolean
+    isLocked?: BoolFieldUpdateOperationsInput | boolean
+    verificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    verificationTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    invitationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    invitationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    roleId?: NullableStringFieldUpdateOperationsInput | string | null
+    workspaceId?: NullableStringFieldUpdateOperationsInput | string | null
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    officeId?: NullableStringFieldUpdateOperationsInput | string | null
+    countryId?: NullableStringFieldUpdateOperationsInput | string | null
+    stateId?: NullableStringFieldUpdateOperationsInput | string | null
+    districtId?: NullableStringFieldUpdateOperationsInput | string | null
+    supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ownedWorkspace?: WorkspaceUncheckedUpdateOneWithoutOwnerNestedInput
+    assignedLocations?: UserLocationAssignmentUncheckedUpdateManyWithoutUserNestedInput
+    subordinates?: UserUncheckedUpdateManyWithoutSupervisorNestedInput
+    targetSettings?: TargetSettingUncheckedUpdateManyWithoutUserNestedInput
+    violations?: TargetViolationUncheckedUpdateManyWithoutUserNestedInput
+    devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
+    performedLeadActivities?: LeadActivityUncheckedUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
+    rosterEntries?: RosterEntryUncheckedUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
+    createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
+    assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
+    generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
+  }
+
+  export type ReportLogUpsertWithWhereUniqueWithoutReportTypeInput = {
+    where: ReportLogWhereUniqueInput
+    update: XOR<ReportLogUpdateWithoutReportTypeInput, ReportLogUncheckedUpdateWithoutReportTypeInput>
+    create: XOR<ReportLogCreateWithoutReportTypeInput, ReportLogUncheckedCreateWithoutReportTypeInput>
+  }
+
+  export type ReportLogUpdateWithWhereUniqueWithoutReportTypeInput = {
+    where: ReportLogWhereUniqueInput
+    data: XOR<ReportLogUpdateWithoutReportTypeInput, ReportLogUncheckedUpdateWithoutReportTypeInput>
+  }
+
+  export type ReportLogUpdateManyWithWhereWithoutReportTypeInput = {
+    where: ReportLogScalarWhereInput
+    data: XOR<ReportLogUpdateManyMutationInput, ReportLogUncheckedUpdateManyWithoutReportTypeInput>
+  }
+
+  export type WorkspaceCreateWithoutReportLogsInput = {
+    id?: string
+    companyName: string
+    employeeCount: string
+    timeZone?: string
+    language?: string
+    currencyLocale?: string
+    loadSampleData?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    owner: UserCreateNestedOneWithoutOwnedWorkspaceInput
+    users?: UserCreateNestedManyWithoutWorkspaceInput
+    departments?: DepartmentCreateNestedManyWithoutWorkspaceInput
+    targetCycles?: TargetCycleCreateNestedManyWithoutWorkspaceInput
+    leadLifeCycles?: LeadLifeCycleCreateNestedManyWithoutWorkspaceInput
+    leadDynamicFields?: LeadDynamicFieldCreateNestedManyWithoutWorkspaceInput
+    leads?: LeadCreateNestedManyWithoutWorkspaceInput
+    leadActivities?: LeadActivityCreateNestedManyWithoutWorkspaceInput
+    leadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutWorkspaceInput
+    holidays?: HolidayCreateNestedManyWithoutWorkspaceInput
+    holidaySyncLogs?: HolidaySyncLogCreateNestedManyWithoutWorkspaceInput
+    reportTypes?: ReportTypeCreateNestedManyWithoutWorkspaceInput
+  }
+
+  export type WorkspaceUncheckedCreateWithoutReportLogsInput = {
+    id?: string
+    companyName: string
+    employeeCount: string
+    timeZone?: string
+    language?: string
+    currencyLocale?: string
+    loadSampleData?: boolean
+    ownerId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    users?: UserUncheckedCreateNestedManyWithoutWorkspaceInput
+    departments?: DepartmentUncheckedCreateNestedManyWithoutWorkspaceInput
+    targetCycles?: TargetCycleUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadLifeCycles?: LeadLifeCycleUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadDynamicFields?: LeadDynamicFieldUncheckedCreateNestedManyWithoutWorkspaceInput
+    leads?: LeadUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadActivities?: LeadActivityUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutWorkspaceInput
+    holidays?: HolidayUncheckedCreateNestedManyWithoutWorkspaceInput
+    holidaySyncLogs?: HolidaySyncLogUncheckedCreateNestedManyWithoutWorkspaceInput
+    reportTypes?: ReportTypeUncheckedCreateNestedManyWithoutWorkspaceInput
+  }
+
+  export type WorkspaceCreateOrConnectWithoutReportLogsInput = {
+    where: WorkspaceWhereUniqueInput
+    create: XOR<WorkspaceCreateWithoutReportLogsInput, WorkspaceUncheckedCreateWithoutReportLogsInput>
+  }
+
+  export type ReportTypeCreateWithoutLogsInput = {
+    id?: string
+    name: string
+    module: $Enums.ReportModule
+    baseDataSource: $Enums.ReportBaseDataSource
+    description?: string | null
+    allowedFilters?: JsonNullValueInput | InputJsonValue
+    status?: $Enums.ReportTypeStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    workspace: WorkspaceCreateNestedOneWithoutReportTypesInput
+    createdBy?: UserCreateNestedOneWithoutCreatedReportTypesInput
+    updatedBy?: UserCreateNestedOneWithoutUpdatedReportTypesInput
+  }
+
+  export type ReportTypeUncheckedCreateWithoutLogsInput = {
+    id?: string
+    workspaceId: string
+    name: string
+    module: $Enums.ReportModule
+    baseDataSource: $Enums.ReportBaseDataSource
+    description?: string | null
+    allowedFilters?: JsonNullValueInput | InputJsonValue
+    status?: $Enums.ReportTypeStatus
+    createdById?: string | null
+    updatedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type ReportTypeCreateOrConnectWithoutLogsInput = {
+    where: ReportTypeWhereUniqueInput
+    create: XOR<ReportTypeCreateWithoutLogsInput, ReportTypeUncheckedCreateWithoutLogsInput>
+  }
+
+  export type UserCreateWithoutGeneratedReportLogsInput = {
+    id?: string
+    name?: string | null
+    username?: string | null
+    email: string
+    password?: string | null
+    phone?: string | null
+    googleId?: string | null
+    isOnboarded?: boolean
+    isActive?: boolean
+    isEmailVerified?: boolean
+    isLocked?: boolean
+    verificationToken?: string | null
+    verificationTokenExpires?: Date | string | null
+    invitationToken?: string | null
+    invitationExpires?: Date | string | null
+    deletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    role?: RoleCreateNestedOneWithoutUsersInput
+    workspace?: WorkspaceCreateNestedOneWithoutUsersInput
+    ownedWorkspace?: WorkspaceCreateNestedOneWithoutOwnerInput
+    department?: DepartmentCreateNestedOneWithoutUsersInput
+    office?: OfficeCreateNestedOneWithoutUsersInput
+    country?: LocationCreateNestedOneWithoutUsersAtCountryInput
+    state?: LocationCreateNestedOneWithoutUsersAtStateInput
+    district?: LocationCreateNestedOneWithoutUsersAtDistrictInput
+    assignedLocations?: UserLocationAssignmentCreateNestedManyWithoutUserInput
+    supervisor?: UserCreateNestedOneWithoutSubordinatesInput
+    subordinates?: UserCreateNestedManyWithoutSupervisorInput
+    targetSettings?: TargetSettingCreateNestedManyWithoutUserInput
+    violations?: TargetViolationCreateNestedManyWithoutUserInput
+    devices?: DeviceCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogCreateNestedManyWithoutUserInput
+    performedLeadActivities?: LeadActivityCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutApprovedByInput
+    rosterEntries?: RosterEntryCreateNestedManyWithoutUserInput
+    followUps?: FollowUpCreateNestedManyWithoutUserInput
+    createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
+    assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+  }
+
+  export type UserUncheckedCreateWithoutGeneratedReportLogsInput = {
+    id?: string
+    name?: string | null
+    username?: string | null
+    email: string
+    password?: string | null
+    phone?: string | null
+    googleId?: string | null
+    isOnboarded?: boolean
+    isActive?: boolean
+    isEmailVerified?: boolean
+    isLocked?: boolean
+    verificationToken?: string | null
+    verificationTokenExpires?: Date | string | null
+    invitationToken?: string | null
+    invitationExpires?: Date | string | null
+    deletedAt?: Date | string | null
+    roleId?: string | null
+    workspaceId?: string | null
+    departmentId?: string | null
+    officeId?: string | null
+    countryId?: string | null
+    stateId?: string | null
+    districtId?: string | null
+    supervisorId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    ownedWorkspace?: WorkspaceUncheckedCreateNestedOneWithoutOwnerInput
+    assignedLocations?: UserLocationAssignmentUncheckedCreateNestedManyWithoutUserInput
+    subordinates?: UserUncheckedCreateNestedManyWithoutSupervisorInput
+    targetSettings?: TargetSettingUncheckedCreateNestedManyWithoutUserInput
+    violations?: TargetViolationUncheckedCreateNestedManyWithoutUserInput
+    devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
+    performedLeadActivities?: LeadActivityUncheckedCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutApprovedByInput
+    rosterEntries?: RosterEntryUncheckedCreateNestedManyWithoutUserInput
+    followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
+    createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
+    assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+  }
+
+  export type UserCreateOrConnectWithoutGeneratedReportLogsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutGeneratedReportLogsInput, UserUncheckedCreateWithoutGeneratedReportLogsInput>
+  }
+
+  export type WorkspaceUpsertWithoutReportLogsInput = {
+    update: XOR<WorkspaceUpdateWithoutReportLogsInput, WorkspaceUncheckedUpdateWithoutReportLogsInput>
+    create: XOR<WorkspaceCreateWithoutReportLogsInput, WorkspaceUncheckedCreateWithoutReportLogsInput>
+    where?: WorkspaceWhereInput
+  }
+
+  export type WorkspaceUpdateToOneWithWhereWithoutReportLogsInput = {
+    where?: WorkspaceWhereInput
+    data: XOR<WorkspaceUpdateWithoutReportLogsInput, WorkspaceUncheckedUpdateWithoutReportLogsInput>
+  }
+
+  export type WorkspaceUpdateWithoutReportLogsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    companyName?: StringFieldUpdateOperationsInput | string
+    employeeCount?: StringFieldUpdateOperationsInput | string
+    timeZone?: StringFieldUpdateOperationsInput | string
+    language?: StringFieldUpdateOperationsInput | string
+    currencyLocale?: StringFieldUpdateOperationsInput | string
+    loadSampleData?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    owner?: UserUpdateOneRequiredWithoutOwnedWorkspaceNestedInput
+    users?: UserUpdateManyWithoutWorkspaceNestedInput
+    departments?: DepartmentUpdateManyWithoutWorkspaceNestedInput
+    targetCycles?: TargetCycleUpdateManyWithoutWorkspaceNestedInput
+    leadLifeCycles?: LeadLifeCycleUpdateManyWithoutWorkspaceNestedInput
+    leadDynamicFields?: LeadDynamicFieldUpdateManyWithoutWorkspaceNestedInput
+    leads?: LeadUpdateManyWithoutWorkspaceNestedInput
+    leadActivities?: LeadActivityUpdateManyWithoutWorkspaceNestedInput
+    leadStageApprovals?: LeadStageApprovalUpdateManyWithoutWorkspaceNestedInput
+    holidays?: HolidayUpdateManyWithoutWorkspaceNestedInput
+    holidaySyncLogs?: HolidaySyncLogUpdateManyWithoutWorkspaceNestedInput
+    reportTypes?: ReportTypeUpdateManyWithoutWorkspaceNestedInput
+  }
+
+  export type WorkspaceUncheckedUpdateWithoutReportLogsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    companyName?: StringFieldUpdateOperationsInput | string
+    employeeCount?: StringFieldUpdateOperationsInput | string
+    timeZone?: StringFieldUpdateOperationsInput | string
+    language?: StringFieldUpdateOperationsInput | string
+    currencyLocale?: StringFieldUpdateOperationsInput | string
+    loadSampleData?: BoolFieldUpdateOperationsInput | boolean
+    ownerId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    users?: UserUncheckedUpdateManyWithoutWorkspaceNestedInput
+    departments?: DepartmentUncheckedUpdateManyWithoutWorkspaceNestedInput
+    targetCycles?: TargetCycleUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadLifeCycles?: LeadLifeCycleUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadDynamicFields?: LeadDynamicFieldUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leads?: LeadUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadActivities?: LeadActivityUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutWorkspaceNestedInput
+    holidays?: HolidayUncheckedUpdateManyWithoutWorkspaceNestedInput
+    holidaySyncLogs?: HolidaySyncLogUncheckedUpdateManyWithoutWorkspaceNestedInput
+    reportTypes?: ReportTypeUncheckedUpdateManyWithoutWorkspaceNestedInput
+  }
+
+  export type ReportTypeUpsertWithoutLogsInput = {
+    update: XOR<ReportTypeUpdateWithoutLogsInput, ReportTypeUncheckedUpdateWithoutLogsInput>
+    create: XOR<ReportTypeCreateWithoutLogsInput, ReportTypeUncheckedCreateWithoutLogsInput>
+    where?: ReportTypeWhereInput
+  }
+
+  export type ReportTypeUpdateToOneWithWhereWithoutLogsInput = {
+    where?: ReportTypeWhereInput
+    data: XOR<ReportTypeUpdateWithoutLogsInput, ReportTypeUncheckedUpdateWithoutLogsInput>
+  }
+
+  export type ReportTypeUpdateWithoutLogsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    module?: EnumReportModuleFieldUpdateOperationsInput | $Enums.ReportModule
+    baseDataSource?: EnumReportBaseDataSourceFieldUpdateOperationsInput | $Enums.ReportBaseDataSource
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    allowedFilters?: JsonNullValueInput | InputJsonValue
+    status?: EnumReportTypeStatusFieldUpdateOperationsInput | $Enums.ReportTypeStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    workspace?: WorkspaceUpdateOneRequiredWithoutReportTypesNestedInput
+    createdBy?: UserUpdateOneWithoutCreatedReportTypesNestedInput
+    updatedBy?: UserUpdateOneWithoutUpdatedReportTypesNestedInput
+  }
+
+  export type ReportTypeUncheckedUpdateWithoutLogsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    module?: EnumReportModuleFieldUpdateOperationsInput | $Enums.ReportModule
+    baseDataSource?: EnumReportBaseDataSourceFieldUpdateOperationsInput | $Enums.ReportBaseDataSource
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    allowedFilters?: JsonNullValueInput | InputJsonValue
+    status?: EnumReportTypeStatusFieldUpdateOperationsInput | $Enums.ReportTypeStatus
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type UserUpsertWithoutGeneratedReportLogsInput = {
+    update: XOR<UserUpdateWithoutGeneratedReportLogsInput, UserUncheckedUpdateWithoutGeneratedReportLogsInput>
+    create: XOR<UserCreateWithoutGeneratedReportLogsInput, UserUncheckedCreateWithoutGeneratedReportLogsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutGeneratedReportLogsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutGeneratedReportLogsInput, UserUncheckedUpdateWithoutGeneratedReportLogsInput>
+  }
+
+  export type UserUpdateWithoutGeneratedReportLogsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    username?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    googleId?: NullableStringFieldUpdateOperationsInput | string | null
+    isOnboarded?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isEmailVerified?: BoolFieldUpdateOperationsInput | boolean
+    isLocked?: BoolFieldUpdateOperationsInput | boolean
+    verificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    verificationTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    invitationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    invitationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    role?: RoleUpdateOneWithoutUsersNestedInput
+    workspace?: WorkspaceUpdateOneWithoutUsersNestedInput
+    ownedWorkspace?: WorkspaceUpdateOneWithoutOwnerNestedInput
+    department?: DepartmentUpdateOneWithoutUsersNestedInput
+    office?: OfficeUpdateOneWithoutUsersNestedInput
+    country?: LocationUpdateOneWithoutUsersAtCountryNestedInput
+    state?: LocationUpdateOneWithoutUsersAtStateNestedInput
+    district?: LocationUpdateOneWithoutUsersAtDistrictNestedInput
+    assignedLocations?: UserLocationAssignmentUpdateManyWithoutUserNestedInput
+    supervisor?: UserUpdateOneWithoutSubordinatesNestedInput
+    subordinates?: UserUpdateManyWithoutSupervisorNestedInput
+    targetSettings?: TargetSettingUpdateManyWithoutUserNestedInput
+    violations?: TargetViolationUpdateManyWithoutUserNestedInput
+    devices?: DeviceUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
+    performedLeadActivities?: LeadActivityUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutApprovedByNestedInput
+    rosterEntries?: RosterEntryUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUpdateManyWithoutUserNestedInput
+    createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
+    assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutGeneratedReportLogsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    username?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    googleId?: NullableStringFieldUpdateOperationsInput | string | null
+    isOnboarded?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isEmailVerified?: BoolFieldUpdateOperationsInput | boolean
+    isLocked?: BoolFieldUpdateOperationsInput | boolean
+    verificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    verificationTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    invitationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    invitationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    roleId?: NullableStringFieldUpdateOperationsInput | string | null
+    workspaceId?: NullableStringFieldUpdateOperationsInput | string | null
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    officeId?: NullableStringFieldUpdateOperationsInput | string | null
+    countryId?: NullableStringFieldUpdateOperationsInput | string | null
+    stateId?: NullableStringFieldUpdateOperationsInput | string | null
+    districtId?: NullableStringFieldUpdateOperationsInput | string | null
+    supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ownedWorkspace?: WorkspaceUncheckedUpdateOneWithoutOwnerNestedInput
+    assignedLocations?: UserLocationAssignmentUncheckedUpdateManyWithoutUserNestedInput
+    subordinates?: UserUncheckedUpdateManyWithoutSupervisorNestedInput
+    targetSettings?: TargetSettingUncheckedUpdateManyWithoutUserNestedInput
+    violations?: TargetViolationUncheckedUpdateManyWithoutUserNestedInput
+    devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
+    performedLeadActivities?: LeadActivityUncheckedUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
+    rosterEntries?: RosterEntryUncheckedUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
+    createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
+    assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
   }
 
   export type RolePermissionCreateManyRoleInput = {
@@ -60669,6 +71095,11 @@ export namespace Prisma {
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
     closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutRoleInput = {
@@ -60713,6 +71144,11 @@ export namespace Prisma {
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
     closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutRoleInput = {
@@ -60883,6 +71319,55 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
+  export type HolidayCreateManyWorkspaceInput = {
+    id?: string
+    name: string
+    holidayDate: Date | string
+    countryId?: string | null
+    stateId?: string | null
+    districtId?: string | null
+    isRecurring?: boolean
+    recurrenceRule?: string | null
+    source?: $Enums.HolidaySource
+    status?: $Enums.HolidayStatus
+    createdById?: string | null
+    updatedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type HolidaySyncLogCreateManyWorkspaceInput = {
+    id?: string
+    source: $Enums.HolidaySource
+    status: string
+    message?: string | null
+    syncedAt?: Date | string
+  }
+
+  export type ReportTypeCreateManyWorkspaceInput = {
+    id?: string
+    name: string
+    module: $Enums.ReportModule
+    baseDataSource: $Enums.ReportBaseDataSource
+    description?: string | null
+    allowedFilters?: JsonNullValueInput | InputJsonValue
+    status?: $Enums.ReportTypeStatus
+    createdById?: string | null
+    updatedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type ReportLogCreateManyWorkspaceInput = {
+    id?: string
+    reportTypeId: string
+    generatedById?: string | null
+    filters?: JsonNullValueInput | InputJsonValue
+    resultCount?: number
+    createdAt?: Date | string
+  }
+
   export type UserUpdateWithoutWorkspaceInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: NullableStringFieldUpdateOperationsInput | string | null
@@ -60925,6 +71410,11 @@ export namespace Prisma {
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
     closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutWorkspaceInput = {
@@ -60969,6 +71459,11 @@ export namespace Prisma {
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
     closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutWorkspaceInput = {
@@ -61309,6 +71804,155 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type HolidayUpdateWithoutWorkspaceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    holidayDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    isRecurring?: BoolFieldUpdateOperationsInput | boolean
+    recurrenceRule?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: EnumHolidaySourceFieldUpdateOperationsInput | $Enums.HolidaySource
+    status?: EnumHolidayStatusFieldUpdateOperationsInput | $Enums.HolidayStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    country?: LocationUpdateOneWithoutHolidaysAtCountryNestedInput
+    state?: LocationUpdateOneWithoutHolidaysAtStateNestedInput
+    district?: LocationUpdateOneWithoutHolidaysAtDistrictNestedInput
+    createdBy?: UserUpdateOneWithoutCreatedHolidaysNestedInput
+    updatedBy?: UserUpdateOneWithoutUpdatedHolidaysNestedInput
+  }
+
+  export type HolidayUncheckedUpdateWithoutWorkspaceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    holidayDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    countryId?: NullableStringFieldUpdateOperationsInput | string | null
+    stateId?: NullableStringFieldUpdateOperationsInput | string | null
+    districtId?: NullableStringFieldUpdateOperationsInput | string | null
+    isRecurring?: BoolFieldUpdateOperationsInput | boolean
+    recurrenceRule?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: EnumHolidaySourceFieldUpdateOperationsInput | $Enums.HolidaySource
+    status?: EnumHolidayStatusFieldUpdateOperationsInput | $Enums.HolidayStatus
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type HolidayUncheckedUpdateManyWithoutWorkspaceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    holidayDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    countryId?: NullableStringFieldUpdateOperationsInput | string | null
+    stateId?: NullableStringFieldUpdateOperationsInput | string | null
+    districtId?: NullableStringFieldUpdateOperationsInput | string | null
+    isRecurring?: BoolFieldUpdateOperationsInput | boolean
+    recurrenceRule?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: EnumHolidaySourceFieldUpdateOperationsInput | $Enums.HolidaySource
+    status?: EnumHolidayStatusFieldUpdateOperationsInput | $Enums.HolidayStatus
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type HolidaySyncLogUpdateWithoutWorkspaceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    source?: EnumHolidaySourceFieldUpdateOperationsInput | $Enums.HolidaySource
+    status?: StringFieldUpdateOperationsInput | string
+    message?: NullableStringFieldUpdateOperationsInput | string | null
+    syncedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type HolidaySyncLogUncheckedUpdateWithoutWorkspaceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    source?: EnumHolidaySourceFieldUpdateOperationsInput | $Enums.HolidaySource
+    status?: StringFieldUpdateOperationsInput | string
+    message?: NullableStringFieldUpdateOperationsInput | string | null
+    syncedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type HolidaySyncLogUncheckedUpdateManyWithoutWorkspaceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    source?: EnumHolidaySourceFieldUpdateOperationsInput | $Enums.HolidaySource
+    status?: StringFieldUpdateOperationsInput | string
+    message?: NullableStringFieldUpdateOperationsInput | string | null
+    syncedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ReportTypeUpdateWithoutWorkspaceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    module?: EnumReportModuleFieldUpdateOperationsInput | $Enums.ReportModule
+    baseDataSource?: EnumReportBaseDataSourceFieldUpdateOperationsInput | $Enums.ReportBaseDataSource
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    allowedFilters?: JsonNullValueInput | InputJsonValue
+    status?: EnumReportTypeStatusFieldUpdateOperationsInput | $Enums.ReportTypeStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdBy?: UserUpdateOneWithoutCreatedReportTypesNestedInput
+    updatedBy?: UserUpdateOneWithoutUpdatedReportTypesNestedInput
+    logs?: ReportLogUpdateManyWithoutReportTypeNestedInput
+  }
+
+  export type ReportTypeUncheckedUpdateWithoutWorkspaceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    module?: EnumReportModuleFieldUpdateOperationsInput | $Enums.ReportModule
+    baseDataSource?: EnumReportBaseDataSourceFieldUpdateOperationsInput | $Enums.ReportBaseDataSource
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    allowedFilters?: JsonNullValueInput | InputJsonValue
+    status?: EnumReportTypeStatusFieldUpdateOperationsInput | $Enums.ReportTypeStatus
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    logs?: ReportLogUncheckedUpdateManyWithoutReportTypeNestedInput
+  }
+
+  export type ReportTypeUncheckedUpdateManyWithoutWorkspaceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    module?: EnumReportModuleFieldUpdateOperationsInput | $Enums.ReportModule
+    baseDataSource?: EnumReportBaseDataSourceFieldUpdateOperationsInput | $Enums.ReportBaseDataSource
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    allowedFilters?: JsonNullValueInput | InputJsonValue
+    status?: EnumReportTypeStatusFieldUpdateOperationsInput | $Enums.ReportTypeStatus
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type ReportLogUpdateWithoutWorkspaceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    filters?: JsonNullValueInput | InputJsonValue
+    resultCount?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    reportType?: ReportTypeUpdateOneRequiredWithoutLogsNestedInput
+    generatedBy?: UserUpdateOneWithoutGeneratedReportLogsNestedInput
+  }
+
+  export type ReportLogUncheckedUpdateWithoutWorkspaceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    reportTypeId?: StringFieldUpdateOperationsInput | string
+    generatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    filters?: JsonNullValueInput | InputJsonValue
+    resultCount?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ReportLogUncheckedUpdateManyWithoutWorkspaceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    reportTypeId?: StringFieldUpdateOperationsInput | string
+    generatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    filters?: JsonNullValueInput | InputJsonValue
+    resultCount?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type UserCreateManyDepartmentInput = {
     id?: string
     name?: string | null
@@ -61379,6 +72023,11 @@ export namespace Prisma {
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
     closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutDepartmentInput = {
@@ -61423,6 +72072,11 @@ export namespace Prisma {
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
     closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutDepartmentInput = {
@@ -62005,6 +72659,11 @@ export namespace Prisma {
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
     closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutOfficeInput = {
@@ -62049,6 +72708,11 @@ export namespace Prisma {
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
     closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutOfficeInput = {
@@ -62180,6 +72844,57 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
+  export type HolidayCreateManyCountryInput = {
+    id?: string
+    workspaceId: string
+    name: string
+    holidayDate: Date | string
+    stateId?: string | null
+    districtId?: string | null
+    isRecurring?: boolean
+    recurrenceRule?: string | null
+    source?: $Enums.HolidaySource
+    status?: $Enums.HolidayStatus
+    createdById?: string | null
+    updatedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type HolidayCreateManyStateInput = {
+    id?: string
+    workspaceId: string
+    name: string
+    holidayDate: Date | string
+    countryId?: string | null
+    districtId?: string | null
+    isRecurring?: boolean
+    recurrenceRule?: string | null
+    source?: $Enums.HolidaySource
+    status?: $Enums.HolidayStatus
+    createdById?: string | null
+    updatedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type HolidayCreateManyDistrictInput = {
+    id?: string
+    workspaceId: string
+    name: string
+    holidayDate: Date | string
+    countryId?: string | null
+    stateId?: string | null
+    isRecurring?: boolean
+    recurrenceRule?: string | null
+    source?: $Enums.HolidaySource
+    status?: $Enums.HolidayStatus
+    createdById?: string | null
+    updatedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type LocationUpdateWithoutParentInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
@@ -62192,6 +72907,9 @@ export namespace Prisma {
     usersAtCountry?: UserUpdateManyWithoutCountryNestedInput
     usersAtState?: UserUpdateManyWithoutStateNestedInput
     usersAtDistrict?: UserUpdateManyWithoutDistrictNestedInput
+    holidaysAtCountry?: HolidayUpdateManyWithoutCountryNestedInput
+    holidaysAtState?: HolidayUpdateManyWithoutStateNestedInput
+    holidaysAtDistrict?: HolidayUpdateManyWithoutDistrictNestedInput
   }
 
   export type LocationUncheckedUpdateWithoutParentInput = {
@@ -62206,6 +72924,9 @@ export namespace Prisma {
     usersAtCountry?: UserUncheckedUpdateManyWithoutCountryNestedInput
     usersAtState?: UserUncheckedUpdateManyWithoutStateNestedInput
     usersAtDistrict?: UserUncheckedUpdateManyWithoutDistrictNestedInput
+    holidaysAtCountry?: HolidayUncheckedUpdateManyWithoutCountryNestedInput
+    holidaysAtState?: HolidayUncheckedUpdateManyWithoutStateNestedInput
+    holidaysAtDistrict?: HolidayUncheckedUpdateManyWithoutDistrictNestedInput
   }
 
   export type LocationUncheckedUpdateManyWithoutParentInput = {
@@ -62283,6 +73004,11 @@ export namespace Prisma {
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
     closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCountryInput = {
@@ -62327,6 +73053,11 @@ export namespace Prisma {
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
     closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutCountryInput = {
@@ -62399,6 +73130,11 @@ export namespace Prisma {
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
     closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutStateInput = {
@@ -62443,6 +73179,11 @@ export namespace Prisma {
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
     closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutStateInput = {
@@ -62515,6 +73256,11 @@ export namespace Prisma {
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
     closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutDistrictInput = {
@@ -62559,6 +73305,11 @@ export namespace Prisma {
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
     closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutDistrictInput = {
@@ -62585,6 +73336,159 @@ export namespace Prisma {
     countryId?: NullableStringFieldUpdateOperationsInput | string | null
     stateId?: NullableStringFieldUpdateOperationsInput | string | null
     supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type HolidayUpdateWithoutCountryInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    holidayDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    isRecurring?: BoolFieldUpdateOperationsInput | boolean
+    recurrenceRule?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: EnumHolidaySourceFieldUpdateOperationsInput | $Enums.HolidaySource
+    status?: EnumHolidayStatusFieldUpdateOperationsInput | $Enums.HolidayStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    workspace?: WorkspaceUpdateOneRequiredWithoutHolidaysNestedInput
+    state?: LocationUpdateOneWithoutHolidaysAtStateNestedInput
+    district?: LocationUpdateOneWithoutHolidaysAtDistrictNestedInput
+    createdBy?: UserUpdateOneWithoutCreatedHolidaysNestedInput
+    updatedBy?: UserUpdateOneWithoutUpdatedHolidaysNestedInput
+  }
+
+  export type HolidayUncheckedUpdateWithoutCountryInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    holidayDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    stateId?: NullableStringFieldUpdateOperationsInput | string | null
+    districtId?: NullableStringFieldUpdateOperationsInput | string | null
+    isRecurring?: BoolFieldUpdateOperationsInput | boolean
+    recurrenceRule?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: EnumHolidaySourceFieldUpdateOperationsInput | $Enums.HolidaySource
+    status?: EnumHolidayStatusFieldUpdateOperationsInput | $Enums.HolidayStatus
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type HolidayUncheckedUpdateManyWithoutCountryInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    holidayDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    stateId?: NullableStringFieldUpdateOperationsInput | string | null
+    districtId?: NullableStringFieldUpdateOperationsInput | string | null
+    isRecurring?: BoolFieldUpdateOperationsInput | boolean
+    recurrenceRule?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: EnumHolidaySourceFieldUpdateOperationsInput | $Enums.HolidaySource
+    status?: EnumHolidayStatusFieldUpdateOperationsInput | $Enums.HolidayStatus
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type HolidayUpdateWithoutStateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    holidayDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    isRecurring?: BoolFieldUpdateOperationsInput | boolean
+    recurrenceRule?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: EnumHolidaySourceFieldUpdateOperationsInput | $Enums.HolidaySource
+    status?: EnumHolidayStatusFieldUpdateOperationsInput | $Enums.HolidayStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    workspace?: WorkspaceUpdateOneRequiredWithoutHolidaysNestedInput
+    country?: LocationUpdateOneWithoutHolidaysAtCountryNestedInput
+    district?: LocationUpdateOneWithoutHolidaysAtDistrictNestedInput
+    createdBy?: UserUpdateOneWithoutCreatedHolidaysNestedInput
+    updatedBy?: UserUpdateOneWithoutUpdatedHolidaysNestedInput
+  }
+
+  export type HolidayUncheckedUpdateWithoutStateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    holidayDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    countryId?: NullableStringFieldUpdateOperationsInput | string | null
+    districtId?: NullableStringFieldUpdateOperationsInput | string | null
+    isRecurring?: BoolFieldUpdateOperationsInput | boolean
+    recurrenceRule?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: EnumHolidaySourceFieldUpdateOperationsInput | $Enums.HolidaySource
+    status?: EnumHolidayStatusFieldUpdateOperationsInput | $Enums.HolidayStatus
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type HolidayUncheckedUpdateManyWithoutStateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    holidayDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    countryId?: NullableStringFieldUpdateOperationsInput | string | null
+    districtId?: NullableStringFieldUpdateOperationsInput | string | null
+    isRecurring?: BoolFieldUpdateOperationsInput | boolean
+    recurrenceRule?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: EnumHolidaySourceFieldUpdateOperationsInput | $Enums.HolidaySource
+    status?: EnumHolidayStatusFieldUpdateOperationsInput | $Enums.HolidayStatus
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type HolidayUpdateWithoutDistrictInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    holidayDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    isRecurring?: BoolFieldUpdateOperationsInput | boolean
+    recurrenceRule?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: EnumHolidaySourceFieldUpdateOperationsInput | $Enums.HolidaySource
+    status?: EnumHolidayStatusFieldUpdateOperationsInput | $Enums.HolidayStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    workspace?: WorkspaceUpdateOneRequiredWithoutHolidaysNestedInput
+    country?: LocationUpdateOneWithoutHolidaysAtCountryNestedInput
+    state?: LocationUpdateOneWithoutHolidaysAtStateNestedInput
+    createdBy?: UserUpdateOneWithoutCreatedHolidaysNestedInput
+    updatedBy?: UserUpdateOneWithoutUpdatedHolidaysNestedInput
+  }
+
+  export type HolidayUncheckedUpdateWithoutDistrictInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    holidayDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    countryId?: NullableStringFieldUpdateOperationsInput | string | null
+    stateId?: NullableStringFieldUpdateOperationsInput | string | null
+    isRecurring?: BoolFieldUpdateOperationsInput | boolean
+    recurrenceRule?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: EnumHolidaySourceFieldUpdateOperationsInput | $Enums.HolidaySource
+    status?: EnumHolidayStatusFieldUpdateOperationsInput | $Enums.HolidayStatus
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type HolidayUncheckedUpdateManyWithoutDistrictInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    holidayDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    countryId?: NullableStringFieldUpdateOperationsInput | string | null
+    stateId?: NullableStringFieldUpdateOperationsInput | string | null
+    isRecurring?: BoolFieldUpdateOperationsInput | boolean
+    recurrenceRule?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: EnumHolidaySourceFieldUpdateOperationsInput | $Enums.HolidaySource
+    status?: EnumHolidayStatusFieldUpdateOperationsInput | $Enums.HolidayStatus
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -63422,6 +74326,79 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
+  export type HolidayCreateManyCreatedByInput = {
+    id?: string
+    workspaceId: string
+    name: string
+    holidayDate: Date | string
+    countryId?: string | null
+    stateId?: string | null
+    districtId?: string | null
+    isRecurring?: boolean
+    recurrenceRule?: string | null
+    source?: $Enums.HolidaySource
+    status?: $Enums.HolidayStatus
+    updatedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type HolidayCreateManyUpdatedByInput = {
+    id?: string
+    workspaceId: string
+    name: string
+    holidayDate: Date | string
+    countryId?: string | null
+    stateId?: string | null
+    districtId?: string | null
+    isRecurring?: boolean
+    recurrenceRule?: string | null
+    source?: $Enums.HolidaySource
+    status?: $Enums.HolidayStatus
+    createdById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ReportTypeCreateManyCreatedByInput = {
+    id?: string
+    workspaceId: string
+    name: string
+    module: $Enums.ReportModule
+    baseDataSource: $Enums.ReportBaseDataSource
+    description?: string | null
+    allowedFilters?: JsonNullValueInput | InputJsonValue
+    status?: $Enums.ReportTypeStatus
+    updatedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type ReportTypeCreateManyUpdatedByInput = {
+    id?: string
+    workspaceId: string
+    name: string
+    module: $Enums.ReportModule
+    baseDataSource: $Enums.ReportBaseDataSource
+    description?: string | null
+    allowedFilters?: JsonNullValueInput | InputJsonValue
+    status?: $Enums.ReportTypeStatus
+    createdById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type ReportLogCreateManyGeneratedByInput = {
+    id?: string
+    workspaceId: string
+    reportTypeId: string
+    filters?: JsonNullValueInput | InputJsonValue
+    resultCount?: number
+    createdAt?: Date | string
+  }
+
   export type UserLocationAssignmentUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     workspaceId?: StringFieldUpdateOperationsInput | string
@@ -63488,6 +74465,11 @@ export namespace Prisma {
     createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
     closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSupervisorInput = {
@@ -63532,6 +74514,11 @@ export namespace Prisma {
     createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
     assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
     closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutSupervisorInput = {
@@ -64269,6 +75256,229 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type HolidayUpdateWithoutCreatedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    holidayDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    isRecurring?: BoolFieldUpdateOperationsInput | boolean
+    recurrenceRule?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: EnumHolidaySourceFieldUpdateOperationsInput | $Enums.HolidaySource
+    status?: EnumHolidayStatusFieldUpdateOperationsInput | $Enums.HolidayStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    workspace?: WorkspaceUpdateOneRequiredWithoutHolidaysNestedInput
+    country?: LocationUpdateOneWithoutHolidaysAtCountryNestedInput
+    state?: LocationUpdateOneWithoutHolidaysAtStateNestedInput
+    district?: LocationUpdateOneWithoutHolidaysAtDistrictNestedInput
+    updatedBy?: UserUpdateOneWithoutUpdatedHolidaysNestedInput
+  }
+
+  export type HolidayUncheckedUpdateWithoutCreatedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    holidayDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    countryId?: NullableStringFieldUpdateOperationsInput | string | null
+    stateId?: NullableStringFieldUpdateOperationsInput | string | null
+    districtId?: NullableStringFieldUpdateOperationsInput | string | null
+    isRecurring?: BoolFieldUpdateOperationsInput | boolean
+    recurrenceRule?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: EnumHolidaySourceFieldUpdateOperationsInput | $Enums.HolidaySource
+    status?: EnumHolidayStatusFieldUpdateOperationsInput | $Enums.HolidayStatus
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type HolidayUncheckedUpdateManyWithoutCreatedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    holidayDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    countryId?: NullableStringFieldUpdateOperationsInput | string | null
+    stateId?: NullableStringFieldUpdateOperationsInput | string | null
+    districtId?: NullableStringFieldUpdateOperationsInput | string | null
+    isRecurring?: BoolFieldUpdateOperationsInput | boolean
+    recurrenceRule?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: EnumHolidaySourceFieldUpdateOperationsInput | $Enums.HolidaySource
+    status?: EnumHolidayStatusFieldUpdateOperationsInput | $Enums.HolidayStatus
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type HolidayUpdateWithoutUpdatedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    holidayDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    isRecurring?: BoolFieldUpdateOperationsInput | boolean
+    recurrenceRule?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: EnumHolidaySourceFieldUpdateOperationsInput | $Enums.HolidaySource
+    status?: EnumHolidayStatusFieldUpdateOperationsInput | $Enums.HolidayStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    workspace?: WorkspaceUpdateOneRequiredWithoutHolidaysNestedInput
+    country?: LocationUpdateOneWithoutHolidaysAtCountryNestedInput
+    state?: LocationUpdateOneWithoutHolidaysAtStateNestedInput
+    district?: LocationUpdateOneWithoutHolidaysAtDistrictNestedInput
+    createdBy?: UserUpdateOneWithoutCreatedHolidaysNestedInput
+  }
+
+  export type HolidayUncheckedUpdateWithoutUpdatedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    holidayDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    countryId?: NullableStringFieldUpdateOperationsInput | string | null
+    stateId?: NullableStringFieldUpdateOperationsInput | string | null
+    districtId?: NullableStringFieldUpdateOperationsInput | string | null
+    isRecurring?: BoolFieldUpdateOperationsInput | boolean
+    recurrenceRule?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: EnumHolidaySourceFieldUpdateOperationsInput | $Enums.HolidaySource
+    status?: EnumHolidayStatusFieldUpdateOperationsInput | $Enums.HolidayStatus
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type HolidayUncheckedUpdateManyWithoutUpdatedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    holidayDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    countryId?: NullableStringFieldUpdateOperationsInput | string | null
+    stateId?: NullableStringFieldUpdateOperationsInput | string | null
+    districtId?: NullableStringFieldUpdateOperationsInput | string | null
+    isRecurring?: BoolFieldUpdateOperationsInput | boolean
+    recurrenceRule?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: EnumHolidaySourceFieldUpdateOperationsInput | $Enums.HolidaySource
+    status?: EnumHolidayStatusFieldUpdateOperationsInput | $Enums.HolidayStatus
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ReportTypeUpdateWithoutCreatedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    module?: EnumReportModuleFieldUpdateOperationsInput | $Enums.ReportModule
+    baseDataSource?: EnumReportBaseDataSourceFieldUpdateOperationsInput | $Enums.ReportBaseDataSource
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    allowedFilters?: JsonNullValueInput | InputJsonValue
+    status?: EnumReportTypeStatusFieldUpdateOperationsInput | $Enums.ReportTypeStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    workspace?: WorkspaceUpdateOneRequiredWithoutReportTypesNestedInput
+    updatedBy?: UserUpdateOneWithoutUpdatedReportTypesNestedInput
+    logs?: ReportLogUpdateManyWithoutReportTypeNestedInput
+  }
+
+  export type ReportTypeUncheckedUpdateWithoutCreatedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    module?: EnumReportModuleFieldUpdateOperationsInput | $Enums.ReportModule
+    baseDataSource?: EnumReportBaseDataSourceFieldUpdateOperationsInput | $Enums.ReportBaseDataSource
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    allowedFilters?: JsonNullValueInput | InputJsonValue
+    status?: EnumReportTypeStatusFieldUpdateOperationsInput | $Enums.ReportTypeStatus
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    logs?: ReportLogUncheckedUpdateManyWithoutReportTypeNestedInput
+  }
+
+  export type ReportTypeUncheckedUpdateManyWithoutCreatedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    module?: EnumReportModuleFieldUpdateOperationsInput | $Enums.ReportModule
+    baseDataSource?: EnumReportBaseDataSourceFieldUpdateOperationsInput | $Enums.ReportBaseDataSource
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    allowedFilters?: JsonNullValueInput | InputJsonValue
+    status?: EnumReportTypeStatusFieldUpdateOperationsInput | $Enums.ReportTypeStatus
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type ReportTypeUpdateWithoutUpdatedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    module?: EnumReportModuleFieldUpdateOperationsInput | $Enums.ReportModule
+    baseDataSource?: EnumReportBaseDataSourceFieldUpdateOperationsInput | $Enums.ReportBaseDataSource
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    allowedFilters?: JsonNullValueInput | InputJsonValue
+    status?: EnumReportTypeStatusFieldUpdateOperationsInput | $Enums.ReportTypeStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    workspace?: WorkspaceUpdateOneRequiredWithoutReportTypesNestedInput
+    createdBy?: UserUpdateOneWithoutCreatedReportTypesNestedInput
+    logs?: ReportLogUpdateManyWithoutReportTypeNestedInput
+  }
+
+  export type ReportTypeUncheckedUpdateWithoutUpdatedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    module?: EnumReportModuleFieldUpdateOperationsInput | $Enums.ReportModule
+    baseDataSource?: EnumReportBaseDataSourceFieldUpdateOperationsInput | $Enums.ReportBaseDataSource
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    allowedFilters?: JsonNullValueInput | InputJsonValue
+    status?: EnumReportTypeStatusFieldUpdateOperationsInput | $Enums.ReportTypeStatus
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    logs?: ReportLogUncheckedUpdateManyWithoutReportTypeNestedInput
+  }
+
+  export type ReportTypeUncheckedUpdateManyWithoutUpdatedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    module?: EnumReportModuleFieldUpdateOperationsInput | $Enums.ReportModule
+    baseDataSource?: EnumReportBaseDataSourceFieldUpdateOperationsInput | $Enums.ReportBaseDataSource
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    allowedFilters?: JsonNullValueInput | InputJsonValue
+    status?: EnumReportTypeStatusFieldUpdateOperationsInput | $Enums.ReportTypeStatus
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type ReportLogUpdateWithoutGeneratedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    filters?: JsonNullValueInput | InputJsonValue
+    resultCount?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    workspace?: WorkspaceUpdateOneRequiredWithoutReportLogsNestedInput
+    reportType?: ReportTypeUpdateOneRequiredWithoutLogsNestedInput
+  }
+
+  export type ReportLogUncheckedUpdateWithoutGeneratedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    reportTypeId?: StringFieldUpdateOperationsInput | string
+    filters?: JsonNullValueInput | InputJsonValue
+    resultCount?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ReportLogUncheckedUpdateManyWithoutGeneratedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    reportTypeId?: StringFieldUpdateOperationsInput | string
+    filters?: JsonNullValueInput | InputJsonValue
+    resultCount?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type FollowUpImageCreateManyFollowUpInput = {
     id?: string
     url: string
@@ -64290,6 +75500,42 @@ export namespace Prisma {
   export type FollowUpImageUncheckedUpdateManyWithoutFollowUpInput = {
     id?: StringFieldUpdateOperationsInput | string
     url?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ReportLogCreateManyReportTypeInput = {
+    id?: string
+    workspaceId: string
+    generatedById?: string | null
+    filters?: JsonNullValueInput | InputJsonValue
+    resultCount?: number
+    createdAt?: Date | string
+  }
+
+  export type ReportLogUpdateWithoutReportTypeInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    filters?: JsonNullValueInput | InputJsonValue
+    resultCount?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    workspace?: WorkspaceUpdateOneRequiredWithoutReportLogsNestedInput
+    generatedBy?: UserUpdateOneWithoutGeneratedReportLogsNestedInput
+  }
+
+  export type ReportLogUncheckedUpdateWithoutReportTypeInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    generatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    filters?: JsonNullValueInput | InputJsonValue
+    resultCount?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ReportLogUncheckedUpdateManyWithoutReportTypeInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    generatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    filters?: JsonNullValueInput | InputJsonValue
+    resultCount?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -64362,6 +75608,10 @@ export namespace Prisma {
      * @deprecated Use FollowUpCountOutputTypeDefaultArgs instead
      */
     export type FollowUpCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = FollowUpCountOutputTypeDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use ReportTypeCountOutputTypeDefaultArgs instead
+     */
+    export type ReportTypeCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = ReportTypeCountOutputTypeDefaultArgs<ExtArgs>
     /**
      * @deprecated Use RoleDefaultArgs instead
      */
@@ -64490,6 +75740,22 @@ export namespace Prisma {
      * @deprecated Use DeviceDefaultArgs instead
      */
     export type DeviceArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = DeviceDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use HolidayDefaultArgs instead
+     */
+    export type HolidayArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = HolidayDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use HolidaySyncLogDefaultArgs instead
+     */
+    export type HolidaySyncLogArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = HolidaySyncLogDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use ReportTypeDefaultArgs instead
+     */
+    export type ReportTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = ReportTypeDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use ReportLogDefaultArgs instead
+     */
+    export type ReportLogArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = ReportLogDefaultArgs<ExtArgs>
 
   /**
    * Batch Payload for updateMany & deleteMany & createMany

@@ -25,6 +25,9 @@ import leadSourceRoutes from './modules/master/lead-source/leadSource.routes';
 import leadStageRoutes from './modules/master/lead-stages/leadStage.routes';
 import stageRuleRoutes from './modules/master/stage-rules/stageRule.routes';
 import auditRoutes from './routes/Audit/auditRoutes';
+import holidayRoutes from './modules/holidays/holidays.routes';
+import reportTypeRoutes from './modules/reports/reportTypes.routes';
+import reportRoutes from './modules/reports/reports.routes';
 import logger from './utils/logger';
 import { globalLimiter } from './middlewares/rateLimiter';
 import { notFound, errorHandler } from './middlewares/errorMiddleware';
@@ -92,6 +95,9 @@ app.use('/api/master/lead-sources', leadSourceRoutes);
 app.use('/api/master/lead-stages', leadStageRoutes);
 app.use('/api/master/stage-rules', stageRuleRoutes);
 app.use('/api/audit', auditRoutes);
+app.use('/api/holidays', holidayRoutes);
+app.use('/api/report-types', reportTypeRoutes);
+app.use('/api/reports', reportRoutes);
 
 // Health check
 app.get('/', (req: Request, res: Response) => {

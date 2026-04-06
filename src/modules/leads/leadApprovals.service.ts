@@ -265,6 +265,66 @@ export const listApprovals = async (workspaceId: string, query: ListLeadApproval
   if (query.status) where.status = query.status;
   if (query.assignedTo) where.assignedToId = query.assignedTo;
   if (query.requestedBy) where.requestedById = query.requestedBy;
+  if (query.search) {
+    where.OR = [
+      {
+        lead: {
+          name: {
+            contains: query.search,
+            mode: 'insensitive',
+          },
+        },
+      },
+      {
+        lead: {
+          email: {
+            contains: query.search,
+            mode: 'insensitive',
+          },
+        },
+      },
+      {
+        lead: {
+          phone: {
+            contains: query.search,
+            mode: 'insensitive',
+          },
+        },
+      },
+      {
+        requestedBy: {
+          name: {
+            contains: query.search,
+            mode: 'insensitive',
+          },
+        },
+      },
+      {
+        assignedTo: {
+          name: {
+            contains: query.search,
+            mode: 'insensitive',
+          },
+        },
+      },
+      {
+        fromStage: {
+          name: {
+            contains: query.search,
+            mode: 'insensitive',
+          },
+        },
+      },
+      {
+        toStage: {
+          name: {
+            contains: query.search,
+            mode: 'insensitive',
+          },
+        },
+      },
+    ];
+  }
 
   if (query.dateFrom || query.dateTo) {
     where.createdAt = {

@@ -97,6 +97,10 @@ model Workspace {
   leads              Lead[]
   leadActivities     LeadActivity[]
   leadStageApprovals LeadStageApproval[]
+  holidays           Holiday[]
+  holidaySyncLogs    HolidaySyncLog[]
+  reportTypes        ReportType[]
+  reportLogs         ReportLog[]
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
 
@@ -138,6 +142,25 @@ enum LeadApprovalStatus {
 enum LeadApprovalState {
   NONE
   PENDING
+}
+
+enum ReportTypeStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum ReportBaseDataSource {
+  LEADS
+  USERS
+  FOLLOWUPS
+}
+
+enum ReportModule {
+  LEADS
+  USERS
+  REPORTS
+  TARGETS
+  FOLLOWUPS
 }
 
 enum InputType {
@@ -312,6 +335,10 @@ model Location {
   usersAtCountry  User[] @relation("UserCountry")
   usersAtState    User[] @relation("UserState")
   usersAtDistrict User[] @relation("UserDistrict")
+
+  holidaysAtCountry  Holiday[] @relation("HolidayCountry")
+  holidaysAtState    Holiday[] @relation("HolidayState")
+  holidaysAtDistrict Holiday[] @relation("HolidayDistrict")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -729,6 +756,12 @@ model User {
   assignedLeads               Lead[]              @relation("LeadAssignedTo")
   closedLeads                 Lead[]              @relation("LeadClosedBy")
 
+  createdHolidays     Holiday[]    @relation("HolidayCreatedBy")
+  updatedHolidays     Holiday[]    @relation("HolidayUpdatedBy")
+  createdReportTypes  ReportType[] @relation("ReportTypeCreatedBy")
+  updatedReportTypes  ReportType[] @relation("ReportTypeUpdatedBy")
+  generatedReportLogs ReportLog[]  @relation("ReportLogGeneratedBy")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -846,4 +879,111 @@ model Device {
 
   @@unique([userId, deviceId])
   @@map("devices")
+}
+
+enum HolidaySource {
+  MANUAL
+  API
+  AI
+  GOOGLE
+}
+
+enum HolidayStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model Holiday {
+  id             String        @id @default(uuid())
+  workspaceId    String
+  name           String
+  holidayDate    DateTime      @db.Date
+  countryId      String?
+  stateId        String?
+  districtId     String?
+  isRecurring    Boolean       @default(false)
+  recurrenceRule String?
+  source         HolidaySource @default(MANUAL)
+  status         HolidayStatus @default(ACTIVE)
+
+  createdById String?
+  updatedById String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  country   Location? @relation("HolidayCountry", fields: [countryId], references: [id])
+  state     Location? @relation("HolidayState", fields: [stateId], references: [id])
+  district  Location? @relation("HolidayDistrict", fields: [districtId], references: [id])
+
+  createdBy User? @relation("HolidayCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy User? @relation("HolidayUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  @@index([workspaceId])
+  @@index([countryId, stateId, districtId])
+  @@index([holidayDate])
+  @@map("holidays")
+}
+
+model HolidaySyncLog {
+  id          String        @id @default(uuid())
+  workspaceId String
+  source      HolidaySource
+  status      String
+  message     String?       @db.Text
+  syncedAt    DateTime      @default(now())
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@index([syncedAt])
+  @@map("holiday_sync_logs")
+}
+
+model ReportType {
+  id             String               @id @default(uuid())
+  workspaceId    String
+  name           String
+  module         ReportModule
+  baseDataSource ReportBaseDataSource
+  description    String?
+  allowedFilters Json                 @default("[]")
+  status         ReportTypeStatus     @default(ACTIVE)
+  createdById    String?
+  updatedById    String?
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  deletedAt      DateTime?
+
+  workspace Workspace   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdBy User?       @relation("ReportTypeCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy User?       @relation("ReportTypeUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  logs      ReportLog[]
+
+  @@index([workspaceId])
+  @@index([status])
+  @@index([module])
+  @@index([workspaceId, status, module, createdAt(sort: Desc)])
+  @@map("report_types")
+}
+
+model ReportLog {
+  id            String   @id @default(uuid())
+  workspaceId   String
+  reportTypeId  String
+  generatedById String?
+  filters       Json     @default("[]")
+  resultCount   Int      @default(0)
+  createdAt     DateTime @default(now())
+
+  workspace   Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  reportType  ReportType @relation(fields: [reportTypeId], references: [id], onDelete: Cascade)
+  generatedBy User?      @relation("ReportLogGeneratedBy", fields: [generatedById], references: [id], onDelete: SetNull)
+
+  @@index([workspaceId])
+  @@index([reportTypeId])
+  @@index([generatedById])
+  @@index([workspaceId, createdAt(sort: Desc)])
+  @@map("report_logs")
 }

@@ -49,6 +49,7 @@ export const createLeadApprovalSchema = z.object({
 export const listLeadApprovalsQuerySchema = z.object({
   page: pageSchema,
   limit: limitSchema,
+  search: z.preprocess(emptyStringToUndefined, z.string().trim().max(191, 'search is too long').optional()).optional(),
   status: z.preprocess(emptyStringToUndefined, z.enum(['PENDING', 'APPROVED', 'DENIED']).optional()).optional(),
   assignedTo: z.preprocess(emptyStringToUndefined, z.string().trim().optional()).optional(),
   requestedBy: z.preprocess(emptyStringToUndefined, z.string().trim().optional()).optional(),

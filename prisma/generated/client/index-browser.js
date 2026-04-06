@@ -523,6 +523,59 @@ exports.Prisma.DeviceScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.HolidayScalarFieldEnum = {
+  id: 'id',
+  workspaceId: 'workspaceId',
+  name: 'name',
+  holidayDate: 'holidayDate',
+  countryId: 'countryId',
+  stateId: 'stateId',
+  districtId: 'districtId',
+  isRecurring: 'isRecurring',
+  recurrenceRule: 'recurrenceRule',
+  source: 'source',
+  status: 'status',
+  createdById: 'createdById',
+  updatedById: 'updatedById',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.HolidaySyncLogScalarFieldEnum = {
+  id: 'id',
+  workspaceId: 'workspaceId',
+  source: 'source',
+  status: 'status',
+  message: 'message',
+  syncedAt: 'syncedAt'
+};
+
+exports.Prisma.ReportTypeScalarFieldEnum = {
+  id: 'id',
+  workspaceId: 'workspaceId',
+  name: 'name',
+  module: 'module',
+  baseDataSource: 'baseDataSource',
+  description: 'description',
+  allowedFilters: 'allowedFilters',
+  status: 'status',
+  createdById: 'createdById',
+  updatedById: 'updatedById',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
+};
+
+exports.Prisma.ReportLogScalarFieldEnum = {
+  id: 'id',
+  workspaceId: 'workspaceId',
+  reportTypeId: 'reportTypeId',
+  generatedById: 'generatedById',
+  filters: 'filters',
+  resultCount: 'resultCount',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -530,6 +583,10 @@ exports.Prisma.SortOrder = {
 
 exports.Prisma.NullableJsonNullValueInput = {
   DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull
+};
+
+exports.Prisma.JsonNullValueInput = {
   JsonNull: Prisma.JsonNull
 };
 
@@ -641,6 +698,37 @@ exports.RosterStatus = exports.$Enums.RosterStatus = {
   INACTIVE: 'INACTIVE'
 };
 
+exports.HolidaySource = exports.$Enums.HolidaySource = {
+  MANUAL: 'MANUAL',
+  API: 'API',
+  AI: 'AI',
+  GOOGLE: 'GOOGLE'
+};
+
+exports.HolidayStatus = exports.$Enums.HolidayStatus = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE'
+};
+
+exports.ReportModule = exports.$Enums.ReportModule = {
+  LEADS: 'LEADS',
+  USERS: 'USERS',
+  REPORTS: 'REPORTS',
+  TARGETS: 'TARGETS',
+  FOLLOWUPS: 'FOLLOWUPS'
+};
+
+exports.ReportBaseDataSource = exports.$Enums.ReportBaseDataSource = {
+  LEADS: 'LEADS',
+  USERS: 'USERS',
+  FOLLOWUPS: 'FOLLOWUPS'
+};
+
+exports.ReportTypeStatus = exports.$Enums.ReportTypeStatus = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE'
+};
+
 exports.Prisma.ModelName = {
   Role: 'Role',
   Permission: 'Permission',
@@ -673,7 +761,11 @@ exports.Prisma.ModelName = {
   FollowUpImage: 'FollowUpImage',
   RosterEntry: 'RosterEntry',
   AuditLog: 'AuditLog',
-  Device: 'Device'
+  Device: 'Device',
+  Holiday: 'Holiday',
+  HolidaySyncLog: 'HolidaySyncLog',
+  ReportType: 'ReportType',
+  ReportLog: 'ReportLog'
 };
 
 /**
