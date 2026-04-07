@@ -3,20 +3,35 @@ import logger from '../../utils/logger';
 
 export const getLocationTree = async (workspaceId: string, parentId: string | null = null) => {
   return (prisma as any).location.findMany({
-    where: { workspaceId, parentId },
+    where: { workspaceId, parentId, deletedAt: null, isActive: true },
     include: {
       children: {
+        where: {
+          deletedAt: null,
+          isActive: true,
+        },
         include: {
-          children: true
+          children: {
+            where: {
+              deletedAt: null,
+              isActive: true,
+            },
+          }
         }
       }
-    }
+    },
+    orderBy: { name: 'asc' },
   });
 };
 
 export const getAllLocations = async (workspaceId: string) => {
   return (prisma as any).location.findMany({
-    where: { workspaceId },
+    where: {
+      workspaceId,
+      deletedAt: null,
+      isActive: true,
+      countryId: { not: null },
+    },
     orderBy: { name: 'asc' }
   });
 };

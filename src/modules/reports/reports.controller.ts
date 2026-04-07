@@ -1,8 +1,22 @@
 import { NextFunction, Request, Response } from 'express';
 import logger from '../../utils/logger';
 import * as reportsService from './reports.service';
-import type { GenerateReportInput, ListReportLogsQueryInput } from './reports.validation';
-import { generateReportSchema, listReportLogsQuerySchema } from './reports.validation';
+import type {
+  CreateReportInput,
+  GenerateReportInput,
+  ListReportLogsQueryInput,
+  ListReportsQueryInput,
+  ReportIdParamInput,
+  UpdateReportInput,
+} from './reports.validation';
+import {
+  createReportSchema,
+  generateReportSchema,
+  listReportLogsQuerySchema,
+  listReportsQuerySchema,
+  reportIdParamSchema,
+  updateReportSchema,
+} from './reports.validation';
 
 const requireWorkspace = (req: Request, res: Response): string | null => {
   const workspaceId = req.user?.workspaceId ?? null;
@@ -54,6 +68,70 @@ const getActor = (req: Request) => ({
   role: req.user?.role,
 });
 
+const getContext = (req: Request) => ({
+  ipAddress: req.ip,
+  userAgent: req.headers['user-agent'],
+});
+
+export const createReport = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = requireWorkspace(req, res);
+  if (!workspaceId) return;
+
+  const input = validate<CreateReportInput>(createReportSchema, req.body, res);
+  if (!input) return;
+
+  try {
+    const result = await reportsService.createReport(workspaceId, getActor(req), input, getContext(req));
+    return res.status(201).json({
+      success: true,
+      message: 'Report created successfully.',
+      data: result,
+    });
+  } catch (error) {
+    handleServiceError(error, res, next, 'createReport');
+  }
+};
+
+export const listReports = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = requireWorkspace(req, res);
+  if (!workspaceId) return;
+
+  const query = validate<ListReportsQueryInput>(listReportsQuerySchema, req.query, res);
+  if (!query) return;
+
+  try {
+    const result = await reportsService.listReports(workspaceId, query);
+    return res.status(200).json({
+      success: true,
+      ...result,
+    });
+  } catch (error) {
+    handleServiceError(error, res, next, 'listReports');
+  }
+};
+
+export const updateReport = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = requireWorkspace(req, res);
+  if (!workspaceId) return;
+
+  const params = validate<ReportIdParamInput>(reportIdParamSchema, req.params, res);
+  if (!params) return;
+
+  const input = validate<UpdateReportInput>(updateReportSchema, req.body, res);
+  if (!input) return;
+
+  try {
+    const result = await reportsService.updateReport(workspaceId, getActor(req), params.id, input, getContext(req));
+    return res.status(200).json({
+      success: true,
+      message: 'Report updated successfully.',
+      data: result,
+    });
+  } catch (error) {
+    handleServiceError(error, res, next, 'updateReport');
+  }
+};
+
 export const generateReport = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
   const workspaceId = requireWorkspace(req, res);
   if (!workspaceId) return;
@@ -62,10 +140,7 @@ export const generateReport = async (req: Request, res: Response, next: NextFunc
   if (!input) return;
 
   try {
-    const result = await reportsService.generateReport(workspaceId, getActor(req), input, {
-      ipAddress: req.ip,
-      userAgent: req.headers['user-agent'],
-    });
+    const result = await reportsService.generateReport(workspaceId, getActor(req), input, getContext(req));
 
     return res.status(200).json({
       success: true,
@@ -73,6 +148,60 @@ export const generateReport = async (req: Request, res: Response, next: NextFunc
     });
   } catch (error) {
     handleServiceError(error, res, next, 'generateReport');
+  }
+};
+
+export const generateSavedReport = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = requireWorkspace(req, res);
+  if (!workspaceId) return;
+
+  const params = validate<ReportIdParamInput>(reportIdParamSchema, req.params, res);
+  if (!params) return;
+
+  try {
+    const result = await reportsService.generateSavedReport(workspaceId, getActor(req), params.id, getContext(req));
+    return res.status(200).json({
+      success: true,
+      ...result,
+    });
+  } catch (error) {
+    handleServiceError(error, res, next, 'generateSavedReport');
+  }
+};
+
+export const downloadReport = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = requireWorkspace(req, res);
+  if (!workspaceId) return;
+
+  const params = validate<ReportIdParamInput>(reportIdParamSchema, req.params, res);
+  if (!params) return;
+
+  try {
+    const result = await reportsService.downloadReport(workspaceId, getActor(req), params.id, getContext(req));
+    return res.status(200).json({
+      success: true,
+      ...result,
+    });
+  } catch (error) {
+    handleServiceError(error, res, next, 'downloadReport');
+  }
+};
+
+export const deleteReport = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = requireWorkspace(req, res);
+  if (!workspaceId) return;
+
+  const params = validate<ReportIdParamInput>(reportIdParamSchema, req.params, res);
+  if (!params) return;
+
+  try {
+    const result = await reportsService.deleteReport(workspaceId, getActor(req), params.id, getContext(req));
+    return res.status(200).json({
+      success: true,
+      ...result,
+    });
+  } catch (error) {
+    handleServiceError(error, res, next, 'deleteReport');
   }
 };
 
@@ -85,7 +214,10 @@ export const listReportLogs = async (req: Request, res: Response, next: NextFunc
 
   try {
     const result = await reportsService.listReportLogs(workspaceId, query);
-    return res.status(200).json(result);
+    return res.status(200).json({
+      success: true,
+      ...result,
+    });
   } catch (error) {
     handleServiceError(error, res, next, 'listReportLogs');
   }

@@ -22,7 +22,9 @@ import {
   leadValuesRouter,
 } from './modules/admin/lead-dynamics/leadDynamics.routes';
 import leadSourceRoutes from './modules/master/lead-source/leadSource.routes';
+import locationRoutes from './modules/master/locations/locations.routes';
 import leadStageRoutes from './modules/master/lead-stages/leadStage.routes';
+import lobReasonRoutes from './modules/master/lob-reasons/lobReasons.routes';
 import stageRuleRoutes from './modules/master/stage-rules/stageRule.routes';
 import auditRoutes from './routes/Audit/auditRoutes';
 import holidayRoutes from './modules/holidays/holidays.routes';
@@ -92,7 +94,9 @@ app.use('/api/master/target-cycles', targetCycleRoutes);
 app.use('/api/lead-dynamics', leadDynamicsRouter);
 app.use('/api/leads', leadValuesRouter);
 app.use('/api/master/lead-sources', leadSourceRoutes);
+app.use('/api/locations', locationRoutes);
 app.use('/api/master/lead-stages', leadStageRoutes);
+app.use('/api/lob-reasons', lobReasonRoutes);
 app.use('/api/master/stage-rules', stageRuleRoutes);
 app.use('/api/audit', auditRoutes);
 app.use('/api/holidays', holidayRoutes);

@@ -2,6 +2,7 @@ import prisma from '../../config/prisma';
 import { redisClient } from '../../config/redis';
 import { buildClosureUpdateData, isClosureStage } from '../../modules/leads/leads.service';
 import * as leadApprovalService from '../../modules/leads/leadApprovals.service';
+import { assertActiveLOBReason } from '../../modules/master/lob-reasons/lobReasons.service';
 import type {
   AssignLeadInput,
   ChangeStageInput,
@@ -564,6 +565,17 @@ const ensureLOBPayload = (stage: { isLOB: boolean; name: string } | null, reason
   }
 };
 
+const ensureValidLOBReasonForStage = async (
+  workspaceId: string,
+  stage: { isLOB: boolean; name: string } | null,
+  reasonId?: string | null,
+): Promise<void> => {
+  const isLobStage = Boolean(stage?.isLOB || normalizeRoleKey(stage?.name) === 'lob');
+  if (!isLobStage || !reasonId) return;
+
+  await assertActiveLOBReason(workspaceId, reasonId);
+};
+
 const findDuplicateLead = async (
   workspaceId: string,
   email?: string | null,
@@ -691,6 +703,7 @@ export const createLead = async (
   const lifecycle = await resolveLifecycle(workspaceId, input.lifecycleId);
   const source = await resolveSource(input.sourceId);
   ensureLOBPayload(stage, input.reasonId, input.remarks ?? null);
+  await ensureValidLOBReasonForStage(workspaceId, stage, input.reasonId);
   const slaSnapshot = stage?.isLOB || stage?.isClosed
     ? emptySlaSnapshot()
     : await buildLeadSlaSnapshot(lifecycle, stage?.id || null);
@@ -868,6 +881,7 @@ export const updateLead = async (
   const remarks = input.remarks === null ? null : input.remarks ?? null;
   const reasonId = input.reasonId === null ? null : input.reasonId ?? null;
   ensureLOBPayload(stage, reasonId, remarks);
+  await ensureValidLOBReasonForStage(workspaceId, stage, reasonId);
   const closureData = input.stageId !== undefined
     ? buildClosureUpdateData(stage as any, actor.id, {
         isClosed: existing.isClosed,
@@ -985,6 +999,9 @@ export const changeStage = async (
   if (!targetStage) {
     throw createServiceError('Lead stage was not found.', 404);
   }
+
+  ensureLOBPayload(targetStage, input.reasonId, input.remarks ?? null);
+  await ensureValidLOBReasonForStage(workspaceId, targetStage, input.reasonId);
 
   if (existing.stageId !== targetStage.id && targetStage.isApprovalRequired) {
     if (!existing.stageId) {

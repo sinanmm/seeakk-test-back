@@ -234,11 +234,43 @@ exports.Prisma.OfficeScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.CountryScalarFieldEnum = {
+  id: 'id',
+  workspaceId: 'workspaceId',
+  name: 'name',
+  code: 'code',
+  isActive: 'isActive',
+  createdById: 'createdById',
+  updatedById: 'updatedById',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
+};
+
+exports.Prisma.LocationLevelScalarFieldEnum = {
+  id: 'id',
+  workspaceId: 'workspaceId',
+  countryId: 'countryId',
+  levelName: 'levelName',
+  levelOrder: 'levelOrder',
+  isActive: 'isActive',
+  createdById: 'createdById',
+  updatedById: 'updatedById',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.LocationScalarFieldEnum = {
   id: 'id',
   name: 'name',
   type: 'type',
   workspaceId: 'workspaceId',
+  countryId: 'countryId',
+  levelId: 'levelId',
+  isActive: 'isActive',
+  createdById: 'createdById',
+  updatedById: 'updatedById',
+  deletedAt: 'deletedAt',
   parentId: 'parentId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -331,6 +363,18 @@ exports.Prisma.LeadLOBLogScalarFieldEnum = {
   changedById: 'changedById',
   changedAt: 'changedAt',
   workspaceId: 'workspaceId'
+};
+
+exports.Prisma.LOBReasonScalarFieldEnum = {
+  id: 'id',
+  workspaceId: 'workspaceId',
+  name: 'name',
+  status: 'status',
+  createdById: 'createdById',
+  updatedById: 'updatedById',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
 };
 
 exports.Prisma.LeadStageApprovalScalarFieldEnum = {
@@ -570,9 +614,36 @@ exports.Prisma.ReportLogScalarFieldEnum = {
   id: 'id',
   workspaceId: 'workspaceId',
   reportTypeId: 'reportTypeId',
+  reportId: 'reportId',
   generatedById: 'generatedById',
+  action: 'action',
   filters: 'filters',
   resultCount: 'resultCount',
+  meta: 'meta',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.ReportScalarFieldEnum = {
+  id: 'id',
+  workspaceId: 'workspaceId',
+  reportName: 'reportName',
+  reportTypeId: 'reportTypeId',
+  reportDate: 'reportDate',
+  isActive: 'isActive',
+  isGenerated: 'isGenerated',
+  generatedFileUrl: 'generatedFileUrl',
+  generatedAt: 'generatedAt',
+  createdById: 'createdById',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
+};
+
+exports.Prisma.ReportFilterScalarFieldEnum = {
+  id: 'id',
+  reportId: 'reportId',
+  filterKey: 'filterKey',
+  filterValue: 'filterValue',
   createdAt: 'createdAt'
 };
 
@@ -663,6 +734,11 @@ exports.LeadClosureType = exports.$Enums.LeadClosureType = {
   CANCELLED: 'CANCELLED'
 };
 
+exports.LOBReasonStatus = exports.$Enums.LOBReasonStatus = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE'
+};
+
 exports.LeadApprovalStatus = exports.$Enums.LeadApprovalStatus = {
   PENDING: 'PENDING',
   APPROVED: 'APPROVED',
@@ -740,6 +816,8 @@ exports.Prisma.ModelName = {
   StageRule: 'StageRule',
   LeadStageInput: 'LeadStageInput',
   Office: 'Office',
+  Country: 'Country',
+  LocationLevel: 'LocationLevel',
   Location: 'Location',
   UserLocationAssignment: 'UserLocationAssignment',
   TargetType: 'TargetType',
@@ -748,6 +826,7 @@ exports.Prisma.ModelName = {
   LeadLifeCycle: 'LeadLifeCycle',
   Lead: 'Lead',
   LeadLOBLog: 'LeadLOBLog',
+  LOBReason: 'LOBReason',
   LeadStageApproval: 'LeadStageApproval',
   LeadLifeCycleTransition: 'LeadLifeCycleTransition',
   LeadDynamicField: 'LeadDynamicField',
@@ -765,7 +844,9 @@ exports.Prisma.ModelName = {
   Holiday: 'Holiday',
   HolidaySyncLog: 'HolidaySyncLog',
   ReportType: 'ReportType',
-  ReportLog: 'ReportLog'
+  ReportLog: 'ReportLog',
+  Report: 'Report',
+  ReportFilter: 'ReportFilter'
 };
 
 /**

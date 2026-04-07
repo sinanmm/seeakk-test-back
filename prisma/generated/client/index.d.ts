@@ -64,6 +64,16 @@ export type LeadStageInput = $Result.DefaultSelection<Prisma.$LeadStageInputPayl
  */
 export type Office = $Result.DefaultSelection<Prisma.$OfficePayload>
 /**
+ * Model Country
+ * 
+ */
+export type Country = $Result.DefaultSelection<Prisma.$CountryPayload>
+/**
+ * Model LocationLevel
+ * 
+ */
+export type LocationLevel = $Result.DefaultSelection<Prisma.$LocationLevelPayload>
+/**
  * Model Location
  * 
  */
@@ -103,6 +113,11 @@ export type Lead = $Result.DefaultSelection<Prisma.$LeadPayload>
  * 
  */
 export type LeadLOBLog = $Result.DefaultSelection<Prisma.$LeadLOBLogPayload>
+/**
+ * Model LOBReason
+ * 
+ */
+export type LOBReason = $Result.DefaultSelection<Prisma.$LOBReasonPayload>
 /**
  * Model LeadStageApproval
  * 
@@ -193,6 +208,16 @@ export type ReportType = $Result.DefaultSelection<Prisma.$ReportTypePayload>
  * 
  */
 export type ReportLog = $Result.DefaultSelection<Prisma.$ReportLogPayload>
+/**
+ * Model Report
+ * 
+ */
+export type Report = $Result.DefaultSelection<Prisma.$ReportPayload>
+/**
+ * Model ReportFilter
+ * 
+ */
+export type ReportFilter = $Result.DefaultSelection<Prisma.$ReportFilterPayload>
 
 /**
  * Enums
@@ -284,6 +309,14 @@ export const LeadClosureType: {
 };
 
 export type LeadClosureType = (typeof LeadClosureType)[keyof typeof LeadClosureType]
+
+
+export const LOBReasonStatus: {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE'
+};
+
+export type LOBReasonStatus = (typeof LOBReasonStatus)[keyof typeof LOBReasonStatus]
 
 
 export const LeadApprovalStatus: {
@@ -425,6 +458,10 @@ export const LeadApprovalState: typeof $Enums.LeadApprovalState
 export type LeadClosureType = $Enums.LeadClosureType
 
 export const LeadClosureType: typeof $Enums.LeadClosureType
+
+export type LOBReasonStatus = $Enums.LOBReasonStatus
+
+export const LOBReasonStatus: typeof $Enums.LOBReasonStatus
 
 export type LeadApprovalStatus = $Enums.LeadApprovalStatus
 
@@ -694,6 +731,26 @@ export class PrismaClient<
   get office(): Prisma.OfficeDelegate<ExtArgs>;
 
   /**
+   * `prisma.country`: Exposes CRUD operations for the **Country** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Countries
+    * const countries = await prisma.country.findMany()
+    * ```
+    */
+  get country(): Prisma.CountryDelegate<ExtArgs>;
+
+  /**
+   * `prisma.locationLevel`: Exposes CRUD operations for the **LocationLevel** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more LocationLevels
+    * const locationLevels = await prisma.locationLevel.findMany()
+    * ```
+    */
+  get locationLevel(): Prisma.LocationLevelDelegate<ExtArgs>;
+
+  /**
    * `prisma.location`: Exposes CRUD operations for the **Location** model.
     * Example usage:
     * ```ts
@@ -772,6 +829,16 @@ export class PrismaClient<
     * ```
     */
   get leadLOBLog(): Prisma.LeadLOBLogDelegate<ExtArgs>;
+
+  /**
+   * `prisma.lOBReason`: Exposes CRUD operations for the **LOBReason** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more LOBReasons
+    * const lOBReasons = await prisma.lOBReason.findMany()
+    * ```
+    */
+  get lOBReason(): Prisma.LOBReasonDelegate<ExtArgs>;
 
   /**
    * `prisma.leadStageApproval`: Exposes CRUD operations for the **LeadStageApproval** model.
@@ -952,6 +1019,26 @@ export class PrismaClient<
     * ```
     */
   get reportLog(): Prisma.ReportLogDelegate<ExtArgs>;
+
+  /**
+   * `prisma.report`: Exposes CRUD operations for the **Report** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Reports
+    * const reports = await prisma.report.findMany()
+    * ```
+    */
+  get report(): Prisma.ReportDelegate<ExtArgs>;
+
+  /**
+   * `prisma.reportFilter`: Exposes CRUD operations for the **ReportFilter** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more ReportFilters
+    * const reportFilters = await prisma.reportFilter.findMany()
+    * ```
+    */
+  get reportFilter(): Prisma.ReportFilterDelegate<ExtArgs>;
 }
 
 export namespace Prisma {
@@ -1403,6 +1490,8 @@ export namespace Prisma {
     StageRule: 'StageRule',
     LeadStageInput: 'LeadStageInput',
     Office: 'Office',
+    Country: 'Country',
+    LocationLevel: 'LocationLevel',
     Location: 'Location',
     UserLocationAssignment: 'UserLocationAssignment',
     TargetType: 'TargetType',
@@ -1411,6 +1500,7 @@ export namespace Prisma {
     LeadLifeCycle: 'LeadLifeCycle',
     Lead: 'Lead',
     LeadLOBLog: 'LeadLOBLog',
+    LOBReason: 'LOBReason',
     LeadStageApproval: 'LeadStageApproval',
     LeadLifeCycleTransition: 'LeadLifeCycleTransition',
     LeadDynamicField: 'LeadDynamicField',
@@ -1428,7 +1518,9 @@ export namespace Prisma {
     Holiday: 'Holiday',
     HolidaySyncLog: 'HolidaySyncLog',
     ReportType: 'ReportType',
-    ReportLog: 'ReportLog'
+    ReportLog: 'ReportLog',
+    Report: 'Report',
+    ReportFilter: 'ReportFilter'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1444,7 +1536,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "role" | "permission" | "rolePermission" | "workspace" | "department" | "leadSource" | "leadStage" | "stageRule" | "leadStageInput" | "office" | "location" | "userLocationAssignment" | "targetType" | "targetCycle" | "targetCycleRange" | "leadLifeCycle" | "lead" | "leadLOBLog" | "leadStageApproval" | "leadLifeCycleTransition" | "leadDynamicField" | "leadDynamicOption" | "leadDynamicValue" | "leadActivity" | "targetSetting" | "targetViolation" | "user" | "followUp" | "followUpImage" | "rosterEntry" | "auditLog" | "device" | "holiday" | "holidaySyncLog" | "reportType" | "reportLog"
+      modelProps: "role" | "permission" | "rolePermission" | "workspace" | "department" | "leadSource" | "leadStage" | "stageRule" | "leadStageInput" | "office" | "country" | "locationLevel" | "location" | "userLocationAssignment" | "targetType" | "targetCycle" | "targetCycleRange" | "leadLifeCycle" | "lead" | "leadLOBLog" | "lOBReason" | "leadStageApproval" | "leadLifeCycleTransition" | "leadDynamicField" | "leadDynamicOption" | "leadDynamicValue" | "leadActivity" | "targetSetting" | "targetViolation" | "user" | "followUp" | "followUpImage" | "rosterEntry" | "auditLog" | "device" | "holiday" | "holidaySyncLog" | "reportType" | "reportLog" | "report" | "reportFilter"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2148,6 +2240,146 @@ export namespace Prisma {
           }
         }
       }
+      Country: {
+        payload: Prisma.$CountryPayload<ExtArgs>
+        fields: Prisma.CountryFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.CountryFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CountryPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.CountryFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CountryPayload>
+          }
+          findFirst: {
+            args: Prisma.CountryFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CountryPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.CountryFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CountryPayload>
+          }
+          findMany: {
+            args: Prisma.CountryFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CountryPayload>[]
+          }
+          create: {
+            args: Prisma.CountryCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CountryPayload>
+          }
+          createMany: {
+            args: Prisma.CountryCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.CountryCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CountryPayload>[]
+          }
+          delete: {
+            args: Prisma.CountryDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CountryPayload>
+          }
+          update: {
+            args: Prisma.CountryUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CountryPayload>
+          }
+          deleteMany: {
+            args: Prisma.CountryDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.CountryUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.CountryUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CountryPayload>
+          }
+          aggregate: {
+            args: Prisma.CountryAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateCountry>
+          }
+          groupBy: {
+            args: Prisma.CountryGroupByArgs<ExtArgs>
+            result: $Utils.Optional<CountryGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.CountryCountArgs<ExtArgs>
+            result: $Utils.Optional<CountryCountAggregateOutputType> | number
+          }
+        }
+      }
+      LocationLevel: {
+        payload: Prisma.$LocationLevelPayload<ExtArgs>
+        fields: Prisma.LocationLevelFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.LocationLevelFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LocationLevelPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.LocationLevelFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LocationLevelPayload>
+          }
+          findFirst: {
+            args: Prisma.LocationLevelFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LocationLevelPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.LocationLevelFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LocationLevelPayload>
+          }
+          findMany: {
+            args: Prisma.LocationLevelFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LocationLevelPayload>[]
+          }
+          create: {
+            args: Prisma.LocationLevelCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LocationLevelPayload>
+          }
+          createMany: {
+            args: Prisma.LocationLevelCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.LocationLevelCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LocationLevelPayload>[]
+          }
+          delete: {
+            args: Prisma.LocationLevelDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LocationLevelPayload>
+          }
+          update: {
+            args: Prisma.LocationLevelUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LocationLevelPayload>
+          }
+          deleteMany: {
+            args: Prisma.LocationLevelDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.LocationLevelUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.LocationLevelUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LocationLevelPayload>
+          }
+          aggregate: {
+            args: Prisma.LocationLevelAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateLocationLevel>
+          }
+          groupBy: {
+            args: Prisma.LocationLevelGroupByArgs<ExtArgs>
+            result: $Utils.Optional<LocationLevelGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.LocationLevelCountArgs<ExtArgs>
+            result: $Utils.Optional<LocationLevelCountAggregateOutputType> | number
+          }
+        }
+      }
       Location: {
         payload: Prisma.$LocationPayload<ExtArgs>
         fields: Prisma.LocationFieldRefs
@@ -2705,6 +2937,76 @@ export namespace Prisma {
           count: {
             args: Prisma.LeadLOBLogCountArgs<ExtArgs>
             result: $Utils.Optional<LeadLOBLogCountAggregateOutputType> | number
+          }
+        }
+      }
+      LOBReason: {
+        payload: Prisma.$LOBReasonPayload<ExtArgs>
+        fields: Prisma.LOBReasonFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.LOBReasonFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LOBReasonPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.LOBReasonFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LOBReasonPayload>
+          }
+          findFirst: {
+            args: Prisma.LOBReasonFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LOBReasonPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.LOBReasonFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LOBReasonPayload>
+          }
+          findMany: {
+            args: Prisma.LOBReasonFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LOBReasonPayload>[]
+          }
+          create: {
+            args: Prisma.LOBReasonCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LOBReasonPayload>
+          }
+          createMany: {
+            args: Prisma.LOBReasonCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.LOBReasonCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LOBReasonPayload>[]
+          }
+          delete: {
+            args: Prisma.LOBReasonDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LOBReasonPayload>
+          }
+          update: {
+            args: Prisma.LOBReasonUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LOBReasonPayload>
+          }
+          deleteMany: {
+            args: Prisma.LOBReasonDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.LOBReasonUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.LOBReasonUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LOBReasonPayload>
+          }
+          aggregate: {
+            args: Prisma.LOBReasonAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateLOBReason>
+          }
+          groupBy: {
+            args: Prisma.LOBReasonGroupByArgs<ExtArgs>
+            result: $Utils.Optional<LOBReasonGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.LOBReasonCountArgs<ExtArgs>
+            result: $Utils.Optional<LOBReasonCountAggregateOutputType> | number
           }
         }
       }
@@ -3968,6 +4270,146 @@ export namespace Prisma {
           }
         }
       }
+      Report: {
+        payload: Prisma.$ReportPayload<ExtArgs>
+        fields: Prisma.ReportFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ReportFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ReportFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportPayload>
+          }
+          findFirst: {
+            args: Prisma.ReportFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ReportFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportPayload>
+          }
+          findMany: {
+            args: Prisma.ReportFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportPayload>[]
+          }
+          create: {
+            args: Prisma.ReportCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportPayload>
+          }
+          createMany: {
+            args: Prisma.ReportCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.ReportCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportPayload>[]
+          }
+          delete: {
+            args: Prisma.ReportDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportPayload>
+          }
+          update: {
+            args: Prisma.ReportUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportPayload>
+          }
+          deleteMany: {
+            args: Prisma.ReportDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ReportUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.ReportUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportPayload>
+          }
+          aggregate: {
+            args: Prisma.ReportAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateReport>
+          }
+          groupBy: {
+            args: Prisma.ReportGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ReportGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.ReportCountArgs<ExtArgs>
+            result: $Utils.Optional<ReportCountAggregateOutputType> | number
+          }
+        }
+      }
+      ReportFilter: {
+        payload: Prisma.$ReportFilterPayload<ExtArgs>
+        fields: Prisma.ReportFilterFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ReportFilterFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportFilterPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ReportFilterFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportFilterPayload>
+          }
+          findFirst: {
+            args: Prisma.ReportFilterFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportFilterPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ReportFilterFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportFilterPayload>
+          }
+          findMany: {
+            args: Prisma.ReportFilterFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportFilterPayload>[]
+          }
+          create: {
+            args: Prisma.ReportFilterCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportFilterPayload>
+          }
+          createMany: {
+            args: Prisma.ReportFilterCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.ReportFilterCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportFilterPayload>[]
+          }
+          delete: {
+            args: Prisma.ReportFilterDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportFilterPayload>
+          }
+          update: {
+            args: Prisma.ReportFilterUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportFilterPayload>
+          }
+          deleteMany: {
+            args: Prisma.ReportFilterDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ReportFilterUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.ReportFilterUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportFilterPayload>
+          }
+          aggregate: {
+            args: Prisma.ReportFilterAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateReportFilter>
+          }
+          groupBy: {
+            args: Prisma.ReportFilterGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ReportFilterGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.ReportFilterCountArgs<ExtArgs>
+            result: $Utils.Optional<ReportFilterCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -4214,7 +4656,11 @@ export namespace Prisma {
     leadStageApprovals: number
     holidays: number
     holidaySyncLogs: number
+    countries: number
+    locationLevels: number
+    lobReasons: number
     reportTypes: number
+    reports: number
     reportLogs: number
   }
 
@@ -4229,7 +4675,11 @@ export namespace Prisma {
     leadStageApprovals?: boolean | WorkspaceCountOutputTypeCountLeadStageApprovalsArgs
     holidays?: boolean | WorkspaceCountOutputTypeCountHolidaysArgs
     holidaySyncLogs?: boolean | WorkspaceCountOutputTypeCountHolidaySyncLogsArgs
+    countries?: boolean | WorkspaceCountOutputTypeCountCountriesArgs
+    locationLevels?: boolean | WorkspaceCountOutputTypeCountLocationLevelsArgs
+    lobReasons?: boolean | WorkspaceCountOutputTypeCountLobReasonsArgs
     reportTypes?: boolean | WorkspaceCountOutputTypeCountReportTypesArgs
+    reports?: boolean | WorkspaceCountOutputTypeCountReportsArgs
     reportLogs?: boolean | WorkspaceCountOutputTypeCountReportLogsArgs
   }
 
@@ -4317,8 +4767,36 @@ export namespace Prisma {
   /**
    * WorkspaceCountOutputType without action
    */
+  export type WorkspaceCountOutputTypeCountCountriesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CountryWhereInput
+  }
+
+  /**
+   * WorkspaceCountOutputType without action
+   */
+  export type WorkspaceCountOutputTypeCountLocationLevelsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LocationLevelWhereInput
+  }
+
+  /**
+   * WorkspaceCountOutputType without action
+   */
+  export type WorkspaceCountOutputTypeCountLobReasonsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LOBReasonWhereInput
+  }
+
+  /**
+   * WorkspaceCountOutputType without action
+   */
   export type WorkspaceCountOutputTypeCountReportTypesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ReportTypeWhereInput
+  }
+
+  /**
+   * WorkspaceCountOutputType without action
+   */
+  export type WorkspaceCountOutputTypeCountReportsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ReportWhereInput
   }
 
   /**
@@ -4508,6 +4986,77 @@ export namespace Prisma {
    */
   export type OfficeCountOutputTypeCountUsersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: UserWhereInput
+  }
+
+
+  /**
+   * Count Type CountryCountOutputType
+   */
+
+  export type CountryCountOutputType = {
+    levels: number
+    locations: number
+  }
+
+  export type CountryCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    levels?: boolean | CountryCountOutputTypeCountLevelsArgs
+    locations?: boolean | CountryCountOutputTypeCountLocationsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * CountryCountOutputType without action
+   */
+  export type CountryCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CountryCountOutputType
+     */
+    select?: CountryCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * CountryCountOutputType without action
+   */
+  export type CountryCountOutputTypeCountLevelsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LocationLevelWhereInput
+  }
+
+  /**
+   * CountryCountOutputType without action
+   */
+  export type CountryCountOutputTypeCountLocationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LocationWhereInput
+  }
+
+
+  /**
+   * Count Type LocationLevelCountOutputType
+   */
+
+  export type LocationLevelCountOutputType = {
+    locations: number
+  }
+
+  export type LocationLevelCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    locations?: boolean | LocationLevelCountOutputTypeCountLocationsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * LocationLevelCountOutputType without action
+   */
+  export type LocationLevelCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LocationLevelCountOutputType
+     */
+    select?: LocationLevelCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * LocationLevelCountOutputType without action
+   */
+  export type LocationLevelCountOutputTypeCountLocationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LocationWhereInput
   }
 
 
@@ -4836,8 +5385,15 @@ export namespace Prisma {
     closedLeads: number
     createdHolidays: number
     updatedHolidays: number
+    createdCountries: number
+    updatedCountries: number
+    createdLocationLevels: number
+    updatedLocationLevels: number
+    createdLOBReasons: number
+    updatedLOBReasons: number
     createdReportTypes: number
     updatedReportTypes: number
+    createdReports: number
     generatedReportLogs: number
   }
 
@@ -4859,8 +5415,15 @@ export namespace Prisma {
     closedLeads?: boolean | UserCountOutputTypeCountClosedLeadsArgs
     createdHolidays?: boolean | UserCountOutputTypeCountCreatedHolidaysArgs
     updatedHolidays?: boolean | UserCountOutputTypeCountUpdatedHolidaysArgs
+    createdCountries?: boolean | UserCountOutputTypeCountCreatedCountriesArgs
+    updatedCountries?: boolean | UserCountOutputTypeCountUpdatedCountriesArgs
+    createdLocationLevels?: boolean | UserCountOutputTypeCountCreatedLocationLevelsArgs
+    updatedLocationLevels?: boolean | UserCountOutputTypeCountUpdatedLocationLevelsArgs
+    createdLOBReasons?: boolean | UserCountOutputTypeCountCreatedLOBReasonsArgs
+    updatedLOBReasons?: boolean | UserCountOutputTypeCountUpdatedLOBReasonsArgs
     createdReportTypes?: boolean | UserCountOutputTypeCountCreatedReportTypesArgs
     updatedReportTypes?: boolean | UserCountOutputTypeCountUpdatedReportTypesArgs
+    createdReports?: boolean | UserCountOutputTypeCountCreatedReportsArgs
     generatedReportLogs?: boolean | UserCountOutputTypeCountGeneratedReportLogsArgs
   }
 
@@ -4997,6 +5560,48 @@ export namespace Prisma {
   /**
    * UserCountOutputType without action
    */
+  export type UserCountOutputTypeCountCreatedCountriesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CountryWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountUpdatedCountriesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CountryWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountCreatedLocationLevelsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LocationLevelWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountUpdatedLocationLevelsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LocationLevelWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountCreatedLOBReasonsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LOBReasonWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountUpdatedLOBReasonsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LOBReasonWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
   export type UserCountOutputTypeCountCreatedReportTypesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ReportTypeWhereInput
   }
@@ -5006,6 +5611,13 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountUpdatedReportTypesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ReportTypeWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountCreatedReportsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ReportWhereInput
   }
 
   /**
@@ -5053,10 +5665,12 @@ export namespace Prisma {
 
   export type ReportTypeCountOutputType = {
     logs: number
+    reports: number
   }
 
   export type ReportTypeCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     logs?: boolean | ReportTypeCountOutputTypeCountLogsArgs
+    reports?: boolean | ReportTypeCountOutputTypeCountReportsArgs
   }
 
   // Custom InputTypes
@@ -5074,6 +5688,53 @@ export namespace Prisma {
    * ReportTypeCountOutputType without action
    */
   export type ReportTypeCountOutputTypeCountLogsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ReportLogWhereInput
+  }
+
+  /**
+   * ReportTypeCountOutputType without action
+   */
+  export type ReportTypeCountOutputTypeCountReportsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ReportWhereInput
+  }
+
+
+  /**
+   * Count Type ReportCountOutputType
+   */
+
+  export type ReportCountOutputType = {
+    filters: number
+    logs: number
+  }
+
+  export type ReportCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    filters?: boolean | ReportCountOutputTypeCountFiltersArgs
+    logs?: boolean | ReportCountOutputTypeCountLogsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * ReportCountOutputType without action
+   */
+  export type ReportCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReportCountOutputType
+     */
+    select?: ReportCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * ReportCountOutputType without action
+   */
+  export type ReportCountOutputTypeCountFiltersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ReportFilterWhereInput
+  }
+
+  /**
+   * ReportCountOutputType without action
+   */
+  export type ReportCountOutputTypeCountLogsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ReportLogWhereInput
   }
 
@@ -8144,7 +8805,11 @@ export namespace Prisma {
     leadStageApprovals?: boolean | Workspace$leadStageApprovalsArgs<ExtArgs>
     holidays?: boolean | Workspace$holidaysArgs<ExtArgs>
     holidaySyncLogs?: boolean | Workspace$holidaySyncLogsArgs<ExtArgs>
+    countries?: boolean | Workspace$countriesArgs<ExtArgs>
+    locationLevels?: boolean | Workspace$locationLevelsArgs<ExtArgs>
+    lobReasons?: boolean | Workspace$lobReasonsArgs<ExtArgs>
     reportTypes?: boolean | Workspace$reportTypesArgs<ExtArgs>
+    reports?: boolean | Workspace$reportsArgs<ExtArgs>
     reportLogs?: boolean | Workspace$reportLogsArgs<ExtArgs>
     _count?: boolean | WorkspaceCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["workspace"]>
@@ -8188,7 +8853,11 @@ export namespace Prisma {
     leadStageApprovals?: boolean | Workspace$leadStageApprovalsArgs<ExtArgs>
     holidays?: boolean | Workspace$holidaysArgs<ExtArgs>
     holidaySyncLogs?: boolean | Workspace$holidaySyncLogsArgs<ExtArgs>
+    countries?: boolean | Workspace$countriesArgs<ExtArgs>
+    locationLevels?: boolean | Workspace$locationLevelsArgs<ExtArgs>
+    lobReasons?: boolean | Workspace$lobReasonsArgs<ExtArgs>
     reportTypes?: boolean | Workspace$reportTypesArgs<ExtArgs>
+    reports?: boolean | Workspace$reportsArgs<ExtArgs>
     reportLogs?: boolean | Workspace$reportLogsArgs<ExtArgs>
     _count?: boolean | WorkspaceCountOutputTypeDefaultArgs<ExtArgs>
   }
@@ -8210,7 +8879,11 @@ export namespace Prisma {
       leadStageApprovals: Prisma.$LeadStageApprovalPayload<ExtArgs>[]
       holidays: Prisma.$HolidayPayload<ExtArgs>[]
       holidaySyncLogs: Prisma.$HolidaySyncLogPayload<ExtArgs>[]
+      countries: Prisma.$CountryPayload<ExtArgs>[]
+      locationLevels: Prisma.$LocationLevelPayload<ExtArgs>[]
+      lobReasons: Prisma.$LOBReasonPayload<ExtArgs>[]
       reportTypes: Prisma.$ReportTypePayload<ExtArgs>[]
+      reports: Prisma.$ReportPayload<ExtArgs>[]
       reportLogs: Prisma.$ReportLogPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
@@ -8599,7 +9272,11 @@ export namespace Prisma {
     leadStageApprovals<T extends Workspace$leadStageApprovalsArgs<ExtArgs> = {}>(args?: Subset<T, Workspace$leadStageApprovalsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadStageApprovalPayload<ExtArgs>, T, "findMany"> | Null>
     holidays<T extends Workspace$holidaysArgs<ExtArgs> = {}>(args?: Subset<T, Workspace$holidaysArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$HolidayPayload<ExtArgs>, T, "findMany"> | Null>
     holidaySyncLogs<T extends Workspace$holidaySyncLogsArgs<ExtArgs> = {}>(args?: Subset<T, Workspace$holidaySyncLogsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$HolidaySyncLogPayload<ExtArgs>, T, "findMany"> | Null>
+    countries<T extends Workspace$countriesArgs<ExtArgs> = {}>(args?: Subset<T, Workspace$countriesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CountryPayload<ExtArgs>, T, "findMany"> | Null>
+    locationLevels<T extends Workspace$locationLevelsArgs<ExtArgs> = {}>(args?: Subset<T, Workspace$locationLevelsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LocationLevelPayload<ExtArgs>, T, "findMany"> | Null>
+    lobReasons<T extends Workspace$lobReasonsArgs<ExtArgs> = {}>(args?: Subset<T, Workspace$lobReasonsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LOBReasonPayload<ExtArgs>, T, "findMany"> | Null>
     reportTypes<T extends Workspace$reportTypesArgs<ExtArgs> = {}>(args?: Subset<T, Workspace$reportTypesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReportTypePayload<ExtArgs>, T, "findMany"> | Null>
+    reports<T extends Workspace$reportsArgs<ExtArgs> = {}>(args?: Subset<T, Workspace$reportsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReportPayload<ExtArgs>, T, "findMany"> | Null>
     reportLogs<T extends Workspace$reportLogsArgs<ExtArgs> = {}>(args?: Subset<T, Workspace$reportLogsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReportLogPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -9158,6 +9835,66 @@ export namespace Prisma {
   }
 
   /**
+   * Workspace.countries
+   */
+  export type Workspace$countriesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Country
+     */
+    select?: CountrySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CountryInclude<ExtArgs> | null
+    where?: CountryWhereInput
+    orderBy?: CountryOrderByWithRelationInput | CountryOrderByWithRelationInput[]
+    cursor?: CountryWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: CountryScalarFieldEnum | CountryScalarFieldEnum[]
+  }
+
+  /**
+   * Workspace.locationLevels
+   */
+  export type Workspace$locationLevelsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LocationLevel
+     */
+    select?: LocationLevelSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LocationLevelInclude<ExtArgs> | null
+    where?: LocationLevelWhereInput
+    orderBy?: LocationLevelOrderByWithRelationInput | LocationLevelOrderByWithRelationInput[]
+    cursor?: LocationLevelWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: LocationLevelScalarFieldEnum | LocationLevelScalarFieldEnum[]
+  }
+
+  /**
+   * Workspace.lobReasons
+   */
+  export type Workspace$lobReasonsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LOBReason
+     */
+    select?: LOBReasonSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LOBReasonInclude<ExtArgs> | null
+    where?: LOBReasonWhereInput
+    orderBy?: LOBReasonOrderByWithRelationInput | LOBReasonOrderByWithRelationInput[]
+    cursor?: LOBReasonWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: LOBReasonScalarFieldEnum | LOBReasonScalarFieldEnum[]
+  }
+
+  /**
    * Workspace.reportTypes
    */
   export type Workspace$reportTypesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -9175,6 +9912,26 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: ReportTypeScalarFieldEnum | ReportTypeScalarFieldEnum[]
+  }
+
+  /**
+   * Workspace.reports
+   */
+  export type Workspace$reportsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Report
+     */
+    select?: ReportSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReportInclude<ExtArgs> | null
+    where?: ReportWhereInput
+    orderBy?: ReportOrderByWithRelationInput | ReportOrderByWithRelationInput[]
+    cursor?: ReportWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ReportScalarFieldEnum | ReportScalarFieldEnum[]
   }
 
   /**
@@ -15414,6 +16171,2192 @@ export namespace Prisma {
 
 
   /**
+   * Model Country
+   */
+
+  export type AggregateCountry = {
+    _count: CountryCountAggregateOutputType | null
+    _min: CountryMinAggregateOutputType | null
+    _max: CountryMaxAggregateOutputType | null
+  }
+
+  export type CountryMinAggregateOutputType = {
+    id: string | null
+    workspaceId: string | null
+    name: string | null
+    code: string | null
+    isActive: boolean | null
+    createdById: string | null
+    updatedById: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    deletedAt: Date | null
+  }
+
+  export type CountryMaxAggregateOutputType = {
+    id: string | null
+    workspaceId: string | null
+    name: string | null
+    code: string | null
+    isActive: boolean | null
+    createdById: string | null
+    updatedById: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    deletedAt: Date | null
+  }
+
+  export type CountryCountAggregateOutputType = {
+    id: number
+    workspaceId: number
+    name: number
+    code: number
+    isActive: number
+    createdById: number
+    updatedById: number
+    createdAt: number
+    updatedAt: number
+    deletedAt: number
+    _all: number
+  }
+
+
+  export type CountryMinAggregateInputType = {
+    id?: true
+    workspaceId?: true
+    name?: true
+    code?: true
+    isActive?: true
+    createdById?: true
+    updatedById?: true
+    createdAt?: true
+    updatedAt?: true
+    deletedAt?: true
+  }
+
+  export type CountryMaxAggregateInputType = {
+    id?: true
+    workspaceId?: true
+    name?: true
+    code?: true
+    isActive?: true
+    createdById?: true
+    updatedById?: true
+    createdAt?: true
+    updatedAt?: true
+    deletedAt?: true
+  }
+
+  export type CountryCountAggregateInputType = {
+    id?: true
+    workspaceId?: true
+    name?: true
+    code?: true
+    isActive?: true
+    createdById?: true
+    updatedById?: true
+    createdAt?: true
+    updatedAt?: true
+    deletedAt?: true
+    _all?: true
+  }
+
+  export type CountryAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Country to aggregate.
+     */
+    where?: CountryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Countries to fetch.
+     */
+    orderBy?: CountryOrderByWithRelationInput | CountryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: CountryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Countries from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Countries.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Countries
+    **/
+    _count?: true | CountryCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: CountryMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: CountryMaxAggregateInputType
+  }
+
+  export type GetCountryAggregateType<T extends CountryAggregateArgs> = {
+        [P in keyof T & keyof AggregateCountry]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateCountry[P]>
+      : GetScalarType<T[P], AggregateCountry[P]>
+  }
+
+
+
+
+  export type CountryGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CountryWhereInput
+    orderBy?: CountryOrderByWithAggregationInput | CountryOrderByWithAggregationInput[]
+    by: CountryScalarFieldEnum[] | CountryScalarFieldEnum
+    having?: CountryScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: CountryCountAggregateInputType | true
+    _min?: CountryMinAggregateInputType
+    _max?: CountryMaxAggregateInputType
+  }
+
+  export type CountryGroupByOutputType = {
+    id: string
+    workspaceId: string
+    name: string
+    code: string | null
+    isActive: boolean
+    createdById: string | null
+    updatedById: string | null
+    createdAt: Date
+    updatedAt: Date
+    deletedAt: Date | null
+    _count: CountryCountAggregateOutputType | null
+    _min: CountryMinAggregateOutputType | null
+    _max: CountryMaxAggregateOutputType | null
+  }
+
+  type GetCountryGroupByPayload<T extends CountryGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<CountryGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof CountryGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], CountryGroupByOutputType[P]>
+            : GetScalarType<T[P], CountryGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type CountrySelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    workspaceId?: boolean
+    name?: boolean
+    code?: boolean
+    isActive?: boolean
+    createdById?: boolean
+    updatedById?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    deletedAt?: boolean
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+    createdBy?: boolean | Country$createdByArgs<ExtArgs>
+    updatedBy?: boolean | Country$updatedByArgs<ExtArgs>
+    levels?: boolean | Country$levelsArgs<ExtArgs>
+    locations?: boolean | Country$locationsArgs<ExtArgs>
+    _count?: boolean | CountryCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["country"]>
+
+  export type CountrySelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    workspaceId?: boolean
+    name?: boolean
+    code?: boolean
+    isActive?: boolean
+    createdById?: boolean
+    updatedById?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    deletedAt?: boolean
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+    createdBy?: boolean | Country$createdByArgs<ExtArgs>
+    updatedBy?: boolean | Country$updatedByArgs<ExtArgs>
+  }, ExtArgs["result"]["country"]>
+
+  export type CountrySelectScalar = {
+    id?: boolean
+    workspaceId?: boolean
+    name?: boolean
+    code?: boolean
+    isActive?: boolean
+    createdById?: boolean
+    updatedById?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    deletedAt?: boolean
+  }
+
+  export type CountryInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+    createdBy?: boolean | Country$createdByArgs<ExtArgs>
+    updatedBy?: boolean | Country$updatedByArgs<ExtArgs>
+    levels?: boolean | Country$levelsArgs<ExtArgs>
+    locations?: boolean | Country$locationsArgs<ExtArgs>
+    _count?: boolean | CountryCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type CountryIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+    createdBy?: boolean | Country$createdByArgs<ExtArgs>
+    updatedBy?: boolean | Country$updatedByArgs<ExtArgs>
+  }
+
+  export type $CountryPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Country"
+    objects: {
+      workspace: Prisma.$WorkspacePayload<ExtArgs>
+      createdBy: Prisma.$UserPayload<ExtArgs> | null
+      updatedBy: Prisma.$UserPayload<ExtArgs> | null
+      levels: Prisma.$LocationLevelPayload<ExtArgs>[]
+      locations: Prisma.$LocationPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      workspaceId: string
+      name: string
+      code: string | null
+      isActive: boolean
+      createdById: string | null
+      updatedById: string | null
+      createdAt: Date
+      updatedAt: Date
+      deletedAt: Date | null
+    }, ExtArgs["result"]["country"]>
+    composites: {}
+  }
+
+  type CountryGetPayload<S extends boolean | null | undefined | CountryDefaultArgs> = $Result.GetResult<Prisma.$CountryPayload, S>
+
+  type CountryCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<CountryFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: CountryCountAggregateInputType | true
+    }
+
+  export interface CountryDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Country'], meta: { name: 'Country' } }
+    /**
+     * Find zero or one Country that matches the filter.
+     * @param {CountryFindUniqueArgs} args - Arguments to find a Country
+     * @example
+     * // Get one Country
+     * const country = await prisma.country.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends CountryFindUniqueArgs>(args: SelectSubset<T, CountryFindUniqueArgs<ExtArgs>>): Prisma__CountryClient<$Result.GetResult<Prisma.$CountryPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one Country that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {CountryFindUniqueOrThrowArgs} args - Arguments to find a Country
+     * @example
+     * // Get one Country
+     * const country = await prisma.country.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends CountryFindUniqueOrThrowArgs>(args: SelectSubset<T, CountryFindUniqueOrThrowArgs<ExtArgs>>): Prisma__CountryClient<$Result.GetResult<Prisma.$CountryPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first Country that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CountryFindFirstArgs} args - Arguments to find a Country
+     * @example
+     * // Get one Country
+     * const country = await prisma.country.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends CountryFindFirstArgs>(args?: SelectSubset<T, CountryFindFirstArgs<ExtArgs>>): Prisma__CountryClient<$Result.GetResult<Prisma.$CountryPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first Country that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CountryFindFirstOrThrowArgs} args - Arguments to find a Country
+     * @example
+     * // Get one Country
+     * const country = await prisma.country.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends CountryFindFirstOrThrowArgs>(args?: SelectSubset<T, CountryFindFirstOrThrowArgs<ExtArgs>>): Prisma__CountryClient<$Result.GetResult<Prisma.$CountryPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more Countries that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CountryFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Countries
+     * const countries = await prisma.country.findMany()
+     * 
+     * // Get first 10 Countries
+     * const countries = await prisma.country.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const countryWithIdOnly = await prisma.country.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends CountryFindManyArgs>(args?: SelectSubset<T, CountryFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CountryPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a Country.
+     * @param {CountryCreateArgs} args - Arguments to create a Country.
+     * @example
+     * // Create one Country
+     * const Country = await prisma.country.create({
+     *   data: {
+     *     // ... data to create a Country
+     *   }
+     * })
+     * 
+     */
+    create<T extends CountryCreateArgs>(args: SelectSubset<T, CountryCreateArgs<ExtArgs>>): Prisma__CountryClient<$Result.GetResult<Prisma.$CountryPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many Countries.
+     * @param {CountryCreateManyArgs} args - Arguments to create many Countries.
+     * @example
+     * // Create many Countries
+     * const country = await prisma.country.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends CountryCreateManyArgs>(args?: SelectSubset<T, CountryCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Countries and returns the data saved in the database.
+     * @param {CountryCreateManyAndReturnArgs} args - Arguments to create many Countries.
+     * @example
+     * // Create many Countries
+     * const country = await prisma.country.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Countries and only return the `id`
+     * const countryWithIdOnly = await prisma.country.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends CountryCreateManyAndReturnArgs>(args?: SelectSubset<T, CountryCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CountryPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a Country.
+     * @param {CountryDeleteArgs} args - Arguments to delete one Country.
+     * @example
+     * // Delete one Country
+     * const Country = await prisma.country.delete({
+     *   where: {
+     *     // ... filter to delete one Country
+     *   }
+     * })
+     * 
+     */
+    delete<T extends CountryDeleteArgs>(args: SelectSubset<T, CountryDeleteArgs<ExtArgs>>): Prisma__CountryClient<$Result.GetResult<Prisma.$CountryPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one Country.
+     * @param {CountryUpdateArgs} args - Arguments to update one Country.
+     * @example
+     * // Update one Country
+     * const country = await prisma.country.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends CountryUpdateArgs>(args: SelectSubset<T, CountryUpdateArgs<ExtArgs>>): Prisma__CountryClient<$Result.GetResult<Prisma.$CountryPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more Countries.
+     * @param {CountryDeleteManyArgs} args - Arguments to filter Countries to delete.
+     * @example
+     * // Delete a few Countries
+     * const { count } = await prisma.country.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends CountryDeleteManyArgs>(args?: SelectSubset<T, CountryDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Countries.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CountryUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Countries
+     * const country = await prisma.country.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends CountryUpdateManyArgs>(args: SelectSubset<T, CountryUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one Country.
+     * @param {CountryUpsertArgs} args - Arguments to update or create a Country.
+     * @example
+     * // Update or create a Country
+     * const country = await prisma.country.upsert({
+     *   create: {
+     *     // ... data to create a Country
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Country we want to update
+     *   }
+     * })
+     */
+    upsert<T extends CountryUpsertArgs>(args: SelectSubset<T, CountryUpsertArgs<ExtArgs>>): Prisma__CountryClient<$Result.GetResult<Prisma.$CountryPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of Countries.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CountryCountArgs} args - Arguments to filter Countries to count.
+     * @example
+     * // Count the number of Countries
+     * const count = await prisma.country.count({
+     *   where: {
+     *     // ... the filter for the Countries we want to count
+     *   }
+     * })
+    **/
+    count<T extends CountryCountArgs>(
+      args?: Subset<T, CountryCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], CountryCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Country.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CountryAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends CountryAggregateArgs>(args: Subset<T, CountryAggregateArgs>): Prisma.PrismaPromise<GetCountryAggregateType<T>>
+
+    /**
+     * Group by Country.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CountryGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends CountryGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: CountryGroupByArgs['orderBy'] }
+        : { orderBy?: CountryGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, CountryGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetCountryGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Country model
+   */
+  readonly fields: CountryFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Country.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__CountryClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    workspace<T extends WorkspaceDefaultArgs<ExtArgs> = {}>(args?: Subset<T, WorkspaceDefaultArgs<ExtArgs>>): Prisma__WorkspaceClient<$Result.GetResult<Prisma.$WorkspacePayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    createdBy<T extends Country$createdByArgs<ExtArgs> = {}>(args?: Subset<T, Country$createdByArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    updatedBy<T extends Country$updatedByArgs<ExtArgs> = {}>(args?: Subset<T, Country$updatedByArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    levels<T extends Country$levelsArgs<ExtArgs> = {}>(args?: Subset<T, Country$levelsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LocationLevelPayload<ExtArgs>, T, "findMany"> | Null>
+    locations<T extends Country$locationsArgs<ExtArgs> = {}>(args?: Subset<T, Country$locationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LocationPayload<ExtArgs>, T, "findMany"> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Country model
+   */ 
+  interface CountryFieldRefs {
+    readonly id: FieldRef<"Country", 'String'>
+    readonly workspaceId: FieldRef<"Country", 'String'>
+    readonly name: FieldRef<"Country", 'String'>
+    readonly code: FieldRef<"Country", 'String'>
+    readonly isActive: FieldRef<"Country", 'Boolean'>
+    readonly createdById: FieldRef<"Country", 'String'>
+    readonly updatedById: FieldRef<"Country", 'String'>
+    readonly createdAt: FieldRef<"Country", 'DateTime'>
+    readonly updatedAt: FieldRef<"Country", 'DateTime'>
+    readonly deletedAt: FieldRef<"Country", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Country findUnique
+   */
+  export type CountryFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Country
+     */
+    select?: CountrySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CountryInclude<ExtArgs> | null
+    /**
+     * Filter, which Country to fetch.
+     */
+    where: CountryWhereUniqueInput
+  }
+
+  /**
+   * Country findUniqueOrThrow
+   */
+  export type CountryFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Country
+     */
+    select?: CountrySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CountryInclude<ExtArgs> | null
+    /**
+     * Filter, which Country to fetch.
+     */
+    where: CountryWhereUniqueInput
+  }
+
+  /**
+   * Country findFirst
+   */
+  export type CountryFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Country
+     */
+    select?: CountrySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CountryInclude<ExtArgs> | null
+    /**
+     * Filter, which Country to fetch.
+     */
+    where?: CountryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Countries to fetch.
+     */
+    orderBy?: CountryOrderByWithRelationInput | CountryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Countries.
+     */
+    cursor?: CountryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Countries from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Countries.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Countries.
+     */
+    distinct?: CountryScalarFieldEnum | CountryScalarFieldEnum[]
+  }
+
+  /**
+   * Country findFirstOrThrow
+   */
+  export type CountryFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Country
+     */
+    select?: CountrySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CountryInclude<ExtArgs> | null
+    /**
+     * Filter, which Country to fetch.
+     */
+    where?: CountryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Countries to fetch.
+     */
+    orderBy?: CountryOrderByWithRelationInput | CountryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Countries.
+     */
+    cursor?: CountryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Countries from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Countries.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Countries.
+     */
+    distinct?: CountryScalarFieldEnum | CountryScalarFieldEnum[]
+  }
+
+  /**
+   * Country findMany
+   */
+  export type CountryFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Country
+     */
+    select?: CountrySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CountryInclude<ExtArgs> | null
+    /**
+     * Filter, which Countries to fetch.
+     */
+    where?: CountryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Countries to fetch.
+     */
+    orderBy?: CountryOrderByWithRelationInput | CountryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Countries.
+     */
+    cursor?: CountryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Countries from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Countries.
+     */
+    skip?: number
+    distinct?: CountryScalarFieldEnum | CountryScalarFieldEnum[]
+  }
+
+  /**
+   * Country create
+   */
+  export type CountryCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Country
+     */
+    select?: CountrySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CountryInclude<ExtArgs> | null
+    /**
+     * The data needed to create a Country.
+     */
+    data: XOR<CountryCreateInput, CountryUncheckedCreateInput>
+  }
+
+  /**
+   * Country createMany
+   */
+  export type CountryCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Countries.
+     */
+    data: CountryCreateManyInput | CountryCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Country createManyAndReturn
+   */
+  export type CountryCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Country
+     */
+    select?: CountrySelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many Countries.
+     */
+    data: CountryCreateManyInput | CountryCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CountryIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Country update
+   */
+  export type CountryUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Country
+     */
+    select?: CountrySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CountryInclude<ExtArgs> | null
+    /**
+     * The data needed to update a Country.
+     */
+    data: XOR<CountryUpdateInput, CountryUncheckedUpdateInput>
+    /**
+     * Choose, which Country to update.
+     */
+    where: CountryWhereUniqueInput
+  }
+
+  /**
+   * Country updateMany
+   */
+  export type CountryUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Countries.
+     */
+    data: XOR<CountryUpdateManyMutationInput, CountryUncheckedUpdateManyInput>
+    /**
+     * Filter which Countries to update
+     */
+    where?: CountryWhereInput
+  }
+
+  /**
+   * Country upsert
+   */
+  export type CountryUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Country
+     */
+    select?: CountrySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CountryInclude<ExtArgs> | null
+    /**
+     * The filter to search for the Country to update in case it exists.
+     */
+    where: CountryWhereUniqueInput
+    /**
+     * In case the Country found by the `where` argument doesn't exist, create a new Country with this data.
+     */
+    create: XOR<CountryCreateInput, CountryUncheckedCreateInput>
+    /**
+     * In case the Country was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<CountryUpdateInput, CountryUncheckedUpdateInput>
+  }
+
+  /**
+   * Country delete
+   */
+  export type CountryDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Country
+     */
+    select?: CountrySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CountryInclude<ExtArgs> | null
+    /**
+     * Filter which Country to delete.
+     */
+    where: CountryWhereUniqueInput
+  }
+
+  /**
+   * Country deleteMany
+   */
+  export type CountryDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Countries to delete
+     */
+    where?: CountryWhereInput
+  }
+
+  /**
+   * Country.createdBy
+   */
+  export type Country$createdByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+  }
+
+  /**
+   * Country.updatedBy
+   */
+  export type Country$updatedByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+  }
+
+  /**
+   * Country.levels
+   */
+  export type Country$levelsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LocationLevel
+     */
+    select?: LocationLevelSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LocationLevelInclude<ExtArgs> | null
+    where?: LocationLevelWhereInput
+    orderBy?: LocationLevelOrderByWithRelationInput | LocationLevelOrderByWithRelationInput[]
+    cursor?: LocationLevelWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: LocationLevelScalarFieldEnum | LocationLevelScalarFieldEnum[]
+  }
+
+  /**
+   * Country.locations
+   */
+  export type Country$locationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Location
+     */
+    select?: LocationSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LocationInclude<ExtArgs> | null
+    where?: LocationWhereInput
+    orderBy?: LocationOrderByWithRelationInput | LocationOrderByWithRelationInput[]
+    cursor?: LocationWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: LocationScalarFieldEnum | LocationScalarFieldEnum[]
+  }
+
+  /**
+   * Country without action
+   */
+  export type CountryDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Country
+     */
+    select?: CountrySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CountryInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model LocationLevel
+   */
+
+  export type AggregateLocationLevel = {
+    _count: LocationLevelCountAggregateOutputType | null
+    _avg: LocationLevelAvgAggregateOutputType | null
+    _sum: LocationLevelSumAggregateOutputType | null
+    _min: LocationLevelMinAggregateOutputType | null
+    _max: LocationLevelMaxAggregateOutputType | null
+  }
+
+  export type LocationLevelAvgAggregateOutputType = {
+    levelOrder: number | null
+  }
+
+  export type LocationLevelSumAggregateOutputType = {
+    levelOrder: number | null
+  }
+
+  export type LocationLevelMinAggregateOutputType = {
+    id: string | null
+    workspaceId: string | null
+    countryId: string | null
+    levelName: string | null
+    levelOrder: number | null
+    isActive: boolean | null
+    createdById: string | null
+    updatedById: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type LocationLevelMaxAggregateOutputType = {
+    id: string | null
+    workspaceId: string | null
+    countryId: string | null
+    levelName: string | null
+    levelOrder: number | null
+    isActive: boolean | null
+    createdById: string | null
+    updatedById: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type LocationLevelCountAggregateOutputType = {
+    id: number
+    workspaceId: number
+    countryId: number
+    levelName: number
+    levelOrder: number
+    isActive: number
+    createdById: number
+    updatedById: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type LocationLevelAvgAggregateInputType = {
+    levelOrder?: true
+  }
+
+  export type LocationLevelSumAggregateInputType = {
+    levelOrder?: true
+  }
+
+  export type LocationLevelMinAggregateInputType = {
+    id?: true
+    workspaceId?: true
+    countryId?: true
+    levelName?: true
+    levelOrder?: true
+    isActive?: true
+    createdById?: true
+    updatedById?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type LocationLevelMaxAggregateInputType = {
+    id?: true
+    workspaceId?: true
+    countryId?: true
+    levelName?: true
+    levelOrder?: true
+    isActive?: true
+    createdById?: true
+    updatedById?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type LocationLevelCountAggregateInputType = {
+    id?: true
+    workspaceId?: true
+    countryId?: true
+    levelName?: true
+    levelOrder?: true
+    isActive?: true
+    createdById?: true
+    updatedById?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type LocationLevelAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which LocationLevel to aggregate.
+     */
+    where?: LocationLevelWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LocationLevels to fetch.
+     */
+    orderBy?: LocationLevelOrderByWithRelationInput | LocationLevelOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: LocationLevelWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LocationLevels from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LocationLevels.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned LocationLevels
+    **/
+    _count?: true | LocationLevelCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: LocationLevelAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: LocationLevelSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: LocationLevelMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: LocationLevelMaxAggregateInputType
+  }
+
+  export type GetLocationLevelAggregateType<T extends LocationLevelAggregateArgs> = {
+        [P in keyof T & keyof AggregateLocationLevel]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateLocationLevel[P]>
+      : GetScalarType<T[P], AggregateLocationLevel[P]>
+  }
+
+
+
+
+  export type LocationLevelGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LocationLevelWhereInput
+    orderBy?: LocationLevelOrderByWithAggregationInput | LocationLevelOrderByWithAggregationInput[]
+    by: LocationLevelScalarFieldEnum[] | LocationLevelScalarFieldEnum
+    having?: LocationLevelScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: LocationLevelCountAggregateInputType | true
+    _avg?: LocationLevelAvgAggregateInputType
+    _sum?: LocationLevelSumAggregateInputType
+    _min?: LocationLevelMinAggregateInputType
+    _max?: LocationLevelMaxAggregateInputType
+  }
+
+  export type LocationLevelGroupByOutputType = {
+    id: string
+    workspaceId: string
+    countryId: string
+    levelName: string
+    levelOrder: number
+    isActive: boolean
+    createdById: string | null
+    updatedById: string | null
+    createdAt: Date
+    updatedAt: Date
+    _count: LocationLevelCountAggregateOutputType | null
+    _avg: LocationLevelAvgAggregateOutputType | null
+    _sum: LocationLevelSumAggregateOutputType | null
+    _min: LocationLevelMinAggregateOutputType | null
+    _max: LocationLevelMaxAggregateOutputType | null
+  }
+
+  type GetLocationLevelGroupByPayload<T extends LocationLevelGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<LocationLevelGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof LocationLevelGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], LocationLevelGroupByOutputType[P]>
+            : GetScalarType<T[P], LocationLevelGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type LocationLevelSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    workspaceId?: boolean
+    countryId?: boolean
+    levelName?: boolean
+    levelOrder?: boolean
+    isActive?: boolean
+    createdById?: boolean
+    updatedById?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+    country?: boolean | CountryDefaultArgs<ExtArgs>
+    createdBy?: boolean | LocationLevel$createdByArgs<ExtArgs>
+    updatedBy?: boolean | LocationLevel$updatedByArgs<ExtArgs>
+    locations?: boolean | LocationLevel$locationsArgs<ExtArgs>
+    _count?: boolean | LocationLevelCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["locationLevel"]>
+
+  export type LocationLevelSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    workspaceId?: boolean
+    countryId?: boolean
+    levelName?: boolean
+    levelOrder?: boolean
+    isActive?: boolean
+    createdById?: boolean
+    updatedById?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+    country?: boolean | CountryDefaultArgs<ExtArgs>
+    createdBy?: boolean | LocationLevel$createdByArgs<ExtArgs>
+    updatedBy?: boolean | LocationLevel$updatedByArgs<ExtArgs>
+  }, ExtArgs["result"]["locationLevel"]>
+
+  export type LocationLevelSelectScalar = {
+    id?: boolean
+    workspaceId?: boolean
+    countryId?: boolean
+    levelName?: boolean
+    levelOrder?: boolean
+    isActive?: boolean
+    createdById?: boolean
+    updatedById?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type LocationLevelInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+    country?: boolean | CountryDefaultArgs<ExtArgs>
+    createdBy?: boolean | LocationLevel$createdByArgs<ExtArgs>
+    updatedBy?: boolean | LocationLevel$updatedByArgs<ExtArgs>
+    locations?: boolean | LocationLevel$locationsArgs<ExtArgs>
+    _count?: boolean | LocationLevelCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type LocationLevelIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+    country?: boolean | CountryDefaultArgs<ExtArgs>
+    createdBy?: boolean | LocationLevel$createdByArgs<ExtArgs>
+    updatedBy?: boolean | LocationLevel$updatedByArgs<ExtArgs>
+  }
+
+  export type $LocationLevelPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "LocationLevel"
+    objects: {
+      workspace: Prisma.$WorkspacePayload<ExtArgs>
+      country: Prisma.$CountryPayload<ExtArgs>
+      createdBy: Prisma.$UserPayload<ExtArgs> | null
+      updatedBy: Prisma.$UserPayload<ExtArgs> | null
+      locations: Prisma.$LocationPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      workspaceId: string
+      countryId: string
+      levelName: string
+      levelOrder: number
+      isActive: boolean
+      createdById: string | null
+      updatedById: string | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["locationLevel"]>
+    composites: {}
+  }
+
+  type LocationLevelGetPayload<S extends boolean | null | undefined | LocationLevelDefaultArgs> = $Result.GetResult<Prisma.$LocationLevelPayload, S>
+
+  type LocationLevelCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<LocationLevelFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: LocationLevelCountAggregateInputType | true
+    }
+
+  export interface LocationLevelDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['LocationLevel'], meta: { name: 'LocationLevel' } }
+    /**
+     * Find zero or one LocationLevel that matches the filter.
+     * @param {LocationLevelFindUniqueArgs} args - Arguments to find a LocationLevel
+     * @example
+     * // Get one LocationLevel
+     * const locationLevel = await prisma.locationLevel.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends LocationLevelFindUniqueArgs>(args: SelectSubset<T, LocationLevelFindUniqueArgs<ExtArgs>>): Prisma__LocationLevelClient<$Result.GetResult<Prisma.$LocationLevelPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one LocationLevel that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {LocationLevelFindUniqueOrThrowArgs} args - Arguments to find a LocationLevel
+     * @example
+     * // Get one LocationLevel
+     * const locationLevel = await prisma.locationLevel.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends LocationLevelFindUniqueOrThrowArgs>(args: SelectSubset<T, LocationLevelFindUniqueOrThrowArgs<ExtArgs>>): Prisma__LocationLevelClient<$Result.GetResult<Prisma.$LocationLevelPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first LocationLevel that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LocationLevelFindFirstArgs} args - Arguments to find a LocationLevel
+     * @example
+     * // Get one LocationLevel
+     * const locationLevel = await prisma.locationLevel.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends LocationLevelFindFirstArgs>(args?: SelectSubset<T, LocationLevelFindFirstArgs<ExtArgs>>): Prisma__LocationLevelClient<$Result.GetResult<Prisma.$LocationLevelPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first LocationLevel that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LocationLevelFindFirstOrThrowArgs} args - Arguments to find a LocationLevel
+     * @example
+     * // Get one LocationLevel
+     * const locationLevel = await prisma.locationLevel.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends LocationLevelFindFirstOrThrowArgs>(args?: SelectSubset<T, LocationLevelFindFirstOrThrowArgs<ExtArgs>>): Prisma__LocationLevelClient<$Result.GetResult<Prisma.$LocationLevelPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more LocationLevels that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LocationLevelFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all LocationLevels
+     * const locationLevels = await prisma.locationLevel.findMany()
+     * 
+     * // Get first 10 LocationLevels
+     * const locationLevels = await prisma.locationLevel.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const locationLevelWithIdOnly = await prisma.locationLevel.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends LocationLevelFindManyArgs>(args?: SelectSubset<T, LocationLevelFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LocationLevelPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a LocationLevel.
+     * @param {LocationLevelCreateArgs} args - Arguments to create a LocationLevel.
+     * @example
+     * // Create one LocationLevel
+     * const LocationLevel = await prisma.locationLevel.create({
+     *   data: {
+     *     // ... data to create a LocationLevel
+     *   }
+     * })
+     * 
+     */
+    create<T extends LocationLevelCreateArgs>(args: SelectSubset<T, LocationLevelCreateArgs<ExtArgs>>): Prisma__LocationLevelClient<$Result.GetResult<Prisma.$LocationLevelPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many LocationLevels.
+     * @param {LocationLevelCreateManyArgs} args - Arguments to create many LocationLevels.
+     * @example
+     * // Create many LocationLevels
+     * const locationLevel = await prisma.locationLevel.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends LocationLevelCreateManyArgs>(args?: SelectSubset<T, LocationLevelCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many LocationLevels and returns the data saved in the database.
+     * @param {LocationLevelCreateManyAndReturnArgs} args - Arguments to create many LocationLevels.
+     * @example
+     * // Create many LocationLevels
+     * const locationLevel = await prisma.locationLevel.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many LocationLevels and only return the `id`
+     * const locationLevelWithIdOnly = await prisma.locationLevel.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends LocationLevelCreateManyAndReturnArgs>(args?: SelectSubset<T, LocationLevelCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LocationLevelPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a LocationLevel.
+     * @param {LocationLevelDeleteArgs} args - Arguments to delete one LocationLevel.
+     * @example
+     * // Delete one LocationLevel
+     * const LocationLevel = await prisma.locationLevel.delete({
+     *   where: {
+     *     // ... filter to delete one LocationLevel
+     *   }
+     * })
+     * 
+     */
+    delete<T extends LocationLevelDeleteArgs>(args: SelectSubset<T, LocationLevelDeleteArgs<ExtArgs>>): Prisma__LocationLevelClient<$Result.GetResult<Prisma.$LocationLevelPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one LocationLevel.
+     * @param {LocationLevelUpdateArgs} args - Arguments to update one LocationLevel.
+     * @example
+     * // Update one LocationLevel
+     * const locationLevel = await prisma.locationLevel.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends LocationLevelUpdateArgs>(args: SelectSubset<T, LocationLevelUpdateArgs<ExtArgs>>): Prisma__LocationLevelClient<$Result.GetResult<Prisma.$LocationLevelPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more LocationLevels.
+     * @param {LocationLevelDeleteManyArgs} args - Arguments to filter LocationLevels to delete.
+     * @example
+     * // Delete a few LocationLevels
+     * const { count } = await prisma.locationLevel.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends LocationLevelDeleteManyArgs>(args?: SelectSubset<T, LocationLevelDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more LocationLevels.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LocationLevelUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many LocationLevels
+     * const locationLevel = await prisma.locationLevel.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends LocationLevelUpdateManyArgs>(args: SelectSubset<T, LocationLevelUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one LocationLevel.
+     * @param {LocationLevelUpsertArgs} args - Arguments to update or create a LocationLevel.
+     * @example
+     * // Update or create a LocationLevel
+     * const locationLevel = await prisma.locationLevel.upsert({
+     *   create: {
+     *     // ... data to create a LocationLevel
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the LocationLevel we want to update
+     *   }
+     * })
+     */
+    upsert<T extends LocationLevelUpsertArgs>(args: SelectSubset<T, LocationLevelUpsertArgs<ExtArgs>>): Prisma__LocationLevelClient<$Result.GetResult<Prisma.$LocationLevelPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of LocationLevels.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LocationLevelCountArgs} args - Arguments to filter LocationLevels to count.
+     * @example
+     * // Count the number of LocationLevels
+     * const count = await prisma.locationLevel.count({
+     *   where: {
+     *     // ... the filter for the LocationLevels we want to count
+     *   }
+     * })
+    **/
+    count<T extends LocationLevelCountArgs>(
+      args?: Subset<T, LocationLevelCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], LocationLevelCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a LocationLevel.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LocationLevelAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends LocationLevelAggregateArgs>(args: Subset<T, LocationLevelAggregateArgs>): Prisma.PrismaPromise<GetLocationLevelAggregateType<T>>
+
+    /**
+     * Group by LocationLevel.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LocationLevelGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends LocationLevelGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: LocationLevelGroupByArgs['orderBy'] }
+        : { orderBy?: LocationLevelGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, LocationLevelGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetLocationLevelGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the LocationLevel model
+   */
+  readonly fields: LocationLevelFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for LocationLevel.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__LocationLevelClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    workspace<T extends WorkspaceDefaultArgs<ExtArgs> = {}>(args?: Subset<T, WorkspaceDefaultArgs<ExtArgs>>): Prisma__WorkspaceClient<$Result.GetResult<Prisma.$WorkspacePayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    country<T extends CountryDefaultArgs<ExtArgs> = {}>(args?: Subset<T, CountryDefaultArgs<ExtArgs>>): Prisma__CountryClient<$Result.GetResult<Prisma.$CountryPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    createdBy<T extends LocationLevel$createdByArgs<ExtArgs> = {}>(args?: Subset<T, LocationLevel$createdByArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    updatedBy<T extends LocationLevel$updatedByArgs<ExtArgs> = {}>(args?: Subset<T, LocationLevel$updatedByArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    locations<T extends LocationLevel$locationsArgs<ExtArgs> = {}>(args?: Subset<T, LocationLevel$locationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LocationPayload<ExtArgs>, T, "findMany"> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the LocationLevel model
+   */ 
+  interface LocationLevelFieldRefs {
+    readonly id: FieldRef<"LocationLevel", 'String'>
+    readonly workspaceId: FieldRef<"LocationLevel", 'String'>
+    readonly countryId: FieldRef<"LocationLevel", 'String'>
+    readonly levelName: FieldRef<"LocationLevel", 'String'>
+    readonly levelOrder: FieldRef<"LocationLevel", 'Int'>
+    readonly isActive: FieldRef<"LocationLevel", 'Boolean'>
+    readonly createdById: FieldRef<"LocationLevel", 'String'>
+    readonly updatedById: FieldRef<"LocationLevel", 'String'>
+    readonly createdAt: FieldRef<"LocationLevel", 'DateTime'>
+    readonly updatedAt: FieldRef<"LocationLevel", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * LocationLevel findUnique
+   */
+  export type LocationLevelFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LocationLevel
+     */
+    select?: LocationLevelSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LocationLevelInclude<ExtArgs> | null
+    /**
+     * Filter, which LocationLevel to fetch.
+     */
+    where: LocationLevelWhereUniqueInput
+  }
+
+  /**
+   * LocationLevel findUniqueOrThrow
+   */
+  export type LocationLevelFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LocationLevel
+     */
+    select?: LocationLevelSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LocationLevelInclude<ExtArgs> | null
+    /**
+     * Filter, which LocationLevel to fetch.
+     */
+    where: LocationLevelWhereUniqueInput
+  }
+
+  /**
+   * LocationLevel findFirst
+   */
+  export type LocationLevelFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LocationLevel
+     */
+    select?: LocationLevelSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LocationLevelInclude<ExtArgs> | null
+    /**
+     * Filter, which LocationLevel to fetch.
+     */
+    where?: LocationLevelWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LocationLevels to fetch.
+     */
+    orderBy?: LocationLevelOrderByWithRelationInput | LocationLevelOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for LocationLevels.
+     */
+    cursor?: LocationLevelWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LocationLevels from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LocationLevels.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of LocationLevels.
+     */
+    distinct?: LocationLevelScalarFieldEnum | LocationLevelScalarFieldEnum[]
+  }
+
+  /**
+   * LocationLevel findFirstOrThrow
+   */
+  export type LocationLevelFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LocationLevel
+     */
+    select?: LocationLevelSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LocationLevelInclude<ExtArgs> | null
+    /**
+     * Filter, which LocationLevel to fetch.
+     */
+    where?: LocationLevelWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LocationLevels to fetch.
+     */
+    orderBy?: LocationLevelOrderByWithRelationInput | LocationLevelOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for LocationLevels.
+     */
+    cursor?: LocationLevelWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LocationLevels from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LocationLevels.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of LocationLevels.
+     */
+    distinct?: LocationLevelScalarFieldEnum | LocationLevelScalarFieldEnum[]
+  }
+
+  /**
+   * LocationLevel findMany
+   */
+  export type LocationLevelFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LocationLevel
+     */
+    select?: LocationLevelSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LocationLevelInclude<ExtArgs> | null
+    /**
+     * Filter, which LocationLevels to fetch.
+     */
+    where?: LocationLevelWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LocationLevels to fetch.
+     */
+    orderBy?: LocationLevelOrderByWithRelationInput | LocationLevelOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing LocationLevels.
+     */
+    cursor?: LocationLevelWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LocationLevels from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LocationLevels.
+     */
+    skip?: number
+    distinct?: LocationLevelScalarFieldEnum | LocationLevelScalarFieldEnum[]
+  }
+
+  /**
+   * LocationLevel create
+   */
+  export type LocationLevelCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LocationLevel
+     */
+    select?: LocationLevelSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LocationLevelInclude<ExtArgs> | null
+    /**
+     * The data needed to create a LocationLevel.
+     */
+    data: XOR<LocationLevelCreateInput, LocationLevelUncheckedCreateInput>
+  }
+
+  /**
+   * LocationLevel createMany
+   */
+  export type LocationLevelCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many LocationLevels.
+     */
+    data: LocationLevelCreateManyInput | LocationLevelCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * LocationLevel createManyAndReturn
+   */
+  export type LocationLevelCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LocationLevel
+     */
+    select?: LocationLevelSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many LocationLevels.
+     */
+    data: LocationLevelCreateManyInput | LocationLevelCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LocationLevelIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * LocationLevel update
+   */
+  export type LocationLevelUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LocationLevel
+     */
+    select?: LocationLevelSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LocationLevelInclude<ExtArgs> | null
+    /**
+     * The data needed to update a LocationLevel.
+     */
+    data: XOR<LocationLevelUpdateInput, LocationLevelUncheckedUpdateInput>
+    /**
+     * Choose, which LocationLevel to update.
+     */
+    where: LocationLevelWhereUniqueInput
+  }
+
+  /**
+   * LocationLevel updateMany
+   */
+  export type LocationLevelUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update LocationLevels.
+     */
+    data: XOR<LocationLevelUpdateManyMutationInput, LocationLevelUncheckedUpdateManyInput>
+    /**
+     * Filter which LocationLevels to update
+     */
+    where?: LocationLevelWhereInput
+  }
+
+  /**
+   * LocationLevel upsert
+   */
+  export type LocationLevelUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LocationLevel
+     */
+    select?: LocationLevelSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LocationLevelInclude<ExtArgs> | null
+    /**
+     * The filter to search for the LocationLevel to update in case it exists.
+     */
+    where: LocationLevelWhereUniqueInput
+    /**
+     * In case the LocationLevel found by the `where` argument doesn't exist, create a new LocationLevel with this data.
+     */
+    create: XOR<LocationLevelCreateInput, LocationLevelUncheckedCreateInput>
+    /**
+     * In case the LocationLevel was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<LocationLevelUpdateInput, LocationLevelUncheckedUpdateInput>
+  }
+
+  /**
+   * LocationLevel delete
+   */
+  export type LocationLevelDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LocationLevel
+     */
+    select?: LocationLevelSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LocationLevelInclude<ExtArgs> | null
+    /**
+     * Filter which LocationLevel to delete.
+     */
+    where: LocationLevelWhereUniqueInput
+  }
+
+  /**
+   * LocationLevel deleteMany
+   */
+  export type LocationLevelDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which LocationLevels to delete
+     */
+    where?: LocationLevelWhereInput
+  }
+
+  /**
+   * LocationLevel.createdBy
+   */
+  export type LocationLevel$createdByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+  }
+
+  /**
+   * LocationLevel.updatedBy
+   */
+  export type LocationLevel$updatedByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+  }
+
+  /**
+   * LocationLevel.locations
+   */
+  export type LocationLevel$locationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Location
+     */
+    select?: LocationSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LocationInclude<ExtArgs> | null
+    where?: LocationWhereInput
+    orderBy?: LocationOrderByWithRelationInput | LocationOrderByWithRelationInput[]
+    cursor?: LocationWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: LocationScalarFieldEnum | LocationScalarFieldEnum[]
+  }
+
+  /**
+   * LocationLevel without action
+   */
+  export type LocationLevelDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LocationLevel
+     */
+    select?: LocationLevelSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LocationLevelInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Model Location
    */
 
@@ -15428,6 +18371,12 @@ export namespace Prisma {
     name: string | null
     type: $Enums.LocationType | null
     workspaceId: string | null
+    countryId: string | null
+    levelId: string | null
+    isActive: boolean | null
+    createdById: string | null
+    updatedById: string | null
+    deletedAt: Date | null
     parentId: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -15438,6 +18387,12 @@ export namespace Prisma {
     name: string | null
     type: $Enums.LocationType | null
     workspaceId: string | null
+    countryId: string | null
+    levelId: string | null
+    isActive: boolean | null
+    createdById: string | null
+    updatedById: string | null
+    deletedAt: Date | null
     parentId: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -15448,6 +18403,12 @@ export namespace Prisma {
     name: number
     type: number
     workspaceId: number
+    countryId: number
+    levelId: number
+    isActive: number
+    createdById: number
+    updatedById: number
+    deletedAt: number
     parentId: number
     createdAt: number
     updatedAt: number
@@ -15460,6 +18421,12 @@ export namespace Prisma {
     name?: true
     type?: true
     workspaceId?: true
+    countryId?: true
+    levelId?: true
+    isActive?: true
+    createdById?: true
+    updatedById?: true
+    deletedAt?: true
     parentId?: true
     createdAt?: true
     updatedAt?: true
@@ -15470,6 +18437,12 @@ export namespace Prisma {
     name?: true
     type?: true
     workspaceId?: true
+    countryId?: true
+    levelId?: true
+    isActive?: true
+    createdById?: true
+    updatedById?: true
+    deletedAt?: true
     parentId?: true
     createdAt?: true
     updatedAt?: true
@@ -15480,6 +18453,12 @@ export namespace Prisma {
     name?: true
     type?: true
     workspaceId?: true
+    countryId?: true
+    levelId?: true
+    isActive?: true
+    createdById?: true
+    updatedById?: true
+    deletedAt?: true
     parentId?: true
     createdAt?: true
     updatedAt?: true
@@ -15563,6 +18542,12 @@ export namespace Prisma {
     name: string
     type: $Enums.LocationType
     workspaceId: string
+    countryId: string | null
+    levelId: string | null
+    isActive: boolean
+    createdById: string | null
+    updatedById: string | null
+    deletedAt: Date | null
     parentId: string | null
     createdAt: Date
     updatedAt: Date
@@ -15590,11 +18575,19 @@ export namespace Prisma {
     name?: boolean
     type?: boolean
     workspaceId?: boolean
+    countryId?: boolean
+    levelId?: boolean
+    isActive?: boolean
+    createdById?: boolean
+    updatedById?: boolean
+    deletedAt?: boolean
     parentId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     parent?: boolean | Location$parentArgs<ExtArgs>
     children?: boolean | Location$childrenArgs<ExtArgs>
+    country?: boolean | Location$countryArgs<ExtArgs>
+    level?: boolean | Location$levelArgs<ExtArgs>
     assignedUsers?: boolean | Location$assignedUsersArgs<ExtArgs>
     usersAtCountry?: boolean | Location$usersAtCountryArgs<ExtArgs>
     usersAtState?: boolean | Location$usersAtStateArgs<ExtArgs>
@@ -15610,10 +18603,18 @@ export namespace Prisma {
     name?: boolean
     type?: boolean
     workspaceId?: boolean
+    countryId?: boolean
+    levelId?: boolean
+    isActive?: boolean
+    createdById?: boolean
+    updatedById?: boolean
+    deletedAt?: boolean
     parentId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     parent?: boolean | Location$parentArgs<ExtArgs>
+    country?: boolean | Location$countryArgs<ExtArgs>
+    level?: boolean | Location$levelArgs<ExtArgs>
   }, ExtArgs["result"]["location"]>
 
   export type LocationSelectScalar = {
@@ -15621,6 +18622,12 @@ export namespace Prisma {
     name?: boolean
     type?: boolean
     workspaceId?: boolean
+    countryId?: boolean
+    levelId?: boolean
+    isActive?: boolean
+    createdById?: boolean
+    updatedById?: boolean
+    deletedAt?: boolean
     parentId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -15629,6 +18636,8 @@ export namespace Prisma {
   export type LocationInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     parent?: boolean | Location$parentArgs<ExtArgs>
     children?: boolean | Location$childrenArgs<ExtArgs>
+    country?: boolean | Location$countryArgs<ExtArgs>
+    level?: boolean | Location$levelArgs<ExtArgs>
     assignedUsers?: boolean | Location$assignedUsersArgs<ExtArgs>
     usersAtCountry?: boolean | Location$usersAtCountryArgs<ExtArgs>
     usersAtState?: boolean | Location$usersAtStateArgs<ExtArgs>
@@ -15640,6 +18649,8 @@ export namespace Prisma {
   }
   export type LocationIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     parent?: boolean | Location$parentArgs<ExtArgs>
+    country?: boolean | Location$countryArgs<ExtArgs>
+    level?: boolean | Location$levelArgs<ExtArgs>
   }
 
   export type $LocationPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -15647,6 +18658,8 @@ export namespace Prisma {
     objects: {
       parent: Prisma.$LocationPayload<ExtArgs> | null
       children: Prisma.$LocationPayload<ExtArgs>[]
+      country: Prisma.$CountryPayload<ExtArgs> | null
+      level: Prisma.$LocationLevelPayload<ExtArgs> | null
       assignedUsers: Prisma.$UserLocationAssignmentPayload<ExtArgs>[]
       usersAtCountry: Prisma.$UserPayload<ExtArgs>[]
       usersAtState: Prisma.$UserPayload<ExtArgs>[]
@@ -15660,6 +18673,12 @@ export namespace Prisma {
       name: string
       type: $Enums.LocationType
       workspaceId: string
+      countryId: string | null
+      levelId: string | null
+      isActive: boolean
+      createdById: string | null
+      updatedById: string | null
+      deletedAt: Date | null
       parentId: string | null
       createdAt: Date
       updatedAt: Date
@@ -16029,6 +19048,8 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     parent<T extends Location$parentArgs<ExtArgs> = {}>(args?: Subset<T, Location$parentArgs<ExtArgs>>): Prisma__LocationClient<$Result.GetResult<Prisma.$LocationPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     children<T extends Location$childrenArgs<ExtArgs> = {}>(args?: Subset<T, Location$childrenArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LocationPayload<ExtArgs>, T, "findMany"> | Null>
+    country<T extends Location$countryArgs<ExtArgs> = {}>(args?: Subset<T, Location$countryArgs<ExtArgs>>): Prisma__CountryClient<$Result.GetResult<Prisma.$CountryPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    level<T extends Location$levelArgs<ExtArgs> = {}>(args?: Subset<T, Location$levelArgs<ExtArgs>>): Prisma__LocationLevelClient<$Result.GetResult<Prisma.$LocationLevelPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     assignedUsers<T extends Location$assignedUsersArgs<ExtArgs> = {}>(args?: Subset<T, Location$assignedUsersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserLocationAssignmentPayload<ExtArgs>, T, "findMany"> | Null>
     usersAtCountry<T extends Location$usersAtCountryArgs<ExtArgs> = {}>(args?: Subset<T, Location$usersAtCountryArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany"> | Null>
     usersAtState<T extends Location$usersAtStateArgs<ExtArgs> = {}>(args?: Subset<T, Location$usersAtStateArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany"> | Null>
@@ -16069,6 +19090,12 @@ export namespace Prisma {
     readonly name: FieldRef<"Location", 'String'>
     readonly type: FieldRef<"Location", 'LocationType'>
     readonly workspaceId: FieldRef<"Location", 'String'>
+    readonly countryId: FieldRef<"Location", 'String'>
+    readonly levelId: FieldRef<"Location", 'String'>
+    readonly isActive: FieldRef<"Location", 'Boolean'>
+    readonly createdById: FieldRef<"Location", 'String'>
+    readonly updatedById: FieldRef<"Location", 'String'>
+    readonly deletedAt: FieldRef<"Location", 'DateTime'>
     readonly parentId: FieldRef<"Location", 'String'>
     readonly createdAt: FieldRef<"Location", 'DateTime'>
     readonly updatedAt: FieldRef<"Location", 'DateTime'>
@@ -16422,6 +19449,36 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: LocationScalarFieldEnum | LocationScalarFieldEnum[]
+  }
+
+  /**
+   * Location.country
+   */
+  export type Location$countryArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Country
+     */
+    select?: CountrySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CountryInclude<ExtArgs> | null
+    where?: CountryWhereInput
+  }
+
+  /**
+   * Location.level
+   */
+  export type Location$levelArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LocationLevel
+     */
+    select?: LocationLevelSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LocationLevelInclude<ExtArgs> | null
+    where?: LocationLevelWhereInput
   }
 
   /**
@@ -23947,6 +27004,1029 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: LeadLOBLogInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model LOBReason
+   */
+
+  export type AggregateLOBReason = {
+    _count: LOBReasonCountAggregateOutputType | null
+    _min: LOBReasonMinAggregateOutputType | null
+    _max: LOBReasonMaxAggregateOutputType | null
+  }
+
+  export type LOBReasonMinAggregateOutputType = {
+    id: string | null
+    workspaceId: string | null
+    name: string | null
+    status: $Enums.LOBReasonStatus | null
+    createdById: string | null
+    updatedById: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    deletedAt: Date | null
+  }
+
+  export type LOBReasonMaxAggregateOutputType = {
+    id: string | null
+    workspaceId: string | null
+    name: string | null
+    status: $Enums.LOBReasonStatus | null
+    createdById: string | null
+    updatedById: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    deletedAt: Date | null
+  }
+
+  export type LOBReasonCountAggregateOutputType = {
+    id: number
+    workspaceId: number
+    name: number
+    status: number
+    createdById: number
+    updatedById: number
+    createdAt: number
+    updatedAt: number
+    deletedAt: number
+    _all: number
+  }
+
+
+  export type LOBReasonMinAggregateInputType = {
+    id?: true
+    workspaceId?: true
+    name?: true
+    status?: true
+    createdById?: true
+    updatedById?: true
+    createdAt?: true
+    updatedAt?: true
+    deletedAt?: true
+  }
+
+  export type LOBReasonMaxAggregateInputType = {
+    id?: true
+    workspaceId?: true
+    name?: true
+    status?: true
+    createdById?: true
+    updatedById?: true
+    createdAt?: true
+    updatedAt?: true
+    deletedAt?: true
+  }
+
+  export type LOBReasonCountAggregateInputType = {
+    id?: true
+    workspaceId?: true
+    name?: true
+    status?: true
+    createdById?: true
+    updatedById?: true
+    createdAt?: true
+    updatedAt?: true
+    deletedAt?: true
+    _all?: true
+  }
+
+  export type LOBReasonAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which LOBReason to aggregate.
+     */
+    where?: LOBReasonWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LOBReasons to fetch.
+     */
+    orderBy?: LOBReasonOrderByWithRelationInput | LOBReasonOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: LOBReasonWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LOBReasons from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LOBReasons.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned LOBReasons
+    **/
+    _count?: true | LOBReasonCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: LOBReasonMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: LOBReasonMaxAggregateInputType
+  }
+
+  export type GetLOBReasonAggregateType<T extends LOBReasonAggregateArgs> = {
+        [P in keyof T & keyof AggregateLOBReason]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateLOBReason[P]>
+      : GetScalarType<T[P], AggregateLOBReason[P]>
+  }
+
+
+
+
+  export type LOBReasonGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LOBReasonWhereInput
+    orderBy?: LOBReasonOrderByWithAggregationInput | LOBReasonOrderByWithAggregationInput[]
+    by: LOBReasonScalarFieldEnum[] | LOBReasonScalarFieldEnum
+    having?: LOBReasonScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: LOBReasonCountAggregateInputType | true
+    _min?: LOBReasonMinAggregateInputType
+    _max?: LOBReasonMaxAggregateInputType
+  }
+
+  export type LOBReasonGroupByOutputType = {
+    id: string
+    workspaceId: string
+    name: string
+    status: $Enums.LOBReasonStatus
+    createdById: string | null
+    updatedById: string | null
+    createdAt: Date
+    updatedAt: Date
+    deletedAt: Date | null
+    _count: LOBReasonCountAggregateOutputType | null
+    _min: LOBReasonMinAggregateOutputType | null
+    _max: LOBReasonMaxAggregateOutputType | null
+  }
+
+  type GetLOBReasonGroupByPayload<T extends LOBReasonGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<LOBReasonGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof LOBReasonGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], LOBReasonGroupByOutputType[P]>
+            : GetScalarType<T[P], LOBReasonGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type LOBReasonSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    workspaceId?: boolean
+    name?: boolean
+    status?: boolean
+    createdById?: boolean
+    updatedById?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    deletedAt?: boolean
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+    createdBy?: boolean | LOBReason$createdByArgs<ExtArgs>
+    updatedBy?: boolean | LOBReason$updatedByArgs<ExtArgs>
+  }, ExtArgs["result"]["lOBReason"]>
+
+  export type LOBReasonSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    workspaceId?: boolean
+    name?: boolean
+    status?: boolean
+    createdById?: boolean
+    updatedById?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    deletedAt?: boolean
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+    createdBy?: boolean | LOBReason$createdByArgs<ExtArgs>
+    updatedBy?: boolean | LOBReason$updatedByArgs<ExtArgs>
+  }, ExtArgs["result"]["lOBReason"]>
+
+  export type LOBReasonSelectScalar = {
+    id?: boolean
+    workspaceId?: boolean
+    name?: boolean
+    status?: boolean
+    createdById?: boolean
+    updatedById?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    deletedAt?: boolean
+  }
+
+  export type LOBReasonInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+    createdBy?: boolean | LOBReason$createdByArgs<ExtArgs>
+    updatedBy?: boolean | LOBReason$updatedByArgs<ExtArgs>
+  }
+  export type LOBReasonIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+    createdBy?: boolean | LOBReason$createdByArgs<ExtArgs>
+    updatedBy?: boolean | LOBReason$updatedByArgs<ExtArgs>
+  }
+
+  export type $LOBReasonPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "LOBReason"
+    objects: {
+      workspace: Prisma.$WorkspacePayload<ExtArgs>
+      createdBy: Prisma.$UserPayload<ExtArgs> | null
+      updatedBy: Prisma.$UserPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      workspaceId: string
+      name: string
+      status: $Enums.LOBReasonStatus
+      createdById: string | null
+      updatedById: string | null
+      createdAt: Date
+      updatedAt: Date
+      deletedAt: Date | null
+    }, ExtArgs["result"]["lOBReason"]>
+    composites: {}
+  }
+
+  type LOBReasonGetPayload<S extends boolean | null | undefined | LOBReasonDefaultArgs> = $Result.GetResult<Prisma.$LOBReasonPayload, S>
+
+  type LOBReasonCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<LOBReasonFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: LOBReasonCountAggregateInputType | true
+    }
+
+  export interface LOBReasonDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['LOBReason'], meta: { name: 'LOBReason' } }
+    /**
+     * Find zero or one LOBReason that matches the filter.
+     * @param {LOBReasonFindUniqueArgs} args - Arguments to find a LOBReason
+     * @example
+     * // Get one LOBReason
+     * const lOBReason = await prisma.lOBReason.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends LOBReasonFindUniqueArgs>(args: SelectSubset<T, LOBReasonFindUniqueArgs<ExtArgs>>): Prisma__LOBReasonClient<$Result.GetResult<Prisma.$LOBReasonPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one LOBReason that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {LOBReasonFindUniqueOrThrowArgs} args - Arguments to find a LOBReason
+     * @example
+     * // Get one LOBReason
+     * const lOBReason = await prisma.lOBReason.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends LOBReasonFindUniqueOrThrowArgs>(args: SelectSubset<T, LOBReasonFindUniqueOrThrowArgs<ExtArgs>>): Prisma__LOBReasonClient<$Result.GetResult<Prisma.$LOBReasonPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first LOBReason that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LOBReasonFindFirstArgs} args - Arguments to find a LOBReason
+     * @example
+     * // Get one LOBReason
+     * const lOBReason = await prisma.lOBReason.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends LOBReasonFindFirstArgs>(args?: SelectSubset<T, LOBReasonFindFirstArgs<ExtArgs>>): Prisma__LOBReasonClient<$Result.GetResult<Prisma.$LOBReasonPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first LOBReason that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LOBReasonFindFirstOrThrowArgs} args - Arguments to find a LOBReason
+     * @example
+     * // Get one LOBReason
+     * const lOBReason = await prisma.lOBReason.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends LOBReasonFindFirstOrThrowArgs>(args?: SelectSubset<T, LOBReasonFindFirstOrThrowArgs<ExtArgs>>): Prisma__LOBReasonClient<$Result.GetResult<Prisma.$LOBReasonPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more LOBReasons that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LOBReasonFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all LOBReasons
+     * const lOBReasons = await prisma.lOBReason.findMany()
+     * 
+     * // Get first 10 LOBReasons
+     * const lOBReasons = await prisma.lOBReason.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const lOBReasonWithIdOnly = await prisma.lOBReason.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends LOBReasonFindManyArgs>(args?: SelectSubset<T, LOBReasonFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LOBReasonPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a LOBReason.
+     * @param {LOBReasonCreateArgs} args - Arguments to create a LOBReason.
+     * @example
+     * // Create one LOBReason
+     * const LOBReason = await prisma.lOBReason.create({
+     *   data: {
+     *     // ... data to create a LOBReason
+     *   }
+     * })
+     * 
+     */
+    create<T extends LOBReasonCreateArgs>(args: SelectSubset<T, LOBReasonCreateArgs<ExtArgs>>): Prisma__LOBReasonClient<$Result.GetResult<Prisma.$LOBReasonPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many LOBReasons.
+     * @param {LOBReasonCreateManyArgs} args - Arguments to create many LOBReasons.
+     * @example
+     * // Create many LOBReasons
+     * const lOBReason = await prisma.lOBReason.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends LOBReasonCreateManyArgs>(args?: SelectSubset<T, LOBReasonCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many LOBReasons and returns the data saved in the database.
+     * @param {LOBReasonCreateManyAndReturnArgs} args - Arguments to create many LOBReasons.
+     * @example
+     * // Create many LOBReasons
+     * const lOBReason = await prisma.lOBReason.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many LOBReasons and only return the `id`
+     * const lOBReasonWithIdOnly = await prisma.lOBReason.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends LOBReasonCreateManyAndReturnArgs>(args?: SelectSubset<T, LOBReasonCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LOBReasonPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a LOBReason.
+     * @param {LOBReasonDeleteArgs} args - Arguments to delete one LOBReason.
+     * @example
+     * // Delete one LOBReason
+     * const LOBReason = await prisma.lOBReason.delete({
+     *   where: {
+     *     // ... filter to delete one LOBReason
+     *   }
+     * })
+     * 
+     */
+    delete<T extends LOBReasonDeleteArgs>(args: SelectSubset<T, LOBReasonDeleteArgs<ExtArgs>>): Prisma__LOBReasonClient<$Result.GetResult<Prisma.$LOBReasonPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one LOBReason.
+     * @param {LOBReasonUpdateArgs} args - Arguments to update one LOBReason.
+     * @example
+     * // Update one LOBReason
+     * const lOBReason = await prisma.lOBReason.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends LOBReasonUpdateArgs>(args: SelectSubset<T, LOBReasonUpdateArgs<ExtArgs>>): Prisma__LOBReasonClient<$Result.GetResult<Prisma.$LOBReasonPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more LOBReasons.
+     * @param {LOBReasonDeleteManyArgs} args - Arguments to filter LOBReasons to delete.
+     * @example
+     * // Delete a few LOBReasons
+     * const { count } = await prisma.lOBReason.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends LOBReasonDeleteManyArgs>(args?: SelectSubset<T, LOBReasonDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more LOBReasons.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LOBReasonUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many LOBReasons
+     * const lOBReason = await prisma.lOBReason.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends LOBReasonUpdateManyArgs>(args: SelectSubset<T, LOBReasonUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one LOBReason.
+     * @param {LOBReasonUpsertArgs} args - Arguments to update or create a LOBReason.
+     * @example
+     * // Update or create a LOBReason
+     * const lOBReason = await prisma.lOBReason.upsert({
+     *   create: {
+     *     // ... data to create a LOBReason
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the LOBReason we want to update
+     *   }
+     * })
+     */
+    upsert<T extends LOBReasonUpsertArgs>(args: SelectSubset<T, LOBReasonUpsertArgs<ExtArgs>>): Prisma__LOBReasonClient<$Result.GetResult<Prisma.$LOBReasonPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of LOBReasons.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LOBReasonCountArgs} args - Arguments to filter LOBReasons to count.
+     * @example
+     * // Count the number of LOBReasons
+     * const count = await prisma.lOBReason.count({
+     *   where: {
+     *     // ... the filter for the LOBReasons we want to count
+     *   }
+     * })
+    **/
+    count<T extends LOBReasonCountArgs>(
+      args?: Subset<T, LOBReasonCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], LOBReasonCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a LOBReason.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LOBReasonAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends LOBReasonAggregateArgs>(args: Subset<T, LOBReasonAggregateArgs>): Prisma.PrismaPromise<GetLOBReasonAggregateType<T>>
+
+    /**
+     * Group by LOBReason.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LOBReasonGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends LOBReasonGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: LOBReasonGroupByArgs['orderBy'] }
+        : { orderBy?: LOBReasonGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, LOBReasonGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetLOBReasonGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the LOBReason model
+   */
+  readonly fields: LOBReasonFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for LOBReason.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__LOBReasonClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    workspace<T extends WorkspaceDefaultArgs<ExtArgs> = {}>(args?: Subset<T, WorkspaceDefaultArgs<ExtArgs>>): Prisma__WorkspaceClient<$Result.GetResult<Prisma.$WorkspacePayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    createdBy<T extends LOBReason$createdByArgs<ExtArgs> = {}>(args?: Subset<T, LOBReason$createdByArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    updatedBy<T extends LOBReason$updatedByArgs<ExtArgs> = {}>(args?: Subset<T, LOBReason$updatedByArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the LOBReason model
+   */ 
+  interface LOBReasonFieldRefs {
+    readonly id: FieldRef<"LOBReason", 'String'>
+    readonly workspaceId: FieldRef<"LOBReason", 'String'>
+    readonly name: FieldRef<"LOBReason", 'String'>
+    readonly status: FieldRef<"LOBReason", 'LOBReasonStatus'>
+    readonly createdById: FieldRef<"LOBReason", 'String'>
+    readonly updatedById: FieldRef<"LOBReason", 'String'>
+    readonly createdAt: FieldRef<"LOBReason", 'DateTime'>
+    readonly updatedAt: FieldRef<"LOBReason", 'DateTime'>
+    readonly deletedAt: FieldRef<"LOBReason", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * LOBReason findUnique
+   */
+  export type LOBReasonFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LOBReason
+     */
+    select?: LOBReasonSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LOBReasonInclude<ExtArgs> | null
+    /**
+     * Filter, which LOBReason to fetch.
+     */
+    where: LOBReasonWhereUniqueInput
+  }
+
+  /**
+   * LOBReason findUniqueOrThrow
+   */
+  export type LOBReasonFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LOBReason
+     */
+    select?: LOBReasonSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LOBReasonInclude<ExtArgs> | null
+    /**
+     * Filter, which LOBReason to fetch.
+     */
+    where: LOBReasonWhereUniqueInput
+  }
+
+  /**
+   * LOBReason findFirst
+   */
+  export type LOBReasonFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LOBReason
+     */
+    select?: LOBReasonSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LOBReasonInclude<ExtArgs> | null
+    /**
+     * Filter, which LOBReason to fetch.
+     */
+    where?: LOBReasonWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LOBReasons to fetch.
+     */
+    orderBy?: LOBReasonOrderByWithRelationInput | LOBReasonOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for LOBReasons.
+     */
+    cursor?: LOBReasonWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LOBReasons from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LOBReasons.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of LOBReasons.
+     */
+    distinct?: LOBReasonScalarFieldEnum | LOBReasonScalarFieldEnum[]
+  }
+
+  /**
+   * LOBReason findFirstOrThrow
+   */
+  export type LOBReasonFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LOBReason
+     */
+    select?: LOBReasonSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LOBReasonInclude<ExtArgs> | null
+    /**
+     * Filter, which LOBReason to fetch.
+     */
+    where?: LOBReasonWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LOBReasons to fetch.
+     */
+    orderBy?: LOBReasonOrderByWithRelationInput | LOBReasonOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for LOBReasons.
+     */
+    cursor?: LOBReasonWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LOBReasons from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LOBReasons.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of LOBReasons.
+     */
+    distinct?: LOBReasonScalarFieldEnum | LOBReasonScalarFieldEnum[]
+  }
+
+  /**
+   * LOBReason findMany
+   */
+  export type LOBReasonFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LOBReason
+     */
+    select?: LOBReasonSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LOBReasonInclude<ExtArgs> | null
+    /**
+     * Filter, which LOBReasons to fetch.
+     */
+    where?: LOBReasonWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LOBReasons to fetch.
+     */
+    orderBy?: LOBReasonOrderByWithRelationInput | LOBReasonOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing LOBReasons.
+     */
+    cursor?: LOBReasonWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LOBReasons from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LOBReasons.
+     */
+    skip?: number
+    distinct?: LOBReasonScalarFieldEnum | LOBReasonScalarFieldEnum[]
+  }
+
+  /**
+   * LOBReason create
+   */
+  export type LOBReasonCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LOBReason
+     */
+    select?: LOBReasonSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LOBReasonInclude<ExtArgs> | null
+    /**
+     * The data needed to create a LOBReason.
+     */
+    data: XOR<LOBReasonCreateInput, LOBReasonUncheckedCreateInput>
+  }
+
+  /**
+   * LOBReason createMany
+   */
+  export type LOBReasonCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many LOBReasons.
+     */
+    data: LOBReasonCreateManyInput | LOBReasonCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * LOBReason createManyAndReturn
+   */
+  export type LOBReasonCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LOBReason
+     */
+    select?: LOBReasonSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many LOBReasons.
+     */
+    data: LOBReasonCreateManyInput | LOBReasonCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LOBReasonIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * LOBReason update
+   */
+  export type LOBReasonUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LOBReason
+     */
+    select?: LOBReasonSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LOBReasonInclude<ExtArgs> | null
+    /**
+     * The data needed to update a LOBReason.
+     */
+    data: XOR<LOBReasonUpdateInput, LOBReasonUncheckedUpdateInput>
+    /**
+     * Choose, which LOBReason to update.
+     */
+    where: LOBReasonWhereUniqueInput
+  }
+
+  /**
+   * LOBReason updateMany
+   */
+  export type LOBReasonUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update LOBReasons.
+     */
+    data: XOR<LOBReasonUpdateManyMutationInput, LOBReasonUncheckedUpdateManyInput>
+    /**
+     * Filter which LOBReasons to update
+     */
+    where?: LOBReasonWhereInput
+  }
+
+  /**
+   * LOBReason upsert
+   */
+  export type LOBReasonUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LOBReason
+     */
+    select?: LOBReasonSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LOBReasonInclude<ExtArgs> | null
+    /**
+     * The filter to search for the LOBReason to update in case it exists.
+     */
+    where: LOBReasonWhereUniqueInput
+    /**
+     * In case the LOBReason found by the `where` argument doesn't exist, create a new LOBReason with this data.
+     */
+    create: XOR<LOBReasonCreateInput, LOBReasonUncheckedCreateInput>
+    /**
+     * In case the LOBReason was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<LOBReasonUpdateInput, LOBReasonUncheckedUpdateInput>
+  }
+
+  /**
+   * LOBReason delete
+   */
+  export type LOBReasonDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LOBReason
+     */
+    select?: LOBReasonSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LOBReasonInclude<ExtArgs> | null
+    /**
+     * Filter which LOBReason to delete.
+     */
+    where: LOBReasonWhereUniqueInput
+  }
+
+  /**
+   * LOBReason deleteMany
+   */
+  export type LOBReasonDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which LOBReasons to delete
+     */
+    where?: LOBReasonWhereInput
+  }
+
+  /**
+   * LOBReason.createdBy
+   */
+  export type LOBReason$createdByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+  }
+
+  /**
+   * LOBReason.updatedBy
+   */
+  export type LOBReason$updatedByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+  }
+
+  /**
+   * LOBReason without action
+   */
+  export type LOBReasonDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LOBReason
+     */
+    select?: LOBReasonSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LOBReasonInclude<ExtArgs> | null
   }
 
 
@@ -32516,8 +36596,15 @@ export namespace Prisma {
     closedLeads?: boolean | User$closedLeadsArgs<ExtArgs>
     createdHolidays?: boolean | User$createdHolidaysArgs<ExtArgs>
     updatedHolidays?: boolean | User$updatedHolidaysArgs<ExtArgs>
+    createdCountries?: boolean | User$createdCountriesArgs<ExtArgs>
+    updatedCountries?: boolean | User$updatedCountriesArgs<ExtArgs>
+    createdLocationLevels?: boolean | User$createdLocationLevelsArgs<ExtArgs>
+    updatedLocationLevels?: boolean | User$updatedLocationLevelsArgs<ExtArgs>
+    createdLOBReasons?: boolean | User$createdLOBReasonsArgs<ExtArgs>
+    updatedLOBReasons?: boolean | User$updatedLOBReasonsArgs<ExtArgs>
     createdReportTypes?: boolean | User$createdReportTypesArgs<ExtArgs>
     updatedReportTypes?: boolean | User$updatedReportTypesArgs<ExtArgs>
+    createdReports?: boolean | User$createdReportsArgs<ExtArgs>
     generatedReportLogs?: boolean | User$generatedReportLogsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
@@ -32615,8 +36702,15 @@ export namespace Prisma {
     closedLeads?: boolean | User$closedLeadsArgs<ExtArgs>
     createdHolidays?: boolean | User$createdHolidaysArgs<ExtArgs>
     updatedHolidays?: boolean | User$updatedHolidaysArgs<ExtArgs>
+    createdCountries?: boolean | User$createdCountriesArgs<ExtArgs>
+    updatedCountries?: boolean | User$updatedCountriesArgs<ExtArgs>
+    createdLocationLevels?: boolean | User$createdLocationLevelsArgs<ExtArgs>
+    updatedLocationLevels?: boolean | User$updatedLocationLevelsArgs<ExtArgs>
+    createdLOBReasons?: boolean | User$createdLOBReasonsArgs<ExtArgs>
+    updatedLOBReasons?: boolean | User$updatedLOBReasonsArgs<ExtArgs>
     createdReportTypes?: boolean | User$createdReportTypesArgs<ExtArgs>
     updatedReportTypes?: boolean | User$updatedReportTypesArgs<ExtArgs>
+    createdReports?: boolean | User$createdReportsArgs<ExtArgs>
     generatedReportLogs?: boolean | User$generatedReportLogsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
@@ -32660,8 +36754,15 @@ export namespace Prisma {
       closedLeads: Prisma.$LeadPayload<ExtArgs>[]
       createdHolidays: Prisma.$HolidayPayload<ExtArgs>[]
       updatedHolidays: Prisma.$HolidayPayload<ExtArgs>[]
+      createdCountries: Prisma.$CountryPayload<ExtArgs>[]
+      updatedCountries: Prisma.$CountryPayload<ExtArgs>[]
+      createdLocationLevels: Prisma.$LocationLevelPayload<ExtArgs>[]
+      updatedLocationLevels: Prisma.$LocationLevelPayload<ExtArgs>[]
+      createdLOBReasons: Prisma.$LOBReasonPayload<ExtArgs>[]
+      updatedLOBReasons: Prisma.$LOBReasonPayload<ExtArgs>[]
       createdReportTypes: Prisma.$ReportTypePayload<ExtArgs>[]
       updatedReportTypes: Prisma.$ReportTypePayload<ExtArgs>[]
+      createdReports: Prisma.$ReportPayload<ExtArgs>[]
       generatedReportLogs: Prisma.$ReportLogPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
@@ -33081,8 +37182,15 @@ export namespace Prisma {
     closedLeads<T extends User$closedLeadsArgs<ExtArgs> = {}>(args?: Subset<T, User$closedLeadsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadPayload<ExtArgs>, T, "findMany"> | Null>
     createdHolidays<T extends User$createdHolidaysArgs<ExtArgs> = {}>(args?: Subset<T, User$createdHolidaysArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$HolidayPayload<ExtArgs>, T, "findMany"> | Null>
     updatedHolidays<T extends User$updatedHolidaysArgs<ExtArgs> = {}>(args?: Subset<T, User$updatedHolidaysArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$HolidayPayload<ExtArgs>, T, "findMany"> | Null>
+    createdCountries<T extends User$createdCountriesArgs<ExtArgs> = {}>(args?: Subset<T, User$createdCountriesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CountryPayload<ExtArgs>, T, "findMany"> | Null>
+    updatedCountries<T extends User$updatedCountriesArgs<ExtArgs> = {}>(args?: Subset<T, User$updatedCountriesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CountryPayload<ExtArgs>, T, "findMany"> | Null>
+    createdLocationLevels<T extends User$createdLocationLevelsArgs<ExtArgs> = {}>(args?: Subset<T, User$createdLocationLevelsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LocationLevelPayload<ExtArgs>, T, "findMany"> | Null>
+    updatedLocationLevels<T extends User$updatedLocationLevelsArgs<ExtArgs> = {}>(args?: Subset<T, User$updatedLocationLevelsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LocationLevelPayload<ExtArgs>, T, "findMany"> | Null>
+    createdLOBReasons<T extends User$createdLOBReasonsArgs<ExtArgs> = {}>(args?: Subset<T, User$createdLOBReasonsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LOBReasonPayload<ExtArgs>, T, "findMany"> | Null>
+    updatedLOBReasons<T extends User$updatedLOBReasonsArgs<ExtArgs> = {}>(args?: Subset<T, User$updatedLOBReasonsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LOBReasonPayload<ExtArgs>, T, "findMany"> | Null>
     createdReportTypes<T extends User$createdReportTypesArgs<ExtArgs> = {}>(args?: Subset<T, User$createdReportTypesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReportTypePayload<ExtArgs>, T, "findMany"> | Null>
     updatedReportTypes<T extends User$updatedReportTypesArgs<ExtArgs> = {}>(args?: Subset<T, User$updatedReportTypesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReportTypePayload<ExtArgs>, T, "findMany"> | Null>
+    createdReports<T extends User$createdReportsArgs<ExtArgs> = {}>(args?: Subset<T, User$createdReportsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReportPayload<ExtArgs>, T, "findMany"> | Null>
     generatedReportLogs<T extends User$generatedReportLogsArgs<ExtArgs> = {}>(args?: Subset<T, User$generatedReportLogsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReportLogPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -33932,6 +38040,126 @@ export namespace Prisma {
   }
 
   /**
+   * User.createdCountries
+   */
+  export type User$createdCountriesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Country
+     */
+    select?: CountrySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CountryInclude<ExtArgs> | null
+    where?: CountryWhereInput
+    orderBy?: CountryOrderByWithRelationInput | CountryOrderByWithRelationInput[]
+    cursor?: CountryWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: CountryScalarFieldEnum | CountryScalarFieldEnum[]
+  }
+
+  /**
+   * User.updatedCountries
+   */
+  export type User$updatedCountriesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Country
+     */
+    select?: CountrySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CountryInclude<ExtArgs> | null
+    where?: CountryWhereInput
+    orderBy?: CountryOrderByWithRelationInput | CountryOrderByWithRelationInput[]
+    cursor?: CountryWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: CountryScalarFieldEnum | CountryScalarFieldEnum[]
+  }
+
+  /**
+   * User.createdLocationLevels
+   */
+  export type User$createdLocationLevelsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LocationLevel
+     */
+    select?: LocationLevelSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LocationLevelInclude<ExtArgs> | null
+    where?: LocationLevelWhereInput
+    orderBy?: LocationLevelOrderByWithRelationInput | LocationLevelOrderByWithRelationInput[]
+    cursor?: LocationLevelWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: LocationLevelScalarFieldEnum | LocationLevelScalarFieldEnum[]
+  }
+
+  /**
+   * User.updatedLocationLevels
+   */
+  export type User$updatedLocationLevelsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LocationLevel
+     */
+    select?: LocationLevelSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LocationLevelInclude<ExtArgs> | null
+    where?: LocationLevelWhereInput
+    orderBy?: LocationLevelOrderByWithRelationInput | LocationLevelOrderByWithRelationInput[]
+    cursor?: LocationLevelWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: LocationLevelScalarFieldEnum | LocationLevelScalarFieldEnum[]
+  }
+
+  /**
+   * User.createdLOBReasons
+   */
+  export type User$createdLOBReasonsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LOBReason
+     */
+    select?: LOBReasonSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LOBReasonInclude<ExtArgs> | null
+    where?: LOBReasonWhereInput
+    orderBy?: LOBReasonOrderByWithRelationInput | LOBReasonOrderByWithRelationInput[]
+    cursor?: LOBReasonWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: LOBReasonScalarFieldEnum | LOBReasonScalarFieldEnum[]
+  }
+
+  /**
+   * User.updatedLOBReasons
+   */
+  export type User$updatedLOBReasonsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LOBReason
+     */
+    select?: LOBReasonSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LOBReasonInclude<ExtArgs> | null
+    where?: LOBReasonWhereInput
+    orderBy?: LOBReasonOrderByWithRelationInput | LOBReasonOrderByWithRelationInput[]
+    cursor?: LOBReasonWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: LOBReasonScalarFieldEnum | LOBReasonScalarFieldEnum[]
+  }
+
+  /**
    * User.createdReportTypes
    */
   export type User$createdReportTypesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -33969,6 +38197,26 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: ReportTypeScalarFieldEnum | ReportTypeScalarFieldEnum[]
+  }
+
+  /**
+   * User.createdReports
+   */
+  export type User$createdReportsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Report
+     */
+    select?: ReportSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReportInclude<ExtArgs> | null
+    where?: ReportWhereInput
+    orderBy?: ReportOrderByWithRelationInput | ReportOrderByWithRelationInput[]
+    cursor?: ReportWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ReportScalarFieldEnum | ReportScalarFieldEnum[]
   }
 
   /**
@@ -41333,6 +45581,7 @@ export namespace Prisma {
     createdBy?: boolean | ReportType$createdByArgs<ExtArgs>
     updatedBy?: boolean | ReportType$updatedByArgs<ExtArgs>
     logs?: boolean | ReportType$logsArgs<ExtArgs>
+    reports?: boolean | ReportType$reportsArgs<ExtArgs>
     _count?: boolean | ReportTypeCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["reportType"]>
 
@@ -41376,6 +45625,7 @@ export namespace Prisma {
     createdBy?: boolean | ReportType$createdByArgs<ExtArgs>
     updatedBy?: boolean | ReportType$updatedByArgs<ExtArgs>
     logs?: boolean | ReportType$logsArgs<ExtArgs>
+    reports?: boolean | ReportType$reportsArgs<ExtArgs>
     _count?: boolean | ReportTypeCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type ReportTypeIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -41391,6 +45641,7 @@ export namespace Prisma {
       createdBy: Prisma.$UserPayload<ExtArgs> | null
       updatedBy: Prisma.$UserPayload<ExtArgs> | null
       logs: Prisma.$ReportLogPayload<ExtArgs>[]
+      reports: Prisma.$ReportPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -41774,6 +46025,7 @@ export namespace Prisma {
     createdBy<T extends ReportType$createdByArgs<ExtArgs> = {}>(args?: Subset<T, ReportType$createdByArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     updatedBy<T extends ReportType$updatedByArgs<ExtArgs> = {}>(args?: Subset<T, ReportType$updatedByArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     logs<T extends ReportType$logsArgs<ExtArgs> = {}>(args?: Subset<T, ReportType$logsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReportLogPayload<ExtArgs>, T, "findMany"> | Null>
+    reports<T extends ReportType$reportsArgs<ExtArgs> = {}>(args?: Subset<T, ReportType$reportsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReportPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -42184,6 +46436,26 @@ export namespace Prisma {
   }
 
   /**
+   * ReportType.reports
+   */
+  export type ReportType$reportsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Report
+     */
+    select?: ReportSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReportInclude<ExtArgs> | null
+    where?: ReportWhereInput
+    orderBy?: ReportOrderByWithRelationInput | ReportOrderByWithRelationInput[]
+    cursor?: ReportWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ReportScalarFieldEnum | ReportScalarFieldEnum[]
+  }
+
+  /**
    * ReportType without action
    */
   export type ReportTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -42222,7 +46494,9 @@ export namespace Prisma {
     id: string | null
     workspaceId: string | null
     reportTypeId: string | null
+    reportId: string | null
     generatedById: string | null
+    action: string | null
     resultCount: number | null
     createdAt: Date | null
   }
@@ -42231,7 +46505,9 @@ export namespace Prisma {
     id: string | null
     workspaceId: string | null
     reportTypeId: string | null
+    reportId: string | null
     generatedById: string | null
+    action: string | null
     resultCount: number | null
     createdAt: Date | null
   }
@@ -42240,9 +46516,12 @@ export namespace Prisma {
     id: number
     workspaceId: number
     reportTypeId: number
+    reportId: number
     generatedById: number
+    action: number
     filters: number
     resultCount: number
+    meta: number
     createdAt: number
     _all: number
   }
@@ -42260,7 +46539,9 @@ export namespace Prisma {
     id?: true
     workspaceId?: true
     reportTypeId?: true
+    reportId?: true
     generatedById?: true
+    action?: true
     resultCount?: true
     createdAt?: true
   }
@@ -42269,7 +46550,9 @@ export namespace Prisma {
     id?: true
     workspaceId?: true
     reportTypeId?: true
+    reportId?: true
     generatedById?: true
+    action?: true
     resultCount?: true
     createdAt?: true
   }
@@ -42278,9 +46561,12 @@ export namespace Prisma {
     id?: true
     workspaceId?: true
     reportTypeId?: true
+    reportId?: true
     generatedById?: true
+    action?: true
     filters?: true
     resultCount?: true
+    meta?: true
     createdAt?: true
     _all?: true
   }
@@ -42374,10 +46660,13 @@ export namespace Prisma {
   export type ReportLogGroupByOutputType = {
     id: string
     workspaceId: string
-    reportTypeId: string
+    reportTypeId: string | null
+    reportId: string | null
     generatedById: string | null
+    action: string | null
     filters: JsonValue
     resultCount: number
+    meta: JsonValue
     createdAt: Date
     _count: ReportLogCountAggregateOutputType | null
     _avg: ReportLogAvgAggregateOutputType | null
@@ -42404,12 +46693,16 @@ export namespace Prisma {
     id?: boolean
     workspaceId?: boolean
     reportTypeId?: boolean
+    reportId?: boolean
     generatedById?: boolean
+    action?: boolean
     filters?: boolean
     resultCount?: boolean
+    meta?: boolean
     createdAt?: boolean
     workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
-    reportType?: boolean | ReportTypeDefaultArgs<ExtArgs>
+    reportType?: boolean | ReportLog$reportTypeArgs<ExtArgs>
+    report?: boolean | ReportLog$reportArgs<ExtArgs>
     generatedBy?: boolean | ReportLog$generatedByArgs<ExtArgs>
   }, ExtArgs["result"]["reportLog"]>
 
@@ -42417,12 +46710,16 @@ export namespace Prisma {
     id?: boolean
     workspaceId?: boolean
     reportTypeId?: boolean
+    reportId?: boolean
     generatedById?: boolean
+    action?: boolean
     filters?: boolean
     resultCount?: boolean
+    meta?: boolean
     createdAt?: boolean
     workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
-    reportType?: boolean | ReportTypeDefaultArgs<ExtArgs>
+    reportType?: boolean | ReportLog$reportTypeArgs<ExtArgs>
+    report?: boolean | ReportLog$reportArgs<ExtArgs>
     generatedBy?: boolean | ReportLog$generatedByArgs<ExtArgs>
   }, ExtArgs["result"]["reportLog"]>
 
@@ -42430,20 +46727,25 @@ export namespace Prisma {
     id?: boolean
     workspaceId?: boolean
     reportTypeId?: boolean
+    reportId?: boolean
     generatedById?: boolean
+    action?: boolean
     filters?: boolean
     resultCount?: boolean
+    meta?: boolean
     createdAt?: boolean
   }
 
   export type ReportLogInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
-    reportType?: boolean | ReportTypeDefaultArgs<ExtArgs>
+    reportType?: boolean | ReportLog$reportTypeArgs<ExtArgs>
+    report?: boolean | ReportLog$reportArgs<ExtArgs>
     generatedBy?: boolean | ReportLog$generatedByArgs<ExtArgs>
   }
   export type ReportLogIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
-    reportType?: boolean | ReportTypeDefaultArgs<ExtArgs>
+    reportType?: boolean | ReportLog$reportTypeArgs<ExtArgs>
+    report?: boolean | ReportLog$reportArgs<ExtArgs>
     generatedBy?: boolean | ReportLog$generatedByArgs<ExtArgs>
   }
 
@@ -42451,16 +46753,20 @@ export namespace Prisma {
     name: "ReportLog"
     objects: {
       workspace: Prisma.$WorkspacePayload<ExtArgs>
-      reportType: Prisma.$ReportTypePayload<ExtArgs>
+      reportType: Prisma.$ReportTypePayload<ExtArgs> | null
+      report: Prisma.$ReportPayload<ExtArgs> | null
       generatedBy: Prisma.$UserPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       workspaceId: string
-      reportTypeId: string
+      reportTypeId: string | null
+      reportId: string | null
       generatedById: string | null
+      action: string | null
       filters: Prisma.JsonValue
       resultCount: number
+      meta: Prisma.JsonValue
       createdAt: Date
     }, ExtArgs["result"]["reportLog"]>
     composites: {}
@@ -42827,7 +47133,8 @@ export namespace Prisma {
   export interface Prisma__ReportLogClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     workspace<T extends WorkspaceDefaultArgs<ExtArgs> = {}>(args?: Subset<T, WorkspaceDefaultArgs<ExtArgs>>): Prisma__WorkspaceClient<$Result.GetResult<Prisma.$WorkspacePayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
-    reportType<T extends ReportTypeDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ReportTypeDefaultArgs<ExtArgs>>): Prisma__ReportTypeClient<$Result.GetResult<Prisma.$ReportTypePayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    reportType<T extends ReportLog$reportTypeArgs<ExtArgs> = {}>(args?: Subset<T, ReportLog$reportTypeArgs<ExtArgs>>): Prisma__ReportTypeClient<$Result.GetResult<Prisma.$ReportTypePayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    report<T extends ReportLog$reportArgs<ExtArgs> = {}>(args?: Subset<T, ReportLog$reportArgs<ExtArgs>>): Prisma__ReportClient<$Result.GetResult<Prisma.$ReportPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     generatedBy<T extends ReportLog$generatedByArgs<ExtArgs> = {}>(args?: Subset<T, ReportLog$generatedByArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -42861,9 +47168,12 @@ export namespace Prisma {
     readonly id: FieldRef<"ReportLog", 'String'>
     readonly workspaceId: FieldRef<"ReportLog", 'String'>
     readonly reportTypeId: FieldRef<"ReportLog", 'String'>
+    readonly reportId: FieldRef<"ReportLog", 'String'>
     readonly generatedById: FieldRef<"ReportLog", 'String'>
+    readonly action: FieldRef<"ReportLog", 'String'>
     readonly filters: FieldRef<"ReportLog", 'Json'>
     readonly resultCount: FieldRef<"ReportLog", 'Int'>
+    readonly meta: FieldRef<"ReportLog", 'Json'>
     readonly createdAt: FieldRef<"ReportLog", 'DateTime'>
   }
     
@@ -43183,6 +47493,36 @@ export namespace Prisma {
   }
 
   /**
+   * ReportLog.reportType
+   */
+  export type ReportLog$reportTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReportType
+     */
+    select?: ReportTypeSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReportTypeInclude<ExtArgs> | null
+    where?: ReportTypeWhereInput
+  }
+
+  /**
+   * ReportLog.report
+   */
+  export type ReportLog$reportArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Report
+     */
+    select?: ReportSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReportInclude<ExtArgs> | null
+    where?: ReportWhereInput
+  }
+
+  /**
    * ReportLog.generatedBy
    */
   export type ReportLog$generatedByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -43209,6 +47549,2030 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: ReportLogInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model Report
+   */
+
+  export type AggregateReport = {
+    _count: ReportCountAggregateOutputType | null
+    _min: ReportMinAggregateOutputType | null
+    _max: ReportMaxAggregateOutputType | null
+  }
+
+  export type ReportMinAggregateOutputType = {
+    id: string | null
+    workspaceId: string | null
+    reportName: string | null
+    reportTypeId: string | null
+    reportDate: Date | null
+    isActive: boolean | null
+    isGenerated: boolean | null
+    generatedFileUrl: string | null
+    generatedAt: Date | null
+    createdById: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    deletedAt: Date | null
+  }
+
+  export type ReportMaxAggregateOutputType = {
+    id: string | null
+    workspaceId: string | null
+    reportName: string | null
+    reportTypeId: string | null
+    reportDate: Date | null
+    isActive: boolean | null
+    isGenerated: boolean | null
+    generatedFileUrl: string | null
+    generatedAt: Date | null
+    createdById: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    deletedAt: Date | null
+  }
+
+  export type ReportCountAggregateOutputType = {
+    id: number
+    workspaceId: number
+    reportName: number
+    reportTypeId: number
+    reportDate: number
+    isActive: number
+    isGenerated: number
+    generatedFileUrl: number
+    generatedAt: number
+    createdById: number
+    createdAt: number
+    updatedAt: number
+    deletedAt: number
+    _all: number
+  }
+
+
+  export type ReportMinAggregateInputType = {
+    id?: true
+    workspaceId?: true
+    reportName?: true
+    reportTypeId?: true
+    reportDate?: true
+    isActive?: true
+    isGenerated?: true
+    generatedFileUrl?: true
+    generatedAt?: true
+    createdById?: true
+    createdAt?: true
+    updatedAt?: true
+    deletedAt?: true
+  }
+
+  export type ReportMaxAggregateInputType = {
+    id?: true
+    workspaceId?: true
+    reportName?: true
+    reportTypeId?: true
+    reportDate?: true
+    isActive?: true
+    isGenerated?: true
+    generatedFileUrl?: true
+    generatedAt?: true
+    createdById?: true
+    createdAt?: true
+    updatedAt?: true
+    deletedAt?: true
+  }
+
+  export type ReportCountAggregateInputType = {
+    id?: true
+    workspaceId?: true
+    reportName?: true
+    reportTypeId?: true
+    reportDate?: true
+    isActive?: true
+    isGenerated?: true
+    generatedFileUrl?: true
+    generatedAt?: true
+    createdById?: true
+    createdAt?: true
+    updatedAt?: true
+    deletedAt?: true
+    _all?: true
+  }
+
+  export type ReportAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Report to aggregate.
+     */
+    where?: ReportWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Reports to fetch.
+     */
+    orderBy?: ReportOrderByWithRelationInput | ReportOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ReportWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Reports from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Reports.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Reports
+    **/
+    _count?: true | ReportCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ReportMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ReportMaxAggregateInputType
+  }
+
+  export type GetReportAggregateType<T extends ReportAggregateArgs> = {
+        [P in keyof T & keyof AggregateReport]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateReport[P]>
+      : GetScalarType<T[P], AggregateReport[P]>
+  }
+
+
+
+
+  export type ReportGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ReportWhereInput
+    orderBy?: ReportOrderByWithAggregationInput | ReportOrderByWithAggregationInput[]
+    by: ReportScalarFieldEnum[] | ReportScalarFieldEnum
+    having?: ReportScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ReportCountAggregateInputType | true
+    _min?: ReportMinAggregateInputType
+    _max?: ReportMaxAggregateInputType
+  }
+
+  export type ReportGroupByOutputType = {
+    id: string
+    workspaceId: string
+    reportName: string
+    reportTypeId: string
+    reportDate: Date
+    isActive: boolean
+    isGenerated: boolean
+    generatedFileUrl: string | null
+    generatedAt: Date | null
+    createdById: string
+    createdAt: Date
+    updatedAt: Date
+    deletedAt: Date | null
+    _count: ReportCountAggregateOutputType | null
+    _min: ReportMinAggregateOutputType | null
+    _max: ReportMaxAggregateOutputType | null
+  }
+
+  type GetReportGroupByPayload<T extends ReportGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ReportGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ReportGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ReportGroupByOutputType[P]>
+            : GetScalarType<T[P], ReportGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ReportSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    workspaceId?: boolean
+    reportName?: boolean
+    reportTypeId?: boolean
+    reportDate?: boolean
+    isActive?: boolean
+    isGenerated?: boolean
+    generatedFileUrl?: boolean
+    generatedAt?: boolean
+    createdById?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    deletedAt?: boolean
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+    reportType?: boolean | ReportTypeDefaultArgs<ExtArgs>
+    createdBy?: boolean | UserDefaultArgs<ExtArgs>
+    filters?: boolean | Report$filtersArgs<ExtArgs>
+    logs?: boolean | Report$logsArgs<ExtArgs>
+    _count?: boolean | ReportCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["report"]>
+
+  export type ReportSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    workspaceId?: boolean
+    reportName?: boolean
+    reportTypeId?: boolean
+    reportDate?: boolean
+    isActive?: boolean
+    isGenerated?: boolean
+    generatedFileUrl?: boolean
+    generatedAt?: boolean
+    createdById?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    deletedAt?: boolean
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+    reportType?: boolean | ReportTypeDefaultArgs<ExtArgs>
+    createdBy?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["report"]>
+
+  export type ReportSelectScalar = {
+    id?: boolean
+    workspaceId?: boolean
+    reportName?: boolean
+    reportTypeId?: boolean
+    reportDate?: boolean
+    isActive?: boolean
+    isGenerated?: boolean
+    generatedFileUrl?: boolean
+    generatedAt?: boolean
+    createdById?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    deletedAt?: boolean
+  }
+
+  export type ReportInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+    reportType?: boolean | ReportTypeDefaultArgs<ExtArgs>
+    createdBy?: boolean | UserDefaultArgs<ExtArgs>
+    filters?: boolean | Report$filtersArgs<ExtArgs>
+    logs?: boolean | Report$logsArgs<ExtArgs>
+    _count?: boolean | ReportCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type ReportIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+    reportType?: boolean | ReportTypeDefaultArgs<ExtArgs>
+    createdBy?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $ReportPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Report"
+    objects: {
+      workspace: Prisma.$WorkspacePayload<ExtArgs>
+      reportType: Prisma.$ReportTypePayload<ExtArgs>
+      createdBy: Prisma.$UserPayload<ExtArgs>
+      filters: Prisma.$ReportFilterPayload<ExtArgs>[]
+      logs: Prisma.$ReportLogPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      workspaceId: string
+      reportName: string
+      reportTypeId: string
+      reportDate: Date
+      isActive: boolean
+      isGenerated: boolean
+      generatedFileUrl: string | null
+      generatedAt: Date | null
+      createdById: string
+      createdAt: Date
+      updatedAt: Date
+      deletedAt: Date | null
+    }, ExtArgs["result"]["report"]>
+    composites: {}
+  }
+
+  type ReportGetPayload<S extends boolean | null | undefined | ReportDefaultArgs> = $Result.GetResult<Prisma.$ReportPayload, S>
+
+  type ReportCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<ReportFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: ReportCountAggregateInputType | true
+    }
+
+  export interface ReportDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Report'], meta: { name: 'Report' } }
+    /**
+     * Find zero or one Report that matches the filter.
+     * @param {ReportFindUniqueArgs} args - Arguments to find a Report
+     * @example
+     * // Get one Report
+     * const report = await prisma.report.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ReportFindUniqueArgs>(args: SelectSubset<T, ReportFindUniqueArgs<ExtArgs>>): Prisma__ReportClient<$Result.GetResult<Prisma.$ReportPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one Report that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {ReportFindUniqueOrThrowArgs} args - Arguments to find a Report
+     * @example
+     * // Get one Report
+     * const report = await prisma.report.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ReportFindUniqueOrThrowArgs>(args: SelectSubset<T, ReportFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ReportClient<$Result.GetResult<Prisma.$ReportPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first Report that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReportFindFirstArgs} args - Arguments to find a Report
+     * @example
+     * // Get one Report
+     * const report = await prisma.report.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ReportFindFirstArgs>(args?: SelectSubset<T, ReportFindFirstArgs<ExtArgs>>): Prisma__ReportClient<$Result.GetResult<Prisma.$ReportPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first Report that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReportFindFirstOrThrowArgs} args - Arguments to find a Report
+     * @example
+     * // Get one Report
+     * const report = await prisma.report.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ReportFindFirstOrThrowArgs>(args?: SelectSubset<T, ReportFindFirstOrThrowArgs<ExtArgs>>): Prisma__ReportClient<$Result.GetResult<Prisma.$ReportPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more Reports that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReportFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Reports
+     * const reports = await prisma.report.findMany()
+     * 
+     * // Get first 10 Reports
+     * const reports = await prisma.report.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const reportWithIdOnly = await prisma.report.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ReportFindManyArgs>(args?: SelectSubset<T, ReportFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReportPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a Report.
+     * @param {ReportCreateArgs} args - Arguments to create a Report.
+     * @example
+     * // Create one Report
+     * const Report = await prisma.report.create({
+     *   data: {
+     *     // ... data to create a Report
+     *   }
+     * })
+     * 
+     */
+    create<T extends ReportCreateArgs>(args: SelectSubset<T, ReportCreateArgs<ExtArgs>>): Prisma__ReportClient<$Result.GetResult<Prisma.$ReportPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many Reports.
+     * @param {ReportCreateManyArgs} args - Arguments to create many Reports.
+     * @example
+     * // Create many Reports
+     * const report = await prisma.report.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ReportCreateManyArgs>(args?: SelectSubset<T, ReportCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Reports and returns the data saved in the database.
+     * @param {ReportCreateManyAndReturnArgs} args - Arguments to create many Reports.
+     * @example
+     * // Create many Reports
+     * const report = await prisma.report.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Reports and only return the `id`
+     * const reportWithIdOnly = await prisma.report.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends ReportCreateManyAndReturnArgs>(args?: SelectSubset<T, ReportCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReportPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a Report.
+     * @param {ReportDeleteArgs} args - Arguments to delete one Report.
+     * @example
+     * // Delete one Report
+     * const Report = await prisma.report.delete({
+     *   where: {
+     *     // ... filter to delete one Report
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ReportDeleteArgs>(args: SelectSubset<T, ReportDeleteArgs<ExtArgs>>): Prisma__ReportClient<$Result.GetResult<Prisma.$ReportPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one Report.
+     * @param {ReportUpdateArgs} args - Arguments to update one Report.
+     * @example
+     * // Update one Report
+     * const report = await prisma.report.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ReportUpdateArgs>(args: SelectSubset<T, ReportUpdateArgs<ExtArgs>>): Prisma__ReportClient<$Result.GetResult<Prisma.$ReportPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more Reports.
+     * @param {ReportDeleteManyArgs} args - Arguments to filter Reports to delete.
+     * @example
+     * // Delete a few Reports
+     * const { count } = await prisma.report.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ReportDeleteManyArgs>(args?: SelectSubset<T, ReportDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Reports.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReportUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Reports
+     * const report = await prisma.report.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ReportUpdateManyArgs>(args: SelectSubset<T, ReportUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one Report.
+     * @param {ReportUpsertArgs} args - Arguments to update or create a Report.
+     * @example
+     * // Update or create a Report
+     * const report = await prisma.report.upsert({
+     *   create: {
+     *     // ... data to create a Report
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Report we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ReportUpsertArgs>(args: SelectSubset<T, ReportUpsertArgs<ExtArgs>>): Prisma__ReportClient<$Result.GetResult<Prisma.$ReportPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of Reports.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReportCountArgs} args - Arguments to filter Reports to count.
+     * @example
+     * // Count the number of Reports
+     * const count = await prisma.report.count({
+     *   where: {
+     *     // ... the filter for the Reports we want to count
+     *   }
+     * })
+    **/
+    count<T extends ReportCountArgs>(
+      args?: Subset<T, ReportCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ReportCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Report.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReportAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ReportAggregateArgs>(args: Subset<T, ReportAggregateArgs>): Prisma.PrismaPromise<GetReportAggregateType<T>>
+
+    /**
+     * Group by Report.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReportGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ReportGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ReportGroupByArgs['orderBy'] }
+        : { orderBy?: ReportGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ReportGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetReportGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Report model
+   */
+  readonly fields: ReportFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Report.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ReportClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    workspace<T extends WorkspaceDefaultArgs<ExtArgs> = {}>(args?: Subset<T, WorkspaceDefaultArgs<ExtArgs>>): Prisma__WorkspaceClient<$Result.GetResult<Prisma.$WorkspacePayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    reportType<T extends ReportTypeDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ReportTypeDefaultArgs<ExtArgs>>): Prisma__ReportTypeClient<$Result.GetResult<Prisma.$ReportTypePayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    createdBy<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    filters<T extends Report$filtersArgs<ExtArgs> = {}>(args?: Subset<T, Report$filtersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReportFilterPayload<ExtArgs>, T, "findMany"> | Null>
+    logs<T extends Report$logsArgs<ExtArgs> = {}>(args?: Subset<T, Report$logsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReportLogPayload<ExtArgs>, T, "findMany"> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Report model
+   */ 
+  interface ReportFieldRefs {
+    readonly id: FieldRef<"Report", 'String'>
+    readonly workspaceId: FieldRef<"Report", 'String'>
+    readonly reportName: FieldRef<"Report", 'String'>
+    readonly reportTypeId: FieldRef<"Report", 'String'>
+    readonly reportDate: FieldRef<"Report", 'DateTime'>
+    readonly isActive: FieldRef<"Report", 'Boolean'>
+    readonly isGenerated: FieldRef<"Report", 'Boolean'>
+    readonly generatedFileUrl: FieldRef<"Report", 'String'>
+    readonly generatedAt: FieldRef<"Report", 'DateTime'>
+    readonly createdById: FieldRef<"Report", 'String'>
+    readonly createdAt: FieldRef<"Report", 'DateTime'>
+    readonly updatedAt: FieldRef<"Report", 'DateTime'>
+    readonly deletedAt: FieldRef<"Report", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Report findUnique
+   */
+  export type ReportFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Report
+     */
+    select?: ReportSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReportInclude<ExtArgs> | null
+    /**
+     * Filter, which Report to fetch.
+     */
+    where: ReportWhereUniqueInput
+  }
+
+  /**
+   * Report findUniqueOrThrow
+   */
+  export type ReportFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Report
+     */
+    select?: ReportSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReportInclude<ExtArgs> | null
+    /**
+     * Filter, which Report to fetch.
+     */
+    where: ReportWhereUniqueInput
+  }
+
+  /**
+   * Report findFirst
+   */
+  export type ReportFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Report
+     */
+    select?: ReportSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReportInclude<ExtArgs> | null
+    /**
+     * Filter, which Report to fetch.
+     */
+    where?: ReportWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Reports to fetch.
+     */
+    orderBy?: ReportOrderByWithRelationInput | ReportOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Reports.
+     */
+    cursor?: ReportWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Reports from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Reports.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Reports.
+     */
+    distinct?: ReportScalarFieldEnum | ReportScalarFieldEnum[]
+  }
+
+  /**
+   * Report findFirstOrThrow
+   */
+  export type ReportFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Report
+     */
+    select?: ReportSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReportInclude<ExtArgs> | null
+    /**
+     * Filter, which Report to fetch.
+     */
+    where?: ReportWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Reports to fetch.
+     */
+    orderBy?: ReportOrderByWithRelationInput | ReportOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Reports.
+     */
+    cursor?: ReportWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Reports from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Reports.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Reports.
+     */
+    distinct?: ReportScalarFieldEnum | ReportScalarFieldEnum[]
+  }
+
+  /**
+   * Report findMany
+   */
+  export type ReportFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Report
+     */
+    select?: ReportSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReportInclude<ExtArgs> | null
+    /**
+     * Filter, which Reports to fetch.
+     */
+    where?: ReportWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Reports to fetch.
+     */
+    orderBy?: ReportOrderByWithRelationInput | ReportOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Reports.
+     */
+    cursor?: ReportWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Reports from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Reports.
+     */
+    skip?: number
+    distinct?: ReportScalarFieldEnum | ReportScalarFieldEnum[]
+  }
+
+  /**
+   * Report create
+   */
+  export type ReportCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Report
+     */
+    select?: ReportSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReportInclude<ExtArgs> | null
+    /**
+     * The data needed to create a Report.
+     */
+    data: XOR<ReportCreateInput, ReportUncheckedCreateInput>
+  }
+
+  /**
+   * Report createMany
+   */
+  export type ReportCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Reports.
+     */
+    data: ReportCreateManyInput | ReportCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Report createManyAndReturn
+   */
+  export type ReportCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Report
+     */
+    select?: ReportSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many Reports.
+     */
+    data: ReportCreateManyInput | ReportCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReportIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Report update
+   */
+  export type ReportUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Report
+     */
+    select?: ReportSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReportInclude<ExtArgs> | null
+    /**
+     * The data needed to update a Report.
+     */
+    data: XOR<ReportUpdateInput, ReportUncheckedUpdateInput>
+    /**
+     * Choose, which Report to update.
+     */
+    where: ReportWhereUniqueInput
+  }
+
+  /**
+   * Report updateMany
+   */
+  export type ReportUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Reports.
+     */
+    data: XOR<ReportUpdateManyMutationInput, ReportUncheckedUpdateManyInput>
+    /**
+     * Filter which Reports to update
+     */
+    where?: ReportWhereInput
+  }
+
+  /**
+   * Report upsert
+   */
+  export type ReportUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Report
+     */
+    select?: ReportSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReportInclude<ExtArgs> | null
+    /**
+     * The filter to search for the Report to update in case it exists.
+     */
+    where: ReportWhereUniqueInput
+    /**
+     * In case the Report found by the `where` argument doesn't exist, create a new Report with this data.
+     */
+    create: XOR<ReportCreateInput, ReportUncheckedCreateInput>
+    /**
+     * In case the Report was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ReportUpdateInput, ReportUncheckedUpdateInput>
+  }
+
+  /**
+   * Report delete
+   */
+  export type ReportDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Report
+     */
+    select?: ReportSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReportInclude<ExtArgs> | null
+    /**
+     * Filter which Report to delete.
+     */
+    where: ReportWhereUniqueInput
+  }
+
+  /**
+   * Report deleteMany
+   */
+  export type ReportDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Reports to delete
+     */
+    where?: ReportWhereInput
+  }
+
+  /**
+   * Report.filters
+   */
+  export type Report$filtersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReportFilter
+     */
+    select?: ReportFilterSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReportFilterInclude<ExtArgs> | null
+    where?: ReportFilterWhereInput
+    orderBy?: ReportFilterOrderByWithRelationInput | ReportFilterOrderByWithRelationInput[]
+    cursor?: ReportFilterWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ReportFilterScalarFieldEnum | ReportFilterScalarFieldEnum[]
+  }
+
+  /**
+   * Report.logs
+   */
+  export type Report$logsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReportLog
+     */
+    select?: ReportLogSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReportLogInclude<ExtArgs> | null
+    where?: ReportLogWhereInput
+    orderBy?: ReportLogOrderByWithRelationInput | ReportLogOrderByWithRelationInput[]
+    cursor?: ReportLogWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ReportLogScalarFieldEnum | ReportLogScalarFieldEnum[]
+  }
+
+  /**
+   * Report without action
+   */
+  export type ReportDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Report
+     */
+    select?: ReportSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReportInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model ReportFilter
+   */
+
+  export type AggregateReportFilter = {
+    _count: ReportFilterCountAggregateOutputType | null
+    _min: ReportFilterMinAggregateOutputType | null
+    _max: ReportFilterMaxAggregateOutputType | null
+  }
+
+  export type ReportFilterMinAggregateOutputType = {
+    id: string | null
+    reportId: string | null
+    filterKey: string | null
+    filterValue: string | null
+    createdAt: Date | null
+  }
+
+  export type ReportFilterMaxAggregateOutputType = {
+    id: string | null
+    reportId: string | null
+    filterKey: string | null
+    filterValue: string | null
+    createdAt: Date | null
+  }
+
+  export type ReportFilterCountAggregateOutputType = {
+    id: number
+    reportId: number
+    filterKey: number
+    filterValue: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type ReportFilterMinAggregateInputType = {
+    id?: true
+    reportId?: true
+    filterKey?: true
+    filterValue?: true
+    createdAt?: true
+  }
+
+  export type ReportFilterMaxAggregateInputType = {
+    id?: true
+    reportId?: true
+    filterKey?: true
+    filterValue?: true
+    createdAt?: true
+  }
+
+  export type ReportFilterCountAggregateInputType = {
+    id?: true
+    reportId?: true
+    filterKey?: true
+    filterValue?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type ReportFilterAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ReportFilter to aggregate.
+     */
+    where?: ReportFilterWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ReportFilters to fetch.
+     */
+    orderBy?: ReportFilterOrderByWithRelationInput | ReportFilterOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ReportFilterWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ReportFilters from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ReportFilters.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned ReportFilters
+    **/
+    _count?: true | ReportFilterCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ReportFilterMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ReportFilterMaxAggregateInputType
+  }
+
+  export type GetReportFilterAggregateType<T extends ReportFilterAggregateArgs> = {
+        [P in keyof T & keyof AggregateReportFilter]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateReportFilter[P]>
+      : GetScalarType<T[P], AggregateReportFilter[P]>
+  }
+
+
+
+
+  export type ReportFilterGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ReportFilterWhereInput
+    orderBy?: ReportFilterOrderByWithAggregationInput | ReportFilterOrderByWithAggregationInput[]
+    by: ReportFilterScalarFieldEnum[] | ReportFilterScalarFieldEnum
+    having?: ReportFilterScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ReportFilterCountAggregateInputType | true
+    _min?: ReportFilterMinAggregateInputType
+    _max?: ReportFilterMaxAggregateInputType
+  }
+
+  export type ReportFilterGroupByOutputType = {
+    id: string
+    reportId: string
+    filterKey: string
+    filterValue: string
+    createdAt: Date
+    _count: ReportFilterCountAggregateOutputType | null
+    _min: ReportFilterMinAggregateOutputType | null
+    _max: ReportFilterMaxAggregateOutputType | null
+  }
+
+  type GetReportFilterGroupByPayload<T extends ReportFilterGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ReportFilterGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ReportFilterGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ReportFilterGroupByOutputType[P]>
+            : GetScalarType<T[P], ReportFilterGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ReportFilterSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    reportId?: boolean
+    filterKey?: boolean
+    filterValue?: boolean
+    createdAt?: boolean
+    report?: boolean | ReportDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["reportFilter"]>
+
+  export type ReportFilterSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    reportId?: boolean
+    filterKey?: boolean
+    filterValue?: boolean
+    createdAt?: boolean
+    report?: boolean | ReportDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["reportFilter"]>
+
+  export type ReportFilterSelectScalar = {
+    id?: boolean
+    reportId?: boolean
+    filterKey?: boolean
+    filterValue?: boolean
+    createdAt?: boolean
+  }
+
+  export type ReportFilterInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    report?: boolean | ReportDefaultArgs<ExtArgs>
+  }
+  export type ReportFilterIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    report?: boolean | ReportDefaultArgs<ExtArgs>
+  }
+
+  export type $ReportFilterPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "ReportFilter"
+    objects: {
+      report: Prisma.$ReportPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      reportId: string
+      filterKey: string
+      filterValue: string
+      createdAt: Date
+    }, ExtArgs["result"]["reportFilter"]>
+    composites: {}
+  }
+
+  type ReportFilterGetPayload<S extends boolean | null | undefined | ReportFilterDefaultArgs> = $Result.GetResult<Prisma.$ReportFilterPayload, S>
+
+  type ReportFilterCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<ReportFilterFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: ReportFilterCountAggregateInputType | true
+    }
+
+  export interface ReportFilterDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ReportFilter'], meta: { name: 'ReportFilter' } }
+    /**
+     * Find zero or one ReportFilter that matches the filter.
+     * @param {ReportFilterFindUniqueArgs} args - Arguments to find a ReportFilter
+     * @example
+     * // Get one ReportFilter
+     * const reportFilter = await prisma.reportFilter.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ReportFilterFindUniqueArgs>(args: SelectSubset<T, ReportFilterFindUniqueArgs<ExtArgs>>): Prisma__ReportFilterClient<$Result.GetResult<Prisma.$ReportFilterPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one ReportFilter that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {ReportFilterFindUniqueOrThrowArgs} args - Arguments to find a ReportFilter
+     * @example
+     * // Get one ReportFilter
+     * const reportFilter = await prisma.reportFilter.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ReportFilterFindUniqueOrThrowArgs>(args: SelectSubset<T, ReportFilterFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ReportFilterClient<$Result.GetResult<Prisma.$ReportFilterPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first ReportFilter that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReportFilterFindFirstArgs} args - Arguments to find a ReportFilter
+     * @example
+     * // Get one ReportFilter
+     * const reportFilter = await prisma.reportFilter.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ReportFilterFindFirstArgs>(args?: SelectSubset<T, ReportFilterFindFirstArgs<ExtArgs>>): Prisma__ReportFilterClient<$Result.GetResult<Prisma.$ReportFilterPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first ReportFilter that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReportFilterFindFirstOrThrowArgs} args - Arguments to find a ReportFilter
+     * @example
+     * // Get one ReportFilter
+     * const reportFilter = await prisma.reportFilter.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ReportFilterFindFirstOrThrowArgs>(args?: SelectSubset<T, ReportFilterFindFirstOrThrowArgs<ExtArgs>>): Prisma__ReportFilterClient<$Result.GetResult<Prisma.$ReportFilterPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more ReportFilters that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReportFilterFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all ReportFilters
+     * const reportFilters = await prisma.reportFilter.findMany()
+     * 
+     * // Get first 10 ReportFilters
+     * const reportFilters = await prisma.reportFilter.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const reportFilterWithIdOnly = await prisma.reportFilter.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ReportFilterFindManyArgs>(args?: SelectSubset<T, ReportFilterFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReportFilterPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a ReportFilter.
+     * @param {ReportFilterCreateArgs} args - Arguments to create a ReportFilter.
+     * @example
+     * // Create one ReportFilter
+     * const ReportFilter = await prisma.reportFilter.create({
+     *   data: {
+     *     // ... data to create a ReportFilter
+     *   }
+     * })
+     * 
+     */
+    create<T extends ReportFilterCreateArgs>(args: SelectSubset<T, ReportFilterCreateArgs<ExtArgs>>): Prisma__ReportFilterClient<$Result.GetResult<Prisma.$ReportFilterPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many ReportFilters.
+     * @param {ReportFilterCreateManyArgs} args - Arguments to create many ReportFilters.
+     * @example
+     * // Create many ReportFilters
+     * const reportFilter = await prisma.reportFilter.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ReportFilterCreateManyArgs>(args?: SelectSubset<T, ReportFilterCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many ReportFilters and returns the data saved in the database.
+     * @param {ReportFilterCreateManyAndReturnArgs} args - Arguments to create many ReportFilters.
+     * @example
+     * // Create many ReportFilters
+     * const reportFilter = await prisma.reportFilter.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many ReportFilters and only return the `id`
+     * const reportFilterWithIdOnly = await prisma.reportFilter.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends ReportFilterCreateManyAndReturnArgs>(args?: SelectSubset<T, ReportFilterCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReportFilterPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a ReportFilter.
+     * @param {ReportFilterDeleteArgs} args - Arguments to delete one ReportFilter.
+     * @example
+     * // Delete one ReportFilter
+     * const ReportFilter = await prisma.reportFilter.delete({
+     *   where: {
+     *     // ... filter to delete one ReportFilter
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ReportFilterDeleteArgs>(args: SelectSubset<T, ReportFilterDeleteArgs<ExtArgs>>): Prisma__ReportFilterClient<$Result.GetResult<Prisma.$ReportFilterPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one ReportFilter.
+     * @param {ReportFilterUpdateArgs} args - Arguments to update one ReportFilter.
+     * @example
+     * // Update one ReportFilter
+     * const reportFilter = await prisma.reportFilter.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ReportFilterUpdateArgs>(args: SelectSubset<T, ReportFilterUpdateArgs<ExtArgs>>): Prisma__ReportFilterClient<$Result.GetResult<Prisma.$ReportFilterPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more ReportFilters.
+     * @param {ReportFilterDeleteManyArgs} args - Arguments to filter ReportFilters to delete.
+     * @example
+     * // Delete a few ReportFilters
+     * const { count } = await prisma.reportFilter.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ReportFilterDeleteManyArgs>(args?: SelectSubset<T, ReportFilterDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ReportFilters.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReportFilterUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many ReportFilters
+     * const reportFilter = await prisma.reportFilter.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ReportFilterUpdateManyArgs>(args: SelectSubset<T, ReportFilterUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one ReportFilter.
+     * @param {ReportFilterUpsertArgs} args - Arguments to update or create a ReportFilter.
+     * @example
+     * // Update or create a ReportFilter
+     * const reportFilter = await prisma.reportFilter.upsert({
+     *   create: {
+     *     // ... data to create a ReportFilter
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the ReportFilter we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ReportFilterUpsertArgs>(args: SelectSubset<T, ReportFilterUpsertArgs<ExtArgs>>): Prisma__ReportFilterClient<$Result.GetResult<Prisma.$ReportFilterPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of ReportFilters.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReportFilterCountArgs} args - Arguments to filter ReportFilters to count.
+     * @example
+     * // Count the number of ReportFilters
+     * const count = await prisma.reportFilter.count({
+     *   where: {
+     *     // ... the filter for the ReportFilters we want to count
+     *   }
+     * })
+    **/
+    count<T extends ReportFilterCountArgs>(
+      args?: Subset<T, ReportFilterCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ReportFilterCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a ReportFilter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReportFilterAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ReportFilterAggregateArgs>(args: Subset<T, ReportFilterAggregateArgs>): Prisma.PrismaPromise<GetReportFilterAggregateType<T>>
+
+    /**
+     * Group by ReportFilter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReportFilterGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ReportFilterGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ReportFilterGroupByArgs['orderBy'] }
+        : { orderBy?: ReportFilterGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ReportFilterGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetReportFilterGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the ReportFilter model
+   */
+  readonly fields: ReportFilterFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for ReportFilter.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ReportFilterClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    report<T extends ReportDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ReportDefaultArgs<ExtArgs>>): Prisma__ReportClient<$Result.GetResult<Prisma.$ReportPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the ReportFilter model
+   */ 
+  interface ReportFilterFieldRefs {
+    readonly id: FieldRef<"ReportFilter", 'String'>
+    readonly reportId: FieldRef<"ReportFilter", 'String'>
+    readonly filterKey: FieldRef<"ReportFilter", 'String'>
+    readonly filterValue: FieldRef<"ReportFilter", 'String'>
+    readonly createdAt: FieldRef<"ReportFilter", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * ReportFilter findUnique
+   */
+  export type ReportFilterFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReportFilter
+     */
+    select?: ReportFilterSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReportFilterInclude<ExtArgs> | null
+    /**
+     * Filter, which ReportFilter to fetch.
+     */
+    where: ReportFilterWhereUniqueInput
+  }
+
+  /**
+   * ReportFilter findUniqueOrThrow
+   */
+  export type ReportFilterFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReportFilter
+     */
+    select?: ReportFilterSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReportFilterInclude<ExtArgs> | null
+    /**
+     * Filter, which ReportFilter to fetch.
+     */
+    where: ReportFilterWhereUniqueInput
+  }
+
+  /**
+   * ReportFilter findFirst
+   */
+  export type ReportFilterFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReportFilter
+     */
+    select?: ReportFilterSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReportFilterInclude<ExtArgs> | null
+    /**
+     * Filter, which ReportFilter to fetch.
+     */
+    where?: ReportFilterWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ReportFilters to fetch.
+     */
+    orderBy?: ReportFilterOrderByWithRelationInput | ReportFilterOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ReportFilters.
+     */
+    cursor?: ReportFilterWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ReportFilters from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ReportFilters.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ReportFilters.
+     */
+    distinct?: ReportFilterScalarFieldEnum | ReportFilterScalarFieldEnum[]
+  }
+
+  /**
+   * ReportFilter findFirstOrThrow
+   */
+  export type ReportFilterFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReportFilter
+     */
+    select?: ReportFilterSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReportFilterInclude<ExtArgs> | null
+    /**
+     * Filter, which ReportFilter to fetch.
+     */
+    where?: ReportFilterWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ReportFilters to fetch.
+     */
+    orderBy?: ReportFilterOrderByWithRelationInput | ReportFilterOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ReportFilters.
+     */
+    cursor?: ReportFilterWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ReportFilters from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ReportFilters.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ReportFilters.
+     */
+    distinct?: ReportFilterScalarFieldEnum | ReportFilterScalarFieldEnum[]
+  }
+
+  /**
+   * ReportFilter findMany
+   */
+  export type ReportFilterFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReportFilter
+     */
+    select?: ReportFilterSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReportFilterInclude<ExtArgs> | null
+    /**
+     * Filter, which ReportFilters to fetch.
+     */
+    where?: ReportFilterWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ReportFilters to fetch.
+     */
+    orderBy?: ReportFilterOrderByWithRelationInput | ReportFilterOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing ReportFilters.
+     */
+    cursor?: ReportFilterWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ReportFilters from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ReportFilters.
+     */
+    skip?: number
+    distinct?: ReportFilterScalarFieldEnum | ReportFilterScalarFieldEnum[]
+  }
+
+  /**
+   * ReportFilter create
+   */
+  export type ReportFilterCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReportFilter
+     */
+    select?: ReportFilterSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReportFilterInclude<ExtArgs> | null
+    /**
+     * The data needed to create a ReportFilter.
+     */
+    data: XOR<ReportFilterCreateInput, ReportFilterUncheckedCreateInput>
+  }
+
+  /**
+   * ReportFilter createMany
+   */
+  export type ReportFilterCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many ReportFilters.
+     */
+    data: ReportFilterCreateManyInput | ReportFilterCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ReportFilter createManyAndReturn
+   */
+  export type ReportFilterCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReportFilter
+     */
+    select?: ReportFilterSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many ReportFilters.
+     */
+    data: ReportFilterCreateManyInput | ReportFilterCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReportFilterIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * ReportFilter update
+   */
+  export type ReportFilterUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReportFilter
+     */
+    select?: ReportFilterSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReportFilterInclude<ExtArgs> | null
+    /**
+     * The data needed to update a ReportFilter.
+     */
+    data: XOR<ReportFilterUpdateInput, ReportFilterUncheckedUpdateInput>
+    /**
+     * Choose, which ReportFilter to update.
+     */
+    where: ReportFilterWhereUniqueInput
+  }
+
+  /**
+   * ReportFilter updateMany
+   */
+  export type ReportFilterUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update ReportFilters.
+     */
+    data: XOR<ReportFilterUpdateManyMutationInput, ReportFilterUncheckedUpdateManyInput>
+    /**
+     * Filter which ReportFilters to update
+     */
+    where?: ReportFilterWhereInput
+  }
+
+  /**
+   * ReportFilter upsert
+   */
+  export type ReportFilterUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReportFilter
+     */
+    select?: ReportFilterSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReportFilterInclude<ExtArgs> | null
+    /**
+     * The filter to search for the ReportFilter to update in case it exists.
+     */
+    where: ReportFilterWhereUniqueInput
+    /**
+     * In case the ReportFilter found by the `where` argument doesn't exist, create a new ReportFilter with this data.
+     */
+    create: XOR<ReportFilterCreateInput, ReportFilterUncheckedCreateInput>
+    /**
+     * In case the ReportFilter was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ReportFilterUpdateInput, ReportFilterUncheckedUpdateInput>
+  }
+
+  /**
+   * ReportFilter delete
+   */
+  export type ReportFilterDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReportFilter
+     */
+    select?: ReportFilterSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReportFilterInclude<ExtArgs> | null
+    /**
+     * Filter which ReportFilter to delete.
+     */
+    where: ReportFilterWhereUniqueInput
+  }
+
+  /**
+   * ReportFilter deleteMany
+   */
+  export type ReportFilterDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ReportFilters to delete
+     */
+    where?: ReportFilterWhereInput
+  }
+
+  /**
+   * ReportFilter without action
+   */
+  export type ReportFilterDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReportFilter
+     */
+    select?: ReportFilterSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReportFilterInclude<ExtArgs> | null
   }
 
 
@@ -43368,11 +49732,49 @@ export namespace Prisma {
   export type OfficeScalarFieldEnum = (typeof OfficeScalarFieldEnum)[keyof typeof OfficeScalarFieldEnum]
 
 
+  export const CountryScalarFieldEnum: {
+    id: 'id',
+    workspaceId: 'workspaceId',
+    name: 'name',
+    code: 'code',
+    isActive: 'isActive',
+    createdById: 'createdById',
+    updatedById: 'updatedById',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
+    deletedAt: 'deletedAt'
+  };
+
+  export type CountryScalarFieldEnum = (typeof CountryScalarFieldEnum)[keyof typeof CountryScalarFieldEnum]
+
+
+  export const LocationLevelScalarFieldEnum: {
+    id: 'id',
+    workspaceId: 'workspaceId',
+    countryId: 'countryId',
+    levelName: 'levelName',
+    levelOrder: 'levelOrder',
+    isActive: 'isActive',
+    createdById: 'createdById',
+    updatedById: 'updatedById',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type LocationLevelScalarFieldEnum = (typeof LocationLevelScalarFieldEnum)[keyof typeof LocationLevelScalarFieldEnum]
+
+
   export const LocationScalarFieldEnum: {
     id: 'id',
     name: 'name',
     type: 'type',
     workspaceId: 'workspaceId',
+    countryId: 'countryId',
+    levelId: 'levelId',
+    isActive: 'isActive',
+    createdById: 'createdById',
+    updatedById: 'updatedById',
+    deletedAt: 'deletedAt',
     parentId: 'parentId',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -43489,6 +49891,21 @@ export namespace Prisma {
   };
 
   export type LeadLOBLogScalarFieldEnum = (typeof LeadLOBLogScalarFieldEnum)[keyof typeof LeadLOBLogScalarFieldEnum]
+
+
+  export const LOBReasonScalarFieldEnum: {
+    id: 'id',
+    workspaceId: 'workspaceId',
+    name: 'name',
+    status: 'status',
+    createdById: 'createdById',
+    updatedById: 'updatedById',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
+    deletedAt: 'deletedAt'
+  };
+
+  export type LOBReasonScalarFieldEnum = (typeof LOBReasonScalarFieldEnum)[keyof typeof LOBReasonScalarFieldEnum]
 
 
   export const LeadStageApprovalScalarFieldEnum: {
@@ -43779,13 +50196,46 @@ export namespace Prisma {
     id: 'id',
     workspaceId: 'workspaceId',
     reportTypeId: 'reportTypeId',
+    reportId: 'reportId',
     generatedById: 'generatedById',
+    action: 'action',
     filters: 'filters',
     resultCount: 'resultCount',
+    meta: 'meta',
     createdAt: 'createdAt'
   };
 
   export type ReportLogScalarFieldEnum = (typeof ReportLogScalarFieldEnum)[keyof typeof ReportLogScalarFieldEnum]
+
+
+  export const ReportScalarFieldEnum: {
+    id: 'id',
+    workspaceId: 'workspaceId',
+    reportName: 'reportName',
+    reportTypeId: 'reportTypeId',
+    reportDate: 'reportDate',
+    isActive: 'isActive',
+    isGenerated: 'isGenerated',
+    generatedFileUrl: 'generatedFileUrl',
+    generatedAt: 'generatedAt',
+    createdById: 'createdById',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
+    deletedAt: 'deletedAt'
+  };
+
+  export type ReportScalarFieldEnum = (typeof ReportScalarFieldEnum)[keyof typeof ReportScalarFieldEnum]
+
+
+  export const ReportFilterScalarFieldEnum: {
+    id: 'id',
+    reportId: 'reportId',
+    filterKey: 'filterKey',
+    filterValue: 'filterValue',
+    createdAt: 'createdAt'
+  };
+
+  export type ReportFilterScalarFieldEnum = (typeof ReportFilterScalarFieldEnum)[keyof typeof ReportFilterScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -44041,6 +50491,20 @@ export namespace Prisma {
    * Reference to a field of type 'LeadClosureType[]'
    */
   export type ListEnumLeadClosureTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LeadClosureType[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'LOBReasonStatus'
+   */
+  export type EnumLOBReasonStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LOBReasonStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'LOBReasonStatus[]'
+   */
+  export type ListEnumLOBReasonStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LOBReasonStatus[]'>
     
 
 
@@ -44400,7 +50864,11 @@ export namespace Prisma {
     leadStageApprovals?: LeadStageApprovalListRelationFilter
     holidays?: HolidayListRelationFilter
     holidaySyncLogs?: HolidaySyncLogListRelationFilter
+    countries?: CountryListRelationFilter
+    locationLevels?: LocationLevelListRelationFilter
+    lobReasons?: LOBReasonListRelationFilter
     reportTypes?: ReportTypeListRelationFilter
+    reports?: ReportListRelationFilter
     reportLogs?: ReportLogListRelationFilter
   }
 
@@ -44426,7 +50894,11 @@ export namespace Prisma {
     leadStageApprovals?: LeadStageApprovalOrderByRelationAggregateInput
     holidays?: HolidayOrderByRelationAggregateInput
     holidaySyncLogs?: HolidaySyncLogOrderByRelationAggregateInput
+    countries?: CountryOrderByRelationAggregateInput
+    locationLevels?: LocationLevelOrderByRelationAggregateInput
+    lobReasons?: LOBReasonOrderByRelationAggregateInput
     reportTypes?: ReportTypeOrderByRelationAggregateInput
+    reports?: ReportOrderByRelationAggregateInput
     reportLogs?: ReportLogOrderByRelationAggregateInput
   }
 
@@ -44455,7 +50927,11 @@ export namespace Prisma {
     leadStageApprovals?: LeadStageApprovalListRelationFilter
     holidays?: HolidayListRelationFilter
     holidaySyncLogs?: HolidaySyncLogListRelationFilter
+    countries?: CountryListRelationFilter
+    locationLevels?: LocationLevelListRelationFilter
+    lobReasons?: LOBReasonListRelationFilter
     reportTypes?: ReportTypeListRelationFilter
+    reports?: ReportListRelationFilter
     reportLogs?: ReportLogListRelationFilter
   }, "id" | "ownerId">
 
@@ -44981,6 +51457,193 @@ export namespace Prisma {
     updatedAt?: DateTimeWithAggregatesFilter<"Office"> | Date | string
   }
 
+  export type CountryWhereInput = {
+    AND?: CountryWhereInput | CountryWhereInput[]
+    OR?: CountryWhereInput[]
+    NOT?: CountryWhereInput | CountryWhereInput[]
+    id?: StringFilter<"Country"> | string
+    workspaceId?: StringFilter<"Country"> | string
+    name?: StringFilter<"Country"> | string
+    code?: StringNullableFilter<"Country"> | string | null
+    isActive?: BoolFilter<"Country"> | boolean
+    createdById?: StringNullableFilter<"Country"> | string | null
+    updatedById?: StringNullableFilter<"Country"> | string | null
+    createdAt?: DateTimeFilter<"Country"> | Date | string
+    updatedAt?: DateTimeFilter<"Country"> | Date | string
+    deletedAt?: DateTimeNullableFilter<"Country"> | Date | string | null
+    workspace?: XOR<WorkspaceRelationFilter, WorkspaceWhereInput>
+    createdBy?: XOR<UserNullableRelationFilter, UserWhereInput> | null
+    updatedBy?: XOR<UserNullableRelationFilter, UserWhereInput> | null
+    levels?: LocationLevelListRelationFilter
+    locations?: LocationListRelationFilter
+  }
+
+  export type CountryOrderByWithRelationInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    name?: SortOrder
+    code?: SortOrderInput | SortOrder
+    isActive?: SortOrder
+    createdById?: SortOrderInput | SortOrder
+    updatedById?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrderInput | SortOrder
+    workspace?: WorkspaceOrderByWithRelationInput
+    createdBy?: UserOrderByWithRelationInput
+    updatedBy?: UserOrderByWithRelationInput
+    levels?: LocationLevelOrderByRelationAggregateInput
+    locations?: LocationOrderByRelationAggregateInput
+  }
+
+  export type CountryWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: CountryWhereInput | CountryWhereInput[]
+    OR?: CountryWhereInput[]
+    NOT?: CountryWhereInput | CountryWhereInput[]
+    workspaceId?: StringFilter<"Country"> | string
+    name?: StringFilter<"Country"> | string
+    code?: StringNullableFilter<"Country"> | string | null
+    isActive?: BoolFilter<"Country"> | boolean
+    createdById?: StringNullableFilter<"Country"> | string | null
+    updatedById?: StringNullableFilter<"Country"> | string | null
+    createdAt?: DateTimeFilter<"Country"> | Date | string
+    updatedAt?: DateTimeFilter<"Country"> | Date | string
+    deletedAt?: DateTimeNullableFilter<"Country"> | Date | string | null
+    workspace?: XOR<WorkspaceRelationFilter, WorkspaceWhereInput>
+    createdBy?: XOR<UserNullableRelationFilter, UserWhereInput> | null
+    updatedBy?: XOR<UserNullableRelationFilter, UserWhereInput> | null
+    levels?: LocationLevelListRelationFilter
+    locations?: LocationListRelationFilter
+  }, "id">
+
+  export type CountryOrderByWithAggregationInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    name?: SortOrder
+    code?: SortOrderInput | SortOrder
+    isActive?: SortOrder
+    createdById?: SortOrderInput | SortOrder
+    updatedById?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrderInput | SortOrder
+    _count?: CountryCountOrderByAggregateInput
+    _max?: CountryMaxOrderByAggregateInput
+    _min?: CountryMinOrderByAggregateInput
+  }
+
+  export type CountryScalarWhereWithAggregatesInput = {
+    AND?: CountryScalarWhereWithAggregatesInput | CountryScalarWhereWithAggregatesInput[]
+    OR?: CountryScalarWhereWithAggregatesInput[]
+    NOT?: CountryScalarWhereWithAggregatesInput | CountryScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"Country"> | string
+    workspaceId?: StringWithAggregatesFilter<"Country"> | string
+    name?: StringWithAggregatesFilter<"Country"> | string
+    code?: StringNullableWithAggregatesFilter<"Country"> | string | null
+    isActive?: BoolWithAggregatesFilter<"Country"> | boolean
+    createdById?: StringNullableWithAggregatesFilter<"Country"> | string | null
+    updatedById?: StringNullableWithAggregatesFilter<"Country"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"Country"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"Country"> | Date | string
+    deletedAt?: DateTimeNullableWithAggregatesFilter<"Country"> | Date | string | null
+  }
+
+  export type LocationLevelWhereInput = {
+    AND?: LocationLevelWhereInput | LocationLevelWhereInput[]
+    OR?: LocationLevelWhereInput[]
+    NOT?: LocationLevelWhereInput | LocationLevelWhereInput[]
+    id?: StringFilter<"LocationLevel"> | string
+    workspaceId?: StringFilter<"LocationLevel"> | string
+    countryId?: StringFilter<"LocationLevel"> | string
+    levelName?: StringFilter<"LocationLevel"> | string
+    levelOrder?: IntFilter<"LocationLevel"> | number
+    isActive?: BoolFilter<"LocationLevel"> | boolean
+    createdById?: StringNullableFilter<"LocationLevel"> | string | null
+    updatedById?: StringNullableFilter<"LocationLevel"> | string | null
+    createdAt?: DateTimeFilter<"LocationLevel"> | Date | string
+    updatedAt?: DateTimeFilter<"LocationLevel"> | Date | string
+    workspace?: XOR<WorkspaceRelationFilter, WorkspaceWhereInput>
+    country?: XOR<CountryRelationFilter, CountryWhereInput>
+    createdBy?: XOR<UserNullableRelationFilter, UserWhereInput> | null
+    updatedBy?: XOR<UserNullableRelationFilter, UserWhereInput> | null
+    locations?: LocationListRelationFilter
+  }
+
+  export type LocationLevelOrderByWithRelationInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    countryId?: SortOrder
+    levelName?: SortOrder
+    levelOrder?: SortOrder
+    isActive?: SortOrder
+    createdById?: SortOrderInput | SortOrder
+    updatedById?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    workspace?: WorkspaceOrderByWithRelationInput
+    country?: CountryOrderByWithRelationInput
+    createdBy?: UserOrderByWithRelationInput
+    updatedBy?: UserOrderByWithRelationInput
+    locations?: LocationOrderByRelationAggregateInput
+  }
+
+  export type LocationLevelWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    countryId_levelOrder?: LocationLevelCountryIdLevelOrderCompoundUniqueInput
+    AND?: LocationLevelWhereInput | LocationLevelWhereInput[]
+    OR?: LocationLevelWhereInput[]
+    NOT?: LocationLevelWhereInput | LocationLevelWhereInput[]
+    workspaceId?: StringFilter<"LocationLevel"> | string
+    countryId?: StringFilter<"LocationLevel"> | string
+    levelName?: StringFilter<"LocationLevel"> | string
+    levelOrder?: IntFilter<"LocationLevel"> | number
+    isActive?: BoolFilter<"LocationLevel"> | boolean
+    createdById?: StringNullableFilter<"LocationLevel"> | string | null
+    updatedById?: StringNullableFilter<"LocationLevel"> | string | null
+    createdAt?: DateTimeFilter<"LocationLevel"> | Date | string
+    updatedAt?: DateTimeFilter<"LocationLevel"> | Date | string
+    workspace?: XOR<WorkspaceRelationFilter, WorkspaceWhereInput>
+    country?: XOR<CountryRelationFilter, CountryWhereInput>
+    createdBy?: XOR<UserNullableRelationFilter, UserWhereInput> | null
+    updatedBy?: XOR<UserNullableRelationFilter, UserWhereInput> | null
+    locations?: LocationListRelationFilter
+  }, "id" | "countryId_levelOrder">
+
+  export type LocationLevelOrderByWithAggregationInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    countryId?: SortOrder
+    levelName?: SortOrder
+    levelOrder?: SortOrder
+    isActive?: SortOrder
+    createdById?: SortOrderInput | SortOrder
+    updatedById?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: LocationLevelCountOrderByAggregateInput
+    _avg?: LocationLevelAvgOrderByAggregateInput
+    _max?: LocationLevelMaxOrderByAggregateInput
+    _min?: LocationLevelMinOrderByAggregateInput
+    _sum?: LocationLevelSumOrderByAggregateInput
+  }
+
+  export type LocationLevelScalarWhereWithAggregatesInput = {
+    AND?: LocationLevelScalarWhereWithAggregatesInput | LocationLevelScalarWhereWithAggregatesInput[]
+    OR?: LocationLevelScalarWhereWithAggregatesInput[]
+    NOT?: LocationLevelScalarWhereWithAggregatesInput | LocationLevelScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"LocationLevel"> | string
+    workspaceId?: StringWithAggregatesFilter<"LocationLevel"> | string
+    countryId?: StringWithAggregatesFilter<"LocationLevel"> | string
+    levelName?: StringWithAggregatesFilter<"LocationLevel"> | string
+    levelOrder?: IntWithAggregatesFilter<"LocationLevel"> | number
+    isActive?: BoolWithAggregatesFilter<"LocationLevel"> | boolean
+    createdById?: StringNullableWithAggregatesFilter<"LocationLevel"> | string | null
+    updatedById?: StringNullableWithAggregatesFilter<"LocationLevel"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"LocationLevel"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"LocationLevel"> | Date | string
+  }
+
   export type LocationWhereInput = {
     AND?: LocationWhereInput | LocationWhereInput[]
     OR?: LocationWhereInput[]
@@ -44989,11 +51652,19 @@ export namespace Prisma {
     name?: StringFilter<"Location"> | string
     type?: EnumLocationTypeFilter<"Location"> | $Enums.LocationType
     workspaceId?: StringFilter<"Location"> | string
+    countryId?: StringNullableFilter<"Location"> | string | null
+    levelId?: StringNullableFilter<"Location"> | string | null
+    isActive?: BoolFilter<"Location"> | boolean
+    createdById?: StringNullableFilter<"Location"> | string | null
+    updatedById?: StringNullableFilter<"Location"> | string | null
+    deletedAt?: DateTimeNullableFilter<"Location"> | Date | string | null
     parentId?: StringNullableFilter<"Location"> | string | null
     createdAt?: DateTimeFilter<"Location"> | Date | string
     updatedAt?: DateTimeFilter<"Location"> | Date | string
     parent?: XOR<LocationNullableRelationFilter, LocationWhereInput> | null
     children?: LocationListRelationFilter
+    country?: XOR<CountryNullableRelationFilter, CountryWhereInput> | null
+    level?: XOR<LocationLevelNullableRelationFilter, LocationLevelWhereInput> | null
     assignedUsers?: UserLocationAssignmentListRelationFilter
     usersAtCountry?: UserListRelationFilter
     usersAtState?: UserListRelationFilter
@@ -45008,11 +51679,19 @@ export namespace Prisma {
     name?: SortOrder
     type?: SortOrder
     workspaceId?: SortOrder
+    countryId?: SortOrderInput | SortOrder
+    levelId?: SortOrderInput | SortOrder
+    isActive?: SortOrder
+    createdById?: SortOrderInput | SortOrder
+    updatedById?: SortOrderInput | SortOrder
+    deletedAt?: SortOrderInput | SortOrder
     parentId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     parent?: LocationOrderByWithRelationInput
     children?: LocationOrderByRelationAggregateInput
+    country?: CountryOrderByWithRelationInput
+    level?: LocationLevelOrderByWithRelationInput
     assignedUsers?: UserLocationAssignmentOrderByRelationAggregateInput
     usersAtCountry?: UserOrderByRelationAggregateInput
     usersAtState?: UserOrderByRelationAggregateInput
@@ -45030,11 +51709,19 @@ export namespace Prisma {
     name?: StringFilter<"Location"> | string
     type?: EnumLocationTypeFilter<"Location"> | $Enums.LocationType
     workspaceId?: StringFilter<"Location"> | string
+    countryId?: StringNullableFilter<"Location"> | string | null
+    levelId?: StringNullableFilter<"Location"> | string | null
+    isActive?: BoolFilter<"Location"> | boolean
+    createdById?: StringNullableFilter<"Location"> | string | null
+    updatedById?: StringNullableFilter<"Location"> | string | null
+    deletedAt?: DateTimeNullableFilter<"Location"> | Date | string | null
     parentId?: StringNullableFilter<"Location"> | string | null
     createdAt?: DateTimeFilter<"Location"> | Date | string
     updatedAt?: DateTimeFilter<"Location"> | Date | string
     parent?: XOR<LocationNullableRelationFilter, LocationWhereInput> | null
     children?: LocationListRelationFilter
+    country?: XOR<CountryNullableRelationFilter, CountryWhereInput> | null
+    level?: XOR<LocationLevelNullableRelationFilter, LocationLevelWhereInput> | null
     assignedUsers?: UserLocationAssignmentListRelationFilter
     usersAtCountry?: UserListRelationFilter
     usersAtState?: UserListRelationFilter
@@ -45049,6 +51736,12 @@ export namespace Prisma {
     name?: SortOrder
     type?: SortOrder
     workspaceId?: SortOrder
+    countryId?: SortOrderInput | SortOrder
+    levelId?: SortOrderInput | SortOrder
+    isActive?: SortOrder
+    createdById?: SortOrderInput | SortOrder
+    updatedById?: SortOrderInput | SortOrder
+    deletedAt?: SortOrderInput | SortOrder
     parentId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -45065,6 +51758,12 @@ export namespace Prisma {
     name?: StringWithAggregatesFilter<"Location"> | string
     type?: EnumLocationTypeWithAggregatesFilter<"Location"> | $Enums.LocationType
     workspaceId?: StringWithAggregatesFilter<"Location"> | string
+    countryId?: StringNullableWithAggregatesFilter<"Location"> | string | null
+    levelId?: StringNullableWithAggregatesFilter<"Location"> | string | null
+    isActive?: BoolWithAggregatesFilter<"Location"> | boolean
+    createdById?: StringNullableWithAggregatesFilter<"Location"> | string | null
+    updatedById?: StringNullableWithAggregatesFilter<"Location"> | string | null
+    deletedAt?: DateTimeNullableWithAggregatesFilter<"Location"> | Date | string | null
     parentId?: StringNullableWithAggregatesFilter<"Location"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Location"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Location"> | Date | string
@@ -45672,6 +52371,87 @@ export namespace Prisma {
     changedById?: StringWithAggregatesFilter<"LeadLOBLog"> | string
     changedAt?: DateTimeWithAggregatesFilter<"LeadLOBLog"> | Date | string
     workspaceId?: StringWithAggregatesFilter<"LeadLOBLog"> | string
+  }
+
+  export type LOBReasonWhereInput = {
+    AND?: LOBReasonWhereInput | LOBReasonWhereInput[]
+    OR?: LOBReasonWhereInput[]
+    NOT?: LOBReasonWhereInput | LOBReasonWhereInput[]
+    id?: StringFilter<"LOBReason"> | string
+    workspaceId?: StringFilter<"LOBReason"> | string
+    name?: StringFilter<"LOBReason"> | string
+    status?: EnumLOBReasonStatusFilter<"LOBReason"> | $Enums.LOBReasonStatus
+    createdById?: StringNullableFilter<"LOBReason"> | string | null
+    updatedById?: StringNullableFilter<"LOBReason"> | string | null
+    createdAt?: DateTimeFilter<"LOBReason"> | Date | string
+    updatedAt?: DateTimeFilter<"LOBReason"> | Date | string
+    deletedAt?: DateTimeNullableFilter<"LOBReason"> | Date | string | null
+    workspace?: XOR<WorkspaceRelationFilter, WorkspaceWhereInput>
+    createdBy?: XOR<UserNullableRelationFilter, UserWhereInput> | null
+    updatedBy?: XOR<UserNullableRelationFilter, UserWhereInput> | null
+  }
+
+  export type LOBReasonOrderByWithRelationInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    name?: SortOrder
+    status?: SortOrder
+    createdById?: SortOrderInput | SortOrder
+    updatedById?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrderInput | SortOrder
+    workspace?: WorkspaceOrderByWithRelationInput
+    createdBy?: UserOrderByWithRelationInput
+    updatedBy?: UserOrderByWithRelationInput
+  }
+
+  export type LOBReasonWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: LOBReasonWhereInput | LOBReasonWhereInput[]
+    OR?: LOBReasonWhereInput[]
+    NOT?: LOBReasonWhereInput | LOBReasonWhereInput[]
+    workspaceId?: StringFilter<"LOBReason"> | string
+    name?: StringFilter<"LOBReason"> | string
+    status?: EnumLOBReasonStatusFilter<"LOBReason"> | $Enums.LOBReasonStatus
+    createdById?: StringNullableFilter<"LOBReason"> | string | null
+    updatedById?: StringNullableFilter<"LOBReason"> | string | null
+    createdAt?: DateTimeFilter<"LOBReason"> | Date | string
+    updatedAt?: DateTimeFilter<"LOBReason"> | Date | string
+    deletedAt?: DateTimeNullableFilter<"LOBReason"> | Date | string | null
+    workspace?: XOR<WorkspaceRelationFilter, WorkspaceWhereInput>
+    createdBy?: XOR<UserNullableRelationFilter, UserWhereInput> | null
+    updatedBy?: XOR<UserNullableRelationFilter, UserWhereInput> | null
+  }, "id">
+
+  export type LOBReasonOrderByWithAggregationInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    name?: SortOrder
+    status?: SortOrder
+    createdById?: SortOrderInput | SortOrder
+    updatedById?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrderInput | SortOrder
+    _count?: LOBReasonCountOrderByAggregateInput
+    _max?: LOBReasonMaxOrderByAggregateInput
+    _min?: LOBReasonMinOrderByAggregateInput
+  }
+
+  export type LOBReasonScalarWhereWithAggregatesInput = {
+    AND?: LOBReasonScalarWhereWithAggregatesInput | LOBReasonScalarWhereWithAggregatesInput[]
+    OR?: LOBReasonScalarWhereWithAggregatesInput[]
+    NOT?: LOBReasonScalarWhereWithAggregatesInput | LOBReasonScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"LOBReason"> | string
+    workspaceId?: StringWithAggregatesFilter<"LOBReason"> | string
+    name?: StringWithAggregatesFilter<"LOBReason"> | string
+    status?: EnumLOBReasonStatusWithAggregatesFilter<"LOBReason"> | $Enums.LOBReasonStatus
+    createdById?: StringNullableWithAggregatesFilter<"LOBReason"> | string | null
+    updatedById?: StringNullableWithAggregatesFilter<"LOBReason"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"LOBReason"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"LOBReason"> | Date | string
+    deletedAt?: DateTimeNullableWithAggregatesFilter<"LOBReason"> | Date | string | null
   }
 
   export type LeadStageApprovalWhereInput = {
@@ -46382,8 +53162,15 @@ export namespace Prisma {
     closedLeads?: LeadListRelationFilter
     createdHolidays?: HolidayListRelationFilter
     updatedHolidays?: HolidayListRelationFilter
+    createdCountries?: CountryListRelationFilter
+    updatedCountries?: CountryListRelationFilter
+    createdLocationLevels?: LocationLevelListRelationFilter
+    updatedLocationLevels?: LocationLevelListRelationFilter
+    createdLOBReasons?: LOBReasonListRelationFilter
+    updatedLOBReasons?: LOBReasonListRelationFilter
     createdReportTypes?: ReportTypeListRelationFilter
     updatedReportTypes?: ReportTypeListRelationFilter
+    createdReports?: ReportListRelationFilter
     generatedReportLogs?: ReportLogListRelationFilter
   }
 
@@ -46440,8 +53227,15 @@ export namespace Prisma {
     closedLeads?: LeadOrderByRelationAggregateInput
     createdHolidays?: HolidayOrderByRelationAggregateInput
     updatedHolidays?: HolidayOrderByRelationAggregateInput
+    createdCountries?: CountryOrderByRelationAggregateInput
+    updatedCountries?: CountryOrderByRelationAggregateInput
+    createdLocationLevels?: LocationLevelOrderByRelationAggregateInput
+    updatedLocationLevels?: LocationLevelOrderByRelationAggregateInput
+    createdLOBReasons?: LOBReasonOrderByRelationAggregateInput
+    updatedLOBReasons?: LOBReasonOrderByRelationAggregateInput
     createdReportTypes?: ReportTypeOrderByRelationAggregateInput
     updatedReportTypes?: ReportTypeOrderByRelationAggregateInput
+    createdReports?: ReportOrderByRelationAggregateInput
     generatedReportLogs?: ReportLogOrderByRelationAggregateInput
   }
 
@@ -46501,8 +53295,15 @@ export namespace Prisma {
     closedLeads?: LeadListRelationFilter
     createdHolidays?: HolidayListRelationFilter
     updatedHolidays?: HolidayListRelationFilter
+    createdCountries?: CountryListRelationFilter
+    updatedCountries?: CountryListRelationFilter
+    createdLocationLevels?: LocationLevelListRelationFilter
+    updatedLocationLevels?: LocationLevelListRelationFilter
+    createdLOBReasons?: LOBReasonListRelationFilter
+    updatedLOBReasons?: LOBReasonListRelationFilter
     createdReportTypes?: ReportTypeListRelationFilter
     updatedReportTypes?: ReportTypeListRelationFilter
+    createdReports?: ReportListRelationFilter
     generatedReportLogs?: ReportLogListRelationFilter
   }, "id" | "username" | "email" | "googleId">
 
@@ -47173,6 +53974,7 @@ export namespace Prisma {
     createdBy?: XOR<UserNullableRelationFilter, UserWhereInput> | null
     updatedBy?: XOR<UserNullableRelationFilter, UserWhereInput> | null
     logs?: ReportLogListRelationFilter
+    reports?: ReportListRelationFilter
   }
 
   export type ReportTypeOrderByWithRelationInput = {
@@ -47193,6 +53995,7 @@ export namespace Prisma {
     createdBy?: UserOrderByWithRelationInput
     updatedBy?: UserOrderByWithRelationInput
     logs?: ReportLogOrderByRelationAggregateInput
+    reports?: ReportOrderByRelationAggregateInput
   }
 
   export type ReportTypeWhereUniqueInput = Prisma.AtLeast<{
@@ -47216,6 +54019,7 @@ export namespace Prisma {
     createdBy?: XOR<UserNullableRelationFilter, UserWhereInput> | null
     updatedBy?: XOR<UserNullableRelationFilter, UserWhereInput> | null
     logs?: ReportLogListRelationFilter
+    reports?: ReportListRelationFilter
   }, "id">
 
   export type ReportTypeOrderByWithAggregationInput = {
@@ -47262,26 +54066,34 @@ export namespace Prisma {
     NOT?: ReportLogWhereInput | ReportLogWhereInput[]
     id?: StringFilter<"ReportLog"> | string
     workspaceId?: StringFilter<"ReportLog"> | string
-    reportTypeId?: StringFilter<"ReportLog"> | string
+    reportTypeId?: StringNullableFilter<"ReportLog"> | string | null
+    reportId?: StringNullableFilter<"ReportLog"> | string | null
     generatedById?: StringNullableFilter<"ReportLog"> | string | null
+    action?: StringNullableFilter<"ReportLog"> | string | null
     filters?: JsonFilter<"ReportLog">
     resultCount?: IntFilter<"ReportLog"> | number
+    meta?: JsonFilter<"ReportLog">
     createdAt?: DateTimeFilter<"ReportLog"> | Date | string
     workspace?: XOR<WorkspaceRelationFilter, WorkspaceWhereInput>
-    reportType?: XOR<ReportTypeRelationFilter, ReportTypeWhereInput>
+    reportType?: XOR<ReportTypeNullableRelationFilter, ReportTypeWhereInput> | null
+    report?: XOR<ReportNullableRelationFilter, ReportWhereInput> | null
     generatedBy?: XOR<UserNullableRelationFilter, UserWhereInput> | null
   }
 
   export type ReportLogOrderByWithRelationInput = {
     id?: SortOrder
     workspaceId?: SortOrder
-    reportTypeId?: SortOrder
+    reportTypeId?: SortOrderInput | SortOrder
+    reportId?: SortOrderInput | SortOrder
     generatedById?: SortOrderInput | SortOrder
+    action?: SortOrderInput | SortOrder
     filters?: SortOrder
     resultCount?: SortOrder
+    meta?: SortOrder
     createdAt?: SortOrder
     workspace?: WorkspaceOrderByWithRelationInput
     reportType?: ReportTypeOrderByWithRelationInput
+    report?: ReportOrderByWithRelationInput
     generatedBy?: UserOrderByWithRelationInput
   }
 
@@ -47291,23 +54103,30 @@ export namespace Prisma {
     OR?: ReportLogWhereInput[]
     NOT?: ReportLogWhereInput | ReportLogWhereInput[]
     workspaceId?: StringFilter<"ReportLog"> | string
-    reportTypeId?: StringFilter<"ReportLog"> | string
+    reportTypeId?: StringNullableFilter<"ReportLog"> | string | null
+    reportId?: StringNullableFilter<"ReportLog"> | string | null
     generatedById?: StringNullableFilter<"ReportLog"> | string | null
+    action?: StringNullableFilter<"ReportLog"> | string | null
     filters?: JsonFilter<"ReportLog">
     resultCount?: IntFilter<"ReportLog"> | number
+    meta?: JsonFilter<"ReportLog">
     createdAt?: DateTimeFilter<"ReportLog"> | Date | string
     workspace?: XOR<WorkspaceRelationFilter, WorkspaceWhereInput>
-    reportType?: XOR<ReportTypeRelationFilter, ReportTypeWhereInput>
+    reportType?: XOR<ReportTypeNullableRelationFilter, ReportTypeWhereInput> | null
+    report?: XOR<ReportNullableRelationFilter, ReportWhereInput> | null
     generatedBy?: XOR<UserNullableRelationFilter, UserWhereInput> | null
   }, "id">
 
   export type ReportLogOrderByWithAggregationInput = {
     id?: SortOrder
     workspaceId?: SortOrder
-    reportTypeId?: SortOrder
+    reportTypeId?: SortOrderInput | SortOrder
+    reportId?: SortOrderInput | SortOrder
     generatedById?: SortOrderInput | SortOrder
+    action?: SortOrderInput | SortOrder
     filters?: SortOrder
     resultCount?: SortOrder
+    meta?: SortOrder
     createdAt?: SortOrder
     _count?: ReportLogCountOrderByAggregateInput
     _avg?: ReportLogAvgOrderByAggregateInput
@@ -47322,11 +54141,176 @@ export namespace Prisma {
     NOT?: ReportLogScalarWhereWithAggregatesInput | ReportLogScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"ReportLog"> | string
     workspaceId?: StringWithAggregatesFilter<"ReportLog"> | string
-    reportTypeId?: StringWithAggregatesFilter<"ReportLog"> | string
+    reportTypeId?: StringNullableWithAggregatesFilter<"ReportLog"> | string | null
+    reportId?: StringNullableWithAggregatesFilter<"ReportLog"> | string | null
     generatedById?: StringNullableWithAggregatesFilter<"ReportLog"> | string | null
+    action?: StringNullableWithAggregatesFilter<"ReportLog"> | string | null
     filters?: JsonWithAggregatesFilter<"ReportLog">
     resultCount?: IntWithAggregatesFilter<"ReportLog"> | number
+    meta?: JsonWithAggregatesFilter<"ReportLog">
     createdAt?: DateTimeWithAggregatesFilter<"ReportLog"> | Date | string
+  }
+
+  export type ReportWhereInput = {
+    AND?: ReportWhereInput | ReportWhereInput[]
+    OR?: ReportWhereInput[]
+    NOT?: ReportWhereInput | ReportWhereInput[]
+    id?: StringFilter<"Report"> | string
+    workspaceId?: StringFilter<"Report"> | string
+    reportName?: StringFilter<"Report"> | string
+    reportTypeId?: StringFilter<"Report"> | string
+    reportDate?: DateTimeFilter<"Report"> | Date | string
+    isActive?: BoolFilter<"Report"> | boolean
+    isGenerated?: BoolFilter<"Report"> | boolean
+    generatedFileUrl?: StringNullableFilter<"Report"> | string | null
+    generatedAt?: DateTimeNullableFilter<"Report"> | Date | string | null
+    createdById?: StringFilter<"Report"> | string
+    createdAt?: DateTimeFilter<"Report"> | Date | string
+    updatedAt?: DateTimeFilter<"Report"> | Date | string
+    deletedAt?: DateTimeNullableFilter<"Report"> | Date | string | null
+    workspace?: XOR<WorkspaceRelationFilter, WorkspaceWhereInput>
+    reportType?: XOR<ReportTypeRelationFilter, ReportTypeWhereInput>
+    createdBy?: XOR<UserRelationFilter, UserWhereInput>
+    filters?: ReportFilterListRelationFilter
+    logs?: ReportLogListRelationFilter
+  }
+
+  export type ReportOrderByWithRelationInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    reportName?: SortOrder
+    reportTypeId?: SortOrder
+    reportDate?: SortOrder
+    isActive?: SortOrder
+    isGenerated?: SortOrder
+    generatedFileUrl?: SortOrderInput | SortOrder
+    generatedAt?: SortOrderInput | SortOrder
+    createdById?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrderInput | SortOrder
+    workspace?: WorkspaceOrderByWithRelationInput
+    reportType?: ReportTypeOrderByWithRelationInput
+    createdBy?: UserOrderByWithRelationInput
+    filters?: ReportFilterOrderByRelationAggregateInput
+    logs?: ReportLogOrderByRelationAggregateInput
+  }
+
+  export type ReportWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: ReportWhereInput | ReportWhereInput[]
+    OR?: ReportWhereInput[]
+    NOT?: ReportWhereInput | ReportWhereInput[]
+    workspaceId?: StringFilter<"Report"> | string
+    reportName?: StringFilter<"Report"> | string
+    reportTypeId?: StringFilter<"Report"> | string
+    reportDate?: DateTimeFilter<"Report"> | Date | string
+    isActive?: BoolFilter<"Report"> | boolean
+    isGenerated?: BoolFilter<"Report"> | boolean
+    generatedFileUrl?: StringNullableFilter<"Report"> | string | null
+    generatedAt?: DateTimeNullableFilter<"Report"> | Date | string | null
+    createdById?: StringFilter<"Report"> | string
+    createdAt?: DateTimeFilter<"Report"> | Date | string
+    updatedAt?: DateTimeFilter<"Report"> | Date | string
+    deletedAt?: DateTimeNullableFilter<"Report"> | Date | string | null
+    workspace?: XOR<WorkspaceRelationFilter, WorkspaceWhereInput>
+    reportType?: XOR<ReportTypeRelationFilter, ReportTypeWhereInput>
+    createdBy?: XOR<UserRelationFilter, UserWhereInput>
+    filters?: ReportFilterListRelationFilter
+    logs?: ReportLogListRelationFilter
+  }, "id">
+
+  export type ReportOrderByWithAggregationInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    reportName?: SortOrder
+    reportTypeId?: SortOrder
+    reportDate?: SortOrder
+    isActive?: SortOrder
+    isGenerated?: SortOrder
+    generatedFileUrl?: SortOrderInput | SortOrder
+    generatedAt?: SortOrderInput | SortOrder
+    createdById?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrderInput | SortOrder
+    _count?: ReportCountOrderByAggregateInput
+    _max?: ReportMaxOrderByAggregateInput
+    _min?: ReportMinOrderByAggregateInput
+  }
+
+  export type ReportScalarWhereWithAggregatesInput = {
+    AND?: ReportScalarWhereWithAggregatesInput | ReportScalarWhereWithAggregatesInput[]
+    OR?: ReportScalarWhereWithAggregatesInput[]
+    NOT?: ReportScalarWhereWithAggregatesInput | ReportScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"Report"> | string
+    workspaceId?: StringWithAggregatesFilter<"Report"> | string
+    reportName?: StringWithAggregatesFilter<"Report"> | string
+    reportTypeId?: StringWithAggregatesFilter<"Report"> | string
+    reportDate?: DateTimeWithAggregatesFilter<"Report"> | Date | string
+    isActive?: BoolWithAggregatesFilter<"Report"> | boolean
+    isGenerated?: BoolWithAggregatesFilter<"Report"> | boolean
+    generatedFileUrl?: StringNullableWithAggregatesFilter<"Report"> | string | null
+    generatedAt?: DateTimeNullableWithAggregatesFilter<"Report"> | Date | string | null
+    createdById?: StringWithAggregatesFilter<"Report"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"Report"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"Report"> | Date | string
+    deletedAt?: DateTimeNullableWithAggregatesFilter<"Report"> | Date | string | null
+  }
+
+  export type ReportFilterWhereInput = {
+    AND?: ReportFilterWhereInput | ReportFilterWhereInput[]
+    OR?: ReportFilterWhereInput[]
+    NOT?: ReportFilterWhereInput | ReportFilterWhereInput[]
+    id?: StringFilter<"ReportFilter"> | string
+    reportId?: StringFilter<"ReportFilter"> | string
+    filterKey?: StringFilter<"ReportFilter"> | string
+    filterValue?: StringFilter<"ReportFilter"> | string
+    createdAt?: DateTimeFilter<"ReportFilter"> | Date | string
+    report?: XOR<ReportRelationFilter, ReportWhereInput>
+  }
+
+  export type ReportFilterOrderByWithRelationInput = {
+    id?: SortOrder
+    reportId?: SortOrder
+    filterKey?: SortOrder
+    filterValue?: SortOrder
+    createdAt?: SortOrder
+    report?: ReportOrderByWithRelationInput
+  }
+
+  export type ReportFilterWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: ReportFilterWhereInput | ReportFilterWhereInput[]
+    OR?: ReportFilterWhereInput[]
+    NOT?: ReportFilterWhereInput | ReportFilterWhereInput[]
+    reportId?: StringFilter<"ReportFilter"> | string
+    filterKey?: StringFilter<"ReportFilter"> | string
+    filterValue?: StringFilter<"ReportFilter"> | string
+    createdAt?: DateTimeFilter<"ReportFilter"> | Date | string
+    report?: XOR<ReportRelationFilter, ReportWhereInput>
+  }, "id">
+
+  export type ReportFilterOrderByWithAggregationInput = {
+    id?: SortOrder
+    reportId?: SortOrder
+    filterKey?: SortOrder
+    filterValue?: SortOrder
+    createdAt?: SortOrder
+    _count?: ReportFilterCountOrderByAggregateInput
+    _max?: ReportFilterMaxOrderByAggregateInput
+    _min?: ReportFilterMinOrderByAggregateInput
+  }
+
+  export type ReportFilterScalarWhereWithAggregatesInput = {
+    AND?: ReportFilterScalarWhereWithAggregatesInput | ReportFilterScalarWhereWithAggregatesInput[]
+    OR?: ReportFilterScalarWhereWithAggregatesInput[]
+    NOT?: ReportFilterScalarWhereWithAggregatesInput | ReportFilterScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"ReportFilter"> | string
+    reportId?: StringWithAggregatesFilter<"ReportFilter"> | string
+    filterKey?: StringWithAggregatesFilter<"ReportFilter"> | string
+    filterValue?: StringWithAggregatesFilter<"ReportFilter"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"ReportFilter"> | Date | string
   }
 
   export type RoleCreateInput = {
@@ -47522,7 +54506,11 @@ export namespace Prisma {
     leadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutWorkspaceInput
     holidays?: HolidayCreateNestedManyWithoutWorkspaceInput
     holidaySyncLogs?: HolidaySyncLogCreateNestedManyWithoutWorkspaceInput
+    countries?: CountryCreateNestedManyWithoutWorkspaceInput
+    locationLevels?: LocationLevelCreateNestedManyWithoutWorkspaceInput
+    lobReasons?: LOBReasonCreateNestedManyWithoutWorkspaceInput
     reportTypes?: ReportTypeCreateNestedManyWithoutWorkspaceInput
+    reports?: ReportCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogCreateNestedManyWithoutWorkspaceInput
   }
 
@@ -47547,7 +54535,11 @@ export namespace Prisma {
     leadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutWorkspaceInput
     holidays?: HolidayUncheckedCreateNestedManyWithoutWorkspaceInput
     holidaySyncLogs?: HolidaySyncLogUncheckedCreateNestedManyWithoutWorkspaceInput
+    countries?: CountryUncheckedCreateNestedManyWithoutWorkspaceInput
+    locationLevels?: LocationLevelUncheckedCreateNestedManyWithoutWorkspaceInput
+    lobReasons?: LOBReasonUncheckedCreateNestedManyWithoutWorkspaceInput
     reportTypes?: ReportTypeUncheckedCreateNestedManyWithoutWorkspaceInput
+    reports?: ReportUncheckedCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
@@ -47572,7 +54564,11 @@ export namespace Prisma {
     leadStageApprovals?: LeadStageApprovalUpdateManyWithoutWorkspaceNestedInput
     holidays?: HolidayUpdateManyWithoutWorkspaceNestedInput
     holidaySyncLogs?: HolidaySyncLogUpdateManyWithoutWorkspaceNestedInput
+    countries?: CountryUpdateManyWithoutWorkspaceNestedInput
+    locationLevels?: LocationLevelUpdateManyWithoutWorkspaceNestedInput
+    lobReasons?: LOBReasonUpdateManyWithoutWorkspaceNestedInput
     reportTypes?: ReportTypeUpdateManyWithoutWorkspaceNestedInput
+    reports?: ReportUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUpdateManyWithoutWorkspaceNestedInput
   }
 
@@ -47597,7 +54593,11 @@ export namespace Prisma {
     leadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutWorkspaceNestedInput
     holidays?: HolidayUncheckedUpdateManyWithoutWorkspaceNestedInput
     holidaySyncLogs?: HolidaySyncLogUncheckedUpdateManyWithoutWorkspaceNestedInput
+    countries?: CountryUncheckedUpdateManyWithoutWorkspaceNestedInput
+    locationLevels?: LocationLevelUncheckedUpdateManyWithoutWorkspaceNestedInput
+    lobReasons?: LOBReasonUncheckedUpdateManyWithoutWorkspaceNestedInput
     reportTypes?: ReportTypeUncheckedUpdateManyWithoutWorkspaceNestedInput
+    reports?: ReportUncheckedUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
@@ -48200,15 +55200,208 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type CountryCreateInput = {
+    id?: string
+    name: string
+    code?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    workspace: WorkspaceCreateNestedOneWithoutCountriesInput
+    createdBy?: UserCreateNestedOneWithoutCreatedCountriesInput
+    updatedBy?: UserCreateNestedOneWithoutUpdatedCountriesInput
+    levels?: LocationLevelCreateNestedManyWithoutCountryInput
+    locations?: LocationCreateNestedManyWithoutCountryInput
+  }
+
+  export type CountryUncheckedCreateInput = {
+    id?: string
+    workspaceId: string
+    name: string
+    code?: string | null
+    isActive?: boolean
+    createdById?: string | null
+    updatedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    levels?: LocationLevelUncheckedCreateNestedManyWithoutCountryInput
+    locations?: LocationUncheckedCreateNestedManyWithoutCountryInput
+  }
+
+  export type CountryUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    code?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    workspace?: WorkspaceUpdateOneRequiredWithoutCountriesNestedInput
+    createdBy?: UserUpdateOneWithoutCreatedCountriesNestedInput
+    updatedBy?: UserUpdateOneWithoutUpdatedCountriesNestedInput
+    levels?: LocationLevelUpdateManyWithoutCountryNestedInput
+    locations?: LocationUpdateManyWithoutCountryNestedInput
+  }
+
+  export type CountryUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    code?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    levels?: LocationLevelUncheckedUpdateManyWithoutCountryNestedInput
+    locations?: LocationUncheckedUpdateManyWithoutCountryNestedInput
+  }
+
+  export type CountryCreateManyInput = {
+    id?: string
+    workspaceId: string
+    name: string
+    code?: string | null
+    isActive?: boolean
+    createdById?: string | null
+    updatedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type CountryUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    code?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type CountryUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    code?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type LocationLevelCreateInput = {
+    id?: string
+    levelName: string
+    levelOrder: number
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    workspace: WorkspaceCreateNestedOneWithoutLocationLevelsInput
+    country: CountryCreateNestedOneWithoutLevelsInput
+    createdBy?: UserCreateNestedOneWithoutCreatedLocationLevelsInput
+    updatedBy?: UserCreateNestedOneWithoutUpdatedLocationLevelsInput
+    locations?: LocationCreateNestedManyWithoutLevelInput
+  }
+
+  export type LocationLevelUncheckedCreateInput = {
+    id?: string
+    workspaceId: string
+    countryId: string
+    levelName: string
+    levelOrder: number
+    isActive?: boolean
+    createdById?: string | null
+    updatedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    locations?: LocationUncheckedCreateNestedManyWithoutLevelInput
+  }
+
+  export type LocationLevelUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    levelName?: StringFieldUpdateOperationsInput | string
+    levelOrder?: IntFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    workspace?: WorkspaceUpdateOneRequiredWithoutLocationLevelsNestedInput
+    country?: CountryUpdateOneRequiredWithoutLevelsNestedInput
+    createdBy?: UserUpdateOneWithoutCreatedLocationLevelsNestedInput
+    updatedBy?: UserUpdateOneWithoutUpdatedLocationLevelsNestedInput
+    locations?: LocationUpdateManyWithoutLevelNestedInput
+  }
+
+  export type LocationLevelUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    countryId?: StringFieldUpdateOperationsInput | string
+    levelName?: StringFieldUpdateOperationsInput | string
+    levelOrder?: IntFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    locations?: LocationUncheckedUpdateManyWithoutLevelNestedInput
+  }
+
+  export type LocationLevelCreateManyInput = {
+    id?: string
+    workspaceId: string
+    countryId: string
+    levelName: string
+    levelOrder: number
+    isActive?: boolean
+    createdById?: string | null
+    updatedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type LocationLevelUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    levelName?: StringFieldUpdateOperationsInput | string
+    levelOrder?: IntFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LocationLevelUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    countryId?: StringFieldUpdateOperationsInput | string
+    levelName?: StringFieldUpdateOperationsInput | string
+    levelOrder?: IntFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type LocationCreateInput = {
     id?: string
     name: string
     type: $Enums.LocationType
     workspaceId: string
+    isActive?: boolean
+    createdById?: string | null
+    updatedById?: string | null
+    deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     parent?: LocationCreateNestedOneWithoutChildrenInput
     children?: LocationCreateNestedManyWithoutParentInput
+    country?: CountryCreateNestedOneWithoutLocationsInput
+    level?: LocationLevelCreateNestedOneWithoutLocationsInput
     assignedUsers?: UserLocationAssignmentCreateNestedManyWithoutLocationInput
     usersAtCountry?: UserCreateNestedManyWithoutCountryInput
     usersAtState?: UserCreateNestedManyWithoutStateInput
@@ -48223,6 +55416,12 @@ export namespace Prisma {
     name: string
     type: $Enums.LocationType
     workspaceId: string
+    countryId?: string | null
+    levelId?: string | null
+    isActive?: boolean
+    createdById?: string | null
+    updatedById?: string | null
+    deletedAt?: Date | string | null
     parentId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -48241,10 +55440,16 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     type?: EnumLocationTypeFieldUpdateOperationsInput | $Enums.LocationType
     workspaceId?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     parent?: LocationUpdateOneWithoutChildrenNestedInput
     children?: LocationUpdateManyWithoutParentNestedInput
+    country?: CountryUpdateOneWithoutLocationsNestedInput
+    level?: LocationLevelUpdateOneWithoutLocationsNestedInput
     assignedUsers?: UserLocationAssignmentUpdateManyWithoutLocationNestedInput
     usersAtCountry?: UserUpdateManyWithoutCountryNestedInput
     usersAtState?: UserUpdateManyWithoutStateNestedInput
@@ -48259,6 +55464,12 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     type?: EnumLocationTypeFieldUpdateOperationsInput | $Enums.LocationType
     workspaceId?: StringFieldUpdateOperationsInput | string
+    countryId?: NullableStringFieldUpdateOperationsInput | string | null
+    levelId?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -48277,6 +55488,12 @@ export namespace Prisma {
     name: string
     type: $Enums.LocationType
     workspaceId: string
+    countryId?: string | null
+    levelId?: string | null
+    isActive?: boolean
+    createdById?: string | null
+    updatedById?: string | null
+    deletedAt?: Date | string | null
     parentId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -48287,6 +55504,10 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     type?: EnumLocationTypeFieldUpdateOperationsInput | $Enums.LocationType
     workspaceId?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -48296,6 +55517,12 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     type?: EnumLocationTypeFieldUpdateOperationsInput | $Enums.LocationType
     workspaceId?: StringFieldUpdateOperationsInput | string
+    countryId?: NullableStringFieldUpdateOperationsInput | string | null
+    levelId?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -48945,6 +56172,87 @@ export namespace Prisma {
     changedById?: StringFieldUpdateOperationsInput | string
     changedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     workspaceId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type LOBReasonCreateInput = {
+    id?: string
+    name: string
+    status?: $Enums.LOBReasonStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    workspace: WorkspaceCreateNestedOneWithoutLobReasonsInput
+    createdBy?: UserCreateNestedOneWithoutCreatedLOBReasonsInput
+    updatedBy?: UserCreateNestedOneWithoutUpdatedLOBReasonsInput
+  }
+
+  export type LOBReasonUncheckedCreateInput = {
+    id?: string
+    workspaceId: string
+    name: string
+    status?: $Enums.LOBReasonStatus
+    createdById?: string | null
+    updatedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type LOBReasonUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    status?: EnumLOBReasonStatusFieldUpdateOperationsInput | $Enums.LOBReasonStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    workspace?: WorkspaceUpdateOneRequiredWithoutLobReasonsNestedInput
+    createdBy?: UserUpdateOneWithoutCreatedLOBReasonsNestedInput
+    updatedBy?: UserUpdateOneWithoutUpdatedLOBReasonsNestedInput
+  }
+
+  export type LOBReasonUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    status?: EnumLOBReasonStatusFieldUpdateOperationsInput | $Enums.LOBReasonStatus
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type LOBReasonCreateManyInput = {
+    id?: string
+    workspaceId: string
+    name: string
+    status?: $Enums.LOBReasonStatus
+    createdById?: string | null
+    updatedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type LOBReasonUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    status?: EnumLOBReasonStatusFieldUpdateOperationsInput | $Enums.LOBReasonStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type LOBReasonUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    status?: EnumLOBReasonStatusFieldUpdateOperationsInput | $Enums.LOBReasonStatus
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type LeadStageApprovalCreateInput = {
@@ -49661,8 +56969,15 @@ export namespace Prisma {
     closedLeads?: LeadCreateNestedManyWithoutClosedByInput
     createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
     updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonCreateNestedManyWithoutUpdatedByInput
     createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
   }
 
@@ -49711,8 +57026,15 @@ export namespace Prisma {
     closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
     createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
     updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
   }
 
@@ -49761,8 +57083,15 @@ export namespace Prisma {
     closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
     createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
     updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUpdateManyWithoutUpdatedByNestedInput
     createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
   }
 
@@ -49811,8 +57140,15 @@ export namespace Prisma {
     closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
     createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
   }
 
@@ -50538,6 +57874,7 @@ export namespace Prisma {
     createdBy?: UserCreateNestedOneWithoutCreatedReportTypesInput
     updatedBy?: UserCreateNestedOneWithoutUpdatedReportTypesInput
     logs?: ReportLogCreateNestedManyWithoutReportTypeInput
+    reports?: ReportCreateNestedManyWithoutReportTypeInput
   }
 
   export type ReportTypeUncheckedCreateInput = {
@@ -50555,6 +57892,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     logs?: ReportLogUncheckedCreateNestedManyWithoutReportTypeInput
+    reports?: ReportUncheckedCreateNestedManyWithoutReportTypeInput
   }
 
   export type ReportTypeUpdateInput = {
@@ -50572,6 +57910,7 @@ export namespace Prisma {
     createdBy?: UserUpdateOneWithoutCreatedReportTypesNestedInput
     updatedBy?: UserUpdateOneWithoutUpdatedReportTypesNestedInput
     logs?: ReportLogUpdateManyWithoutReportTypeNestedInput
+    reports?: ReportUpdateManyWithoutReportTypeNestedInput
   }
 
   export type ReportTypeUncheckedUpdateInput = {
@@ -50589,6 +57928,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     logs?: ReportLogUncheckedUpdateManyWithoutReportTypeNestedInput
+    reports?: ReportUncheckedUpdateManyWithoutReportTypeNestedInput
   }
 
   export type ReportTypeCreateManyInput = {
@@ -50638,68 +57978,260 @@ export namespace Prisma {
 
   export type ReportLogCreateInput = {
     id?: string
+    action?: string | null
     filters?: JsonNullValueInput | InputJsonValue
     resultCount?: number
+    meta?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     workspace: WorkspaceCreateNestedOneWithoutReportLogsInput
-    reportType: ReportTypeCreateNestedOneWithoutLogsInput
+    reportType?: ReportTypeCreateNestedOneWithoutLogsInput
+    report?: ReportCreateNestedOneWithoutLogsInput
     generatedBy?: UserCreateNestedOneWithoutGeneratedReportLogsInput
   }
 
   export type ReportLogUncheckedCreateInput = {
     id?: string
     workspaceId: string
-    reportTypeId: string
+    reportTypeId?: string | null
+    reportId?: string | null
     generatedById?: string | null
+    action?: string | null
     filters?: JsonNullValueInput | InputJsonValue
     resultCount?: number
+    meta?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
   }
 
   export type ReportLogUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    action?: NullableStringFieldUpdateOperationsInput | string | null
     filters?: JsonNullValueInput | InputJsonValue
     resultCount?: IntFieldUpdateOperationsInput | number
+    meta?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     workspace?: WorkspaceUpdateOneRequiredWithoutReportLogsNestedInput
-    reportType?: ReportTypeUpdateOneRequiredWithoutLogsNestedInput
+    reportType?: ReportTypeUpdateOneWithoutLogsNestedInput
+    report?: ReportUpdateOneWithoutLogsNestedInput
     generatedBy?: UserUpdateOneWithoutGeneratedReportLogsNestedInput
   }
 
   export type ReportLogUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     workspaceId?: StringFieldUpdateOperationsInput | string
-    reportTypeId?: StringFieldUpdateOperationsInput | string
+    reportTypeId?: NullableStringFieldUpdateOperationsInput | string | null
+    reportId?: NullableStringFieldUpdateOperationsInput | string | null
     generatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    action?: NullableStringFieldUpdateOperationsInput | string | null
     filters?: JsonNullValueInput | InputJsonValue
     resultCount?: IntFieldUpdateOperationsInput | number
+    meta?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type ReportLogCreateManyInput = {
     id?: string
     workspaceId: string
-    reportTypeId: string
+    reportTypeId?: string | null
+    reportId?: string | null
     generatedById?: string | null
+    action?: string | null
     filters?: JsonNullValueInput | InputJsonValue
     resultCount?: number
+    meta?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
   }
 
   export type ReportLogUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
+    action?: NullableStringFieldUpdateOperationsInput | string | null
     filters?: JsonNullValueInput | InputJsonValue
     resultCount?: IntFieldUpdateOperationsInput | number
+    meta?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type ReportLogUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     workspaceId?: StringFieldUpdateOperationsInput | string
-    reportTypeId?: StringFieldUpdateOperationsInput | string
+    reportTypeId?: NullableStringFieldUpdateOperationsInput | string | null
+    reportId?: NullableStringFieldUpdateOperationsInput | string | null
     generatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    action?: NullableStringFieldUpdateOperationsInput | string | null
     filters?: JsonNullValueInput | InputJsonValue
     resultCount?: IntFieldUpdateOperationsInput | number
+    meta?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ReportCreateInput = {
+    id?: string
+    reportName: string
+    reportDate: Date | string
+    isActive?: boolean
+    isGenerated?: boolean
+    generatedFileUrl?: string | null
+    generatedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    workspace: WorkspaceCreateNestedOneWithoutReportsInput
+    reportType: ReportTypeCreateNestedOneWithoutReportsInput
+    createdBy: UserCreateNestedOneWithoutCreatedReportsInput
+    filters?: ReportFilterCreateNestedManyWithoutReportInput
+    logs?: ReportLogCreateNestedManyWithoutReportInput
+  }
+
+  export type ReportUncheckedCreateInput = {
+    id?: string
+    workspaceId: string
+    reportName: string
+    reportTypeId: string
+    reportDate: Date | string
+    isActive?: boolean
+    isGenerated?: boolean
+    generatedFileUrl?: string | null
+    generatedAt?: Date | string | null
+    createdById: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    filters?: ReportFilterUncheckedCreateNestedManyWithoutReportInput
+    logs?: ReportLogUncheckedCreateNestedManyWithoutReportInput
+  }
+
+  export type ReportUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    reportName?: StringFieldUpdateOperationsInput | string
+    reportDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isGenerated?: BoolFieldUpdateOperationsInput | boolean
+    generatedFileUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    generatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    workspace?: WorkspaceUpdateOneRequiredWithoutReportsNestedInput
+    reportType?: ReportTypeUpdateOneRequiredWithoutReportsNestedInput
+    createdBy?: UserUpdateOneRequiredWithoutCreatedReportsNestedInput
+    filters?: ReportFilterUpdateManyWithoutReportNestedInput
+    logs?: ReportLogUpdateManyWithoutReportNestedInput
+  }
+
+  export type ReportUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    reportName?: StringFieldUpdateOperationsInput | string
+    reportTypeId?: StringFieldUpdateOperationsInput | string
+    reportDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isGenerated?: BoolFieldUpdateOperationsInput | boolean
+    generatedFileUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    generatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdById?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    filters?: ReportFilterUncheckedUpdateManyWithoutReportNestedInput
+    logs?: ReportLogUncheckedUpdateManyWithoutReportNestedInput
+  }
+
+  export type ReportCreateManyInput = {
+    id?: string
+    workspaceId: string
+    reportName: string
+    reportTypeId: string
+    reportDate: Date | string
+    isActive?: boolean
+    isGenerated?: boolean
+    generatedFileUrl?: string | null
+    generatedAt?: Date | string | null
+    createdById: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type ReportUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    reportName?: StringFieldUpdateOperationsInput | string
+    reportDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isGenerated?: BoolFieldUpdateOperationsInput | boolean
+    generatedFileUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    generatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type ReportUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    reportName?: StringFieldUpdateOperationsInput | string
+    reportTypeId?: StringFieldUpdateOperationsInput | string
+    reportDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isGenerated?: BoolFieldUpdateOperationsInput | boolean
+    generatedFileUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    generatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdById?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type ReportFilterCreateInput = {
+    id?: string
+    filterKey: string
+    filterValue: string
+    createdAt?: Date | string
+    report: ReportCreateNestedOneWithoutFiltersInput
+  }
+
+  export type ReportFilterUncheckedCreateInput = {
+    id?: string
+    reportId: string
+    filterKey: string
+    filterValue: string
+    createdAt?: Date | string
+  }
+
+  export type ReportFilterUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    filterKey?: StringFieldUpdateOperationsInput | string
+    filterValue?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    report?: ReportUpdateOneRequiredWithoutFiltersNestedInput
+  }
+
+  export type ReportFilterUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    reportId?: StringFieldUpdateOperationsInput | string
+    filterKey?: StringFieldUpdateOperationsInput | string
+    filterValue?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ReportFilterCreateManyInput = {
+    id?: string
+    reportId: string
+    filterKey: string
+    filterValue: string
+    createdAt?: Date | string
+  }
+
+  export type ReportFilterUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    filterKey?: StringFieldUpdateOperationsInput | string
+    filterValue?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ReportFilterUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    reportId?: StringFieldUpdateOperationsInput | string
+    filterKey?: StringFieldUpdateOperationsInput | string
+    filterValue?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -50984,10 +58516,34 @@ export namespace Prisma {
     none?: HolidaySyncLogWhereInput
   }
 
+  export type CountryListRelationFilter = {
+    every?: CountryWhereInput
+    some?: CountryWhereInput
+    none?: CountryWhereInput
+  }
+
+  export type LocationLevelListRelationFilter = {
+    every?: LocationLevelWhereInput
+    some?: LocationLevelWhereInput
+    none?: LocationLevelWhereInput
+  }
+
+  export type LOBReasonListRelationFilter = {
+    every?: LOBReasonWhereInput
+    some?: LOBReasonWhereInput
+    none?: LOBReasonWhereInput
+  }
+
   export type ReportTypeListRelationFilter = {
     every?: ReportTypeWhereInput
     some?: ReportTypeWhereInput
     none?: ReportTypeWhereInput
+  }
+
+  export type ReportListRelationFilter = {
+    every?: ReportWhereInput
+    some?: ReportWhereInput
+    none?: ReportWhereInput
   }
 
   export type ReportLogListRelationFilter = {
@@ -51032,7 +58588,23 @@ export namespace Prisma {
     _count?: SortOrder
   }
 
+  export type CountryOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type LocationLevelOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type LOBReasonOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
   export type ReportTypeOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type ReportOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -51521,6 +59093,122 @@ export namespace Prisma {
     updatedAt?: SortOrder
   }
 
+  export type WorkspaceRelationFilter = {
+    is?: WorkspaceWhereInput
+    isNot?: WorkspaceWhereInput
+  }
+
+  export type UserNullableRelationFilter = {
+    is?: UserWhereInput | null
+    isNot?: UserWhereInput | null
+  }
+
+  export type LocationListRelationFilter = {
+    every?: LocationWhereInput
+    some?: LocationWhereInput
+    none?: LocationWhereInput
+  }
+
+  export type LocationOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type CountryCountOrderByAggregateInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    name?: SortOrder
+    code?: SortOrder
+    isActive?: SortOrder
+    createdById?: SortOrder
+    updatedById?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrder
+  }
+
+  export type CountryMaxOrderByAggregateInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    name?: SortOrder
+    code?: SortOrder
+    isActive?: SortOrder
+    createdById?: SortOrder
+    updatedById?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrder
+  }
+
+  export type CountryMinOrderByAggregateInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    name?: SortOrder
+    code?: SortOrder
+    isActive?: SortOrder
+    createdById?: SortOrder
+    updatedById?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrder
+  }
+
+  export type CountryRelationFilter = {
+    is?: CountryWhereInput
+    isNot?: CountryWhereInput
+  }
+
+  export type LocationLevelCountryIdLevelOrderCompoundUniqueInput = {
+    countryId: string
+    levelOrder: number
+  }
+
+  export type LocationLevelCountOrderByAggregateInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    countryId?: SortOrder
+    levelName?: SortOrder
+    levelOrder?: SortOrder
+    isActive?: SortOrder
+    createdById?: SortOrder
+    updatedById?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type LocationLevelAvgOrderByAggregateInput = {
+    levelOrder?: SortOrder
+  }
+
+  export type LocationLevelMaxOrderByAggregateInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    countryId?: SortOrder
+    levelName?: SortOrder
+    levelOrder?: SortOrder
+    isActive?: SortOrder
+    createdById?: SortOrder
+    updatedById?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type LocationLevelMinOrderByAggregateInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    countryId?: SortOrder
+    levelName?: SortOrder
+    levelOrder?: SortOrder
+    isActive?: SortOrder
+    createdById?: SortOrder
+    updatedById?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type LocationLevelSumOrderByAggregateInput = {
+    levelOrder?: SortOrder
+  }
+
   export type EnumLocationTypeFilter<$PrismaModel = never> = {
     equals?: $Enums.LocationType | EnumLocationTypeFieldRefInput<$PrismaModel>
     in?: $Enums.LocationType[] | ListEnumLocationTypeFieldRefInput<$PrismaModel>
@@ -51533,20 +59221,20 @@ export namespace Prisma {
     isNot?: LocationWhereInput | null
   }
 
-  export type LocationListRelationFilter = {
-    every?: LocationWhereInput
-    some?: LocationWhereInput
-    none?: LocationWhereInput
+  export type CountryNullableRelationFilter = {
+    is?: CountryWhereInput | null
+    isNot?: CountryWhereInput | null
+  }
+
+  export type LocationLevelNullableRelationFilter = {
+    is?: LocationLevelWhereInput | null
+    isNot?: LocationLevelWhereInput | null
   }
 
   export type UserLocationAssignmentListRelationFilter = {
     every?: UserLocationAssignmentWhereInput
     some?: UserLocationAssignmentWhereInput
     none?: UserLocationAssignmentWhereInput
-  }
-
-  export type LocationOrderByRelationAggregateInput = {
-    _count?: SortOrder
   }
 
   export type UserLocationAssignmentOrderByRelationAggregateInput = {
@@ -51558,6 +59246,12 @@ export namespace Prisma {
     name?: SortOrder
     type?: SortOrder
     workspaceId?: SortOrder
+    countryId?: SortOrder
+    levelId?: SortOrder
+    isActive?: SortOrder
+    createdById?: SortOrder
+    updatedById?: SortOrder
+    deletedAt?: SortOrder
     parentId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -51568,6 +59262,12 @@ export namespace Prisma {
     name?: SortOrder
     type?: SortOrder
     workspaceId?: SortOrder
+    countryId?: SortOrder
+    levelId?: SortOrder
+    isActive?: SortOrder
+    createdById?: SortOrder
+    updatedById?: SortOrder
+    deletedAt?: SortOrder
     parentId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -51578,6 +59278,12 @@ export namespace Prisma {
     name?: SortOrder
     type?: SortOrder
     workspaceId?: SortOrder
+    countryId?: SortOrder
+    levelId?: SortOrder
+    isActive?: SortOrder
+    createdById?: SortOrder
+    updatedById?: SortOrder
+    deletedAt?: SortOrder
     parentId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -51665,11 +59371,6 @@ export namespace Prisma {
     workspaceId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-  }
-
-  export type WorkspaceRelationFilter = {
-    is?: WorkspaceWhereInput
-    isNot?: WorkspaceWhereInput
   }
 
   export type TargetCycleRangeListRelationFilter = {
@@ -51867,11 +59568,6 @@ export namespace Prisma {
     in?: $Enums.LeadClosureType[] | ListEnumLeadClosureTypeFieldRefInput<$PrismaModel> | null
     notIn?: $Enums.LeadClosureType[] | ListEnumLeadClosureTypeFieldRefInput<$PrismaModel> | null
     not?: NestedEnumLeadClosureTypeNullableFilter<$PrismaModel> | $Enums.LeadClosureType | null
-  }
-
-  export type UserNullableRelationFilter = {
-    is?: UserWhereInput | null
-    isNot?: UserWhereInput | null
   }
 
   export type LeadLifeCycleNullableRelationFilter = {
@@ -52120,6 +59816,59 @@ export namespace Prisma {
     changedById?: SortOrder
     changedAt?: SortOrder
     workspaceId?: SortOrder
+  }
+
+  export type EnumLOBReasonStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.LOBReasonStatus | EnumLOBReasonStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.LOBReasonStatus[] | ListEnumLOBReasonStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.LOBReasonStatus[] | ListEnumLOBReasonStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumLOBReasonStatusFilter<$PrismaModel> | $Enums.LOBReasonStatus
+  }
+
+  export type LOBReasonCountOrderByAggregateInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    name?: SortOrder
+    status?: SortOrder
+    createdById?: SortOrder
+    updatedById?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrder
+  }
+
+  export type LOBReasonMaxOrderByAggregateInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    name?: SortOrder
+    status?: SortOrder
+    createdById?: SortOrder
+    updatedById?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrder
+  }
+
+  export type LOBReasonMinOrderByAggregateInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    name?: SortOrder
+    status?: SortOrder
+    createdById?: SortOrder
+    updatedById?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrder
+  }
+
+  export type EnumLOBReasonStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.LOBReasonStatus | EnumLOBReasonStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.LOBReasonStatus[] | ListEnumLOBReasonStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.LOBReasonStatus[] | ListEnumLOBReasonStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumLOBReasonStatusWithAggregatesFilter<$PrismaModel> | $Enums.LOBReasonStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumLOBReasonStatusFilter<$PrismaModel>
+    _max?: NestedEnumLOBReasonStatusFilter<$PrismaModel>
   }
 
   export type EnumLeadApprovalStatusFilter<$PrismaModel = never> = {
@@ -53284,18 +61033,26 @@ export namespace Prisma {
     _max?: NestedEnumReportTypeStatusFilter<$PrismaModel>
   }
 
-  export type ReportTypeRelationFilter = {
-    is?: ReportTypeWhereInput
-    isNot?: ReportTypeWhereInput
+  export type ReportTypeNullableRelationFilter = {
+    is?: ReportTypeWhereInput | null
+    isNot?: ReportTypeWhereInput | null
+  }
+
+  export type ReportNullableRelationFilter = {
+    is?: ReportWhereInput | null
+    isNot?: ReportWhereInput | null
   }
 
   export type ReportLogCountOrderByAggregateInput = {
     id?: SortOrder
     workspaceId?: SortOrder
     reportTypeId?: SortOrder
+    reportId?: SortOrder
     generatedById?: SortOrder
+    action?: SortOrder
     filters?: SortOrder
     resultCount?: SortOrder
+    meta?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -53307,7 +61064,9 @@ export namespace Prisma {
     id?: SortOrder
     workspaceId?: SortOrder
     reportTypeId?: SortOrder
+    reportId?: SortOrder
     generatedById?: SortOrder
+    action?: SortOrder
     resultCount?: SortOrder
     createdAt?: SortOrder
   }
@@ -53316,13 +61075,107 @@ export namespace Prisma {
     id?: SortOrder
     workspaceId?: SortOrder
     reportTypeId?: SortOrder
+    reportId?: SortOrder
     generatedById?: SortOrder
+    action?: SortOrder
     resultCount?: SortOrder
     createdAt?: SortOrder
   }
 
   export type ReportLogSumOrderByAggregateInput = {
     resultCount?: SortOrder
+  }
+
+  export type ReportTypeRelationFilter = {
+    is?: ReportTypeWhereInput
+    isNot?: ReportTypeWhereInput
+  }
+
+  export type ReportFilterListRelationFilter = {
+    every?: ReportFilterWhereInput
+    some?: ReportFilterWhereInput
+    none?: ReportFilterWhereInput
+  }
+
+  export type ReportFilterOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type ReportCountOrderByAggregateInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    reportName?: SortOrder
+    reportTypeId?: SortOrder
+    reportDate?: SortOrder
+    isActive?: SortOrder
+    isGenerated?: SortOrder
+    generatedFileUrl?: SortOrder
+    generatedAt?: SortOrder
+    createdById?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrder
+  }
+
+  export type ReportMaxOrderByAggregateInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    reportName?: SortOrder
+    reportTypeId?: SortOrder
+    reportDate?: SortOrder
+    isActive?: SortOrder
+    isGenerated?: SortOrder
+    generatedFileUrl?: SortOrder
+    generatedAt?: SortOrder
+    createdById?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrder
+  }
+
+  export type ReportMinOrderByAggregateInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    reportName?: SortOrder
+    reportTypeId?: SortOrder
+    reportDate?: SortOrder
+    isActive?: SortOrder
+    isGenerated?: SortOrder
+    generatedFileUrl?: SortOrder
+    generatedAt?: SortOrder
+    createdById?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrder
+  }
+
+  export type ReportRelationFilter = {
+    is?: ReportWhereInput
+    isNot?: ReportWhereInput
+  }
+
+  export type ReportFilterCountOrderByAggregateInput = {
+    id?: SortOrder
+    reportId?: SortOrder
+    filterKey?: SortOrder
+    filterValue?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type ReportFilterMaxOrderByAggregateInput = {
+    id?: SortOrder
+    reportId?: SortOrder
+    filterKey?: SortOrder
+    filterValue?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type ReportFilterMinOrderByAggregateInput = {
+    id?: SortOrder
+    reportId?: SortOrder
+    filterKey?: SortOrder
+    filterValue?: SortOrder
+    createdAt?: SortOrder
   }
 
   export type RolePermissionCreateNestedManyWithoutRoleInput = {
@@ -53571,11 +61424,39 @@ export namespace Prisma {
     connect?: HolidaySyncLogWhereUniqueInput | HolidaySyncLogWhereUniqueInput[]
   }
 
+  export type CountryCreateNestedManyWithoutWorkspaceInput = {
+    create?: XOR<CountryCreateWithoutWorkspaceInput, CountryUncheckedCreateWithoutWorkspaceInput> | CountryCreateWithoutWorkspaceInput[] | CountryUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: CountryCreateOrConnectWithoutWorkspaceInput | CountryCreateOrConnectWithoutWorkspaceInput[]
+    createMany?: CountryCreateManyWorkspaceInputEnvelope
+    connect?: CountryWhereUniqueInput | CountryWhereUniqueInput[]
+  }
+
+  export type LocationLevelCreateNestedManyWithoutWorkspaceInput = {
+    create?: XOR<LocationLevelCreateWithoutWorkspaceInput, LocationLevelUncheckedCreateWithoutWorkspaceInput> | LocationLevelCreateWithoutWorkspaceInput[] | LocationLevelUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: LocationLevelCreateOrConnectWithoutWorkspaceInput | LocationLevelCreateOrConnectWithoutWorkspaceInput[]
+    createMany?: LocationLevelCreateManyWorkspaceInputEnvelope
+    connect?: LocationLevelWhereUniqueInput | LocationLevelWhereUniqueInput[]
+  }
+
+  export type LOBReasonCreateNestedManyWithoutWorkspaceInput = {
+    create?: XOR<LOBReasonCreateWithoutWorkspaceInput, LOBReasonUncheckedCreateWithoutWorkspaceInput> | LOBReasonCreateWithoutWorkspaceInput[] | LOBReasonUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: LOBReasonCreateOrConnectWithoutWorkspaceInput | LOBReasonCreateOrConnectWithoutWorkspaceInput[]
+    createMany?: LOBReasonCreateManyWorkspaceInputEnvelope
+    connect?: LOBReasonWhereUniqueInput | LOBReasonWhereUniqueInput[]
+  }
+
   export type ReportTypeCreateNestedManyWithoutWorkspaceInput = {
     create?: XOR<ReportTypeCreateWithoutWorkspaceInput, ReportTypeUncheckedCreateWithoutWorkspaceInput> | ReportTypeCreateWithoutWorkspaceInput[] | ReportTypeUncheckedCreateWithoutWorkspaceInput[]
     connectOrCreate?: ReportTypeCreateOrConnectWithoutWorkspaceInput | ReportTypeCreateOrConnectWithoutWorkspaceInput[]
     createMany?: ReportTypeCreateManyWorkspaceInputEnvelope
     connect?: ReportTypeWhereUniqueInput | ReportTypeWhereUniqueInput[]
+  }
+
+  export type ReportCreateNestedManyWithoutWorkspaceInput = {
+    create?: XOR<ReportCreateWithoutWorkspaceInput, ReportUncheckedCreateWithoutWorkspaceInput> | ReportCreateWithoutWorkspaceInput[] | ReportUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: ReportCreateOrConnectWithoutWorkspaceInput | ReportCreateOrConnectWithoutWorkspaceInput[]
+    createMany?: ReportCreateManyWorkspaceInputEnvelope
+    connect?: ReportWhereUniqueInput | ReportWhereUniqueInput[]
   }
 
   export type ReportLogCreateNestedManyWithoutWorkspaceInput = {
@@ -53655,11 +61536,39 @@ export namespace Prisma {
     connect?: HolidaySyncLogWhereUniqueInput | HolidaySyncLogWhereUniqueInput[]
   }
 
+  export type CountryUncheckedCreateNestedManyWithoutWorkspaceInput = {
+    create?: XOR<CountryCreateWithoutWorkspaceInput, CountryUncheckedCreateWithoutWorkspaceInput> | CountryCreateWithoutWorkspaceInput[] | CountryUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: CountryCreateOrConnectWithoutWorkspaceInput | CountryCreateOrConnectWithoutWorkspaceInput[]
+    createMany?: CountryCreateManyWorkspaceInputEnvelope
+    connect?: CountryWhereUniqueInput | CountryWhereUniqueInput[]
+  }
+
+  export type LocationLevelUncheckedCreateNestedManyWithoutWorkspaceInput = {
+    create?: XOR<LocationLevelCreateWithoutWorkspaceInput, LocationLevelUncheckedCreateWithoutWorkspaceInput> | LocationLevelCreateWithoutWorkspaceInput[] | LocationLevelUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: LocationLevelCreateOrConnectWithoutWorkspaceInput | LocationLevelCreateOrConnectWithoutWorkspaceInput[]
+    createMany?: LocationLevelCreateManyWorkspaceInputEnvelope
+    connect?: LocationLevelWhereUniqueInput | LocationLevelWhereUniqueInput[]
+  }
+
+  export type LOBReasonUncheckedCreateNestedManyWithoutWorkspaceInput = {
+    create?: XOR<LOBReasonCreateWithoutWorkspaceInput, LOBReasonUncheckedCreateWithoutWorkspaceInput> | LOBReasonCreateWithoutWorkspaceInput[] | LOBReasonUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: LOBReasonCreateOrConnectWithoutWorkspaceInput | LOBReasonCreateOrConnectWithoutWorkspaceInput[]
+    createMany?: LOBReasonCreateManyWorkspaceInputEnvelope
+    connect?: LOBReasonWhereUniqueInput | LOBReasonWhereUniqueInput[]
+  }
+
   export type ReportTypeUncheckedCreateNestedManyWithoutWorkspaceInput = {
     create?: XOR<ReportTypeCreateWithoutWorkspaceInput, ReportTypeUncheckedCreateWithoutWorkspaceInput> | ReportTypeCreateWithoutWorkspaceInput[] | ReportTypeUncheckedCreateWithoutWorkspaceInput[]
     connectOrCreate?: ReportTypeCreateOrConnectWithoutWorkspaceInput | ReportTypeCreateOrConnectWithoutWorkspaceInput[]
     createMany?: ReportTypeCreateManyWorkspaceInputEnvelope
     connect?: ReportTypeWhereUniqueInput | ReportTypeWhereUniqueInput[]
+  }
+
+  export type ReportUncheckedCreateNestedManyWithoutWorkspaceInput = {
+    create?: XOR<ReportCreateWithoutWorkspaceInput, ReportUncheckedCreateWithoutWorkspaceInput> | ReportCreateWithoutWorkspaceInput[] | ReportUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: ReportCreateOrConnectWithoutWorkspaceInput | ReportCreateOrConnectWithoutWorkspaceInput[]
+    createMany?: ReportCreateManyWorkspaceInputEnvelope
+    connect?: ReportWhereUniqueInput | ReportWhereUniqueInput[]
   }
 
   export type ReportLogUncheckedCreateNestedManyWithoutWorkspaceInput = {
@@ -53821,6 +61730,48 @@ export namespace Prisma {
     deleteMany?: HolidaySyncLogScalarWhereInput | HolidaySyncLogScalarWhereInput[]
   }
 
+  export type CountryUpdateManyWithoutWorkspaceNestedInput = {
+    create?: XOR<CountryCreateWithoutWorkspaceInput, CountryUncheckedCreateWithoutWorkspaceInput> | CountryCreateWithoutWorkspaceInput[] | CountryUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: CountryCreateOrConnectWithoutWorkspaceInput | CountryCreateOrConnectWithoutWorkspaceInput[]
+    upsert?: CountryUpsertWithWhereUniqueWithoutWorkspaceInput | CountryUpsertWithWhereUniqueWithoutWorkspaceInput[]
+    createMany?: CountryCreateManyWorkspaceInputEnvelope
+    set?: CountryWhereUniqueInput | CountryWhereUniqueInput[]
+    disconnect?: CountryWhereUniqueInput | CountryWhereUniqueInput[]
+    delete?: CountryWhereUniqueInput | CountryWhereUniqueInput[]
+    connect?: CountryWhereUniqueInput | CountryWhereUniqueInput[]
+    update?: CountryUpdateWithWhereUniqueWithoutWorkspaceInput | CountryUpdateWithWhereUniqueWithoutWorkspaceInput[]
+    updateMany?: CountryUpdateManyWithWhereWithoutWorkspaceInput | CountryUpdateManyWithWhereWithoutWorkspaceInput[]
+    deleteMany?: CountryScalarWhereInput | CountryScalarWhereInput[]
+  }
+
+  export type LocationLevelUpdateManyWithoutWorkspaceNestedInput = {
+    create?: XOR<LocationLevelCreateWithoutWorkspaceInput, LocationLevelUncheckedCreateWithoutWorkspaceInput> | LocationLevelCreateWithoutWorkspaceInput[] | LocationLevelUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: LocationLevelCreateOrConnectWithoutWorkspaceInput | LocationLevelCreateOrConnectWithoutWorkspaceInput[]
+    upsert?: LocationLevelUpsertWithWhereUniqueWithoutWorkspaceInput | LocationLevelUpsertWithWhereUniqueWithoutWorkspaceInput[]
+    createMany?: LocationLevelCreateManyWorkspaceInputEnvelope
+    set?: LocationLevelWhereUniqueInput | LocationLevelWhereUniqueInput[]
+    disconnect?: LocationLevelWhereUniqueInput | LocationLevelWhereUniqueInput[]
+    delete?: LocationLevelWhereUniqueInput | LocationLevelWhereUniqueInput[]
+    connect?: LocationLevelWhereUniqueInput | LocationLevelWhereUniqueInput[]
+    update?: LocationLevelUpdateWithWhereUniqueWithoutWorkspaceInput | LocationLevelUpdateWithWhereUniqueWithoutWorkspaceInput[]
+    updateMany?: LocationLevelUpdateManyWithWhereWithoutWorkspaceInput | LocationLevelUpdateManyWithWhereWithoutWorkspaceInput[]
+    deleteMany?: LocationLevelScalarWhereInput | LocationLevelScalarWhereInput[]
+  }
+
+  export type LOBReasonUpdateManyWithoutWorkspaceNestedInput = {
+    create?: XOR<LOBReasonCreateWithoutWorkspaceInput, LOBReasonUncheckedCreateWithoutWorkspaceInput> | LOBReasonCreateWithoutWorkspaceInput[] | LOBReasonUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: LOBReasonCreateOrConnectWithoutWorkspaceInput | LOBReasonCreateOrConnectWithoutWorkspaceInput[]
+    upsert?: LOBReasonUpsertWithWhereUniqueWithoutWorkspaceInput | LOBReasonUpsertWithWhereUniqueWithoutWorkspaceInput[]
+    createMany?: LOBReasonCreateManyWorkspaceInputEnvelope
+    set?: LOBReasonWhereUniqueInput | LOBReasonWhereUniqueInput[]
+    disconnect?: LOBReasonWhereUniqueInput | LOBReasonWhereUniqueInput[]
+    delete?: LOBReasonWhereUniqueInput | LOBReasonWhereUniqueInput[]
+    connect?: LOBReasonWhereUniqueInput | LOBReasonWhereUniqueInput[]
+    update?: LOBReasonUpdateWithWhereUniqueWithoutWorkspaceInput | LOBReasonUpdateWithWhereUniqueWithoutWorkspaceInput[]
+    updateMany?: LOBReasonUpdateManyWithWhereWithoutWorkspaceInput | LOBReasonUpdateManyWithWhereWithoutWorkspaceInput[]
+    deleteMany?: LOBReasonScalarWhereInput | LOBReasonScalarWhereInput[]
+  }
+
   export type ReportTypeUpdateManyWithoutWorkspaceNestedInput = {
     create?: XOR<ReportTypeCreateWithoutWorkspaceInput, ReportTypeUncheckedCreateWithoutWorkspaceInput> | ReportTypeCreateWithoutWorkspaceInput[] | ReportTypeUncheckedCreateWithoutWorkspaceInput[]
     connectOrCreate?: ReportTypeCreateOrConnectWithoutWorkspaceInput | ReportTypeCreateOrConnectWithoutWorkspaceInput[]
@@ -53833,6 +61784,20 @@ export namespace Prisma {
     update?: ReportTypeUpdateWithWhereUniqueWithoutWorkspaceInput | ReportTypeUpdateWithWhereUniqueWithoutWorkspaceInput[]
     updateMany?: ReportTypeUpdateManyWithWhereWithoutWorkspaceInput | ReportTypeUpdateManyWithWhereWithoutWorkspaceInput[]
     deleteMany?: ReportTypeScalarWhereInput | ReportTypeScalarWhereInput[]
+  }
+
+  export type ReportUpdateManyWithoutWorkspaceNestedInput = {
+    create?: XOR<ReportCreateWithoutWorkspaceInput, ReportUncheckedCreateWithoutWorkspaceInput> | ReportCreateWithoutWorkspaceInput[] | ReportUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: ReportCreateOrConnectWithoutWorkspaceInput | ReportCreateOrConnectWithoutWorkspaceInput[]
+    upsert?: ReportUpsertWithWhereUniqueWithoutWorkspaceInput | ReportUpsertWithWhereUniqueWithoutWorkspaceInput[]
+    createMany?: ReportCreateManyWorkspaceInputEnvelope
+    set?: ReportWhereUniqueInput | ReportWhereUniqueInput[]
+    disconnect?: ReportWhereUniqueInput | ReportWhereUniqueInput[]
+    delete?: ReportWhereUniqueInput | ReportWhereUniqueInput[]
+    connect?: ReportWhereUniqueInput | ReportWhereUniqueInput[]
+    update?: ReportUpdateWithWhereUniqueWithoutWorkspaceInput | ReportUpdateWithWhereUniqueWithoutWorkspaceInput[]
+    updateMany?: ReportUpdateManyWithWhereWithoutWorkspaceInput | ReportUpdateManyWithWhereWithoutWorkspaceInput[]
+    deleteMany?: ReportScalarWhereInput | ReportScalarWhereInput[]
   }
 
   export type ReportLogUpdateManyWithoutWorkspaceNestedInput = {
@@ -53989,6 +61954,48 @@ export namespace Prisma {
     deleteMany?: HolidaySyncLogScalarWhereInput | HolidaySyncLogScalarWhereInput[]
   }
 
+  export type CountryUncheckedUpdateManyWithoutWorkspaceNestedInput = {
+    create?: XOR<CountryCreateWithoutWorkspaceInput, CountryUncheckedCreateWithoutWorkspaceInput> | CountryCreateWithoutWorkspaceInput[] | CountryUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: CountryCreateOrConnectWithoutWorkspaceInput | CountryCreateOrConnectWithoutWorkspaceInput[]
+    upsert?: CountryUpsertWithWhereUniqueWithoutWorkspaceInput | CountryUpsertWithWhereUniqueWithoutWorkspaceInput[]
+    createMany?: CountryCreateManyWorkspaceInputEnvelope
+    set?: CountryWhereUniqueInput | CountryWhereUniqueInput[]
+    disconnect?: CountryWhereUniqueInput | CountryWhereUniqueInput[]
+    delete?: CountryWhereUniqueInput | CountryWhereUniqueInput[]
+    connect?: CountryWhereUniqueInput | CountryWhereUniqueInput[]
+    update?: CountryUpdateWithWhereUniqueWithoutWorkspaceInput | CountryUpdateWithWhereUniqueWithoutWorkspaceInput[]
+    updateMany?: CountryUpdateManyWithWhereWithoutWorkspaceInput | CountryUpdateManyWithWhereWithoutWorkspaceInput[]
+    deleteMany?: CountryScalarWhereInput | CountryScalarWhereInput[]
+  }
+
+  export type LocationLevelUncheckedUpdateManyWithoutWorkspaceNestedInput = {
+    create?: XOR<LocationLevelCreateWithoutWorkspaceInput, LocationLevelUncheckedCreateWithoutWorkspaceInput> | LocationLevelCreateWithoutWorkspaceInput[] | LocationLevelUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: LocationLevelCreateOrConnectWithoutWorkspaceInput | LocationLevelCreateOrConnectWithoutWorkspaceInput[]
+    upsert?: LocationLevelUpsertWithWhereUniqueWithoutWorkspaceInput | LocationLevelUpsertWithWhereUniqueWithoutWorkspaceInput[]
+    createMany?: LocationLevelCreateManyWorkspaceInputEnvelope
+    set?: LocationLevelWhereUniqueInput | LocationLevelWhereUniqueInput[]
+    disconnect?: LocationLevelWhereUniqueInput | LocationLevelWhereUniqueInput[]
+    delete?: LocationLevelWhereUniqueInput | LocationLevelWhereUniqueInput[]
+    connect?: LocationLevelWhereUniqueInput | LocationLevelWhereUniqueInput[]
+    update?: LocationLevelUpdateWithWhereUniqueWithoutWorkspaceInput | LocationLevelUpdateWithWhereUniqueWithoutWorkspaceInput[]
+    updateMany?: LocationLevelUpdateManyWithWhereWithoutWorkspaceInput | LocationLevelUpdateManyWithWhereWithoutWorkspaceInput[]
+    deleteMany?: LocationLevelScalarWhereInput | LocationLevelScalarWhereInput[]
+  }
+
+  export type LOBReasonUncheckedUpdateManyWithoutWorkspaceNestedInput = {
+    create?: XOR<LOBReasonCreateWithoutWorkspaceInput, LOBReasonUncheckedCreateWithoutWorkspaceInput> | LOBReasonCreateWithoutWorkspaceInput[] | LOBReasonUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: LOBReasonCreateOrConnectWithoutWorkspaceInput | LOBReasonCreateOrConnectWithoutWorkspaceInput[]
+    upsert?: LOBReasonUpsertWithWhereUniqueWithoutWorkspaceInput | LOBReasonUpsertWithWhereUniqueWithoutWorkspaceInput[]
+    createMany?: LOBReasonCreateManyWorkspaceInputEnvelope
+    set?: LOBReasonWhereUniqueInput | LOBReasonWhereUniqueInput[]
+    disconnect?: LOBReasonWhereUniqueInput | LOBReasonWhereUniqueInput[]
+    delete?: LOBReasonWhereUniqueInput | LOBReasonWhereUniqueInput[]
+    connect?: LOBReasonWhereUniqueInput | LOBReasonWhereUniqueInput[]
+    update?: LOBReasonUpdateWithWhereUniqueWithoutWorkspaceInput | LOBReasonUpdateWithWhereUniqueWithoutWorkspaceInput[]
+    updateMany?: LOBReasonUpdateManyWithWhereWithoutWorkspaceInput | LOBReasonUpdateManyWithWhereWithoutWorkspaceInput[]
+    deleteMany?: LOBReasonScalarWhereInput | LOBReasonScalarWhereInput[]
+  }
+
   export type ReportTypeUncheckedUpdateManyWithoutWorkspaceNestedInput = {
     create?: XOR<ReportTypeCreateWithoutWorkspaceInput, ReportTypeUncheckedCreateWithoutWorkspaceInput> | ReportTypeCreateWithoutWorkspaceInput[] | ReportTypeUncheckedCreateWithoutWorkspaceInput[]
     connectOrCreate?: ReportTypeCreateOrConnectWithoutWorkspaceInput | ReportTypeCreateOrConnectWithoutWorkspaceInput[]
@@ -54001,6 +62008,20 @@ export namespace Prisma {
     update?: ReportTypeUpdateWithWhereUniqueWithoutWorkspaceInput | ReportTypeUpdateWithWhereUniqueWithoutWorkspaceInput[]
     updateMany?: ReportTypeUpdateManyWithWhereWithoutWorkspaceInput | ReportTypeUpdateManyWithWhereWithoutWorkspaceInput[]
     deleteMany?: ReportTypeScalarWhereInput | ReportTypeScalarWhereInput[]
+  }
+
+  export type ReportUncheckedUpdateManyWithoutWorkspaceNestedInput = {
+    create?: XOR<ReportCreateWithoutWorkspaceInput, ReportUncheckedCreateWithoutWorkspaceInput> | ReportCreateWithoutWorkspaceInput[] | ReportUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: ReportCreateOrConnectWithoutWorkspaceInput | ReportCreateOrConnectWithoutWorkspaceInput[]
+    upsert?: ReportUpsertWithWhereUniqueWithoutWorkspaceInput | ReportUpsertWithWhereUniqueWithoutWorkspaceInput[]
+    createMany?: ReportCreateManyWorkspaceInputEnvelope
+    set?: ReportWhereUniqueInput | ReportWhereUniqueInput[]
+    disconnect?: ReportWhereUniqueInput | ReportWhereUniqueInput[]
+    delete?: ReportWhereUniqueInput | ReportWhereUniqueInput[]
+    connect?: ReportWhereUniqueInput | ReportWhereUniqueInput[]
+    update?: ReportUpdateWithWhereUniqueWithoutWorkspaceInput | ReportUpdateWithWhereUniqueWithoutWorkspaceInput[]
+    updateMany?: ReportUpdateManyWithWhereWithoutWorkspaceInput | ReportUpdateManyWithWhereWithoutWorkspaceInput[]
+    deleteMany?: ReportScalarWhereInput | ReportScalarWhereInput[]
   }
 
   export type ReportLogUncheckedUpdateManyWithoutWorkspaceNestedInput = {
@@ -54435,6 +62456,238 @@ export namespace Prisma {
     deleteMany?: UserScalarWhereInput | UserScalarWhereInput[]
   }
 
+  export type WorkspaceCreateNestedOneWithoutCountriesInput = {
+    create?: XOR<WorkspaceCreateWithoutCountriesInput, WorkspaceUncheckedCreateWithoutCountriesInput>
+    connectOrCreate?: WorkspaceCreateOrConnectWithoutCountriesInput
+    connect?: WorkspaceWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutCreatedCountriesInput = {
+    create?: XOR<UserCreateWithoutCreatedCountriesInput, UserUncheckedCreateWithoutCreatedCountriesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutCreatedCountriesInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutUpdatedCountriesInput = {
+    create?: XOR<UserCreateWithoutUpdatedCountriesInput, UserUncheckedCreateWithoutUpdatedCountriesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutUpdatedCountriesInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type LocationLevelCreateNestedManyWithoutCountryInput = {
+    create?: XOR<LocationLevelCreateWithoutCountryInput, LocationLevelUncheckedCreateWithoutCountryInput> | LocationLevelCreateWithoutCountryInput[] | LocationLevelUncheckedCreateWithoutCountryInput[]
+    connectOrCreate?: LocationLevelCreateOrConnectWithoutCountryInput | LocationLevelCreateOrConnectWithoutCountryInput[]
+    createMany?: LocationLevelCreateManyCountryInputEnvelope
+    connect?: LocationLevelWhereUniqueInput | LocationLevelWhereUniqueInput[]
+  }
+
+  export type LocationCreateNestedManyWithoutCountryInput = {
+    create?: XOR<LocationCreateWithoutCountryInput, LocationUncheckedCreateWithoutCountryInput> | LocationCreateWithoutCountryInput[] | LocationUncheckedCreateWithoutCountryInput[]
+    connectOrCreate?: LocationCreateOrConnectWithoutCountryInput | LocationCreateOrConnectWithoutCountryInput[]
+    createMany?: LocationCreateManyCountryInputEnvelope
+    connect?: LocationWhereUniqueInput | LocationWhereUniqueInput[]
+  }
+
+  export type LocationLevelUncheckedCreateNestedManyWithoutCountryInput = {
+    create?: XOR<LocationLevelCreateWithoutCountryInput, LocationLevelUncheckedCreateWithoutCountryInput> | LocationLevelCreateWithoutCountryInput[] | LocationLevelUncheckedCreateWithoutCountryInput[]
+    connectOrCreate?: LocationLevelCreateOrConnectWithoutCountryInput | LocationLevelCreateOrConnectWithoutCountryInput[]
+    createMany?: LocationLevelCreateManyCountryInputEnvelope
+    connect?: LocationLevelWhereUniqueInput | LocationLevelWhereUniqueInput[]
+  }
+
+  export type LocationUncheckedCreateNestedManyWithoutCountryInput = {
+    create?: XOR<LocationCreateWithoutCountryInput, LocationUncheckedCreateWithoutCountryInput> | LocationCreateWithoutCountryInput[] | LocationUncheckedCreateWithoutCountryInput[]
+    connectOrCreate?: LocationCreateOrConnectWithoutCountryInput | LocationCreateOrConnectWithoutCountryInput[]
+    createMany?: LocationCreateManyCountryInputEnvelope
+    connect?: LocationWhereUniqueInput | LocationWhereUniqueInput[]
+  }
+
+  export type WorkspaceUpdateOneRequiredWithoutCountriesNestedInput = {
+    create?: XOR<WorkspaceCreateWithoutCountriesInput, WorkspaceUncheckedCreateWithoutCountriesInput>
+    connectOrCreate?: WorkspaceCreateOrConnectWithoutCountriesInput
+    upsert?: WorkspaceUpsertWithoutCountriesInput
+    connect?: WorkspaceWhereUniqueInput
+    update?: XOR<XOR<WorkspaceUpdateToOneWithWhereWithoutCountriesInput, WorkspaceUpdateWithoutCountriesInput>, WorkspaceUncheckedUpdateWithoutCountriesInput>
+  }
+
+  export type UserUpdateOneWithoutCreatedCountriesNestedInput = {
+    create?: XOR<UserCreateWithoutCreatedCountriesInput, UserUncheckedCreateWithoutCreatedCountriesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutCreatedCountriesInput
+    upsert?: UserUpsertWithoutCreatedCountriesInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutCreatedCountriesInput, UserUpdateWithoutCreatedCountriesInput>, UserUncheckedUpdateWithoutCreatedCountriesInput>
+  }
+
+  export type UserUpdateOneWithoutUpdatedCountriesNestedInput = {
+    create?: XOR<UserCreateWithoutUpdatedCountriesInput, UserUncheckedCreateWithoutUpdatedCountriesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutUpdatedCountriesInput
+    upsert?: UserUpsertWithoutUpdatedCountriesInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutUpdatedCountriesInput, UserUpdateWithoutUpdatedCountriesInput>, UserUncheckedUpdateWithoutUpdatedCountriesInput>
+  }
+
+  export type LocationLevelUpdateManyWithoutCountryNestedInput = {
+    create?: XOR<LocationLevelCreateWithoutCountryInput, LocationLevelUncheckedCreateWithoutCountryInput> | LocationLevelCreateWithoutCountryInput[] | LocationLevelUncheckedCreateWithoutCountryInput[]
+    connectOrCreate?: LocationLevelCreateOrConnectWithoutCountryInput | LocationLevelCreateOrConnectWithoutCountryInput[]
+    upsert?: LocationLevelUpsertWithWhereUniqueWithoutCountryInput | LocationLevelUpsertWithWhereUniqueWithoutCountryInput[]
+    createMany?: LocationLevelCreateManyCountryInputEnvelope
+    set?: LocationLevelWhereUniqueInput | LocationLevelWhereUniqueInput[]
+    disconnect?: LocationLevelWhereUniqueInput | LocationLevelWhereUniqueInput[]
+    delete?: LocationLevelWhereUniqueInput | LocationLevelWhereUniqueInput[]
+    connect?: LocationLevelWhereUniqueInput | LocationLevelWhereUniqueInput[]
+    update?: LocationLevelUpdateWithWhereUniqueWithoutCountryInput | LocationLevelUpdateWithWhereUniqueWithoutCountryInput[]
+    updateMany?: LocationLevelUpdateManyWithWhereWithoutCountryInput | LocationLevelUpdateManyWithWhereWithoutCountryInput[]
+    deleteMany?: LocationLevelScalarWhereInput | LocationLevelScalarWhereInput[]
+  }
+
+  export type LocationUpdateManyWithoutCountryNestedInput = {
+    create?: XOR<LocationCreateWithoutCountryInput, LocationUncheckedCreateWithoutCountryInput> | LocationCreateWithoutCountryInput[] | LocationUncheckedCreateWithoutCountryInput[]
+    connectOrCreate?: LocationCreateOrConnectWithoutCountryInput | LocationCreateOrConnectWithoutCountryInput[]
+    upsert?: LocationUpsertWithWhereUniqueWithoutCountryInput | LocationUpsertWithWhereUniqueWithoutCountryInput[]
+    createMany?: LocationCreateManyCountryInputEnvelope
+    set?: LocationWhereUniqueInput | LocationWhereUniqueInput[]
+    disconnect?: LocationWhereUniqueInput | LocationWhereUniqueInput[]
+    delete?: LocationWhereUniqueInput | LocationWhereUniqueInput[]
+    connect?: LocationWhereUniqueInput | LocationWhereUniqueInput[]
+    update?: LocationUpdateWithWhereUniqueWithoutCountryInput | LocationUpdateWithWhereUniqueWithoutCountryInput[]
+    updateMany?: LocationUpdateManyWithWhereWithoutCountryInput | LocationUpdateManyWithWhereWithoutCountryInput[]
+    deleteMany?: LocationScalarWhereInput | LocationScalarWhereInput[]
+  }
+
+  export type LocationLevelUncheckedUpdateManyWithoutCountryNestedInput = {
+    create?: XOR<LocationLevelCreateWithoutCountryInput, LocationLevelUncheckedCreateWithoutCountryInput> | LocationLevelCreateWithoutCountryInput[] | LocationLevelUncheckedCreateWithoutCountryInput[]
+    connectOrCreate?: LocationLevelCreateOrConnectWithoutCountryInput | LocationLevelCreateOrConnectWithoutCountryInput[]
+    upsert?: LocationLevelUpsertWithWhereUniqueWithoutCountryInput | LocationLevelUpsertWithWhereUniqueWithoutCountryInput[]
+    createMany?: LocationLevelCreateManyCountryInputEnvelope
+    set?: LocationLevelWhereUniqueInput | LocationLevelWhereUniqueInput[]
+    disconnect?: LocationLevelWhereUniqueInput | LocationLevelWhereUniqueInput[]
+    delete?: LocationLevelWhereUniqueInput | LocationLevelWhereUniqueInput[]
+    connect?: LocationLevelWhereUniqueInput | LocationLevelWhereUniqueInput[]
+    update?: LocationLevelUpdateWithWhereUniqueWithoutCountryInput | LocationLevelUpdateWithWhereUniqueWithoutCountryInput[]
+    updateMany?: LocationLevelUpdateManyWithWhereWithoutCountryInput | LocationLevelUpdateManyWithWhereWithoutCountryInput[]
+    deleteMany?: LocationLevelScalarWhereInput | LocationLevelScalarWhereInput[]
+  }
+
+  export type LocationUncheckedUpdateManyWithoutCountryNestedInput = {
+    create?: XOR<LocationCreateWithoutCountryInput, LocationUncheckedCreateWithoutCountryInput> | LocationCreateWithoutCountryInput[] | LocationUncheckedCreateWithoutCountryInput[]
+    connectOrCreate?: LocationCreateOrConnectWithoutCountryInput | LocationCreateOrConnectWithoutCountryInput[]
+    upsert?: LocationUpsertWithWhereUniqueWithoutCountryInput | LocationUpsertWithWhereUniqueWithoutCountryInput[]
+    createMany?: LocationCreateManyCountryInputEnvelope
+    set?: LocationWhereUniqueInput | LocationWhereUniqueInput[]
+    disconnect?: LocationWhereUniqueInput | LocationWhereUniqueInput[]
+    delete?: LocationWhereUniqueInput | LocationWhereUniqueInput[]
+    connect?: LocationWhereUniqueInput | LocationWhereUniqueInput[]
+    update?: LocationUpdateWithWhereUniqueWithoutCountryInput | LocationUpdateWithWhereUniqueWithoutCountryInput[]
+    updateMany?: LocationUpdateManyWithWhereWithoutCountryInput | LocationUpdateManyWithWhereWithoutCountryInput[]
+    deleteMany?: LocationScalarWhereInput | LocationScalarWhereInput[]
+  }
+
+  export type WorkspaceCreateNestedOneWithoutLocationLevelsInput = {
+    create?: XOR<WorkspaceCreateWithoutLocationLevelsInput, WorkspaceUncheckedCreateWithoutLocationLevelsInput>
+    connectOrCreate?: WorkspaceCreateOrConnectWithoutLocationLevelsInput
+    connect?: WorkspaceWhereUniqueInput
+  }
+
+  export type CountryCreateNestedOneWithoutLevelsInput = {
+    create?: XOR<CountryCreateWithoutLevelsInput, CountryUncheckedCreateWithoutLevelsInput>
+    connectOrCreate?: CountryCreateOrConnectWithoutLevelsInput
+    connect?: CountryWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutCreatedLocationLevelsInput = {
+    create?: XOR<UserCreateWithoutCreatedLocationLevelsInput, UserUncheckedCreateWithoutCreatedLocationLevelsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutCreatedLocationLevelsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutUpdatedLocationLevelsInput = {
+    create?: XOR<UserCreateWithoutUpdatedLocationLevelsInput, UserUncheckedCreateWithoutUpdatedLocationLevelsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutUpdatedLocationLevelsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type LocationCreateNestedManyWithoutLevelInput = {
+    create?: XOR<LocationCreateWithoutLevelInput, LocationUncheckedCreateWithoutLevelInput> | LocationCreateWithoutLevelInput[] | LocationUncheckedCreateWithoutLevelInput[]
+    connectOrCreate?: LocationCreateOrConnectWithoutLevelInput | LocationCreateOrConnectWithoutLevelInput[]
+    createMany?: LocationCreateManyLevelInputEnvelope
+    connect?: LocationWhereUniqueInput | LocationWhereUniqueInput[]
+  }
+
+  export type LocationUncheckedCreateNestedManyWithoutLevelInput = {
+    create?: XOR<LocationCreateWithoutLevelInput, LocationUncheckedCreateWithoutLevelInput> | LocationCreateWithoutLevelInput[] | LocationUncheckedCreateWithoutLevelInput[]
+    connectOrCreate?: LocationCreateOrConnectWithoutLevelInput | LocationCreateOrConnectWithoutLevelInput[]
+    createMany?: LocationCreateManyLevelInputEnvelope
+    connect?: LocationWhereUniqueInput | LocationWhereUniqueInput[]
+  }
+
+  export type WorkspaceUpdateOneRequiredWithoutLocationLevelsNestedInput = {
+    create?: XOR<WorkspaceCreateWithoutLocationLevelsInput, WorkspaceUncheckedCreateWithoutLocationLevelsInput>
+    connectOrCreate?: WorkspaceCreateOrConnectWithoutLocationLevelsInput
+    upsert?: WorkspaceUpsertWithoutLocationLevelsInput
+    connect?: WorkspaceWhereUniqueInput
+    update?: XOR<XOR<WorkspaceUpdateToOneWithWhereWithoutLocationLevelsInput, WorkspaceUpdateWithoutLocationLevelsInput>, WorkspaceUncheckedUpdateWithoutLocationLevelsInput>
+  }
+
+  export type CountryUpdateOneRequiredWithoutLevelsNestedInput = {
+    create?: XOR<CountryCreateWithoutLevelsInput, CountryUncheckedCreateWithoutLevelsInput>
+    connectOrCreate?: CountryCreateOrConnectWithoutLevelsInput
+    upsert?: CountryUpsertWithoutLevelsInput
+    connect?: CountryWhereUniqueInput
+    update?: XOR<XOR<CountryUpdateToOneWithWhereWithoutLevelsInput, CountryUpdateWithoutLevelsInput>, CountryUncheckedUpdateWithoutLevelsInput>
+  }
+
+  export type UserUpdateOneWithoutCreatedLocationLevelsNestedInput = {
+    create?: XOR<UserCreateWithoutCreatedLocationLevelsInput, UserUncheckedCreateWithoutCreatedLocationLevelsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutCreatedLocationLevelsInput
+    upsert?: UserUpsertWithoutCreatedLocationLevelsInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutCreatedLocationLevelsInput, UserUpdateWithoutCreatedLocationLevelsInput>, UserUncheckedUpdateWithoutCreatedLocationLevelsInput>
+  }
+
+  export type UserUpdateOneWithoutUpdatedLocationLevelsNestedInput = {
+    create?: XOR<UserCreateWithoutUpdatedLocationLevelsInput, UserUncheckedCreateWithoutUpdatedLocationLevelsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutUpdatedLocationLevelsInput
+    upsert?: UserUpsertWithoutUpdatedLocationLevelsInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutUpdatedLocationLevelsInput, UserUpdateWithoutUpdatedLocationLevelsInput>, UserUncheckedUpdateWithoutUpdatedLocationLevelsInput>
+  }
+
+  export type LocationUpdateManyWithoutLevelNestedInput = {
+    create?: XOR<LocationCreateWithoutLevelInput, LocationUncheckedCreateWithoutLevelInput> | LocationCreateWithoutLevelInput[] | LocationUncheckedCreateWithoutLevelInput[]
+    connectOrCreate?: LocationCreateOrConnectWithoutLevelInput | LocationCreateOrConnectWithoutLevelInput[]
+    upsert?: LocationUpsertWithWhereUniqueWithoutLevelInput | LocationUpsertWithWhereUniqueWithoutLevelInput[]
+    createMany?: LocationCreateManyLevelInputEnvelope
+    set?: LocationWhereUniqueInput | LocationWhereUniqueInput[]
+    disconnect?: LocationWhereUniqueInput | LocationWhereUniqueInput[]
+    delete?: LocationWhereUniqueInput | LocationWhereUniqueInput[]
+    connect?: LocationWhereUniqueInput | LocationWhereUniqueInput[]
+    update?: LocationUpdateWithWhereUniqueWithoutLevelInput | LocationUpdateWithWhereUniqueWithoutLevelInput[]
+    updateMany?: LocationUpdateManyWithWhereWithoutLevelInput | LocationUpdateManyWithWhereWithoutLevelInput[]
+    deleteMany?: LocationScalarWhereInput | LocationScalarWhereInput[]
+  }
+
+  export type LocationUncheckedUpdateManyWithoutLevelNestedInput = {
+    create?: XOR<LocationCreateWithoutLevelInput, LocationUncheckedCreateWithoutLevelInput> | LocationCreateWithoutLevelInput[] | LocationUncheckedCreateWithoutLevelInput[]
+    connectOrCreate?: LocationCreateOrConnectWithoutLevelInput | LocationCreateOrConnectWithoutLevelInput[]
+    upsert?: LocationUpsertWithWhereUniqueWithoutLevelInput | LocationUpsertWithWhereUniqueWithoutLevelInput[]
+    createMany?: LocationCreateManyLevelInputEnvelope
+    set?: LocationWhereUniqueInput | LocationWhereUniqueInput[]
+    disconnect?: LocationWhereUniqueInput | LocationWhereUniqueInput[]
+    delete?: LocationWhereUniqueInput | LocationWhereUniqueInput[]
+    connect?: LocationWhereUniqueInput | LocationWhereUniqueInput[]
+    update?: LocationUpdateWithWhereUniqueWithoutLevelInput | LocationUpdateWithWhereUniqueWithoutLevelInput[]
+    updateMany?: LocationUpdateManyWithWhereWithoutLevelInput | LocationUpdateManyWithWhereWithoutLevelInput[]
+    deleteMany?: LocationScalarWhereInput | LocationScalarWhereInput[]
+  }
+
   export type LocationCreateNestedOneWithoutChildrenInput = {
     create?: XOR<LocationCreateWithoutChildrenInput, LocationUncheckedCreateWithoutChildrenInput>
     connectOrCreate?: LocationCreateOrConnectWithoutChildrenInput
@@ -54446,6 +62699,18 @@ export namespace Prisma {
     connectOrCreate?: LocationCreateOrConnectWithoutParentInput | LocationCreateOrConnectWithoutParentInput[]
     createMany?: LocationCreateManyParentInputEnvelope
     connect?: LocationWhereUniqueInput | LocationWhereUniqueInput[]
+  }
+
+  export type CountryCreateNestedOneWithoutLocationsInput = {
+    create?: XOR<CountryCreateWithoutLocationsInput, CountryUncheckedCreateWithoutLocationsInput>
+    connectOrCreate?: CountryCreateOrConnectWithoutLocationsInput
+    connect?: CountryWhereUniqueInput
+  }
+
+  export type LocationLevelCreateNestedOneWithoutLocationsInput = {
+    create?: XOR<LocationLevelCreateWithoutLocationsInput, LocationLevelUncheckedCreateWithoutLocationsInput>
+    connectOrCreate?: LocationLevelCreateOrConnectWithoutLocationsInput
+    connect?: LocationLevelWhereUniqueInput
   }
 
   export type UserLocationAssignmentCreateNestedManyWithoutLocationInput = {
@@ -54579,6 +62844,26 @@ export namespace Prisma {
     update?: LocationUpdateWithWhereUniqueWithoutParentInput | LocationUpdateWithWhereUniqueWithoutParentInput[]
     updateMany?: LocationUpdateManyWithWhereWithoutParentInput | LocationUpdateManyWithWhereWithoutParentInput[]
     deleteMany?: LocationScalarWhereInput | LocationScalarWhereInput[]
+  }
+
+  export type CountryUpdateOneWithoutLocationsNestedInput = {
+    create?: XOR<CountryCreateWithoutLocationsInput, CountryUncheckedCreateWithoutLocationsInput>
+    connectOrCreate?: CountryCreateOrConnectWithoutLocationsInput
+    upsert?: CountryUpsertWithoutLocationsInput
+    disconnect?: CountryWhereInput | boolean
+    delete?: CountryWhereInput | boolean
+    connect?: CountryWhereUniqueInput
+    update?: XOR<XOR<CountryUpdateToOneWithWhereWithoutLocationsInput, CountryUpdateWithoutLocationsInput>, CountryUncheckedUpdateWithoutLocationsInput>
+  }
+
+  export type LocationLevelUpdateOneWithoutLocationsNestedInput = {
+    create?: XOR<LocationLevelCreateWithoutLocationsInput, LocationLevelUncheckedCreateWithoutLocationsInput>
+    connectOrCreate?: LocationLevelCreateOrConnectWithoutLocationsInput
+    upsert?: LocationLevelUpsertWithoutLocationsInput
+    disconnect?: LocationLevelWhereInput | boolean
+    delete?: LocationLevelWhereInput | boolean
+    connect?: LocationLevelWhereUniqueInput
+    update?: XOR<XOR<LocationLevelUpdateToOneWithWhereWithoutLocationsInput, LocationLevelUpdateWithoutLocationsInput>, LocationLevelUncheckedUpdateWithoutLocationsInput>
   }
 
   export type UserLocationAssignmentUpdateManyWithoutLocationNestedInput = {
@@ -55397,6 +63682,56 @@ export namespace Prisma {
     update?: XOR<XOR<LeadUpdateToOneWithWhereWithoutLobLogsInput, LeadUpdateWithoutLobLogsInput>, LeadUncheckedUpdateWithoutLobLogsInput>
   }
 
+  export type WorkspaceCreateNestedOneWithoutLobReasonsInput = {
+    create?: XOR<WorkspaceCreateWithoutLobReasonsInput, WorkspaceUncheckedCreateWithoutLobReasonsInput>
+    connectOrCreate?: WorkspaceCreateOrConnectWithoutLobReasonsInput
+    connect?: WorkspaceWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutCreatedLOBReasonsInput = {
+    create?: XOR<UserCreateWithoutCreatedLOBReasonsInput, UserUncheckedCreateWithoutCreatedLOBReasonsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutCreatedLOBReasonsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutUpdatedLOBReasonsInput = {
+    create?: XOR<UserCreateWithoutUpdatedLOBReasonsInput, UserUncheckedCreateWithoutUpdatedLOBReasonsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutUpdatedLOBReasonsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type EnumLOBReasonStatusFieldUpdateOperationsInput = {
+    set?: $Enums.LOBReasonStatus
+  }
+
+  export type WorkspaceUpdateOneRequiredWithoutLobReasonsNestedInput = {
+    create?: XOR<WorkspaceCreateWithoutLobReasonsInput, WorkspaceUncheckedCreateWithoutLobReasonsInput>
+    connectOrCreate?: WorkspaceCreateOrConnectWithoutLobReasonsInput
+    upsert?: WorkspaceUpsertWithoutLobReasonsInput
+    connect?: WorkspaceWhereUniqueInput
+    update?: XOR<XOR<WorkspaceUpdateToOneWithWhereWithoutLobReasonsInput, WorkspaceUpdateWithoutLobReasonsInput>, WorkspaceUncheckedUpdateWithoutLobReasonsInput>
+  }
+
+  export type UserUpdateOneWithoutCreatedLOBReasonsNestedInput = {
+    create?: XOR<UserCreateWithoutCreatedLOBReasonsInput, UserUncheckedCreateWithoutCreatedLOBReasonsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutCreatedLOBReasonsInput
+    upsert?: UserUpsertWithoutCreatedLOBReasonsInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutCreatedLOBReasonsInput, UserUpdateWithoutCreatedLOBReasonsInput>, UserUncheckedUpdateWithoutCreatedLOBReasonsInput>
+  }
+
+  export type UserUpdateOneWithoutUpdatedLOBReasonsNestedInput = {
+    create?: XOR<UserCreateWithoutUpdatedLOBReasonsInput, UserUncheckedCreateWithoutUpdatedLOBReasonsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutUpdatedLOBReasonsInput
+    upsert?: UserUpsertWithoutUpdatedLOBReasonsInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutUpdatedLOBReasonsInput, UserUpdateWithoutUpdatedLOBReasonsInput>, UserUncheckedUpdateWithoutUpdatedLOBReasonsInput>
+  }
+
   export type WorkspaceCreateNestedOneWithoutLeadStageApprovalsInput = {
     create?: XOR<WorkspaceCreateWithoutLeadStageApprovalsInput, WorkspaceUncheckedCreateWithoutLeadStageApprovalsInput>
     connectOrCreate?: WorkspaceCreateOrConnectWithoutLeadStageApprovalsInput
@@ -55930,6 +64265,48 @@ export namespace Prisma {
     connect?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
   }
 
+  export type CountryCreateNestedManyWithoutCreatedByInput = {
+    create?: XOR<CountryCreateWithoutCreatedByInput, CountryUncheckedCreateWithoutCreatedByInput> | CountryCreateWithoutCreatedByInput[] | CountryUncheckedCreateWithoutCreatedByInput[]
+    connectOrCreate?: CountryCreateOrConnectWithoutCreatedByInput | CountryCreateOrConnectWithoutCreatedByInput[]
+    createMany?: CountryCreateManyCreatedByInputEnvelope
+    connect?: CountryWhereUniqueInput | CountryWhereUniqueInput[]
+  }
+
+  export type CountryCreateNestedManyWithoutUpdatedByInput = {
+    create?: XOR<CountryCreateWithoutUpdatedByInput, CountryUncheckedCreateWithoutUpdatedByInput> | CountryCreateWithoutUpdatedByInput[] | CountryUncheckedCreateWithoutUpdatedByInput[]
+    connectOrCreate?: CountryCreateOrConnectWithoutUpdatedByInput | CountryCreateOrConnectWithoutUpdatedByInput[]
+    createMany?: CountryCreateManyUpdatedByInputEnvelope
+    connect?: CountryWhereUniqueInput | CountryWhereUniqueInput[]
+  }
+
+  export type LocationLevelCreateNestedManyWithoutCreatedByInput = {
+    create?: XOR<LocationLevelCreateWithoutCreatedByInput, LocationLevelUncheckedCreateWithoutCreatedByInput> | LocationLevelCreateWithoutCreatedByInput[] | LocationLevelUncheckedCreateWithoutCreatedByInput[]
+    connectOrCreate?: LocationLevelCreateOrConnectWithoutCreatedByInput | LocationLevelCreateOrConnectWithoutCreatedByInput[]
+    createMany?: LocationLevelCreateManyCreatedByInputEnvelope
+    connect?: LocationLevelWhereUniqueInput | LocationLevelWhereUniqueInput[]
+  }
+
+  export type LocationLevelCreateNestedManyWithoutUpdatedByInput = {
+    create?: XOR<LocationLevelCreateWithoutUpdatedByInput, LocationLevelUncheckedCreateWithoutUpdatedByInput> | LocationLevelCreateWithoutUpdatedByInput[] | LocationLevelUncheckedCreateWithoutUpdatedByInput[]
+    connectOrCreate?: LocationLevelCreateOrConnectWithoutUpdatedByInput | LocationLevelCreateOrConnectWithoutUpdatedByInput[]
+    createMany?: LocationLevelCreateManyUpdatedByInputEnvelope
+    connect?: LocationLevelWhereUniqueInput | LocationLevelWhereUniqueInput[]
+  }
+
+  export type LOBReasonCreateNestedManyWithoutCreatedByInput = {
+    create?: XOR<LOBReasonCreateWithoutCreatedByInput, LOBReasonUncheckedCreateWithoutCreatedByInput> | LOBReasonCreateWithoutCreatedByInput[] | LOBReasonUncheckedCreateWithoutCreatedByInput[]
+    connectOrCreate?: LOBReasonCreateOrConnectWithoutCreatedByInput | LOBReasonCreateOrConnectWithoutCreatedByInput[]
+    createMany?: LOBReasonCreateManyCreatedByInputEnvelope
+    connect?: LOBReasonWhereUniqueInput | LOBReasonWhereUniqueInput[]
+  }
+
+  export type LOBReasonCreateNestedManyWithoutUpdatedByInput = {
+    create?: XOR<LOBReasonCreateWithoutUpdatedByInput, LOBReasonUncheckedCreateWithoutUpdatedByInput> | LOBReasonCreateWithoutUpdatedByInput[] | LOBReasonUncheckedCreateWithoutUpdatedByInput[]
+    connectOrCreate?: LOBReasonCreateOrConnectWithoutUpdatedByInput | LOBReasonCreateOrConnectWithoutUpdatedByInput[]
+    createMany?: LOBReasonCreateManyUpdatedByInputEnvelope
+    connect?: LOBReasonWhereUniqueInput | LOBReasonWhereUniqueInput[]
+  }
+
   export type ReportTypeCreateNestedManyWithoutCreatedByInput = {
     create?: XOR<ReportTypeCreateWithoutCreatedByInput, ReportTypeUncheckedCreateWithoutCreatedByInput> | ReportTypeCreateWithoutCreatedByInput[] | ReportTypeUncheckedCreateWithoutCreatedByInput[]
     connectOrCreate?: ReportTypeCreateOrConnectWithoutCreatedByInput | ReportTypeCreateOrConnectWithoutCreatedByInput[]
@@ -55942,6 +64319,13 @@ export namespace Prisma {
     connectOrCreate?: ReportTypeCreateOrConnectWithoutUpdatedByInput | ReportTypeCreateOrConnectWithoutUpdatedByInput[]
     createMany?: ReportTypeCreateManyUpdatedByInputEnvelope
     connect?: ReportTypeWhereUniqueInput | ReportTypeWhereUniqueInput[]
+  }
+
+  export type ReportCreateNestedManyWithoutCreatedByInput = {
+    create?: XOR<ReportCreateWithoutCreatedByInput, ReportUncheckedCreateWithoutCreatedByInput> | ReportCreateWithoutCreatedByInput[] | ReportUncheckedCreateWithoutCreatedByInput[]
+    connectOrCreate?: ReportCreateOrConnectWithoutCreatedByInput | ReportCreateOrConnectWithoutCreatedByInput[]
+    createMany?: ReportCreateManyCreatedByInputEnvelope
+    connect?: ReportWhereUniqueInput | ReportWhereUniqueInput[]
   }
 
   export type ReportLogCreateNestedManyWithoutGeneratedByInput = {
@@ -56076,6 +64460,48 @@ export namespace Prisma {
     connect?: HolidayWhereUniqueInput | HolidayWhereUniqueInput[]
   }
 
+  export type CountryUncheckedCreateNestedManyWithoutCreatedByInput = {
+    create?: XOR<CountryCreateWithoutCreatedByInput, CountryUncheckedCreateWithoutCreatedByInput> | CountryCreateWithoutCreatedByInput[] | CountryUncheckedCreateWithoutCreatedByInput[]
+    connectOrCreate?: CountryCreateOrConnectWithoutCreatedByInput | CountryCreateOrConnectWithoutCreatedByInput[]
+    createMany?: CountryCreateManyCreatedByInputEnvelope
+    connect?: CountryWhereUniqueInput | CountryWhereUniqueInput[]
+  }
+
+  export type CountryUncheckedCreateNestedManyWithoutUpdatedByInput = {
+    create?: XOR<CountryCreateWithoutUpdatedByInput, CountryUncheckedCreateWithoutUpdatedByInput> | CountryCreateWithoutUpdatedByInput[] | CountryUncheckedCreateWithoutUpdatedByInput[]
+    connectOrCreate?: CountryCreateOrConnectWithoutUpdatedByInput | CountryCreateOrConnectWithoutUpdatedByInput[]
+    createMany?: CountryCreateManyUpdatedByInputEnvelope
+    connect?: CountryWhereUniqueInput | CountryWhereUniqueInput[]
+  }
+
+  export type LocationLevelUncheckedCreateNestedManyWithoutCreatedByInput = {
+    create?: XOR<LocationLevelCreateWithoutCreatedByInput, LocationLevelUncheckedCreateWithoutCreatedByInput> | LocationLevelCreateWithoutCreatedByInput[] | LocationLevelUncheckedCreateWithoutCreatedByInput[]
+    connectOrCreate?: LocationLevelCreateOrConnectWithoutCreatedByInput | LocationLevelCreateOrConnectWithoutCreatedByInput[]
+    createMany?: LocationLevelCreateManyCreatedByInputEnvelope
+    connect?: LocationLevelWhereUniqueInput | LocationLevelWhereUniqueInput[]
+  }
+
+  export type LocationLevelUncheckedCreateNestedManyWithoutUpdatedByInput = {
+    create?: XOR<LocationLevelCreateWithoutUpdatedByInput, LocationLevelUncheckedCreateWithoutUpdatedByInput> | LocationLevelCreateWithoutUpdatedByInput[] | LocationLevelUncheckedCreateWithoutUpdatedByInput[]
+    connectOrCreate?: LocationLevelCreateOrConnectWithoutUpdatedByInput | LocationLevelCreateOrConnectWithoutUpdatedByInput[]
+    createMany?: LocationLevelCreateManyUpdatedByInputEnvelope
+    connect?: LocationLevelWhereUniqueInput | LocationLevelWhereUniqueInput[]
+  }
+
+  export type LOBReasonUncheckedCreateNestedManyWithoutCreatedByInput = {
+    create?: XOR<LOBReasonCreateWithoutCreatedByInput, LOBReasonUncheckedCreateWithoutCreatedByInput> | LOBReasonCreateWithoutCreatedByInput[] | LOBReasonUncheckedCreateWithoutCreatedByInput[]
+    connectOrCreate?: LOBReasonCreateOrConnectWithoutCreatedByInput | LOBReasonCreateOrConnectWithoutCreatedByInput[]
+    createMany?: LOBReasonCreateManyCreatedByInputEnvelope
+    connect?: LOBReasonWhereUniqueInput | LOBReasonWhereUniqueInput[]
+  }
+
+  export type LOBReasonUncheckedCreateNestedManyWithoutUpdatedByInput = {
+    create?: XOR<LOBReasonCreateWithoutUpdatedByInput, LOBReasonUncheckedCreateWithoutUpdatedByInput> | LOBReasonCreateWithoutUpdatedByInput[] | LOBReasonUncheckedCreateWithoutUpdatedByInput[]
+    connectOrCreate?: LOBReasonCreateOrConnectWithoutUpdatedByInput | LOBReasonCreateOrConnectWithoutUpdatedByInput[]
+    createMany?: LOBReasonCreateManyUpdatedByInputEnvelope
+    connect?: LOBReasonWhereUniqueInput | LOBReasonWhereUniqueInput[]
+  }
+
   export type ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput = {
     create?: XOR<ReportTypeCreateWithoutCreatedByInput, ReportTypeUncheckedCreateWithoutCreatedByInput> | ReportTypeCreateWithoutCreatedByInput[] | ReportTypeUncheckedCreateWithoutCreatedByInput[]
     connectOrCreate?: ReportTypeCreateOrConnectWithoutCreatedByInput | ReportTypeCreateOrConnectWithoutCreatedByInput[]
@@ -56088,6 +64514,13 @@ export namespace Prisma {
     connectOrCreate?: ReportTypeCreateOrConnectWithoutUpdatedByInput | ReportTypeCreateOrConnectWithoutUpdatedByInput[]
     createMany?: ReportTypeCreateManyUpdatedByInputEnvelope
     connect?: ReportTypeWhereUniqueInput | ReportTypeWhereUniqueInput[]
+  }
+
+  export type ReportUncheckedCreateNestedManyWithoutCreatedByInput = {
+    create?: XOR<ReportCreateWithoutCreatedByInput, ReportUncheckedCreateWithoutCreatedByInput> | ReportCreateWithoutCreatedByInput[] | ReportUncheckedCreateWithoutCreatedByInput[]
+    connectOrCreate?: ReportCreateOrConnectWithoutCreatedByInput | ReportCreateOrConnectWithoutCreatedByInput[]
+    createMany?: ReportCreateManyCreatedByInputEnvelope
+    connect?: ReportWhereUniqueInput | ReportWhereUniqueInput[]
   }
 
   export type ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput = {
@@ -56425,6 +64858,90 @@ export namespace Prisma {
     deleteMany?: HolidayScalarWhereInput | HolidayScalarWhereInput[]
   }
 
+  export type CountryUpdateManyWithoutCreatedByNestedInput = {
+    create?: XOR<CountryCreateWithoutCreatedByInput, CountryUncheckedCreateWithoutCreatedByInput> | CountryCreateWithoutCreatedByInput[] | CountryUncheckedCreateWithoutCreatedByInput[]
+    connectOrCreate?: CountryCreateOrConnectWithoutCreatedByInput | CountryCreateOrConnectWithoutCreatedByInput[]
+    upsert?: CountryUpsertWithWhereUniqueWithoutCreatedByInput | CountryUpsertWithWhereUniqueWithoutCreatedByInput[]
+    createMany?: CountryCreateManyCreatedByInputEnvelope
+    set?: CountryWhereUniqueInput | CountryWhereUniqueInput[]
+    disconnect?: CountryWhereUniqueInput | CountryWhereUniqueInput[]
+    delete?: CountryWhereUniqueInput | CountryWhereUniqueInput[]
+    connect?: CountryWhereUniqueInput | CountryWhereUniqueInput[]
+    update?: CountryUpdateWithWhereUniqueWithoutCreatedByInput | CountryUpdateWithWhereUniqueWithoutCreatedByInput[]
+    updateMany?: CountryUpdateManyWithWhereWithoutCreatedByInput | CountryUpdateManyWithWhereWithoutCreatedByInput[]
+    deleteMany?: CountryScalarWhereInput | CountryScalarWhereInput[]
+  }
+
+  export type CountryUpdateManyWithoutUpdatedByNestedInput = {
+    create?: XOR<CountryCreateWithoutUpdatedByInput, CountryUncheckedCreateWithoutUpdatedByInput> | CountryCreateWithoutUpdatedByInput[] | CountryUncheckedCreateWithoutUpdatedByInput[]
+    connectOrCreate?: CountryCreateOrConnectWithoutUpdatedByInput | CountryCreateOrConnectWithoutUpdatedByInput[]
+    upsert?: CountryUpsertWithWhereUniqueWithoutUpdatedByInput | CountryUpsertWithWhereUniqueWithoutUpdatedByInput[]
+    createMany?: CountryCreateManyUpdatedByInputEnvelope
+    set?: CountryWhereUniqueInput | CountryWhereUniqueInput[]
+    disconnect?: CountryWhereUniqueInput | CountryWhereUniqueInput[]
+    delete?: CountryWhereUniqueInput | CountryWhereUniqueInput[]
+    connect?: CountryWhereUniqueInput | CountryWhereUniqueInput[]
+    update?: CountryUpdateWithWhereUniqueWithoutUpdatedByInput | CountryUpdateWithWhereUniqueWithoutUpdatedByInput[]
+    updateMany?: CountryUpdateManyWithWhereWithoutUpdatedByInput | CountryUpdateManyWithWhereWithoutUpdatedByInput[]
+    deleteMany?: CountryScalarWhereInput | CountryScalarWhereInput[]
+  }
+
+  export type LocationLevelUpdateManyWithoutCreatedByNestedInput = {
+    create?: XOR<LocationLevelCreateWithoutCreatedByInput, LocationLevelUncheckedCreateWithoutCreatedByInput> | LocationLevelCreateWithoutCreatedByInput[] | LocationLevelUncheckedCreateWithoutCreatedByInput[]
+    connectOrCreate?: LocationLevelCreateOrConnectWithoutCreatedByInput | LocationLevelCreateOrConnectWithoutCreatedByInput[]
+    upsert?: LocationLevelUpsertWithWhereUniqueWithoutCreatedByInput | LocationLevelUpsertWithWhereUniqueWithoutCreatedByInput[]
+    createMany?: LocationLevelCreateManyCreatedByInputEnvelope
+    set?: LocationLevelWhereUniqueInput | LocationLevelWhereUniqueInput[]
+    disconnect?: LocationLevelWhereUniqueInput | LocationLevelWhereUniqueInput[]
+    delete?: LocationLevelWhereUniqueInput | LocationLevelWhereUniqueInput[]
+    connect?: LocationLevelWhereUniqueInput | LocationLevelWhereUniqueInput[]
+    update?: LocationLevelUpdateWithWhereUniqueWithoutCreatedByInput | LocationLevelUpdateWithWhereUniqueWithoutCreatedByInput[]
+    updateMany?: LocationLevelUpdateManyWithWhereWithoutCreatedByInput | LocationLevelUpdateManyWithWhereWithoutCreatedByInput[]
+    deleteMany?: LocationLevelScalarWhereInput | LocationLevelScalarWhereInput[]
+  }
+
+  export type LocationLevelUpdateManyWithoutUpdatedByNestedInput = {
+    create?: XOR<LocationLevelCreateWithoutUpdatedByInput, LocationLevelUncheckedCreateWithoutUpdatedByInput> | LocationLevelCreateWithoutUpdatedByInput[] | LocationLevelUncheckedCreateWithoutUpdatedByInput[]
+    connectOrCreate?: LocationLevelCreateOrConnectWithoutUpdatedByInput | LocationLevelCreateOrConnectWithoutUpdatedByInput[]
+    upsert?: LocationLevelUpsertWithWhereUniqueWithoutUpdatedByInput | LocationLevelUpsertWithWhereUniqueWithoutUpdatedByInput[]
+    createMany?: LocationLevelCreateManyUpdatedByInputEnvelope
+    set?: LocationLevelWhereUniqueInput | LocationLevelWhereUniqueInput[]
+    disconnect?: LocationLevelWhereUniqueInput | LocationLevelWhereUniqueInput[]
+    delete?: LocationLevelWhereUniqueInput | LocationLevelWhereUniqueInput[]
+    connect?: LocationLevelWhereUniqueInput | LocationLevelWhereUniqueInput[]
+    update?: LocationLevelUpdateWithWhereUniqueWithoutUpdatedByInput | LocationLevelUpdateWithWhereUniqueWithoutUpdatedByInput[]
+    updateMany?: LocationLevelUpdateManyWithWhereWithoutUpdatedByInput | LocationLevelUpdateManyWithWhereWithoutUpdatedByInput[]
+    deleteMany?: LocationLevelScalarWhereInput | LocationLevelScalarWhereInput[]
+  }
+
+  export type LOBReasonUpdateManyWithoutCreatedByNestedInput = {
+    create?: XOR<LOBReasonCreateWithoutCreatedByInput, LOBReasonUncheckedCreateWithoutCreatedByInput> | LOBReasonCreateWithoutCreatedByInput[] | LOBReasonUncheckedCreateWithoutCreatedByInput[]
+    connectOrCreate?: LOBReasonCreateOrConnectWithoutCreatedByInput | LOBReasonCreateOrConnectWithoutCreatedByInput[]
+    upsert?: LOBReasonUpsertWithWhereUniqueWithoutCreatedByInput | LOBReasonUpsertWithWhereUniqueWithoutCreatedByInput[]
+    createMany?: LOBReasonCreateManyCreatedByInputEnvelope
+    set?: LOBReasonWhereUniqueInput | LOBReasonWhereUniqueInput[]
+    disconnect?: LOBReasonWhereUniqueInput | LOBReasonWhereUniqueInput[]
+    delete?: LOBReasonWhereUniqueInput | LOBReasonWhereUniqueInput[]
+    connect?: LOBReasonWhereUniqueInput | LOBReasonWhereUniqueInput[]
+    update?: LOBReasonUpdateWithWhereUniqueWithoutCreatedByInput | LOBReasonUpdateWithWhereUniqueWithoutCreatedByInput[]
+    updateMany?: LOBReasonUpdateManyWithWhereWithoutCreatedByInput | LOBReasonUpdateManyWithWhereWithoutCreatedByInput[]
+    deleteMany?: LOBReasonScalarWhereInput | LOBReasonScalarWhereInput[]
+  }
+
+  export type LOBReasonUpdateManyWithoutUpdatedByNestedInput = {
+    create?: XOR<LOBReasonCreateWithoutUpdatedByInput, LOBReasonUncheckedCreateWithoutUpdatedByInput> | LOBReasonCreateWithoutUpdatedByInput[] | LOBReasonUncheckedCreateWithoutUpdatedByInput[]
+    connectOrCreate?: LOBReasonCreateOrConnectWithoutUpdatedByInput | LOBReasonCreateOrConnectWithoutUpdatedByInput[]
+    upsert?: LOBReasonUpsertWithWhereUniqueWithoutUpdatedByInput | LOBReasonUpsertWithWhereUniqueWithoutUpdatedByInput[]
+    createMany?: LOBReasonCreateManyUpdatedByInputEnvelope
+    set?: LOBReasonWhereUniqueInput | LOBReasonWhereUniqueInput[]
+    disconnect?: LOBReasonWhereUniqueInput | LOBReasonWhereUniqueInput[]
+    delete?: LOBReasonWhereUniqueInput | LOBReasonWhereUniqueInput[]
+    connect?: LOBReasonWhereUniqueInput | LOBReasonWhereUniqueInput[]
+    update?: LOBReasonUpdateWithWhereUniqueWithoutUpdatedByInput | LOBReasonUpdateWithWhereUniqueWithoutUpdatedByInput[]
+    updateMany?: LOBReasonUpdateManyWithWhereWithoutUpdatedByInput | LOBReasonUpdateManyWithWhereWithoutUpdatedByInput[]
+    deleteMany?: LOBReasonScalarWhereInput | LOBReasonScalarWhereInput[]
+  }
+
   export type ReportTypeUpdateManyWithoutCreatedByNestedInput = {
     create?: XOR<ReportTypeCreateWithoutCreatedByInput, ReportTypeUncheckedCreateWithoutCreatedByInput> | ReportTypeCreateWithoutCreatedByInput[] | ReportTypeUncheckedCreateWithoutCreatedByInput[]
     connectOrCreate?: ReportTypeCreateOrConnectWithoutCreatedByInput | ReportTypeCreateOrConnectWithoutCreatedByInput[]
@@ -56451,6 +64968,20 @@ export namespace Prisma {
     update?: ReportTypeUpdateWithWhereUniqueWithoutUpdatedByInput | ReportTypeUpdateWithWhereUniqueWithoutUpdatedByInput[]
     updateMany?: ReportTypeUpdateManyWithWhereWithoutUpdatedByInput | ReportTypeUpdateManyWithWhereWithoutUpdatedByInput[]
     deleteMany?: ReportTypeScalarWhereInput | ReportTypeScalarWhereInput[]
+  }
+
+  export type ReportUpdateManyWithoutCreatedByNestedInput = {
+    create?: XOR<ReportCreateWithoutCreatedByInput, ReportUncheckedCreateWithoutCreatedByInput> | ReportCreateWithoutCreatedByInput[] | ReportUncheckedCreateWithoutCreatedByInput[]
+    connectOrCreate?: ReportCreateOrConnectWithoutCreatedByInput | ReportCreateOrConnectWithoutCreatedByInput[]
+    upsert?: ReportUpsertWithWhereUniqueWithoutCreatedByInput | ReportUpsertWithWhereUniqueWithoutCreatedByInput[]
+    createMany?: ReportCreateManyCreatedByInputEnvelope
+    set?: ReportWhereUniqueInput | ReportWhereUniqueInput[]
+    disconnect?: ReportWhereUniqueInput | ReportWhereUniqueInput[]
+    delete?: ReportWhereUniqueInput | ReportWhereUniqueInput[]
+    connect?: ReportWhereUniqueInput | ReportWhereUniqueInput[]
+    update?: ReportUpdateWithWhereUniqueWithoutCreatedByInput | ReportUpdateWithWhereUniqueWithoutCreatedByInput[]
+    updateMany?: ReportUpdateManyWithWhereWithoutCreatedByInput | ReportUpdateManyWithWhereWithoutCreatedByInput[]
+    deleteMany?: ReportScalarWhereInput | ReportScalarWhereInput[]
   }
 
   export type ReportLogUpdateManyWithoutGeneratedByNestedInput = {
@@ -56715,6 +65246,90 @@ export namespace Prisma {
     deleteMany?: HolidayScalarWhereInput | HolidayScalarWhereInput[]
   }
 
+  export type CountryUncheckedUpdateManyWithoutCreatedByNestedInput = {
+    create?: XOR<CountryCreateWithoutCreatedByInput, CountryUncheckedCreateWithoutCreatedByInput> | CountryCreateWithoutCreatedByInput[] | CountryUncheckedCreateWithoutCreatedByInput[]
+    connectOrCreate?: CountryCreateOrConnectWithoutCreatedByInput | CountryCreateOrConnectWithoutCreatedByInput[]
+    upsert?: CountryUpsertWithWhereUniqueWithoutCreatedByInput | CountryUpsertWithWhereUniqueWithoutCreatedByInput[]
+    createMany?: CountryCreateManyCreatedByInputEnvelope
+    set?: CountryWhereUniqueInput | CountryWhereUniqueInput[]
+    disconnect?: CountryWhereUniqueInput | CountryWhereUniqueInput[]
+    delete?: CountryWhereUniqueInput | CountryWhereUniqueInput[]
+    connect?: CountryWhereUniqueInput | CountryWhereUniqueInput[]
+    update?: CountryUpdateWithWhereUniqueWithoutCreatedByInput | CountryUpdateWithWhereUniqueWithoutCreatedByInput[]
+    updateMany?: CountryUpdateManyWithWhereWithoutCreatedByInput | CountryUpdateManyWithWhereWithoutCreatedByInput[]
+    deleteMany?: CountryScalarWhereInput | CountryScalarWhereInput[]
+  }
+
+  export type CountryUncheckedUpdateManyWithoutUpdatedByNestedInput = {
+    create?: XOR<CountryCreateWithoutUpdatedByInput, CountryUncheckedCreateWithoutUpdatedByInput> | CountryCreateWithoutUpdatedByInput[] | CountryUncheckedCreateWithoutUpdatedByInput[]
+    connectOrCreate?: CountryCreateOrConnectWithoutUpdatedByInput | CountryCreateOrConnectWithoutUpdatedByInput[]
+    upsert?: CountryUpsertWithWhereUniqueWithoutUpdatedByInput | CountryUpsertWithWhereUniqueWithoutUpdatedByInput[]
+    createMany?: CountryCreateManyUpdatedByInputEnvelope
+    set?: CountryWhereUniqueInput | CountryWhereUniqueInput[]
+    disconnect?: CountryWhereUniqueInput | CountryWhereUniqueInput[]
+    delete?: CountryWhereUniqueInput | CountryWhereUniqueInput[]
+    connect?: CountryWhereUniqueInput | CountryWhereUniqueInput[]
+    update?: CountryUpdateWithWhereUniqueWithoutUpdatedByInput | CountryUpdateWithWhereUniqueWithoutUpdatedByInput[]
+    updateMany?: CountryUpdateManyWithWhereWithoutUpdatedByInput | CountryUpdateManyWithWhereWithoutUpdatedByInput[]
+    deleteMany?: CountryScalarWhereInput | CountryScalarWhereInput[]
+  }
+
+  export type LocationLevelUncheckedUpdateManyWithoutCreatedByNestedInput = {
+    create?: XOR<LocationLevelCreateWithoutCreatedByInput, LocationLevelUncheckedCreateWithoutCreatedByInput> | LocationLevelCreateWithoutCreatedByInput[] | LocationLevelUncheckedCreateWithoutCreatedByInput[]
+    connectOrCreate?: LocationLevelCreateOrConnectWithoutCreatedByInput | LocationLevelCreateOrConnectWithoutCreatedByInput[]
+    upsert?: LocationLevelUpsertWithWhereUniqueWithoutCreatedByInput | LocationLevelUpsertWithWhereUniqueWithoutCreatedByInput[]
+    createMany?: LocationLevelCreateManyCreatedByInputEnvelope
+    set?: LocationLevelWhereUniqueInput | LocationLevelWhereUniqueInput[]
+    disconnect?: LocationLevelWhereUniqueInput | LocationLevelWhereUniqueInput[]
+    delete?: LocationLevelWhereUniqueInput | LocationLevelWhereUniqueInput[]
+    connect?: LocationLevelWhereUniqueInput | LocationLevelWhereUniqueInput[]
+    update?: LocationLevelUpdateWithWhereUniqueWithoutCreatedByInput | LocationLevelUpdateWithWhereUniqueWithoutCreatedByInput[]
+    updateMany?: LocationLevelUpdateManyWithWhereWithoutCreatedByInput | LocationLevelUpdateManyWithWhereWithoutCreatedByInput[]
+    deleteMany?: LocationLevelScalarWhereInput | LocationLevelScalarWhereInput[]
+  }
+
+  export type LocationLevelUncheckedUpdateManyWithoutUpdatedByNestedInput = {
+    create?: XOR<LocationLevelCreateWithoutUpdatedByInput, LocationLevelUncheckedCreateWithoutUpdatedByInput> | LocationLevelCreateWithoutUpdatedByInput[] | LocationLevelUncheckedCreateWithoutUpdatedByInput[]
+    connectOrCreate?: LocationLevelCreateOrConnectWithoutUpdatedByInput | LocationLevelCreateOrConnectWithoutUpdatedByInput[]
+    upsert?: LocationLevelUpsertWithWhereUniqueWithoutUpdatedByInput | LocationLevelUpsertWithWhereUniqueWithoutUpdatedByInput[]
+    createMany?: LocationLevelCreateManyUpdatedByInputEnvelope
+    set?: LocationLevelWhereUniqueInput | LocationLevelWhereUniqueInput[]
+    disconnect?: LocationLevelWhereUniqueInput | LocationLevelWhereUniqueInput[]
+    delete?: LocationLevelWhereUniqueInput | LocationLevelWhereUniqueInput[]
+    connect?: LocationLevelWhereUniqueInput | LocationLevelWhereUniqueInput[]
+    update?: LocationLevelUpdateWithWhereUniqueWithoutUpdatedByInput | LocationLevelUpdateWithWhereUniqueWithoutUpdatedByInput[]
+    updateMany?: LocationLevelUpdateManyWithWhereWithoutUpdatedByInput | LocationLevelUpdateManyWithWhereWithoutUpdatedByInput[]
+    deleteMany?: LocationLevelScalarWhereInput | LocationLevelScalarWhereInput[]
+  }
+
+  export type LOBReasonUncheckedUpdateManyWithoutCreatedByNestedInput = {
+    create?: XOR<LOBReasonCreateWithoutCreatedByInput, LOBReasonUncheckedCreateWithoutCreatedByInput> | LOBReasonCreateWithoutCreatedByInput[] | LOBReasonUncheckedCreateWithoutCreatedByInput[]
+    connectOrCreate?: LOBReasonCreateOrConnectWithoutCreatedByInput | LOBReasonCreateOrConnectWithoutCreatedByInput[]
+    upsert?: LOBReasonUpsertWithWhereUniqueWithoutCreatedByInput | LOBReasonUpsertWithWhereUniqueWithoutCreatedByInput[]
+    createMany?: LOBReasonCreateManyCreatedByInputEnvelope
+    set?: LOBReasonWhereUniqueInput | LOBReasonWhereUniqueInput[]
+    disconnect?: LOBReasonWhereUniqueInput | LOBReasonWhereUniqueInput[]
+    delete?: LOBReasonWhereUniqueInput | LOBReasonWhereUniqueInput[]
+    connect?: LOBReasonWhereUniqueInput | LOBReasonWhereUniqueInput[]
+    update?: LOBReasonUpdateWithWhereUniqueWithoutCreatedByInput | LOBReasonUpdateWithWhereUniqueWithoutCreatedByInput[]
+    updateMany?: LOBReasonUpdateManyWithWhereWithoutCreatedByInput | LOBReasonUpdateManyWithWhereWithoutCreatedByInput[]
+    deleteMany?: LOBReasonScalarWhereInput | LOBReasonScalarWhereInput[]
+  }
+
+  export type LOBReasonUncheckedUpdateManyWithoutUpdatedByNestedInput = {
+    create?: XOR<LOBReasonCreateWithoutUpdatedByInput, LOBReasonUncheckedCreateWithoutUpdatedByInput> | LOBReasonCreateWithoutUpdatedByInput[] | LOBReasonUncheckedCreateWithoutUpdatedByInput[]
+    connectOrCreate?: LOBReasonCreateOrConnectWithoutUpdatedByInput | LOBReasonCreateOrConnectWithoutUpdatedByInput[]
+    upsert?: LOBReasonUpsertWithWhereUniqueWithoutUpdatedByInput | LOBReasonUpsertWithWhereUniqueWithoutUpdatedByInput[]
+    createMany?: LOBReasonCreateManyUpdatedByInputEnvelope
+    set?: LOBReasonWhereUniqueInput | LOBReasonWhereUniqueInput[]
+    disconnect?: LOBReasonWhereUniqueInput | LOBReasonWhereUniqueInput[]
+    delete?: LOBReasonWhereUniqueInput | LOBReasonWhereUniqueInput[]
+    connect?: LOBReasonWhereUniqueInput | LOBReasonWhereUniqueInput[]
+    update?: LOBReasonUpdateWithWhereUniqueWithoutUpdatedByInput | LOBReasonUpdateWithWhereUniqueWithoutUpdatedByInput[]
+    updateMany?: LOBReasonUpdateManyWithWhereWithoutUpdatedByInput | LOBReasonUpdateManyWithWhereWithoutUpdatedByInput[]
+    deleteMany?: LOBReasonScalarWhereInput | LOBReasonScalarWhereInput[]
+  }
+
   export type ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput = {
     create?: XOR<ReportTypeCreateWithoutCreatedByInput, ReportTypeUncheckedCreateWithoutCreatedByInput> | ReportTypeCreateWithoutCreatedByInput[] | ReportTypeUncheckedCreateWithoutCreatedByInput[]
     connectOrCreate?: ReportTypeCreateOrConnectWithoutCreatedByInput | ReportTypeCreateOrConnectWithoutCreatedByInput[]
@@ -56741,6 +65356,20 @@ export namespace Prisma {
     update?: ReportTypeUpdateWithWhereUniqueWithoutUpdatedByInput | ReportTypeUpdateWithWhereUniqueWithoutUpdatedByInput[]
     updateMany?: ReportTypeUpdateManyWithWhereWithoutUpdatedByInput | ReportTypeUpdateManyWithWhereWithoutUpdatedByInput[]
     deleteMany?: ReportTypeScalarWhereInput | ReportTypeScalarWhereInput[]
+  }
+
+  export type ReportUncheckedUpdateManyWithoutCreatedByNestedInput = {
+    create?: XOR<ReportCreateWithoutCreatedByInput, ReportUncheckedCreateWithoutCreatedByInput> | ReportCreateWithoutCreatedByInput[] | ReportUncheckedCreateWithoutCreatedByInput[]
+    connectOrCreate?: ReportCreateOrConnectWithoutCreatedByInput | ReportCreateOrConnectWithoutCreatedByInput[]
+    upsert?: ReportUpsertWithWhereUniqueWithoutCreatedByInput | ReportUpsertWithWhereUniqueWithoutCreatedByInput[]
+    createMany?: ReportCreateManyCreatedByInputEnvelope
+    set?: ReportWhereUniqueInput | ReportWhereUniqueInput[]
+    disconnect?: ReportWhereUniqueInput | ReportWhereUniqueInput[]
+    delete?: ReportWhereUniqueInput | ReportWhereUniqueInput[]
+    connect?: ReportWhereUniqueInput | ReportWhereUniqueInput[]
+    update?: ReportUpdateWithWhereUniqueWithoutCreatedByInput | ReportUpdateWithWhereUniqueWithoutCreatedByInput[]
+    updateMany?: ReportUpdateManyWithWhereWithoutCreatedByInput | ReportUpdateManyWithWhereWithoutCreatedByInput[]
+    deleteMany?: ReportScalarWhereInput | ReportScalarWhereInput[]
   }
 
   export type ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput = {
@@ -57038,11 +65667,25 @@ export namespace Prisma {
     connect?: ReportLogWhereUniqueInput | ReportLogWhereUniqueInput[]
   }
 
+  export type ReportCreateNestedManyWithoutReportTypeInput = {
+    create?: XOR<ReportCreateWithoutReportTypeInput, ReportUncheckedCreateWithoutReportTypeInput> | ReportCreateWithoutReportTypeInput[] | ReportUncheckedCreateWithoutReportTypeInput[]
+    connectOrCreate?: ReportCreateOrConnectWithoutReportTypeInput | ReportCreateOrConnectWithoutReportTypeInput[]
+    createMany?: ReportCreateManyReportTypeInputEnvelope
+    connect?: ReportWhereUniqueInput | ReportWhereUniqueInput[]
+  }
+
   export type ReportLogUncheckedCreateNestedManyWithoutReportTypeInput = {
     create?: XOR<ReportLogCreateWithoutReportTypeInput, ReportLogUncheckedCreateWithoutReportTypeInput> | ReportLogCreateWithoutReportTypeInput[] | ReportLogUncheckedCreateWithoutReportTypeInput[]
     connectOrCreate?: ReportLogCreateOrConnectWithoutReportTypeInput | ReportLogCreateOrConnectWithoutReportTypeInput[]
     createMany?: ReportLogCreateManyReportTypeInputEnvelope
     connect?: ReportLogWhereUniqueInput | ReportLogWhereUniqueInput[]
+  }
+
+  export type ReportUncheckedCreateNestedManyWithoutReportTypeInput = {
+    create?: XOR<ReportCreateWithoutReportTypeInput, ReportUncheckedCreateWithoutReportTypeInput> | ReportCreateWithoutReportTypeInput[] | ReportUncheckedCreateWithoutReportTypeInput[]
+    connectOrCreate?: ReportCreateOrConnectWithoutReportTypeInput | ReportCreateOrConnectWithoutReportTypeInput[]
+    createMany?: ReportCreateManyReportTypeInputEnvelope
+    connect?: ReportWhereUniqueInput | ReportWhereUniqueInput[]
   }
 
   export type EnumReportModuleFieldUpdateOperationsInput = {
@@ -57099,6 +65742,20 @@ export namespace Prisma {
     deleteMany?: ReportLogScalarWhereInput | ReportLogScalarWhereInput[]
   }
 
+  export type ReportUpdateManyWithoutReportTypeNestedInput = {
+    create?: XOR<ReportCreateWithoutReportTypeInput, ReportUncheckedCreateWithoutReportTypeInput> | ReportCreateWithoutReportTypeInput[] | ReportUncheckedCreateWithoutReportTypeInput[]
+    connectOrCreate?: ReportCreateOrConnectWithoutReportTypeInput | ReportCreateOrConnectWithoutReportTypeInput[]
+    upsert?: ReportUpsertWithWhereUniqueWithoutReportTypeInput | ReportUpsertWithWhereUniqueWithoutReportTypeInput[]
+    createMany?: ReportCreateManyReportTypeInputEnvelope
+    set?: ReportWhereUniqueInput | ReportWhereUniqueInput[]
+    disconnect?: ReportWhereUniqueInput | ReportWhereUniqueInput[]
+    delete?: ReportWhereUniqueInput | ReportWhereUniqueInput[]
+    connect?: ReportWhereUniqueInput | ReportWhereUniqueInput[]
+    update?: ReportUpdateWithWhereUniqueWithoutReportTypeInput | ReportUpdateWithWhereUniqueWithoutReportTypeInput[]
+    updateMany?: ReportUpdateManyWithWhereWithoutReportTypeInput | ReportUpdateManyWithWhereWithoutReportTypeInput[]
+    deleteMany?: ReportScalarWhereInput | ReportScalarWhereInput[]
+  }
+
   export type ReportLogUncheckedUpdateManyWithoutReportTypeNestedInput = {
     create?: XOR<ReportLogCreateWithoutReportTypeInput, ReportLogUncheckedCreateWithoutReportTypeInput> | ReportLogCreateWithoutReportTypeInput[] | ReportLogUncheckedCreateWithoutReportTypeInput[]
     connectOrCreate?: ReportLogCreateOrConnectWithoutReportTypeInput | ReportLogCreateOrConnectWithoutReportTypeInput[]
@@ -57113,6 +65770,20 @@ export namespace Prisma {
     deleteMany?: ReportLogScalarWhereInput | ReportLogScalarWhereInput[]
   }
 
+  export type ReportUncheckedUpdateManyWithoutReportTypeNestedInput = {
+    create?: XOR<ReportCreateWithoutReportTypeInput, ReportUncheckedCreateWithoutReportTypeInput> | ReportCreateWithoutReportTypeInput[] | ReportUncheckedCreateWithoutReportTypeInput[]
+    connectOrCreate?: ReportCreateOrConnectWithoutReportTypeInput | ReportCreateOrConnectWithoutReportTypeInput[]
+    upsert?: ReportUpsertWithWhereUniqueWithoutReportTypeInput | ReportUpsertWithWhereUniqueWithoutReportTypeInput[]
+    createMany?: ReportCreateManyReportTypeInputEnvelope
+    set?: ReportWhereUniqueInput | ReportWhereUniqueInput[]
+    disconnect?: ReportWhereUniqueInput | ReportWhereUniqueInput[]
+    delete?: ReportWhereUniqueInput | ReportWhereUniqueInput[]
+    connect?: ReportWhereUniqueInput | ReportWhereUniqueInput[]
+    update?: ReportUpdateWithWhereUniqueWithoutReportTypeInput | ReportUpdateWithWhereUniqueWithoutReportTypeInput[]
+    updateMany?: ReportUpdateManyWithWhereWithoutReportTypeInput | ReportUpdateManyWithWhereWithoutReportTypeInput[]
+    deleteMany?: ReportScalarWhereInput | ReportScalarWhereInput[]
+  }
+
   export type WorkspaceCreateNestedOneWithoutReportLogsInput = {
     create?: XOR<WorkspaceCreateWithoutReportLogsInput, WorkspaceUncheckedCreateWithoutReportLogsInput>
     connectOrCreate?: WorkspaceCreateOrConnectWithoutReportLogsInput
@@ -57123,6 +65794,12 @@ export namespace Prisma {
     create?: XOR<ReportTypeCreateWithoutLogsInput, ReportTypeUncheckedCreateWithoutLogsInput>
     connectOrCreate?: ReportTypeCreateOrConnectWithoutLogsInput
     connect?: ReportTypeWhereUniqueInput
+  }
+
+  export type ReportCreateNestedOneWithoutLogsInput = {
+    create?: XOR<ReportCreateWithoutLogsInput, ReportUncheckedCreateWithoutLogsInput>
+    connectOrCreate?: ReportCreateOrConnectWithoutLogsInput
+    connect?: ReportWhereUniqueInput
   }
 
   export type UserCreateNestedOneWithoutGeneratedReportLogsInput = {
@@ -57139,12 +65816,24 @@ export namespace Prisma {
     update?: XOR<XOR<WorkspaceUpdateToOneWithWhereWithoutReportLogsInput, WorkspaceUpdateWithoutReportLogsInput>, WorkspaceUncheckedUpdateWithoutReportLogsInput>
   }
 
-  export type ReportTypeUpdateOneRequiredWithoutLogsNestedInput = {
+  export type ReportTypeUpdateOneWithoutLogsNestedInput = {
     create?: XOR<ReportTypeCreateWithoutLogsInput, ReportTypeUncheckedCreateWithoutLogsInput>
     connectOrCreate?: ReportTypeCreateOrConnectWithoutLogsInput
     upsert?: ReportTypeUpsertWithoutLogsInput
+    disconnect?: ReportTypeWhereInput | boolean
+    delete?: ReportTypeWhereInput | boolean
     connect?: ReportTypeWhereUniqueInput
     update?: XOR<XOR<ReportTypeUpdateToOneWithWhereWithoutLogsInput, ReportTypeUpdateWithoutLogsInput>, ReportTypeUncheckedUpdateWithoutLogsInput>
+  }
+
+  export type ReportUpdateOneWithoutLogsNestedInput = {
+    create?: XOR<ReportCreateWithoutLogsInput, ReportUncheckedCreateWithoutLogsInput>
+    connectOrCreate?: ReportCreateOrConnectWithoutLogsInput
+    upsert?: ReportUpsertWithoutLogsInput
+    disconnect?: ReportWhereInput | boolean
+    delete?: ReportWhereInput | boolean
+    connect?: ReportWhereUniqueInput
+    update?: XOR<XOR<ReportUpdateToOneWithWhereWithoutLogsInput, ReportUpdateWithoutLogsInput>, ReportUncheckedUpdateWithoutLogsInput>
   }
 
   export type UserUpdateOneWithoutGeneratedReportLogsNestedInput = {
@@ -57155,6 +65844,146 @@ export namespace Prisma {
     delete?: UserWhereInput | boolean
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutGeneratedReportLogsInput, UserUpdateWithoutGeneratedReportLogsInput>, UserUncheckedUpdateWithoutGeneratedReportLogsInput>
+  }
+
+  export type WorkspaceCreateNestedOneWithoutReportsInput = {
+    create?: XOR<WorkspaceCreateWithoutReportsInput, WorkspaceUncheckedCreateWithoutReportsInput>
+    connectOrCreate?: WorkspaceCreateOrConnectWithoutReportsInput
+    connect?: WorkspaceWhereUniqueInput
+  }
+
+  export type ReportTypeCreateNestedOneWithoutReportsInput = {
+    create?: XOR<ReportTypeCreateWithoutReportsInput, ReportTypeUncheckedCreateWithoutReportsInput>
+    connectOrCreate?: ReportTypeCreateOrConnectWithoutReportsInput
+    connect?: ReportTypeWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutCreatedReportsInput = {
+    create?: XOR<UserCreateWithoutCreatedReportsInput, UserUncheckedCreateWithoutCreatedReportsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutCreatedReportsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type ReportFilterCreateNestedManyWithoutReportInput = {
+    create?: XOR<ReportFilterCreateWithoutReportInput, ReportFilterUncheckedCreateWithoutReportInput> | ReportFilterCreateWithoutReportInput[] | ReportFilterUncheckedCreateWithoutReportInput[]
+    connectOrCreate?: ReportFilterCreateOrConnectWithoutReportInput | ReportFilterCreateOrConnectWithoutReportInput[]
+    createMany?: ReportFilterCreateManyReportInputEnvelope
+    connect?: ReportFilterWhereUniqueInput | ReportFilterWhereUniqueInput[]
+  }
+
+  export type ReportLogCreateNestedManyWithoutReportInput = {
+    create?: XOR<ReportLogCreateWithoutReportInput, ReportLogUncheckedCreateWithoutReportInput> | ReportLogCreateWithoutReportInput[] | ReportLogUncheckedCreateWithoutReportInput[]
+    connectOrCreate?: ReportLogCreateOrConnectWithoutReportInput | ReportLogCreateOrConnectWithoutReportInput[]
+    createMany?: ReportLogCreateManyReportInputEnvelope
+    connect?: ReportLogWhereUniqueInput | ReportLogWhereUniqueInput[]
+  }
+
+  export type ReportFilterUncheckedCreateNestedManyWithoutReportInput = {
+    create?: XOR<ReportFilterCreateWithoutReportInput, ReportFilterUncheckedCreateWithoutReportInput> | ReportFilterCreateWithoutReportInput[] | ReportFilterUncheckedCreateWithoutReportInput[]
+    connectOrCreate?: ReportFilterCreateOrConnectWithoutReportInput | ReportFilterCreateOrConnectWithoutReportInput[]
+    createMany?: ReportFilterCreateManyReportInputEnvelope
+    connect?: ReportFilterWhereUniqueInput | ReportFilterWhereUniqueInput[]
+  }
+
+  export type ReportLogUncheckedCreateNestedManyWithoutReportInput = {
+    create?: XOR<ReportLogCreateWithoutReportInput, ReportLogUncheckedCreateWithoutReportInput> | ReportLogCreateWithoutReportInput[] | ReportLogUncheckedCreateWithoutReportInput[]
+    connectOrCreate?: ReportLogCreateOrConnectWithoutReportInput | ReportLogCreateOrConnectWithoutReportInput[]
+    createMany?: ReportLogCreateManyReportInputEnvelope
+    connect?: ReportLogWhereUniqueInput | ReportLogWhereUniqueInput[]
+  }
+
+  export type WorkspaceUpdateOneRequiredWithoutReportsNestedInput = {
+    create?: XOR<WorkspaceCreateWithoutReportsInput, WorkspaceUncheckedCreateWithoutReportsInput>
+    connectOrCreate?: WorkspaceCreateOrConnectWithoutReportsInput
+    upsert?: WorkspaceUpsertWithoutReportsInput
+    connect?: WorkspaceWhereUniqueInput
+    update?: XOR<XOR<WorkspaceUpdateToOneWithWhereWithoutReportsInput, WorkspaceUpdateWithoutReportsInput>, WorkspaceUncheckedUpdateWithoutReportsInput>
+  }
+
+  export type ReportTypeUpdateOneRequiredWithoutReportsNestedInput = {
+    create?: XOR<ReportTypeCreateWithoutReportsInput, ReportTypeUncheckedCreateWithoutReportsInput>
+    connectOrCreate?: ReportTypeCreateOrConnectWithoutReportsInput
+    upsert?: ReportTypeUpsertWithoutReportsInput
+    connect?: ReportTypeWhereUniqueInput
+    update?: XOR<XOR<ReportTypeUpdateToOneWithWhereWithoutReportsInput, ReportTypeUpdateWithoutReportsInput>, ReportTypeUncheckedUpdateWithoutReportsInput>
+  }
+
+  export type UserUpdateOneRequiredWithoutCreatedReportsNestedInput = {
+    create?: XOR<UserCreateWithoutCreatedReportsInput, UserUncheckedCreateWithoutCreatedReportsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutCreatedReportsInput
+    upsert?: UserUpsertWithoutCreatedReportsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutCreatedReportsInput, UserUpdateWithoutCreatedReportsInput>, UserUncheckedUpdateWithoutCreatedReportsInput>
+  }
+
+  export type ReportFilterUpdateManyWithoutReportNestedInput = {
+    create?: XOR<ReportFilterCreateWithoutReportInput, ReportFilterUncheckedCreateWithoutReportInput> | ReportFilterCreateWithoutReportInput[] | ReportFilterUncheckedCreateWithoutReportInput[]
+    connectOrCreate?: ReportFilterCreateOrConnectWithoutReportInput | ReportFilterCreateOrConnectWithoutReportInput[]
+    upsert?: ReportFilterUpsertWithWhereUniqueWithoutReportInput | ReportFilterUpsertWithWhereUniqueWithoutReportInput[]
+    createMany?: ReportFilterCreateManyReportInputEnvelope
+    set?: ReportFilterWhereUniqueInput | ReportFilterWhereUniqueInput[]
+    disconnect?: ReportFilterWhereUniqueInput | ReportFilterWhereUniqueInput[]
+    delete?: ReportFilterWhereUniqueInput | ReportFilterWhereUniqueInput[]
+    connect?: ReportFilterWhereUniqueInput | ReportFilterWhereUniqueInput[]
+    update?: ReportFilterUpdateWithWhereUniqueWithoutReportInput | ReportFilterUpdateWithWhereUniqueWithoutReportInput[]
+    updateMany?: ReportFilterUpdateManyWithWhereWithoutReportInput | ReportFilterUpdateManyWithWhereWithoutReportInput[]
+    deleteMany?: ReportFilterScalarWhereInput | ReportFilterScalarWhereInput[]
+  }
+
+  export type ReportLogUpdateManyWithoutReportNestedInput = {
+    create?: XOR<ReportLogCreateWithoutReportInput, ReportLogUncheckedCreateWithoutReportInput> | ReportLogCreateWithoutReportInput[] | ReportLogUncheckedCreateWithoutReportInput[]
+    connectOrCreate?: ReportLogCreateOrConnectWithoutReportInput | ReportLogCreateOrConnectWithoutReportInput[]
+    upsert?: ReportLogUpsertWithWhereUniqueWithoutReportInput | ReportLogUpsertWithWhereUniqueWithoutReportInput[]
+    createMany?: ReportLogCreateManyReportInputEnvelope
+    set?: ReportLogWhereUniqueInput | ReportLogWhereUniqueInput[]
+    disconnect?: ReportLogWhereUniqueInput | ReportLogWhereUniqueInput[]
+    delete?: ReportLogWhereUniqueInput | ReportLogWhereUniqueInput[]
+    connect?: ReportLogWhereUniqueInput | ReportLogWhereUniqueInput[]
+    update?: ReportLogUpdateWithWhereUniqueWithoutReportInput | ReportLogUpdateWithWhereUniqueWithoutReportInput[]
+    updateMany?: ReportLogUpdateManyWithWhereWithoutReportInput | ReportLogUpdateManyWithWhereWithoutReportInput[]
+    deleteMany?: ReportLogScalarWhereInput | ReportLogScalarWhereInput[]
+  }
+
+  export type ReportFilterUncheckedUpdateManyWithoutReportNestedInput = {
+    create?: XOR<ReportFilterCreateWithoutReportInput, ReportFilterUncheckedCreateWithoutReportInput> | ReportFilterCreateWithoutReportInput[] | ReportFilterUncheckedCreateWithoutReportInput[]
+    connectOrCreate?: ReportFilterCreateOrConnectWithoutReportInput | ReportFilterCreateOrConnectWithoutReportInput[]
+    upsert?: ReportFilterUpsertWithWhereUniqueWithoutReportInput | ReportFilterUpsertWithWhereUniqueWithoutReportInput[]
+    createMany?: ReportFilterCreateManyReportInputEnvelope
+    set?: ReportFilterWhereUniqueInput | ReportFilterWhereUniqueInput[]
+    disconnect?: ReportFilterWhereUniqueInput | ReportFilterWhereUniqueInput[]
+    delete?: ReportFilterWhereUniqueInput | ReportFilterWhereUniqueInput[]
+    connect?: ReportFilterWhereUniqueInput | ReportFilterWhereUniqueInput[]
+    update?: ReportFilterUpdateWithWhereUniqueWithoutReportInput | ReportFilterUpdateWithWhereUniqueWithoutReportInput[]
+    updateMany?: ReportFilterUpdateManyWithWhereWithoutReportInput | ReportFilterUpdateManyWithWhereWithoutReportInput[]
+    deleteMany?: ReportFilterScalarWhereInput | ReportFilterScalarWhereInput[]
+  }
+
+  export type ReportLogUncheckedUpdateManyWithoutReportNestedInput = {
+    create?: XOR<ReportLogCreateWithoutReportInput, ReportLogUncheckedCreateWithoutReportInput> | ReportLogCreateWithoutReportInput[] | ReportLogUncheckedCreateWithoutReportInput[]
+    connectOrCreate?: ReportLogCreateOrConnectWithoutReportInput | ReportLogCreateOrConnectWithoutReportInput[]
+    upsert?: ReportLogUpsertWithWhereUniqueWithoutReportInput | ReportLogUpsertWithWhereUniqueWithoutReportInput[]
+    createMany?: ReportLogCreateManyReportInputEnvelope
+    set?: ReportLogWhereUniqueInput | ReportLogWhereUniqueInput[]
+    disconnect?: ReportLogWhereUniqueInput | ReportLogWhereUniqueInput[]
+    delete?: ReportLogWhereUniqueInput | ReportLogWhereUniqueInput[]
+    connect?: ReportLogWhereUniqueInput | ReportLogWhereUniqueInput[]
+    update?: ReportLogUpdateWithWhereUniqueWithoutReportInput | ReportLogUpdateWithWhereUniqueWithoutReportInput[]
+    updateMany?: ReportLogUpdateManyWithWhereWithoutReportInput | ReportLogUpdateManyWithWhereWithoutReportInput[]
+    deleteMany?: ReportLogScalarWhereInput | ReportLogScalarWhereInput[]
+  }
+
+  export type ReportCreateNestedOneWithoutFiltersInput = {
+    create?: XOR<ReportCreateWithoutFiltersInput, ReportUncheckedCreateWithoutFiltersInput>
+    connectOrCreate?: ReportCreateOrConnectWithoutFiltersInput
+    connect?: ReportWhereUniqueInput
+  }
+
+  export type ReportUpdateOneRequiredWithoutFiltersNestedInput = {
+    create?: XOR<ReportCreateWithoutFiltersInput, ReportUncheckedCreateWithoutFiltersInput>
+    connectOrCreate?: ReportCreateOrConnectWithoutFiltersInput
+    upsert?: ReportUpsertWithoutFiltersInput
+    connect?: ReportWhereUniqueInput
+    update?: XOR<XOR<ReportUpdateToOneWithWhereWithoutFiltersInput, ReportUpdateWithoutFiltersInput>, ReportUncheckedUpdateWithoutFiltersInput>
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -57573,6 +66402,23 @@ export namespace Prisma {
     _max?: NestedEnumLeadClosureTypeNullableFilter<$PrismaModel>
   }
 
+  export type NestedEnumLOBReasonStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.LOBReasonStatus | EnumLOBReasonStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.LOBReasonStatus[] | ListEnumLOBReasonStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.LOBReasonStatus[] | ListEnumLOBReasonStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumLOBReasonStatusFilter<$PrismaModel> | $Enums.LOBReasonStatus
+  }
+
+  export type NestedEnumLOBReasonStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.LOBReasonStatus | EnumLOBReasonStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.LOBReasonStatus[] | ListEnumLOBReasonStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.LOBReasonStatus[] | ListEnumLOBReasonStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumLOBReasonStatusWithAggregatesFilter<$PrismaModel> | $Enums.LOBReasonStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumLOBReasonStatusFilter<$PrismaModel>
+    _max?: NestedEnumLOBReasonStatusFilter<$PrismaModel>
+  }
+
   export type NestedEnumLeadApprovalStatusFilter<$PrismaModel = never> = {
     equals?: $Enums.LeadApprovalStatus | EnumLeadApprovalStatusFieldRefInput<$PrismaModel>
     in?: $Enums.LeadApprovalStatus[] | ListEnumLeadApprovalStatusFieldRefInput<$PrismaModel>
@@ -57883,8 +66729,15 @@ export namespace Prisma {
     closedLeads?: LeadCreateNestedManyWithoutClosedByInput
     createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
     updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonCreateNestedManyWithoutUpdatedByInput
     createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
   }
 
@@ -57932,8 +66785,15 @@ export namespace Prisma {
     closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
     createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
     updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
   }
 
@@ -58205,8 +67065,15 @@ export namespace Prisma {
     closedLeads?: LeadCreateNestedManyWithoutClosedByInput
     createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
     updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonCreateNestedManyWithoutUpdatedByInput
     createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
   }
 
@@ -58254,8 +67121,15 @@ export namespace Prisma {
     closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
     createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
     updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
   }
 
@@ -58308,8 +67182,15 @@ export namespace Prisma {
     closedLeads?: LeadCreateNestedManyWithoutClosedByInput
     createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
     updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonCreateNestedManyWithoutUpdatedByInput
     createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
   }
 
@@ -58357,8 +67238,15 @@ export namespace Prisma {
     closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
     createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
     updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
   }
 
@@ -58726,6 +67614,112 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type CountryCreateWithoutWorkspaceInput = {
+    id?: string
+    name: string
+    code?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    createdBy?: UserCreateNestedOneWithoutCreatedCountriesInput
+    updatedBy?: UserCreateNestedOneWithoutUpdatedCountriesInput
+    levels?: LocationLevelCreateNestedManyWithoutCountryInput
+    locations?: LocationCreateNestedManyWithoutCountryInput
+  }
+
+  export type CountryUncheckedCreateWithoutWorkspaceInput = {
+    id?: string
+    name: string
+    code?: string | null
+    isActive?: boolean
+    createdById?: string | null
+    updatedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    levels?: LocationLevelUncheckedCreateNestedManyWithoutCountryInput
+    locations?: LocationUncheckedCreateNestedManyWithoutCountryInput
+  }
+
+  export type CountryCreateOrConnectWithoutWorkspaceInput = {
+    where: CountryWhereUniqueInput
+    create: XOR<CountryCreateWithoutWorkspaceInput, CountryUncheckedCreateWithoutWorkspaceInput>
+  }
+
+  export type CountryCreateManyWorkspaceInputEnvelope = {
+    data: CountryCreateManyWorkspaceInput | CountryCreateManyWorkspaceInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type LocationLevelCreateWithoutWorkspaceInput = {
+    id?: string
+    levelName: string
+    levelOrder: number
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    country: CountryCreateNestedOneWithoutLevelsInput
+    createdBy?: UserCreateNestedOneWithoutCreatedLocationLevelsInput
+    updatedBy?: UserCreateNestedOneWithoutUpdatedLocationLevelsInput
+    locations?: LocationCreateNestedManyWithoutLevelInput
+  }
+
+  export type LocationLevelUncheckedCreateWithoutWorkspaceInput = {
+    id?: string
+    countryId: string
+    levelName: string
+    levelOrder: number
+    isActive?: boolean
+    createdById?: string | null
+    updatedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    locations?: LocationUncheckedCreateNestedManyWithoutLevelInput
+  }
+
+  export type LocationLevelCreateOrConnectWithoutWorkspaceInput = {
+    where: LocationLevelWhereUniqueInput
+    create: XOR<LocationLevelCreateWithoutWorkspaceInput, LocationLevelUncheckedCreateWithoutWorkspaceInput>
+  }
+
+  export type LocationLevelCreateManyWorkspaceInputEnvelope = {
+    data: LocationLevelCreateManyWorkspaceInput | LocationLevelCreateManyWorkspaceInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type LOBReasonCreateWithoutWorkspaceInput = {
+    id?: string
+    name: string
+    status?: $Enums.LOBReasonStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    createdBy?: UserCreateNestedOneWithoutCreatedLOBReasonsInput
+    updatedBy?: UserCreateNestedOneWithoutUpdatedLOBReasonsInput
+  }
+
+  export type LOBReasonUncheckedCreateWithoutWorkspaceInput = {
+    id?: string
+    name: string
+    status?: $Enums.LOBReasonStatus
+    createdById?: string | null
+    updatedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type LOBReasonCreateOrConnectWithoutWorkspaceInput = {
+    where: LOBReasonWhereUniqueInput
+    create: XOR<LOBReasonCreateWithoutWorkspaceInput, LOBReasonUncheckedCreateWithoutWorkspaceInput>
+  }
+
+  export type LOBReasonCreateManyWorkspaceInputEnvelope = {
+    data: LOBReasonCreateManyWorkspaceInput | LOBReasonCreateManyWorkspaceInput[]
+    skipDuplicates?: boolean
+  }
+
   export type ReportTypeCreateWithoutWorkspaceInput = {
     id?: string
     name: string
@@ -58740,6 +67734,7 @@ export namespace Prisma {
     createdBy?: UserCreateNestedOneWithoutCreatedReportTypesInput
     updatedBy?: UserCreateNestedOneWithoutUpdatedReportTypesInput
     logs?: ReportLogCreateNestedManyWithoutReportTypeInput
+    reports?: ReportCreateNestedManyWithoutReportTypeInput
   }
 
   export type ReportTypeUncheckedCreateWithoutWorkspaceInput = {
@@ -58756,6 +67751,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     logs?: ReportLogUncheckedCreateNestedManyWithoutReportTypeInput
+    reports?: ReportUncheckedCreateNestedManyWithoutReportTypeInput
   }
 
   export type ReportTypeCreateOrConnectWithoutWorkspaceInput = {
@@ -58768,21 +67764,71 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type ReportCreateWithoutWorkspaceInput = {
+    id?: string
+    reportName: string
+    reportDate: Date | string
+    isActive?: boolean
+    isGenerated?: boolean
+    generatedFileUrl?: string | null
+    generatedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    reportType: ReportTypeCreateNestedOneWithoutReportsInput
+    createdBy: UserCreateNestedOneWithoutCreatedReportsInput
+    filters?: ReportFilterCreateNestedManyWithoutReportInput
+    logs?: ReportLogCreateNestedManyWithoutReportInput
+  }
+
+  export type ReportUncheckedCreateWithoutWorkspaceInput = {
+    id?: string
+    reportName: string
+    reportTypeId: string
+    reportDate: Date | string
+    isActive?: boolean
+    isGenerated?: boolean
+    generatedFileUrl?: string | null
+    generatedAt?: Date | string | null
+    createdById: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    filters?: ReportFilterUncheckedCreateNestedManyWithoutReportInput
+    logs?: ReportLogUncheckedCreateNestedManyWithoutReportInput
+  }
+
+  export type ReportCreateOrConnectWithoutWorkspaceInput = {
+    where: ReportWhereUniqueInput
+    create: XOR<ReportCreateWithoutWorkspaceInput, ReportUncheckedCreateWithoutWorkspaceInput>
+  }
+
+  export type ReportCreateManyWorkspaceInputEnvelope = {
+    data: ReportCreateManyWorkspaceInput | ReportCreateManyWorkspaceInput[]
+    skipDuplicates?: boolean
+  }
+
   export type ReportLogCreateWithoutWorkspaceInput = {
     id?: string
+    action?: string | null
     filters?: JsonNullValueInput | InputJsonValue
     resultCount?: number
+    meta?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
-    reportType: ReportTypeCreateNestedOneWithoutLogsInput
+    reportType?: ReportTypeCreateNestedOneWithoutLogsInput
+    report?: ReportCreateNestedOneWithoutLogsInput
     generatedBy?: UserCreateNestedOneWithoutGeneratedReportLogsInput
   }
 
   export type ReportLogUncheckedCreateWithoutWorkspaceInput = {
     id?: string
-    reportTypeId: string
+    reportTypeId?: string | null
+    reportId?: string | null
     generatedById?: string | null
+    action?: string | null
     filters?: JsonNullValueInput | InputJsonValue
     resultCount?: number
+    meta?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
   }
 
@@ -58851,8 +67897,15 @@ export namespace Prisma {
     closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
     createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
     updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUpdateManyWithoutUpdatedByNestedInput
     createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
   }
 
@@ -58900,8 +67953,15 @@ export namespace Prisma {
     closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
     createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
   }
 
@@ -59222,6 +68282,101 @@ export namespace Prisma {
     syncedAt?: DateTimeFilter<"HolidaySyncLog"> | Date | string
   }
 
+  export type CountryUpsertWithWhereUniqueWithoutWorkspaceInput = {
+    where: CountryWhereUniqueInput
+    update: XOR<CountryUpdateWithoutWorkspaceInput, CountryUncheckedUpdateWithoutWorkspaceInput>
+    create: XOR<CountryCreateWithoutWorkspaceInput, CountryUncheckedCreateWithoutWorkspaceInput>
+  }
+
+  export type CountryUpdateWithWhereUniqueWithoutWorkspaceInput = {
+    where: CountryWhereUniqueInput
+    data: XOR<CountryUpdateWithoutWorkspaceInput, CountryUncheckedUpdateWithoutWorkspaceInput>
+  }
+
+  export type CountryUpdateManyWithWhereWithoutWorkspaceInput = {
+    where: CountryScalarWhereInput
+    data: XOR<CountryUpdateManyMutationInput, CountryUncheckedUpdateManyWithoutWorkspaceInput>
+  }
+
+  export type CountryScalarWhereInput = {
+    AND?: CountryScalarWhereInput | CountryScalarWhereInput[]
+    OR?: CountryScalarWhereInput[]
+    NOT?: CountryScalarWhereInput | CountryScalarWhereInput[]
+    id?: StringFilter<"Country"> | string
+    workspaceId?: StringFilter<"Country"> | string
+    name?: StringFilter<"Country"> | string
+    code?: StringNullableFilter<"Country"> | string | null
+    isActive?: BoolFilter<"Country"> | boolean
+    createdById?: StringNullableFilter<"Country"> | string | null
+    updatedById?: StringNullableFilter<"Country"> | string | null
+    createdAt?: DateTimeFilter<"Country"> | Date | string
+    updatedAt?: DateTimeFilter<"Country"> | Date | string
+    deletedAt?: DateTimeNullableFilter<"Country"> | Date | string | null
+  }
+
+  export type LocationLevelUpsertWithWhereUniqueWithoutWorkspaceInput = {
+    where: LocationLevelWhereUniqueInput
+    update: XOR<LocationLevelUpdateWithoutWorkspaceInput, LocationLevelUncheckedUpdateWithoutWorkspaceInput>
+    create: XOR<LocationLevelCreateWithoutWorkspaceInput, LocationLevelUncheckedCreateWithoutWorkspaceInput>
+  }
+
+  export type LocationLevelUpdateWithWhereUniqueWithoutWorkspaceInput = {
+    where: LocationLevelWhereUniqueInput
+    data: XOR<LocationLevelUpdateWithoutWorkspaceInput, LocationLevelUncheckedUpdateWithoutWorkspaceInput>
+  }
+
+  export type LocationLevelUpdateManyWithWhereWithoutWorkspaceInput = {
+    where: LocationLevelScalarWhereInput
+    data: XOR<LocationLevelUpdateManyMutationInput, LocationLevelUncheckedUpdateManyWithoutWorkspaceInput>
+  }
+
+  export type LocationLevelScalarWhereInput = {
+    AND?: LocationLevelScalarWhereInput | LocationLevelScalarWhereInput[]
+    OR?: LocationLevelScalarWhereInput[]
+    NOT?: LocationLevelScalarWhereInput | LocationLevelScalarWhereInput[]
+    id?: StringFilter<"LocationLevel"> | string
+    workspaceId?: StringFilter<"LocationLevel"> | string
+    countryId?: StringFilter<"LocationLevel"> | string
+    levelName?: StringFilter<"LocationLevel"> | string
+    levelOrder?: IntFilter<"LocationLevel"> | number
+    isActive?: BoolFilter<"LocationLevel"> | boolean
+    createdById?: StringNullableFilter<"LocationLevel"> | string | null
+    updatedById?: StringNullableFilter<"LocationLevel"> | string | null
+    createdAt?: DateTimeFilter<"LocationLevel"> | Date | string
+    updatedAt?: DateTimeFilter<"LocationLevel"> | Date | string
+  }
+
+  export type LOBReasonUpsertWithWhereUniqueWithoutWorkspaceInput = {
+    where: LOBReasonWhereUniqueInput
+    update: XOR<LOBReasonUpdateWithoutWorkspaceInput, LOBReasonUncheckedUpdateWithoutWorkspaceInput>
+    create: XOR<LOBReasonCreateWithoutWorkspaceInput, LOBReasonUncheckedCreateWithoutWorkspaceInput>
+  }
+
+  export type LOBReasonUpdateWithWhereUniqueWithoutWorkspaceInput = {
+    where: LOBReasonWhereUniqueInput
+    data: XOR<LOBReasonUpdateWithoutWorkspaceInput, LOBReasonUncheckedUpdateWithoutWorkspaceInput>
+  }
+
+  export type LOBReasonUpdateManyWithWhereWithoutWorkspaceInput = {
+    where: LOBReasonScalarWhereInput
+    data: XOR<LOBReasonUpdateManyMutationInput, LOBReasonUncheckedUpdateManyWithoutWorkspaceInput>
+  }
+
+  export type LOBReasonScalarWhereInput = {
+    AND?: LOBReasonScalarWhereInput | LOBReasonScalarWhereInput[]
+    OR?: LOBReasonScalarWhereInput[]
+    NOT?: LOBReasonScalarWhereInput | LOBReasonScalarWhereInput[]
+    id?: StringFilter<"LOBReason"> | string
+    workspaceId?: StringFilter<"LOBReason"> | string
+    name?: StringFilter<"LOBReason"> | string
+    status?: EnumLOBReasonStatusFilter<"LOBReason"> | $Enums.LOBReasonStatus
+    createdById?: StringNullableFilter<"LOBReason"> | string | null
+    updatedById?: StringNullableFilter<"LOBReason"> | string | null
+    createdAt?: DateTimeFilter<"LOBReason"> | Date | string
+    updatedAt?: DateTimeFilter<"LOBReason"> | Date | string
+    deletedAt?: DateTimeNullableFilter<"LOBReason"> | Date | string | null
+  }
+
   export type ReportTypeUpsertWithWhereUniqueWithoutWorkspaceInput = {
     where: ReportTypeWhereUniqueInput
     update: XOR<ReportTypeUpdateWithoutWorkspaceInput, ReportTypeUncheckedUpdateWithoutWorkspaceInput>
@@ -59257,6 +68412,41 @@ export namespace Prisma {
     deletedAt?: DateTimeNullableFilter<"ReportType"> | Date | string | null
   }
 
+  export type ReportUpsertWithWhereUniqueWithoutWorkspaceInput = {
+    where: ReportWhereUniqueInput
+    update: XOR<ReportUpdateWithoutWorkspaceInput, ReportUncheckedUpdateWithoutWorkspaceInput>
+    create: XOR<ReportCreateWithoutWorkspaceInput, ReportUncheckedCreateWithoutWorkspaceInput>
+  }
+
+  export type ReportUpdateWithWhereUniqueWithoutWorkspaceInput = {
+    where: ReportWhereUniqueInput
+    data: XOR<ReportUpdateWithoutWorkspaceInput, ReportUncheckedUpdateWithoutWorkspaceInput>
+  }
+
+  export type ReportUpdateManyWithWhereWithoutWorkspaceInput = {
+    where: ReportScalarWhereInput
+    data: XOR<ReportUpdateManyMutationInput, ReportUncheckedUpdateManyWithoutWorkspaceInput>
+  }
+
+  export type ReportScalarWhereInput = {
+    AND?: ReportScalarWhereInput | ReportScalarWhereInput[]
+    OR?: ReportScalarWhereInput[]
+    NOT?: ReportScalarWhereInput | ReportScalarWhereInput[]
+    id?: StringFilter<"Report"> | string
+    workspaceId?: StringFilter<"Report"> | string
+    reportName?: StringFilter<"Report"> | string
+    reportTypeId?: StringFilter<"Report"> | string
+    reportDate?: DateTimeFilter<"Report"> | Date | string
+    isActive?: BoolFilter<"Report"> | boolean
+    isGenerated?: BoolFilter<"Report"> | boolean
+    generatedFileUrl?: StringNullableFilter<"Report"> | string | null
+    generatedAt?: DateTimeNullableFilter<"Report"> | Date | string | null
+    createdById?: StringFilter<"Report"> | string
+    createdAt?: DateTimeFilter<"Report"> | Date | string
+    updatedAt?: DateTimeFilter<"Report"> | Date | string
+    deletedAt?: DateTimeNullableFilter<"Report"> | Date | string | null
+  }
+
   export type ReportLogUpsertWithWhereUniqueWithoutWorkspaceInput = {
     where: ReportLogWhereUniqueInput
     update: XOR<ReportLogUpdateWithoutWorkspaceInput, ReportLogUncheckedUpdateWithoutWorkspaceInput>
@@ -59279,10 +68469,13 @@ export namespace Prisma {
     NOT?: ReportLogScalarWhereInput | ReportLogScalarWhereInput[]
     id?: StringFilter<"ReportLog"> | string
     workspaceId?: StringFilter<"ReportLog"> | string
-    reportTypeId?: StringFilter<"ReportLog"> | string
+    reportTypeId?: StringNullableFilter<"ReportLog"> | string | null
+    reportId?: StringNullableFilter<"ReportLog"> | string | null
     generatedById?: StringNullableFilter<"ReportLog"> | string | null
+    action?: StringNullableFilter<"ReportLog"> | string | null
     filters?: JsonFilter<"ReportLog">
     resultCount?: IntFilter<"ReportLog"> | number
+    meta?: JsonFilter<"ReportLog">
     createdAt?: DateTimeFilter<"ReportLog"> | Date | string
   }
 
@@ -59306,7 +68499,11 @@ export namespace Prisma {
     leadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutWorkspaceInput
     holidays?: HolidayCreateNestedManyWithoutWorkspaceInput
     holidaySyncLogs?: HolidaySyncLogCreateNestedManyWithoutWorkspaceInput
+    countries?: CountryCreateNestedManyWithoutWorkspaceInput
+    locationLevels?: LocationLevelCreateNestedManyWithoutWorkspaceInput
+    lobReasons?: LOBReasonCreateNestedManyWithoutWorkspaceInput
     reportTypes?: ReportTypeCreateNestedManyWithoutWorkspaceInput
+    reports?: ReportCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogCreateNestedManyWithoutWorkspaceInput
   }
 
@@ -59330,7 +68527,11 @@ export namespace Prisma {
     leadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutWorkspaceInput
     holidays?: HolidayUncheckedCreateNestedManyWithoutWorkspaceInput
     holidaySyncLogs?: HolidaySyncLogUncheckedCreateNestedManyWithoutWorkspaceInput
+    countries?: CountryUncheckedCreateNestedManyWithoutWorkspaceInput
+    locationLevels?: LocationLevelUncheckedCreateNestedManyWithoutWorkspaceInput
+    lobReasons?: LOBReasonUncheckedCreateNestedManyWithoutWorkspaceInput
     reportTypes?: ReportTypeUncheckedCreateNestedManyWithoutWorkspaceInput
+    reports?: ReportUncheckedCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
@@ -59383,8 +68584,15 @@ export namespace Prisma {
     closedLeads?: LeadCreateNestedManyWithoutClosedByInput
     createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
     updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonCreateNestedManyWithoutUpdatedByInput
     createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
   }
 
@@ -59432,8 +68640,15 @@ export namespace Prisma {
     closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
     createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
     updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
   }
 
@@ -59478,7 +68693,11 @@ export namespace Prisma {
     leadStageApprovals?: LeadStageApprovalUpdateManyWithoutWorkspaceNestedInput
     holidays?: HolidayUpdateManyWithoutWorkspaceNestedInput
     holidaySyncLogs?: HolidaySyncLogUpdateManyWithoutWorkspaceNestedInput
+    countries?: CountryUpdateManyWithoutWorkspaceNestedInput
+    locationLevels?: LocationLevelUpdateManyWithoutWorkspaceNestedInput
+    lobReasons?: LOBReasonUpdateManyWithoutWorkspaceNestedInput
     reportTypes?: ReportTypeUpdateManyWithoutWorkspaceNestedInput
+    reports?: ReportUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUpdateManyWithoutWorkspaceNestedInput
   }
 
@@ -59502,7 +68721,11 @@ export namespace Prisma {
     leadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutWorkspaceNestedInput
     holidays?: HolidayUncheckedUpdateManyWithoutWorkspaceNestedInput
     holidaySyncLogs?: HolidaySyncLogUncheckedUpdateManyWithoutWorkspaceNestedInput
+    countries?: CountryUncheckedUpdateManyWithoutWorkspaceNestedInput
+    locationLevels?: LocationLevelUncheckedUpdateManyWithoutWorkspaceNestedInput
+    lobReasons?: LOBReasonUncheckedUpdateManyWithoutWorkspaceNestedInput
     reportTypes?: ReportTypeUncheckedUpdateManyWithoutWorkspaceNestedInput
+    reports?: ReportUncheckedUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
@@ -60180,8 +69403,15 @@ export namespace Prisma {
     closedLeads?: LeadCreateNestedManyWithoutClosedByInput
     createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
     updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonCreateNestedManyWithoutUpdatedByInput
     createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
   }
 
@@ -60229,8 +69459,15 @@ export namespace Prisma {
     closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
     createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
     updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
   }
 
@@ -60260,14 +69497,1523 @@ export namespace Prisma {
     data: XOR<UserUpdateManyMutationInput, UserUncheckedUpdateManyWithoutOfficeInput>
   }
 
+  export type WorkspaceCreateWithoutCountriesInput = {
+    id?: string
+    companyName: string
+    employeeCount: string
+    timeZone?: string
+    language?: string
+    currencyLocale?: string
+    loadSampleData?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    owner: UserCreateNestedOneWithoutOwnedWorkspaceInput
+    users?: UserCreateNestedManyWithoutWorkspaceInput
+    departments?: DepartmentCreateNestedManyWithoutWorkspaceInput
+    targetCycles?: TargetCycleCreateNestedManyWithoutWorkspaceInput
+    leadLifeCycles?: LeadLifeCycleCreateNestedManyWithoutWorkspaceInput
+    leadDynamicFields?: LeadDynamicFieldCreateNestedManyWithoutWorkspaceInput
+    leads?: LeadCreateNestedManyWithoutWorkspaceInput
+    leadActivities?: LeadActivityCreateNestedManyWithoutWorkspaceInput
+    leadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutWorkspaceInput
+    holidays?: HolidayCreateNestedManyWithoutWorkspaceInput
+    holidaySyncLogs?: HolidaySyncLogCreateNestedManyWithoutWorkspaceInput
+    locationLevels?: LocationLevelCreateNestedManyWithoutWorkspaceInput
+    lobReasons?: LOBReasonCreateNestedManyWithoutWorkspaceInput
+    reportTypes?: ReportTypeCreateNestedManyWithoutWorkspaceInput
+    reports?: ReportCreateNestedManyWithoutWorkspaceInput
+    reportLogs?: ReportLogCreateNestedManyWithoutWorkspaceInput
+  }
+
+  export type WorkspaceUncheckedCreateWithoutCountriesInput = {
+    id?: string
+    companyName: string
+    employeeCount: string
+    timeZone?: string
+    language?: string
+    currencyLocale?: string
+    loadSampleData?: boolean
+    ownerId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    users?: UserUncheckedCreateNestedManyWithoutWorkspaceInput
+    departments?: DepartmentUncheckedCreateNestedManyWithoutWorkspaceInput
+    targetCycles?: TargetCycleUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadLifeCycles?: LeadLifeCycleUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadDynamicFields?: LeadDynamicFieldUncheckedCreateNestedManyWithoutWorkspaceInput
+    leads?: LeadUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadActivities?: LeadActivityUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutWorkspaceInput
+    holidays?: HolidayUncheckedCreateNestedManyWithoutWorkspaceInput
+    holidaySyncLogs?: HolidaySyncLogUncheckedCreateNestedManyWithoutWorkspaceInput
+    locationLevels?: LocationLevelUncheckedCreateNestedManyWithoutWorkspaceInput
+    lobReasons?: LOBReasonUncheckedCreateNestedManyWithoutWorkspaceInput
+    reportTypes?: ReportTypeUncheckedCreateNestedManyWithoutWorkspaceInput
+    reports?: ReportUncheckedCreateNestedManyWithoutWorkspaceInput
+    reportLogs?: ReportLogUncheckedCreateNestedManyWithoutWorkspaceInput
+  }
+
+  export type WorkspaceCreateOrConnectWithoutCountriesInput = {
+    where: WorkspaceWhereUniqueInput
+    create: XOR<WorkspaceCreateWithoutCountriesInput, WorkspaceUncheckedCreateWithoutCountriesInput>
+  }
+
+  export type UserCreateWithoutCreatedCountriesInput = {
+    id?: string
+    name?: string | null
+    username?: string | null
+    email: string
+    password?: string | null
+    phone?: string | null
+    googleId?: string | null
+    isOnboarded?: boolean
+    isActive?: boolean
+    isEmailVerified?: boolean
+    isLocked?: boolean
+    verificationToken?: string | null
+    verificationTokenExpires?: Date | string | null
+    invitationToken?: string | null
+    invitationExpires?: Date | string | null
+    deletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    role?: RoleCreateNestedOneWithoutUsersInput
+    workspace?: WorkspaceCreateNestedOneWithoutUsersInput
+    ownedWorkspace?: WorkspaceCreateNestedOneWithoutOwnerInput
+    department?: DepartmentCreateNestedOneWithoutUsersInput
+    office?: OfficeCreateNestedOneWithoutUsersInput
+    country?: LocationCreateNestedOneWithoutUsersAtCountryInput
+    state?: LocationCreateNestedOneWithoutUsersAtStateInput
+    district?: LocationCreateNestedOneWithoutUsersAtDistrictInput
+    assignedLocations?: UserLocationAssignmentCreateNestedManyWithoutUserInput
+    supervisor?: UserCreateNestedOneWithoutSubordinatesInput
+    subordinates?: UserCreateNestedManyWithoutSupervisorInput
+    targetSettings?: TargetSettingCreateNestedManyWithoutUserInput
+    violations?: TargetViolationCreateNestedManyWithoutUserInput
+    devices?: DeviceCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogCreateNestedManyWithoutUserInput
+    performedLeadActivities?: LeadActivityCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutApprovedByInput
+    rosterEntries?: RosterEntryCreateNestedManyWithoutUserInput
+    followUps?: FollowUpCreateNestedManyWithoutUserInput
+    createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
+    assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    updatedCountries?: CountryCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportCreateNestedManyWithoutCreatedByInput
+    generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
+  }
+
+  export type UserUncheckedCreateWithoutCreatedCountriesInput = {
+    id?: string
+    name?: string | null
+    username?: string | null
+    email: string
+    password?: string | null
+    phone?: string | null
+    googleId?: string | null
+    isOnboarded?: boolean
+    isActive?: boolean
+    isEmailVerified?: boolean
+    isLocked?: boolean
+    verificationToken?: string | null
+    verificationTokenExpires?: Date | string | null
+    invitationToken?: string | null
+    invitationExpires?: Date | string | null
+    deletedAt?: Date | string | null
+    roleId?: string | null
+    workspaceId?: string | null
+    departmentId?: string | null
+    officeId?: string | null
+    countryId?: string | null
+    stateId?: string | null
+    districtId?: string | null
+    supervisorId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    ownedWorkspace?: WorkspaceUncheckedCreateNestedOneWithoutOwnerInput
+    assignedLocations?: UserLocationAssignmentUncheckedCreateNestedManyWithoutUserInput
+    subordinates?: UserUncheckedCreateNestedManyWithoutSupervisorInput
+    targetSettings?: TargetSettingUncheckedCreateNestedManyWithoutUserInput
+    violations?: TargetViolationUncheckedCreateNestedManyWithoutUserInput
+    devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
+    performedLeadActivities?: LeadActivityUncheckedCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutApprovedByInput
+    rosterEntries?: RosterEntryUncheckedCreateNestedManyWithoutUserInput
+    followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
+    createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
+    assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    updatedCountries?: CountryUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
+    generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
+  }
+
+  export type UserCreateOrConnectWithoutCreatedCountriesInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutCreatedCountriesInput, UserUncheckedCreateWithoutCreatedCountriesInput>
+  }
+
+  export type UserCreateWithoutUpdatedCountriesInput = {
+    id?: string
+    name?: string | null
+    username?: string | null
+    email: string
+    password?: string | null
+    phone?: string | null
+    googleId?: string | null
+    isOnboarded?: boolean
+    isActive?: boolean
+    isEmailVerified?: boolean
+    isLocked?: boolean
+    verificationToken?: string | null
+    verificationTokenExpires?: Date | string | null
+    invitationToken?: string | null
+    invitationExpires?: Date | string | null
+    deletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    role?: RoleCreateNestedOneWithoutUsersInput
+    workspace?: WorkspaceCreateNestedOneWithoutUsersInput
+    ownedWorkspace?: WorkspaceCreateNestedOneWithoutOwnerInput
+    department?: DepartmentCreateNestedOneWithoutUsersInput
+    office?: OfficeCreateNestedOneWithoutUsersInput
+    country?: LocationCreateNestedOneWithoutUsersAtCountryInput
+    state?: LocationCreateNestedOneWithoutUsersAtStateInput
+    district?: LocationCreateNestedOneWithoutUsersAtDistrictInput
+    assignedLocations?: UserLocationAssignmentCreateNestedManyWithoutUserInput
+    supervisor?: UserCreateNestedOneWithoutSubordinatesInput
+    subordinates?: UserCreateNestedManyWithoutSupervisorInput
+    targetSettings?: TargetSettingCreateNestedManyWithoutUserInput
+    violations?: TargetViolationCreateNestedManyWithoutUserInput
+    devices?: DeviceCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogCreateNestedManyWithoutUserInput
+    performedLeadActivities?: LeadActivityCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutApprovedByInput
+    rosterEntries?: RosterEntryCreateNestedManyWithoutUserInput
+    followUps?: FollowUpCreateNestedManyWithoutUserInput
+    createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
+    assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryCreateNestedManyWithoutCreatedByInput
+    createdLocationLevels?: LocationLevelCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportCreateNestedManyWithoutCreatedByInput
+    generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
+  }
+
+  export type UserUncheckedCreateWithoutUpdatedCountriesInput = {
+    id?: string
+    name?: string | null
+    username?: string | null
+    email: string
+    password?: string | null
+    phone?: string | null
+    googleId?: string | null
+    isOnboarded?: boolean
+    isActive?: boolean
+    isEmailVerified?: boolean
+    isLocked?: boolean
+    verificationToken?: string | null
+    verificationTokenExpires?: Date | string | null
+    invitationToken?: string | null
+    invitationExpires?: Date | string | null
+    deletedAt?: Date | string | null
+    roleId?: string | null
+    workspaceId?: string | null
+    departmentId?: string | null
+    officeId?: string | null
+    countryId?: string | null
+    stateId?: string | null
+    districtId?: string | null
+    supervisorId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    ownedWorkspace?: WorkspaceUncheckedCreateNestedOneWithoutOwnerInput
+    assignedLocations?: UserLocationAssignmentUncheckedCreateNestedManyWithoutUserInput
+    subordinates?: UserUncheckedCreateNestedManyWithoutSupervisorInput
+    targetSettings?: TargetSettingUncheckedCreateNestedManyWithoutUserInput
+    violations?: TargetViolationUncheckedCreateNestedManyWithoutUserInput
+    devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
+    performedLeadActivities?: LeadActivityUncheckedCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutApprovedByInput
+    rosterEntries?: RosterEntryUncheckedCreateNestedManyWithoutUserInput
+    followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
+    createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
+    assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryUncheckedCreateNestedManyWithoutCreatedByInput
+    createdLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
+    generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
+  }
+
+  export type UserCreateOrConnectWithoutUpdatedCountriesInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutUpdatedCountriesInput, UserUncheckedCreateWithoutUpdatedCountriesInput>
+  }
+
+  export type LocationLevelCreateWithoutCountryInput = {
+    id?: string
+    levelName: string
+    levelOrder: number
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    workspace: WorkspaceCreateNestedOneWithoutLocationLevelsInput
+    createdBy?: UserCreateNestedOneWithoutCreatedLocationLevelsInput
+    updatedBy?: UserCreateNestedOneWithoutUpdatedLocationLevelsInput
+    locations?: LocationCreateNestedManyWithoutLevelInput
+  }
+
+  export type LocationLevelUncheckedCreateWithoutCountryInput = {
+    id?: string
+    workspaceId: string
+    levelName: string
+    levelOrder: number
+    isActive?: boolean
+    createdById?: string | null
+    updatedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    locations?: LocationUncheckedCreateNestedManyWithoutLevelInput
+  }
+
+  export type LocationLevelCreateOrConnectWithoutCountryInput = {
+    where: LocationLevelWhereUniqueInput
+    create: XOR<LocationLevelCreateWithoutCountryInput, LocationLevelUncheckedCreateWithoutCountryInput>
+  }
+
+  export type LocationLevelCreateManyCountryInputEnvelope = {
+    data: LocationLevelCreateManyCountryInput | LocationLevelCreateManyCountryInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type LocationCreateWithoutCountryInput = {
+    id?: string
+    name: string
+    type: $Enums.LocationType
+    workspaceId: string
+    isActive?: boolean
+    createdById?: string | null
+    updatedById?: string | null
+    deletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    parent?: LocationCreateNestedOneWithoutChildrenInput
+    children?: LocationCreateNestedManyWithoutParentInput
+    level?: LocationLevelCreateNestedOneWithoutLocationsInput
+    assignedUsers?: UserLocationAssignmentCreateNestedManyWithoutLocationInput
+    usersAtCountry?: UserCreateNestedManyWithoutCountryInput
+    usersAtState?: UserCreateNestedManyWithoutStateInput
+    usersAtDistrict?: UserCreateNestedManyWithoutDistrictInput
+    holidaysAtCountry?: HolidayCreateNestedManyWithoutCountryInput
+    holidaysAtState?: HolidayCreateNestedManyWithoutStateInput
+    holidaysAtDistrict?: HolidayCreateNestedManyWithoutDistrictInput
+  }
+
+  export type LocationUncheckedCreateWithoutCountryInput = {
+    id?: string
+    name: string
+    type: $Enums.LocationType
+    workspaceId: string
+    levelId?: string | null
+    isActive?: boolean
+    createdById?: string | null
+    updatedById?: string | null
+    deletedAt?: Date | string | null
+    parentId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    children?: LocationUncheckedCreateNestedManyWithoutParentInput
+    assignedUsers?: UserLocationAssignmentUncheckedCreateNestedManyWithoutLocationInput
+    usersAtCountry?: UserUncheckedCreateNestedManyWithoutCountryInput
+    usersAtState?: UserUncheckedCreateNestedManyWithoutStateInput
+    usersAtDistrict?: UserUncheckedCreateNestedManyWithoutDistrictInput
+    holidaysAtCountry?: HolidayUncheckedCreateNestedManyWithoutCountryInput
+    holidaysAtState?: HolidayUncheckedCreateNestedManyWithoutStateInput
+    holidaysAtDistrict?: HolidayUncheckedCreateNestedManyWithoutDistrictInput
+  }
+
+  export type LocationCreateOrConnectWithoutCountryInput = {
+    where: LocationWhereUniqueInput
+    create: XOR<LocationCreateWithoutCountryInput, LocationUncheckedCreateWithoutCountryInput>
+  }
+
+  export type LocationCreateManyCountryInputEnvelope = {
+    data: LocationCreateManyCountryInput | LocationCreateManyCountryInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type WorkspaceUpsertWithoutCountriesInput = {
+    update: XOR<WorkspaceUpdateWithoutCountriesInput, WorkspaceUncheckedUpdateWithoutCountriesInput>
+    create: XOR<WorkspaceCreateWithoutCountriesInput, WorkspaceUncheckedCreateWithoutCountriesInput>
+    where?: WorkspaceWhereInput
+  }
+
+  export type WorkspaceUpdateToOneWithWhereWithoutCountriesInput = {
+    where?: WorkspaceWhereInput
+    data: XOR<WorkspaceUpdateWithoutCountriesInput, WorkspaceUncheckedUpdateWithoutCountriesInput>
+  }
+
+  export type WorkspaceUpdateWithoutCountriesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    companyName?: StringFieldUpdateOperationsInput | string
+    employeeCount?: StringFieldUpdateOperationsInput | string
+    timeZone?: StringFieldUpdateOperationsInput | string
+    language?: StringFieldUpdateOperationsInput | string
+    currencyLocale?: StringFieldUpdateOperationsInput | string
+    loadSampleData?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    owner?: UserUpdateOneRequiredWithoutOwnedWorkspaceNestedInput
+    users?: UserUpdateManyWithoutWorkspaceNestedInput
+    departments?: DepartmentUpdateManyWithoutWorkspaceNestedInput
+    targetCycles?: TargetCycleUpdateManyWithoutWorkspaceNestedInput
+    leadLifeCycles?: LeadLifeCycleUpdateManyWithoutWorkspaceNestedInput
+    leadDynamicFields?: LeadDynamicFieldUpdateManyWithoutWorkspaceNestedInput
+    leads?: LeadUpdateManyWithoutWorkspaceNestedInput
+    leadActivities?: LeadActivityUpdateManyWithoutWorkspaceNestedInput
+    leadStageApprovals?: LeadStageApprovalUpdateManyWithoutWorkspaceNestedInput
+    holidays?: HolidayUpdateManyWithoutWorkspaceNestedInput
+    holidaySyncLogs?: HolidaySyncLogUpdateManyWithoutWorkspaceNestedInput
+    locationLevels?: LocationLevelUpdateManyWithoutWorkspaceNestedInput
+    lobReasons?: LOBReasonUpdateManyWithoutWorkspaceNestedInput
+    reportTypes?: ReportTypeUpdateManyWithoutWorkspaceNestedInput
+    reports?: ReportUpdateManyWithoutWorkspaceNestedInput
+    reportLogs?: ReportLogUpdateManyWithoutWorkspaceNestedInput
+  }
+
+  export type WorkspaceUncheckedUpdateWithoutCountriesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    companyName?: StringFieldUpdateOperationsInput | string
+    employeeCount?: StringFieldUpdateOperationsInput | string
+    timeZone?: StringFieldUpdateOperationsInput | string
+    language?: StringFieldUpdateOperationsInput | string
+    currencyLocale?: StringFieldUpdateOperationsInput | string
+    loadSampleData?: BoolFieldUpdateOperationsInput | boolean
+    ownerId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    users?: UserUncheckedUpdateManyWithoutWorkspaceNestedInput
+    departments?: DepartmentUncheckedUpdateManyWithoutWorkspaceNestedInput
+    targetCycles?: TargetCycleUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadLifeCycles?: LeadLifeCycleUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadDynamicFields?: LeadDynamicFieldUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leads?: LeadUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadActivities?: LeadActivityUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutWorkspaceNestedInput
+    holidays?: HolidayUncheckedUpdateManyWithoutWorkspaceNestedInput
+    holidaySyncLogs?: HolidaySyncLogUncheckedUpdateManyWithoutWorkspaceNestedInput
+    locationLevels?: LocationLevelUncheckedUpdateManyWithoutWorkspaceNestedInput
+    lobReasons?: LOBReasonUncheckedUpdateManyWithoutWorkspaceNestedInput
+    reportTypes?: ReportTypeUncheckedUpdateManyWithoutWorkspaceNestedInput
+    reports?: ReportUncheckedUpdateManyWithoutWorkspaceNestedInput
+    reportLogs?: ReportLogUncheckedUpdateManyWithoutWorkspaceNestedInput
+  }
+
+  export type UserUpsertWithoutCreatedCountriesInput = {
+    update: XOR<UserUpdateWithoutCreatedCountriesInput, UserUncheckedUpdateWithoutCreatedCountriesInput>
+    create: XOR<UserCreateWithoutCreatedCountriesInput, UserUncheckedCreateWithoutCreatedCountriesInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutCreatedCountriesInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutCreatedCountriesInput, UserUncheckedUpdateWithoutCreatedCountriesInput>
+  }
+
+  export type UserUpdateWithoutCreatedCountriesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    username?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    googleId?: NullableStringFieldUpdateOperationsInput | string | null
+    isOnboarded?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isEmailVerified?: BoolFieldUpdateOperationsInput | boolean
+    isLocked?: BoolFieldUpdateOperationsInput | boolean
+    verificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    verificationTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    invitationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    invitationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    role?: RoleUpdateOneWithoutUsersNestedInput
+    workspace?: WorkspaceUpdateOneWithoutUsersNestedInput
+    ownedWorkspace?: WorkspaceUpdateOneWithoutOwnerNestedInput
+    department?: DepartmentUpdateOneWithoutUsersNestedInput
+    office?: OfficeUpdateOneWithoutUsersNestedInput
+    country?: LocationUpdateOneWithoutUsersAtCountryNestedInput
+    state?: LocationUpdateOneWithoutUsersAtStateNestedInput
+    district?: LocationUpdateOneWithoutUsersAtDistrictNestedInput
+    assignedLocations?: UserLocationAssignmentUpdateManyWithoutUserNestedInput
+    supervisor?: UserUpdateOneWithoutSubordinatesNestedInput
+    subordinates?: UserUpdateManyWithoutSupervisorNestedInput
+    targetSettings?: TargetSettingUpdateManyWithoutUserNestedInput
+    violations?: TargetViolationUpdateManyWithoutUserNestedInput
+    devices?: DeviceUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
+    performedLeadActivities?: LeadActivityUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutApprovedByNestedInput
+    rosterEntries?: RosterEntryUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUpdateManyWithoutUserNestedInput
+    createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
+    assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    updatedCountries?: CountryUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
+    generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutCreatedCountriesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    username?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    googleId?: NullableStringFieldUpdateOperationsInput | string | null
+    isOnboarded?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isEmailVerified?: BoolFieldUpdateOperationsInput | boolean
+    isLocked?: BoolFieldUpdateOperationsInput | boolean
+    verificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    verificationTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    invitationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    invitationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    roleId?: NullableStringFieldUpdateOperationsInput | string | null
+    workspaceId?: NullableStringFieldUpdateOperationsInput | string | null
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    officeId?: NullableStringFieldUpdateOperationsInput | string | null
+    countryId?: NullableStringFieldUpdateOperationsInput | string | null
+    stateId?: NullableStringFieldUpdateOperationsInput | string | null
+    districtId?: NullableStringFieldUpdateOperationsInput | string | null
+    supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ownedWorkspace?: WorkspaceUncheckedUpdateOneWithoutOwnerNestedInput
+    assignedLocations?: UserLocationAssignmentUncheckedUpdateManyWithoutUserNestedInput
+    subordinates?: UserUncheckedUpdateManyWithoutSupervisorNestedInput
+    targetSettings?: TargetSettingUncheckedUpdateManyWithoutUserNestedInput
+    violations?: TargetViolationUncheckedUpdateManyWithoutUserNestedInput
+    devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
+    performedLeadActivities?: LeadActivityUncheckedUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
+    rosterEntries?: RosterEntryUncheckedUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
+    createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
+    assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    updatedCountries?: CountryUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
+    generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
+  }
+
+  export type UserUpsertWithoutUpdatedCountriesInput = {
+    update: XOR<UserUpdateWithoutUpdatedCountriesInput, UserUncheckedUpdateWithoutUpdatedCountriesInput>
+    create: XOR<UserCreateWithoutUpdatedCountriesInput, UserUncheckedCreateWithoutUpdatedCountriesInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutUpdatedCountriesInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutUpdatedCountriesInput, UserUncheckedUpdateWithoutUpdatedCountriesInput>
+  }
+
+  export type UserUpdateWithoutUpdatedCountriesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    username?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    googleId?: NullableStringFieldUpdateOperationsInput | string | null
+    isOnboarded?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isEmailVerified?: BoolFieldUpdateOperationsInput | boolean
+    isLocked?: BoolFieldUpdateOperationsInput | boolean
+    verificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    verificationTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    invitationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    invitationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    role?: RoleUpdateOneWithoutUsersNestedInput
+    workspace?: WorkspaceUpdateOneWithoutUsersNestedInput
+    ownedWorkspace?: WorkspaceUpdateOneWithoutOwnerNestedInput
+    department?: DepartmentUpdateOneWithoutUsersNestedInput
+    office?: OfficeUpdateOneWithoutUsersNestedInput
+    country?: LocationUpdateOneWithoutUsersAtCountryNestedInput
+    state?: LocationUpdateOneWithoutUsersAtStateNestedInput
+    district?: LocationUpdateOneWithoutUsersAtDistrictNestedInput
+    assignedLocations?: UserLocationAssignmentUpdateManyWithoutUserNestedInput
+    supervisor?: UserUpdateOneWithoutSubordinatesNestedInput
+    subordinates?: UserUpdateManyWithoutSupervisorNestedInput
+    targetSettings?: TargetSettingUpdateManyWithoutUserNestedInput
+    violations?: TargetViolationUpdateManyWithoutUserNestedInput
+    devices?: DeviceUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
+    performedLeadActivities?: LeadActivityUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutApprovedByNestedInput
+    rosterEntries?: RosterEntryUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUpdateManyWithoutUserNestedInput
+    createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
+    assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUpdateManyWithoutCreatedByNestedInput
+    createdLocationLevels?: LocationLevelUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
+    generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutUpdatedCountriesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    username?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    googleId?: NullableStringFieldUpdateOperationsInput | string | null
+    isOnboarded?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isEmailVerified?: BoolFieldUpdateOperationsInput | boolean
+    isLocked?: BoolFieldUpdateOperationsInput | boolean
+    verificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    verificationTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    invitationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    invitationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    roleId?: NullableStringFieldUpdateOperationsInput | string | null
+    workspaceId?: NullableStringFieldUpdateOperationsInput | string | null
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    officeId?: NullableStringFieldUpdateOperationsInput | string | null
+    countryId?: NullableStringFieldUpdateOperationsInput | string | null
+    stateId?: NullableStringFieldUpdateOperationsInput | string | null
+    districtId?: NullableStringFieldUpdateOperationsInput | string | null
+    supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ownedWorkspace?: WorkspaceUncheckedUpdateOneWithoutOwnerNestedInput
+    assignedLocations?: UserLocationAssignmentUncheckedUpdateManyWithoutUserNestedInput
+    subordinates?: UserUncheckedUpdateManyWithoutSupervisorNestedInput
+    targetSettings?: TargetSettingUncheckedUpdateManyWithoutUserNestedInput
+    violations?: TargetViolationUncheckedUpdateManyWithoutUserNestedInput
+    devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
+    performedLeadActivities?: LeadActivityUncheckedUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
+    rosterEntries?: RosterEntryUncheckedUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
+    createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
+    assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUncheckedUpdateManyWithoutCreatedByNestedInput
+    createdLocationLevels?: LocationLevelUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
+    generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
+  }
+
+  export type LocationLevelUpsertWithWhereUniqueWithoutCountryInput = {
+    where: LocationLevelWhereUniqueInput
+    update: XOR<LocationLevelUpdateWithoutCountryInput, LocationLevelUncheckedUpdateWithoutCountryInput>
+    create: XOR<LocationLevelCreateWithoutCountryInput, LocationLevelUncheckedCreateWithoutCountryInput>
+  }
+
+  export type LocationLevelUpdateWithWhereUniqueWithoutCountryInput = {
+    where: LocationLevelWhereUniqueInput
+    data: XOR<LocationLevelUpdateWithoutCountryInput, LocationLevelUncheckedUpdateWithoutCountryInput>
+  }
+
+  export type LocationLevelUpdateManyWithWhereWithoutCountryInput = {
+    where: LocationLevelScalarWhereInput
+    data: XOR<LocationLevelUpdateManyMutationInput, LocationLevelUncheckedUpdateManyWithoutCountryInput>
+  }
+
+  export type LocationUpsertWithWhereUniqueWithoutCountryInput = {
+    where: LocationWhereUniqueInput
+    update: XOR<LocationUpdateWithoutCountryInput, LocationUncheckedUpdateWithoutCountryInput>
+    create: XOR<LocationCreateWithoutCountryInput, LocationUncheckedCreateWithoutCountryInput>
+  }
+
+  export type LocationUpdateWithWhereUniqueWithoutCountryInput = {
+    where: LocationWhereUniqueInput
+    data: XOR<LocationUpdateWithoutCountryInput, LocationUncheckedUpdateWithoutCountryInput>
+  }
+
+  export type LocationUpdateManyWithWhereWithoutCountryInput = {
+    where: LocationScalarWhereInput
+    data: XOR<LocationUpdateManyMutationInput, LocationUncheckedUpdateManyWithoutCountryInput>
+  }
+
+  export type LocationScalarWhereInput = {
+    AND?: LocationScalarWhereInput | LocationScalarWhereInput[]
+    OR?: LocationScalarWhereInput[]
+    NOT?: LocationScalarWhereInput | LocationScalarWhereInput[]
+    id?: StringFilter<"Location"> | string
+    name?: StringFilter<"Location"> | string
+    type?: EnumLocationTypeFilter<"Location"> | $Enums.LocationType
+    workspaceId?: StringFilter<"Location"> | string
+    countryId?: StringNullableFilter<"Location"> | string | null
+    levelId?: StringNullableFilter<"Location"> | string | null
+    isActive?: BoolFilter<"Location"> | boolean
+    createdById?: StringNullableFilter<"Location"> | string | null
+    updatedById?: StringNullableFilter<"Location"> | string | null
+    deletedAt?: DateTimeNullableFilter<"Location"> | Date | string | null
+    parentId?: StringNullableFilter<"Location"> | string | null
+    createdAt?: DateTimeFilter<"Location"> | Date | string
+    updatedAt?: DateTimeFilter<"Location"> | Date | string
+  }
+
+  export type WorkspaceCreateWithoutLocationLevelsInput = {
+    id?: string
+    companyName: string
+    employeeCount: string
+    timeZone?: string
+    language?: string
+    currencyLocale?: string
+    loadSampleData?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    owner: UserCreateNestedOneWithoutOwnedWorkspaceInput
+    users?: UserCreateNestedManyWithoutWorkspaceInput
+    departments?: DepartmentCreateNestedManyWithoutWorkspaceInput
+    targetCycles?: TargetCycleCreateNestedManyWithoutWorkspaceInput
+    leadLifeCycles?: LeadLifeCycleCreateNestedManyWithoutWorkspaceInput
+    leadDynamicFields?: LeadDynamicFieldCreateNestedManyWithoutWorkspaceInput
+    leads?: LeadCreateNestedManyWithoutWorkspaceInput
+    leadActivities?: LeadActivityCreateNestedManyWithoutWorkspaceInput
+    leadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutWorkspaceInput
+    holidays?: HolidayCreateNestedManyWithoutWorkspaceInput
+    holidaySyncLogs?: HolidaySyncLogCreateNestedManyWithoutWorkspaceInput
+    countries?: CountryCreateNestedManyWithoutWorkspaceInput
+    lobReasons?: LOBReasonCreateNestedManyWithoutWorkspaceInput
+    reportTypes?: ReportTypeCreateNestedManyWithoutWorkspaceInput
+    reports?: ReportCreateNestedManyWithoutWorkspaceInput
+    reportLogs?: ReportLogCreateNestedManyWithoutWorkspaceInput
+  }
+
+  export type WorkspaceUncheckedCreateWithoutLocationLevelsInput = {
+    id?: string
+    companyName: string
+    employeeCount: string
+    timeZone?: string
+    language?: string
+    currencyLocale?: string
+    loadSampleData?: boolean
+    ownerId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    users?: UserUncheckedCreateNestedManyWithoutWorkspaceInput
+    departments?: DepartmentUncheckedCreateNestedManyWithoutWorkspaceInput
+    targetCycles?: TargetCycleUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadLifeCycles?: LeadLifeCycleUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadDynamicFields?: LeadDynamicFieldUncheckedCreateNestedManyWithoutWorkspaceInput
+    leads?: LeadUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadActivities?: LeadActivityUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutWorkspaceInput
+    holidays?: HolidayUncheckedCreateNestedManyWithoutWorkspaceInput
+    holidaySyncLogs?: HolidaySyncLogUncheckedCreateNestedManyWithoutWorkspaceInput
+    countries?: CountryUncheckedCreateNestedManyWithoutWorkspaceInput
+    lobReasons?: LOBReasonUncheckedCreateNestedManyWithoutWorkspaceInput
+    reportTypes?: ReportTypeUncheckedCreateNestedManyWithoutWorkspaceInput
+    reports?: ReportUncheckedCreateNestedManyWithoutWorkspaceInput
+    reportLogs?: ReportLogUncheckedCreateNestedManyWithoutWorkspaceInput
+  }
+
+  export type WorkspaceCreateOrConnectWithoutLocationLevelsInput = {
+    where: WorkspaceWhereUniqueInput
+    create: XOR<WorkspaceCreateWithoutLocationLevelsInput, WorkspaceUncheckedCreateWithoutLocationLevelsInput>
+  }
+
+  export type CountryCreateWithoutLevelsInput = {
+    id?: string
+    name: string
+    code?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    workspace: WorkspaceCreateNestedOneWithoutCountriesInput
+    createdBy?: UserCreateNestedOneWithoutCreatedCountriesInput
+    updatedBy?: UserCreateNestedOneWithoutUpdatedCountriesInput
+    locations?: LocationCreateNestedManyWithoutCountryInput
+  }
+
+  export type CountryUncheckedCreateWithoutLevelsInput = {
+    id?: string
+    workspaceId: string
+    name: string
+    code?: string | null
+    isActive?: boolean
+    createdById?: string | null
+    updatedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    locations?: LocationUncheckedCreateNestedManyWithoutCountryInput
+  }
+
+  export type CountryCreateOrConnectWithoutLevelsInput = {
+    where: CountryWhereUniqueInput
+    create: XOR<CountryCreateWithoutLevelsInput, CountryUncheckedCreateWithoutLevelsInput>
+  }
+
+  export type UserCreateWithoutCreatedLocationLevelsInput = {
+    id?: string
+    name?: string | null
+    username?: string | null
+    email: string
+    password?: string | null
+    phone?: string | null
+    googleId?: string | null
+    isOnboarded?: boolean
+    isActive?: boolean
+    isEmailVerified?: boolean
+    isLocked?: boolean
+    verificationToken?: string | null
+    verificationTokenExpires?: Date | string | null
+    invitationToken?: string | null
+    invitationExpires?: Date | string | null
+    deletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    role?: RoleCreateNestedOneWithoutUsersInput
+    workspace?: WorkspaceCreateNestedOneWithoutUsersInput
+    ownedWorkspace?: WorkspaceCreateNestedOneWithoutOwnerInput
+    department?: DepartmentCreateNestedOneWithoutUsersInput
+    office?: OfficeCreateNestedOneWithoutUsersInput
+    country?: LocationCreateNestedOneWithoutUsersAtCountryInput
+    state?: LocationCreateNestedOneWithoutUsersAtStateInput
+    district?: LocationCreateNestedOneWithoutUsersAtDistrictInput
+    assignedLocations?: UserLocationAssignmentCreateNestedManyWithoutUserInput
+    supervisor?: UserCreateNestedOneWithoutSubordinatesInput
+    subordinates?: UserCreateNestedManyWithoutSupervisorInput
+    targetSettings?: TargetSettingCreateNestedManyWithoutUserInput
+    violations?: TargetViolationCreateNestedManyWithoutUserInput
+    devices?: DeviceCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogCreateNestedManyWithoutUserInput
+    performedLeadActivities?: LeadActivityCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutApprovedByInput
+    rosterEntries?: RosterEntryCreateNestedManyWithoutUserInput
+    followUps?: FollowUpCreateNestedManyWithoutUserInput
+    createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
+    assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryCreateNestedManyWithoutUpdatedByInput
+    updatedLocationLevels?: LocationLevelCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportCreateNestedManyWithoutCreatedByInput
+    generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
+  }
+
+  export type UserUncheckedCreateWithoutCreatedLocationLevelsInput = {
+    id?: string
+    name?: string | null
+    username?: string | null
+    email: string
+    password?: string | null
+    phone?: string | null
+    googleId?: string | null
+    isOnboarded?: boolean
+    isActive?: boolean
+    isEmailVerified?: boolean
+    isLocked?: boolean
+    verificationToken?: string | null
+    verificationTokenExpires?: Date | string | null
+    invitationToken?: string | null
+    invitationExpires?: Date | string | null
+    deletedAt?: Date | string | null
+    roleId?: string | null
+    workspaceId?: string | null
+    departmentId?: string | null
+    officeId?: string | null
+    countryId?: string | null
+    stateId?: string | null
+    districtId?: string | null
+    supervisorId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    ownedWorkspace?: WorkspaceUncheckedCreateNestedOneWithoutOwnerInput
+    assignedLocations?: UserLocationAssignmentUncheckedCreateNestedManyWithoutUserInput
+    subordinates?: UserUncheckedCreateNestedManyWithoutSupervisorInput
+    targetSettings?: TargetSettingUncheckedCreateNestedManyWithoutUserInput
+    violations?: TargetViolationUncheckedCreateNestedManyWithoutUserInput
+    devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
+    performedLeadActivities?: LeadActivityUncheckedCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutApprovedByInput
+    rosterEntries?: RosterEntryUncheckedCreateNestedManyWithoutUserInput
+    followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
+    createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
+    assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryUncheckedCreateNestedManyWithoutUpdatedByInput
+    updatedLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
+    generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
+  }
+
+  export type UserCreateOrConnectWithoutCreatedLocationLevelsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutCreatedLocationLevelsInput, UserUncheckedCreateWithoutCreatedLocationLevelsInput>
+  }
+
+  export type UserCreateWithoutUpdatedLocationLevelsInput = {
+    id?: string
+    name?: string | null
+    username?: string | null
+    email: string
+    password?: string | null
+    phone?: string | null
+    googleId?: string | null
+    isOnboarded?: boolean
+    isActive?: boolean
+    isEmailVerified?: boolean
+    isLocked?: boolean
+    verificationToken?: string | null
+    verificationTokenExpires?: Date | string | null
+    invitationToken?: string | null
+    invitationExpires?: Date | string | null
+    deletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    role?: RoleCreateNestedOneWithoutUsersInput
+    workspace?: WorkspaceCreateNestedOneWithoutUsersInput
+    ownedWorkspace?: WorkspaceCreateNestedOneWithoutOwnerInput
+    department?: DepartmentCreateNestedOneWithoutUsersInput
+    office?: OfficeCreateNestedOneWithoutUsersInput
+    country?: LocationCreateNestedOneWithoutUsersAtCountryInput
+    state?: LocationCreateNestedOneWithoutUsersAtStateInput
+    district?: LocationCreateNestedOneWithoutUsersAtDistrictInput
+    assignedLocations?: UserLocationAssignmentCreateNestedManyWithoutUserInput
+    supervisor?: UserCreateNestedOneWithoutSubordinatesInput
+    subordinates?: UserCreateNestedManyWithoutSupervisorInput
+    targetSettings?: TargetSettingCreateNestedManyWithoutUserInput
+    violations?: TargetViolationCreateNestedManyWithoutUserInput
+    devices?: DeviceCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogCreateNestedManyWithoutUserInput
+    performedLeadActivities?: LeadActivityCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutApprovedByInput
+    rosterEntries?: RosterEntryCreateNestedManyWithoutUserInput
+    followUps?: FollowUpCreateNestedManyWithoutUserInput
+    createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
+    assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelCreateNestedManyWithoutCreatedByInput
+    createdLOBReasons?: LOBReasonCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportCreateNestedManyWithoutCreatedByInput
+    generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
+  }
+
+  export type UserUncheckedCreateWithoutUpdatedLocationLevelsInput = {
+    id?: string
+    name?: string | null
+    username?: string | null
+    email: string
+    password?: string | null
+    phone?: string | null
+    googleId?: string | null
+    isOnboarded?: boolean
+    isActive?: boolean
+    isEmailVerified?: boolean
+    isLocked?: boolean
+    verificationToken?: string | null
+    verificationTokenExpires?: Date | string | null
+    invitationToken?: string | null
+    invitationExpires?: Date | string | null
+    deletedAt?: Date | string | null
+    roleId?: string | null
+    workspaceId?: string | null
+    departmentId?: string | null
+    officeId?: string | null
+    countryId?: string | null
+    stateId?: string | null
+    districtId?: string | null
+    supervisorId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    ownedWorkspace?: WorkspaceUncheckedCreateNestedOneWithoutOwnerInput
+    assignedLocations?: UserLocationAssignmentUncheckedCreateNestedManyWithoutUserInput
+    subordinates?: UserUncheckedCreateNestedManyWithoutSupervisorInput
+    targetSettings?: TargetSettingUncheckedCreateNestedManyWithoutUserInput
+    violations?: TargetViolationUncheckedCreateNestedManyWithoutUserInput
+    devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
+    performedLeadActivities?: LeadActivityUncheckedCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutApprovedByInput
+    rosterEntries?: RosterEntryUncheckedCreateNestedManyWithoutUserInput
+    followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
+    createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
+    assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutCreatedByInput
+    createdLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
+    generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
+  }
+
+  export type UserCreateOrConnectWithoutUpdatedLocationLevelsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutUpdatedLocationLevelsInput, UserUncheckedCreateWithoutUpdatedLocationLevelsInput>
+  }
+
+  export type LocationCreateWithoutLevelInput = {
+    id?: string
+    name: string
+    type: $Enums.LocationType
+    workspaceId: string
+    isActive?: boolean
+    createdById?: string | null
+    updatedById?: string | null
+    deletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    parent?: LocationCreateNestedOneWithoutChildrenInput
+    children?: LocationCreateNestedManyWithoutParentInput
+    country?: CountryCreateNestedOneWithoutLocationsInput
+    assignedUsers?: UserLocationAssignmentCreateNestedManyWithoutLocationInput
+    usersAtCountry?: UserCreateNestedManyWithoutCountryInput
+    usersAtState?: UserCreateNestedManyWithoutStateInput
+    usersAtDistrict?: UserCreateNestedManyWithoutDistrictInput
+    holidaysAtCountry?: HolidayCreateNestedManyWithoutCountryInput
+    holidaysAtState?: HolidayCreateNestedManyWithoutStateInput
+    holidaysAtDistrict?: HolidayCreateNestedManyWithoutDistrictInput
+  }
+
+  export type LocationUncheckedCreateWithoutLevelInput = {
+    id?: string
+    name: string
+    type: $Enums.LocationType
+    workspaceId: string
+    countryId?: string | null
+    isActive?: boolean
+    createdById?: string | null
+    updatedById?: string | null
+    deletedAt?: Date | string | null
+    parentId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    children?: LocationUncheckedCreateNestedManyWithoutParentInput
+    assignedUsers?: UserLocationAssignmentUncheckedCreateNestedManyWithoutLocationInput
+    usersAtCountry?: UserUncheckedCreateNestedManyWithoutCountryInput
+    usersAtState?: UserUncheckedCreateNestedManyWithoutStateInput
+    usersAtDistrict?: UserUncheckedCreateNestedManyWithoutDistrictInput
+    holidaysAtCountry?: HolidayUncheckedCreateNestedManyWithoutCountryInput
+    holidaysAtState?: HolidayUncheckedCreateNestedManyWithoutStateInput
+    holidaysAtDistrict?: HolidayUncheckedCreateNestedManyWithoutDistrictInput
+  }
+
+  export type LocationCreateOrConnectWithoutLevelInput = {
+    where: LocationWhereUniqueInput
+    create: XOR<LocationCreateWithoutLevelInput, LocationUncheckedCreateWithoutLevelInput>
+  }
+
+  export type LocationCreateManyLevelInputEnvelope = {
+    data: LocationCreateManyLevelInput | LocationCreateManyLevelInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type WorkspaceUpsertWithoutLocationLevelsInput = {
+    update: XOR<WorkspaceUpdateWithoutLocationLevelsInput, WorkspaceUncheckedUpdateWithoutLocationLevelsInput>
+    create: XOR<WorkspaceCreateWithoutLocationLevelsInput, WorkspaceUncheckedCreateWithoutLocationLevelsInput>
+    where?: WorkspaceWhereInput
+  }
+
+  export type WorkspaceUpdateToOneWithWhereWithoutLocationLevelsInput = {
+    where?: WorkspaceWhereInput
+    data: XOR<WorkspaceUpdateWithoutLocationLevelsInput, WorkspaceUncheckedUpdateWithoutLocationLevelsInput>
+  }
+
+  export type WorkspaceUpdateWithoutLocationLevelsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    companyName?: StringFieldUpdateOperationsInput | string
+    employeeCount?: StringFieldUpdateOperationsInput | string
+    timeZone?: StringFieldUpdateOperationsInput | string
+    language?: StringFieldUpdateOperationsInput | string
+    currencyLocale?: StringFieldUpdateOperationsInput | string
+    loadSampleData?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    owner?: UserUpdateOneRequiredWithoutOwnedWorkspaceNestedInput
+    users?: UserUpdateManyWithoutWorkspaceNestedInput
+    departments?: DepartmentUpdateManyWithoutWorkspaceNestedInput
+    targetCycles?: TargetCycleUpdateManyWithoutWorkspaceNestedInput
+    leadLifeCycles?: LeadLifeCycleUpdateManyWithoutWorkspaceNestedInput
+    leadDynamicFields?: LeadDynamicFieldUpdateManyWithoutWorkspaceNestedInput
+    leads?: LeadUpdateManyWithoutWorkspaceNestedInput
+    leadActivities?: LeadActivityUpdateManyWithoutWorkspaceNestedInput
+    leadStageApprovals?: LeadStageApprovalUpdateManyWithoutWorkspaceNestedInput
+    holidays?: HolidayUpdateManyWithoutWorkspaceNestedInput
+    holidaySyncLogs?: HolidaySyncLogUpdateManyWithoutWorkspaceNestedInput
+    countries?: CountryUpdateManyWithoutWorkspaceNestedInput
+    lobReasons?: LOBReasonUpdateManyWithoutWorkspaceNestedInput
+    reportTypes?: ReportTypeUpdateManyWithoutWorkspaceNestedInput
+    reports?: ReportUpdateManyWithoutWorkspaceNestedInput
+    reportLogs?: ReportLogUpdateManyWithoutWorkspaceNestedInput
+  }
+
+  export type WorkspaceUncheckedUpdateWithoutLocationLevelsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    companyName?: StringFieldUpdateOperationsInput | string
+    employeeCount?: StringFieldUpdateOperationsInput | string
+    timeZone?: StringFieldUpdateOperationsInput | string
+    language?: StringFieldUpdateOperationsInput | string
+    currencyLocale?: StringFieldUpdateOperationsInput | string
+    loadSampleData?: BoolFieldUpdateOperationsInput | boolean
+    ownerId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    users?: UserUncheckedUpdateManyWithoutWorkspaceNestedInput
+    departments?: DepartmentUncheckedUpdateManyWithoutWorkspaceNestedInput
+    targetCycles?: TargetCycleUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadLifeCycles?: LeadLifeCycleUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadDynamicFields?: LeadDynamicFieldUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leads?: LeadUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadActivities?: LeadActivityUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutWorkspaceNestedInput
+    holidays?: HolidayUncheckedUpdateManyWithoutWorkspaceNestedInput
+    holidaySyncLogs?: HolidaySyncLogUncheckedUpdateManyWithoutWorkspaceNestedInput
+    countries?: CountryUncheckedUpdateManyWithoutWorkspaceNestedInput
+    lobReasons?: LOBReasonUncheckedUpdateManyWithoutWorkspaceNestedInput
+    reportTypes?: ReportTypeUncheckedUpdateManyWithoutWorkspaceNestedInput
+    reports?: ReportUncheckedUpdateManyWithoutWorkspaceNestedInput
+    reportLogs?: ReportLogUncheckedUpdateManyWithoutWorkspaceNestedInput
+  }
+
+  export type CountryUpsertWithoutLevelsInput = {
+    update: XOR<CountryUpdateWithoutLevelsInput, CountryUncheckedUpdateWithoutLevelsInput>
+    create: XOR<CountryCreateWithoutLevelsInput, CountryUncheckedCreateWithoutLevelsInput>
+    where?: CountryWhereInput
+  }
+
+  export type CountryUpdateToOneWithWhereWithoutLevelsInput = {
+    where?: CountryWhereInput
+    data: XOR<CountryUpdateWithoutLevelsInput, CountryUncheckedUpdateWithoutLevelsInput>
+  }
+
+  export type CountryUpdateWithoutLevelsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    code?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    workspace?: WorkspaceUpdateOneRequiredWithoutCountriesNestedInput
+    createdBy?: UserUpdateOneWithoutCreatedCountriesNestedInput
+    updatedBy?: UserUpdateOneWithoutUpdatedCountriesNestedInput
+    locations?: LocationUpdateManyWithoutCountryNestedInput
+  }
+
+  export type CountryUncheckedUpdateWithoutLevelsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    code?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    locations?: LocationUncheckedUpdateManyWithoutCountryNestedInput
+  }
+
+  export type UserUpsertWithoutCreatedLocationLevelsInput = {
+    update: XOR<UserUpdateWithoutCreatedLocationLevelsInput, UserUncheckedUpdateWithoutCreatedLocationLevelsInput>
+    create: XOR<UserCreateWithoutCreatedLocationLevelsInput, UserUncheckedCreateWithoutCreatedLocationLevelsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutCreatedLocationLevelsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutCreatedLocationLevelsInput, UserUncheckedUpdateWithoutCreatedLocationLevelsInput>
+  }
+
+  export type UserUpdateWithoutCreatedLocationLevelsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    username?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    googleId?: NullableStringFieldUpdateOperationsInput | string | null
+    isOnboarded?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isEmailVerified?: BoolFieldUpdateOperationsInput | boolean
+    isLocked?: BoolFieldUpdateOperationsInput | boolean
+    verificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    verificationTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    invitationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    invitationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    role?: RoleUpdateOneWithoutUsersNestedInput
+    workspace?: WorkspaceUpdateOneWithoutUsersNestedInput
+    ownedWorkspace?: WorkspaceUpdateOneWithoutOwnerNestedInput
+    department?: DepartmentUpdateOneWithoutUsersNestedInput
+    office?: OfficeUpdateOneWithoutUsersNestedInput
+    country?: LocationUpdateOneWithoutUsersAtCountryNestedInput
+    state?: LocationUpdateOneWithoutUsersAtStateNestedInput
+    district?: LocationUpdateOneWithoutUsersAtDistrictNestedInput
+    assignedLocations?: UserLocationAssignmentUpdateManyWithoutUserNestedInput
+    supervisor?: UserUpdateOneWithoutSubordinatesNestedInput
+    subordinates?: UserUpdateManyWithoutSupervisorNestedInput
+    targetSettings?: TargetSettingUpdateManyWithoutUserNestedInput
+    violations?: TargetViolationUpdateManyWithoutUserNestedInput
+    devices?: DeviceUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
+    performedLeadActivities?: LeadActivityUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutApprovedByNestedInput
+    rosterEntries?: RosterEntryUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUpdateManyWithoutUserNestedInput
+    createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
+    assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUpdateManyWithoutUpdatedByNestedInput
+    updatedLocationLevels?: LocationLevelUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
+    generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutCreatedLocationLevelsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    username?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    googleId?: NullableStringFieldUpdateOperationsInput | string | null
+    isOnboarded?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isEmailVerified?: BoolFieldUpdateOperationsInput | boolean
+    isLocked?: BoolFieldUpdateOperationsInput | boolean
+    verificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    verificationTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    invitationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    invitationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    roleId?: NullableStringFieldUpdateOperationsInput | string | null
+    workspaceId?: NullableStringFieldUpdateOperationsInput | string | null
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    officeId?: NullableStringFieldUpdateOperationsInput | string | null
+    countryId?: NullableStringFieldUpdateOperationsInput | string | null
+    stateId?: NullableStringFieldUpdateOperationsInput | string | null
+    districtId?: NullableStringFieldUpdateOperationsInput | string | null
+    supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ownedWorkspace?: WorkspaceUncheckedUpdateOneWithoutOwnerNestedInput
+    assignedLocations?: UserLocationAssignmentUncheckedUpdateManyWithoutUserNestedInput
+    subordinates?: UserUncheckedUpdateManyWithoutSupervisorNestedInput
+    targetSettings?: TargetSettingUncheckedUpdateManyWithoutUserNestedInput
+    violations?: TargetViolationUncheckedUpdateManyWithoutUserNestedInput
+    devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
+    performedLeadActivities?: LeadActivityUncheckedUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
+    rosterEntries?: RosterEntryUncheckedUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
+    createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
+    assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUncheckedUpdateManyWithoutUpdatedByNestedInput
+    updatedLocationLevels?: LocationLevelUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
+    generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
+  }
+
+  export type UserUpsertWithoutUpdatedLocationLevelsInput = {
+    update: XOR<UserUpdateWithoutUpdatedLocationLevelsInput, UserUncheckedUpdateWithoutUpdatedLocationLevelsInput>
+    create: XOR<UserCreateWithoutUpdatedLocationLevelsInput, UserUncheckedCreateWithoutUpdatedLocationLevelsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutUpdatedLocationLevelsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutUpdatedLocationLevelsInput, UserUncheckedUpdateWithoutUpdatedLocationLevelsInput>
+  }
+
+  export type UserUpdateWithoutUpdatedLocationLevelsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    username?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    googleId?: NullableStringFieldUpdateOperationsInput | string | null
+    isOnboarded?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isEmailVerified?: BoolFieldUpdateOperationsInput | boolean
+    isLocked?: BoolFieldUpdateOperationsInput | boolean
+    verificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    verificationTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    invitationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    invitationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    role?: RoleUpdateOneWithoutUsersNestedInput
+    workspace?: WorkspaceUpdateOneWithoutUsersNestedInput
+    ownedWorkspace?: WorkspaceUpdateOneWithoutOwnerNestedInput
+    department?: DepartmentUpdateOneWithoutUsersNestedInput
+    office?: OfficeUpdateOneWithoutUsersNestedInput
+    country?: LocationUpdateOneWithoutUsersAtCountryNestedInput
+    state?: LocationUpdateOneWithoutUsersAtStateNestedInput
+    district?: LocationUpdateOneWithoutUsersAtDistrictNestedInput
+    assignedLocations?: UserLocationAssignmentUpdateManyWithoutUserNestedInput
+    supervisor?: UserUpdateOneWithoutSubordinatesNestedInput
+    subordinates?: UserUpdateManyWithoutSupervisorNestedInput
+    targetSettings?: TargetSettingUpdateManyWithoutUserNestedInput
+    violations?: TargetViolationUpdateManyWithoutUserNestedInput
+    devices?: DeviceUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
+    performedLeadActivities?: LeadActivityUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutApprovedByNestedInput
+    rosterEntries?: RosterEntryUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUpdateManyWithoutUserNestedInput
+    createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
+    assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUpdateManyWithoutCreatedByNestedInput
+    createdLOBReasons?: LOBReasonUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
+    generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutUpdatedLocationLevelsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    username?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    googleId?: NullableStringFieldUpdateOperationsInput | string | null
+    isOnboarded?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isEmailVerified?: BoolFieldUpdateOperationsInput | boolean
+    isLocked?: BoolFieldUpdateOperationsInput | boolean
+    verificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    verificationTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    invitationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    invitationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    roleId?: NullableStringFieldUpdateOperationsInput | string | null
+    workspaceId?: NullableStringFieldUpdateOperationsInput | string | null
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    officeId?: NullableStringFieldUpdateOperationsInput | string | null
+    countryId?: NullableStringFieldUpdateOperationsInput | string | null
+    stateId?: NullableStringFieldUpdateOperationsInput | string | null
+    districtId?: NullableStringFieldUpdateOperationsInput | string | null
+    supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ownedWorkspace?: WorkspaceUncheckedUpdateOneWithoutOwnerNestedInput
+    assignedLocations?: UserLocationAssignmentUncheckedUpdateManyWithoutUserNestedInput
+    subordinates?: UserUncheckedUpdateManyWithoutSupervisorNestedInput
+    targetSettings?: TargetSettingUncheckedUpdateManyWithoutUserNestedInput
+    violations?: TargetViolationUncheckedUpdateManyWithoutUserNestedInput
+    devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
+    performedLeadActivities?: LeadActivityUncheckedUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
+    rosterEntries?: RosterEntryUncheckedUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
+    createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
+    assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUncheckedUpdateManyWithoutCreatedByNestedInput
+    createdLOBReasons?: LOBReasonUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
+    generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
+  }
+
+  export type LocationUpsertWithWhereUniqueWithoutLevelInput = {
+    where: LocationWhereUniqueInput
+    update: XOR<LocationUpdateWithoutLevelInput, LocationUncheckedUpdateWithoutLevelInput>
+    create: XOR<LocationCreateWithoutLevelInput, LocationUncheckedCreateWithoutLevelInput>
+  }
+
+  export type LocationUpdateWithWhereUniqueWithoutLevelInput = {
+    where: LocationWhereUniqueInput
+    data: XOR<LocationUpdateWithoutLevelInput, LocationUncheckedUpdateWithoutLevelInput>
+  }
+
+  export type LocationUpdateManyWithWhereWithoutLevelInput = {
+    where: LocationScalarWhereInput
+    data: XOR<LocationUpdateManyMutationInput, LocationUncheckedUpdateManyWithoutLevelInput>
+  }
+
   export type LocationCreateWithoutChildrenInput = {
     id?: string
     name: string
     type: $Enums.LocationType
     workspaceId: string
+    isActive?: boolean
+    createdById?: string | null
+    updatedById?: string | null
+    deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     parent?: LocationCreateNestedOneWithoutChildrenInput
+    country?: CountryCreateNestedOneWithoutLocationsInput
+    level?: LocationLevelCreateNestedOneWithoutLocationsInput
     assignedUsers?: UserLocationAssignmentCreateNestedManyWithoutLocationInput
     usersAtCountry?: UserCreateNestedManyWithoutCountryInput
     usersAtState?: UserCreateNestedManyWithoutStateInput
@@ -60282,6 +71028,12 @@ export namespace Prisma {
     name: string
     type: $Enums.LocationType
     workspaceId: string
+    countryId?: string | null
+    levelId?: string | null
+    isActive?: boolean
+    createdById?: string | null
+    updatedById?: string | null
+    deletedAt?: Date | string | null
     parentId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -60304,9 +71056,15 @@ export namespace Prisma {
     name: string
     type: $Enums.LocationType
     workspaceId: string
+    isActive?: boolean
+    createdById?: string | null
+    updatedById?: string | null
+    deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     children?: LocationCreateNestedManyWithoutParentInput
+    country?: CountryCreateNestedOneWithoutLocationsInput
+    level?: LocationLevelCreateNestedOneWithoutLocationsInput
     assignedUsers?: UserLocationAssignmentCreateNestedManyWithoutLocationInput
     usersAtCountry?: UserCreateNestedManyWithoutCountryInput
     usersAtState?: UserCreateNestedManyWithoutStateInput
@@ -60321,6 +71079,12 @@ export namespace Prisma {
     name: string
     type: $Enums.LocationType
     workspaceId: string
+    countryId?: string | null
+    levelId?: string | null
+    isActive?: boolean
+    createdById?: string | null
+    updatedById?: string | null
+    deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     children?: LocationUncheckedCreateNestedManyWithoutParentInput
@@ -60341,6 +71105,70 @@ export namespace Prisma {
   export type LocationCreateManyParentInputEnvelope = {
     data: LocationCreateManyParentInput | LocationCreateManyParentInput[]
     skipDuplicates?: boolean
+  }
+
+  export type CountryCreateWithoutLocationsInput = {
+    id?: string
+    name: string
+    code?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    workspace: WorkspaceCreateNestedOneWithoutCountriesInput
+    createdBy?: UserCreateNestedOneWithoutCreatedCountriesInput
+    updatedBy?: UserCreateNestedOneWithoutUpdatedCountriesInput
+    levels?: LocationLevelCreateNestedManyWithoutCountryInput
+  }
+
+  export type CountryUncheckedCreateWithoutLocationsInput = {
+    id?: string
+    workspaceId: string
+    name: string
+    code?: string | null
+    isActive?: boolean
+    createdById?: string | null
+    updatedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    levels?: LocationLevelUncheckedCreateNestedManyWithoutCountryInput
+  }
+
+  export type CountryCreateOrConnectWithoutLocationsInput = {
+    where: CountryWhereUniqueInput
+    create: XOR<CountryCreateWithoutLocationsInput, CountryUncheckedCreateWithoutLocationsInput>
+  }
+
+  export type LocationLevelCreateWithoutLocationsInput = {
+    id?: string
+    levelName: string
+    levelOrder: number
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    workspace: WorkspaceCreateNestedOneWithoutLocationLevelsInput
+    country: CountryCreateNestedOneWithoutLevelsInput
+    createdBy?: UserCreateNestedOneWithoutCreatedLocationLevelsInput
+    updatedBy?: UserCreateNestedOneWithoutUpdatedLocationLevelsInput
+  }
+
+  export type LocationLevelUncheckedCreateWithoutLocationsInput = {
+    id?: string
+    workspaceId: string
+    countryId: string
+    levelName: string
+    levelOrder: number
+    isActive?: boolean
+    createdById?: string | null
+    updatedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type LocationLevelCreateOrConnectWithoutLocationsInput = {
+    where: LocationLevelWhereUniqueInput
+    create: XOR<LocationLevelCreateWithoutLocationsInput, LocationLevelUncheckedCreateWithoutLocationsInput>
   }
 
   export type UserLocationAssignmentCreateWithoutLocationInput = {
@@ -60413,8 +71241,15 @@ export namespace Prisma {
     closedLeads?: LeadCreateNestedManyWithoutClosedByInput
     createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
     updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonCreateNestedManyWithoutUpdatedByInput
     createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
   }
 
@@ -60462,8 +71297,15 @@ export namespace Prisma {
     closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
     createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
     updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
   }
 
@@ -60521,8 +71363,15 @@ export namespace Prisma {
     closedLeads?: LeadCreateNestedManyWithoutClosedByInput
     createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
     updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonCreateNestedManyWithoutUpdatedByInput
     createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
   }
 
@@ -60570,8 +71419,15 @@ export namespace Prisma {
     closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
     createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
     updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
   }
 
@@ -60629,8 +71485,15 @@ export namespace Prisma {
     closedLeads?: LeadCreateNestedManyWithoutClosedByInput
     createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
     updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonCreateNestedManyWithoutUpdatedByInput
     createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
   }
 
@@ -60678,8 +71541,15 @@ export namespace Prisma {
     closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
     createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
     updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
   }
 
@@ -60841,9 +71711,15 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     type?: EnumLocationTypeFieldUpdateOperationsInput | $Enums.LocationType
     workspaceId?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     parent?: LocationUpdateOneWithoutChildrenNestedInput
+    country?: CountryUpdateOneWithoutLocationsNestedInput
+    level?: LocationLevelUpdateOneWithoutLocationsNestedInput
     assignedUsers?: UserLocationAssignmentUpdateManyWithoutLocationNestedInput
     usersAtCountry?: UserUpdateManyWithoutCountryNestedInput
     usersAtState?: UserUpdateManyWithoutStateNestedInput
@@ -60858,6 +71734,12 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     type?: EnumLocationTypeFieldUpdateOperationsInput | $Enums.LocationType
     workspaceId?: StringFieldUpdateOperationsInput | string
+    countryId?: NullableStringFieldUpdateOperationsInput | string | null
+    levelId?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -60886,17 +71768,80 @@ export namespace Prisma {
     data: XOR<LocationUpdateManyMutationInput, LocationUncheckedUpdateManyWithoutParentInput>
   }
 
-  export type LocationScalarWhereInput = {
-    AND?: LocationScalarWhereInput | LocationScalarWhereInput[]
-    OR?: LocationScalarWhereInput[]
-    NOT?: LocationScalarWhereInput | LocationScalarWhereInput[]
-    id?: StringFilter<"Location"> | string
-    name?: StringFilter<"Location"> | string
-    type?: EnumLocationTypeFilter<"Location"> | $Enums.LocationType
-    workspaceId?: StringFilter<"Location"> | string
-    parentId?: StringNullableFilter<"Location"> | string | null
-    createdAt?: DateTimeFilter<"Location"> | Date | string
-    updatedAt?: DateTimeFilter<"Location"> | Date | string
+  export type CountryUpsertWithoutLocationsInput = {
+    update: XOR<CountryUpdateWithoutLocationsInput, CountryUncheckedUpdateWithoutLocationsInput>
+    create: XOR<CountryCreateWithoutLocationsInput, CountryUncheckedCreateWithoutLocationsInput>
+    where?: CountryWhereInput
+  }
+
+  export type CountryUpdateToOneWithWhereWithoutLocationsInput = {
+    where?: CountryWhereInput
+    data: XOR<CountryUpdateWithoutLocationsInput, CountryUncheckedUpdateWithoutLocationsInput>
+  }
+
+  export type CountryUpdateWithoutLocationsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    code?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    workspace?: WorkspaceUpdateOneRequiredWithoutCountriesNestedInput
+    createdBy?: UserUpdateOneWithoutCreatedCountriesNestedInput
+    updatedBy?: UserUpdateOneWithoutUpdatedCountriesNestedInput
+    levels?: LocationLevelUpdateManyWithoutCountryNestedInput
+  }
+
+  export type CountryUncheckedUpdateWithoutLocationsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    code?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    levels?: LocationLevelUncheckedUpdateManyWithoutCountryNestedInput
+  }
+
+  export type LocationLevelUpsertWithoutLocationsInput = {
+    update: XOR<LocationLevelUpdateWithoutLocationsInput, LocationLevelUncheckedUpdateWithoutLocationsInput>
+    create: XOR<LocationLevelCreateWithoutLocationsInput, LocationLevelUncheckedCreateWithoutLocationsInput>
+    where?: LocationLevelWhereInput
+  }
+
+  export type LocationLevelUpdateToOneWithWhereWithoutLocationsInput = {
+    where?: LocationLevelWhereInput
+    data: XOR<LocationLevelUpdateWithoutLocationsInput, LocationLevelUncheckedUpdateWithoutLocationsInput>
+  }
+
+  export type LocationLevelUpdateWithoutLocationsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    levelName?: StringFieldUpdateOperationsInput | string
+    levelOrder?: IntFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    workspace?: WorkspaceUpdateOneRequiredWithoutLocationLevelsNestedInput
+    country?: CountryUpdateOneRequiredWithoutLevelsNestedInput
+    createdBy?: UserUpdateOneWithoutCreatedLocationLevelsNestedInput
+    updatedBy?: UserUpdateOneWithoutUpdatedLocationLevelsNestedInput
+  }
+
+  export type LocationLevelUncheckedUpdateWithoutLocationsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    countryId?: StringFieldUpdateOperationsInput | string
+    levelName?: StringFieldUpdateOperationsInput | string
+    levelOrder?: IntFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type UserLocationAssignmentUpsertWithWhereUniqueWithoutLocationInput = {
@@ -61067,8 +72012,15 @@ export namespace Prisma {
     closedLeads?: LeadCreateNestedManyWithoutClosedByInput
     createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
     updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonCreateNestedManyWithoutUpdatedByInput
     createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
   }
 
@@ -61116,8 +72068,15 @@ export namespace Prisma {
     closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
     createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
     updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
   }
 
@@ -61131,10 +72090,16 @@ export namespace Prisma {
     name: string
     type: $Enums.LocationType
     workspaceId: string
+    isActive?: boolean
+    createdById?: string | null
+    updatedById?: string | null
+    deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     parent?: LocationCreateNestedOneWithoutChildrenInput
     children?: LocationCreateNestedManyWithoutParentInput
+    country?: CountryCreateNestedOneWithoutLocationsInput
+    level?: LocationLevelCreateNestedOneWithoutLocationsInput
     usersAtCountry?: UserCreateNestedManyWithoutCountryInput
     usersAtState?: UserCreateNestedManyWithoutStateInput
     usersAtDistrict?: UserCreateNestedManyWithoutDistrictInput
@@ -61148,6 +72113,12 @@ export namespace Prisma {
     name: string
     type: $Enums.LocationType
     workspaceId: string
+    countryId?: string | null
+    levelId?: string | null
+    isActive?: boolean
+    createdById?: string | null
+    updatedById?: string | null
+    deletedAt?: Date | string | null
     parentId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -61220,8 +72191,15 @@ export namespace Prisma {
     closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
     createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
     updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUpdateManyWithoutUpdatedByNestedInput
     createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
   }
 
@@ -61269,8 +72247,15 @@ export namespace Prisma {
     closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
     createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
   }
 
@@ -61290,10 +72275,16 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     type?: EnumLocationTypeFieldUpdateOperationsInput | $Enums.LocationType
     workspaceId?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     parent?: LocationUpdateOneWithoutChildrenNestedInput
     children?: LocationUpdateManyWithoutParentNestedInput
+    country?: CountryUpdateOneWithoutLocationsNestedInput
+    level?: LocationLevelUpdateOneWithoutLocationsNestedInput
     usersAtCountry?: UserUpdateManyWithoutCountryNestedInput
     usersAtState?: UserUpdateManyWithoutStateNestedInput
     usersAtDistrict?: UserUpdateManyWithoutDistrictNestedInput
@@ -61307,6 +72298,12 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     type?: EnumLocationTypeFieldUpdateOperationsInput | $Enums.LocationType
     workspaceId?: StringFieldUpdateOperationsInput | string
+    countryId?: NullableStringFieldUpdateOperationsInput | string | null
+    levelId?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -61414,7 +72411,11 @@ export namespace Prisma {
     leadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutWorkspaceInput
     holidays?: HolidayCreateNestedManyWithoutWorkspaceInput
     holidaySyncLogs?: HolidaySyncLogCreateNestedManyWithoutWorkspaceInput
+    countries?: CountryCreateNestedManyWithoutWorkspaceInput
+    locationLevels?: LocationLevelCreateNestedManyWithoutWorkspaceInput
+    lobReasons?: LOBReasonCreateNestedManyWithoutWorkspaceInput
     reportTypes?: ReportTypeCreateNestedManyWithoutWorkspaceInput
+    reports?: ReportCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogCreateNestedManyWithoutWorkspaceInput
   }
 
@@ -61438,7 +72439,11 @@ export namespace Prisma {
     leadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutWorkspaceInput
     holidays?: HolidayUncheckedCreateNestedManyWithoutWorkspaceInput
     holidaySyncLogs?: HolidaySyncLogUncheckedCreateNestedManyWithoutWorkspaceInput
+    countries?: CountryUncheckedCreateNestedManyWithoutWorkspaceInput
+    locationLevels?: LocationLevelUncheckedCreateNestedManyWithoutWorkspaceInput
+    lobReasons?: LOBReasonUncheckedCreateNestedManyWithoutWorkspaceInput
     reportTypes?: ReportTypeUncheckedCreateNestedManyWithoutWorkspaceInput
+    reports?: ReportUncheckedCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
@@ -61542,7 +72547,11 @@ export namespace Prisma {
     leadStageApprovals?: LeadStageApprovalUpdateManyWithoutWorkspaceNestedInput
     holidays?: HolidayUpdateManyWithoutWorkspaceNestedInput
     holidaySyncLogs?: HolidaySyncLogUpdateManyWithoutWorkspaceNestedInput
+    countries?: CountryUpdateManyWithoutWorkspaceNestedInput
+    locationLevels?: LocationLevelUpdateManyWithoutWorkspaceNestedInput
+    lobReasons?: LOBReasonUpdateManyWithoutWorkspaceNestedInput
     reportTypes?: ReportTypeUpdateManyWithoutWorkspaceNestedInput
+    reports?: ReportUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUpdateManyWithoutWorkspaceNestedInput
   }
 
@@ -61566,7 +72575,11 @@ export namespace Prisma {
     leadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutWorkspaceNestedInput
     holidays?: HolidayUncheckedUpdateManyWithoutWorkspaceNestedInput
     holidaySyncLogs?: HolidaySyncLogUncheckedUpdateManyWithoutWorkspaceNestedInput
+    countries?: CountryUncheckedUpdateManyWithoutWorkspaceNestedInput
+    locationLevels?: LocationLevelUncheckedUpdateManyWithoutWorkspaceNestedInput
+    lobReasons?: LOBReasonUncheckedUpdateManyWithoutWorkspaceNestedInput
     reportTypes?: ReportTypeUncheckedUpdateManyWithoutWorkspaceNestedInput
+    reports?: ReportUncheckedUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
@@ -61701,7 +72714,11 @@ export namespace Prisma {
     leadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutWorkspaceInput
     holidays?: HolidayCreateNestedManyWithoutWorkspaceInput
     holidaySyncLogs?: HolidaySyncLogCreateNestedManyWithoutWorkspaceInput
+    countries?: CountryCreateNestedManyWithoutWorkspaceInput
+    locationLevels?: LocationLevelCreateNestedManyWithoutWorkspaceInput
+    lobReasons?: LOBReasonCreateNestedManyWithoutWorkspaceInput
     reportTypes?: ReportTypeCreateNestedManyWithoutWorkspaceInput
+    reports?: ReportCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogCreateNestedManyWithoutWorkspaceInput
   }
 
@@ -61725,7 +72742,11 @@ export namespace Prisma {
     leadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutWorkspaceInput
     holidays?: HolidayUncheckedCreateNestedManyWithoutWorkspaceInput
     holidaySyncLogs?: HolidaySyncLogUncheckedCreateNestedManyWithoutWorkspaceInput
+    countries?: CountryUncheckedCreateNestedManyWithoutWorkspaceInput
+    locationLevels?: LocationLevelUncheckedCreateNestedManyWithoutWorkspaceInput
+    lobReasons?: LOBReasonUncheckedCreateNestedManyWithoutWorkspaceInput
     reportTypes?: ReportTypeUncheckedCreateNestedManyWithoutWorkspaceInput
+    reports?: ReportUncheckedCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
@@ -61879,7 +72900,11 @@ export namespace Prisma {
     leadStageApprovals?: LeadStageApprovalUpdateManyWithoutWorkspaceNestedInput
     holidays?: HolidayUpdateManyWithoutWorkspaceNestedInput
     holidaySyncLogs?: HolidaySyncLogUpdateManyWithoutWorkspaceNestedInput
+    countries?: CountryUpdateManyWithoutWorkspaceNestedInput
+    locationLevels?: LocationLevelUpdateManyWithoutWorkspaceNestedInput
+    lobReasons?: LOBReasonUpdateManyWithoutWorkspaceNestedInput
     reportTypes?: ReportTypeUpdateManyWithoutWorkspaceNestedInput
+    reports?: ReportUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUpdateManyWithoutWorkspaceNestedInput
   }
 
@@ -61903,7 +72928,11 @@ export namespace Prisma {
     leadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutWorkspaceNestedInput
     holidays?: HolidayUncheckedUpdateManyWithoutWorkspaceNestedInput
     holidaySyncLogs?: HolidaySyncLogUncheckedUpdateManyWithoutWorkspaceNestedInput
+    countries?: CountryUncheckedUpdateManyWithoutWorkspaceNestedInput
+    locationLevels?: LocationLevelUncheckedUpdateManyWithoutWorkspaceNestedInput
+    lobReasons?: LOBReasonUncheckedUpdateManyWithoutWorkspaceNestedInput
     reportTypes?: ReportTypeUncheckedUpdateManyWithoutWorkspaceNestedInput
+    reports?: ReportUncheckedUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
@@ -62000,8 +73029,15 @@ export namespace Prisma {
     closedLeads?: LeadCreateNestedManyWithoutClosedByInput
     createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
     updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonCreateNestedManyWithoutUpdatedByInput
     createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
   }
 
@@ -62049,8 +73085,15 @@ export namespace Prisma {
     closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
     createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
     updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
   }
 
@@ -62196,8 +73239,15 @@ export namespace Prisma {
     closedLeads?: LeadCreateNestedManyWithoutClosedByInput
     createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
     updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonCreateNestedManyWithoutUpdatedByInput
     createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
   }
 
@@ -62245,8 +73295,15 @@ export namespace Prisma {
     closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
     createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
     updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
   }
 
@@ -62299,8 +73356,15 @@ export namespace Prisma {
     assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
     createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
     updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonCreateNestedManyWithoutUpdatedByInput
     createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
   }
 
@@ -62348,8 +73412,15 @@ export namespace Prisma {
     assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
     createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
     updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
   }
 
@@ -62378,7 +73449,11 @@ export namespace Prisma {
     leadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutWorkspaceInput
     holidays?: HolidayCreateNestedManyWithoutWorkspaceInput
     holidaySyncLogs?: HolidaySyncLogCreateNestedManyWithoutWorkspaceInput
+    countries?: CountryCreateNestedManyWithoutWorkspaceInput
+    locationLevels?: LocationLevelCreateNestedManyWithoutWorkspaceInput
+    lobReasons?: LOBReasonCreateNestedManyWithoutWorkspaceInput
     reportTypes?: ReportTypeCreateNestedManyWithoutWorkspaceInput
+    reports?: ReportCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogCreateNestedManyWithoutWorkspaceInput
   }
 
@@ -62402,7 +73477,11 @@ export namespace Prisma {
     leadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutWorkspaceInput
     holidays?: HolidayUncheckedCreateNestedManyWithoutWorkspaceInput
     holidaySyncLogs?: HolidaySyncLogUncheckedCreateNestedManyWithoutWorkspaceInput
+    countries?: CountryUncheckedCreateNestedManyWithoutWorkspaceInput
+    locationLevels?: LocationLevelUncheckedCreateNestedManyWithoutWorkspaceInput
+    lobReasons?: LOBReasonUncheckedCreateNestedManyWithoutWorkspaceInput
     reportTypes?: ReportTypeUncheckedCreateNestedManyWithoutWorkspaceInput
+    reports?: ReportUncheckedCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
@@ -62602,8 +73681,15 @@ export namespace Prisma {
     closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
     createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
     updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUpdateManyWithoutUpdatedByNestedInput
     createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
   }
 
@@ -62651,8 +73737,15 @@ export namespace Prisma {
     closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
     createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
   }
 
@@ -62822,8 +73915,15 @@ export namespace Prisma {
     closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
     createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
     updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUpdateManyWithoutUpdatedByNestedInput
     createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
   }
 
@@ -62871,8 +73971,15 @@ export namespace Prisma {
     closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
     createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
   }
 
@@ -62931,8 +74038,15 @@ export namespace Prisma {
     assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
     createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
     updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUpdateManyWithoutUpdatedByNestedInput
     createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
   }
 
@@ -62980,8 +74094,15 @@ export namespace Prisma {
     assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
     createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
   }
 
@@ -63016,7 +74137,11 @@ export namespace Prisma {
     leadStageApprovals?: LeadStageApprovalUpdateManyWithoutWorkspaceNestedInput
     holidays?: HolidayUpdateManyWithoutWorkspaceNestedInput
     holidaySyncLogs?: HolidaySyncLogUpdateManyWithoutWorkspaceNestedInput
+    countries?: CountryUpdateManyWithoutWorkspaceNestedInput
+    locationLevels?: LocationLevelUpdateManyWithoutWorkspaceNestedInput
+    lobReasons?: LOBReasonUpdateManyWithoutWorkspaceNestedInput
     reportTypes?: ReportTypeUpdateManyWithoutWorkspaceNestedInput
+    reports?: ReportUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUpdateManyWithoutWorkspaceNestedInput
   }
 
@@ -63040,7 +74165,11 @@ export namespace Prisma {
     leadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutWorkspaceNestedInput
     holidays?: HolidayUncheckedUpdateManyWithoutWorkspaceNestedInput
     holidaySyncLogs?: HolidaySyncLogUncheckedUpdateManyWithoutWorkspaceNestedInput
+    countries?: CountryUncheckedUpdateManyWithoutWorkspaceNestedInput
+    locationLevels?: LocationLevelUncheckedUpdateManyWithoutWorkspaceNestedInput
+    lobReasons?: LOBReasonUncheckedUpdateManyWithoutWorkspaceNestedInput
     reportTypes?: ReportTypeUncheckedUpdateManyWithoutWorkspaceNestedInput
+    reports?: ReportUncheckedUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
@@ -63290,6 +74419,614 @@ export namespace Prisma {
     stageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutLeadNestedInput
   }
 
+  export type WorkspaceCreateWithoutLobReasonsInput = {
+    id?: string
+    companyName: string
+    employeeCount: string
+    timeZone?: string
+    language?: string
+    currencyLocale?: string
+    loadSampleData?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    owner: UserCreateNestedOneWithoutOwnedWorkspaceInput
+    users?: UserCreateNestedManyWithoutWorkspaceInput
+    departments?: DepartmentCreateNestedManyWithoutWorkspaceInput
+    targetCycles?: TargetCycleCreateNestedManyWithoutWorkspaceInput
+    leadLifeCycles?: LeadLifeCycleCreateNestedManyWithoutWorkspaceInput
+    leadDynamicFields?: LeadDynamicFieldCreateNestedManyWithoutWorkspaceInput
+    leads?: LeadCreateNestedManyWithoutWorkspaceInput
+    leadActivities?: LeadActivityCreateNestedManyWithoutWorkspaceInput
+    leadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutWorkspaceInput
+    holidays?: HolidayCreateNestedManyWithoutWorkspaceInput
+    holidaySyncLogs?: HolidaySyncLogCreateNestedManyWithoutWorkspaceInput
+    countries?: CountryCreateNestedManyWithoutWorkspaceInput
+    locationLevels?: LocationLevelCreateNestedManyWithoutWorkspaceInput
+    reportTypes?: ReportTypeCreateNestedManyWithoutWorkspaceInput
+    reports?: ReportCreateNestedManyWithoutWorkspaceInput
+    reportLogs?: ReportLogCreateNestedManyWithoutWorkspaceInput
+  }
+
+  export type WorkspaceUncheckedCreateWithoutLobReasonsInput = {
+    id?: string
+    companyName: string
+    employeeCount: string
+    timeZone?: string
+    language?: string
+    currencyLocale?: string
+    loadSampleData?: boolean
+    ownerId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    users?: UserUncheckedCreateNestedManyWithoutWorkspaceInput
+    departments?: DepartmentUncheckedCreateNestedManyWithoutWorkspaceInput
+    targetCycles?: TargetCycleUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadLifeCycles?: LeadLifeCycleUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadDynamicFields?: LeadDynamicFieldUncheckedCreateNestedManyWithoutWorkspaceInput
+    leads?: LeadUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadActivities?: LeadActivityUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutWorkspaceInput
+    holidays?: HolidayUncheckedCreateNestedManyWithoutWorkspaceInput
+    holidaySyncLogs?: HolidaySyncLogUncheckedCreateNestedManyWithoutWorkspaceInput
+    countries?: CountryUncheckedCreateNestedManyWithoutWorkspaceInput
+    locationLevels?: LocationLevelUncheckedCreateNestedManyWithoutWorkspaceInput
+    reportTypes?: ReportTypeUncheckedCreateNestedManyWithoutWorkspaceInput
+    reports?: ReportUncheckedCreateNestedManyWithoutWorkspaceInput
+    reportLogs?: ReportLogUncheckedCreateNestedManyWithoutWorkspaceInput
+  }
+
+  export type WorkspaceCreateOrConnectWithoutLobReasonsInput = {
+    where: WorkspaceWhereUniqueInput
+    create: XOR<WorkspaceCreateWithoutLobReasonsInput, WorkspaceUncheckedCreateWithoutLobReasonsInput>
+  }
+
+  export type UserCreateWithoutCreatedLOBReasonsInput = {
+    id?: string
+    name?: string | null
+    username?: string | null
+    email: string
+    password?: string | null
+    phone?: string | null
+    googleId?: string | null
+    isOnboarded?: boolean
+    isActive?: boolean
+    isEmailVerified?: boolean
+    isLocked?: boolean
+    verificationToken?: string | null
+    verificationTokenExpires?: Date | string | null
+    invitationToken?: string | null
+    invitationExpires?: Date | string | null
+    deletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    role?: RoleCreateNestedOneWithoutUsersInput
+    workspace?: WorkspaceCreateNestedOneWithoutUsersInput
+    ownedWorkspace?: WorkspaceCreateNestedOneWithoutOwnerInput
+    department?: DepartmentCreateNestedOneWithoutUsersInput
+    office?: OfficeCreateNestedOneWithoutUsersInput
+    country?: LocationCreateNestedOneWithoutUsersAtCountryInput
+    state?: LocationCreateNestedOneWithoutUsersAtStateInput
+    district?: LocationCreateNestedOneWithoutUsersAtDistrictInput
+    assignedLocations?: UserLocationAssignmentCreateNestedManyWithoutUserInput
+    supervisor?: UserCreateNestedOneWithoutSubordinatesInput
+    subordinates?: UserCreateNestedManyWithoutSupervisorInput
+    targetSettings?: TargetSettingCreateNestedManyWithoutUserInput
+    violations?: TargetViolationCreateNestedManyWithoutUserInput
+    devices?: DeviceCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogCreateNestedManyWithoutUserInput
+    performedLeadActivities?: LeadActivityCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutApprovedByInput
+    rosterEntries?: RosterEntryCreateNestedManyWithoutUserInput
+    followUps?: FollowUpCreateNestedManyWithoutUserInput
+    createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
+    assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelCreateNestedManyWithoutUpdatedByInput
+    updatedLOBReasons?: LOBReasonCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportCreateNestedManyWithoutCreatedByInput
+    generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
+  }
+
+  export type UserUncheckedCreateWithoutCreatedLOBReasonsInput = {
+    id?: string
+    name?: string | null
+    username?: string | null
+    email: string
+    password?: string | null
+    phone?: string | null
+    googleId?: string | null
+    isOnboarded?: boolean
+    isActive?: boolean
+    isEmailVerified?: boolean
+    isLocked?: boolean
+    verificationToken?: string | null
+    verificationTokenExpires?: Date | string | null
+    invitationToken?: string | null
+    invitationExpires?: Date | string | null
+    deletedAt?: Date | string | null
+    roleId?: string | null
+    workspaceId?: string | null
+    departmentId?: string | null
+    officeId?: string | null
+    countryId?: string | null
+    stateId?: string | null
+    districtId?: string | null
+    supervisorId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    ownedWorkspace?: WorkspaceUncheckedCreateNestedOneWithoutOwnerInput
+    assignedLocations?: UserLocationAssignmentUncheckedCreateNestedManyWithoutUserInput
+    subordinates?: UserUncheckedCreateNestedManyWithoutSupervisorInput
+    targetSettings?: TargetSettingUncheckedCreateNestedManyWithoutUserInput
+    violations?: TargetViolationUncheckedCreateNestedManyWithoutUserInput
+    devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
+    performedLeadActivities?: LeadActivityUncheckedCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutApprovedByInput
+    rosterEntries?: RosterEntryUncheckedCreateNestedManyWithoutUserInput
+    followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
+    createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
+    assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutUpdatedByInput
+    updatedLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
+    generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
+  }
+
+  export type UserCreateOrConnectWithoutCreatedLOBReasonsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutCreatedLOBReasonsInput, UserUncheckedCreateWithoutCreatedLOBReasonsInput>
+  }
+
+  export type UserCreateWithoutUpdatedLOBReasonsInput = {
+    id?: string
+    name?: string | null
+    username?: string | null
+    email: string
+    password?: string | null
+    phone?: string | null
+    googleId?: string | null
+    isOnboarded?: boolean
+    isActive?: boolean
+    isEmailVerified?: boolean
+    isLocked?: boolean
+    verificationToken?: string | null
+    verificationTokenExpires?: Date | string | null
+    invitationToken?: string | null
+    invitationExpires?: Date | string | null
+    deletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    role?: RoleCreateNestedOneWithoutUsersInput
+    workspace?: WorkspaceCreateNestedOneWithoutUsersInput
+    ownedWorkspace?: WorkspaceCreateNestedOneWithoutOwnerInput
+    department?: DepartmentCreateNestedOneWithoutUsersInput
+    office?: OfficeCreateNestedOneWithoutUsersInput
+    country?: LocationCreateNestedOneWithoutUsersAtCountryInput
+    state?: LocationCreateNestedOneWithoutUsersAtStateInput
+    district?: LocationCreateNestedOneWithoutUsersAtDistrictInput
+    assignedLocations?: UserLocationAssignmentCreateNestedManyWithoutUserInput
+    supervisor?: UserCreateNestedOneWithoutSubordinatesInput
+    subordinates?: UserCreateNestedManyWithoutSupervisorInput
+    targetSettings?: TargetSettingCreateNestedManyWithoutUserInput
+    violations?: TargetViolationCreateNestedManyWithoutUserInput
+    devices?: DeviceCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogCreateNestedManyWithoutUserInput
+    performedLeadActivities?: LeadActivityCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutApprovedByInput
+    rosterEntries?: RosterEntryCreateNestedManyWithoutUserInput
+    followUps?: FollowUpCreateNestedManyWithoutUserInput
+    createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
+    assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonCreateNestedManyWithoutCreatedByInput
+    createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportCreateNestedManyWithoutCreatedByInput
+    generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
+  }
+
+  export type UserUncheckedCreateWithoutUpdatedLOBReasonsInput = {
+    id?: string
+    name?: string | null
+    username?: string | null
+    email: string
+    password?: string | null
+    phone?: string | null
+    googleId?: string | null
+    isOnboarded?: boolean
+    isActive?: boolean
+    isEmailVerified?: boolean
+    isLocked?: boolean
+    verificationToken?: string | null
+    verificationTokenExpires?: Date | string | null
+    invitationToken?: string | null
+    invitationExpires?: Date | string | null
+    deletedAt?: Date | string | null
+    roleId?: string | null
+    workspaceId?: string | null
+    departmentId?: string | null
+    officeId?: string | null
+    countryId?: string | null
+    stateId?: string | null
+    districtId?: string | null
+    supervisorId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    ownedWorkspace?: WorkspaceUncheckedCreateNestedOneWithoutOwnerInput
+    assignedLocations?: UserLocationAssignmentUncheckedCreateNestedManyWithoutUserInput
+    subordinates?: UserUncheckedCreateNestedManyWithoutSupervisorInput
+    targetSettings?: TargetSettingUncheckedCreateNestedManyWithoutUserInput
+    violations?: TargetViolationUncheckedCreateNestedManyWithoutUserInput
+    devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
+    performedLeadActivities?: LeadActivityUncheckedCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutApprovedByInput
+    rosterEntries?: RosterEntryUncheckedCreateNestedManyWithoutUserInput
+    followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
+    createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
+    assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutCreatedByInput
+    createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
+    generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
+  }
+
+  export type UserCreateOrConnectWithoutUpdatedLOBReasonsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutUpdatedLOBReasonsInput, UserUncheckedCreateWithoutUpdatedLOBReasonsInput>
+  }
+
+  export type WorkspaceUpsertWithoutLobReasonsInput = {
+    update: XOR<WorkspaceUpdateWithoutLobReasonsInput, WorkspaceUncheckedUpdateWithoutLobReasonsInput>
+    create: XOR<WorkspaceCreateWithoutLobReasonsInput, WorkspaceUncheckedCreateWithoutLobReasonsInput>
+    where?: WorkspaceWhereInput
+  }
+
+  export type WorkspaceUpdateToOneWithWhereWithoutLobReasonsInput = {
+    where?: WorkspaceWhereInput
+    data: XOR<WorkspaceUpdateWithoutLobReasonsInput, WorkspaceUncheckedUpdateWithoutLobReasonsInput>
+  }
+
+  export type WorkspaceUpdateWithoutLobReasonsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    companyName?: StringFieldUpdateOperationsInput | string
+    employeeCount?: StringFieldUpdateOperationsInput | string
+    timeZone?: StringFieldUpdateOperationsInput | string
+    language?: StringFieldUpdateOperationsInput | string
+    currencyLocale?: StringFieldUpdateOperationsInput | string
+    loadSampleData?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    owner?: UserUpdateOneRequiredWithoutOwnedWorkspaceNestedInput
+    users?: UserUpdateManyWithoutWorkspaceNestedInput
+    departments?: DepartmentUpdateManyWithoutWorkspaceNestedInput
+    targetCycles?: TargetCycleUpdateManyWithoutWorkspaceNestedInput
+    leadLifeCycles?: LeadLifeCycleUpdateManyWithoutWorkspaceNestedInput
+    leadDynamicFields?: LeadDynamicFieldUpdateManyWithoutWorkspaceNestedInput
+    leads?: LeadUpdateManyWithoutWorkspaceNestedInput
+    leadActivities?: LeadActivityUpdateManyWithoutWorkspaceNestedInput
+    leadStageApprovals?: LeadStageApprovalUpdateManyWithoutWorkspaceNestedInput
+    holidays?: HolidayUpdateManyWithoutWorkspaceNestedInput
+    holidaySyncLogs?: HolidaySyncLogUpdateManyWithoutWorkspaceNestedInput
+    countries?: CountryUpdateManyWithoutWorkspaceNestedInput
+    locationLevels?: LocationLevelUpdateManyWithoutWorkspaceNestedInput
+    reportTypes?: ReportTypeUpdateManyWithoutWorkspaceNestedInput
+    reports?: ReportUpdateManyWithoutWorkspaceNestedInput
+    reportLogs?: ReportLogUpdateManyWithoutWorkspaceNestedInput
+  }
+
+  export type WorkspaceUncheckedUpdateWithoutLobReasonsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    companyName?: StringFieldUpdateOperationsInput | string
+    employeeCount?: StringFieldUpdateOperationsInput | string
+    timeZone?: StringFieldUpdateOperationsInput | string
+    language?: StringFieldUpdateOperationsInput | string
+    currencyLocale?: StringFieldUpdateOperationsInput | string
+    loadSampleData?: BoolFieldUpdateOperationsInput | boolean
+    ownerId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    users?: UserUncheckedUpdateManyWithoutWorkspaceNestedInput
+    departments?: DepartmentUncheckedUpdateManyWithoutWorkspaceNestedInput
+    targetCycles?: TargetCycleUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadLifeCycles?: LeadLifeCycleUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadDynamicFields?: LeadDynamicFieldUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leads?: LeadUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadActivities?: LeadActivityUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutWorkspaceNestedInput
+    holidays?: HolidayUncheckedUpdateManyWithoutWorkspaceNestedInput
+    holidaySyncLogs?: HolidaySyncLogUncheckedUpdateManyWithoutWorkspaceNestedInput
+    countries?: CountryUncheckedUpdateManyWithoutWorkspaceNestedInput
+    locationLevels?: LocationLevelUncheckedUpdateManyWithoutWorkspaceNestedInput
+    reportTypes?: ReportTypeUncheckedUpdateManyWithoutWorkspaceNestedInput
+    reports?: ReportUncheckedUpdateManyWithoutWorkspaceNestedInput
+    reportLogs?: ReportLogUncheckedUpdateManyWithoutWorkspaceNestedInput
+  }
+
+  export type UserUpsertWithoutCreatedLOBReasonsInput = {
+    update: XOR<UserUpdateWithoutCreatedLOBReasonsInput, UserUncheckedUpdateWithoutCreatedLOBReasonsInput>
+    create: XOR<UserCreateWithoutCreatedLOBReasonsInput, UserUncheckedCreateWithoutCreatedLOBReasonsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutCreatedLOBReasonsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutCreatedLOBReasonsInput, UserUncheckedUpdateWithoutCreatedLOBReasonsInput>
+  }
+
+  export type UserUpdateWithoutCreatedLOBReasonsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    username?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    googleId?: NullableStringFieldUpdateOperationsInput | string | null
+    isOnboarded?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isEmailVerified?: BoolFieldUpdateOperationsInput | boolean
+    isLocked?: BoolFieldUpdateOperationsInput | boolean
+    verificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    verificationTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    invitationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    invitationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    role?: RoleUpdateOneWithoutUsersNestedInput
+    workspace?: WorkspaceUpdateOneWithoutUsersNestedInput
+    ownedWorkspace?: WorkspaceUpdateOneWithoutOwnerNestedInput
+    department?: DepartmentUpdateOneWithoutUsersNestedInput
+    office?: OfficeUpdateOneWithoutUsersNestedInput
+    country?: LocationUpdateOneWithoutUsersAtCountryNestedInput
+    state?: LocationUpdateOneWithoutUsersAtStateNestedInput
+    district?: LocationUpdateOneWithoutUsersAtDistrictNestedInput
+    assignedLocations?: UserLocationAssignmentUpdateManyWithoutUserNestedInput
+    supervisor?: UserUpdateOneWithoutSubordinatesNestedInput
+    subordinates?: UserUpdateManyWithoutSupervisorNestedInput
+    targetSettings?: TargetSettingUpdateManyWithoutUserNestedInput
+    violations?: TargetViolationUpdateManyWithoutUserNestedInput
+    devices?: DeviceUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
+    performedLeadActivities?: LeadActivityUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutApprovedByNestedInput
+    rosterEntries?: RosterEntryUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUpdateManyWithoutUserNestedInput
+    createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
+    assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUpdateManyWithoutUpdatedByNestedInput
+    updatedLOBReasons?: LOBReasonUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
+    generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutCreatedLOBReasonsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    username?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    googleId?: NullableStringFieldUpdateOperationsInput | string | null
+    isOnboarded?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isEmailVerified?: BoolFieldUpdateOperationsInput | boolean
+    isLocked?: BoolFieldUpdateOperationsInput | boolean
+    verificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    verificationTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    invitationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    invitationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    roleId?: NullableStringFieldUpdateOperationsInput | string | null
+    workspaceId?: NullableStringFieldUpdateOperationsInput | string | null
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    officeId?: NullableStringFieldUpdateOperationsInput | string | null
+    countryId?: NullableStringFieldUpdateOperationsInput | string | null
+    stateId?: NullableStringFieldUpdateOperationsInput | string | null
+    districtId?: NullableStringFieldUpdateOperationsInput | string | null
+    supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ownedWorkspace?: WorkspaceUncheckedUpdateOneWithoutOwnerNestedInput
+    assignedLocations?: UserLocationAssignmentUncheckedUpdateManyWithoutUserNestedInput
+    subordinates?: UserUncheckedUpdateManyWithoutSupervisorNestedInput
+    targetSettings?: TargetSettingUncheckedUpdateManyWithoutUserNestedInput
+    violations?: TargetViolationUncheckedUpdateManyWithoutUserNestedInput
+    devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
+    performedLeadActivities?: LeadActivityUncheckedUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
+    rosterEntries?: RosterEntryUncheckedUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
+    createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
+    assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUncheckedUpdateManyWithoutUpdatedByNestedInput
+    updatedLOBReasons?: LOBReasonUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
+    generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
+  }
+
+  export type UserUpsertWithoutUpdatedLOBReasonsInput = {
+    update: XOR<UserUpdateWithoutUpdatedLOBReasonsInput, UserUncheckedUpdateWithoutUpdatedLOBReasonsInput>
+    create: XOR<UserCreateWithoutUpdatedLOBReasonsInput, UserUncheckedCreateWithoutUpdatedLOBReasonsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutUpdatedLOBReasonsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutUpdatedLOBReasonsInput, UserUncheckedUpdateWithoutUpdatedLOBReasonsInput>
+  }
+
+  export type UserUpdateWithoutUpdatedLOBReasonsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    username?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    googleId?: NullableStringFieldUpdateOperationsInput | string | null
+    isOnboarded?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isEmailVerified?: BoolFieldUpdateOperationsInput | boolean
+    isLocked?: BoolFieldUpdateOperationsInput | boolean
+    verificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    verificationTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    invitationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    invitationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    role?: RoleUpdateOneWithoutUsersNestedInput
+    workspace?: WorkspaceUpdateOneWithoutUsersNestedInput
+    ownedWorkspace?: WorkspaceUpdateOneWithoutOwnerNestedInput
+    department?: DepartmentUpdateOneWithoutUsersNestedInput
+    office?: OfficeUpdateOneWithoutUsersNestedInput
+    country?: LocationUpdateOneWithoutUsersAtCountryNestedInput
+    state?: LocationUpdateOneWithoutUsersAtStateNestedInput
+    district?: LocationUpdateOneWithoutUsersAtDistrictNestedInput
+    assignedLocations?: UserLocationAssignmentUpdateManyWithoutUserNestedInput
+    supervisor?: UserUpdateOneWithoutSubordinatesNestedInput
+    subordinates?: UserUpdateManyWithoutSupervisorNestedInput
+    targetSettings?: TargetSettingUpdateManyWithoutUserNestedInput
+    violations?: TargetViolationUpdateManyWithoutUserNestedInput
+    devices?: DeviceUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
+    performedLeadActivities?: LeadActivityUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutApprovedByNestedInput
+    rosterEntries?: RosterEntryUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUpdateManyWithoutUserNestedInput
+    createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
+    assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUpdateManyWithoutCreatedByNestedInput
+    createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
+    generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutUpdatedLOBReasonsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    username?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    googleId?: NullableStringFieldUpdateOperationsInput | string | null
+    isOnboarded?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isEmailVerified?: BoolFieldUpdateOperationsInput | boolean
+    isLocked?: BoolFieldUpdateOperationsInput | boolean
+    verificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    verificationTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    invitationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    invitationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    roleId?: NullableStringFieldUpdateOperationsInput | string | null
+    workspaceId?: NullableStringFieldUpdateOperationsInput | string | null
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    officeId?: NullableStringFieldUpdateOperationsInput | string | null
+    countryId?: NullableStringFieldUpdateOperationsInput | string | null
+    stateId?: NullableStringFieldUpdateOperationsInput | string | null
+    districtId?: NullableStringFieldUpdateOperationsInput | string | null
+    supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ownedWorkspace?: WorkspaceUncheckedUpdateOneWithoutOwnerNestedInput
+    assignedLocations?: UserLocationAssignmentUncheckedUpdateManyWithoutUserNestedInput
+    subordinates?: UserUncheckedUpdateManyWithoutSupervisorNestedInput
+    targetSettings?: TargetSettingUncheckedUpdateManyWithoutUserNestedInput
+    violations?: TargetViolationUncheckedUpdateManyWithoutUserNestedInput
+    devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
+    performedLeadActivities?: LeadActivityUncheckedUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
+    rosterEntries?: RosterEntryUncheckedUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
+    createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
+    assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUncheckedUpdateManyWithoutCreatedByNestedInput
+    createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
+    generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
+  }
+
   export type WorkspaceCreateWithoutLeadStageApprovalsInput = {
     id?: string
     companyName: string
@@ -63310,7 +75047,11 @@ export namespace Prisma {
     leadActivities?: LeadActivityCreateNestedManyWithoutWorkspaceInput
     holidays?: HolidayCreateNestedManyWithoutWorkspaceInput
     holidaySyncLogs?: HolidaySyncLogCreateNestedManyWithoutWorkspaceInput
+    countries?: CountryCreateNestedManyWithoutWorkspaceInput
+    locationLevels?: LocationLevelCreateNestedManyWithoutWorkspaceInput
+    lobReasons?: LOBReasonCreateNestedManyWithoutWorkspaceInput
     reportTypes?: ReportTypeCreateNestedManyWithoutWorkspaceInput
+    reports?: ReportCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogCreateNestedManyWithoutWorkspaceInput
   }
 
@@ -63334,7 +75075,11 @@ export namespace Prisma {
     leadActivities?: LeadActivityUncheckedCreateNestedManyWithoutWorkspaceInput
     holidays?: HolidayUncheckedCreateNestedManyWithoutWorkspaceInput
     holidaySyncLogs?: HolidaySyncLogUncheckedCreateNestedManyWithoutWorkspaceInput
+    countries?: CountryUncheckedCreateNestedManyWithoutWorkspaceInput
+    locationLevels?: LocationLevelUncheckedCreateNestedManyWithoutWorkspaceInput
+    lobReasons?: LOBReasonUncheckedCreateNestedManyWithoutWorkspaceInput
     reportTypes?: ReportTypeUncheckedCreateNestedManyWithoutWorkspaceInput
+    reports?: ReportUncheckedCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
@@ -63542,8 +75287,15 @@ export namespace Prisma {
     closedLeads?: LeadCreateNestedManyWithoutClosedByInput
     createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
     updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonCreateNestedManyWithoutUpdatedByInput
     createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
   }
 
@@ -63591,8 +75343,15 @@ export namespace Prisma {
     closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
     createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
     updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
   }
 
@@ -63645,8 +75404,15 @@ export namespace Prisma {
     closedLeads?: LeadCreateNestedManyWithoutClosedByInput
     createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
     updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonCreateNestedManyWithoutUpdatedByInput
     createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
   }
 
@@ -63694,8 +75460,15 @@ export namespace Prisma {
     closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
     createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
     updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
   }
 
@@ -63748,8 +75521,15 @@ export namespace Prisma {
     closedLeads?: LeadCreateNestedManyWithoutClosedByInput
     createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
     updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonCreateNestedManyWithoutUpdatedByInput
     createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
   }
 
@@ -63797,8 +75577,15 @@ export namespace Prisma {
     closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
     createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
     updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
   }
 
@@ -63838,7 +75625,11 @@ export namespace Prisma {
     leadActivities?: LeadActivityUpdateManyWithoutWorkspaceNestedInput
     holidays?: HolidayUpdateManyWithoutWorkspaceNestedInput
     holidaySyncLogs?: HolidaySyncLogUpdateManyWithoutWorkspaceNestedInput
+    countries?: CountryUpdateManyWithoutWorkspaceNestedInput
+    locationLevels?: LocationLevelUpdateManyWithoutWorkspaceNestedInput
+    lobReasons?: LOBReasonUpdateManyWithoutWorkspaceNestedInput
     reportTypes?: ReportTypeUpdateManyWithoutWorkspaceNestedInput
+    reports?: ReportUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUpdateManyWithoutWorkspaceNestedInput
   }
 
@@ -63862,7 +75653,11 @@ export namespace Prisma {
     leadActivities?: LeadActivityUncheckedUpdateManyWithoutWorkspaceNestedInput
     holidays?: HolidayUncheckedUpdateManyWithoutWorkspaceNestedInput
     holidaySyncLogs?: HolidaySyncLogUncheckedUpdateManyWithoutWorkspaceNestedInput
+    countries?: CountryUncheckedUpdateManyWithoutWorkspaceNestedInput
+    locationLevels?: LocationLevelUncheckedUpdateManyWithoutWorkspaceNestedInput
+    lobReasons?: LOBReasonUncheckedUpdateManyWithoutWorkspaceNestedInput
     reportTypes?: ReportTypeUncheckedUpdateManyWithoutWorkspaceNestedInput
+    reports?: ReportUncheckedUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
@@ -64094,8 +75889,15 @@ export namespace Prisma {
     closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
     createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
     updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUpdateManyWithoutUpdatedByNestedInput
     createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
   }
 
@@ -64143,8 +75945,15 @@ export namespace Prisma {
     closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
     createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
   }
 
@@ -64203,8 +76012,15 @@ export namespace Prisma {
     closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
     createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
     updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUpdateManyWithoutUpdatedByNestedInput
     createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
   }
 
@@ -64252,8 +76068,15 @@ export namespace Prisma {
     closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
     createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
   }
 
@@ -64312,8 +76135,15 @@ export namespace Prisma {
     closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
     createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
     updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUpdateManyWithoutUpdatedByNestedInput
     createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
   }
 
@@ -64361,8 +76191,15 @@ export namespace Prisma {
     closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
     createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
   }
 
@@ -64446,7 +76283,11 @@ export namespace Prisma {
     leadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutWorkspaceInput
     holidays?: HolidayCreateNestedManyWithoutWorkspaceInput
     holidaySyncLogs?: HolidaySyncLogCreateNestedManyWithoutWorkspaceInput
+    countries?: CountryCreateNestedManyWithoutWorkspaceInput
+    locationLevels?: LocationLevelCreateNestedManyWithoutWorkspaceInput
+    lobReasons?: LOBReasonCreateNestedManyWithoutWorkspaceInput
     reportTypes?: ReportTypeCreateNestedManyWithoutWorkspaceInput
+    reports?: ReportCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogCreateNestedManyWithoutWorkspaceInput
   }
 
@@ -64470,7 +76311,11 @@ export namespace Prisma {
     leadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutWorkspaceInput
     holidays?: HolidayUncheckedCreateNestedManyWithoutWorkspaceInput
     holidaySyncLogs?: HolidaySyncLogUncheckedCreateNestedManyWithoutWorkspaceInput
+    countries?: CountryUncheckedCreateNestedManyWithoutWorkspaceInput
+    locationLevels?: LocationLevelUncheckedCreateNestedManyWithoutWorkspaceInput
+    lobReasons?: LOBReasonUncheckedCreateNestedManyWithoutWorkspaceInput
     reportTypes?: ReportTypeUncheckedCreateNestedManyWithoutWorkspaceInput
+    reports?: ReportUncheckedCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
@@ -64556,7 +76401,11 @@ export namespace Prisma {
     leadStageApprovals?: LeadStageApprovalUpdateManyWithoutWorkspaceNestedInput
     holidays?: HolidayUpdateManyWithoutWorkspaceNestedInput
     holidaySyncLogs?: HolidaySyncLogUpdateManyWithoutWorkspaceNestedInput
+    countries?: CountryUpdateManyWithoutWorkspaceNestedInput
+    locationLevels?: LocationLevelUpdateManyWithoutWorkspaceNestedInput
+    lobReasons?: LOBReasonUpdateManyWithoutWorkspaceNestedInput
     reportTypes?: ReportTypeUpdateManyWithoutWorkspaceNestedInput
+    reports?: ReportUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUpdateManyWithoutWorkspaceNestedInput
   }
 
@@ -64580,7 +76429,11 @@ export namespace Prisma {
     leadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutWorkspaceNestedInput
     holidays?: HolidayUncheckedUpdateManyWithoutWorkspaceNestedInput
     holidaySyncLogs?: HolidaySyncLogUncheckedUpdateManyWithoutWorkspaceNestedInput
+    countries?: CountryUncheckedUpdateManyWithoutWorkspaceNestedInput
+    locationLevels?: LocationLevelUncheckedUpdateManyWithoutWorkspaceNestedInput
+    lobReasons?: LOBReasonUncheckedUpdateManyWithoutWorkspaceNestedInput
     reportTypes?: ReportTypeUncheckedUpdateManyWithoutWorkspaceNestedInput
+    reports?: ReportUncheckedUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
@@ -64890,8 +76743,15 @@ export namespace Prisma {
     closedLeads?: LeadCreateNestedManyWithoutClosedByInput
     createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
     updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonCreateNestedManyWithoutUpdatedByInput
     createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
   }
 
@@ -64939,8 +76799,15 @@ export namespace Prisma {
     closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
     createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
     updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
   }
 
@@ -64969,7 +76836,11 @@ export namespace Prisma {
     leadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutWorkspaceInput
     holidays?: HolidayCreateNestedManyWithoutWorkspaceInput
     holidaySyncLogs?: HolidaySyncLogCreateNestedManyWithoutWorkspaceInput
+    countries?: CountryCreateNestedManyWithoutWorkspaceInput
+    locationLevels?: LocationLevelCreateNestedManyWithoutWorkspaceInput
+    lobReasons?: LOBReasonCreateNestedManyWithoutWorkspaceInput
     reportTypes?: ReportTypeCreateNestedManyWithoutWorkspaceInput
+    reports?: ReportCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogCreateNestedManyWithoutWorkspaceInput
   }
 
@@ -64993,7 +76864,11 @@ export namespace Prisma {
     leadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutWorkspaceInput
     holidays?: HolidayUncheckedCreateNestedManyWithoutWorkspaceInput
     holidaySyncLogs?: HolidaySyncLogUncheckedCreateNestedManyWithoutWorkspaceInput
+    countries?: CountryUncheckedCreateNestedManyWithoutWorkspaceInput
+    locationLevels?: LocationLevelUncheckedCreateNestedManyWithoutWorkspaceInput
+    lobReasons?: LOBReasonUncheckedCreateNestedManyWithoutWorkspaceInput
     reportTypes?: ReportTypeUncheckedCreateNestedManyWithoutWorkspaceInput
+    reports?: ReportUncheckedCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
@@ -65136,8 +77011,15 @@ export namespace Prisma {
     closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
     createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
     updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUpdateManyWithoutUpdatedByNestedInput
     createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
   }
 
@@ -65185,8 +77067,15 @@ export namespace Prisma {
     closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
     createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
   }
 
@@ -65221,7 +77110,11 @@ export namespace Prisma {
     leadStageApprovals?: LeadStageApprovalUpdateManyWithoutWorkspaceNestedInput
     holidays?: HolidayUpdateManyWithoutWorkspaceNestedInput
     holidaySyncLogs?: HolidaySyncLogUpdateManyWithoutWorkspaceNestedInput
+    countries?: CountryUpdateManyWithoutWorkspaceNestedInput
+    locationLevels?: LocationLevelUpdateManyWithoutWorkspaceNestedInput
+    lobReasons?: LOBReasonUpdateManyWithoutWorkspaceNestedInput
     reportTypes?: ReportTypeUpdateManyWithoutWorkspaceNestedInput
+    reports?: ReportUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUpdateManyWithoutWorkspaceNestedInput
   }
 
@@ -65245,7 +77138,11 @@ export namespace Prisma {
     leadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutWorkspaceNestedInput
     holidays?: HolidayUncheckedUpdateManyWithoutWorkspaceNestedInput
     holidaySyncLogs?: HolidaySyncLogUncheckedUpdateManyWithoutWorkspaceNestedInput
+    countries?: CountryUncheckedUpdateManyWithoutWorkspaceNestedInput
+    locationLevels?: LocationLevelUncheckedUpdateManyWithoutWorkspaceNestedInput
+    lobReasons?: LOBReasonUncheckedUpdateManyWithoutWorkspaceNestedInput
     reportTypes?: ReportTypeUncheckedUpdateManyWithoutWorkspaceNestedInput
+    reports?: ReportUncheckedUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
@@ -65293,8 +77190,15 @@ export namespace Prisma {
     closedLeads?: LeadCreateNestedManyWithoutClosedByInput
     createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
     updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonCreateNestedManyWithoutUpdatedByInput
     createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
   }
 
@@ -65342,8 +77246,15 @@ export namespace Prisma {
     closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
     createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
     updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
   }
 
@@ -65461,8 +77372,15 @@ export namespace Prisma {
     closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
     createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
     updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUpdateManyWithoutUpdatedByNestedInput
     createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
   }
 
@@ -65510,8 +77428,15 @@ export namespace Prisma {
     closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
     createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
   }
 
@@ -65625,8 +77550,15 @@ export namespace Prisma {
     closedLeads?: LeadCreateNestedManyWithoutClosedByInput
     createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
     updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonCreateNestedManyWithoutUpdatedByInput
     createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
   }
 
@@ -65674,8 +77606,15 @@ export namespace Prisma {
     closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
     createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
     updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
   }
 
@@ -65739,8 +77678,15 @@ export namespace Prisma {
     closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
     createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
     updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUpdateManyWithoutUpdatedByNestedInput
     createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
   }
 
@@ -65788,8 +77734,15 @@ export namespace Prisma {
     closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
     createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
   }
 
@@ -65840,7 +77793,11 @@ export namespace Prisma {
     leadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutWorkspaceInput
     holidays?: HolidayCreateNestedManyWithoutWorkspaceInput
     holidaySyncLogs?: HolidaySyncLogCreateNestedManyWithoutWorkspaceInput
+    countries?: CountryCreateNestedManyWithoutWorkspaceInput
+    locationLevels?: LocationLevelCreateNestedManyWithoutWorkspaceInput
+    lobReasons?: LOBReasonCreateNestedManyWithoutWorkspaceInput
     reportTypes?: ReportTypeCreateNestedManyWithoutWorkspaceInput
+    reports?: ReportCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogCreateNestedManyWithoutWorkspaceInput
   }
 
@@ -65864,7 +77821,11 @@ export namespace Prisma {
     leadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutWorkspaceInput
     holidays?: HolidayUncheckedCreateNestedManyWithoutWorkspaceInput
     holidaySyncLogs?: HolidaySyncLogUncheckedCreateNestedManyWithoutWorkspaceInput
+    countries?: CountryUncheckedCreateNestedManyWithoutWorkspaceInput
+    locationLevels?: LocationLevelUncheckedCreateNestedManyWithoutWorkspaceInput
+    lobReasons?: LOBReasonUncheckedCreateNestedManyWithoutWorkspaceInput
     reportTypes?: ReportTypeUncheckedCreateNestedManyWithoutWorkspaceInput
+    reports?: ReportUncheckedCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
@@ -65893,7 +77854,11 @@ export namespace Prisma {
     leadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutWorkspaceInput
     holidays?: HolidayCreateNestedManyWithoutWorkspaceInput
     holidaySyncLogs?: HolidaySyncLogCreateNestedManyWithoutWorkspaceInput
+    countries?: CountryCreateNestedManyWithoutWorkspaceInput
+    locationLevels?: LocationLevelCreateNestedManyWithoutWorkspaceInput
+    lobReasons?: LOBReasonCreateNestedManyWithoutWorkspaceInput
     reportTypes?: ReportTypeCreateNestedManyWithoutWorkspaceInput
+    reports?: ReportCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogCreateNestedManyWithoutWorkspaceInput
   }
 
@@ -65917,7 +77882,11 @@ export namespace Prisma {
     leadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutWorkspaceInput
     holidays?: HolidayUncheckedCreateNestedManyWithoutWorkspaceInput
     holidaySyncLogs?: HolidaySyncLogUncheckedCreateNestedManyWithoutWorkspaceInput
+    countries?: CountryUncheckedCreateNestedManyWithoutWorkspaceInput
+    locationLevels?: LocationLevelUncheckedCreateNestedManyWithoutWorkspaceInput
+    lobReasons?: LOBReasonUncheckedCreateNestedManyWithoutWorkspaceInput
     reportTypes?: ReportTypeUncheckedCreateNestedManyWithoutWorkspaceInput
+    reports?: ReportUncheckedCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
@@ -65991,10 +77960,16 @@ export namespace Prisma {
     name: string
     type: $Enums.LocationType
     workspaceId: string
+    isActive?: boolean
+    createdById?: string | null
+    updatedById?: string | null
+    deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     parent?: LocationCreateNestedOneWithoutChildrenInput
     children?: LocationCreateNestedManyWithoutParentInput
+    country?: CountryCreateNestedOneWithoutLocationsInput
+    level?: LocationLevelCreateNestedOneWithoutLocationsInput
     assignedUsers?: UserLocationAssignmentCreateNestedManyWithoutLocationInput
     usersAtState?: UserCreateNestedManyWithoutStateInput
     usersAtDistrict?: UserCreateNestedManyWithoutDistrictInput
@@ -66008,6 +77983,12 @@ export namespace Prisma {
     name: string
     type: $Enums.LocationType
     workspaceId: string
+    countryId?: string | null
+    levelId?: string | null
+    isActive?: boolean
+    createdById?: string | null
+    updatedById?: string | null
+    deletedAt?: Date | string | null
     parentId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -66030,10 +78011,16 @@ export namespace Prisma {
     name: string
     type: $Enums.LocationType
     workspaceId: string
+    isActive?: boolean
+    createdById?: string | null
+    updatedById?: string | null
+    deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     parent?: LocationCreateNestedOneWithoutChildrenInput
     children?: LocationCreateNestedManyWithoutParentInput
+    country?: CountryCreateNestedOneWithoutLocationsInput
+    level?: LocationLevelCreateNestedOneWithoutLocationsInput
     assignedUsers?: UserLocationAssignmentCreateNestedManyWithoutLocationInput
     usersAtCountry?: UserCreateNestedManyWithoutCountryInput
     usersAtDistrict?: UserCreateNestedManyWithoutDistrictInput
@@ -66047,6 +78034,12 @@ export namespace Prisma {
     name: string
     type: $Enums.LocationType
     workspaceId: string
+    countryId?: string | null
+    levelId?: string | null
+    isActive?: boolean
+    createdById?: string | null
+    updatedById?: string | null
+    deletedAt?: Date | string | null
     parentId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -66069,10 +78062,16 @@ export namespace Prisma {
     name: string
     type: $Enums.LocationType
     workspaceId: string
+    isActive?: boolean
+    createdById?: string | null
+    updatedById?: string | null
+    deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     parent?: LocationCreateNestedOneWithoutChildrenInput
     children?: LocationCreateNestedManyWithoutParentInput
+    country?: CountryCreateNestedOneWithoutLocationsInput
+    level?: LocationLevelCreateNestedOneWithoutLocationsInput
     assignedUsers?: UserLocationAssignmentCreateNestedManyWithoutLocationInput
     usersAtCountry?: UserCreateNestedManyWithoutCountryInput
     usersAtState?: UserCreateNestedManyWithoutStateInput
@@ -66086,6 +78085,12 @@ export namespace Prisma {
     name: string
     type: $Enums.LocationType
     workspaceId: string
+    countryId?: string | null
+    levelId?: string | null
+    isActive?: boolean
+    createdById?: string | null
+    updatedById?: string | null
+    deletedAt?: Date | string | null
     parentId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -66173,8 +78178,15 @@ export namespace Prisma {
     closedLeads?: LeadCreateNestedManyWithoutClosedByInput
     createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
     updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonCreateNestedManyWithoutUpdatedByInput
     createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
   }
 
@@ -66222,8 +78234,15 @@ export namespace Prisma {
     closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
     createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
     updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
   }
 
@@ -66276,8 +78295,15 @@ export namespace Prisma {
     closedLeads?: LeadCreateNestedManyWithoutClosedByInput
     createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
     updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonCreateNestedManyWithoutUpdatedByInput
     createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
   }
 
@@ -66325,8 +78351,15 @@ export namespace Prisma {
     closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
     createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
     updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
   }
 
@@ -67038,6 +79071,218 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type CountryCreateWithoutCreatedByInput = {
+    id?: string
+    name: string
+    code?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    workspace: WorkspaceCreateNestedOneWithoutCountriesInput
+    updatedBy?: UserCreateNestedOneWithoutUpdatedCountriesInput
+    levels?: LocationLevelCreateNestedManyWithoutCountryInput
+    locations?: LocationCreateNestedManyWithoutCountryInput
+  }
+
+  export type CountryUncheckedCreateWithoutCreatedByInput = {
+    id?: string
+    workspaceId: string
+    name: string
+    code?: string | null
+    isActive?: boolean
+    updatedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    levels?: LocationLevelUncheckedCreateNestedManyWithoutCountryInput
+    locations?: LocationUncheckedCreateNestedManyWithoutCountryInput
+  }
+
+  export type CountryCreateOrConnectWithoutCreatedByInput = {
+    where: CountryWhereUniqueInput
+    create: XOR<CountryCreateWithoutCreatedByInput, CountryUncheckedCreateWithoutCreatedByInput>
+  }
+
+  export type CountryCreateManyCreatedByInputEnvelope = {
+    data: CountryCreateManyCreatedByInput | CountryCreateManyCreatedByInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type CountryCreateWithoutUpdatedByInput = {
+    id?: string
+    name: string
+    code?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    workspace: WorkspaceCreateNestedOneWithoutCountriesInput
+    createdBy?: UserCreateNestedOneWithoutCreatedCountriesInput
+    levels?: LocationLevelCreateNestedManyWithoutCountryInput
+    locations?: LocationCreateNestedManyWithoutCountryInput
+  }
+
+  export type CountryUncheckedCreateWithoutUpdatedByInput = {
+    id?: string
+    workspaceId: string
+    name: string
+    code?: string | null
+    isActive?: boolean
+    createdById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    levels?: LocationLevelUncheckedCreateNestedManyWithoutCountryInput
+    locations?: LocationUncheckedCreateNestedManyWithoutCountryInput
+  }
+
+  export type CountryCreateOrConnectWithoutUpdatedByInput = {
+    where: CountryWhereUniqueInput
+    create: XOR<CountryCreateWithoutUpdatedByInput, CountryUncheckedCreateWithoutUpdatedByInput>
+  }
+
+  export type CountryCreateManyUpdatedByInputEnvelope = {
+    data: CountryCreateManyUpdatedByInput | CountryCreateManyUpdatedByInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type LocationLevelCreateWithoutCreatedByInput = {
+    id?: string
+    levelName: string
+    levelOrder: number
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    workspace: WorkspaceCreateNestedOneWithoutLocationLevelsInput
+    country: CountryCreateNestedOneWithoutLevelsInput
+    updatedBy?: UserCreateNestedOneWithoutUpdatedLocationLevelsInput
+    locations?: LocationCreateNestedManyWithoutLevelInput
+  }
+
+  export type LocationLevelUncheckedCreateWithoutCreatedByInput = {
+    id?: string
+    workspaceId: string
+    countryId: string
+    levelName: string
+    levelOrder: number
+    isActive?: boolean
+    updatedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    locations?: LocationUncheckedCreateNestedManyWithoutLevelInput
+  }
+
+  export type LocationLevelCreateOrConnectWithoutCreatedByInput = {
+    where: LocationLevelWhereUniqueInput
+    create: XOR<LocationLevelCreateWithoutCreatedByInput, LocationLevelUncheckedCreateWithoutCreatedByInput>
+  }
+
+  export type LocationLevelCreateManyCreatedByInputEnvelope = {
+    data: LocationLevelCreateManyCreatedByInput | LocationLevelCreateManyCreatedByInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type LocationLevelCreateWithoutUpdatedByInput = {
+    id?: string
+    levelName: string
+    levelOrder: number
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    workspace: WorkspaceCreateNestedOneWithoutLocationLevelsInput
+    country: CountryCreateNestedOneWithoutLevelsInput
+    createdBy?: UserCreateNestedOneWithoutCreatedLocationLevelsInput
+    locations?: LocationCreateNestedManyWithoutLevelInput
+  }
+
+  export type LocationLevelUncheckedCreateWithoutUpdatedByInput = {
+    id?: string
+    workspaceId: string
+    countryId: string
+    levelName: string
+    levelOrder: number
+    isActive?: boolean
+    createdById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    locations?: LocationUncheckedCreateNestedManyWithoutLevelInput
+  }
+
+  export type LocationLevelCreateOrConnectWithoutUpdatedByInput = {
+    where: LocationLevelWhereUniqueInput
+    create: XOR<LocationLevelCreateWithoutUpdatedByInput, LocationLevelUncheckedCreateWithoutUpdatedByInput>
+  }
+
+  export type LocationLevelCreateManyUpdatedByInputEnvelope = {
+    data: LocationLevelCreateManyUpdatedByInput | LocationLevelCreateManyUpdatedByInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type LOBReasonCreateWithoutCreatedByInput = {
+    id?: string
+    name: string
+    status?: $Enums.LOBReasonStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    workspace: WorkspaceCreateNestedOneWithoutLobReasonsInput
+    updatedBy?: UserCreateNestedOneWithoutUpdatedLOBReasonsInput
+  }
+
+  export type LOBReasonUncheckedCreateWithoutCreatedByInput = {
+    id?: string
+    workspaceId: string
+    name: string
+    status?: $Enums.LOBReasonStatus
+    updatedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type LOBReasonCreateOrConnectWithoutCreatedByInput = {
+    where: LOBReasonWhereUniqueInput
+    create: XOR<LOBReasonCreateWithoutCreatedByInput, LOBReasonUncheckedCreateWithoutCreatedByInput>
+  }
+
+  export type LOBReasonCreateManyCreatedByInputEnvelope = {
+    data: LOBReasonCreateManyCreatedByInput | LOBReasonCreateManyCreatedByInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type LOBReasonCreateWithoutUpdatedByInput = {
+    id?: string
+    name: string
+    status?: $Enums.LOBReasonStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    workspace: WorkspaceCreateNestedOneWithoutLobReasonsInput
+    createdBy?: UserCreateNestedOneWithoutCreatedLOBReasonsInput
+  }
+
+  export type LOBReasonUncheckedCreateWithoutUpdatedByInput = {
+    id?: string
+    workspaceId: string
+    name: string
+    status?: $Enums.LOBReasonStatus
+    createdById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type LOBReasonCreateOrConnectWithoutUpdatedByInput = {
+    where: LOBReasonWhereUniqueInput
+    create: XOR<LOBReasonCreateWithoutUpdatedByInput, LOBReasonUncheckedCreateWithoutUpdatedByInput>
+  }
+
+  export type LOBReasonCreateManyUpdatedByInputEnvelope = {
+    data: LOBReasonCreateManyUpdatedByInput | LOBReasonCreateManyUpdatedByInput[]
+    skipDuplicates?: boolean
+  }
+
   export type ReportTypeCreateWithoutCreatedByInput = {
     id?: string
     name: string
@@ -67052,6 +79297,7 @@ export namespace Prisma {
     workspace: WorkspaceCreateNestedOneWithoutReportTypesInput
     updatedBy?: UserCreateNestedOneWithoutUpdatedReportTypesInput
     logs?: ReportLogCreateNestedManyWithoutReportTypeInput
+    reports?: ReportCreateNestedManyWithoutReportTypeInput
   }
 
   export type ReportTypeUncheckedCreateWithoutCreatedByInput = {
@@ -67068,6 +79314,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     logs?: ReportLogUncheckedCreateNestedManyWithoutReportTypeInput
+    reports?: ReportUncheckedCreateNestedManyWithoutReportTypeInput
   }
 
   export type ReportTypeCreateOrConnectWithoutCreatedByInput = {
@@ -67094,6 +79341,7 @@ export namespace Prisma {
     workspace: WorkspaceCreateNestedOneWithoutReportTypesInput
     createdBy?: UserCreateNestedOneWithoutCreatedReportTypesInput
     logs?: ReportLogCreateNestedManyWithoutReportTypeInput
+    reports?: ReportCreateNestedManyWithoutReportTypeInput
   }
 
   export type ReportTypeUncheckedCreateWithoutUpdatedByInput = {
@@ -67110,6 +79358,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     logs?: ReportLogUncheckedCreateNestedManyWithoutReportTypeInput
+    reports?: ReportUncheckedCreateNestedManyWithoutReportTypeInput
   }
 
   export type ReportTypeCreateOrConnectWithoutUpdatedByInput = {
@@ -67122,21 +79371,71 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type ReportCreateWithoutCreatedByInput = {
+    id?: string
+    reportName: string
+    reportDate: Date | string
+    isActive?: boolean
+    isGenerated?: boolean
+    generatedFileUrl?: string | null
+    generatedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    workspace: WorkspaceCreateNestedOneWithoutReportsInput
+    reportType: ReportTypeCreateNestedOneWithoutReportsInput
+    filters?: ReportFilterCreateNestedManyWithoutReportInput
+    logs?: ReportLogCreateNestedManyWithoutReportInput
+  }
+
+  export type ReportUncheckedCreateWithoutCreatedByInput = {
+    id?: string
+    workspaceId: string
+    reportName: string
+    reportTypeId: string
+    reportDate: Date | string
+    isActive?: boolean
+    isGenerated?: boolean
+    generatedFileUrl?: string | null
+    generatedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    filters?: ReportFilterUncheckedCreateNestedManyWithoutReportInput
+    logs?: ReportLogUncheckedCreateNestedManyWithoutReportInput
+  }
+
+  export type ReportCreateOrConnectWithoutCreatedByInput = {
+    where: ReportWhereUniqueInput
+    create: XOR<ReportCreateWithoutCreatedByInput, ReportUncheckedCreateWithoutCreatedByInput>
+  }
+
+  export type ReportCreateManyCreatedByInputEnvelope = {
+    data: ReportCreateManyCreatedByInput | ReportCreateManyCreatedByInput[]
+    skipDuplicates?: boolean
+  }
+
   export type ReportLogCreateWithoutGeneratedByInput = {
     id?: string
+    action?: string | null
     filters?: JsonNullValueInput | InputJsonValue
     resultCount?: number
+    meta?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     workspace: WorkspaceCreateNestedOneWithoutReportLogsInput
-    reportType: ReportTypeCreateNestedOneWithoutLogsInput
+    reportType?: ReportTypeCreateNestedOneWithoutLogsInput
+    report?: ReportCreateNestedOneWithoutLogsInput
   }
 
   export type ReportLogUncheckedCreateWithoutGeneratedByInput = {
     id?: string
     workspaceId: string
-    reportTypeId: string
+    reportTypeId?: string | null
+    reportId?: string | null
+    action?: string | null
     filters?: JsonNullValueInput | InputJsonValue
     resultCount?: number
+    meta?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
   }
 
@@ -67214,7 +79513,11 @@ export namespace Prisma {
     leadStageApprovals?: LeadStageApprovalUpdateManyWithoutWorkspaceNestedInput
     holidays?: HolidayUpdateManyWithoutWorkspaceNestedInput
     holidaySyncLogs?: HolidaySyncLogUpdateManyWithoutWorkspaceNestedInput
+    countries?: CountryUpdateManyWithoutWorkspaceNestedInput
+    locationLevels?: LocationLevelUpdateManyWithoutWorkspaceNestedInput
+    lobReasons?: LOBReasonUpdateManyWithoutWorkspaceNestedInput
     reportTypes?: ReportTypeUpdateManyWithoutWorkspaceNestedInput
+    reports?: ReportUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUpdateManyWithoutWorkspaceNestedInput
   }
 
@@ -67238,7 +79541,11 @@ export namespace Prisma {
     leadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutWorkspaceNestedInput
     holidays?: HolidayUncheckedUpdateManyWithoutWorkspaceNestedInput
     holidaySyncLogs?: HolidaySyncLogUncheckedUpdateManyWithoutWorkspaceNestedInput
+    countries?: CountryUncheckedUpdateManyWithoutWorkspaceNestedInput
+    locationLevels?: LocationLevelUncheckedUpdateManyWithoutWorkspaceNestedInput
+    lobReasons?: LOBReasonUncheckedUpdateManyWithoutWorkspaceNestedInput
     reportTypes?: ReportTypeUncheckedUpdateManyWithoutWorkspaceNestedInput
+    reports?: ReportUncheckedUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
@@ -67273,7 +79580,11 @@ export namespace Prisma {
     leadStageApprovals?: LeadStageApprovalUpdateManyWithoutWorkspaceNestedInput
     holidays?: HolidayUpdateManyWithoutWorkspaceNestedInput
     holidaySyncLogs?: HolidaySyncLogUpdateManyWithoutWorkspaceNestedInput
+    countries?: CountryUpdateManyWithoutWorkspaceNestedInput
+    locationLevels?: LocationLevelUpdateManyWithoutWorkspaceNestedInput
+    lobReasons?: LOBReasonUpdateManyWithoutWorkspaceNestedInput
     reportTypes?: ReportTypeUpdateManyWithoutWorkspaceNestedInput
+    reports?: ReportUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUpdateManyWithoutWorkspaceNestedInput
   }
 
@@ -67297,7 +79608,11 @@ export namespace Prisma {
     leadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutWorkspaceNestedInput
     holidays?: HolidayUncheckedUpdateManyWithoutWorkspaceNestedInput
     holidaySyncLogs?: HolidaySyncLogUncheckedUpdateManyWithoutWorkspaceNestedInput
+    countries?: CountryUncheckedUpdateManyWithoutWorkspaceNestedInput
+    locationLevels?: LocationLevelUncheckedUpdateManyWithoutWorkspaceNestedInput
+    lobReasons?: LOBReasonUncheckedUpdateManyWithoutWorkspaceNestedInput
     reportTypes?: ReportTypeUncheckedUpdateManyWithoutWorkspaceNestedInput
+    reports?: ReportUncheckedUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
@@ -67389,10 +79704,16 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     type?: EnumLocationTypeFieldUpdateOperationsInput | $Enums.LocationType
     workspaceId?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     parent?: LocationUpdateOneWithoutChildrenNestedInput
     children?: LocationUpdateManyWithoutParentNestedInput
+    country?: CountryUpdateOneWithoutLocationsNestedInput
+    level?: LocationLevelUpdateOneWithoutLocationsNestedInput
     assignedUsers?: UserLocationAssignmentUpdateManyWithoutLocationNestedInput
     usersAtState?: UserUpdateManyWithoutStateNestedInput
     usersAtDistrict?: UserUpdateManyWithoutDistrictNestedInput
@@ -67406,6 +79727,12 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     type?: EnumLocationTypeFieldUpdateOperationsInput | $Enums.LocationType
     workspaceId?: StringFieldUpdateOperationsInput | string
+    countryId?: NullableStringFieldUpdateOperationsInput | string | null
+    levelId?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -67434,10 +79761,16 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     type?: EnumLocationTypeFieldUpdateOperationsInput | $Enums.LocationType
     workspaceId?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     parent?: LocationUpdateOneWithoutChildrenNestedInput
     children?: LocationUpdateManyWithoutParentNestedInput
+    country?: CountryUpdateOneWithoutLocationsNestedInput
+    level?: LocationLevelUpdateOneWithoutLocationsNestedInput
     assignedUsers?: UserLocationAssignmentUpdateManyWithoutLocationNestedInput
     usersAtCountry?: UserUpdateManyWithoutCountryNestedInput
     usersAtDistrict?: UserUpdateManyWithoutDistrictNestedInput
@@ -67451,6 +79784,12 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     type?: EnumLocationTypeFieldUpdateOperationsInput | $Enums.LocationType
     workspaceId?: StringFieldUpdateOperationsInput | string
+    countryId?: NullableStringFieldUpdateOperationsInput | string | null
+    levelId?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -67479,10 +79818,16 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     type?: EnumLocationTypeFieldUpdateOperationsInput | $Enums.LocationType
     workspaceId?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     parent?: LocationUpdateOneWithoutChildrenNestedInput
     children?: LocationUpdateManyWithoutParentNestedInput
+    country?: CountryUpdateOneWithoutLocationsNestedInput
+    level?: LocationLevelUpdateOneWithoutLocationsNestedInput
     assignedUsers?: UserLocationAssignmentUpdateManyWithoutLocationNestedInput
     usersAtCountry?: UserUpdateManyWithoutCountryNestedInput
     usersAtState?: UserUpdateManyWithoutStateNestedInput
@@ -67496,6 +79841,12 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     type?: EnumLocationTypeFieldUpdateOperationsInput | $Enums.LocationType
     workspaceId?: StringFieldUpdateOperationsInput | string
+    countryId?: NullableStringFieldUpdateOperationsInput | string | null
+    levelId?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -67579,8 +79930,15 @@ export namespace Prisma {
     closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
     createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
     updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUpdateManyWithoutUpdatedByNestedInput
     createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
   }
 
@@ -67628,8 +79986,15 @@ export namespace Prisma {
     closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
     createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
   }
 
@@ -67957,6 +80322,102 @@ export namespace Prisma {
     data: XOR<HolidayUpdateManyMutationInput, HolidayUncheckedUpdateManyWithoutUpdatedByInput>
   }
 
+  export type CountryUpsertWithWhereUniqueWithoutCreatedByInput = {
+    where: CountryWhereUniqueInput
+    update: XOR<CountryUpdateWithoutCreatedByInput, CountryUncheckedUpdateWithoutCreatedByInput>
+    create: XOR<CountryCreateWithoutCreatedByInput, CountryUncheckedCreateWithoutCreatedByInput>
+  }
+
+  export type CountryUpdateWithWhereUniqueWithoutCreatedByInput = {
+    where: CountryWhereUniqueInput
+    data: XOR<CountryUpdateWithoutCreatedByInput, CountryUncheckedUpdateWithoutCreatedByInput>
+  }
+
+  export type CountryUpdateManyWithWhereWithoutCreatedByInput = {
+    where: CountryScalarWhereInput
+    data: XOR<CountryUpdateManyMutationInput, CountryUncheckedUpdateManyWithoutCreatedByInput>
+  }
+
+  export type CountryUpsertWithWhereUniqueWithoutUpdatedByInput = {
+    where: CountryWhereUniqueInput
+    update: XOR<CountryUpdateWithoutUpdatedByInput, CountryUncheckedUpdateWithoutUpdatedByInput>
+    create: XOR<CountryCreateWithoutUpdatedByInput, CountryUncheckedCreateWithoutUpdatedByInput>
+  }
+
+  export type CountryUpdateWithWhereUniqueWithoutUpdatedByInput = {
+    where: CountryWhereUniqueInput
+    data: XOR<CountryUpdateWithoutUpdatedByInput, CountryUncheckedUpdateWithoutUpdatedByInput>
+  }
+
+  export type CountryUpdateManyWithWhereWithoutUpdatedByInput = {
+    where: CountryScalarWhereInput
+    data: XOR<CountryUpdateManyMutationInput, CountryUncheckedUpdateManyWithoutUpdatedByInput>
+  }
+
+  export type LocationLevelUpsertWithWhereUniqueWithoutCreatedByInput = {
+    where: LocationLevelWhereUniqueInput
+    update: XOR<LocationLevelUpdateWithoutCreatedByInput, LocationLevelUncheckedUpdateWithoutCreatedByInput>
+    create: XOR<LocationLevelCreateWithoutCreatedByInput, LocationLevelUncheckedCreateWithoutCreatedByInput>
+  }
+
+  export type LocationLevelUpdateWithWhereUniqueWithoutCreatedByInput = {
+    where: LocationLevelWhereUniqueInput
+    data: XOR<LocationLevelUpdateWithoutCreatedByInput, LocationLevelUncheckedUpdateWithoutCreatedByInput>
+  }
+
+  export type LocationLevelUpdateManyWithWhereWithoutCreatedByInput = {
+    where: LocationLevelScalarWhereInput
+    data: XOR<LocationLevelUpdateManyMutationInput, LocationLevelUncheckedUpdateManyWithoutCreatedByInput>
+  }
+
+  export type LocationLevelUpsertWithWhereUniqueWithoutUpdatedByInput = {
+    where: LocationLevelWhereUniqueInput
+    update: XOR<LocationLevelUpdateWithoutUpdatedByInput, LocationLevelUncheckedUpdateWithoutUpdatedByInput>
+    create: XOR<LocationLevelCreateWithoutUpdatedByInput, LocationLevelUncheckedCreateWithoutUpdatedByInput>
+  }
+
+  export type LocationLevelUpdateWithWhereUniqueWithoutUpdatedByInput = {
+    where: LocationLevelWhereUniqueInput
+    data: XOR<LocationLevelUpdateWithoutUpdatedByInput, LocationLevelUncheckedUpdateWithoutUpdatedByInput>
+  }
+
+  export type LocationLevelUpdateManyWithWhereWithoutUpdatedByInput = {
+    where: LocationLevelScalarWhereInput
+    data: XOR<LocationLevelUpdateManyMutationInput, LocationLevelUncheckedUpdateManyWithoutUpdatedByInput>
+  }
+
+  export type LOBReasonUpsertWithWhereUniqueWithoutCreatedByInput = {
+    where: LOBReasonWhereUniqueInput
+    update: XOR<LOBReasonUpdateWithoutCreatedByInput, LOBReasonUncheckedUpdateWithoutCreatedByInput>
+    create: XOR<LOBReasonCreateWithoutCreatedByInput, LOBReasonUncheckedCreateWithoutCreatedByInput>
+  }
+
+  export type LOBReasonUpdateWithWhereUniqueWithoutCreatedByInput = {
+    where: LOBReasonWhereUniqueInput
+    data: XOR<LOBReasonUpdateWithoutCreatedByInput, LOBReasonUncheckedUpdateWithoutCreatedByInput>
+  }
+
+  export type LOBReasonUpdateManyWithWhereWithoutCreatedByInput = {
+    where: LOBReasonScalarWhereInput
+    data: XOR<LOBReasonUpdateManyMutationInput, LOBReasonUncheckedUpdateManyWithoutCreatedByInput>
+  }
+
+  export type LOBReasonUpsertWithWhereUniqueWithoutUpdatedByInput = {
+    where: LOBReasonWhereUniqueInput
+    update: XOR<LOBReasonUpdateWithoutUpdatedByInput, LOBReasonUncheckedUpdateWithoutUpdatedByInput>
+    create: XOR<LOBReasonCreateWithoutUpdatedByInput, LOBReasonUncheckedCreateWithoutUpdatedByInput>
+  }
+
+  export type LOBReasonUpdateWithWhereUniqueWithoutUpdatedByInput = {
+    where: LOBReasonWhereUniqueInput
+    data: XOR<LOBReasonUpdateWithoutUpdatedByInput, LOBReasonUncheckedUpdateWithoutUpdatedByInput>
+  }
+
+  export type LOBReasonUpdateManyWithWhereWithoutUpdatedByInput = {
+    where: LOBReasonScalarWhereInput
+    data: XOR<LOBReasonUpdateManyMutationInput, LOBReasonUncheckedUpdateManyWithoutUpdatedByInput>
+  }
+
   export type ReportTypeUpsertWithWhereUniqueWithoutCreatedByInput = {
     where: ReportTypeWhereUniqueInput
     update: XOR<ReportTypeUpdateWithoutCreatedByInput, ReportTypeUncheckedUpdateWithoutCreatedByInput>
@@ -67987,6 +80448,22 @@ export namespace Prisma {
   export type ReportTypeUpdateManyWithWhereWithoutUpdatedByInput = {
     where: ReportTypeScalarWhereInput
     data: XOR<ReportTypeUpdateManyMutationInput, ReportTypeUncheckedUpdateManyWithoutUpdatedByInput>
+  }
+
+  export type ReportUpsertWithWhereUniqueWithoutCreatedByInput = {
+    where: ReportWhereUniqueInput
+    update: XOR<ReportUpdateWithoutCreatedByInput, ReportUncheckedUpdateWithoutCreatedByInput>
+    create: XOR<ReportCreateWithoutCreatedByInput, ReportUncheckedCreateWithoutCreatedByInput>
+  }
+
+  export type ReportUpdateWithWhereUniqueWithoutCreatedByInput = {
+    where: ReportWhereUniqueInput
+    data: XOR<ReportUpdateWithoutCreatedByInput, ReportUncheckedUpdateWithoutCreatedByInput>
+  }
+
+  export type ReportUpdateManyWithWhereWithoutCreatedByInput = {
+    where: ReportScalarWhereInput
+    data: XOR<ReportUpdateManyMutationInput, ReportUncheckedUpdateManyWithoutCreatedByInput>
   }
 
   export type ReportLogUpsertWithWhereUniqueWithoutGeneratedByInput = {
@@ -68049,8 +80526,15 @@ export namespace Prisma {
     closedLeads?: LeadCreateNestedManyWithoutClosedByInput
     createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
     updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonCreateNestedManyWithoutUpdatedByInput
     createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
   }
 
@@ -68098,8 +80582,15 @@ export namespace Prisma {
     closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
     createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
     updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
   }
 
@@ -68258,8 +80749,15 @@ export namespace Prisma {
     closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
     createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
     updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUpdateManyWithoutUpdatedByNestedInput
     createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
   }
 
@@ -68307,8 +80805,15 @@ export namespace Prisma {
     closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
     createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
   }
 
@@ -68533,8 +81038,15 @@ export namespace Prisma {
     closedLeads?: LeadCreateNestedManyWithoutClosedByInput
     createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
     updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonCreateNestedManyWithoutUpdatedByInput
     createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
   }
 
@@ -68582,8 +81094,15 @@ export namespace Prisma {
     closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
     createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
     updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
   }
 
@@ -68647,8 +81166,15 @@ export namespace Prisma {
     closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
     createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
     updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUpdateManyWithoutUpdatedByNestedInput
     createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
   }
 
@@ -68696,8 +81222,15 @@ export namespace Prisma {
     closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
     createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
   }
 
@@ -68745,8 +81278,15 @@ export namespace Prisma {
     closedLeads?: LeadCreateNestedManyWithoutClosedByInput
     createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
     updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonCreateNestedManyWithoutUpdatedByInput
     createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
   }
 
@@ -68794,8 +81334,15 @@ export namespace Prisma {
     closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
     createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
     updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
   }
 
@@ -68859,8 +81406,15 @@ export namespace Prisma {
     closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
     createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
     updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUpdateManyWithoutUpdatedByNestedInput
     createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
   }
 
@@ -68908,8 +81462,15 @@ export namespace Prisma {
     closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
     createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
   }
 
@@ -68957,8 +81518,15 @@ export namespace Prisma {
     closedLeads?: LeadCreateNestedManyWithoutClosedByInput
     createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
     updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonCreateNestedManyWithoutUpdatedByInput
     createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
   }
 
@@ -69006,8 +81574,15 @@ export namespace Prisma {
     closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
     createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
     updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
   }
 
@@ -69071,8 +81646,15 @@ export namespace Prisma {
     closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
     createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
     updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUpdateManyWithoutUpdatedByNestedInput
     createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
   }
 
@@ -69120,8 +81702,15 @@ export namespace Prisma {
     closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
     createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
   }
 
@@ -69145,7 +81734,11 @@ export namespace Prisma {
     leadActivities?: LeadActivityCreateNestedManyWithoutWorkspaceInput
     leadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutWorkspaceInput
     holidaySyncLogs?: HolidaySyncLogCreateNestedManyWithoutWorkspaceInput
+    countries?: CountryCreateNestedManyWithoutWorkspaceInput
+    locationLevels?: LocationLevelCreateNestedManyWithoutWorkspaceInput
+    lobReasons?: LOBReasonCreateNestedManyWithoutWorkspaceInput
     reportTypes?: ReportTypeCreateNestedManyWithoutWorkspaceInput
+    reports?: ReportCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogCreateNestedManyWithoutWorkspaceInput
   }
 
@@ -69169,7 +81762,11 @@ export namespace Prisma {
     leadActivities?: LeadActivityUncheckedCreateNestedManyWithoutWorkspaceInput
     leadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutWorkspaceInput
     holidaySyncLogs?: HolidaySyncLogUncheckedCreateNestedManyWithoutWorkspaceInput
+    countries?: CountryUncheckedCreateNestedManyWithoutWorkspaceInput
+    locationLevels?: LocationLevelUncheckedCreateNestedManyWithoutWorkspaceInput
+    lobReasons?: LOBReasonUncheckedCreateNestedManyWithoutWorkspaceInput
     reportTypes?: ReportTypeUncheckedCreateNestedManyWithoutWorkspaceInput
+    reports?: ReportUncheckedCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
@@ -69183,10 +81780,16 @@ export namespace Prisma {
     name: string
     type: $Enums.LocationType
     workspaceId: string
+    isActive?: boolean
+    createdById?: string | null
+    updatedById?: string | null
+    deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     parent?: LocationCreateNestedOneWithoutChildrenInput
     children?: LocationCreateNestedManyWithoutParentInput
+    country?: CountryCreateNestedOneWithoutLocationsInput
+    level?: LocationLevelCreateNestedOneWithoutLocationsInput
     assignedUsers?: UserLocationAssignmentCreateNestedManyWithoutLocationInput
     usersAtCountry?: UserCreateNestedManyWithoutCountryInput
     usersAtState?: UserCreateNestedManyWithoutStateInput
@@ -69200,6 +81803,12 @@ export namespace Prisma {
     name: string
     type: $Enums.LocationType
     workspaceId: string
+    countryId?: string | null
+    levelId?: string | null
+    isActive?: boolean
+    createdById?: string | null
+    updatedById?: string | null
+    deletedAt?: Date | string | null
     parentId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -69222,10 +81831,16 @@ export namespace Prisma {
     name: string
     type: $Enums.LocationType
     workspaceId: string
+    isActive?: boolean
+    createdById?: string | null
+    updatedById?: string | null
+    deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     parent?: LocationCreateNestedOneWithoutChildrenInput
     children?: LocationCreateNestedManyWithoutParentInput
+    country?: CountryCreateNestedOneWithoutLocationsInput
+    level?: LocationLevelCreateNestedOneWithoutLocationsInput
     assignedUsers?: UserLocationAssignmentCreateNestedManyWithoutLocationInput
     usersAtCountry?: UserCreateNestedManyWithoutCountryInput
     usersAtState?: UserCreateNestedManyWithoutStateInput
@@ -69239,6 +81854,12 @@ export namespace Prisma {
     name: string
     type: $Enums.LocationType
     workspaceId: string
+    countryId?: string | null
+    levelId?: string | null
+    isActive?: boolean
+    createdById?: string | null
+    updatedById?: string | null
+    deletedAt?: Date | string | null
     parentId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -69261,10 +81882,16 @@ export namespace Prisma {
     name: string
     type: $Enums.LocationType
     workspaceId: string
+    isActive?: boolean
+    createdById?: string | null
+    updatedById?: string | null
+    deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     parent?: LocationCreateNestedOneWithoutChildrenInput
     children?: LocationCreateNestedManyWithoutParentInput
+    country?: CountryCreateNestedOneWithoutLocationsInput
+    level?: LocationLevelCreateNestedOneWithoutLocationsInput
     assignedUsers?: UserLocationAssignmentCreateNestedManyWithoutLocationInput
     usersAtCountry?: UserCreateNestedManyWithoutCountryInput
     usersAtState?: UserCreateNestedManyWithoutStateInput
@@ -69278,6 +81905,12 @@ export namespace Prisma {
     name: string
     type: $Enums.LocationType
     workspaceId: string
+    countryId?: string | null
+    levelId?: string | null
+    isActive?: boolean
+    createdById?: string | null
+    updatedById?: string | null
+    deletedAt?: Date | string | null
     parentId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -69339,8 +81972,15 @@ export namespace Prisma {
     assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
     closedLeads?: LeadCreateNestedManyWithoutClosedByInput
     updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonCreateNestedManyWithoutUpdatedByInput
     createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
   }
 
@@ -69388,8 +82028,15 @@ export namespace Prisma {
     assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
     closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
     updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
   }
 
@@ -69442,8 +82089,15 @@ export namespace Prisma {
     assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
     closedLeads?: LeadCreateNestedManyWithoutClosedByInput
     createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
+    createdCountries?: CountryCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonCreateNestedManyWithoutUpdatedByInput
     createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
   }
 
@@ -69491,8 +82145,15 @@ export namespace Prisma {
     assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
     closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
     createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
+    createdCountries?: CountryUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
   }
 
@@ -69532,7 +82193,11 @@ export namespace Prisma {
     leadActivities?: LeadActivityUpdateManyWithoutWorkspaceNestedInput
     leadStageApprovals?: LeadStageApprovalUpdateManyWithoutWorkspaceNestedInput
     holidaySyncLogs?: HolidaySyncLogUpdateManyWithoutWorkspaceNestedInput
+    countries?: CountryUpdateManyWithoutWorkspaceNestedInput
+    locationLevels?: LocationLevelUpdateManyWithoutWorkspaceNestedInput
+    lobReasons?: LOBReasonUpdateManyWithoutWorkspaceNestedInput
     reportTypes?: ReportTypeUpdateManyWithoutWorkspaceNestedInput
+    reports?: ReportUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUpdateManyWithoutWorkspaceNestedInput
   }
 
@@ -69556,7 +82221,11 @@ export namespace Prisma {
     leadActivities?: LeadActivityUncheckedUpdateManyWithoutWorkspaceNestedInput
     leadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutWorkspaceNestedInput
     holidaySyncLogs?: HolidaySyncLogUncheckedUpdateManyWithoutWorkspaceNestedInput
+    countries?: CountryUncheckedUpdateManyWithoutWorkspaceNestedInput
+    locationLevels?: LocationLevelUncheckedUpdateManyWithoutWorkspaceNestedInput
+    lobReasons?: LOBReasonUncheckedUpdateManyWithoutWorkspaceNestedInput
     reportTypes?: ReportTypeUncheckedUpdateManyWithoutWorkspaceNestedInput
+    reports?: ReportUncheckedUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
@@ -69576,10 +82245,16 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     type?: EnumLocationTypeFieldUpdateOperationsInput | $Enums.LocationType
     workspaceId?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     parent?: LocationUpdateOneWithoutChildrenNestedInput
     children?: LocationUpdateManyWithoutParentNestedInput
+    country?: CountryUpdateOneWithoutLocationsNestedInput
+    level?: LocationLevelUpdateOneWithoutLocationsNestedInput
     assignedUsers?: UserLocationAssignmentUpdateManyWithoutLocationNestedInput
     usersAtCountry?: UserUpdateManyWithoutCountryNestedInput
     usersAtState?: UserUpdateManyWithoutStateNestedInput
@@ -69593,6 +82268,12 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     type?: EnumLocationTypeFieldUpdateOperationsInput | $Enums.LocationType
     workspaceId?: StringFieldUpdateOperationsInput | string
+    countryId?: NullableStringFieldUpdateOperationsInput | string | null
+    levelId?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -69621,10 +82302,16 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     type?: EnumLocationTypeFieldUpdateOperationsInput | $Enums.LocationType
     workspaceId?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     parent?: LocationUpdateOneWithoutChildrenNestedInput
     children?: LocationUpdateManyWithoutParentNestedInput
+    country?: CountryUpdateOneWithoutLocationsNestedInput
+    level?: LocationLevelUpdateOneWithoutLocationsNestedInput
     assignedUsers?: UserLocationAssignmentUpdateManyWithoutLocationNestedInput
     usersAtCountry?: UserUpdateManyWithoutCountryNestedInput
     usersAtState?: UserUpdateManyWithoutStateNestedInput
@@ -69638,6 +82325,12 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     type?: EnumLocationTypeFieldUpdateOperationsInput | $Enums.LocationType
     workspaceId?: StringFieldUpdateOperationsInput | string
+    countryId?: NullableStringFieldUpdateOperationsInput | string | null
+    levelId?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -69666,10 +82359,16 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     type?: EnumLocationTypeFieldUpdateOperationsInput | $Enums.LocationType
     workspaceId?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     parent?: LocationUpdateOneWithoutChildrenNestedInput
     children?: LocationUpdateManyWithoutParentNestedInput
+    country?: CountryUpdateOneWithoutLocationsNestedInput
+    level?: LocationLevelUpdateOneWithoutLocationsNestedInput
     assignedUsers?: UserLocationAssignmentUpdateManyWithoutLocationNestedInput
     usersAtCountry?: UserUpdateManyWithoutCountryNestedInput
     usersAtState?: UserUpdateManyWithoutStateNestedInput
@@ -69683,6 +82382,12 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     type?: EnumLocationTypeFieldUpdateOperationsInput | $Enums.LocationType
     workspaceId?: StringFieldUpdateOperationsInput | string
+    countryId?: NullableStringFieldUpdateOperationsInput | string | null
+    levelId?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -69750,8 +82455,15 @@ export namespace Prisma {
     assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
     closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
     updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUpdateManyWithoutUpdatedByNestedInput
     createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
   }
 
@@ -69799,8 +82511,15 @@ export namespace Prisma {
     assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
     closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
     updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
   }
 
@@ -69859,8 +82578,15 @@ export namespace Prisma {
     assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
     closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
     createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
+    createdCountries?: CountryUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUpdateManyWithoutUpdatedByNestedInput
     createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
   }
 
@@ -69908,8 +82634,15 @@ export namespace Prisma {
     assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
     closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
     createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
+    createdCountries?: CountryUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
   }
 
@@ -69933,7 +82666,11 @@ export namespace Prisma {
     leadActivities?: LeadActivityCreateNestedManyWithoutWorkspaceInput
     leadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutWorkspaceInput
     holidays?: HolidayCreateNestedManyWithoutWorkspaceInput
+    countries?: CountryCreateNestedManyWithoutWorkspaceInput
+    locationLevels?: LocationLevelCreateNestedManyWithoutWorkspaceInput
+    lobReasons?: LOBReasonCreateNestedManyWithoutWorkspaceInput
     reportTypes?: ReportTypeCreateNestedManyWithoutWorkspaceInput
+    reports?: ReportCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogCreateNestedManyWithoutWorkspaceInput
   }
 
@@ -69957,7 +82694,11 @@ export namespace Prisma {
     leadActivities?: LeadActivityUncheckedCreateNestedManyWithoutWorkspaceInput
     leadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutWorkspaceInput
     holidays?: HolidayUncheckedCreateNestedManyWithoutWorkspaceInput
+    countries?: CountryUncheckedCreateNestedManyWithoutWorkspaceInput
+    locationLevels?: LocationLevelUncheckedCreateNestedManyWithoutWorkspaceInput
+    lobReasons?: LOBReasonUncheckedCreateNestedManyWithoutWorkspaceInput
     reportTypes?: ReportTypeUncheckedCreateNestedManyWithoutWorkspaceInput
+    reports?: ReportUncheckedCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
@@ -69997,7 +82738,11 @@ export namespace Prisma {
     leadActivities?: LeadActivityUpdateManyWithoutWorkspaceNestedInput
     leadStageApprovals?: LeadStageApprovalUpdateManyWithoutWorkspaceNestedInput
     holidays?: HolidayUpdateManyWithoutWorkspaceNestedInput
+    countries?: CountryUpdateManyWithoutWorkspaceNestedInput
+    locationLevels?: LocationLevelUpdateManyWithoutWorkspaceNestedInput
+    lobReasons?: LOBReasonUpdateManyWithoutWorkspaceNestedInput
     reportTypes?: ReportTypeUpdateManyWithoutWorkspaceNestedInput
+    reports?: ReportUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUpdateManyWithoutWorkspaceNestedInput
   }
 
@@ -70021,7 +82766,11 @@ export namespace Prisma {
     leadActivities?: LeadActivityUncheckedUpdateManyWithoutWorkspaceNestedInput
     leadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutWorkspaceNestedInput
     holidays?: HolidayUncheckedUpdateManyWithoutWorkspaceNestedInput
+    countries?: CountryUncheckedUpdateManyWithoutWorkspaceNestedInput
+    locationLevels?: LocationLevelUncheckedUpdateManyWithoutWorkspaceNestedInput
+    lobReasons?: LOBReasonUncheckedUpdateManyWithoutWorkspaceNestedInput
     reportTypes?: ReportTypeUncheckedUpdateManyWithoutWorkspaceNestedInput
+    reports?: ReportUncheckedUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
@@ -70046,6 +82795,10 @@ export namespace Prisma {
     leadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutWorkspaceInput
     holidays?: HolidayCreateNestedManyWithoutWorkspaceInput
     holidaySyncLogs?: HolidaySyncLogCreateNestedManyWithoutWorkspaceInput
+    countries?: CountryCreateNestedManyWithoutWorkspaceInput
+    locationLevels?: LocationLevelCreateNestedManyWithoutWorkspaceInput
+    lobReasons?: LOBReasonCreateNestedManyWithoutWorkspaceInput
+    reports?: ReportCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogCreateNestedManyWithoutWorkspaceInput
   }
 
@@ -70070,6 +82823,10 @@ export namespace Prisma {
     leadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutWorkspaceInput
     holidays?: HolidayUncheckedCreateNestedManyWithoutWorkspaceInput
     holidaySyncLogs?: HolidaySyncLogUncheckedCreateNestedManyWithoutWorkspaceInput
+    countries?: CountryUncheckedCreateNestedManyWithoutWorkspaceInput
+    locationLevels?: LocationLevelUncheckedCreateNestedManyWithoutWorkspaceInput
+    lobReasons?: LOBReasonUncheckedCreateNestedManyWithoutWorkspaceInput
+    reports?: ReportUncheckedCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
@@ -70123,7 +82880,14 @@ export namespace Prisma {
     closedLeads?: LeadCreateNestedManyWithoutClosedByInput
     createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
     updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonCreateNestedManyWithoutUpdatedByInput
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
   }
 
@@ -70172,7 +82936,14 @@ export namespace Prisma {
     closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
     createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
     updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutUpdatedByInput
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
   }
 
@@ -70226,7 +82997,14 @@ export namespace Prisma {
     closedLeads?: LeadCreateNestedManyWithoutClosedByInput
     createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
     updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonCreateNestedManyWithoutUpdatedByInput
     createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
+    createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
   }
 
@@ -70275,7 +83053,14 @@ export namespace Prisma {
     closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
     createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
     updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
+    createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
   }
 
@@ -70286,19 +83071,25 @@ export namespace Prisma {
 
   export type ReportLogCreateWithoutReportTypeInput = {
     id?: string
+    action?: string | null
     filters?: JsonNullValueInput | InputJsonValue
     resultCount?: number
+    meta?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     workspace: WorkspaceCreateNestedOneWithoutReportLogsInput
+    report?: ReportCreateNestedOneWithoutLogsInput
     generatedBy?: UserCreateNestedOneWithoutGeneratedReportLogsInput
   }
 
   export type ReportLogUncheckedCreateWithoutReportTypeInput = {
     id?: string
     workspaceId: string
+    reportId?: string | null
     generatedById?: string | null
+    action?: string | null
     filters?: JsonNullValueInput | InputJsonValue
     resultCount?: number
+    meta?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
   }
 
@@ -70309,6 +83100,50 @@ export namespace Prisma {
 
   export type ReportLogCreateManyReportTypeInputEnvelope = {
     data: ReportLogCreateManyReportTypeInput | ReportLogCreateManyReportTypeInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type ReportCreateWithoutReportTypeInput = {
+    id?: string
+    reportName: string
+    reportDate: Date | string
+    isActive?: boolean
+    isGenerated?: boolean
+    generatedFileUrl?: string | null
+    generatedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    workspace: WorkspaceCreateNestedOneWithoutReportsInput
+    createdBy: UserCreateNestedOneWithoutCreatedReportsInput
+    filters?: ReportFilterCreateNestedManyWithoutReportInput
+    logs?: ReportLogCreateNestedManyWithoutReportInput
+  }
+
+  export type ReportUncheckedCreateWithoutReportTypeInput = {
+    id?: string
+    workspaceId: string
+    reportName: string
+    reportDate: Date | string
+    isActive?: boolean
+    isGenerated?: boolean
+    generatedFileUrl?: string | null
+    generatedAt?: Date | string | null
+    createdById: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    filters?: ReportFilterUncheckedCreateNestedManyWithoutReportInput
+    logs?: ReportLogUncheckedCreateNestedManyWithoutReportInput
+  }
+
+  export type ReportCreateOrConnectWithoutReportTypeInput = {
+    where: ReportWhereUniqueInput
+    create: XOR<ReportCreateWithoutReportTypeInput, ReportUncheckedCreateWithoutReportTypeInput>
+  }
+
+  export type ReportCreateManyReportTypeInputEnvelope = {
+    data: ReportCreateManyReportTypeInput | ReportCreateManyReportTypeInput[]
     skipDuplicates?: boolean
   }
 
@@ -70344,6 +83179,10 @@ export namespace Prisma {
     leadStageApprovals?: LeadStageApprovalUpdateManyWithoutWorkspaceNestedInput
     holidays?: HolidayUpdateManyWithoutWorkspaceNestedInput
     holidaySyncLogs?: HolidaySyncLogUpdateManyWithoutWorkspaceNestedInput
+    countries?: CountryUpdateManyWithoutWorkspaceNestedInput
+    locationLevels?: LocationLevelUpdateManyWithoutWorkspaceNestedInput
+    lobReasons?: LOBReasonUpdateManyWithoutWorkspaceNestedInput
+    reports?: ReportUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUpdateManyWithoutWorkspaceNestedInput
   }
 
@@ -70368,6 +83207,10 @@ export namespace Prisma {
     leadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutWorkspaceNestedInput
     holidays?: HolidayUncheckedUpdateManyWithoutWorkspaceNestedInput
     holidaySyncLogs?: HolidaySyncLogUncheckedUpdateManyWithoutWorkspaceNestedInput
+    countries?: CountryUncheckedUpdateManyWithoutWorkspaceNestedInput
+    locationLevels?: LocationLevelUncheckedUpdateManyWithoutWorkspaceNestedInput
+    lobReasons?: LOBReasonUncheckedUpdateManyWithoutWorkspaceNestedInput
+    reports?: ReportUncheckedUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
@@ -70427,7 +83270,14 @@ export namespace Prisma {
     closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
     createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
     updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUpdateManyWithoutUpdatedByNestedInput
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
   }
 
@@ -70476,7 +83326,14 @@ export namespace Prisma {
     closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
     createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUncheckedUpdateManyWithoutUpdatedByNestedInput
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
   }
 
@@ -70536,7 +83393,14 @@ export namespace Prisma {
     closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
     createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
     updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUpdateManyWithoutUpdatedByNestedInput
     createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
+    createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
   }
 
@@ -70585,7 +83449,14 @@ export namespace Prisma {
     closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
     createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
+    createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
   }
 
@@ -70603,6 +83474,22 @@ export namespace Prisma {
   export type ReportLogUpdateManyWithWhereWithoutReportTypeInput = {
     where: ReportLogScalarWhereInput
     data: XOR<ReportLogUpdateManyMutationInput, ReportLogUncheckedUpdateManyWithoutReportTypeInput>
+  }
+
+  export type ReportUpsertWithWhereUniqueWithoutReportTypeInput = {
+    where: ReportWhereUniqueInput
+    update: XOR<ReportUpdateWithoutReportTypeInput, ReportUncheckedUpdateWithoutReportTypeInput>
+    create: XOR<ReportCreateWithoutReportTypeInput, ReportUncheckedCreateWithoutReportTypeInput>
+  }
+
+  export type ReportUpdateWithWhereUniqueWithoutReportTypeInput = {
+    where: ReportWhereUniqueInput
+    data: XOR<ReportUpdateWithoutReportTypeInput, ReportUncheckedUpdateWithoutReportTypeInput>
+  }
+
+  export type ReportUpdateManyWithWhereWithoutReportTypeInput = {
+    where: ReportScalarWhereInput
+    data: XOR<ReportUpdateManyMutationInput, ReportUncheckedUpdateManyWithoutReportTypeInput>
   }
 
   export type WorkspaceCreateWithoutReportLogsInput = {
@@ -70626,7 +83513,11 @@ export namespace Prisma {
     leadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutWorkspaceInput
     holidays?: HolidayCreateNestedManyWithoutWorkspaceInput
     holidaySyncLogs?: HolidaySyncLogCreateNestedManyWithoutWorkspaceInput
+    countries?: CountryCreateNestedManyWithoutWorkspaceInput
+    locationLevels?: LocationLevelCreateNestedManyWithoutWorkspaceInput
+    lobReasons?: LOBReasonCreateNestedManyWithoutWorkspaceInput
     reportTypes?: ReportTypeCreateNestedManyWithoutWorkspaceInput
+    reports?: ReportCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateWithoutReportLogsInput = {
@@ -70650,7 +83541,11 @@ export namespace Prisma {
     leadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutWorkspaceInput
     holidays?: HolidayUncheckedCreateNestedManyWithoutWorkspaceInput
     holidaySyncLogs?: HolidaySyncLogUncheckedCreateNestedManyWithoutWorkspaceInput
+    countries?: CountryUncheckedCreateNestedManyWithoutWorkspaceInput
+    locationLevels?: LocationLevelUncheckedCreateNestedManyWithoutWorkspaceInput
+    lobReasons?: LOBReasonUncheckedCreateNestedManyWithoutWorkspaceInput
     reportTypes?: ReportTypeUncheckedCreateNestedManyWithoutWorkspaceInput
+    reports?: ReportUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceCreateOrConnectWithoutReportLogsInput = {
@@ -70672,6 +83567,7 @@ export namespace Prisma {
     workspace: WorkspaceCreateNestedOneWithoutReportTypesInput
     createdBy?: UserCreateNestedOneWithoutCreatedReportTypesInput
     updatedBy?: UserCreateNestedOneWithoutUpdatedReportTypesInput
+    reports?: ReportCreateNestedManyWithoutReportTypeInput
   }
 
   export type ReportTypeUncheckedCreateWithoutLogsInput = {
@@ -70688,11 +83584,51 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
+    reports?: ReportUncheckedCreateNestedManyWithoutReportTypeInput
   }
 
   export type ReportTypeCreateOrConnectWithoutLogsInput = {
     where: ReportTypeWhereUniqueInput
     create: XOR<ReportTypeCreateWithoutLogsInput, ReportTypeUncheckedCreateWithoutLogsInput>
+  }
+
+  export type ReportCreateWithoutLogsInput = {
+    id?: string
+    reportName: string
+    reportDate: Date | string
+    isActive?: boolean
+    isGenerated?: boolean
+    generatedFileUrl?: string | null
+    generatedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    workspace: WorkspaceCreateNestedOneWithoutReportsInput
+    reportType: ReportTypeCreateNestedOneWithoutReportsInput
+    createdBy: UserCreateNestedOneWithoutCreatedReportsInput
+    filters?: ReportFilterCreateNestedManyWithoutReportInput
+  }
+
+  export type ReportUncheckedCreateWithoutLogsInput = {
+    id?: string
+    workspaceId: string
+    reportName: string
+    reportTypeId: string
+    reportDate: Date | string
+    isActive?: boolean
+    isGenerated?: boolean
+    generatedFileUrl?: string | null
+    generatedAt?: Date | string | null
+    createdById: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    filters?: ReportFilterUncheckedCreateNestedManyWithoutReportInput
+  }
+
+  export type ReportCreateOrConnectWithoutLogsInput = {
+    where: ReportWhereUniqueInput
+    create: XOR<ReportCreateWithoutLogsInput, ReportUncheckedCreateWithoutLogsInput>
   }
 
   export type UserCreateWithoutGeneratedReportLogsInput = {
@@ -70740,8 +83676,15 @@ export namespace Prisma {
     closedLeads?: LeadCreateNestedManyWithoutClosedByInput
     createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
     updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonCreateNestedManyWithoutUpdatedByInput
     createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutGeneratedReportLogsInput = {
@@ -70789,8 +83732,15 @@ export namespace Prisma {
     closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
     createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
     updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutGeneratedReportLogsInput = {
@@ -70830,7 +83780,11 @@ export namespace Prisma {
     leadStageApprovals?: LeadStageApprovalUpdateManyWithoutWorkspaceNestedInput
     holidays?: HolidayUpdateManyWithoutWorkspaceNestedInput
     holidaySyncLogs?: HolidaySyncLogUpdateManyWithoutWorkspaceNestedInput
+    countries?: CountryUpdateManyWithoutWorkspaceNestedInput
+    locationLevels?: LocationLevelUpdateManyWithoutWorkspaceNestedInput
+    lobReasons?: LOBReasonUpdateManyWithoutWorkspaceNestedInput
     reportTypes?: ReportTypeUpdateManyWithoutWorkspaceNestedInput
+    reports?: ReportUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateWithoutReportLogsInput = {
@@ -70854,7 +83808,11 @@ export namespace Prisma {
     leadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutWorkspaceNestedInput
     holidays?: HolidayUncheckedUpdateManyWithoutWorkspaceNestedInput
     holidaySyncLogs?: HolidaySyncLogUncheckedUpdateManyWithoutWorkspaceNestedInput
+    countries?: CountryUncheckedUpdateManyWithoutWorkspaceNestedInput
+    locationLevels?: LocationLevelUncheckedUpdateManyWithoutWorkspaceNestedInput
+    lobReasons?: LOBReasonUncheckedUpdateManyWithoutWorkspaceNestedInput
     reportTypes?: ReportTypeUncheckedUpdateManyWithoutWorkspaceNestedInput
+    reports?: ReportUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type ReportTypeUpsertWithoutLogsInput = {
@@ -70882,6 +83840,7 @@ export namespace Prisma {
     workspace?: WorkspaceUpdateOneRequiredWithoutReportTypesNestedInput
     createdBy?: UserUpdateOneWithoutCreatedReportTypesNestedInput
     updatedBy?: UserUpdateOneWithoutUpdatedReportTypesNestedInput
+    reports?: ReportUpdateManyWithoutReportTypeNestedInput
   }
 
   export type ReportTypeUncheckedUpdateWithoutLogsInput = {
@@ -70898,6 +83857,52 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reports?: ReportUncheckedUpdateManyWithoutReportTypeNestedInput
+  }
+
+  export type ReportUpsertWithoutLogsInput = {
+    update: XOR<ReportUpdateWithoutLogsInput, ReportUncheckedUpdateWithoutLogsInput>
+    create: XOR<ReportCreateWithoutLogsInput, ReportUncheckedCreateWithoutLogsInput>
+    where?: ReportWhereInput
+  }
+
+  export type ReportUpdateToOneWithWhereWithoutLogsInput = {
+    where?: ReportWhereInput
+    data: XOR<ReportUpdateWithoutLogsInput, ReportUncheckedUpdateWithoutLogsInput>
+  }
+
+  export type ReportUpdateWithoutLogsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    reportName?: StringFieldUpdateOperationsInput | string
+    reportDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isGenerated?: BoolFieldUpdateOperationsInput | boolean
+    generatedFileUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    generatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    workspace?: WorkspaceUpdateOneRequiredWithoutReportsNestedInput
+    reportType?: ReportTypeUpdateOneRequiredWithoutReportsNestedInput
+    createdBy?: UserUpdateOneRequiredWithoutCreatedReportsNestedInput
+    filters?: ReportFilterUpdateManyWithoutReportNestedInput
+  }
+
+  export type ReportUncheckedUpdateWithoutLogsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    reportName?: StringFieldUpdateOperationsInput | string
+    reportTypeId?: StringFieldUpdateOperationsInput | string
+    reportDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isGenerated?: BoolFieldUpdateOperationsInput | boolean
+    generatedFileUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    generatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdById?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    filters?: ReportFilterUncheckedUpdateManyWithoutReportNestedInput
   }
 
   export type UserUpsertWithoutGeneratedReportLogsInput = {
@@ -70956,8 +83961,15 @@ export namespace Prisma {
     closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
     createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
     updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUpdateManyWithoutUpdatedByNestedInput
     createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutGeneratedReportLogsInput = {
@@ -71005,8 +84017,652 @@ export namespace Prisma {
     closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
     createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
+  }
+
+  export type WorkspaceCreateWithoutReportsInput = {
+    id?: string
+    companyName: string
+    employeeCount: string
+    timeZone?: string
+    language?: string
+    currencyLocale?: string
+    loadSampleData?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    owner: UserCreateNestedOneWithoutOwnedWorkspaceInput
+    users?: UserCreateNestedManyWithoutWorkspaceInput
+    departments?: DepartmentCreateNestedManyWithoutWorkspaceInput
+    targetCycles?: TargetCycleCreateNestedManyWithoutWorkspaceInput
+    leadLifeCycles?: LeadLifeCycleCreateNestedManyWithoutWorkspaceInput
+    leadDynamicFields?: LeadDynamicFieldCreateNestedManyWithoutWorkspaceInput
+    leads?: LeadCreateNestedManyWithoutWorkspaceInput
+    leadActivities?: LeadActivityCreateNestedManyWithoutWorkspaceInput
+    leadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutWorkspaceInput
+    holidays?: HolidayCreateNestedManyWithoutWorkspaceInput
+    holidaySyncLogs?: HolidaySyncLogCreateNestedManyWithoutWorkspaceInput
+    countries?: CountryCreateNestedManyWithoutWorkspaceInput
+    locationLevels?: LocationLevelCreateNestedManyWithoutWorkspaceInput
+    lobReasons?: LOBReasonCreateNestedManyWithoutWorkspaceInput
+    reportTypes?: ReportTypeCreateNestedManyWithoutWorkspaceInput
+    reportLogs?: ReportLogCreateNestedManyWithoutWorkspaceInput
+  }
+
+  export type WorkspaceUncheckedCreateWithoutReportsInput = {
+    id?: string
+    companyName: string
+    employeeCount: string
+    timeZone?: string
+    language?: string
+    currencyLocale?: string
+    loadSampleData?: boolean
+    ownerId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    users?: UserUncheckedCreateNestedManyWithoutWorkspaceInput
+    departments?: DepartmentUncheckedCreateNestedManyWithoutWorkspaceInput
+    targetCycles?: TargetCycleUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadLifeCycles?: LeadLifeCycleUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadDynamicFields?: LeadDynamicFieldUncheckedCreateNestedManyWithoutWorkspaceInput
+    leads?: LeadUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadActivities?: LeadActivityUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutWorkspaceInput
+    holidays?: HolidayUncheckedCreateNestedManyWithoutWorkspaceInput
+    holidaySyncLogs?: HolidaySyncLogUncheckedCreateNestedManyWithoutWorkspaceInput
+    countries?: CountryUncheckedCreateNestedManyWithoutWorkspaceInput
+    locationLevels?: LocationLevelUncheckedCreateNestedManyWithoutWorkspaceInput
+    lobReasons?: LOBReasonUncheckedCreateNestedManyWithoutWorkspaceInput
+    reportTypes?: ReportTypeUncheckedCreateNestedManyWithoutWorkspaceInput
+    reportLogs?: ReportLogUncheckedCreateNestedManyWithoutWorkspaceInput
+  }
+
+  export type WorkspaceCreateOrConnectWithoutReportsInput = {
+    where: WorkspaceWhereUniqueInput
+    create: XOR<WorkspaceCreateWithoutReportsInput, WorkspaceUncheckedCreateWithoutReportsInput>
+  }
+
+  export type ReportTypeCreateWithoutReportsInput = {
+    id?: string
+    name: string
+    module: $Enums.ReportModule
+    baseDataSource: $Enums.ReportBaseDataSource
+    description?: string | null
+    allowedFilters?: JsonNullValueInput | InputJsonValue
+    status?: $Enums.ReportTypeStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    workspace: WorkspaceCreateNestedOneWithoutReportTypesInput
+    createdBy?: UserCreateNestedOneWithoutCreatedReportTypesInput
+    updatedBy?: UserCreateNestedOneWithoutUpdatedReportTypesInput
+    logs?: ReportLogCreateNestedManyWithoutReportTypeInput
+  }
+
+  export type ReportTypeUncheckedCreateWithoutReportsInput = {
+    id?: string
+    workspaceId: string
+    name: string
+    module: $Enums.ReportModule
+    baseDataSource: $Enums.ReportBaseDataSource
+    description?: string | null
+    allowedFilters?: JsonNullValueInput | InputJsonValue
+    status?: $Enums.ReportTypeStatus
+    createdById?: string | null
+    updatedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    logs?: ReportLogUncheckedCreateNestedManyWithoutReportTypeInput
+  }
+
+  export type ReportTypeCreateOrConnectWithoutReportsInput = {
+    where: ReportTypeWhereUniqueInput
+    create: XOR<ReportTypeCreateWithoutReportsInput, ReportTypeUncheckedCreateWithoutReportsInput>
+  }
+
+  export type UserCreateWithoutCreatedReportsInput = {
+    id?: string
+    name?: string | null
+    username?: string | null
+    email: string
+    password?: string | null
+    phone?: string | null
+    googleId?: string | null
+    isOnboarded?: boolean
+    isActive?: boolean
+    isEmailVerified?: boolean
+    isLocked?: boolean
+    verificationToken?: string | null
+    verificationTokenExpires?: Date | string | null
+    invitationToken?: string | null
+    invitationExpires?: Date | string | null
+    deletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    role?: RoleCreateNestedOneWithoutUsersInput
+    workspace?: WorkspaceCreateNestedOneWithoutUsersInput
+    ownedWorkspace?: WorkspaceCreateNestedOneWithoutOwnerInput
+    department?: DepartmentCreateNestedOneWithoutUsersInput
+    office?: OfficeCreateNestedOneWithoutUsersInput
+    country?: LocationCreateNestedOneWithoutUsersAtCountryInput
+    state?: LocationCreateNestedOneWithoutUsersAtStateInput
+    district?: LocationCreateNestedOneWithoutUsersAtDistrictInput
+    assignedLocations?: UserLocationAssignmentCreateNestedManyWithoutUserInput
+    supervisor?: UserCreateNestedOneWithoutSubordinatesInput
+    subordinates?: UserCreateNestedManyWithoutSupervisorInput
+    targetSettings?: TargetSettingCreateNestedManyWithoutUserInput
+    violations?: TargetViolationCreateNestedManyWithoutUserInput
+    devices?: DeviceCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogCreateNestedManyWithoutUserInput
+    performedLeadActivities?: LeadActivityCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutApprovedByInput
+    rosterEntries?: RosterEntryCreateNestedManyWithoutUserInput
+    followUps?: FollowUpCreateNestedManyWithoutUserInput
+    createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
+    assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
+  }
+
+  export type UserUncheckedCreateWithoutCreatedReportsInput = {
+    id?: string
+    name?: string | null
+    username?: string | null
+    email: string
+    password?: string | null
+    phone?: string | null
+    googleId?: string | null
+    isOnboarded?: boolean
+    isActive?: boolean
+    isEmailVerified?: boolean
+    isLocked?: boolean
+    verificationToken?: string | null
+    verificationTokenExpires?: Date | string | null
+    invitationToken?: string | null
+    invitationExpires?: Date | string | null
+    deletedAt?: Date | string | null
+    roleId?: string | null
+    workspaceId?: string | null
+    departmentId?: string | null
+    officeId?: string | null
+    countryId?: string | null
+    stateId?: string | null
+    districtId?: string | null
+    supervisorId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    ownedWorkspace?: WorkspaceUncheckedCreateNestedOneWithoutOwnerInput
+    assignedLocations?: UserLocationAssignmentUncheckedCreateNestedManyWithoutUserInput
+    subordinates?: UserUncheckedCreateNestedManyWithoutSupervisorInput
+    targetSettings?: TargetSettingUncheckedCreateNestedManyWithoutUserInput
+    violations?: TargetViolationUncheckedCreateNestedManyWithoutUserInput
+    devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
+    performedLeadActivities?: LeadActivityUncheckedCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutApprovedByInput
+    rosterEntries?: RosterEntryUncheckedCreateNestedManyWithoutUserInput
+    followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
+    createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
+    assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
+  }
+
+  export type UserCreateOrConnectWithoutCreatedReportsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutCreatedReportsInput, UserUncheckedCreateWithoutCreatedReportsInput>
+  }
+
+  export type ReportFilterCreateWithoutReportInput = {
+    id?: string
+    filterKey: string
+    filterValue: string
+    createdAt?: Date | string
+  }
+
+  export type ReportFilterUncheckedCreateWithoutReportInput = {
+    id?: string
+    filterKey: string
+    filterValue: string
+    createdAt?: Date | string
+  }
+
+  export type ReportFilterCreateOrConnectWithoutReportInput = {
+    where: ReportFilterWhereUniqueInput
+    create: XOR<ReportFilterCreateWithoutReportInput, ReportFilterUncheckedCreateWithoutReportInput>
+  }
+
+  export type ReportFilterCreateManyReportInputEnvelope = {
+    data: ReportFilterCreateManyReportInput | ReportFilterCreateManyReportInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type ReportLogCreateWithoutReportInput = {
+    id?: string
+    action?: string | null
+    filters?: JsonNullValueInput | InputJsonValue
+    resultCount?: number
+    meta?: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    workspace: WorkspaceCreateNestedOneWithoutReportLogsInput
+    reportType?: ReportTypeCreateNestedOneWithoutLogsInput
+    generatedBy?: UserCreateNestedOneWithoutGeneratedReportLogsInput
+  }
+
+  export type ReportLogUncheckedCreateWithoutReportInput = {
+    id?: string
+    workspaceId: string
+    reportTypeId?: string | null
+    generatedById?: string | null
+    action?: string | null
+    filters?: JsonNullValueInput | InputJsonValue
+    resultCount?: number
+    meta?: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+  }
+
+  export type ReportLogCreateOrConnectWithoutReportInput = {
+    where: ReportLogWhereUniqueInput
+    create: XOR<ReportLogCreateWithoutReportInput, ReportLogUncheckedCreateWithoutReportInput>
+  }
+
+  export type ReportLogCreateManyReportInputEnvelope = {
+    data: ReportLogCreateManyReportInput | ReportLogCreateManyReportInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type WorkspaceUpsertWithoutReportsInput = {
+    update: XOR<WorkspaceUpdateWithoutReportsInput, WorkspaceUncheckedUpdateWithoutReportsInput>
+    create: XOR<WorkspaceCreateWithoutReportsInput, WorkspaceUncheckedCreateWithoutReportsInput>
+    where?: WorkspaceWhereInput
+  }
+
+  export type WorkspaceUpdateToOneWithWhereWithoutReportsInput = {
+    where?: WorkspaceWhereInput
+    data: XOR<WorkspaceUpdateWithoutReportsInput, WorkspaceUncheckedUpdateWithoutReportsInput>
+  }
+
+  export type WorkspaceUpdateWithoutReportsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    companyName?: StringFieldUpdateOperationsInput | string
+    employeeCount?: StringFieldUpdateOperationsInput | string
+    timeZone?: StringFieldUpdateOperationsInput | string
+    language?: StringFieldUpdateOperationsInput | string
+    currencyLocale?: StringFieldUpdateOperationsInput | string
+    loadSampleData?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    owner?: UserUpdateOneRequiredWithoutOwnedWorkspaceNestedInput
+    users?: UserUpdateManyWithoutWorkspaceNestedInput
+    departments?: DepartmentUpdateManyWithoutWorkspaceNestedInput
+    targetCycles?: TargetCycleUpdateManyWithoutWorkspaceNestedInput
+    leadLifeCycles?: LeadLifeCycleUpdateManyWithoutWorkspaceNestedInput
+    leadDynamicFields?: LeadDynamicFieldUpdateManyWithoutWorkspaceNestedInput
+    leads?: LeadUpdateManyWithoutWorkspaceNestedInput
+    leadActivities?: LeadActivityUpdateManyWithoutWorkspaceNestedInput
+    leadStageApprovals?: LeadStageApprovalUpdateManyWithoutWorkspaceNestedInput
+    holidays?: HolidayUpdateManyWithoutWorkspaceNestedInput
+    holidaySyncLogs?: HolidaySyncLogUpdateManyWithoutWorkspaceNestedInput
+    countries?: CountryUpdateManyWithoutWorkspaceNestedInput
+    locationLevels?: LocationLevelUpdateManyWithoutWorkspaceNestedInput
+    lobReasons?: LOBReasonUpdateManyWithoutWorkspaceNestedInput
+    reportTypes?: ReportTypeUpdateManyWithoutWorkspaceNestedInput
+    reportLogs?: ReportLogUpdateManyWithoutWorkspaceNestedInput
+  }
+
+  export type WorkspaceUncheckedUpdateWithoutReportsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    companyName?: StringFieldUpdateOperationsInput | string
+    employeeCount?: StringFieldUpdateOperationsInput | string
+    timeZone?: StringFieldUpdateOperationsInput | string
+    language?: StringFieldUpdateOperationsInput | string
+    currencyLocale?: StringFieldUpdateOperationsInput | string
+    loadSampleData?: BoolFieldUpdateOperationsInput | boolean
+    ownerId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    users?: UserUncheckedUpdateManyWithoutWorkspaceNestedInput
+    departments?: DepartmentUncheckedUpdateManyWithoutWorkspaceNestedInput
+    targetCycles?: TargetCycleUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadLifeCycles?: LeadLifeCycleUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadDynamicFields?: LeadDynamicFieldUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leads?: LeadUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadActivities?: LeadActivityUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutWorkspaceNestedInput
+    holidays?: HolidayUncheckedUpdateManyWithoutWorkspaceNestedInput
+    holidaySyncLogs?: HolidaySyncLogUncheckedUpdateManyWithoutWorkspaceNestedInput
+    countries?: CountryUncheckedUpdateManyWithoutWorkspaceNestedInput
+    locationLevels?: LocationLevelUncheckedUpdateManyWithoutWorkspaceNestedInput
+    lobReasons?: LOBReasonUncheckedUpdateManyWithoutWorkspaceNestedInput
+    reportTypes?: ReportTypeUncheckedUpdateManyWithoutWorkspaceNestedInput
+    reportLogs?: ReportLogUncheckedUpdateManyWithoutWorkspaceNestedInput
+  }
+
+  export type ReportTypeUpsertWithoutReportsInput = {
+    update: XOR<ReportTypeUpdateWithoutReportsInput, ReportTypeUncheckedUpdateWithoutReportsInput>
+    create: XOR<ReportTypeCreateWithoutReportsInput, ReportTypeUncheckedCreateWithoutReportsInput>
+    where?: ReportTypeWhereInput
+  }
+
+  export type ReportTypeUpdateToOneWithWhereWithoutReportsInput = {
+    where?: ReportTypeWhereInput
+    data: XOR<ReportTypeUpdateWithoutReportsInput, ReportTypeUncheckedUpdateWithoutReportsInput>
+  }
+
+  export type ReportTypeUpdateWithoutReportsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    module?: EnumReportModuleFieldUpdateOperationsInput | $Enums.ReportModule
+    baseDataSource?: EnumReportBaseDataSourceFieldUpdateOperationsInput | $Enums.ReportBaseDataSource
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    allowedFilters?: JsonNullValueInput | InputJsonValue
+    status?: EnumReportTypeStatusFieldUpdateOperationsInput | $Enums.ReportTypeStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    workspace?: WorkspaceUpdateOneRequiredWithoutReportTypesNestedInput
+    createdBy?: UserUpdateOneWithoutCreatedReportTypesNestedInput
+    updatedBy?: UserUpdateOneWithoutUpdatedReportTypesNestedInput
+    logs?: ReportLogUpdateManyWithoutReportTypeNestedInput
+  }
+
+  export type ReportTypeUncheckedUpdateWithoutReportsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    module?: EnumReportModuleFieldUpdateOperationsInput | $Enums.ReportModule
+    baseDataSource?: EnumReportBaseDataSourceFieldUpdateOperationsInput | $Enums.ReportBaseDataSource
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    allowedFilters?: JsonNullValueInput | InputJsonValue
+    status?: EnumReportTypeStatusFieldUpdateOperationsInput | $Enums.ReportTypeStatus
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    logs?: ReportLogUncheckedUpdateManyWithoutReportTypeNestedInput
+  }
+
+  export type UserUpsertWithoutCreatedReportsInput = {
+    update: XOR<UserUpdateWithoutCreatedReportsInput, UserUncheckedUpdateWithoutCreatedReportsInput>
+    create: XOR<UserCreateWithoutCreatedReportsInput, UserUncheckedCreateWithoutCreatedReportsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutCreatedReportsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutCreatedReportsInput, UserUncheckedUpdateWithoutCreatedReportsInput>
+  }
+
+  export type UserUpdateWithoutCreatedReportsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    username?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    googleId?: NullableStringFieldUpdateOperationsInput | string | null
+    isOnboarded?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isEmailVerified?: BoolFieldUpdateOperationsInput | boolean
+    isLocked?: BoolFieldUpdateOperationsInput | boolean
+    verificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    verificationTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    invitationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    invitationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    role?: RoleUpdateOneWithoutUsersNestedInput
+    workspace?: WorkspaceUpdateOneWithoutUsersNestedInput
+    ownedWorkspace?: WorkspaceUpdateOneWithoutOwnerNestedInput
+    department?: DepartmentUpdateOneWithoutUsersNestedInput
+    office?: OfficeUpdateOneWithoutUsersNestedInput
+    country?: LocationUpdateOneWithoutUsersAtCountryNestedInput
+    state?: LocationUpdateOneWithoutUsersAtStateNestedInput
+    district?: LocationUpdateOneWithoutUsersAtDistrictNestedInput
+    assignedLocations?: UserLocationAssignmentUpdateManyWithoutUserNestedInput
+    supervisor?: UserUpdateOneWithoutSubordinatesNestedInput
+    subordinates?: UserUpdateManyWithoutSupervisorNestedInput
+    targetSettings?: TargetSettingUpdateManyWithoutUserNestedInput
+    violations?: TargetViolationUpdateManyWithoutUserNestedInput
+    devices?: DeviceUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
+    performedLeadActivities?: LeadActivityUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutApprovedByNestedInput
+    rosterEntries?: RosterEntryUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUpdateManyWithoutUserNestedInput
+    createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
+    assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutCreatedReportsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    username?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    googleId?: NullableStringFieldUpdateOperationsInput | string | null
+    isOnboarded?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isEmailVerified?: BoolFieldUpdateOperationsInput | boolean
+    isLocked?: BoolFieldUpdateOperationsInput | boolean
+    verificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    verificationTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    invitationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    invitationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    roleId?: NullableStringFieldUpdateOperationsInput | string | null
+    workspaceId?: NullableStringFieldUpdateOperationsInput | string | null
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    officeId?: NullableStringFieldUpdateOperationsInput | string | null
+    countryId?: NullableStringFieldUpdateOperationsInput | string | null
+    stateId?: NullableStringFieldUpdateOperationsInput | string | null
+    districtId?: NullableStringFieldUpdateOperationsInput | string | null
+    supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ownedWorkspace?: WorkspaceUncheckedUpdateOneWithoutOwnerNestedInput
+    assignedLocations?: UserLocationAssignmentUncheckedUpdateManyWithoutUserNestedInput
+    subordinates?: UserUncheckedUpdateManyWithoutSupervisorNestedInput
+    targetSettings?: TargetSettingUncheckedUpdateManyWithoutUserNestedInput
+    violations?: TargetViolationUncheckedUpdateManyWithoutUserNestedInput
+    devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
+    performedLeadActivities?: LeadActivityUncheckedUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
+    rosterEntries?: RosterEntryUncheckedUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
+    createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
+    assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
+  }
+
+  export type ReportFilterUpsertWithWhereUniqueWithoutReportInput = {
+    where: ReportFilterWhereUniqueInput
+    update: XOR<ReportFilterUpdateWithoutReportInput, ReportFilterUncheckedUpdateWithoutReportInput>
+    create: XOR<ReportFilterCreateWithoutReportInput, ReportFilterUncheckedCreateWithoutReportInput>
+  }
+
+  export type ReportFilterUpdateWithWhereUniqueWithoutReportInput = {
+    where: ReportFilterWhereUniqueInput
+    data: XOR<ReportFilterUpdateWithoutReportInput, ReportFilterUncheckedUpdateWithoutReportInput>
+  }
+
+  export type ReportFilterUpdateManyWithWhereWithoutReportInput = {
+    where: ReportFilterScalarWhereInput
+    data: XOR<ReportFilterUpdateManyMutationInput, ReportFilterUncheckedUpdateManyWithoutReportInput>
+  }
+
+  export type ReportFilterScalarWhereInput = {
+    AND?: ReportFilterScalarWhereInput | ReportFilterScalarWhereInput[]
+    OR?: ReportFilterScalarWhereInput[]
+    NOT?: ReportFilterScalarWhereInput | ReportFilterScalarWhereInput[]
+    id?: StringFilter<"ReportFilter"> | string
+    reportId?: StringFilter<"ReportFilter"> | string
+    filterKey?: StringFilter<"ReportFilter"> | string
+    filterValue?: StringFilter<"ReportFilter"> | string
+    createdAt?: DateTimeFilter<"ReportFilter"> | Date | string
+  }
+
+  export type ReportLogUpsertWithWhereUniqueWithoutReportInput = {
+    where: ReportLogWhereUniqueInput
+    update: XOR<ReportLogUpdateWithoutReportInput, ReportLogUncheckedUpdateWithoutReportInput>
+    create: XOR<ReportLogCreateWithoutReportInput, ReportLogUncheckedCreateWithoutReportInput>
+  }
+
+  export type ReportLogUpdateWithWhereUniqueWithoutReportInput = {
+    where: ReportLogWhereUniqueInput
+    data: XOR<ReportLogUpdateWithoutReportInput, ReportLogUncheckedUpdateWithoutReportInput>
+  }
+
+  export type ReportLogUpdateManyWithWhereWithoutReportInput = {
+    where: ReportLogScalarWhereInput
+    data: XOR<ReportLogUpdateManyMutationInput, ReportLogUncheckedUpdateManyWithoutReportInput>
+  }
+
+  export type ReportCreateWithoutFiltersInput = {
+    id?: string
+    reportName: string
+    reportDate: Date | string
+    isActive?: boolean
+    isGenerated?: boolean
+    generatedFileUrl?: string | null
+    generatedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    workspace: WorkspaceCreateNestedOneWithoutReportsInput
+    reportType: ReportTypeCreateNestedOneWithoutReportsInput
+    createdBy: UserCreateNestedOneWithoutCreatedReportsInput
+    logs?: ReportLogCreateNestedManyWithoutReportInput
+  }
+
+  export type ReportUncheckedCreateWithoutFiltersInput = {
+    id?: string
+    workspaceId: string
+    reportName: string
+    reportTypeId: string
+    reportDate: Date | string
+    isActive?: boolean
+    isGenerated?: boolean
+    generatedFileUrl?: string | null
+    generatedAt?: Date | string | null
+    createdById: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    logs?: ReportLogUncheckedCreateNestedManyWithoutReportInput
+  }
+
+  export type ReportCreateOrConnectWithoutFiltersInput = {
+    where: ReportWhereUniqueInput
+    create: XOR<ReportCreateWithoutFiltersInput, ReportUncheckedCreateWithoutFiltersInput>
+  }
+
+  export type ReportUpsertWithoutFiltersInput = {
+    update: XOR<ReportUpdateWithoutFiltersInput, ReportUncheckedUpdateWithoutFiltersInput>
+    create: XOR<ReportCreateWithoutFiltersInput, ReportUncheckedCreateWithoutFiltersInput>
+    where?: ReportWhereInput
+  }
+
+  export type ReportUpdateToOneWithWhereWithoutFiltersInput = {
+    where?: ReportWhereInput
+    data: XOR<ReportUpdateWithoutFiltersInput, ReportUncheckedUpdateWithoutFiltersInput>
+  }
+
+  export type ReportUpdateWithoutFiltersInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    reportName?: StringFieldUpdateOperationsInput | string
+    reportDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isGenerated?: BoolFieldUpdateOperationsInput | boolean
+    generatedFileUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    generatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    workspace?: WorkspaceUpdateOneRequiredWithoutReportsNestedInput
+    reportType?: ReportTypeUpdateOneRequiredWithoutReportsNestedInput
+    createdBy?: UserUpdateOneRequiredWithoutCreatedReportsNestedInput
+    logs?: ReportLogUpdateManyWithoutReportNestedInput
+  }
+
+  export type ReportUncheckedUpdateWithoutFiltersInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    reportName?: StringFieldUpdateOperationsInput | string
+    reportTypeId?: StringFieldUpdateOperationsInput | string
+    reportDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isGenerated?: BoolFieldUpdateOperationsInput | boolean
+    generatedFileUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    generatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdById?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    logs?: ReportLogUncheckedUpdateManyWithoutReportNestedInput
   }
 
   export type RolePermissionCreateManyRoleInput = {
@@ -71097,8 +84753,15 @@ export namespace Prisma {
     closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
     createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
     updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUpdateManyWithoutUpdatedByNestedInput
     createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
   }
 
@@ -71146,8 +84809,15 @@ export namespace Prisma {
     closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
     createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
   }
 
@@ -71344,6 +85014,41 @@ export namespace Prisma {
     syncedAt?: Date | string
   }
 
+  export type CountryCreateManyWorkspaceInput = {
+    id?: string
+    name: string
+    code?: string | null
+    isActive?: boolean
+    createdById?: string | null
+    updatedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type LocationLevelCreateManyWorkspaceInput = {
+    id?: string
+    countryId: string
+    levelName: string
+    levelOrder: number
+    isActive?: boolean
+    createdById?: string | null
+    updatedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type LOBReasonCreateManyWorkspaceInput = {
+    id?: string
+    name: string
+    status?: $Enums.LOBReasonStatus
+    createdById?: string | null
+    updatedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
   export type ReportTypeCreateManyWorkspaceInput = {
     id?: string
     name: string
@@ -71359,12 +85064,30 @@ export namespace Prisma {
     deletedAt?: Date | string | null
   }
 
+  export type ReportCreateManyWorkspaceInput = {
+    id?: string
+    reportName: string
+    reportTypeId: string
+    reportDate: Date | string
+    isActive?: boolean
+    isGenerated?: boolean
+    generatedFileUrl?: string | null
+    generatedAt?: Date | string | null
+    createdById: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
   export type ReportLogCreateManyWorkspaceInput = {
     id?: string
-    reportTypeId: string
+    reportTypeId?: string | null
+    reportId?: string | null
     generatedById?: string | null
+    action?: string | null
     filters?: JsonNullValueInput | InputJsonValue
     resultCount?: number
+    meta?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
   }
 
@@ -71412,8 +85135,15 @@ export namespace Prisma {
     closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
     createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
     updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUpdateManyWithoutUpdatedByNestedInput
     createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
   }
 
@@ -71461,8 +85191,15 @@ export namespace Prisma {
     closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
     createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
   }
 
@@ -71879,6 +85616,117 @@ export namespace Prisma {
     syncedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type CountryUpdateWithoutWorkspaceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    code?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdBy?: UserUpdateOneWithoutCreatedCountriesNestedInput
+    updatedBy?: UserUpdateOneWithoutUpdatedCountriesNestedInput
+    levels?: LocationLevelUpdateManyWithoutCountryNestedInput
+    locations?: LocationUpdateManyWithoutCountryNestedInput
+  }
+
+  export type CountryUncheckedUpdateWithoutWorkspaceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    code?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    levels?: LocationLevelUncheckedUpdateManyWithoutCountryNestedInput
+    locations?: LocationUncheckedUpdateManyWithoutCountryNestedInput
+  }
+
+  export type CountryUncheckedUpdateManyWithoutWorkspaceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    code?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type LocationLevelUpdateWithoutWorkspaceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    levelName?: StringFieldUpdateOperationsInput | string
+    levelOrder?: IntFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    country?: CountryUpdateOneRequiredWithoutLevelsNestedInput
+    createdBy?: UserUpdateOneWithoutCreatedLocationLevelsNestedInput
+    updatedBy?: UserUpdateOneWithoutUpdatedLocationLevelsNestedInput
+    locations?: LocationUpdateManyWithoutLevelNestedInput
+  }
+
+  export type LocationLevelUncheckedUpdateWithoutWorkspaceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    countryId?: StringFieldUpdateOperationsInput | string
+    levelName?: StringFieldUpdateOperationsInput | string
+    levelOrder?: IntFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    locations?: LocationUncheckedUpdateManyWithoutLevelNestedInput
+  }
+
+  export type LocationLevelUncheckedUpdateManyWithoutWorkspaceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    countryId?: StringFieldUpdateOperationsInput | string
+    levelName?: StringFieldUpdateOperationsInput | string
+    levelOrder?: IntFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LOBReasonUpdateWithoutWorkspaceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    status?: EnumLOBReasonStatusFieldUpdateOperationsInput | $Enums.LOBReasonStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdBy?: UserUpdateOneWithoutCreatedLOBReasonsNestedInput
+    updatedBy?: UserUpdateOneWithoutUpdatedLOBReasonsNestedInput
+  }
+
+  export type LOBReasonUncheckedUpdateWithoutWorkspaceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    status?: EnumLOBReasonStatusFieldUpdateOperationsInput | $Enums.LOBReasonStatus
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type LOBReasonUncheckedUpdateManyWithoutWorkspaceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    status?: EnumLOBReasonStatusFieldUpdateOperationsInput | $Enums.LOBReasonStatus
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
   export type ReportTypeUpdateWithoutWorkspaceInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
@@ -71893,6 +85741,7 @@ export namespace Prisma {
     createdBy?: UserUpdateOneWithoutCreatedReportTypesNestedInput
     updatedBy?: UserUpdateOneWithoutUpdatedReportTypesNestedInput
     logs?: ReportLogUpdateManyWithoutReportTypeNestedInput
+    reports?: ReportUpdateManyWithoutReportTypeNestedInput
   }
 
   export type ReportTypeUncheckedUpdateWithoutWorkspaceInput = {
@@ -71909,6 +85758,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     logs?: ReportLogUncheckedUpdateManyWithoutReportTypeNestedInput
+    reports?: ReportUncheckedUpdateManyWithoutReportTypeNestedInput
   }
 
   export type ReportTypeUncheckedUpdateManyWithoutWorkspaceInput = {
@@ -71926,30 +85776,88 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
+  export type ReportUpdateWithoutWorkspaceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    reportName?: StringFieldUpdateOperationsInput | string
+    reportDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isGenerated?: BoolFieldUpdateOperationsInput | boolean
+    generatedFileUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    generatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reportType?: ReportTypeUpdateOneRequiredWithoutReportsNestedInput
+    createdBy?: UserUpdateOneRequiredWithoutCreatedReportsNestedInput
+    filters?: ReportFilterUpdateManyWithoutReportNestedInput
+    logs?: ReportLogUpdateManyWithoutReportNestedInput
+  }
+
+  export type ReportUncheckedUpdateWithoutWorkspaceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    reportName?: StringFieldUpdateOperationsInput | string
+    reportTypeId?: StringFieldUpdateOperationsInput | string
+    reportDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isGenerated?: BoolFieldUpdateOperationsInput | boolean
+    generatedFileUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    generatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdById?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    filters?: ReportFilterUncheckedUpdateManyWithoutReportNestedInput
+    logs?: ReportLogUncheckedUpdateManyWithoutReportNestedInput
+  }
+
+  export type ReportUncheckedUpdateManyWithoutWorkspaceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    reportName?: StringFieldUpdateOperationsInput | string
+    reportTypeId?: StringFieldUpdateOperationsInput | string
+    reportDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isGenerated?: BoolFieldUpdateOperationsInput | boolean
+    generatedFileUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    generatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdById?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
   export type ReportLogUpdateWithoutWorkspaceInput = {
     id?: StringFieldUpdateOperationsInput | string
+    action?: NullableStringFieldUpdateOperationsInput | string | null
     filters?: JsonNullValueInput | InputJsonValue
     resultCount?: IntFieldUpdateOperationsInput | number
+    meta?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    reportType?: ReportTypeUpdateOneRequiredWithoutLogsNestedInput
+    reportType?: ReportTypeUpdateOneWithoutLogsNestedInput
+    report?: ReportUpdateOneWithoutLogsNestedInput
     generatedBy?: UserUpdateOneWithoutGeneratedReportLogsNestedInput
   }
 
   export type ReportLogUncheckedUpdateWithoutWorkspaceInput = {
     id?: StringFieldUpdateOperationsInput | string
-    reportTypeId?: StringFieldUpdateOperationsInput | string
+    reportTypeId?: NullableStringFieldUpdateOperationsInput | string | null
+    reportId?: NullableStringFieldUpdateOperationsInput | string | null
     generatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    action?: NullableStringFieldUpdateOperationsInput | string | null
     filters?: JsonNullValueInput | InputJsonValue
     resultCount?: IntFieldUpdateOperationsInput | number
+    meta?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type ReportLogUncheckedUpdateManyWithoutWorkspaceInput = {
     id?: StringFieldUpdateOperationsInput | string
-    reportTypeId?: StringFieldUpdateOperationsInput | string
+    reportTypeId?: NullableStringFieldUpdateOperationsInput | string | null
+    reportId?: NullableStringFieldUpdateOperationsInput | string | null
     generatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    action?: NullableStringFieldUpdateOperationsInput | string | null
     filters?: JsonNullValueInput | InputJsonValue
     resultCount?: IntFieldUpdateOperationsInput | number
+    meta?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -72025,8 +85933,15 @@ export namespace Prisma {
     closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
     createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
     updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUpdateManyWithoutUpdatedByNestedInput
     createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
   }
 
@@ -72074,8 +85989,15 @@ export namespace Prisma {
     closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
     createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
   }
 
@@ -72661,8 +86583,15 @@ export namespace Prisma {
     closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
     createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
     updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUpdateManyWithoutUpdatedByNestedInput
     createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
   }
 
@@ -72710,8 +86639,15 @@ export namespace Prisma {
     closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
     createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
   }
 
@@ -72743,11 +86679,219 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type LocationLevelCreateManyCountryInput = {
+    id?: string
+    workspaceId: string
+    levelName: string
+    levelOrder: number
+    isActive?: boolean
+    createdById?: string | null
+    updatedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type LocationCreateManyCountryInput = {
+    id?: string
+    name: string
+    type: $Enums.LocationType
+    workspaceId: string
+    levelId?: string | null
+    isActive?: boolean
+    createdById?: string | null
+    updatedById?: string | null
+    deletedAt?: Date | string | null
+    parentId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type LocationLevelUpdateWithoutCountryInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    levelName?: StringFieldUpdateOperationsInput | string
+    levelOrder?: IntFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    workspace?: WorkspaceUpdateOneRequiredWithoutLocationLevelsNestedInput
+    createdBy?: UserUpdateOneWithoutCreatedLocationLevelsNestedInput
+    updatedBy?: UserUpdateOneWithoutUpdatedLocationLevelsNestedInput
+    locations?: LocationUpdateManyWithoutLevelNestedInput
+  }
+
+  export type LocationLevelUncheckedUpdateWithoutCountryInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    levelName?: StringFieldUpdateOperationsInput | string
+    levelOrder?: IntFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    locations?: LocationUncheckedUpdateManyWithoutLevelNestedInput
+  }
+
+  export type LocationLevelUncheckedUpdateManyWithoutCountryInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    levelName?: StringFieldUpdateOperationsInput | string
+    levelOrder?: IntFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LocationUpdateWithoutCountryInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    type?: EnumLocationTypeFieldUpdateOperationsInput | $Enums.LocationType
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    parent?: LocationUpdateOneWithoutChildrenNestedInput
+    children?: LocationUpdateManyWithoutParentNestedInput
+    level?: LocationLevelUpdateOneWithoutLocationsNestedInput
+    assignedUsers?: UserLocationAssignmentUpdateManyWithoutLocationNestedInput
+    usersAtCountry?: UserUpdateManyWithoutCountryNestedInput
+    usersAtState?: UserUpdateManyWithoutStateNestedInput
+    usersAtDistrict?: UserUpdateManyWithoutDistrictNestedInput
+    holidaysAtCountry?: HolidayUpdateManyWithoutCountryNestedInput
+    holidaysAtState?: HolidayUpdateManyWithoutStateNestedInput
+    holidaysAtDistrict?: HolidayUpdateManyWithoutDistrictNestedInput
+  }
+
+  export type LocationUncheckedUpdateWithoutCountryInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    type?: EnumLocationTypeFieldUpdateOperationsInput | $Enums.LocationType
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    levelId?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    children?: LocationUncheckedUpdateManyWithoutParentNestedInput
+    assignedUsers?: UserLocationAssignmentUncheckedUpdateManyWithoutLocationNestedInput
+    usersAtCountry?: UserUncheckedUpdateManyWithoutCountryNestedInput
+    usersAtState?: UserUncheckedUpdateManyWithoutStateNestedInput
+    usersAtDistrict?: UserUncheckedUpdateManyWithoutDistrictNestedInput
+    holidaysAtCountry?: HolidayUncheckedUpdateManyWithoutCountryNestedInput
+    holidaysAtState?: HolidayUncheckedUpdateManyWithoutStateNestedInput
+    holidaysAtDistrict?: HolidayUncheckedUpdateManyWithoutDistrictNestedInput
+  }
+
+  export type LocationUncheckedUpdateManyWithoutCountryInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    type?: EnumLocationTypeFieldUpdateOperationsInput | $Enums.LocationType
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    levelId?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LocationCreateManyLevelInput = {
+    id?: string
+    name: string
+    type: $Enums.LocationType
+    workspaceId: string
+    countryId?: string | null
+    isActive?: boolean
+    createdById?: string | null
+    updatedById?: string | null
+    deletedAt?: Date | string | null
+    parentId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type LocationUpdateWithoutLevelInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    type?: EnumLocationTypeFieldUpdateOperationsInput | $Enums.LocationType
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    parent?: LocationUpdateOneWithoutChildrenNestedInput
+    children?: LocationUpdateManyWithoutParentNestedInput
+    country?: CountryUpdateOneWithoutLocationsNestedInput
+    assignedUsers?: UserLocationAssignmentUpdateManyWithoutLocationNestedInput
+    usersAtCountry?: UserUpdateManyWithoutCountryNestedInput
+    usersAtState?: UserUpdateManyWithoutStateNestedInput
+    usersAtDistrict?: UserUpdateManyWithoutDistrictNestedInput
+    holidaysAtCountry?: HolidayUpdateManyWithoutCountryNestedInput
+    holidaysAtState?: HolidayUpdateManyWithoutStateNestedInput
+    holidaysAtDistrict?: HolidayUpdateManyWithoutDistrictNestedInput
+  }
+
+  export type LocationUncheckedUpdateWithoutLevelInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    type?: EnumLocationTypeFieldUpdateOperationsInput | $Enums.LocationType
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    countryId?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    children?: LocationUncheckedUpdateManyWithoutParentNestedInput
+    assignedUsers?: UserLocationAssignmentUncheckedUpdateManyWithoutLocationNestedInput
+    usersAtCountry?: UserUncheckedUpdateManyWithoutCountryNestedInput
+    usersAtState?: UserUncheckedUpdateManyWithoutStateNestedInput
+    usersAtDistrict?: UserUncheckedUpdateManyWithoutDistrictNestedInput
+    holidaysAtCountry?: HolidayUncheckedUpdateManyWithoutCountryNestedInput
+    holidaysAtState?: HolidayUncheckedUpdateManyWithoutStateNestedInput
+    holidaysAtDistrict?: HolidayUncheckedUpdateManyWithoutDistrictNestedInput
+  }
+
+  export type LocationUncheckedUpdateManyWithoutLevelInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    type?: EnumLocationTypeFieldUpdateOperationsInput | $Enums.LocationType
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    countryId?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type LocationCreateManyParentInput = {
     id?: string
     name: string
     type: $Enums.LocationType
     workspaceId: string
+    countryId?: string | null
+    levelId?: string | null
+    isActive?: boolean
+    createdById?: string | null
+    updatedById?: string | null
+    deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -72900,9 +87044,15 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     type?: EnumLocationTypeFieldUpdateOperationsInput | $Enums.LocationType
     workspaceId?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     children?: LocationUpdateManyWithoutParentNestedInput
+    country?: CountryUpdateOneWithoutLocationsNestedInput
+    level?: LocationLevelUpdateOneWithoutLocationsNestedInput
     assignedUsers?: UserLocationAssignmentUpdateManyWithoutLocationNestedInput
     usersAtCountry?: UserUpdateManyWithoutCountryNestedInput
     usersAtState?: UserUpdateManyWithoutStateNestedInput
@@ -72917,6 +87067,12 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     type?: EnumLocationTypeFieldUpdateOperationsInput | $Enums.LocationType
     workspaceId?: StringFieldUpdateOperationsInput | string
+    countryId?: NullableStringFieldUpdateOperationsInput | string | null
+    levelId?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     children?: LocationUncheckedUpdateManyWithoutParentNestedInput
@@ -72934,6 +87090,12 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     type?: EnumLocationTypeFieldUpdateOperationsInput | $Enums.LocationType
     workspaceId?: StringFieldUpdateOperationsInput | string
+    countryId?: NullableStringFieldUpdateOperationsInput | string | null
+    levelId?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -73006,8 +87168,15 @@ export namespace Prisma {
     closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
     createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
     updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUpdateManyWithoutUpdatedByNestedInput
     createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
   }
 
@@ -73055,8 +87224,15 @@ export namespace Prisma {
     closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
     createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
   }
 
@@ -73132,8 +87308,15 @@ export namespace Prisma {
     closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
     createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
     updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUpdateManyWithoutUpdatedByNestedInput
     createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
   }
 
@@ -73181,8 +87364,15 @@ export namespace Prisma {
     closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
     createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
   }
 
@@ -73258,8 +87448,15 @@ export namespace Prisma {
     closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
     createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
     updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUpdateManyWithoutUpdatedByNestedInput
     createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
   }
 
@@ -73307,8 +87504,15 @@ export namespace Prisma {
     closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
     createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
   }
 
@@ -74360,6 +88564,76 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
+  export type CountryCreateManyCreatedByInput = {
+    id?: string
+    workspaceId: string
+    name: string
+    code?: string | null
+    isActive?: boolean
+    updatedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type CountryCreateManyUpdatedByInput = {
+    id?: string
+    workspaceId: string
+    name: string
+    code?: string | null
+    isActive?: boolean
+    createdById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type LocationLevelCreateManyCreatedByInput = {
+    id?: string
+    workspaceId: string
+    countryId: string
+    levelName: string
+    levelOrder: number
+    isActive?: boolean
+    updatedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type LocationLevelCreateManyUpdatedByInput = {
+    id?: string
+    workspaceId: string
+    countryId: string
+    levelName: string
+    levelOrder: number
+    isActive?: boolean
+    createdById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type LOBReasonCreateManyCreatedByInput = {
+    id?: string
+    workspaceId: string
+    name: string
+    status?: $Enums.LOBReasonStatus
+    updatedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type LOBReasonCreateManyUpdatedByInput = {
+    id?: string
+    workspaceId: string
+    name: string
+    status?: $Enums.LOBReasonStatus
+    createdById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
   export type ReportTypeCreateManyCreatedByInput = {
     id?: string
     workspaceId: string
@@ -74390,12 +88664,30 @@ export namespace Prisma {
     deletedAt?: Date | string | null
   }
 
+  export type ReportCreateManyCreatedByInput = {
+    id?: string
+    workspaceId: string
+    reportName: string
+    reportTypeId: string
+    reportDate: Date | string
+    isActive?: boolean
+    isGenerated?: boolean
+    generatedFileUrl?: string | null
+    generatedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
   export type ReportLogCreateManyGeneratedByInput = {
     id?: string
     workspaceId: string
-    reportTypeId: string
+    reportTypeId?: string | null
+    reportId?: string | null
+    action?: string | null
     filters?: JsonNullValueInput | InputJsonValue
     resultCount?: number
+    meta?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
   }
 
@@ -74467,8 +88759,15 @@ export namespace Prisma {
     closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
     createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
     updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUpdateManyWithoutUpdatedByNestedInput
     createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
   }
 
@@ -74516,8 +88815,15 @@ export namespace Prisma {
     closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
     createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
   }
 
@@ -75358,6 +89664,228 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type CountryUpdateWithoutCreatedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    code?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    workspace?: WorkspaceUpdateOneRequiredWithoutCountriesNestedInput
+    updatedBy?: UserUpdateOneWithoutUpdatedCountriesNestedInput
+    levels?: LocationLevelUpdateManyWithoutCountryNestedInput
+    locations?: LocationUpdateManyWithoutCountryNestedInput
+  }
+
+  export type CountryUncheckedUpdateWithoutCreatedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    code?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    levels?: LocationLevelUncheckedUpdateManyWithoutCountryNestedInput
+    locations?: LocationUncheckedUpdateManyWithoutCountryNestedInput
+  }
+
+  export type CountryUncheckedUpdateManyWithoutCreatedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    code?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type CountryUpdateWithoutUpdatedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    code?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    workspace?: WorkspaceUpdateOneRequiredWithoutCountriesNestedInput
+    createdBy?: UserUpdateOneWithoutCreatedCountriesNestedInput
+    levels?: LocationLevelUpdateManyWithoutCountryNestedInput
+    locations?: LocationUpdateManyWithoutCountryNestedInput
+  }
+
+  export type CountryUncheckedUpdateWithoutUpdatedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    code?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    levels?: LocationLevelUncheckedUpdateManyWithoutCountryNestedInput
+    locations?: LocationUncheckedUpdateManyWithoutCountryNestedInput
+  }
+
+  export type CountryUncheckedUpdateManyWithoutUpdatedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    code?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type LocationLevelUpdateWithoutCreatedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    levelName?: StringFieldUpdateOperationsInput | string
+    levelOrder?: IntFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    workspace?: WorkspaceUpdateOneRequiredWithoutLocationLevelsNestedInput
+    country?: CountryUpdateOneRequiredWithoutLevelsNestedInput
+    updatedBy?: UserUpdateOneWithoutUpdatedLocationLevelsNestedInput
+    locations?: LocationUpdateManyWithoutLevelNestedInput
+  }
+
+  export type LocationLevelUncheckedUpdateWithoutCreatedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    countryId?: StringFieldUpdateOperationsInput | string
+    levelName?: StringFieldUpdateOperationsInput | string
+    levelOrder?: IntFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    locations?: LocationUncheckedUpdateManyWithoutLevelNestedInput
+  }
+
+  export type LocationLevelUncheckedUpdateManyWithoutCreatedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    countryId?: StringFieldUpdateOperationsInput | string
+    levelName?: StringFieldUpdateOperationsInput | string
+    levelOrder?: IntFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LocationLevelUpdateWithoutUpdatedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    levelName?: StringFieldUpdateOperationsInput | string
+    levelOrder?: IntFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    workspace?: WorkspaceUpdateOneRequiredWithoutLocationLevelsNestedInput
+    country?: CountryUpdateOneRequiredWithoutLevelsNestedInput
+    createdBy?: UserUpdateOneWithoutCreatedLocationLevelsNestedInput
+    locations?: LocationUpdateManyWithoutLevelNestedInput
+  }
+
+  export type LocationLevelUncheckedUpdateWithoutUpdatedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    countryId?: StringFieldUpdateOperationsInput | string
+    levelName?: StringFieldUpdateOperationsInput | string
+    levelOrder?: IntFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    locations?: LocationUncheckedUpdateManyWithoutLevelNestedInput
+  }
+
+  export type LocationLevelUncheckedUpdateManyWithoutUpdatedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    countryId?: StringFieldUpdateOperationsInput | string
+    levelName?: StringFieldUpdateOperationsInput | string
+    levelOrder?: IntFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LOBReasonUpdateWithoutCreatedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    status?: EnumLOBReasonStatusFieldUpdateOperationsInput | $Enums.LOBReasonStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    workspace?: WorkspaceUpdateOneRequiredWithoutLobReasonsNestedInput
+    updatedBy?: UserUpdateOneWithoutUpdatedLOBReasonsNestedInput
+  }
+
+  export type LOBReasonUncheckedUpdateWithoutCreatedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    status?: EnumLOBReasonStatusFieldUpdateOperationsInput | $Enums.LOBReasonStatus
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type LOBReasonUncheckedUpdateManyWithoutCreatedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    status?: EnumLOBReasonStatusFieldUpdateOperationsInput | $Enums.LOBReasonStatus
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type LOBReasonUpdateWithoutUpdatedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    status?: EnumLOBReasonStatusFieldUpdateOperationsInput | $Enums.LOBReasonStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    workspace?: WorkspaceUpdateOneRequiredWithoutLobReasonsNestedInput
+    createdBy?: UserUpdateOneWithoutCreatedLOBReasonsNestedInput
+  }
+
+  export type LOBReasonUncheckedUpdateWithoutUpdatedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    status?: EnumLOBReasonStatusFieldUpdateOperationsInput | $Enums.LOBReasonStatus
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type LOBReasonUncheckedUpdateManyWithoutUpdatedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    status?: EnumLOBReasonStatusFieldUpdateOperationsInput | $Enums.LOBReasonStatus
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
   export type ReportTypeUpdateWithoutCreatedByInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
@@ -75372,6 +89900,7 @@ export namespace Prisma {
     workspace?: WorkspaceUpdateOneRequiredWithoutReportTypesNestedInput
     updatedBy?: UserUpdateOneWithoutUpdatedReportTypesNestedInput
     logs?: ReportLogUpdateManyWithoutReportTypeNestedInput
+    reports?: ReportUpdateManyWithoutReportTypeNestedInput
   }
 
   export type ReportTypeUncheckedUpdateWithoutCreatedByInput = {
@@ -75388,6 +89917,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     logs?: ReportLogUncheckedUpdateManyWithoutReportTypeNestedInput
+    reports?: ReportUncheckedUpdateManyWithoutReportTypeNestedInput
   }
 
   export type ReportTypeUncheckedUpdateManyWithoutCreatedByInput = {
@@ -75419,6 +89949,7 @@ export namespace Prisma {
     workspace?: WorkspaceUpdateOneRequiredWithoutReportTypesNestedInput
     createdBy?: UserUpdateOneWithoutCreatedReportTypesNestedInput
     logs?: ReportLogUpdateManyWithoutReportTypeNestedInput
+    reports?: ReportUpdateManyWithoutReportTypeNestedInput
   }
 
   export type ReportTypeUncheckedUpdateWithoutUpdatedByInput = {
@@ -75435,6 +89966,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     logs?: ReportLogUncheckedUpdateManyWithoutReportTypeNestedInput
+    reports?: ReportUncheckedUpdateManyWithoutReportTypeNestedInput
   }
 
   export type ReportTypeUncheckedUpdateManyWithoutUpdatedByInput = {
@@ -75452,30 +89984,88 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
+  export type ReportUpdateWithoutCreatedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    reportName?: StringFieldUpdateOperationsInput | string
+    reportDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isGenerated?: BoolFieldUpdateOperationsInput | boolean
+    generatedFileUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    generatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    workspace?: WorkspaceUpdateOneRequiredWithoutReportsNestedInput
+    reportType?: ReportTypeUpdateOneRequiredWithoutReportsNestedInput
+    filters?: ReportFilterUpdateManyWithoutReportNestedInput
+    logs?: ReportLogUpdateManyWithoutReportNestedInput
+  }
+
+  export type ReportUncheckedUpdateWithoutCreatedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    reportName?: StringFieldUpdateOperationsInput | string
+    reportTypeId?: StringFieldUpdateOperationsInput | string
+    reportDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isGenerated?: BoolFieldUpdateOperationsInput | boolean
+    generatedFileUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    generatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    filters?: ReportFilterUncheckedUpdateManyWithoutReportNestedInput
+    logs?: ReportLogUncheckedUpdateManyWithoutReportNestedInput
+  }
+
+  export type ReportUncheckedUpdateManyWithoutCreatedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    reportName?: StringFieldUpdateOperationsInput | string
+    reportTypeId?: StringFieldUpdateOperationsInput | string
+    reportDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isGenerated?: BoolFieldUpdateOperationsInput | boolean
+    generatedFileUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    generatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
   export type ReportLogUpdateWithoutGeneratedByInput = {
     id?: StringFieldUpdateOperationsInput | string
+    action?: NullableStringFieldUpdateOperationsInput | string | null
     filters?: JsonNullValueInput | InputJsonValue
     resultCount?: IntFieldUpdateOperationsInput | number
+    meta?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     workspace?: WorkspaceUpdateOneRequiredWithoutReportLogsNestedInput
-    reportType?: ReportTypeUpdateOneRequiredWithoutLogsNestedInput
+    reportType?: ReportTypeUpdateOneWithoutLogsNestedInput
+    report?: ReportUpdateOneWithoutLogsNestedInput
   }
 
   export type ReportLogUncheckedUpdateWithoutGeneratedByInput = {
     id?: StringFieldUpdateOperationsInput | string
     workspaceId?: StringFieldUpdateOperationsInput | string
-    reportTypeId?: StringFieldUpdateOperationsInput | string
+    reportTypeId?: NullableStringFieldUpdateOperationsInput | string | null
+    reportId?: NullableStringFieldUpdateOperationsInput | string | null
+    action?: NullableStringFieldUpdateOperationsInput | string | null
     filters?: JsonNullValueInput | InputJsonValue
     resultCount?: IntFieldUpdateOperationsInput | number
+    meta?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type ReportLogUncheckedUpdateManyWithoutGeneratedByInput = {
     id?: StringFieldUpdateOperationsInput | string
     workspaceId?: StringFieldUpdateOperationsInput | string
-    reportTypeId?: StringFieldUpdateOperationsInput | string
+    reportTypeId?: NullableStringFieldUpdateOperationsInput | string | null
+    reportId?: NullableStringFieldUpdateOperationsInput | string | null
+    action?: NullableStringFieldUpdateOperationsInput | string | null
     filters?: JsonNullValueInput | InputJsonValue
     resultCount?: IntFieldUpdateOperationsInput | number
+    meta?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -75506,36 +90096,188 @@ export namespace Prisma {
   export type ReportLogCreateManyReportTypeInput = {
     id?: string
     workspaceId: string
+    reportId?: string | null
     generatedById?: string | null
+    action?: string | null
     filters?: JsonNullValueInput | InputJsonValue
     resultCount?: number
+    meta?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
+  }
+
+  export type ReportCreateManyReportTypeInput = {
+    id?: string
+    workspaceId: string
+    reportName: string
+    reportDate: Date | string
+    isActive?: boolean
+    isGenerated?: boolean
+    generatedFileUrl?: string | null
+    generatedAt?: Date | string | null
+    createdById: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
   }
 
   export type ReportLogUpdateWithoutReportTypeInput = {
     id?: StringFieldUpdateOperationsInput | string
+    action?: NullableStringFieldUpdateOperationsInput | string | null
     filters?: JsonNullValueInput | InputJsonValue
     resultCount?: IntFieldUpdateOperationsInput | number
+    meta?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     workspace?: WorkspaceUpdateOneRequiredWithoutReportLogsNestedInput
+    report?: ReportUpdateOneWithoutLogsNestedInput
     generatedBy?: UserUpdateOneWithoutGeneratedReportLogsNestedInput
   }
 
   export type ReportLogUncheckedUpdateWithoutReportTypeInput = {
     id?: StringFieldUpdateOperationsInput | string
     workspaceId?: StringFieldUpdateOperationsInput | string
+    reportId?: NullableStringFieldUpdateOperationsInput | string | null
     generatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    action?: NullableStringFieldUpdateOperationsInput | string | null
     filters?: JsonNullValueInput | InputJsonValue
     resultCount?: IntFieldUpdateOperationsInput | number
+    meta?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type ReportLogUncheckedUpdateManyWithoutReportTypeInput = {
     id?: StringFieldUpdateOperationsInput | string
     workspaceId?: StringFieldUpdateOperationsInput | string
+    reportId?: NullableStringFieldUpdateOperationsInput | string | null
     generatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    action?: NullableStringFieldUpdateOperationsInput | string | null
     filters?: JsonNullValueInput | InputJsonValue
     resultCount?: IntFieldUpdateOperationsInput | number
+    meta?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ReportUpdateWithoutReportTypeInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    reportName?: StringFieldUpdateOperationsInput | string
+    reportDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isGenerated?: BoolFieldUpdateOperationsInput | boolean
+    generatedFileUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    generatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    workspace?: WorkspaceUpdateOneRequiredWithoutReportsNestedInput
+    createdBy?: UserUpdateOneRequiredWithoutCreatedReportsNestedInput
+    filters?: ReportFilterUpdateManyWithoutReportNestedInput
+    logs?: ReportLogUpdateManyWithoutReportNestedInput
+  }
+
+  export type ReportUncheckedUpdateWithoutReportTypeInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    reportName?: StringFieldUpdateOperationsInput | string
+    reportDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isGenerated?: BoolFieldUpdateOperationsInput | boolean
+    generatedFileUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    generatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdById?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    filters?: ReportFilterUncheckedUpdateManyWithoutReportNestedInput
+    logs?: ReportLogUncheckedUpdateManyWithoutReportNestedInput
+  }
+
+  export type ReportUncheckedUpdateManyWithoutReportTypeInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    reportName?: StringFieldUpdateOperationsInput | string
+    reportDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isGenerated?: BoolFieldUpdateOperationsInput | boolean
+    generatedFileUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    generatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdById?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type ReportFilterCreateManyReportInput = {
+    id?: string
+    filterKey: string
+    filterValue: string
+    createdAt?: Date | string
+  }
+
+  export type ReportLogCreateManyReportInput = {
+    id?: string
+    workspaceId: string
+    reportTypeId?: string | null
+    generatedById?: string | null
+    action?: string | null
+    filters?: JsonNullValueInput | InputJsonValue
+    resultCount?: number
+    meta?: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+  }
+
+  export type ReportFilterUpdateWithoutReportInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    filterKey?: StringFieldUpdateOperationsInput | string
+    filterValue?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ReportFilterUncheckedUpdateWithoutReportInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    filterKey?: StringFieldUpdateOperationsInput | string
+    filterValue?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ReportFilterUncheckedUpdateManyWithoutReportInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    filterKey?: StringFieldUpdateOperationsInput | string
+    filterValue?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ReportLogUpdateWithoutReportInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    action?: NullableStringFieldUpdateOperationsInput | string | null
+    filters?: JsonNullValueInput | InputJsonValue
+    resultCount?: IntFieldUpdateOperationsInput | number
+    meta?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    workspace?: WorkspaceUpdateOneRequiredWithoutReportLogsNestedInput
+    reportType?: ReportTypeUpdateOneWithoutLogsNestedInput
+    generatedBy?: UserUpdateOneWithoutGeneratedReportLogsNestedInput
+  }
+
+  export type ReportLogUncheckedUpdateWithoutReportInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    reportTypeId?: NullableStringFieldUpdateOperationsInput | string | null
+    generatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    action?: NullableStringFieldUpdateOperationsInput | string | null
+    filters?: JsonNullValueInput | InputJsonValue
+    resultCount?: IntFieldUpdateOperationsInput | number
+    meta?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ReportLogUncheckedUpdateManyWithoutReportInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    reportTypeId?: NullableStringFieldUpdateOperationsInput | string | null
+    generatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    action?: NullableStringFieldUpdateOperationsInput | string | null
+    filters?: JsonNullValueInput | InputJsonValue
+    resultCount?: IntFieldUpdateOperationsInput | number
+    meta?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -75577,6 +90319,14 @@ export namespace Prisma {
      */
     export type OfficeCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = OfficeCountOutputTypeDefaultArgs<ExtArgs>
     /**
+     * @deprecated Use CountryCountOutputTypeDefaultArgs instead
+     */
+    export type CountryCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = CountryCountOutputTypeDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use LocationLevelCountOutputTypeDefaultArgs instead
+     */
+    export type LocationLevelCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = LocationLevelCountOutputTypeDefaultArgs<ExtArgs>
+    /**
      * @deprecated Use LocationCountOutputTypeDefaultArgs instead
      */
     export type LocationCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = LocationCountOutputTypeDefaultArgs<ExtArgs>
@@ -75612,6 +90362,10 @@ export namespace Prisma {
      * @deprecated Use ReportTypeCountOutputTypeDefaultArgs instead
      */
     export type ReportTypeCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = ReportTypeCountOutputTypeDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use ReportCountOutputTypeDefaultArgs instead
+     */
+    export type ReportCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = ReportCountOutputTypeDefaultArgs<ExtArgs>
     /**
      * @deprecated Use RoleDefaultArgs instead
      */
@@ -75653,6 +90407,14 @@ export namespace Prisma {
      */
     export type OfficeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = OfficeDefaultArgs<ExtArgs>
     /**
+     * @deprecated Use CountryDefaultArgs instead
+     */
+    export type CountryArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = CountryDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use LocationLevelDefaultArgs instead
+     */
+    export type LocationLevelArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = LocationLevelDefaultArgs<ExtArgs>
+    /**
      * @deprecated Use LocationDefaultArgs instead
      */
     export type LocationArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = LocationDefaultArgs<ExtArgs>
@@ -75684,6 +90446,10 @@ export namespace Prisma {
      * @deprecated Use LeadLOBLogDefaultArgs instead
      */
     export type LeadLOBLogArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = LeadLOBLogDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use LOBReasonDefaultArgs instead
+     */
+    export type LOBReasonArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = LOBReasonDefaultArgs<ExtArgs>
     /**
      * @deprecated Use LeadStageApprovalDefaultArgs instead
      */
@@ -75756,6 +90522,14 @@ export namespace Prisma {
      * @deprecated Use ReportLogDefaultArgs instead
      */
     export type ReportLogArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = ReportLogDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use ReportDefaultArgs instead
+     */
+    export type ReportArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = ReportDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use ReportFilterDefaultArgs instead
+     */
+    export type ReportFilterArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = ReportFilterDefaultArgs<ExtArgs>
 
   /**
    * Batch Payload for updateMany & deleteMany & createMany

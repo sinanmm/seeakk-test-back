@@ -99,7 +99,11 @@ model Workspace {
   leadStageApprovals LeadStageApproval[]
   holidays           Holiday[]
   holidaySyncLogs    HolidaySyncLog[]
+  countries          Country[]
+  locationLevels     LocationLevel[]
+  lobReasons         LOBReason[]
   reportTypes        ReportType[]
+  reports            Report[]
   reportLogs         ReportLog[]
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
@@ -145,6 +149,11 @@ enum LeadApprovalState {
 }
 
 enum ReportTypeStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum LOBReasonStatus {
   ACTIVE
   INACTIVE
 }
@@ -319,15 +328,70 @@ model Office {
   @@map("offices")
 }
 
+model Country {
+  id          String    @id @default(uuid())
+  workspaceId String
+  name        String
+  code        String?
+  isActive    Boolean   @default(true)
+  createdById String?
+  updatedById String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  workspace Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdBy User?           @relation("CountryCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy User?           @relation("CountryUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  levels    LocationLevel[]
+  locations Location[]
+
+  @@index([workspaceId])
+  @@index([workspaceId, isActive, createdAt(sort: Desc)])
+  @@map("countries")
+}
+
+model LocationLevel {
+  id          String   @id @default(uuid())
+  workspaceId String
+  countryId   String
+  levelName   String
+  levelOrder  Int
+  isActive    Boolean  @default(true)
+  createdById String?
+  updatedById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workspace Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  country   Country    @relation(fields: [countryId], references: [id], onDelete: Cascade)
+  createdBy User?      @relation("LocationLevelCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy User?      @relation("LocationLevelUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  locations Location[]
+
+  @@unique([countryId, levelOrder])
+  @@index([workspaceId])
+  @@index([countryId, isActive, levelOrder])
+  @@map("location_levels")
+}
+
 model Location {
   id          String       @id @default(cuid())
   name        String
   type        LocationType
   workspaceId String
+  countryId   String?
+  levelId     String?
+  isActive    Boolean      @default(true)
+  createdById String?
+  updatedById String?
+  deletedAt   DateTime?
 
   parentId String?
-  parent   Location?  @relation("LocationHierarchy", fields: [parentId], references: [id])
-  children Location[] @relation("LocationHierarchy")
+  parent   Location?      @relation("LocationHierarchy", fields: [parentId], references: [id])
+  children Location[]     @relation("LocationHierarchy")
+  country  Country?       @relation(fields: [countryId], references: [id], onDelete: SetNull)
+  level    LocationLevel? @relation(fields: [levelId], references: [id], onDelete: SetNull)
 
   assignedUsers UserLocationAssignment[]
 
@@ -345,6 +409,9 @@ model Location {
 
   @@index([workspaceId])
   @@index([parentId])
+  @@index([countryId])
+  @@index([levelId])
+  @@index([workspaceId, countryId, levelId, isActive])
   @@map("locations")
 }
 
@@ -511,6 +578,27 @@ model LeadLOBLog {
   @@index([leadId, changedAt])
   @@index([workspaceId, reasonId])
   @@map("lead_lob_logs")
+}
+
+model LOBReason {
+  id          String          @id @default(uuid())
+  workspaceId String
+  name        String
+  status      LOBReasonStatus @default(ACTIVE)
+  createdById String?
+  updatedById String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  deletedAt   DateTime?
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdBy User?     @relation("LOBReasonCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy User?     @relation("LOBReasonUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  @@index([workspaceId])
+  @@index([status])
+  @@index([workspaceId, status, createdAt(sort: Desc)])
+  @@map("lob_reasons")
 }
 
 model LeadStageApproval {
@@ -756,11 +844,18 @@ model User {
   assignedLeads               Lead[]              @relation("LeadAssignedTo")
   closedLeads                 Lead[]              @relation("LeadClosedBy")
 
-  createdHolidays     Holiday[]    @relation("HolidayCreatedBy")
-  updatedHolidays     Holiday[]    @relation("HolidayUpdatedBy")
-  createdReportTypes  ReportType[] @relation("ReportTypeCreatedBy")
-  updatedReportTypes  ReportType[] @relation("ReportTypeUpdatedBy")
-  generatedReportLogs ReportLog[]  @relation("ReportLogGeneratedBy")
+  createdHolidays       Holiday[]       @relation("HolidayCreatedBy")
+  updatedHolidays       Holiday[]       @relation("HolidayUpdatedBy")
+  createdCountries      Country[]       @relation("CountryCreatedBy")
+  updatedCountries      Country[]       @relation("CountryUpdatedBy")
+  createdLocationLevels LocationLevel[] @relation("LocationLevelCreatedBy")
+  updatedLocationLevels LocationLevel[] @relation("LocationLevelUpdatedBy")
+  createdLOBReasons     LOBReason[]     @relation("LOBReasonCreatedBy")
+  updatedLOBReasons     LOBReason[]     @relation("LOBReasonUpdatedBy")
+  createdReportTypes    ReportType[]    @relation("ReportTypeCreatedBy")
+  updatedReportTypes    ReportType[]    @relation("ReportTypeUpdatedBy")
+  createdReports        Report[]        @relation("ReportCreatedBy")
+  generatedReportLogs   ReportLog[]     @relation("ReportLogGeneratedBy")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -960,6 +1055,7 @@ model ReportType {
   createdBy User?       @relation("ReportTypeCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
   updatedBy User?       @relation("ReportTypeUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
   logs      ReportLog[]
+  reports   Report[]
 
   @@index([workspaceId])
   @@index([status])
@@ -971,19 +1067,71 @@ model ReportType {
 model ReportLog {
   id            String   @id @default(uuid())
   workspaceId   String
-  reportTypeId  String
+  reportTypeId  String?
+  reportId      String?
   generatedById String?
+  action        String?
   filters       Json     @default("[]")
   resultCount   Int      @default(0)
+  meta          Json     @default("{}")
   createdAt     DateTime @default(now())
 
-  workspace   Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  reportType  ReportType @relation(fields: [reportTypeId], references: [id], onDelete: Cascade)
-  generatedBy User?      @relation("ReportLogGeneratedBy", fields: [generatedById], references: [id], onDelete: SetNull)
+  workspace   Workspace   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  reportType  ReportType? @relation(fields: [reportTypeId], references: [id], onDelete: SetNull)
+  report      Report?     @relation("ReportInstanceLogs", fields: [reportId], references: [id], onDelete: Cascade)
+  generatedBy User?       @relation("ReportLogGeneratedBy", fields: [generatedById], references: [id], onDelete: SetNull)
 
   @@index([workspaceId])
   @@index([reportTypeId])
+  @@index([reportId])
   @@index([generatedById])
+  @@index([action])
   @@index([workspaceId, createdAt(sort: Desc)])
   @@map("report_logs")
+}
+
+model Report {
+  id               String    @id @default(uuid())
+  workspaceId      String
+  reportName       String
+  reportTypeId     String
+  reportDate       DateTime  @db.Date
+  isActive         Boolean   @default(true)
+  isGenerated      Boolean   @default(false)
+  generatedFileUrl String?
+  generatedAt      DateTime?
+  createdById      String
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  deletedAt        DateTime?
+
+  workspace  Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  reportType ReportType     @relation(fields: [reportTypeId], references: [id], onDelete: Restrict)
+  createdBy  User           @relation("ReportCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  filters    ReportFilter[]
+  logs       ReportLog[]    @relation("ReportInstanceLogs")
+
+  @@index([workspaceId])
+  @@index([reportTypeId])
+  @@index([createdById])
+  @@index([isActive])
+  @@index([isGenerated])
+  @@index([reportDate])
+  @@index([workspaceId, deletedAt, createdAt(sort: Desc)])
+  @@index([workspaceId, reportTypeId, reportDate])
+  @@map("reports")
+}
+
+model ReportFilter {
+  id          String   @id @default(uuid())
+  reportId    String
+  filterKey   String
+  filterValue String   @db.Text
+  createdAt   DateTime @default(now())
+
+  report Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@index([reportId])
+  @@index([filterKey])
+  @@map("report_filters")
 }

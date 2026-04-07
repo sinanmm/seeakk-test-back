@@ -1,4 +1,5 @@
 import prisma from '../../config/prisma';
+import { assertActiveLOBReason } from '../master/lob-reasons/lobReasons.service';
 import * as repository from './leadApprovals.repository';
 import type {
   CreateLeadApprovalInput,
@@ -225,6 +226,8 @@ export const createLeadApproval = async (
     if (!reasonId) {
       throw createServiceError('LOB approval requests require a reason.', 422);
     }
+
+    await assertActiveLOBReason(workspaceId, reasonId);
   }
 
   const existingPending = await repository.findPendingApprovalForLead(workspaceId, input.leadId);
