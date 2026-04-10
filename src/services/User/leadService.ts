@@ -559,10 +559,6 @@ const ensureLOBPayload = (stage: { isLOB: boolean; name: string } | null, reason
   if (!reasonId) {
     throw createServiceError('reasonId is required when moving a lead to LOB.', 422);
   }
-
-  if (!remarks || !remarks.trim()) {
-    throw createServiceError('remarks are required when moving a lead to LOB.', 422);
-  }
 };
 
 const ensureValidLOBReasonForStage = async (
