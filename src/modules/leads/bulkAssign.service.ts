@@ -1,0 +1,262 @@
+import * as repository from './bulkAssign.repository';
+import type { BulkAssignFiltersInput, BulkAssignInput, BulkAssignPreviewInput } from './bulkAssign.validation';
+
+type Actor = {
+  id: string;
+  roleId?: string | null;
+  role?: { name?: string | null } | null;
+};
+
+const MAX_BULK_ASSIGN_SIZE = 5000;
+
+const createServiceError = (message: string, statusCode: number): Error & { statusCode: number } => {
+  const error = new Error(message) as Error & { statusCode: number };
+  error.statusCode = statusCode;
+  return error;
+};
+
+const normalizeRoleKey = (role?: string | null): string =>
+  (role || '')
+    .toLowerCase()
+    .trim()
+    .replace(/[\s_-]+/g, '');
+
+const resolveDisplayName = (user?: { name?: string | null; username?: string | null; email?: string | null } | null): string => {
+  if (user?.name?.trim()) return user.name.trim();
+  if (user?.username?.trim()) return user.username.trim();
+  return user?.email || 'Unknown user';
+};
+
+const buildLeadPreviewItems = (rows: any[]) =>
+  rows.map((row) => ({
+    id: row.id,
+    name: row.name,
+    email: row.email,
+    phone: row.phone,
+    createdAt: row.createdAt,
+    nextFollowUpAt: row.nextFollowUpAt,
+    assignedTo: row.assignedTo
+      ? {
+          id: row.assignedTo.id,
+          label: resolveDisplayName(row.assignedTo),
+        }
+      : null,
+    stage: row.stage
+      ? {
+          id: row.stage.id,
+          name: row.stage.name,
+        }
+      : null,
+    source: row.source
+      ? {
+          id: row.source.id,
+          name: row.source.name,
+        }
+      : null,
+    lifecycle: row.lifecycle
+      ? {
+          id: row.lifecycle.id,
+          name: row.lifecycle.name,
+        }
+      : null,
+  }));
+
+const ensureModuleReady = async (): Promise<void> => {
+  const ready = await repository.ensureBulkAssignSchemaReady();
+  if (!ready) {
+    throw createServiceError(
+      'Bulk assign module is not ready. Required database schema is missing. Run Prisma migration/db push.',
+      503,
+    );
+  }
+};
+
+const getPermissionKeys = async (actor: Actor): Promise<string[]> => {
+  if (!actor.roleId) return [];
+  if (normalizeRoleKey(actor.role?.name) === 'superadmin') return ['*'];
+  return repository.getRolePermissionKeys(actor.roleId);
+};
+
+const buildAccessWhere = async (workspaceId: string, actor: Actor): Promise<any> => {
+  const permissions = await getPermissionKeys(actor);
+
+  if (permissions.includes('*') || permissions.includes('LEADS_VIEW_ALL')) {
+    return {};
+  }
+
+  if (permissions.includes('LEADS_VIEW_TEAM')) {
+    const teamUserIds = await repository.getTeamUserIds(workspaceId, actor.id);
+    const scopedIds = Array.from(new Set([actor.id, ...teamUserIds]));
+
+    return {
+      OR: [
+        { assignedToId: { in: scopedIds } },
+        { createdById: { in: scopedIds } },
+      ],
+    };
+  }
+
+  if (permissions.includes('LEADS_VIEW_OWN')) {
+    return {
+      OR: [
+        { assignedToId: actor.id },
+        { createdById: actor.id },
+      ],
+    };
+  }
+
+  throw createServiceError('Access denied. You need lead view permissions to bulk assign leads.', 403);
+};
+
+const buildLeadFilterWhere = async (workspaceId: string, actor: Actor, filters: BulkAssignFiltersInput): Promise<any> => {
+  const accessWhere = await buildAccessWhere(workspaceId, actor);
+
+  const where: any = {
+    workspaceId,
+    deletedAt: null,
+    isClosed: false,
+    isLOB: false,
+    ...accessWhere,
+  };
+
+  if (filters.stageId) where.stageId = filters.stageId;
+  if (filters.assignedTo) where.assignedToId = filters.assignedTo;
+  if (filters.lifecycleId) where.lifecycleId = filters.lifecycleId;
+  if (filters.sourceId) where.sourceId = filters.sourceId;
+
+  if (filters.followupDateFrom || filters.followupDateTo) {
+    where.nextFollowUpAt = {
+      ...(filters.followupDateFrom ? { gte: filters.followupDateFrom } : {}),
+      ...(filters.followupDateTo ? { lte: filters.followupDateTo } : {}),
+    };
+  }
+
+  if (filters.createdDateFrom || filters.createdDateTo) {
+    where.createdAt = {
+      ...(filters.createdDateFrom ? { gte: filters.createdDateFrom } : {}),
+      ...(filters.createdDateTo ? { lte: filters.createdDateTo } : {}),
+    };
+  }
+
+  return where;
+};
+
+export const previewBulkAssign = async (
+  workspaceId: string,
+  actor: Actor,
+  input: BulkAssignPreviewInput,
+) => {
+  await ensureModuleReady();
+
+  const { sampleLimit, ...filters } = input;
+  const where = await buildLeadFilterWhere(workspaceId, actor, filters);
+  const [count, sampleRows] = await Promise.all([
+    repository.countMatchingLeads(where),
+    repository.findMatchingLeadPreviewRows(where, sampleLimit),
+  ]);
+
+  return {
+    count,
+    sampleLeads: buildLeadPreviewItems(sampleRows),
+  };
+};
+
+export const bulkAssignLeads = async (
+  workspaceId: string,
+  actor: Actor,
+  input: BulkAssignInput,
+  context?: { ipAddress?: string; userAgent?: string },
+) => {
+  await ensureModuleReady();
+
+  const where = await buildLeadFilterWhere(workspaceId, actor, input.filters);
+  const previewCount = await repository.countMatchingLeads(where);
+
+  if (previewCount === 0) {
+    throw createServiceError('No active leads matched the provided filters.', 404);
+  }
+
+  if (previewCount > MAX_BULK_ASSIGN_SIZE) {
+    throw createServiceError(
+      `Bulk assign is limited to ${MAX_BULK_ASSIGN_SIZE} leads at a time. Refine the filters and try again.`,
+      422,
+    );
+  }
+
+  const leadIds = await repository.findMatchingLeadIds(where, MAX_BULK_ASSIGN_SIZE);
+  if (leadIds.length === 0) {
+    throw createServiceError('No active leads matched the provided filters.', 404);
+  }
+
+  const assignmentType = input.assignmentType ?? 'SINGLE';
+
+  let assignments: Array<{ leadId: string; assignTo: string }> = [];
+  let assigneeLabelMap: Record<string, string> = {};
+
+  if (assignmentType === 'ROUND_ROBIN') {
+    const assignees = await repository.findAssignableUsers(workspaceId, input.assignToIds);
+    if (assignees.length !== input.assignToIds.length) {
+      throw createServiceError('One or more selected assignees are invalid or inactive.', 404);
+    }
+
+    assigneeLabelMap = assignees.reduce<Record<string, string>>((accumulator, assignee) => {
+      accumulator[assignee.id] = resolveDisplayName(assignee);
+      return accumulator;
+    }, {});
+
+    assignments = leadIds.map((leadId, index) => ({
+      leadId,
+      assignTo: assignees[index % assignees.length].id,
+    }));
+  } else {
+    if (!input.assignTo) {
+      throw createServiceError('Assignee required', 422);
+    }
+
+    const assignee = await repository.findAssignableUser(workspaceId, input.assignTo);
+    if (!assignee) {
+      throw createServiceError('Invalid assignee. Please choose an active workspace user.', 404);
+    }
+
+    assigneeLabelMap = {
+      [assignee.id]: resolveDisplayName(assignee),
+    };
+
+    assignments = leadIds.map((leadId) => ({
+      leadId,
+      assignTo: assignee.id,
+    }));
+  }
+
+  const result = await repository.bulkAssignLeads({
+    assignments,
+    workspaceId,
+    actorId: actor.id,
+    filters: input.filters,
+    assignmentType,
+    assigneeLabelMap,
+    ipAddress: context?.ipAddress,
+    userAgent: context?.userAgent,
+  });
+
+  if (result.updatedCount === 0) {
+    throw createServiceError('No active leads were available to assign. Please refresh and try again.', 409);
+  }
+
+  return {
+    message:
+      assignmentType === 'ROUND_ROBIN'
+        ? 'Leads distributed successfully'
+        : 'Leads assigned successfully',
+    updated_count: result.updatedCount,
+    failed_count: result.failedLeadIds.length,
+    failed_lead_ids: result.failedLeadIds,
+    assignment_type: assignmentType,
+    progress: {
+      current: result.updatedCount,
+      total: leadIds.length,
+      status: result.failedLeadIds.length ? 'PARTIAL' : 'COMPLETED',
+      transport: 'SYNC_READY_FOR_WEBSOCKET',
+    },
+  };
+};

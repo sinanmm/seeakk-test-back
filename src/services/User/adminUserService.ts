@@ -174,10 +174,10 @@ export const createUser = async (input: CreateUserInput, workspaceId: string) =>
 
   if (officeId) {
     const office = await (prisma as any).office.findFirst({
-      where: { id: officeId, workspaceId },
+      where: { id: officeId, workspaceId, isActive: true },
     });
     if (!office) {
-      const err: any = new Error('Office not found in this workspace.');
+      const err: any = new Error('Active office not found in this workspace.');
       err.statusCode = 400;
       throw err;
     }
@@ -290,7 +290,9 @@ export const listUsers = async (query: ListUsersQuery, workspaceId: string) => {
       : {}),
   };
 
-  const [total, users] = await prisma.$transaction([
+  // Avoid wrapping paginated read queries in a Prisma transaction on pooled connections.
+  // PgBouncer/pooled PostgreSQL can intermittently close transaction-scoped reads.
+  const [total, users] = await Promise.all([
     (prisma as any).user.count({ where }),
     (prisma as any).user.findMany({
       where,
@@ -396,10 +398,10 @@ export const updateUser = async (id: string, input: UpdateUserInput, workspaceId
 
   if (input.officeId) {
     const office = await (prisma as any).office.findFirst({
-      where: { id: input.officeId, workspaceId },
+      where: { id: input.officeId, workspaceId, isActive: true },
     });
     if (!office) {
-      const err: any = new Error('Office not found in this workspace.');
+      const err: any = new Error('Active office not found in this workspace.');
       err.statusCode = 400;
       throw err;
     }

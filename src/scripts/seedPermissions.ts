@@ -43,6 +43,24 @@ const permissions = [
   { key: 'LEAD_STAGE_RULES_EDIT', group: 'MASTER_CONFIGURATION', description: 'Edit stage rules' },
   { key: 'LEAD_STAGE_RULES_DELETE', group: 'MASTER_CONFIGURATION', description: 'Delete stage rules' },
 
+  // MASTER TARGET CYCLES
+  { key: 'TARGET_CYCLES_VIEW', group: 'MASTER_CONFIGURATION', description: 'View target cycles' },
+  { key: 'TARGET_CYCLES_CREATE', group: 'MASTER_CONFIGURATION', description: 'Create target cycles' },
+  { key: 'TARGET_CYCLES_EDIT', group: 'MASTER_CONFIGURATION', description: 'Edit target cycles' },
+  { key: 'TARGET_CYCLES_DELETE', group: 'MASTER_CONFIGURATION', description: 'Delete target cycles' },
+
+  // MASTER LEAD DYNAMICS
+  { key: 'LEAD_DYNAMICS_VIEW', group: 'MASTER_CONFIGURATION', description: 'View lead dynamic fields' },
+  { key: 'LEAD_DYNAMICS_CREATE', group: 'MASTER_CONFIGURATION', description: 'Create lead dynamic fields' },
+  { key: 'LEAD_DYNAMICS_EDIT', group: 'MASTER_CONFIGURATION', description: 'Edit lead dynamic fields' },
+  { key: 'LEAD_DYNAMICS_DELETE', group: 'MASTER_CONFIGURATION', description: 'Delete lead dynamic fields' },
+  { key: 'LOB_REASONS_VIEW', group: 'MASTER_CONFIGURATION', description: 'View LOB reasons' },
+  { key: 'LOB_REASONS_CREATE', group: 'MASTER_CONFIGURATION', description: 'Create LOB reasons' },
+  { key: 'LOB_REASONS_EDIT', group: 'MASTER_CONFIGURATION', description: 'Edit LOB reasons' },
+  { key: 'LOB_REASONS_DELETE', group: 'MASTER_CONFIGURATION', description: 'Delete LOB reasons' },
+  { key: 'LOCATION_VIEW', group: 'MASTER_CONFIGURATION', description: 'View countries, levels, and locations' },
+  { key: 'LOCATION_MANAGE', group: 'MASTER_CONFIGURATION', description: 'Create and manage countries, levels, and locations' },
+
   // LEADS MANAGEMENT
   { key: 'LEADS_VIEW_ALL', group: 'LEADS_MANAGEMENT', description: 'View all leads' },
   { key: 'LEADS_VIEW_OWN', group: 'LEADS_MANAGEMENT', description: 'View only own leads' },
@@ -52,6 +70,9 @@ const permissions = [
   { key: 'LEADS_DELETE', group: 'LEADS_MANAGEMENT', description: 'Delete leads' },
   { key: 'LEADS_ASSIGN', group: 'LEADS_MANAGEMENT', description: 'Assign leads to users' },
   { key: 'LEADS_BULK_ASSIGN', group: 'LEADS_MANAGEMENT', description: 'Bulk assign leads' },
+  { key: 'LEAD_APPROVAL_VIEW', group: 'LEADS_MANAGEMENT', description: 'View lead stage approvals' },
+  { key: 'LEAD_APPROVAL_APPROVE', group: 'LEADS_MANAGEMENT', description: 'Approve lead stage requests' },
+  { key: 'LEAD_APPROVAL_DENY', group: 'LEADS_MANAGEMENT', description: 'Deny lead stage requests' },
   { key: 'LEADS_APPROVE', group: 'LEADS_MANAGEMENT', description: 'Approve lead conversions' },
   { key: 'LEADS_REJECT', group: 'LEADS_MANAGEMENT', description: 'Reject leads' },
   { key: 'LEADS_CLOSE', group: 'LEADS_MANAGEMENT', description: 'Close leads' },
@@ -62,7 +83,11 @@ const permissions = [
   // OTHER MODULES (Future proofing)
   { key: 'FINANCE_VIEW', group: 'MASTER_CONFIGURATION', description: 'View finance records' },
   { key: 'INVENTORY_VIEW', group: 'MASTER_CONFIGURATION', description: 'View inventory' },
+  { key: 'REPORT_TYPE_MANAGE', group: 'REPORTS_ANALYTICS', description: 'Create, edit, activate, deactivate, and delete report types' },
   { key: 'REPORTS_VIEW', group: 'REPORTS_ANALYTICS', description: 'View reports' },
+  { key: 'REPORTS_GENERATE', group: 'REPORTS_ANALYTICS', description: 'Generate dynamic reports' },
+  { key: 'REPORT_LOGS_VIEW', group: 'REPORTS_ANALYTICS', description: 'View report execution logs' },
+  { key: 'LOB_ANALYSIS_VIEW', group: 'REPORTS_ANALYTICS', description: 'View LOB analysis dashboards and audit breakdowns' },
   { key: 'SYSTEM_CONFIG', group: 'SYSTEM_SETTINGS', description: 'Manage system settings' },
 ];
 

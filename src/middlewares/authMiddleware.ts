@@ -8,6 +8,12 @@ interface JwtPayload {
   userId: string;
 }
 
+const normalizeRoleKey = (role: string): string =>
+  role
+    .toLowerCase()
+    .trim()
+    .replace(/[\s_-]+/g, '');
+
 const maskAuthHeader = (authHeader?: string): string => {
   if (!authHeader) return 'NOTHING RECEIVED';
   if (!authHeader.toLowerCase().startsWith('bearer ')) return '[NON_BEARER_TOKEN_REDACTED]';
@@ -102,8 +108,10 @@ export const authorize = (...roles: string[]) => {
     }
 
     const userRole = req.user.role.name;
+    const normalizedUserRole = normalizeRoleKey(userRole);
+    const normalizedAllowedRoles = roles.map((role) => normalizeRoleKey(role));
 
-    if (!roles.includes(userRole)) {
+    if (!normalizedAllowedRoles.includes(normalizedUserRole)) {
       logger.warn(`Access forbidden. Required: ${roles.join(', ')}, Found: ${userRole}`, {
         userId: req.user.id,
         role: userRole,
@@ -139,8 +147,8 @@ export const checkPermission = (permissionKey: string) => {
     const cacheKey = `role_permissions:${roleId}`;
 
     try {
-      const roleName = (req.user.role?.name || '').toLowerCase().trim();
-      if (roleName === 'super admin' || roleName === 'super-admin') {
+      const roleName = normalizeRoleKey(req.user.role?.name || '');
+      if (roleName === 'superadmin') {
         return next();
       }
 
@@ -182,12 +190,15 @@ export const checkPermission = (permissionKey: string) => {
         permissionKey.startsWith('LEAD_STAGES_') && permissions.includes('SYSTEM_CONFIG');
       const hasStageRuleFallbackPermission =
         permissionKey.startsWith('LEAD_STAGE_RULES_') && permissions.includes('SYSTEM_CONFIG');
+      const hasTargetCycleFallbackPermission =
+        permissionKey.startsWith('TARGET_CYCLES_') && permissions.includes('SYSTEM_CONFIG');
 
       if (
         !hasRequestedPermission &&
         !hasLeadSourceFallbackPermission &&
         !hasLeadStageFallbackPermission &&
-        !hasStageRuleFallbackPermission
+        !hasStageRuleFallbackPermission &&
+        !hasTargetCycleFallbackPermission
       ) {
         logger.warn(`Permission denied. Required: ${permissionKey}. User has: ${permissions.join(', ')}`, {
           userId: req.user.id,
@@ -210,6 +221,73 @@ export const checkPermission = (permissionKey: string) => {
     } catch (error: any) {
       logger.error('Error checking permissions', { error: error.message, userId: req.user.id });
       // Fallback to DB if Redis fails (already handled by permissions.length === 0 check above)
+      return res.status(500).json({ success: false, message: 'Internal server error while checking permissions.' });
+    }
+  };
+};
+
+export const checkAnyPermission = (permissionKeys: string[]) => {
+  return async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    if (!req.user || !req.user.roleId) {
+      logger.warn('Permission denied. User has no assigned role.', {
+        userId: req.user?.id,
+        action: 'permission_denied_no_role',
+      });
+      return res.status(403).json({
+        success: false,
+        message: 'Forbidden: You do not have an assigned role.',
+      });
+    }
+
+    const roleId = req.user.roleId;
+    const cacheKey = `role_permissions:${roleId}`;
+
+    try {
+      const roleName = normalizeRoleKey(req.user.role?.name || '');
+      if (roleName === 'superadmin') {
+        return next();
+      }
+
+      let permissions: string[] = [];
+
+      if (redisClient.isOpen) {
+        const cached = await redisClient.get(cacheKey);
+        if (cached) {
+          permissions = JSON.parse(cached);
+        }
+      }
+
+      if (permissions.length === 0) {
+        const rolePermissions = await (prisma as any).rolePermission.findMany({
+          where: { roleId },
+          include: { permission: { select: { key: true } } },
+        });
+
+        permissions = rolePermissions.map((rp: any) => rp.permission.key);
+
+        if (redisClient.isOpen && permissions.length > 0) {
+          await redisClient.setEx(cacheKey, 3600, JSON.stringify(permissions));
+        }
+      }
+
+      const hasMatch = permissionKeys.some((permissionKey) => permissions.includes(permissionKey));
+      if (!hasMatch) {
+        logger.warn(`Permission denied. Required one of: ${permissionKeys.join(', ')}`, {
+          userId: req.user.id,
+          roleId,
+          action: 'permission_denied_any',
+        });
+
+        return res.status(403).json({
+          success: false,
+          errorCode: 'PERMISSION_DENIED',
+          message: `Access denied. You need one of these permissions: ${permissionKeys.join(', ')}.`,
+        });
+      }
+
+      next();
+    } catch (error: any) {
+      logger.error('Error checking permissions', { error: error.message, userId: req.user.id });
       return res.status(500).json({ success: false, message: 'Internal server error while checking permissions.' });
     }
   };

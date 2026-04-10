@@ -10,7 +10,7 @@ import { sendVerificationEmail } from '../../services/Email/emailService';
 import { trackUserDevice } from '../../utils/deviceTracker';
 import logger from '../../utils/logger';
 import auditService from '../../services/Audit/auditService';
-
+ 
 const parsePositiveInt = (value: unknown, fallback: number): number => {
   const parsed = Number(value);
   if (!Number.isFinite(parsed) || parsed < 1) return fallback;
@@ -286,9 +286,9 @@ export const login = async (req: Request, res: Response): Promise<any> => {
 
     const tokens = generateTokens(user as any);
     await redisClient.set(`refresh:${tokens.tokenId}`, user.id);
-    await trackUserDevice(req, user as any);
-
-    await auditService.log({
+    // Fire and forget non-critical tracking to drastically speed up login response time
+    trackUserDevice(req, user as any).catch(e => console.error('Device track err:', e));
+    auditService.log({
       userId: user.id,
       workspaceId: user.workspaceId || undefined,
       action: 'USER_LOGIN',
@@ -297,7 +297,7 @@ export const login = async (req: Request, res: Response): Promise<any> => {
       details: { method: 'password' },
       ipAddress: req.ip,
       userAgent: req.headers['user-agent'],
-    });
+    }).catch(e => console.error('Audit err:', e));
 
     return res.status(200).json({
       user: {
@@ -317,10 +317,11 @@ export const login = async (req: Request, res: Response): Promise<any> => {
 
 export const googleLogin = async (req: Request, res: Response): Promise<any> => {
   try {
-    const { token } = req.body;
+    const credential = typeof req.body?.credential === 'string' ? req.body.credential.trim() : '';
+    const token = typeof req.body?.token === 'string' ? req.body.token.trim() : credential;
 
     if (!token) {
-      return res.status(400).json({ message: 'Google token is required' });
+      return res.status(400).json({ message: 'Google credential token is required' });
     }
 
     if (typeof token !== 'string' || token.split('.').length !== 3) {
@@ -336,6 +337,9 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
     }
 
     const { email, name, sub } = payload;
+    if (!email) {
+      return res.status(400).json({ message: 'Google account email is missing' });
+    }
 
     let user = await prisma.user.findUnique({
       where: { email },
@@ -350,6 +354,14 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
           googleId: sub,
           isEmailVerified: true,
         },
+        include: { role: true, devices: true },
+      });
+    }
+
+    if (!user.googleId || user.googleId !== sub) {
+      user = await prisma.user.update({
+        where: { id: user.id },
+        data: { googleId: sub, isEmailVerified: true },
         include: { role: true, devices: true },
       });
     }
@@ -373,9 +385,9 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
     }
 
     logger.info('Google login successful', { email: user.email, userId: user.id, action: 'google_login_success' });
-    await trackUserDevice(req, user as any);
-
-    await auditService.log({
+    // Fire and forget non-critical tracking to drastically speed up login response time
+    trackUserDevice(req, user as any).catch(e => console.error('Device track err:', e));
+    auditService.log({
       userId: user.id,
       workspaceId: user.workspaceId || undefined,
       action: 'USER_LOGIN',
@@ -384,7 +396,7 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
       details: { method: 'google' },
       ipAddress: req.ip,
       userAgent: req.headers['user-agent'],
-    });
+    }).catch(e => console.error('Audit err:', e));
 
     return res.json({
       user: {
@@ -590,4 +602,3 @@ export const listUsers = async (req: Request, res: Response): Promise<any> => {
     return res.status(500).json({ message: 'Failed to fetch users' });
   }
 };
-

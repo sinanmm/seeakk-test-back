@@ -1,15 +1,28 @@
 import { Request, Response, NextFunction } from 'express';
-// @ts-expect-error - geoip-lite does not have proper types in the registry
-import geoip from 'geoip-lite';
 import currencyCodes from 'currency-codes';
 import ISO6391 from 'iso-639-1';
 import moment from 'moment-timezone';
+import logger from '../../utils/logger';
 
 const countryToCurrency: Record<string, string> = {
   US: 'USD', GB: 'GBP', IN: 'INR', AU: 'AUD', CA: 'CAD', DE: 'EUR', FR: 'EUR', ES: 'EUR', IT: 'EUR',
   JP: 'JPY', CN: 'CNY', BR: 'BRL', RU: 'RUB', KR: 'KRW', ZA: 'ZAR', MX: 'MXN', SG: 'SGD', HK: 'HKD',
   NZ: 'NZD', SE: 'SEK', CH: 'CHF', NO: 'NOK', DK: 'DKK', PL: 'PLN', TH: 'THB', ID: 'IDR', MY: 'MYR',
   PH: 'PHP', VN: 'VND', TR: 'TRY', AE: 'AED', SA: 'SAR', EG: 'EGP', NG: 'NGN', AR: 'ARS', CO: 'COP',
+};
+
+const lookupGeoByIp = (ip: string): { timezone?: string; country?: string } | null => {
+  try {
+    // Lazily requiring geoip-lite avoids crashing app startup if geo DB files are missing.
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const geoip = require('geoip-lite');
+    return geoip.lookup(ip);
+  } catch (error) {
+    logger.warn('GeoIP lookup disabled; continuing with defaults', {
+      reason: (error as Error)?.message || 'Unknown error',
+    });
+    return null;
+  }
 };
 
 export const getWorkspaceConfigMeta = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
@@ -46,7 +59,7 @@ export const getWorkspaceConfigMeta = async (req: Request, res: Response, next: 
       ip = '207.97.227.239';
     }
 
-    const geo = geoip.lookup(ip as string);
+    const geo = lookupGeoByIp(ip as string);
     if (geo) {
       if (geo.timezone) {
         defaultTimeZone = geo.timezone;

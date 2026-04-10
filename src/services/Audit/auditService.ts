@@ -12,27 +12,63 @@ export interface AuditLogData {
 }
 
 class AuditService {
+  private writeQueue: Promise<void> = Promise.resolve();
+
+  private isRecoverableAuditError(error: unknown): boolean {
+    const code = String((error as any)?.code || '');
+    const message = String((error as any)?.message || '');
+
+    return (
+      code === 'P2024' ||
+      code === 'P1001' ||
+      code === 'P1017' ||
+      message.includes('Timed out fetching a new connection from the connection pool') ||
+      message.includes('Error in PostgreSQL connection') ||
+      message.includes('Server has closed the connection') ||
+      message.includes('Connection terminated unexpectedly') ||
+      message.includes('connection is closed')
+    );
+  }
+
+  private async writeLog(data: AuditLogData): Promise<void> {
+    await prisma.auditLog.create({
+      data: {
+        userId: data.userId,
+        workspaceId: data.workspaceId,
+        action: data.action,
+        entityType: data.entityType,
+        entityId: data.entityId,
+        details: data.details ?? {},
+        ipAddress: data.ipAddress,
+        userAgent: data.userAgent,
+      },
+    });
+  }
+
   /**
    * Create a new audit log entry
    */
   async log(data: AuditLogData) {
-    try {
-      return await prisma.auditLog.create({
-        data: {
-          userId: data.userId,
-          workspaceId: data.workspaceId,
-          action: data.action,
-          entityType: data.entityType,
-          entityId: data.entityId,
-          details: data.details ?? {},
-          ipAddress: data.ipAddress,
-          userAgent: data.userAgent,
-        },
+    this.writeQueue = this.writeQueue
+      .catch(() => undefined)
+      .then(async () => {
+        try {
+          await this.writeLog(data);
+        } catch (error) {
+          if (!this.isRecoverableAuditError(error)) {
+            console.error('Failed to create audit log:', error);
+            return;
+          }
+
+          console.warn('Skipped audit log because the database pool was unavailable.', {
+            action: data.action,
+            entityType: data.entityType,
+            entityId: data.entityId,
+          });
+        }
       });
-    } catch (error) {
-      console.error('Failed to create audit log:', error);
-      // We don't want to throw error and break the main flow if auditing fails
-    }
+
+    return undefined;
   }
 
   /**

@@ -44,13 +44,18 @@ export const getUserTargets = async (userId: string, workspaceId: string) => {
 /**
  * Update a specific target setting
  */
-export const updateTarget = async (targetId: string, workspaceId: string, input: UpdateTargetInput) => {
+export const updateTarget = async (
+  targetId: string,
+  userId: string,
+  workspaceId: string,
+  input: UpdateTargetInput,
+) => {
   const existing = await (prisma as any).targetSetting.findFirst({
-    where: { id: targetId, workspaceId }
+    where: { id: targetId, userId, workspaceId }
   });
 
   if (!existing) {
-    const err: any = new Error('Target setting not found in this workspace.');
+    const err: any = new Error('Target setting not found for this user in this workspace.');
     err.statusCode = 404;
     throw err;
   }

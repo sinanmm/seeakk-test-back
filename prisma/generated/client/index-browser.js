@@ -224,7 +224,38 @@ exports.Prisma.OfficeScalarFieldEnum = {
   id: 'id',
   name: 'name',
   address: 'address',
+  countryId: 'countryId',
+  stateId: 'stateId',
+  districtId: 'districtId',
+  isActive: 'isActive',
+  createdBy: 'createdBy',
   workspaceId: 'workspaceId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.CountryScalarFieldEnum = {
+  id: 'id',
+  workspaceId: 'workspaceId',
+  name: 'name',
+  code: 'code',
+  isActive: 'isActive',
+  createdById: 'createdById',
+  updatedById: 'updatedById',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
+};
+
+exports.Prisma.LocationLevelScalarFieldEnum = {
+  id: 'id',
+  workspaceId: 'workspaceId',
+  countryId: 'countryId',
+  levelName: 'levelName',
+  levelOrder: 'levelOrder',
+  isActive: 'isActive',
+  createdById: 'createdById',
+  updatedById: 'updatedById',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -234,6 +265,12 @@ exports.Prisma.LocationScalarFieldEnum = {
   name: 'name',
   type: 'type',
   workspaceId: 'workspaceId',
+  countryId: 'countryId',
+  levelId: 'levelId',
+  isActive: 'isActive',
+  createdById: 'createdById',
+  updatedById: 'updatedById',
+  deletedAt: 'deletedAt',
   parentId: 'parentId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -257,11 +294,163 @@ exports.Prisma.TargetTypeScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.TargetCycleScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  workspaceId: 'workspaceId',
+  totalDays: 'totalDays',
+  status: 'status',
+  createdBy: 'createdBy',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
+};
+
+exports.Prisma.TargetCycleRangeScalarFieldEnum = {
+  id: 'id',
+  targetCycleId: 'targetCycleId',
+  startDay: 'startDay',
+  endDay: 'endDay',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.LeadLifeCycleScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  isDefault: 'isDefault',
+  workspaceId: 'workspaceId',
+  createdBy: 'createdBy',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.LeadScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  email: 'email',
+  phone: 'phone',
+  expectedRevenue: 'expectedRevenue',
+  generatedRevenue: 'generatedRevenue',
+  assignedToId: 'assignedToId',
+  stageId: 'stageId',
+  lifecycleId: 'lifecycleId',
+  sourceId: 'sourceId',
+  nextFollowUpAt: 'nextFollowUpAt',
+  stageEnteredAt: 'stageEnteredAt',
+  stageExpiresAt: 'stageExpiresAt',
+  slaAction: 'slaAction',
+  slaWarningDays: 'slaWarningDays',
+  approvalState: 'approvalState',
+  pendingApprovalToStageId: 'pendingApprovalToStageId',
+  pendingApprovalRequestedAt: 'pendingApprovalRequestedAt',
+  isClosed: 'isClosed',
+  isLOB: 'isLOB',
+  closedAt: 'closedAt',
+  closedById: 'closedById',
+  closureType: 'closureType',
+  workspaceId: 'workspaceId',
+  createdById: 'createdById',
+  deletedAt: 'deletedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.LeadLOBLogScalarFieldEnum = {
+  id: 'id',
+  leadId: 'leadId',
+  reasonId: 'reasonId',
+  remarks: 'remarks',
+  changedById: 'changedById',
+  changedAt: 'changedAt',
+  workspaceId: 'workspaceId'
+};
+
+exports.Prisma.LOBReasonScalarFieldEnum = {
+  id: 'id',
+  workspaceId: 'workspaceId',
+  name: 'name',
+  status: 'status',
+  createdById: 'createdById',
+  updatedById: 'updatedById',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
+};
+
+exports.Prisma.LeadStageApprovalScalarFieldEnum = {
+  id: 'id',
+  workspaceId: 'workspaceId',
+  leadId: 'leadId',
+  fromStageId: 'fromStageId',
+  toStageId: 'toStageId',
+  requestedById: 'requestedById',
+  assignedToId: 'assignedToId',
+  status: 'status',
+  comment: 'comment',
+  requestData: 'requestData',
+  approvedById: 'approvedById',
+  approvedAt: 'approvedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.LeadLifeCycleTransitionScalarFieldEnum = {
+  id: 'id',
+  lifecycleId: 'lifecycleId',
+  fromStageId: 'fromStageId',
+  toStageId: 'toStageId',
+  numberOfDays: 'numberOfDays',
+  expiryAction: 'expiryAction',
+  warningDays: 'warningDays',
+  sortOrder: 'sortOrder',
+  workspaceId: 'workspaceId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.LeadDynamicFieldScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  inputType: 'inputType',
+  sortOrder: 'sortOrder',
+  isRequired: 'isRequired',
+  isActive: 'isActive',
+  workspaceId: 'workspaceId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.LeadDynamicOptionScalarFieldEnum = {
+  id: 'id',
+  fieldId: 'fieldId',
+  value: 'value',
+  sortOrder: 'sortOrder'
+};
+
+exports.Prisma.LeadDynamicValueScalarFieldEnum = {
+  id: 'id',
+  leadId: 'leadId',
+  fieldId: 'fieldId',
+  value: 'value',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.LeadActivityScalarFieldEnum = {
+  id: 'id',
+  leadId: 'leadId',
+  performedById: 'performedById',
+  workspaceId: 'workspaceId',
+  action: 'action',
+  metadata: 'metadata',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.TargetSettingScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
   targetTypeId: 'targetTypeId',
   cycle: 'cycle',
+  targetCycleId: 'targetCycleId',
   monthlyTargetLeads: 'monthlyTargetLeads',
   dailyFollowupTarget: 'dailyFollowupTarget',
   revenueTarget: 'revenueTarget',
@@ -314,6 +503,27 @@ exports.Prisma.UserScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.FollowUpScalarFieldEnum = {
+  id: 'id',
+  leadId: 'leadId',
+  userId: 'userId',
+  workspaceId: 'workspaceId',
+  type: 'type',
+  description: 'description',
+  status: 'status',
+  scheduledAt: 'scheduledAt',
+  completedAt: 'completedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.FollowUpImageScalarFieldEnum = {
+  id: 'id',
+  followUpId: 'followUpId',
+  url: 'url',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.RosterEntryScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
@@ -357,6 +567,86 @@ exports.Prisma.DeviceScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.HolidayScalarFieldEnum = {
+  id: 'id',
+  workspaceId: 'workspaceId',
+  name: 'name',
+  holidayDate: 'holidayDate',
+  countryId: 'countryId',
+  stateId: 'stateId',
+  districtId: 'districtId',
+  isRecurring: 'isRecurring',
+  recurrenceRule: 'recurrenceRule',
+  source: 'source',
+  status: 'status',
+  createdById: 'createdById',
+  updatedById: 'updatedById',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.HolidaySyncLogScalarFieldEnum = {
+  id: 'id',
+  workspaceId: 'workspaceId',
+  source: 'source',
+  status: 'status',
+  message: 'message',
+  syncedAt: 'syncedAt'
+};
+
+exports.Prisma.ReportTypeScalarFieldEnum = {
+  id: 'id',
+  workspaceId: 'workspaceId',
+  name: 'name',
+  module: 'module',
+  baseDataSource: 'baseDataSource',
+  description: 'description',
+  allowedFilters: 'allowedFilters',
+  status: 'status',
+  createdById: 'createdById',
+  updatedById: 'updatedById',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
+};
+
+exports.Prisma.ReportLogScalarFieldEnum = {
+  id: 'id',
+  workspaceId: 'workspaceId',
+  reportTypeId: 'reportTypeId',
+  reportId: 'reportId',
+  generatedById: 'generatedById',
+  action: 'action',
+  filters: 'filters',
+  resultCount: 'resultCount',
+  meta: 'meta',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.ReportScalarFieldEnum = {
+  id: 'id',
+  workspaceId: 'workspaceId',
+  reportName: 'reportName',
+  reportTypeId: 'reportTypeId',
+  reportDate: 'reportDate',
+  isActive: 'isActive',
+  isGenerated: 'isGenerated',
+  generatedFileUrl: 'generatedFileUrl',
+  generatedAt: 'generatedAt',
+  createdById: 'createdById',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
+};
+
+exports.Prisma.ReportFilterScalarFieldEnum = {
+  id: 'id',
+  reportId: 'reportId',
+  filterKey: 'filterKey',
+  filterValue: 'filterValue',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -364,6 +654,10 @@ exports.Prisma.SortOrder = {
 
 exports.Prisma.NullableJsonNullValueInput = {
   DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull
+};
+
+exports.Prisma.JsonNullValueInput = {
   JsonNull: Prisma.JsonNull
 };
 
@@ -424,7 +718,34 @@ exports.LocationType = exports.$Enums.LocationType = {
   OFFICE: 'OFFICE'
 };
 
-exports.TargetCycle = exports.$Enums.TargetCycle = {
+exports.LeadExpiryAction = exports.$Enums.LeadExpiryAction = {
+  AUTO_LOB: 'AUTO_LOB',
+  WARN_AND_CHOOSE: 'WARN_AND_CHOOSE'
+};
+
+exports.LeadApprovalState = exports.$Enums.LeadApprovalState = {
+  NONE: 'NONE',
+  PENDING: 'PENDING'
+};
+
+exports.LeadClosureType = exports.$Enums.LeadClosureType = {
+  WON: 'WON',
+  LOST: 'LOST',
+  CANCELLED: 'CANCELLED'
+};
+
+exports.LOBReasonStatus = exports.$Enums.LOBReasonStatus = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE'
+};
+
+exports.LeadApprovalStatus = exports.$Enums.LeadApprovalStatus = {
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  DENIED: 'DENIED'
+};
+
+exports.TargetSettingCycle = exports.$Enums.TargetSettingCycle = {
   MONTHLY: 'MONTHLY',
   QUARTERLY: 'QUARTERLY',
   YEARLY: 'YEARLY',
@@ -453,6 +774,37 @@ exports.RosterStatus = exports.$Enums.RosterStatus = {
   INACTIVE: 'INACTIVE'
 };
 
+exports.HolidaySource = exports.$Enums.HolidaySource = {
+  MANUAL: 'MANUAL',
+  API: 'API',
+  AI: 'AI',
+  GOOGLE: 'GOOGLE'
+};
+
+exports.HolidayStatus = exports.$Enums.HolidayStatus = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE'
+};
+
+exports.ReportModule = exports.$Enums.ReportModule = {
+  LEADS: 'LEADS',
+  USERS: 'USERS',
+  REPORTS: 'REPORTS',
+  TARGETS: 'TARGETS',
+  FOLLOWUPS: 'FOLLOWUPS'
+};
+
+exports.ReportBaseDataSource = exports.$Enums.ReportBaseDataSource = {
+  LEADS: 'LEADS',
+  USERS: 'USERS',
+  FOLLOWUPS: 'FOLLOWUPS'
+};
+
+exports.ReportTypeStatus = exports.$Enums.ReportTypeStatus = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE'
+};
+
 exports.Prisma.ModelName = {
   Role: 'Role',
   Permission: 'Permission',
@@ -464,15 +816,37 @@ exports.Prisma.ModelName = {
   StageRule: 'StageRule',
   LeadStageInput: 'LeadStageInput',
   Office: 'Office',
+  Country: 'Country',
+  LocationLevel: 'LocationLevel',
   Location: 'Location',
   UserLocationAssignment: 'UserLocationAssignment',
   TargetType: 'TargetType',
+  TargetCycle: 'TargetCycle',
+  TargetCycleRange: 'TargetCycleRange',
+  LeadLifeCycle: 'LeadLifeCycle',
+  Lead: 'Lead',
+  LeadLOBLog: 'LeadLOBLog',
+  LOBReason: 'LOBReason',
+  LeadStageApproval: 'LeadStageApproval',
+  LeadLifeCycleTransition: 'LeadLifeCycleTransition',
+  LeadDynamicField: 'LeadDynamicField',
+  LeadDynamicOption: 'LeadDynamicOption',
+  LeadDynamicValue: 'LeadDynamicValue',
+  LeadActivity: 'LeadActivity',
   TargetSetting: 'TargetSetting',
   TargetViolation: 'TargetViolation',
   User: 'User',
+  FollowUp: 'FollowUp',
+  FollowUpImage: 'FollowUpImage',
   RosterEntry: 'RosterEntry',
   AuditLog: 'AuditLog',
-  Device: 'Device'
+  Device: 'Device',
+  Holiday: 'Holiday',
+  HolidaySyncLog: 'HolidaySyncLog',
+  ReportType: 'ReportType',
+  ReportLog: 'ReportLog',
+  Report: 'Report',
+  ReportFilter: 'ReportFilter'
 };
 
 /**
