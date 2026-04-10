@@ -54,6 +54,12 @@ const mapLOBReason = (row: any) => ({
     : null,
 });
 
+const mapLOBReasonOption = (row: { id: string; name: string; status: LOBReasonStatus }) => ({
+  id: row.id,
+  name: row.name,
+  status: row.status,
+});
+
 const ensureModuleReady = async (): Promise<void> => {
   const ready = await repository.ensureLOBReasonSchemaReady();
   if (!ready) {
@@ -179,6 +185,13 @@ export const listLOBReasons = async (workspaceId: string, actor: Actor, query: L
   };
 };
 
+export const listActiveLOBReasons = async (workspaceId: string) => {
+  await ensureModuleReady();
+
+  const rows = await repository.listActiveLOBReasonOptions(workspaceId);
+  return rows.map(mapLOBReasonOption);
+};
+
 export const updateLOBReason = async (
   workspaceId: string,
   actor: Actor,
@@ -283,7 +296,7 @@ export const deleteLOBReason = async (
 
   const activeUsageCount = await repository.countActiveLeadUsage(workspaceId, id);
   if (activeUsageCount > 0) {
-    throw createServiceError('LOB reason is used in active leads and cannot be deleted.', 409);
+    throw createServiceError('LOB reason is used in active leads and cannot be deactivated.', 409);
   }
 
   const deleted = await repository.softDeleteLOBReason(id, actor.id);
@@ -291,12 +304,13 @@ export const deleteLOBReason = async (
   await auditService.log({
     userId: actor.id,
     workspaceId,
-    action: 'LOB_REASON_DELETED',
+    action: 'LOB_REASON_DEACTIVATED',
     entityType: 'LOBReason',
     entityId: deleted.id,
     details: {
       name: deleted.name,
       status: deleted.status,
+      softDeleted: true,
     },
     ipAddress: context?.ipAddress,
     userAgent: context?.userAgent,

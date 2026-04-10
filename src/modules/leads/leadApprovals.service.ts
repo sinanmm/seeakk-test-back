@@ -204,6 +204,15 @@ export const createLeadApproval = async (
     throw createServiceError('Lead does not have a current stage to approve from.', 409);
   }
 
+  const existingPending = await repository.findPendingApprovalForLead(workspaceId, input.leadId);
+
+  if (lead.approvalState === 'PENDING' && !existingPending) {
+    await repository.clearLeadPendingApprovalState(input.leadId);
+    lead.approvalState = 'NONE';
+    lead.pendingApprovalToStageId = null;
+    lead.pendingApprovalRequestedAt = null;
+  }
+
   if (lead.approvalState === 'PENDING') {
     throw createServiceError('This lead already has a pending stage approval request.', 409);
   }
@@ -230,7 +239,6 @@ export const createLeadApproval = async (
     await assertActiveLOBReason(workspaceId, reasonId);
   }
 
-  const existingPending = await repository.findPendingApprovalForLead(workspaceId, input.leadId);
   if (existingPending) {
     if (existingPending.fromStageId === input.fromStageId && existingPending.toStageId === input.toStageId) {
       throw createServiceError('An approval request for this lead stage transition is already pending.', 409);

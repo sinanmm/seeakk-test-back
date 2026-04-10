@@ -347,7 +347,7 @@ export const deleteLead = async (req: Request, res: Response, next: NextFunction
     await auditService.log({
       userId: req.user?.id,
       workspaceId,
-      action: 'LEAD_DELETED',
+      action: 'LEAD_ARCHIVED',
       entityType: 'Lead',
       entityId: params.id,
       ipAddress: req.ip,
@@ -356,10 +356,39 @@ export const deleteLead = async (req: Request, res: Response, next: NextFunction
 
     return res.status(200).json({
       success: true,
-      message: 'Lead deleted successfully',
+      message: 'Lead archived successfully',
     });
   } catch (error) {
     handleServiceError(error, res, next, 'deleteLead');
+  }
+};
+
+export const permanentlyDeleteLead = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = requireWorkspace(req, res);
+  if (!workspaceId) return;
+
+  const params = validate<LeadIdParamInput>(leadIdParamSchema, req.params, res);
+  if (!params) return;
+
+  try {
+    await leadService.permanentlyDeleteLead(workspaceId, params.id);
+
+    await auditService.log({
+      userId: req.user?.id,
+      workspaceId,
+      action: 'LEAD_PERMANENTLY_DELETED',
+      entityType: 'Lead',
+      entityId: params.id,
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Lead permanently deleted successfully',
+    });
+  } catch (error) {
+    handleServiceError(error, res, next, 'permanentlyDeleteLead');
   }
 };
 

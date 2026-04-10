@@ -14,6 +14,7 @@ router.put('/:id', leadController.updateLead);
 router.patch('/:id/stage', leadController.changeStage);
 router.patch('/:id/sla/extend', leadController.extendLeadSla);
 router.patch('/:id/assign', leadController.assignLead);
+router.delete('/:id/permanent', leadController.permanentlyDeleteLead);
 router.delete('/:id', leadController.deleteLead);
 
 export default router;

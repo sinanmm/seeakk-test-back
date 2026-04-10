@@ -1120,6 +1120,38 @@ export const deleteLead = async (workspaceId: string, id: string): Promise<void>
   await clearLeadCache(workspaceId);
 };
 
+export const permanentlyDeleteLead = async (workspaceId: string, id: string): Promise<void> => {
+  await assertModuleReady();
+
+  const lead = await (prisma as any).lead.findFirst({
+    where: {
+      id,
+      workspaceId,
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  if (!lead) {
+    throw createServiceError('Lead not found in this workspace.', 404);
+  }
+
+  await prisma.$transaction(async (tx) => {
+    await (tx as any).leadDynamicValue.deleteMany({
+      where: {
+        leadId: id,
+      },
+    });
+
+    await (tx as any).lead.delete({
+      where: { id },
+    });
+  });
+
+  await clearLeadCache(workspaceId);
+};
+
 export const exportLeads = async (
   workspaceId: string,
   query: ExportLeadsQueryInput,

@@ -10,6 +10,12 @@ router.get(
   checkAnyPermission(['LOB_REASONS_VIEW', 'LOB_REASONS_CREATE', 'LOB_REASONS_EDIT', 'LOB_REASONS_DELETE', 'LEADS_CREATE', 'LEADS_EDIT']),
   lobReasonsController.listLOBReasons,
 );
+router.get(
+  '/active',
+  protect,
+  checkAnyPermission(['LOB_REASONS_VIEW', 'LOB_REASONS_CREATE', 'LOB_REASONS_EDIT', 'LOB_REASONS_DELETE', 'LEADS_CREATE', 'LEADS_EDIT']),
+  lobReasonsController.listActiveLOBReasons,
+);
 router.post('/', protect, checkPermission('LOB_REASONS_CREATE'), lobReasonsController.createLOBReason);
 router.put('/:id', protect, checkPermission('LOB_REASONS_EDIT'), lobReasonsController.updateLOBReason);
 router.patch('/:id/status', protect, checkPermission('LOB_REASONS_EDIT'), lobReasonsController.toggleLOBReasonStatus);

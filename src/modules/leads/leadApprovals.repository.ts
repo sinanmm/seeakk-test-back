@@ -103,6 +103,22 @@ export const findPendingApprovalForLead = async (workspaceId: string, leadId: st
     orderBy: { createdAt: 'desc' },
   });
 
+export const clearLeadPendingApprovalState = async (leadId: string) =>
+  (prisma as any).lead.update({
+    where: { id: leadId },
+    data: {
+      approvalState: 'NONE',
+      pendingApprovalToStageId: null,
+      pendingApprovalRequestedAt: null,
+    },
+    select: {
+      id: true,
+      approvalState: true,
+      pendingApprovalToStageId: true,
+      pendingApprovalRequestedAt: true,
+    },
+  });
+
 export const findApproverCandidates = async (workspaceId: string) =>
   prisma.user.findMany({
     where: {

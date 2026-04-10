@@ -87,6 +87,7 @@ const permissions = [
   { key: 'REPORTS_VIEW', group: 'REPORTS_ANALYTICS', description: 'View reports' },
   { key: 'REPORTS_GENERATE', group: 'REPORTS_ANALYTICS', description: 'Generate dynamic reports' },
   { key: 'REPORT_LOGS_VIEW', group: 'REPORTS_ANALYTICS', description: 'View report execution logs' },
+  { key: 'LOB_ANALYSIS_VIEW', group: 'REPORTS_ANALYTICS', description: 'View LOB analysis dashboards and audit breakdowns' },
   { key: 'SYSTEM_CONFIG', group: 'SYSTEM_SETTINGS', description: 'Manage system settings' },
 ];
 

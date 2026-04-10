@@ -103,6 +103,21 @@ export const listLOBReasons = async (req: Request, res: Response, next: NextFunc
   }
 };
 
+export const listActiveLOBReasons = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = requireWorkspace(req, res);
+  if (!workspaceId) return;
+
+  try {
+    const data = await lobReasonsService.listActiveLOBReasons(workspaceId);
+    return res.status(200).json({
+      success: true,
+      data,
+    });
+  } catch (error) {
+    handleServiceError(error, res, next, 'listActiveLOBReasons');
+  }
+};
+
 export const updateLOBReason = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
   const workspaceId = requireWorkspace(req, res);
   if (!workspaceId) return;
@@ -121,6 +136,7 @@ export const updateLOBReason = async (req: Request, res: Response, next: NextFun
 
     return res.status(200).json({
       success: true,
+      message: 'LOB reason deactivated successfully',
       data,
     });
   } catch (error) {

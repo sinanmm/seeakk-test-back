@@ -109,6 +109,21 @@ export const listLOBReasons = async (where: Prisma.LOBReasonWhereInput, skip: nu
   return { rows, total };
 };
 
+export const listActiveLOBReasonOptions = async (workspaceId: string) =>
+  prisma.lOBReason.findMany({
+    where: {
+      workspaceId,
+      deletedAt: null,
+      status: LOBReasonStatus.ACTIVE,
+    },
+    orderBy: [{ name: 'asc' }],
+    select: {
+      id: true,
+      name: true,
+      status: true,
+    },
+  });
+
 export const createLOBReason = async (data: Prisma.LOBReasonUncheckedCreateInput) =>
   prisma.lOBReason.create({
     data,
