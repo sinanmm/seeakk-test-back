@@ -128,7 +128,7 @@ export const listLeadsQuerySchema = z.object({
   assignedTo: z.preprocess(emptyStringToUndefined, z.string().trim().optional()).optional(),
   stage: z.preprocess(emptyStringToUndefined, z.string().trim().optional()).optional(),
   source: z.preprocess(emptyStringToUndefined, z.string().trim().optional()).optional(),
-  status: z.preprocess(emptyStringToUndefined, z.enum(['OPEN', 'CLOSED', 'LOB', 'ACTIVE']).optional()).optional(),
+  status: z.preprocess(emptyStringToUndefined, z.enum(['OPEN', 'CLOSED', 'LOB', 'ACTIVE', 'ARCHIVED']).optional()).optional(),
 });
 
 export type ListLeadsQueryInput = z.infer<typeof listLeadsQuerySchema>;

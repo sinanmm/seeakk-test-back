@@ -647,6 +647,21 @@ exports.Prisma.ReportFilterScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.ImportJobScalarFieldEnum = {
+  id: 'id',
+  workspaceId: 'workspaceId',
+  fileName: 'fileName',
+  totalRows: 'totalRows',
+  processedRows: 'processedRows',
+  successCount: 'successCount',
+  failedCount: 'failedCount',
+  status: 'status',
+  errorFileUrl: 'errorFileUrl',
+  createdById: 'createdById',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -805,6 +820,13 @@ exports.ReportTypeStatus = exports.$Enums.ReportTypeStatus = {
   INACTIVE: 'INACTIVE'
 };
 
+exports.ImportJobStatus = exports.$Enums.ImportJobStatus = {
+  PENDING: 'PENDING',
+  PROCESSING: 'PROCESSING',
+  COMPLETED: 'COMPLETED',
+  FAILED: 'FAILED'
+};
+
 exports.Prisma.ModelName = {
   Role: 'Role',
   Permission: 'Permission',
@@ -846,7 +868,8 @@ exports.Prisma.ModelName = {
   ReportType: 'ReportType',
   ReportLog: 'ReportLog',
   Report: 'Report',
-  ReportFilter: 'ReportFilter'
+  ReportFilter: 'ReportFilter',
+  ImportJob: 'ImportJob'
 };
 
 /**

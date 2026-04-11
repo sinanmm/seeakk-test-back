@@ -616,8 +616,13 @@ const findDuplicateLead = async (
 const buildListWhere = (workspaceId: string, query: ListLeadsQueryInput | ExportLeadsQueryInput) => {
   const where: any = {
     workspaceId,
-    deletedAt: null,
   };
+
+  if (query.status === 'ARCHIVED') {
+    where.deletedAt = { not: null };
+  } else {
+    where.deletedAt = null;
+  }
 
   if (query.search) {
     where.OR = [
@@ -1140,8 +1145,33 @@ export const permanentlyDeleteLead = async (workspaceId: string, id: string): Pr
       },
     });
 
-    await (tx as any).lead.delete({
+    await (tx as any).lead.update({
       where: { id },
+      data: {
+        name: `Deleted Lead ${id.slice(-6)}`,
+        email: null,
+        phone: null,
+        expectedRevenue: null,
+        generatedRevenue: 0,
+        assignedToId: null,
+        stageId: null,
+        lifecycleId: null,
+        sourceId: null,
+        nextFollowUpAt: null,
+        stageEnteredAt: null,
+        stageExpiresAt: null,
+        slaAction: null,
+        slaWarningDays: null,
+        approvalState: 'NONE',
+        pendingApprovalToStageId: null,
+        pendingApprovalRequestedAt: null,
+        isClosed: false,
+        isLOB: false,
+        closedAt: null,
+        closedById: null,
+        closureType: null,
+        deletedAt: new Date(),
+      },
     });
   });
 

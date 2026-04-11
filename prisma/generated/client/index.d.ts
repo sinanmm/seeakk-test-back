@@ -218,6 +218,11 @@ export type Report = $Result.DefaultSelection<Prisma.$ReportPayload>
  * 
  */
 export type ReportFilter = $Result.DefaultSelection<Prisma.$ReportFilterPayload>
+/**
+ * Model ImportJob
+ * 
+ */
+export type ImportJob = $Result.DefaultSelection<Prisma.$ImportJobPayload>
 
 /**
  * Enums
@@ -417,6 +422,16 @@ export const ReportTypeStatus: {
 
 export type ReportTypeStatus = (typeof ReportTypeStatus)[keyof typeof ReportTypeStatus]
 
+
+export const ImportJobStatus: {
+  PENDING: 'PENDING',
+  PROCESSING: 'PROCESSING',
+  COMPLETED: 'COMPLETED',
+  FAILED: 'FAILED'
+};
+
+export type ImportJobStatus = (typeof ImportJobStatus)[keyof typeof ImportJobStatus]
+
 }
 
 export type RoleStatus = $Enums.RoleStatus
@@ -506,6 +521,10 @@ export const ReportBaseDataSource: typeof $Enums.ReportBaseDataSource
 export type ReportTypeStatus = $Enums.ReportTypeStatus
 
 export const ReportTypeStatus: typeof $Enums.ReportTypeStatus
+
+export type ImportJobStatus = $Enums.ImportJobStatus
+
+export const ImportJobStatus: typeof $Enums.ImportJobStatus
 
 /**
  * ##  Prisma Client ʲˢ
@@ -1039,6 +1058,16 @@ export class PrismaClient<
     * ```
     */
   get reportFilter(): Prisma.ReportFilterDelegate<ExtArgs>;
+
+  /**
+   * `prisma.importJob`: Exposes CRUD operations for the **ImportJob** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more ImportJobs
+    * const importJobs = await prisma.importJob.findMany()
+    * ```
+    */
+  get importJob(): Prisma.ImportJobDelegate<ExtArgs>;
 }
 
 export namespace Prisma {
@@ -1520,7 +1549,8 @@ export namespace Prisma {
     ReportType: 'ReportType',
     ReportLog: 'ReportLog',
     Report: 'Report',
-    ReportFilter: 'ReportFilter'
+    ReportFilter: 'ReportFilter',
+    ImportJob: 'ImportJob'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1536,7 +1566,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "role" | "permission" | "rolePermission" | "workspace" | "department" | "leadSource" | "leadStage" | "stageRule" | "leadStageInput" | "office" | "country" | "locationLevel" | "location" | "userLocationAssignment" | "targetType" | "targetCycle" | "targetCycleRange" | "leadLifeCycle" | "lead" | "leadLOBLog" | "lOBReason" | "leadStageApproval" | "leadLifeCycleTransition" | "leadDynamicField" | "leadDynamicOption" | "leadDynamicValue" | "leadActivity" | "targetSetting" | "targetViolation" | "user" | "followUp" | "followUpImage" | "rosterEntry" | "auditLog" | "device" | "holiday" | "holidaySyncLog" | "reportType" | "reportLog" | "report" | "reportFilter"
+      modelProps: "role" | "permission" | "rolePermission" | "workspace" | "department" | "leadSource" | "leadStage" | "stageRule" | "leadStageInput" | "office" | "country" | "locationLevel" | "location" | "userLocationAssignment" | "targetType" | "targetCycle" | "targetCycleRange" | "leadLifeCycle" | "lead" | "leadLOBLog" | "lOBReason" | "leadStageApproval" | "leadLifeCycleTransition" | "leadDynamicField" | "leadDynamicOption" | "leadDynamicValue" | "leadActivity" | "targetSetting" | "targetViolation" | "user" | "followUp" | "followUpImage" | "rosterEntry" | "auditLog" | "device" | "holiday" | "holidaySyncLog" | "reportType" | "reportLog" | "report" | "reportFilter" | "importJob"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -4410,6 +4440,76 @@ export namespace Prisma {
           }
         }
       }
+      ImportJob: {
+        payload: Prisma.$ImportJobPayload<ExtArgs>
+        fields: Prisma.ImportJobFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ImportJobFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ImportJobPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ImportJobFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ImportJobPayload>
+          }
+          findFirst: {
+            args: Prisma.ImportJobFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ImportJobPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ImportJobFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ImportJobPayload>
+          }
+          findMany: {
+            args: Prisma.ImportJobFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ImportJobPayload>[]
+          }
+          create: {
+            args: Prisma.ImportJobCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ImportJobPayload>
+          }
+          createMany: {
+            args: Prisma.ImportJobCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.ImportJobCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ImportJobPayload>[]
+          }
+          delete: {
+            args: Prisma.ImportJobDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ImportJobPayload>
+          }
+          update: {
+            args: Prisma.ImportJobUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ImportJobPayload>
+          }
+          deleteMany: {
+            args: Prisma.ImportJobDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ImportJobUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.ImportJobUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ImportJobPayload>
+          }
+          aggregate: {
+            args: Prisma.ImportJobAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateImportJob>
+          }
+          groupBy: {
+            args: Prisma.ImportJobGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ImportJobGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.ImportJobCountArgs<ExtArgs>
+            result: $Utils.Optional<ImportJobCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -4662,6 +4762,7 @@ export namespace Prisma {
     reportTypes: number
     reports: number
     reportLogs: number
+    importJobs: number
   }
 
   export type WorkspaceCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -4681,6 +4782,7 @@ export namespace Prisma {
     reportTypes?: boolean | WorkspaceCountOutputTypeCountReportTypesArgs
     reports?: boolean | WorkspaceCountOutputTypeCountReportsArgs
     reportLogs?: boolean | WorkspaceCountOutputTypeCountReportLogsArgs
+    importJobs?: boolean | WorkspaceCountOutputTypeCountImportJobsArgs
   }
 
   // Custom InputTypes
@@ -4804,6 +4906,13 @@ export namespace Prisma {
    */
   export type WorkspaceCountOutputTypeCountReportLogsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ReportLogWhereInput
+  }
+
+  /**
+   * WorkspaceCountOutputType without action
+   */
+  export type WorkspaceCountOutputTypeCountImportJobsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ImportJobWhereInput
   }
 
 
@@ -5395,6 +5504,7 @@ export namespace Prisma {
     updatedReportTypes: number
     createdReports: number
     generatedReportLogs: number
+    createdImportJobs: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -5425,6 +5535,7 @@ export namespace Prisma {
     updatedReportTypes?: boolean | UserCountOutputTypeCountUpdatedReportTypesArgs
     createdReports?: boolean | UserCountOutputTypeCountCreatedReportsArgs
     generatedReportLogs?: boolean | UserCountOutputTypeCountGeneratedReportLogsArgs
+    createdImportJobs?: boolean | UserCountOutputTypeCountCreatedImportJobsArgs
   }
 
   // Custom InputTypes
@@ -5625,6 +5736,13 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountGeneratedReportLogsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ReportLogWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountCreatedImportJobsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ImportJobWhereInput
   }
 
 
@@ -8811,6 +8929,7 @@ export namespace Prisma {
     reportTypes?: boolean | Workspace$reportTypesArgs<ExtArgs>
     reports?: boolean | Workspace$reportsArgs<ExtArgs>
     reportLogs?: boolean | Workspace$reportLogsArgs<ExtArgs>
+    importJobs?: boolean | Workspace$importJobsArgs<ExtArgs>
     _count?: boolean | WorkspaceCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["workspace"]>
 
@@ -8859,6 +8978,7 @@ export namespace Prisma {
     reportTypes?: boolean | Workspace$reportTypesArgs<ExtArgs>
     reports?: boolean | Workspace$reportsArgs<ExtArgs>
     reportLogs?: boolean | Workspace$reportLogsArgs<ExtArgs>
+    importJobs?: boolean | Workspace$importJobsArgs<ExtArgs>
     _count?: boolean | WorkspaceCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type WorkspaceIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -8885,6 +9005,7 @@ export namespace Prisma {
       reportTypes: Prisma.$ReportTypePayload<ExtArgs>[]
       reports: Prisma.$ReportPayload<ExtArgs>[]
       reportLogs: Prisma.$ReportLogPayload<ExtArgs>[]
+      importJobs: Prisma.$ImportJobPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -9278,6 +9399,7 @@ export namespace Prisma {
     reportTypes<T extends Workspace$reportTypesArgs<ExtArgs> = {}>(args?: Subset<T, Workspace$reportTypesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReportTypePayload<ExtArgs>, T, "findMany"> | Null>
     reports<T extends Workspace$reportsArgs<ExtArgs> = {}>(args?: Subset<T, Workspace$reportsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReportPayload<ExtArgs>, T, "findMany"> | Null>
     reportLogs<T extends Workspace$reportLogsArgs<ExtArgs> = {}>(args?: Subset<T, Workspace$reportLogsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReportLogPayload<ExtArgs>, T, "findMany"> | Null>
+    importJobs<T extends Workspace$importJobsArgs<ExtArgs> = {}>(args?: Subset<T, Workspace$importJobsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ImportJobPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -9952,6 +10074,26 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: ReportLogScalarFieldEnum | ReportLogScalarFieldEnum[]
+  }
+
+  /**
+   * Workspace.importJobs
+   */
+  export type Workspace$importJobsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ImportJob
+     */
+    select?: ImportJobSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ImportJobInclude<ExtArgs> | null
+    where?: ImportJobWhereInput
+    orderBy?: ImportJobOrderByWithRelationInput | ImportJobOrderByWithRelationInput[]
+    cursor?: ImportJobWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ImportJobScalarFieldEnum | ImportJobScalarFieldEnum[]
   }
 
   /**
@@ -36606,6 +36748,7 @@ export namespace Prisma {
     updatedReportTypes?: boolean | User$updatedReportTypesArgs<ExtArgs>
     createdReports?: boolean | User$createdReportsArgs<ExtArgs>
     generatedReportLogs?: boolean | User$generatedReportLogsArgs<ExtArgs>
+    createdImportJobs?: boolean | User$createdImportJobsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -36712,6 +36855,7 @@ export namespace Prisma {
     updatedReportTypes?: boolean | User$updatedReportTypesArgs<ExtArgs>
     createdReports?: boolean | User$createdReportsArgs<ExtArgs>
     generatedReportLogs?: boolean | User$generatedReportLogsArgs<ExtArgs>
+    createdImportJobs?: boolean | User$createdImportJobsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -36764,6 +36908,7 @@ export namespace Prisma {
       updatedReportTypes: Prisma.$ReportTypePayload<ExtArgs>[]
       createdReports: Prisma.$ReportPayload<ExtArgs>[]
       generatedReportLogs: Prisma.$ReportLogPayload<ExtArgs>[]
+      createdImportJobs: Prisma.$ImportJobPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -37192,6 +37337,7 @@ export namespace Prisma {
     updatedReportTypes<T extends User$updatedReportTypesArgs<ExtArgs> = {}>(args?: Subset<T, User$updatedReportTypesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReportTypePayload<ExtArgs>, T, "findMany"> | Null>
     createdReports<T extends User$createdReportsArgs<ExtArgs> = {}>(args?: Subset<T, User$createdReportsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReportPayload<ExtArgs>, T, "findMany"> | Null>
     generatedReportLogs<T extends User$generatedReportLogsArgs<ExtArgs> = {}>(args?: Subset<T, User$generatedReportLogsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReportLogPayload<ExtArgs>, T, "findMany"> | Null>
+    createdImportJobs<T extends User$createdImportJobsArgs<ExtArgs> = {}>(args?: Subset<T, User$createdImportJobsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ImportJobPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -38237,6 +38383,26 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: ReportLogScalarFieldEnum | ReportLogScalarFieldEnum[]
+  }
+
+  /**
+   * User.createdImportJobs
+   */
+  export type User$createdImportJobsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ImportJob
+     */
+    select?: ImportJobSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ImportJobInclude<ExtArgs> | null
+    where?: ImportJobWhereInput
+    orderBy?: ImportJobOrderByWithRelationInput | ImportJobOrderByWithRelationInput[]
+    cursor?: ImportJobWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ImportJobScalarFieldEnum | ImportJobScalarFieldEnum[]
   }
 
   /**
@@ -49577,6 +49743,1090 @@ export namespace Prisma {
 
 
   /**
+   * Model ImportJob
+   */
+
+  export type AggregateImportJob = {
+    _count: ImportJobCountAggregateOutputType | null
+    _avg: ImportJobAvgAggregateOutputType | null
+    _sum: ImportJobSumAggregateOutputType | null
+    _min: ImportJobMinAggregateOutputType | null
+    _max: ImportJobMaxAggregateOutputType | null
+  }
+
+  export type ImportJobAvgAggregateOutputType = {
+    totalRows: number | null
+    processedRows: number | null
+    successCount: number | null
+    failedCount: number | null
+  }
+
+  export type ImportJobSumAggregateOutputType = {
+    totalRows: number | null
+    processedRows: number | null
+    successCount: number | null
+    failedCount: number | null
+  }
+
+  export type ImportJobMinAggregateOutputType = {
+    id: string | null
+    workspaceId: string | null
+    fileName: string | null
+    totalRows: number | null
+    processedRows: number | null
+    successCount: number | null
+    failedCount: number | null
+    status: $Enums.ImportJobStatus | null
+    errorFileUrl: string | null
+    createdById: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ImportJobMaxAggregateOutputType = {
+    id: string | null
+    workspaceId: string | null
+    fileName: string | null
+    totalRows: number | null
+    processedRows: number | null
+    successCount: number | null
+    failedCount: number | null
+    status: $Enums.ImportJobStatus | null
+    errorFileUrl: string | null
+    createdById: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ImportJobCountAggregateOutputType = {
+    id: number
+    workspaceId: number
+    fileName: number
+    totalRows: number
+    processedRows: number
+    successCount: number
+    failedCount: number
+    status: number
+    errorFileUrl: number
+    createdById: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type ImportJobAvgAggregateInputType = {
+    totalRows?: true
+    processedRows?: true
+    successCount?: true
+    failedCount?: true
+  }
+
+  export type ImportJobSumAggregateInputType = {
+    totalRows?: true
+    processedRows?: true
+    successCount?: true
+    failedCount?: true
+  }
+
+  export type ImportJobMinAggregateInputType = {
+    id?: true
+    workspaceId?: true
+    fileName?: true
+    totalRows?: true
+    processedRows?: true
+    successCount?: true
+    failedCount?: true
+    status?: true
+    errorFileUrl?: true
+    createdById?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ImportJobMaxAggregateInputType = {
+    id?: true
+    workspaceId?: true
+    fileName?: true
+    totalRows?: true
+    processedRows?: true
+    successCount?: true
+    failedCount?: true
+    status?: true
+    errorFileUrl?: true
+    createdById?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ImportJobCountAggregateInputType = {
+    id?: true
+    workspaceId?: true
+    fileName?: true
+    totalRows?: true
+    processedRows?: true
+    successCount?: true
+    failedCount?: true
+    status?: true
+    errorFileUrl?: true
+    createdById?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type ImportJobAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ImportJob to aggregate.
+     */
+    where?: ImportJobWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ImportJobs to fetch.
+     */
+    orderBy?: ImportJobOrderByWithRelationInput | ImportJobOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ImportJobWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ImportJobs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ImportJobs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned ImportJobs
+    **/
+    _count?: true | ImportJobCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: ImportJobAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: ImportJobSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ImportJobMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ImportJobMaxAggregateInputType
+  }
+
+  export type GetImportJobAggregateType<T extends ImportJobAggregateArgs> = {
+        [P in keyof T & keyof AggregateImportJob]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateImportJob[P]>
+      : GetScalarType<T[P], AggregateImportJob[P]>
+  }
+
+
+
+
+  export type ImportJobGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ImportJobWhereInput
+    orderBy?: ImportJobOrderByWithAggregationInput | ImportJobOrderByWithAggregationInput[]
+    by: ImportJobScalarFieldEnum[] | ImportJobScalarFieldEnum
+    having?: ImportJobScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ImportJobCountAggregateInputType | true
+    _avg?: ImportJobAvgAggregateInputType
+    _sum?: ImportJobSumAggregateInputType
+    _min?: ImportJobMinAggregateInputType
+    _max?: ImportJobMaxAggregateInputType
+  }
+
+  export type ImportJobGroupByOutputType = {
+    id: string
+    workspaceId: string
+    fileName: string
+    totalRows: number | null
+    processedRows: number
+    successCount: number
+    failedCount: number
+    status: $Enums.ImportJobStatus
+    errorFileUrl: string | null
+    createdById: string | null
+    createdAt: Date
+    updatedAt: Date
+    _count: ImportJobCountAggregateOutputType | null
+    _avg: ImportJobAvgAggregateOutputType | null
+    _sum: ImportJobSumAggregateOutputType | null
+    _min: ImportJobMinAggregateOutputType | null
+    _max: ImportJobMaxAggregateOutputType | null
+  }
+
+  type GetImportJobGroupByPayload<T extends ImportJobGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ImportJobGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ImportJobGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ImportJobGroupByOutputType[P]>
+            : GetScalarType<T[P], ImportJobGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ImportJobSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    workspaceId?: boolean
+    fileName?: boolean
+    totalRows?: boolean
+    processedRows?: boolean
+    successCount?: boolean
+    failedCount?: boolean
+    status?: boolean
+    errorFileUrl?: boolean
+    createdById?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+    createdBy?: boolean | ImportJob$createdByArgs<ExtArgs>
+  }, ExtArgs["result"]["importJob"]>
+
+  export type ImportJobSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    workspaceId?: boolean
+    fileName?: boolean
+    totalRows?: boolean
+    processedRows?: boolean
+    successCount?: boolean
+    failedCount?: boolean
+    status?: boolean
+    errorFileUrl?: boolean
+    createdById?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+    createdBy?: boolean | ImportJob$createdByArgs<ExtArgs>
+  }, ExtArgs["result"]["importJob"]>
+
+  export type ImportJobSelectScalar = {
+    id?: boolean
+    workspaceId?: boolean
+    fileName?: boolean
+    totalRows?: boolean
+    processedRows?: boolean
+    successCount?: boolean
+    failedCount?: boolean
+    status?: boolean
+    errorFileUrl?: boolean
+    createdById?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type ImportJobInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+    createdBy?: boolean | ImportJob$createdByArgs<ExtArgs>
+  }
+  export type ImportJobIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+    createdBy?: boolean | ImportJob$createdByArgs<ExtArgs>
+  }
+
+  export type $ImportJobPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "ImportJob"
+    objects: {
+      workspace: Prisma.$WorkspacePayload<ExtArgs>
+      createdBy: Prisma.$UserPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      workspaceId: string
+      fileName: string
+      totalRows: number | null
+      processedRows: number
+      successCount: number
+      failedCount: number
+      status: $Enums.ImportJobStatus
+      errorFileUrl: string | null
+      createdById: string | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["importJob"]>
+    composites: {}
+  }
+
+  type ImportJobGetPayload<S extends boolean | null | undefined | ImportJobDefaultArgs> = $Result.GetResult<Prisma.$ImportJobPayload, S>
+
+  type ImportJobCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<ImportJobFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: ImportJobCountAggregateInputType | true
+    }
+
+  export interface ImportJobDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ImportJob'], meta: { name: 'ImportJob' } }
+    /**
+     * Find zero or one ImportJob that matches the filter.
+     * @param {ImportJobFindUniqueArgs} args - Arguments to find a ImportJob
+     * @example
+     * // Get one ImportJob
+     * const importJob = await prisma.importJob.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ImportJobFindUniqueArgs>(args: SelectSubset<T, ImportJobFindUniqueArgs<ExtArgs>>): Prisma__ImportJobClient<$Result.GetResult<Prisma.$ImportJobPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one ImportJob that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {ImportJobFindUniqueOrThrowArgs} args - Arguments to find a ImportJob
+     * @example
+     * // Get one ImportJob
+     * const importJob = await prisma.importJob.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ImportJobFindUniqueOrThrowArgs>(args: SelectSubset<T, ImportJobFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ImportJobClient<$Result.GetResult<Prisma.$ImportJobPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first ImportJob that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ImportJobFindFirstArgs} args - Arguments to find a ImportJob
+     * @example
+     * // Get one ImportJob
+     * const importJob = await prisma.importJob.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ImportJobFindFirstArgs>(args?: SelectSubset<T, ImportJobFindFirstArgs<ExtArgs>>): Prisma__ImportJobClient<$Result.GetResult<Prisma.$ImportJobPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first ImportJob that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ImportJobFindFirstOrThrowArgs} args - Arguments to find a ImportJob
+     * @example
+     * // Get one ImportJob
+     * const importJob = await prisma.importJob.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ImportJobFindFirstOrThrowArgs>(args?: SelectSubset<T, ImportJobFindFirstOrThrowArgs<ExtArgs>>): Prisma__ImportJobClient<$Result.GetResult<Prisma.$ImportJobPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more ImportJobs that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ImportJobFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all ImportJobs
+     * const importJobs = await prisma.importJob.findMany()
+     * 
+     * // Get first 10 ImportJobs
+     * const importJobs = await prisma.importJob.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const importJobWithIdOnly = await prisma.importJob.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ImportJobFindManyArgs>(args?: SelectSubset<T, ImportJobFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ImportJobPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a ImportJob.
+     * @param {ImportJobCreateArgs} args - Arguments to create a ImportJob.
+     * @example
+     * // Create one ImportJob
+     * const ImportJob = await prisma.importJob.create({
+     *   data: {
+     *     // ... data to create a ImportJob
+     *   }
+     * })
+     * 
+     */
+    create<T extends ImportJobCreateArgs>(args: SelectSubset<T, ImportJobCreateArgs<ExtArgs>>): Prisma__ImportJobClient<$Result.GetResult<Prisma.$ImportJobPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many ImportJobs.
+     * @param {ImportJobCreateManyArgs} args - Arguments to create many ImportJobs.
+     * @example
+     * // Create many ImportJobs
+     * const importJob = await prisma.importJob.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ImportJobCreateManyArgs>(args?: SelectSubset<T, ImportJobCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many ImportJobs and returns the data saved in the database.
+     * @param {ImportJobCreateManyAndReturnArgs} args - Arguments to create many ImportJobs.
+     * @example
+     * // Create many ImportJobs
+     * const importJob = await prisma.importJob.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many ImportJobs and only return the `id`
+     * const importJobWithIdOnly = await prisma.importJob.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends ImportJobCreateManyAndReturnArgs>(args?: SelectSubset<T, ImportJobCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ImportJobPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a ImportJob.
+     * @param {ImportJobDeleteArgs} args - Arguments to delete one ImportJob.
+     * @example
+     * // Delete one ImportJob
+     * const ImportJob = await prisma.importJob.delete({
+     *   where: {
+     *     // ... filter to delete one ImportJob
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ImportJobDeleteArgs>(args: SelectSubset<T, ImportJobDeleteArgs<ExtArgs>>): Prisma__ImportJobClient<$Result.GetResult<Prisma.$ImportJobPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one ImportJob.
+     * @param {ImportJobUpdateArgs} args - Arguments to update one ImportJob.
+     * @example
+     * // Update one ImportJob
+     * const importJob = await prisma.importJob.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ImportJobUpdateArgs>(args: SelectSubset<T, ImportJobUpdateArgs<ExtArgs>>): Prisma__ImportJobClient<$Result.GetResult<Prisma.$ImportJobPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more ImportJobs.
+     * @param {ImportJobDeleteManyArgs} args - Arguments to filter ImportJobs to delete.
+     * @example
+     * // Delete a few ImportJobs
+     * const { count } = await prisma.importJob.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ImportJobDeleteManyArgs>(args?: SelectSubset<T, ImportJobDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ImportJobs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ImportJobUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many ImportJobs
+     * const importJob = await prisma.importJob.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ImportJobUpdateManyArgs>(args: SelectSubset<T, ImportJobUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one ImportJob.
+     * @param {ImportJobUpsertArgs} args - Arguments to update or create a ImportJob.
+     * @example
+     * // Update or create a ImportJob
+     * const importJob = await prisma.importJob.upsert({
+     *   create: {
+     *     // ... data to create a ImportJob
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the ImportJob we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ImportJobUpsertArgs>(args: SelectSubset<T, ImportJobUpsertArgs<ExtArgs>>): Prisma__ImportJobClient<$Result.GetResult<Prisma.$ImportJobPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of ImportJobs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ImportJobCountArgs} args - Arguments to filter ImportJobs to count.
+     * @example
+     * // Count the number of ImportJobs
+     * const count = await prisma.importJob.count({
+     *   where: {
+     *     // ... the filter for the ImportJobs we want to count
+     *   }
+     * })
+    **/
+    count<T extends ImportJobCountArgs>(
+      args?: Subset<T, ImportJobCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ImportJobCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a ImportJob.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ImportJobAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ImportJobAggregateArgs>(args: Subset<T, ImportJobAggregateArgs>): Prisma.PrismaPromise<GetImportJobAggregateType<T>>
+
+    /**
+     * Group by ImportJob.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ImportJobGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ImportJobGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ImportJobGroupByArgs['orderBy'] }
+        : { orderBy?: ImportJobGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ImportJobGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetImportJobGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the ImportJob model
+   */
+  readonly fields: ImportJobFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for ImportJob.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ImportJobClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    workspace<T extends WorkspaceDefaultArgs<ExtArgs> = {}>(args?: Subset<T, WorkspaceDefaultArgs<ExtArgs>>): Prisma__WorkspaceClient<$Result.GetResult<Prisma.$WorkspacePayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    createdBy<T extends ImportJob$createdByArgs<ExtArgs> = {}>(args?: Subset<T, ImportJob$createdByArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the ImportJob model
+   */ 
+  interface ImportJobFieldRefs {
+    readonly id: FieldRef<"ImportJob", 'String'>
+    readonly workspaceId: FieldRef<"ImportJob", 'String'>
+    readonly fileName: FieldRef<"ImportJob", 'String'>
+    readonly totalRows: FieldRef<"ImportJob", 'Int'>
+    readonly processedRows: FieldRef<"ImportJob", 'Int'>
+    readonly successCount: FieldRef<"ImportJob", 'Int'>
+    readonly failedCount: FieldRef<"ImportJob", 'Int'>
+    readonly status: FieldRef<"ImportJob", 'ImportJobStatus'>
+    readonly errorFileUrl: FieldRef<"ImportJob", 'String'>
+    readonly createdById: FieldRef<"ImportJob", 'String'>
+    readonly createdAt: FieldRef<"ImportJob", 'DateTime'>
+    readonly updatedAt: FieldRef<"ImportJob", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * ImportJob findUnique
+   */
+  export type ImportJobFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ImportJob
+     */
+    select?: ImportJobSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ImportJobInclude<ExtArgs> | null
+    /**
+     * Filter, which ImportJob to fetch.
+     */
+    where: ImportJobWhereUniqueInput
+  }
+
+  /**
+   * ImportJob findUniqueOrThrow
+   */
+  export type ImportJobFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ImportJob
+     */
+    select?: ImportJobSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ImportJobInclude<ExtArgs> | null
+    /**
+     * Filter, which ImportJob to fetch.
+     */
+    where: ImportJobWhereUniqueInput
+  }
+
+  /**
+   * ImportJob findFirst
+   */
+  export type ImportJobFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ImportJob
+     */
+    select?: ImportJobSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ImportJobInclude<ExtArgs> | null
+    /**
+     * Filter, which ImportJob to fetch.
+     */
+    where?: ImportJobWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ImportJobs to fetch.
+     */
+    orderBy?: ImportJobOrderByWithRelationInput | ImportJobOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ImportJobs.
+     */
+    cursor?: ImportJobWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ImportJobs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ImportJobs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ImportJobs.
+     */
+    distinct?: ImportJobScalarFieldEnum | ImportJobScalarFieldEnum[]
+  }
+
+  /**
+   * ImportJob findFirstOrThrow
+   */
+  export type ImportJobFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ImportJob
+     */
+    select?: ImportJobSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ImportJobInclude<ExtArgs> | null
+    /**
+     * Filter, which ImportJob to fetch.
+     */
+    where?: ImportJobWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ImportJobs to fetch.
+     */
+    orderBy?: ImportJobOrderByWithRelationInput | ImportJobOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ImportJobs.
+     */
+    cursor?: ImportJobWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ImportJobs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ImportJobs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ImportJobs.
+     */
+    distinct?: ImportJobScalarFieldEnum | ImportJobScalarFieldEnum[]
+  }
+
+  /**
+   * ImportJob findMany
+   */
+  export type ImportJobFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ImportJob
+     */
+    select?: ImportJobSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ImportJobInclude<ExtArgs> | null
+    /**
+     * Filter, which ImportJobs to fetch.
+     */
+    where?: ImportJobWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ImportJobs to fetch.
+     */
+    orderBy?: ImportJobOrderByWithRelationInput | ImportJobOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing ImportJobs.
+     */
+    cursor?: ImportJobWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ImportJobs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ImportJobs.
+     */
+    skip?: number
+    distinct?: ImportJobScalarFieldEnum | ImportJobScalarFieldEnum[]
+  }
+
+  /**
+   * ImportJob create
+   */
+  export type ImportJobCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ImportJob
+     */
+    select?: ImportJobSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ImportJobInclude<ExtArgs> | null
+    /**
+     * The data needed to create a ImportJob.
+     */
+    data: XOR<ImportJobCreateInput, ImportJobUncheckedCreateInput>
+  }
+
+  /**
+   * ImportJob createMany
+   */
+  export type ImportJobCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many ImportJobs.
+     */
+    data: ImportJobCreateManyInput | ImportJobCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ImportJob createManyAndReturn
+   */
+  export type ImportJobCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ImportJob
+     */
+    select?: ImportJobSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many ImportJobs.
+     */
+    data: ImportJobCreateManyInput | ImportJobCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ImportJobIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * ImportJob update
+   */
+  export type ImportJobUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ImportJob
+     */
+    select?: ImportJobSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ImportJobInclude<ExtArgs> | null
+    /**
+     * The data needed to update a ImportJob.
+     */
+    data: XOR<ImportJobUpdateInput, ImportJobUncheckedUpdateInput>
+    /**
+     * Choose, which ImportJob to update.
+     */
+    where: ImportJobWhereUniqueInput
+  }
+
+  /**
+   * ImportJob updateMany
+   */
+  export type ImportJobUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update ImportJobs.
+     */
+    data: XOR<ImportJobUpdateManyMutationInput, ImportJobUncheckedUpdateManyInput>
+    /**
+     * Filter which ImportJobs to update
+     */
+    where?: ImportJobWhereInput
+  }
+
+  /**
+   * ImportJob upsert
+   */
+  export type ImportJobUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ImportJob
+     */
+    select?: ImportJobSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ImportJobInclude<ExtArgs> | null
+    /**
+     * The filter to search for the ImportJob to update in case it exists.
+     */
+    where: ImportJobWhereUniqueInput
+    /**
+     * In case the ImportJob found by the `where` argument doesn't exist, create a new ImportJob with this data.
+     */
+    create: XOR<ImportJobCreateInput, ImportJobUncheckedCreateInput>
+    /**
+     * In case the ImportJob was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ImportJobUpdateInput, ImportJobUncheckedUpdateInput>
+  }
+
+  /**
+   * ImportJob delete
+   */
+  export type ImportJobDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ImportJob
+     */
+    select?: ImportJobSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ImportJobInclude<ExtArgs> | null
+    /**
+     * Filter which ImportJob to delete.
+     */
+    where: ImportJobWhereUniqueInput
+  }
+
+  /**
+   * ImportJob deleteMany
+   */
+  export type ImportJobDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ImportJobs to delete
+     */
+    where?: ImportJobWhereInput
+  }
+
+  /**
+   * ImportJob.createdBy
+   */
+  export type ImportJob$createdByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+  }
+
+  /**
+   * ImportJob without action
+   */
+  export type ImportJobDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ImportJob
+     */
+    select?: ImportJobSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ImportJobInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -50238,6 +51488,24 @@ export namespace Prisma {
   export type ReportFilterScalarFieldEnum = (typeof ReportFilterScalarFieldEnum)[keyof typeof ReportFilterScalarFieldEnum]
 
 
+  export const ImportJobScalarFieldEnum: {
+    id: 'id',
+    workspaceId: 'workspaceId',
+    fileName: 'fileName',
+    totalRows: 'totalRows',
+    processedRows: 'processedRows',
+    successCount: 'successCount',
+    failedCount: 'failedCount',
+    status: 'status',
+    errorFileUrl: 'errorFileUrl',
+    createdById: 'createdById',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type ImportJobScalarFieldEnum = (typeof ImportJobScalarFieldEnum)[keyof typeof ImportJobScalarFieldEnum]
+
+
   export const SortOrder: {
     asc: 'asc',
     desc: 'desc'
@@ -50667,6 +51935,20 @@ export namespace Prisma {
    */
   export type ListEnumReportTypeStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ReportTypeStatus[]'>
     
+
+
+  /**
+   * Reference to a field of type 'ImportJobStatus'
+   */
+  export type EnumImportJobStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ImportJobStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'ImportJobStatus[]'
+   */
+  export type ListEnumImportJobStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ImportJobStatus[]'>
+    
   /**
    * Deep Input Types
    */
@@ -50870,6 +52152,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeListRelationFilter
     reports?: ReportListRelationFilter
     reportLogs?: ReportLogListRelationFilter
+    importJobs?: ImportJobListRelationFilter
   }
 
   export type WorkspaceOrderByWithRelationInput = {
@@ -50900,6 +52183,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeOrderByRelationAggregateInput
     reports?: ReportOrderByRelationAggregateInput
     reportLogs?: ReportLogOrderByRelationAggregateInput
+    importJobs?: ImportJobOrderByRelationAggregateInput
   }
 
   export type WorkspaceWhereUniqueInput = Prisma.AtLeast<{
@@ -50933,6 +52217,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeListRelationFilter
     reports?: ReportListRelationFilter
     reportLogs?: ReportLogListRelationFilter
+    importJobs?: ImportJobListRelationFilter
   }, "id" | "ownerId">
 
   export type WorkspaceOrderByWithAggregationInput = {
@@ -53172,6 +54457,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeListRelationFilter
     createdReports?: ReportListRelationFilter
     generatedReportLogs?: ReportLogListRelationFilter
+    createdImportJobs?: ImportJobListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -53237,6 +54523,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeOrderByRelationAggregateInput
     createdReports?: ReportOrderByRelationAggregateInput
     generatedReportLogs?: ReportLogOrderByRelationAggregateInput
+    createdImportJobs?: ImportJobOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -53305,6 +54592,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeListRelationFilter
     createdReports?: ReportListRelationFilter
     generatedReportLogs?: ReportLogListRelationFilter
+    createdImportJobs?: ImportJobListRelationFilter
   }, "id" | "username" | "email" | "googleId">
 
   export type UserOrderByWithAggregationInput = {
@@ -54313,6 +55601,101 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"ReportFilter"> | Date | string
   }
 
+  export type ImportJobWhereInput = {
+    AND?: ImportJobWhereInput | ImportJobWhereInput[]
+    OR?: ImportJobWhereInput[]
+    NOT?: ImportJobWhereInput | ImportJobWhereInput[]
+    id?: StringFilter<"ImportJob"> | string
+    workspaceId?: StringFilter<"ImportJob"> | string
+    fileName?: StringFilter<"ImportJob"> | string
+    totalRows?: IntNullableFilter<"ImportJob"> | number | null
+    processedRows?: IntFilter<"ImportJob"> | number
+    successCount?: IntFilter<"ImportJob"> | number
+    failedCount?: IntFilter<"ImportJob"> | number
+    status?: EnumImportJobStatusFilter<"ImportJob"> | $Enums.ImportJobStatus
+    errorFileUrl?: StringNullableFilter<"ImportJob"> | string | null
+    createdById?: StringNullableFilter<"ImportJob"> | string | null
+    createdAt?: DateTimeFilter<"ImportJob"> | Date | string
+    updatedAt?: DateTimeFilter<"ImportJob"> | Date | string
+    workspace?: XOR<WorkspaceRelationFilter, WorkspaceWhereInput>
+    createdBy?: XOR<UserNullableRelationFilter, UserWhereInput> | null
+  }
+
+  export type ImportJobOrderByWithRelationInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    fileName?: SortOrder
+    totalRows?: SortOrderInput | SortOrder
+    processedRows?: SortOrder
+    successCount?: SortOrder
+    failedCount?: SortOrder
+    status?: SortOrder
+    errorFileUrl?: SortOrderInput | SortOrder
+    createdById?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    workspace?: WorkspaceOrderByWithRelationInput
+    createdBy?: UserOrderByWithRelationInput
+  }
+
+  export type ImportJobWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: ImportJobWhereInput | ImportJobWhereInput[]
+    OR?: ImportJobWhereInput[]
+    NOT?: ImportJobWhereInput | ImportJobWhereInput[]
+    workspaceId?: StringFilter<"ImportJob"> | string
+    fileName?: StringFilter<"ImportJob"> | string
+    totalRows?: IntNullableFilter<"ImportJob"> | number | null
+    processedRows?: IntFilter<"ImportJob"> | number
+    successCount?: IntFilter<"ImportJob"> | number
+    failedCount?: IntFilter<"ImportJob"> | number
+    status?: EnumImportJobStatusFilter<"ImportJob"> | $Enums.ImportJobStatus
+    errorFileUrl?: StringNullableFilter<"ImportJob"> | string | null
+    createdById?: StringNullableFilter<"ImportJob"> | string | null
+    createdAt?: DateTimeFilter<"ImportJob"> | Date | string
+    updatedAt?: DateTimeFilter<"ImportJob"> | Date | string
+    workspace?: XOR<WorkspaceRelationFilter, WorkspaceWhereInput>
+    createdBy?: XOR<UserNullableRelationFilter, UserWhereInput> | null
+  }, "id">
+
+  export type ImportJobOrderByWithAggregationInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    fileName?: SortOrder
+    totalRows?: SortOrderInput | SortOrder
+    processedRows?: SortOrder
+    successCount?: SortOrder
+    failedCount?: SortOrder
+    status?: SortOrder
+    errorFileUrl?: SortOrderInput | SortOrder
+    createdById?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: ImportJobCountOrderByAggregateInput
+    _avg?: ImportJobAvgOrderByAggregateInput
+    _max?: ImportJobMaxOrderByAggregateInput
+    _min?: ImportJobMinOrderByAggregateInput
+    _sum?: ImportJobSumOrderByAggregateInput
+  }
+
+  export type ImportJobScalarWhereWithAggregatesInput = {
+    AND?: ImportJobScalarWhereWithAggregatesInput | ImportJobScalarWhereWithAggregatesInput[]
+    OR?: ImportJobScalarWhereWithAggregatesInput[]
+    NOT?: ImportJobScalarWhereWithAggregatesInput | ImportJobScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"ImportJob"> | string
+    workspaceId?: StringWithAggregatesFilter<"ImportJob"> | string
+    fileName?: StringWithAggregatesFilter<"ImportJob"> | string
+    totalRows?: IntNullableWithAggregatesFilter<"ImportJob"> | number | null
+    processedRows?: IntWithAggregatesFilter<"ImportJob"> | number
+    successCount?: IntWithAggregatesFilter<"ImportJob"> | number
+    failedCount?: IntWithAggregatesFilter<"ImportJob"> | number
+    status?: EnumImportJobStatusWithAggregatesFilter<"ImportJob"> | $Enums.ImportJobStatus
+    errorFileUrl?: StringNullableWithAggregatesFilter<"ImportJob"> | string | null
+    createdById?: StringNullableWithAggregatesFilter<"ImportJob"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"ImportJob"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"ImportJob"> | Date | string
+  }
+
   export type RoleCreateInput = {
     id?: string
     name: string
@@ -54512,6 +55895,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeCreateNestedManyWithoutWorkspaceInput
     reports?: ReportCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogCreateNestedManyWithoutWorkspaceInput
+    importJobs?: ImportJobCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateInput = {
@@ -54541,6 +55925,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeUncheckedCreateNestedManyWithoutWorkspaceInput
     reports?: ReportUncheckedCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogUncheckedCreateNestedManyWithoutWorkspaceInput
+    importJobs?: ImportJobUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUpdateInput = {
@@ -54570,6 +55955,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeUpdateManyWithoutWorkspaceNestedInput
     reports?: ReportUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUpdateManyWithoutWorkspaceNestedInput
+    importJobs?: ImportJobUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateInput = {
@@ -54599,6 +55985,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeUncheckedUpdateManyWithoutWorkspaceNestedInput
     reports?: ReportUncheckedUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUncheckedUpdateManyWithoutWorkspaceNestedInput
+    importJobs?: ImportJobUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceCreateManyInput = {
@@ -56979,6 +58366,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -57036,6 +58424,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUpdateInput = {
@@ -57093,6 +58482,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -57150,6 +58540,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -58235,6 +59626,109 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type ImportJobCreateInput = {
+    id?: string
+    fileName: string
+    totalRows?: number | null
+    processedRows?: number
+    successCount?: number
+    failedCount?: number
+    status?: $Enums.ImportJobStatus
+    errorFileUrl?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    workspace: WorkspaceCreateNestedOneWithoutImportJobsInput
+    createdBy?: UserCreateNestedOneWithoutCreatedImportJobsInput
+  }
+
+  export type ImportJobUncheckedCreateInput = {
+    id?: string
+    workspaceId: string
+    fileName: string
+    totalRows?: number | null
+    processedRows?: number
+    successCount?: number
+    failedCount?: number
+    status?: $Enums.ImportJobStatus
+    errorFileUrl?: string | null
+    createdById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ImportJobUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    fileName?: StringFieldUpdateOperationsInput | string
+    totalRows?: NullableIntFieldUpdateOperationsInput | number | null
+    processedRows?: IntFieldUpdateOperationsInput | number
+    successCount?: IntFieldUpdateOperationsInput | number
+    failedCount?: IntFieldUpdateOperationsInput | number
+    status?: EnumImportJobStatusFieldUpdateOperationsInput | $Enums.ImportJobStatus
+    errorFileUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    workspace?: WorkspaceUpdateOneRequiredWithoutImportJobsNestedInput
+    createdBy?: UserUpdateOneWithoutCreatedImportJobsNestedInput
+  }
+
+  export type ImportJobUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    fileName?: StringFieldUpdateOperationsInput | string
+    totalRows?: NullableIntFieldUpdateOperationsInput | number | null
+    processedRows?: IntFieldUpdateOperationsInput | number
+    successCount?: IntFieldUpdateOperationsInput | number
+    failedCount?: IntFieldUpdateOperationsInput | number
+    status?: EnumImportJobStatusFieldUpdateOperationsInput | $Enums.ImportJobStatus
+    errorFileUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ImportJobCreateManyInput = {
+    id?: string
+    workspaceId: string
+    fileName: string
+    totalRows?: number | null
+    processedRows?: number
+    successCount?: number
+    failedCount?: number
+    status?: $Enums.ImportJobStatus
+    errorFileUrl?: string | null
+    createdById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ImportJobUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    fileName?: StringFieldUpdateOperationsInput | string
+    totalRows?: NullableIntFieldUpdateOperationsInput | number | null
+    processedRows?: IntFieldUpdateOperationsInput | number
+    successCount?: IntFieldUpdateOperationsInput | number
+    failedCount?: IntFieldUpdateOperationsInput | number
+    status?: EnumImportJobStatusFieldUpdateOperationsInput | $Enums.ImportJobStatus
+    errorFileUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ImportJobUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    fileName?: StringFieldUpdateOperationsInput | string
+    totalRows?: NullableIntFieldUpdateOperationsInput | number | null
+    processedRows?: IntFieldUpdateOperationsInput | number
+    successCount?: IntFieldUpdateOperationsInput | number
+    failedCount?: IntFieldUpdateOperationsInput | number
+    status?: EnumImportJobStatusFieldUpdateOperationsInput | $Enums.ImportJobStatus
+    errorFileUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -58552,6 +60046,12 @@ export namespace Prisma {
     none?: ReportLogWhereInput
   }
 
+  export type ImportJobListRelationFilter = {
+    every?: ImportJobWhereInput
+    some?: ImportJobWhereInput
+    none?: ImportJobWhereInput
+  }
+
   export type DepartmentOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -58609,6 +60109,10 @@ export namespace Prisma {
   }
 
   export type ReportLogOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type ImportJobOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -61178,6 +62682,82 @@ export namespace Prisma {
     createdAt?: SortOrder
   }
 
+  export type EnumImportJobStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.ImportJobStatus | EnumImportJobStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ImportJobStatus[] | ListEnumImportJobStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ImportJobStatus[] | ListEnumImportJobStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumImportJobStatusFilter<$PrismaModel> | $Enums.ImportJobStatus
+  }
+
+  export type ImportJobCountOrderByAggregateInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    fileName?: SortOrder
+    totalRows?: SortOrder
+    processedRows?: SortOrder
+    successCount?: SortOrder
+    failedCount?: SortOrder
+    status?: SortOrder
+    errorFileUrl?: SortOrder
+    createdById?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ImportJobAvgOrderByAggregateInput = {
+    totalRows?: SortOrder
+    processedRows?: SortOrder
+    successCount?: SortOrder
+    failedCount?: SortOrder
+  }
+
+  export type ImportJobMaxOrderByAggregateInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    fileName?: SortOrder
+    totalRows?: SortOrder
+    processedRows?: SortOrder
+    successCount?: SortOrder
+    failedCount?: SortOrder
+    status?: SortOrder
+    errorFileUrl?: SortOrder
+    createdById?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ImportJobMinOrderByAggregateInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    fileName?: SortOrder
+    totalRows?: SortOrder
+    processedRows?: SortOrder
+    successCount?: SortOrder
+    failedCount?: SortOrder
+    status?: SortOrder
+    errorFileUrl?: SortOrder
+    createdById?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ImportJobSumOrderByAggregateInput = {
+    totalRows?: SortOrder
+    processedRows?: SortOrder
+    successCount?: SortOrder
+    failedCount?: SortOrder
+  }
+
+  export type EnumImportJobStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ImportJobStatus | EnumImportJobStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ImportJobStatus[] | ListEnumImportJobStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ImportJobStatus[] | ListEnumImportJobStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumImportJobStatusWithAggregatesFilter<$PrismaModel> | $Enums.ImportJobStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumImportJobStatusFilter<$PrismaModel>
+    _max?: NestedEnumImportJobStatusFilter<$PrismaModel>
+  }
+
   export type RolePermissionCreateNestedManyWithoutRoleInput = {
     create?: XOR<RolePermissionCreateWithoutRoleInput, RolePermissionUncheckedCreateWithoutRoleInput> | RolePermissionCreateWithoutRoleInput[] | RolePermissionUncheckedCreateWithoutRoleInput[]
     connectOrCreate?: RolePermissionCreateOrConnectWithoutRoleInput | RolePermissionCreateOrConnectWithoutRoleInput[]
@@ -61466,6 +63046,13 @@ export namespace Prisma {
     connect?: ReportLogWhereUniqueInput | ReportLogWhereUniqueInput[]
   }
 
+  export type ImportJobCreateNestedManyWithoutWorkspaceInput = {
+    create?: XOR<ImportJobCreateWithoutWorkspaceInput, ImportJobUncheckedCreateWithoutWorkspaceInput> | ImportJobCreateWithoutWorkspaceInput[] | ImportJobUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: ImportJobCreateOrConnectWithoutWorkspaceInput | ImportJobCreateOrConnectWithoutWorkspaceInput[]
+    createMany?: ImportJobCreateManyWorkspaceInputEnvelope
+    connect?: ImportJobWhereUniqueInput | ImportJobWhereUniqueInput[]
+  }
+
   export type UserUncheckedCreateNestedManyWithoutWorkspaceInput = {
     create?: XOR<UserCreateWithoutWorkspaceInput, UserUncheckedCreateWithoutWorkspaceInput> | UserCreateWithoutWorkspaceInput[] | UserUncheckedCreateWithoutWorkspaceInput[]
     connectOrCreate?: UserCreateOrConnectWithoutWorkspaceInput | UserCreateOrConnectWithoutWorkspaceInput[]
@@ -61576,6 +63163,13 @@ export namespace Prisma {
     connectOrCreate?: ReportLogCreateOrConnectWithoutWorkspaceInput | ReportLogCreateOrConnectWithoutWorkspaceInput[]
     createMany?: ReportLogCreateManyWorkspaceInputEnvelope
     connect?: ReportLogWhereUniqueInput | ReportLogWhereUniqueInput[]
+  }
+
+  export type ImportJobUncheckedCreateNestedManyWithoutWorkspaceInput = {
+    create?: XOR<ImportJobCreateWithoutWorkspaceInput, ImportJobUncheckedCreateWithoutWorkspaceInput> | ImportJobCreateWithoutWorkspaceInput[] | ImportJobUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: ImportJobCreateOrConnectWithoutWorkspaceInput | ImportJobCreateOrConnectWithoutWorkspaceInput[]
+    createMany?: ImportJobCreateManyWorkspaceInputEnvelope
+    connect?: ImportJobWhereUniqueInput | ImportJobWhereUniqueInput[]
   }
 
   export type BoolFieldUpdateOperationsInput = {
@@ -61814,6 +63408,20 @@ export namespace Prisma {
     deleteMany?: ReportLogScalarWhereInput | ReportLogScalarWhereInput[]
   }
 
+  export type ImportJobUpdateManyWithoutWorkspaceNestedInput = {
+    create?: XOR<ImportJobCreateWithoutWorkspaceInput, ImportJobUncheckedCreateWithoutWorkspaceInput> | ImportJobCreateWithoutWorkspaceInput[] | ImportJobUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: ImportJobCreateOrConnectWithoutWorkspaceInput | ImportJobCreateOrConnectWithoutWorkspaceInput[]
+    upsert?: ImportJobUpsertWithWhereUniqueWithoutWorkspaceInput | ImportJobUpsertWithWhereUniqueWithoutWorkspaceInput[]
+    createMany?: ImportJobCreateManyWorkspaceInputEnvelope
+    set?: ImportJobWhereUniqueInput | ImportJobWhereUniqueInput[]
+    disconnect?: ImportJobWhereUniqueInput | ImportJobWhereUniqueInput[]
+    delete?: ImportJobWhereUniqueInput | ImportJobWhereUniqueInput[]
+    connect?: ImportJobWhereUniqueInput | ImportJobWhereUniqueInput[]
+    update?: ImportJobUpdateWithWhereUniqueWithoutWorkspaceInput | ImportJobUpdateWithWhereUniqueWithoutWorkspaceInput[]
+    updateMany?: ImportJobUpdateManyWithWhereWithoutWorkspaceInput | ImportJobUpdateManyWithWhereWithoutWorkspaceInput[]
+    deleteMany?: ImportJobScalarWhereInput | ImportJobScalarWhereInput[]
+  }
+
   export type UserUncheckedUpdateManyWithoutWorkspaceNestedInput = {
     create?: XOR<UserCreateWithoutWorkspaceInput, UserUncheckedCreateWithoutWorkspaceInput> | UserCreateWithoutWorkspaceInput[] | UserUncheckedCreateWithoutWorkspaceInput[]
     connectOrCreate?: UserCreateOrConnectWithoutWorkspaceInput | UserCreateOrConnectWithoutWorkspaceInput[]
@@ -62036,6 +63644,20 @@ export namespace Prisma {
     update?: ReportLogUpdateWithWhereUniqueWithoutWorkspaceInput | ReportLogUpdateWithWhereUniqueWithoutWorkspaceInput[]
     updateMany?: ReportLogUpdateManyWithWhereWithoutWorkspaceInput | ReportLogUpdateManyWithWhereWithoutWorkspaceInput[]
     deleteMany?: ReportLogScalarWhereInput | ReportLogScalarWhereInput[]
+  }
+
+  export type ImportJobUncheckedUpdateManyWithoutWorkspaceNestedInput = {
+    create?: XOR<ImportJobCreateWithoutWorkspaceInput, ImportJobUncheckedCreateWithoutWorkspaceInput> | ImportJobCreateWithoutWorkspaceInput[] | ImportJobUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: ImportJobCreateOrConnectWithoutWorkspaceInput | ImportJobCreateOrConnectWithoutWorkspaceInput[]
+    upsert?: ImportJobUpsertWithWhereUniqueWithoutWorkspaceInput | ImportJobUpsertWithWhereUniqueWithoutWorkspaceInput[]
+    createMany?: ImportJobCreateManyWorkspaceInputEnvelope
+    set?: ImportJobWhereUniqueInput | ImportJobWhereUniqueInput[]
+    disconnect?: ImportJobWhereUniqueInput | ImportJobWhereUniqueInput[]
+    delete?: ImportJobWhereUniqueInput | ImportJobWhereUniqueInput[]
+    connect?: ImportJobWhereUniqueInput | ImportJobWhereUniqueInput[]
+    update?: ImportJobUpdateWithWhereUniqueWithoutWorkspaceInput | ImportJobUpdateWithWhereUniqueWithoutWorkspaceInput[]
+    updateMany?: ImportJobUpdateManyWithWhereWithoutWorkspaceInput | ImportJobUpdateManyWithWhereWithoutWorkspaceInput[]
+    deleteMany?: ImportJobScalarWhereInput | ImportJobScalarWhereInput[]
   }
 
   export type WorkspaceCreateNestedOneWithoutDepartmentsInput = {
@@ -64335,6 +65957,13 @@ export namespace Prisma {
     connect?: ReportLogWhereUniqueInput | ReportLogWhereUniqueInput[]
   }
 
+  export type ImportJobCreateNestedManyWithoutCreatedByInput = {
+    create?: XOR<ImportJobCreateWithoutCreatedByInput, ImportJobUncheckedCreateWithoutCreatedByInput> | ImportJobCreateWithoutCreatedByInput[] | ImportJobUncheckedCreateWithoutCreatedByInput[]
+    connectOrCreate?: ImportJobCreateOrConnectWithoutCreatedByInput | ImportJobCreateOrConnectWithoutCreatedByInput[]
+    createMany?: ImportJobCreateManyCreatedByInputEnvelope
+    connect?: ImportJobWhereUniqueInput | ImportJobWhereUniqueInput[]
+  }
+
   export type WorkspaceUncheckedCreateNestedOneWithoutOwnerInput = {
     create?: XOR<WorkspaceCreateWithoutOwnerInput, WorkspaceUncheckedCreateWithoutOwnerInput>
     connectOrCreate?: WorkspaceCreateOrConnectWithoutOwnerInput
@@ -64528,6 +66157,13 @@ export namespace Prisma {
     connectOrCreate?: ReportLogCreateOrConnectWithoutGeneratedByInput | ReportLogCreateOrConnectWithoutGeneratedByInput[]
     createMany?: ReportLogCreateManyGeneratedByInputEnvelope
     connect?: ReportLogWhereUniqueInput | ReportLogWhereUniqueInput[]
+  }
+
+  export type ImportJobUncheckedCreateNestedManyWithoutCreatedByInput = {
+    create?: XOR<ImportJobCreateWithoutCreatedByInput, ImportJobUncheckedCreateWithoutCreatedByInput> | ImportJobCreateWithoutCreatedByInput[] | ImportJobUncheckedCreateWithoutCreatedByInput[]
+    connectOrCreate?: ImportJobCreateOrConnectWithoutCreatedByInput | ImportJobCreateOrConnectWithoutCreatedByInput[]
+    createMany?: ImportJobCreateManyCreatedByInputEnvelope
+    connect?: ImportJobWhereUniqueInput | ImportJobWhereUniqueInput[]
   }
 
   export type RoleUpdateOneWithoutUsersNestedInput = {
@@ -64998,6 +66634,20 @@ export namespace Prisma {
     deleteMany?: ReportLogScalarWhereInput | ReportLogScalarWhereInput[]
   }
 
+  export type ImportJobUpdateManyWithoutCreatedByNestedInput = {
+    create?: XOR<ImportJobCreateWithoutCreatedByInput, ImportJobUncheckedCreateWithoutCreatedByInput> | ImportJobCreateWithoutCreatedByInput[] | ImportJobUncheckedCreateWithoutCreatedByInput[]
+    connectOrCreate?: ImportJobCreateOrConnectWithoutCreatedByInput | ImportJobCreateOrConnectWithoutCreatedByInput[]
+    upsert?: ImportJobUpsertWithWhereUniqueWithoutCreatedByInput | ImportJobUpsertWithWhereUniqueWithoutCreatedByInput[]
+    createMany?: ImportJobCreateManyCreatedByInputEnvelope
+    set?: ImportJobWhereUniqueInput | ImportJobWhereUniqueInput[]
+    disconnect?: ImportJobWhereUniqueInput | ImportJobWhereUniqueInput[]
+    delete?: ImportJobWhereUniqueInput | ImportJobWhereUniqueInput[]
+    connect?: ImportJobWhereUniqueInput | ImportJobWhereUniqueInput[]
+    update?: ImportJobUpdateWithWhereUniqueWithoutCreatedByInput | ImportJobUpdateWithWhereUniqueWithoutCreatedByInput[]
+    updateMany?: ImportJobUpdateManyWithWhereWithoutCreatedByInput | ImportJobUpdateManyWithWhereWithoutCreatedByInput[]
+    deleteMany?: ImportJobScalarWhereInput | ImportJobScalarWhereInput[]
+  }
+
   export type WorkspaceUncheckedUpdateOneWithoutOwnerNestedInput = {
     create?: XOR<WorkspaceCreateWithoutOwnerInput, WorkspaceUncheckedCreateWithoutOwnerInput>
     connectOrCreate?: WorkspaceCreateOrConnectWithoutOwnerInput
@@ -65384,6 +67034,20 @@ export namespace Prisma {
     update?: ReportLogUpdateWithWhereUniqueWithoutGeneratedByInput | ReportLogUpdateWithWhereUniqueWithoutGeneratedByInput[]
     updateMany?: ReportLogUpdateManyWithWhereWithoutGeneratedByInput | ReportLogUpdateManyWithWhereWithoutGeneratedByInput[]
     deleteMany?: ReportLogScalarWhereInput | ReportLogScalarWhereInput[]
+  }
+
+  export type ImportJobUncheckedUpdateManyWithoutCreatedByNestedInput = {
+    create?: XOR<ImportJobCreateWithoutCreatedByInput, ImportJobUncheckedCreateWithoutCreatedByInput> | ImportJobCreateWithoutCreatedByInput[] | ImportJobUncheckedCreateWithoutCreatedByInput[]
+    connectOrCreate?: ImportJobCreateOrConnectWithoutCreatedByInput | ImportJobCreateOrConnectWithoutCreatedByInput[]
+    upsert?: ImportJobUpsertWithWhereUniqueWithoutCreatedByInput | ImportJobUpsertWithWhereUniqueWithoutCreatedByInput[]
+    createMany?: ImportJobCreateManyCreatedByInputEnvelope
+    set?: ImportJobWhereUniqueInput | ImportJobWhereUniqueInput[]
+    disconnect?: ImportJobWhereUniqueInput | ImportJobWhereUniqueInput[]
+    delete?: ImportJobWhereUniqueInput | ImportJobWhereUniqueInput[]
+    connect?: ImportJobWhereUniqueInput | ImportJobWhereUniqueInput[]
+    update?: ImportJobUpdateWithWhereUniqueWithoutCreatedByInput | ImportJobUpdateWithWhereUniqueWithoutCreatedByInput[]
+    updateMany?: ImportJobUpdateManyWithWhereWithoutCreatedByInput | ImportJobUpdateManyWithWhereWithoutCreatedByInput[]
+    deleteMany?: ImportJobScalarWhereInput | ImportJobScalarWhereInput[]
   }
 
   export type UserCreateNestedOneWithoutFollowUpsInput = {
@@ -65984,6 +67648,40 @@ export namespace Prisma {
     upsert?: ReportUpsertWithoutFiltersInput
     connect?: ReportWhereUniqueInput
     update?: XOR<XOR<ReportUpdateToOneWithWhereWithoutFiltersInput, ReportUpdateWithoutFiltersInput>, ReportUncheckedUpdateWithoutFiltersInput>
+  }
+
+  export type WorkspaceCreateNestedOneWithoutImportJobsInput = {
+    create?: XOR<WorkspaceCreateWithoutImportJobsInput, WorkspaceUncheckedCreateWithoutImportJobsInput>
+    connectOrCreate?: WorkspaceCreateOrConnectWithoutImportJobsInput
+    connect?: WorkspaceWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutCreatedImportJobsInput = {
+    create?: XOR<UserCreateWithoutCreatedImportJobsInput, UserUncheckedCreateWithoutCreatedImportJobsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutCreatedImportJobsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type EnumImportJobStatusFieldUpdateOperationsInput = {
+    set?: $Enums.ImportJobStatus
+  }
+
+  export type WorkspaceUpdateOneRequiredWithoutImportJobsNestedInput = {
+    create?: XOR<WorkspaceCreateWithoutImportJobsInput, WorkspaceUncheckedCreateWithoutImportJobsInput>
+    connectOrCreate?: WorkspaceCreateOrConnectWithoutImportJobsInput
+    upsert?: WorkspaceUpsertWithoutImportJobsInput
+    connect?: WorkspaceWhereUniqueInput
+    update?: XOR<XOR<WorkspaceUpdateToOneWithWhereWithoutImportJobsInput, WorkspaceUpdateWithoutImportJobsInput>, WorkspaceUncheckedUpdateWithoutImportJobsInput>
+  }
+
+  export type UserUpdateOneWithoutCreatedImportJobsNestedInput = {
+    create?: XOR<UserCreateWithoutCreatedImportJobsInput, UserUncheckedCreateWithoutCreatedImportJobsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutCreatedImportJobsInput
+    upsert?: UserUpsertWithoutCreatedImportJobsInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutCreatedImportJobsInput, UserUpdateWithoutCreatedImportJobsInput>, UserUncheckedUpdateWithoutCreatedImportJobsInput>
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -66667,6 +68365,23 @@ export namespace Prisma {
     _max?: NestedEnumReportTypeStatusFilter<$PrismaModel>
   }
 
+  export type NestedEnumImportJobStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.ImportJobStatus | EnumImportJobStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ImportJobStatus[] | ListEnumImportJobStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ImportJobStatus[] | ListEnumImportJobStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumImportJobStatusFilter<$PrismaModel> | $Enums.ImportJobStatus
+  }
+
+  export type NestedEnumImportJobStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ImportJobStatus | EnumImportJobStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ImportJobStatus[] | ListEnumImportJobStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ImportJobStatus[] | ListEnumImportJobStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumImportJobStatusWithAggregatesFilter<$PrismaModel> | $Enums.ImportJobStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumImportJobStatusFilter<$PrismaModel>
+    _max?: NestedEnumImportJobStatusFilter<$PrismaModel>
+  }
+
   export type RolePermissionCreateWithoutRoleInput = {
     permission: PermissionCreateNestedOneWithoutRolesInput
   }
@@ -66739,6 +68454,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutRoleInput = {
@@ -66795,6 +68511,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutRoleInput = {
@@ -67075,6 +68792,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutOwnedWorkspaceInput = {
@@ -67131,6 +68849,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutOwnedWorkspaceInput = {
@@ -67192,6 +68911,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutWorkspaceInput = {
@@ -67248,6 +68968,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutWorkspaceInput = {
@@ -67842,6 +69563,44 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type ImportJobCreateWithoutWorkspaceInput = {
+    id?: string
+    fileName: string
+    totalRows?: number | null
+    processedRows?: number
+    successCount?: number
+    failedCount?: number
+    status?: $Enums.ImportJobStatus
+    errorFileUrl?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    createdBy?: UserCreateNestedOneWithoutCreatedImportJobsInput
+  }
+
+  export type ImportJobUncheckedCreateWithoutWorkspaceInput = {
+    id?: string
+    fileName: string
+    totalRows?: number | null
+    processedRows?: number
+    successCount?: number
+    failedCount?: number
+    status?: $Enums.ImportJobStatus
+    errorFileUrl?: string | null
+    createdById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ImportJobCreateOrConnectWithoutWorkspaceInput = {
+    where: ImportJobWhereUniqueInput
+    create: XOR<ImportJobCreateWithoutWorkspaceInput, ImportJobUncheckedCreateWithoutWorkspaceInput>
+  }
+
+  export type ImportJobCreateManyWorkspaceInputEnvelope = {
+    data: ImportJobCreateManyWorkspaceInput | ImportJobCreateManyWorkspaceInput[]
+    skipDuplicates?: boolean
+  }
+
   export type UserUpsertWithoutOwnedWorkspaceInput = {
     update: XOR<UserUpdateWithoutOwnedWorkspaceInput, UserUncheckedUpdateWithoutOwnedWorkspaceInput>
     create: XOR<UserCreateWithoutOwnedWorkspaceInput, UserUncheckedCreateWithoutOwnedWorkspaceInput>
@@ -67907,6 +69666,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutOwnedWorkspaceInput = {
@@ -67963,6 +69723,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUpsertWithWhereUniqueWithoutWorkspaceInput = {
@@ -68479,6 +70240,40 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"ReportLog"> | Date | string
   }
 
+  export type ImportJobUpsertWithWhereUniqueWithoutWorkspaceInput = {
+    where: ImportJobWhereUniqueInput
+    update: XOR<ImportJobUpdateWithoutWorkspaceInput, ImportJobUncheckedUpdateWithoutWorkspaceInput>
+    create: XOR<ImportJobCreateWithoutWorkspaceInput, ImportJobUncheckedCreateWithoutWorkspaceInput>
+  }
+
+  export type ImportJobUpdateWithWhereUniqueWithoutWorkspaceInput = {
+    where: ImportJobWhereUniqueInput
+    data: XOR<ImportJobUpdateWithoutWorkspaceInput, ImportJobUncheckedUpdateWithoutWorkspaceInput>
+  }
+
+  export type ImportJobUpdateManyWithWhereWithoutWorkspaceInput = {
+    where: ImportJobScalarWhereInput
+    data: XOR<ImportJobUpdateManyMutationInput, ImportJobUncheckedUpdateManyWithoutWorkspaceInput>
+  }
+
+  export type ImportJobScalarWhereInput = {
+    AND?: ImportJobScalarWhereInput | ImportJobScalarWhereInput[]
+    OR?: ImportJobScalarWhereInput[]
+    NOT?: ImportJobScalarWhereInput | ImportJobScalarWhereInput[]
+    id?: StringFilter<"ImportJob"> | string
+    workspaceId?: StringFilter<"ImportJob"> | string
+    fileName?: StringFilter<"ImportJob"> | string
+    totalRows?: IntNullableFilter<"ImportJob"> | number | null
+    processedRows?: IntFilter<"ImportJob"> | number
+    successCount?: IntFilter<"ImportJob"> | number
+    failedCount?: IntFilter<"ImportJob"> | number
+    status?: EnumImportJobStatusFilter<"ImportJob"> | $Enums.ImportJobStatus
+    errorFileUrl?: StringNullableFilter<"ImportJob"> | string | null
+    createdById?: StringNullableFilter<"ImportJob"> | string | null
+    createdAt?: DateTimeFilter<"ImportJob"> | Date | string
+    updatedAt?: DateTimeFilter<"ImportJob"> | Date | string
+  }
+
   export type WorkspaceCreateWithoutDepartmentsInput = {
     id?: string
     companyName: string
@@ -68505,6 +70300,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeCreateNestedManyWithoutWorkspaceInput
     reports?: ReportCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogCreateNestedManyWithoutWorkspaceInput
+    importJobs?: ImportJobCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateWithoutDepartmentsInput = {
@@ -68533,6 +70329,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeUncheckedCreateNestedManyWithoutWorkspaceInput
     reports?: ReportUncheckedCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogUncheckedCreateNestedManyWithoutWorkspaceInput
+    importJobs?: ImportJobUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceCreateOrConnectWithoutDepartmentsInput = {
@@ -68594,6 +70391,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutDepartmentInput = {
@@ -68650,6 +70448,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutDepartmentInput = {
@@ -68699,6 +70498,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeUpdateManyWithoutWorkspaceNestedInput
     reports?: ReportUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUpdateManyWithoutWorkspaceNestedInput
+    importJobs?: ImportJobUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateWithoutDepartmentsInput = {
@@ -68727,6 +70527,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeUncheckedUpdateManyWithoutWorkspaceNestedInput
     reports?: ReportUncheckedUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUncheckedUpdateManyWithoutWorkspaceNestedInput
+    importJobs?: ImportJobUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type UserUpsertWithWhereUniqueWithoutDepartmentInput = {
@@ -69413,6 +71214,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutOfficeInput = {
@@ -69469,6 +71271,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutOfficeInput = {
@@ -69523,6 +71326,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeCreateNestedManyWithoutWorkspaceInput
     reports?: ReportCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogCreateNestedManyWithoutWorkspaceInput
+    importJobs?: ImportJobCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateWithoutCountriesInput = {
@@ -69551,6 +71355,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeUncheckedCreateNestedManyWithoutWorkspaceInput
     reports?: ReportUncheckedCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogUncheckedCreateNestedManyWithoutWorkspaceInput
+    importJobs?: ImportJobUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceCreateOrConnectWithoutCountriesInput = {
@@ -69612,6 +71417,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutCreatedCountriesInput = {
@@ -69668,6 +71474,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutCreatedCountriesInput = {
@@ -69729,6 +71536,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutUpdatedCountriesInput = {
@@ -69785,6 +71593,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutUpdatedCountriesInput = {
@@ -69921,6 +71730,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeUpdateManyWithoutWorkspaceNestedInput
     reports?: ReportUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUpdateManyWithoutWorkspaceNestedInput
+    importJobs?: ImportJobUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateWithoutCountriesInput = {
@@ -69949,6 +71759,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeUncheckedUpdateManyWithoutWorkspaceNestedInput
     reports?: ReportUncheckedUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUncheckedUpdateManyWithoutWorkspaceNestedInput
+    importJobs?: ImportJobUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type UserUpsertWithoutCreatedCountriesInput = {
@@ -70016,6 +71827,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCreatedCountriesInput = {
@@ -70072,6 +71884,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUpsertWithoutUpdatedCountriesInput = {
@@ -70139,6 +71952,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutUpdatedCountriesInput = {
@@ -70195,6 +72009,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type LocationLevelUpsertWithWhereUniqueWithoutCountryInput = {
@@ -70274,6 +72089,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeCreateNestedManyWithoutWorkspaceInput
     reports?: ReportCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogCreateNestedManyWithoutWorkspaceInput
+    importJobs?: ImportJobCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateWithoutLocationLevelsInput = {
@@ -70302,6 +72118,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeUncheckedCreateNestedManyWithoutWorkspaceInput
     reports?: ReportUncheckedCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogUncheckedCreateNestedManyWithoutWorkspaceInput
+    importJobs?: ImportJobUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceCreateOrConnectWithoutLocationLevelsInput = {
@@ -70396,6 +72213,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutCreatedLocationLevelsInput = {
@@ -70452,6 +72270,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutCreatedLocationLevelsInput = {
@@ -70513,6 +72332,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutUpdatedLocationLevelsInput = {
@@ -70569,6 +72389,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutUpdatedLocationLevelsInput = {
@@ -70669,6 +72490,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeUpdateManyWithoutWorkspaceNestedInput
     reports?: ReportUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUpdateManyWithoutWorkspaceNestedInput
+    importJobs?: ImportJobUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateWithoutLocationLevelsInput = {
@@ -70697,6 +72519,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeUncheckedUpdateManyWithoutWorkspaceNestedInput
     reports?: ReportUncheckedUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUncheckedUpdateManyWithoutWorkspaceNestedInput
+    importJobs?: ImportJobUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type CountryUpsertWithoutLevelsInput = {
@@ -70803,6 +72626,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCreatedLocationLevelsInput = {
@@ -70859,6 +72683,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUpsertWithoutUpdatedLocationLevelsInput = {
@@ -70926,6 +72751,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutUpdatedLocationLevelsInput = {
@@ -70982,6 +72808,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type LocationUpsertWithWhereUniqueWithoutLevelInput = {
@@ -71251,6 +73078,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutCountryInput = {
@@ -71307,6 +73135,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutCountryInput = {
@@ -71373,6 +73202,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutStateInput = {
@@ -71429,6 +73259,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutStateInput = {
@@ -71495,6 +73326,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutDistrictInput = {
@@ -71551,6 +73383,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutDistrictInput = {
@@ -72022,6 +73855,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutAssignedLocationsInput = {
@@ -72078,6 +73912,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutAssignedLocationsInput = {
@@ -72201,6 +74036,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAssignedLocationsInput = {
@@ -72257,6 +74093,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type LocationUpsertWithoutAssignedUsersInput = {
@@ -72417,6 +74254,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeCreateNestedManyWithoutWorkspaceInput
     reports?: ReportCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogCreateNestedManyWithoutWorkspaceInput
+    importJobs?: ImportJobCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateWithoutTargetCyclesInput = {
@@ -72445,6 +74283,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeUncheckedCreateNestedManyWithoutWorkspaceInput
     reports?: ReportUncheckedCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogUncheckedCreateNestedManyWithoutWorkspaceInput
+    importJobs?: ImportJobUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceCreateOrConnectWithoutTargetCyclesInput = {
@@ -72553,6 +74392,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeUpdateManyWithoutWorkspaceNestedInput
     reports?: ReportUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUpdateManyWithoutWorkspaceNestedInput
+    importJobs?: ImportJobUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateWithoutTargetCyclesInput = {
@@ -72581,6 +74421,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeUncheckedUpdateManyWithoutWorkspaceNestedInput
     reports?: ReportUncheckedUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUncheckedUpdateManyWithoutWorkspaceNestedInput
+    importJobs?: ImportJobUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type TargetCycleRangeUpsertWithWhereUniqueWithoutTargetCycleInput = {
@@ -72720,6 +74561,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeCreateNestedManyWithoutWorkspaceInput
     reports?: ReportCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogCreateNestedManyWithoutWorkspaceInput
+    importJobs?: ImportJobCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateWithoutLeadLifeCyclesInput = {
@@ -72748,6 +74590,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeUncheckedCreateNestedManyWithoutWorkspaceInput
     reports?: ReportUncheckedCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogUncheckedCreateNestedManyWithoutWorkspaceInput
+    importJobs?: ImportJobUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceCreateOrConnectWithoutLeadLifeCyclesInput = {
@@ -72906,6 +74749,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeUpdateManyWithoutWorkspaceNestedInput
     reports?: ReportUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUpdateManyWithoutWorkspaceNestedInput
+    importJobs?: ImportJobUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateWithoutLeadLifeCyclesInput = {
@@ -72934,6 +74778,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeUncheckedUpdateManyWithoutWorkspaceNestedInput
     reports?: ReportUncheckedUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUncheckedUpdateManyWithoutWorkspaceNestedInput
+    importJobs?: ImportJobUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type LeadLifeCycleTransitionUpsertWithWhereUniqueWithoutLifecycleInput = {
@@ -73039,6 +74884,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutAssignedLeadsInput = {
@@ -73095,6 +74941,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutAssignedLeadsInput = {
@@ -73249,6 +75096,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutCreatedLeadsInput = {
@@ -73305,6 +75153,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutCreatedLeadsInput = {
@@ -73366,6 +75215,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutClosedLeadsInput = {
@@ -73422,6 +75272,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutClosedLeadsInput = {
@@ -73455,6 +75306,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeCreateNestedManyWithoutWorkspaceInput
     reports?: ReportCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogCreateNestedManyWithoutWorkspaceInput
+    importJobs?: ImportJobCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateWithoutLeadsInput = {
@@ -73483,6 +75335,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeUncheckedCreateNestedManyWithoutWorkspaceInput
     reports?: ReportUncheckedCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogUncheckedCreateNestedManyWithoutWorkspaceInput
+    importJobs?: ImportJobUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceCreateOrConnectWithoutLeadsInput = {
@@ -73691,6 +75544,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAssignedLeadsInput = {
@@ -73747,6 +75601,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type LeadStageUpsertWithoutLeadsInput = {
@@ -73925,6 +75780,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCreatedLeadsInput = {
@@ -73981,6 +75837,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUpsertWithoutClosedLeadsInput = {
@@ -74048,6 +75905,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutClosedLeadsInput = {
@@ -74104,6 +75962,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type WorkspaceUpsertWithoutLeadsInput = {
@@ -74143,6 +76002,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeUpdateManyWithoutWorkspaceNestedInput
     reports?: ReportUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUpdateManyWithoutWorkspaceNestedInput
+    importJobs?: ImportJobUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateWithoutLeadsInput = {
@@ -74171,6 +76031,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeUncheckedUpdateManyWithoutWorkspaceNestedInput
     reports?: ReportUncheckedUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUncheckedUpdateManyWithoutWorkspaceNestedInput
+    importJobs?: ImportJobUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type FollowUpUpsertWithWhereUniqueWithoutLeadInput = {
@@ -74445,6 +76306,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeCreateNestedManyWithoutWorkspaceInput
     reports?: ReportCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogCreateNestedManyWithoutWorkspaceInput
+    importJobs?: ImportJobCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateWithoutLobReasonsInput = {
@@ -74473,6 +76335,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeUncheckedCreateNestedManyWithoutWorkspaceInput
     reports?: ReportUncheckedCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogUncheckedCreateNestedManyWithoutWorkspaceInput
+    importJobs?: ImportJobUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceCreateOrConnectWithoutLobReasonsInput = {
@@ -74534,6 +76397,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutCreatedLOBReasonsInput = {
@@ -74590,6 +76454,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutCreatedLOBReasonsInput = {
@@ -74651,6 +76516,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutUpdatedLOBReasonsInput = {
@@ -74707,6 +76573,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutUpdatedLOBReasonsInput = {
@@ -74751,6 +76618,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeUpdateManyWithoutWorkspaceNestedInput
     reports?: ReportUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUpdateManyWithoutWorkspaceNestedInput
+    importJobs?: ImportJobUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateWithoutLobReasonsInput = {
@@ -74779,6 +76647,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeUncheckedUpdateManyWithoutWorkspaceNestedInput
     reports?: ReportUncheckedUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUncheckedUpdateManyWithoutWorkspaceNestedInput
+    importJobs?: ImportJobUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type UserUpsertWithoutCreatedLOBReasonsInput = {
@@ -74846,6 +76715,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCreatedLOBReasonsInput = {
@@ -74902,6 +76772,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUpsertWithoutUpdatedLOBReasonsInput = {
@@ -74969,6 +76840,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutUpdatedLOBReasonsInput = {
@@ -75025,6 +76897,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type WorkspaceCreateWithoutLeadStageApprovalsInput = {
@@ -75053,6 +76926,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeCreateNestedManyWithoutWorkspaceInput
     reports?: ReportCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogCreateNestedManyWithoutWorkspaceInput
+    importJobs?: ImportJobCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateWithoutLeadStageApprovalsInput = {
@@ -75081,6 +76955,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeUncheckedCreateNestedManyWithoutWorkspaceInput
     reports?: ReportUncheckedCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogUncheckedCreateNestedManyWithoutWorkspaceInput
+    importJobs?: ImportJobUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceCreateOrConnectWithoutLeadStageApprovalsInput = {
@@ -75297,6 +77172,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutRequestedLeadStageApprovalsInput = {
@@ -75353,6 +77229,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutRequestedLeadStageApprovalsInput = {
@@ -75414,6 +77291,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutAssignedLeadStageApprovalsInput = {
@@ -75470,6 +77348,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutAssignedLeadStageApprovalsInput = {
@@ -75531,6 +77410,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutApprovedLeadStageApprovalsInput = {
@@ -75587,6 +77467,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutApprovedLeadStageApprovalsInput = {
@@ -75631,6 +77512,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeUpdateManyWithoutWorkspaceNestedInput
     reports?: ReportUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUpdateManyWithoutWorkspaceNestedInput
+    importJobs?: ImportJobUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateWithoutLeadStageApprovalsInput = {
@@ -75659,6 +77541,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeUncheckedUpdateManyWithoutWorkspaceNestedInput
     reports?: ReportUncheckedUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUncheckedUpdateManyWithoutWorkspaceNestedInput
+    importJobs?: ImportJobUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type LeadUpsertWithoutStageApprovalsInput = {
@@ -75899,6 +77782,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutRequestedLeadStageApprovalsInput = {
@@ -75955,6 +77839,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUpsertWithoutAssignedLeadStageApprovalsInput = {
@@ -76022,6 +77907,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAssignedLeadStageApprovalsInput = {
@@ -76078,6 +77964,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUpsertWithoutApprovedLeadStageApprovalsInput = {
@@ -76145,6 +78032,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutApprovedLeadStageApprovalsInput = {
@@ -76201,6 +78089,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type LeadLifeCycleCreateWithoutTransitionsInput = {
@@ -76289,6 +78178,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeCreateNestedManyWithoutWorkspaceInput
     reports?: ReportCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogCreateNestedManyWithoutWorkspaceInput
+    importJobs?: ImportJobCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateWithoutLeadDynamicFieldsInput = {
@@ -76317,6 +78207,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeUncheckedCreateNestedManyWithoutWorkspaceInput
     reports?: ReportUncheckedCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogUncheckedCreateNestedManyWithoutWorkspaceInput
+    importJobs?: ImportJobUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceCreateOrConnectWithoutLeadDynamicFieldsInput = {
@@ -76407,6 +78298,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeUpdateManyWithoutWorkspaceNestedInput
     reports?: ReportUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUpdateManyWithoutWorkspaceNestedInput
+    importJobs?: ImportJobUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateWithoutLeadDynamicFieldsInput = {
@@ -76435,6 +78327,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeUncheckedUpdateManyWithoutWorkspaceNestedInput
     reports?: ReportUncheckedUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUncheckedUpdateManyWithoutWorkspaceNestedInput
+    importJobs?: ImportJobUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type LeadDynamicOptionUpsertWithWhereUniqueWithoutFieldInput = {
@@ -76753,6 +78646,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutPerformedLeadActivitiesInput = {
@@ -76809,6 +78703,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutPerformedLeadActivitiesInput = {
@@ -76842,6 +78737,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeCreateNestedManyWithoutWorkspaceInput
     reports?: ReportCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogCreateNestedManyWithoutWorkspaceInput
+    importJobs?: ImportJobCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateWithoutLeadActivitiesInput = {
@@ -76870,6 +78766,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeUncheckedCreateNestedManyWithoutWorkspaceInput
     reports?: ReportUncheckedCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogUncheckedCreateNestedManyWithoutWorkspaceInput
+    importJobs?: ImportJobUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceCreateOrConnectWithoutLeadActivitiesInput = {
@@ -77021,6 +78918,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutPerformedLeadActivitiesInput = {
@@ -77077,6 +78975,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type WorkspaceUpsertWithoutLeadActivitiesInput = {
@@ -77116,6 +79015,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeUpdateManyWithoutWorkspaceNestedInput
     reports?: ReportUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUpdateManyWithoutWorkspaceNestedInput
+    importJobs?: ImportJobUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateWithoutLeadActivitiesInput = {
@@ -77144,6 +79044,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeUncheckedUpdateManyWithoutWorkspaceNestedInput
     reports?: ReportUncheckedUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUncheckedUpdateManyWithoutWorkspaceNestedInput
+    importJobs?: ImportJobUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type UserCreateWithoutTargetSettingsInput = {
@@ -77200,6 +79101,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutTargetSettingsInput = {
@@ -77256,6 +79158,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutTargetSettingsInput = {
@@ -77382,6 +79285,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutTargetSettingsInput = {
@@ -77438,6 +79342,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type TargetTypeUpsertWithoutSettingsInput = {
@@ -77560,6 +79465,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutViolationsInput = {
@@ -77616,6 +79522,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutViolationsInput = {
@@ -77688,6 +79595,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutViolationsInput = {
@@ -77744,6 +79652,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type RoleCreateWithoutUsersInput = {
@@ -77799,6 +79708,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeCreateNestedManyWithoutWorkspaceInput
     reports?: ReportCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogCreateNestedManyWithoutWorkspaceInput
+    importJobs?: ImportJobCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateWithoutUsersInput = {
@@ -77827,6 +79737,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeUncheckedCreateNestedManyWithoutWorkspaceInput
     reports?: ReportUncheckedCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogUncheckedCreateNestedManyWithoutWorkspaceInput
+    importJobs?: ImportJobUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceCreateOrConnectWithoutUsersInput = {
@@ -77860,6 +79771,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeCreateNestedManyWithoutWorkspaceInput
     reports?: ReportCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogCreateNestedManyWithoutWorkspaceInput
+    importJobs?: ImportJobCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateWithoutOwnerInput = {
@@ -77888,6 +79800,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeUncheckedCreateNestedManyWithoutWorkspaceInput
     reports?: ReportUncheckedCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogUncheckedCreateNestedManyWithoutWorkspaceInput
+    importJobs?: ImportJobUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceCreateOrConnectWithoutOwnerInput = {
@@ -78188,6 +80101,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutSubordinatesInput = {
@@ -78244,6 +80158,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutSubordinatesInput = {
@@ -78305,6 +80220,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutSupervisorInput = {
@@ -78361,6 +80277,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutSupervisorInput = {
@@ -79449,6 +81366,44 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type ImportJobCreateWithoutCreatedByInput = {
+    id?: string
+    fileName: string
+    totalRows?: number | null
+    processedRows?: number
+    successCount?: number
+    failedCount?: number
+    status?: $Enums.ImportJobStatus
+    errorFileUrl?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    workspace: WorkspaceCreateNestedOneWithoutImportJobsInput
+  }
+
+  export type ImportJobUncheckedCreateWithoutCreatedByInput = {
+    id?: string
+    workspaceId: string
+    fileName: string
+    totalRows?: number | null
+    processedRows?: number
+    successCount?: number
+    failedCount?: number
+    status?: $Enums.ImportJobStatus
+    errorFileUrl?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ImportJobCreateOrConnectWithoutCreatedByInput = {
+    where: ImportJobWhereUniqueInput
+    create: XOR<ImportJobCreateWithoutCreatedByInput, ImportJobUncheckedCreateWithoutCreatedByInput>
+  }
+
+  export type ImportJobCreateManyCreatedByInputEnvelope = {
+    data: ImportJobCreateManyCreatedByInput | ImportJobCreateManyCreatedByInput[]
+    skipDuplicates?: boolean
+  }
+
   export type RoleUpsertWithoutUsersInput = {
     update: XOR<RoleUpdateWithoutUsersInput, RoleUncheckedUpdateWithoutUsersInput>
     create: XOR<RoleCreateWithoutUsersInput, RoleUncheckedCreateWithoutUsersInput>
@@ -79519,6 +81474,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeUpdateManyWithoutWorkspaceNestedInput
     reports?: ReportUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUpdateManyWithoutWorkspaceNestedInput
+    importJobs?: ImportJobUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateWithoutUsersInput = {
@@ -79547,6 +81503,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeUncheckedUpdateManyWithoutWorkspaceNestedInput
     reports?: ReportUncheckedUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUncheckedUpdateManyWithoutWorkspaceNestedInput
+    importJobs?: ImportJobUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUpsertWithoutOwnerInput = {
@@ -79586,6 +81543,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeUpdateManyWithoutWorkspaceNestedInput
     reports?: ReportUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUpdateManyWithoutWorkspaceNestedInput
+    importJobs?: ImportJobUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateWithoutOwnerInput = {
@@ -79614,6 +81572,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeUncheckedUpdateManyWithoutWorkspaceNestedInput
     reports?: ReportUncheckedUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUncheckedUpdateManyWithoutWorkspaceNestedInput
+    importJobs?: ImportJobUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type DepartmentUpsertWithoutUsersInput = {
@@ -79940,6 +81899,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSubordinatesInput = {
@@ -79996,6 +81956,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUpsertWithWhereUniqueWithoutSupervisorInput = {
@@ -80482,6 +82443,22 @@ export namespace Prisma {
     data: XOR<ReportLogUpdateManyMutationInput, ReportLogUncheckedUpdateManyWithoutGeneratedByInput>
   }
 
+  export type ImportJobUpsertWithWhereUniqueWithoutCreatedByInput = {
+    where: ImportJobWhereUniqueInput
+    update: XOR<ImportJobUpdateWithoutCreatedByInput, ImportJobUncheckedUpdateWithoutCreatedByInput>
+    create: XOR<ImportJobCreateWithoutCreatedByInput, ImportJobUncheckedCreateWithoutCreatedByInput>
+  }
+
+  export type ImportJobUpdateWithWhereUniqueWithoutCreatedByInput = {
+    where: ImportJobWhereUniqueInput
+    data: XOR<ImportJobUpdateWithoutCreatedByInput, ImportJobUncheckedUpdateWithoutCreatedByInput>
+  }
+
+  export type ImportJobUpdateManyWithWhereWithoutCreatedByInput = {
+    where: ImportJobScalarWhereInput
+    data: XOR<ImportJobUpdateManyMutationInput, ImportJobUncheckedUpdateManyWithoutCreatedByInput>
+  }
+
   export type UserCreateWithoutFollowUpsInput = {
     id?: string
     name?: string | null
@@ -80536,6 +82513,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutFollowUpsInput = {
@@ -80592,6 +82570,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutFollowUpsInput = {
@@ -80759,6 +82738,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutFollowUpsInput = {
@@ -80815,6 +82795,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type LeadUpsertWithoutFollowUpsInput = {
@@ -81048,6 +83029,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutRosterEntriesInput = {
@@ -81104,6 +83086,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutRosterEntriesInput = {
@@ -81176,6 +83159,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutRosterEntriesInput = {
@@ -81232,6 +83216,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserCreateWithoutAuditLogsInput = {
@@ -81288,6 +83273,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutAuditLogsInput = {
@@ -81344,6 +83330,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutAuditLogsInput = {
@@ -81416,6 +83403,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAuditLogsInput = {
@@ -81472,6 +83460,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserCreateWithoutDevicesInput = {
@@ -81528,6 +83517,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutDevicesInput = {
@@ -81584,6 +83574,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutDevicesInput = {
@@ -81656,6 +83647,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutDevicesInput = {
@@ -81712,6 +83704,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type WorkspaceCreateWithoutHolidaysInput = {
@@ -81740,6 +83733,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeCreateNestedManyWithoutWorkspaceInput
     reports?: ReportCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogCreateNestedManyWithoutWorkspaceInput
+    importJobs?: ImportJobCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateWithoutHolidaysInput = {
@@ -81768,6 +83762,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeUncheckedCreateNestedManyWithoutWorkspaceInput
     reports?: ReportUncheckedCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogUncheckedCreateNestedManyWithoutWorkspaceInput
+    importJobs?: ImportJobUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceCreateOrConnectWithoutHolidaysInput = {
@@ -81982,6 +83977,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutCreatedHolidaysInput = {
@@ -82038,6 +84034,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutCreatedHolidaysInput = {
@@ -82099,6 +84096,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutUpdatedHolidaysInput = {
@@ -82155,6 +84153,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutUpdatedHolidaysInput = {
@@ -82199,6 +84198,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeUpdateManyWithoutWorkspaceNestedInput
     reports?: ReportUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUpdateManyWithoutWorkspaceNestedInput
+    importJobs?: ImportJobUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateWithoutHolidaysInput = {
@@ -82227,6 +84227,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeUncheckedUpdateManyWithoutWorkspaceNestedInput
     reports?: ReportUncheckedUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUncheckedUpdateManyWithoutWorkspaceNestedInput
+    importJobs?: ImportJobUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type LocationUpsertWithoutHolidaysAtCountryInput = {
@@ -82465,6 +84466,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCreatedHolidaysInput = {
@@ -82521,6 +84523,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUpsertWithoutUpdatedHolidaysInput = {
@@ -82588,6 +84591,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutUpdatedHolidaysInput = {
@@ -82644,6 +84648,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type WorkspaceCreateWithoutHolidaySyncLogsInput = {
@@ -82672,6 +84677,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeCreateNestedManyWithoutWorkspaceInput
     reports?: ReportCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogCreateNestedManyWithoutWorkspaceInput
+    importJobs?: ImportJobCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateWithoutHolidaySyncLogsInput = {
@@ -82700,6 +84706,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeUncheckedCreateNestedManyWithoutWorkspaceInput
     reports?: ReportUncheckedCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogUncheckedCreateNestedManyWithoutWorkspaceInput
+    importJobs?: ImportJobUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceCreateOrConnectWithoutHolidaySyncLogsInput = {
@@ -82744,6 +84751,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeUpdateManyWithoutWorkspaceNestedInput
     reports?: ReportUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUpdateManyWithoutWorkspaceNestedInput
+    importJobs?: ImportJobUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateWithoutHolidaySyncLogsInput = {
@@ -82772,6 +84780,7 @@ export namespace Prisma {
     reportTypes?: ReportTypeUncheckedUpdateManyWithoutWorkspaceNestedInput
     reports?: ReportUncheckedUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUncheckedUpdateManyWithoutWorkspaceNestedInput
+    importJobs?: ImportJobUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceCreateWithoutReportTypesInput = {
@@ -82800,6 +84809,7 @@ export namespace Prisma {
     lobReasons?: LOBReasonCreateNestedManyWithoutWorkspaceInput
     reports?: ReportCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogCreateNestedManyWithoutWorkspaceInput
+    importJobs?: ImportJobCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateWithoutReportTypesInput = {
@@ -82828,6 +84838,7 @@ export namespace Prisma {
     lobReasons?: LOBReasonUncheckedCreateNestedManyWithoutWorkspaceInput
     reports?: ReportUncheckedCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogUncheckedCreateNestedManyWithoutWorkspaceInput
+    importJobs?: ImportJobUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceCreateOrConnectWithoutReportTypesInput = {
@@ -82889,6 +84900,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutCreatedReportTypesInput = {
@@ -82945,6 +84957,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutCreatedReportTypesInput = {
@@ -83006,6 +85019,7 @@ export namespace Prisma {
     createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutUpdatedReportTypesInput = {
@@ -83062,6 +85076,7 @@ export namespace Prisma {
     createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutUpdatedReportTypesInput = {
@@ -83184,6 +85199,7 @@ export namespace Prisma {
     lobReasons?: LOBReasonUpdateManyWithoutWorkspaceNestedInput
     reports?: ReportUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUpdateManyWithoutWorkspaceNestedInput
+    importJobs?: ImportJobUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateWithoutReportTypesInput = {
@@ -83212,6 +85228,7 @@ export namespace Prisma {
     lobReasons?: LOBReasonUncheckedUpdateManyWithoutWorkspaceNestedInput
     reports?: ReportUncheckedUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUncheckedUpdateManyWithoutWorkspaceNestedInput
+    importJobs?: ImportJobUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type UserUpsertWithoutCreatedReportTypesInput = {
@@ -83279,6 +85296,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCreatedReportTypesInput = {
@@ -83335,6 +85353,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUpsertWithoutUpdatedReportTypesInput = {
@@ -83402,6 +85421,7 @@ export namespace Prisma {
     createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutUpdatedReportTypesInput = {
@@ -83458,6 +85478,7 @@ export namespace Prisma {
     createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type ReportLogUpsertWithWhereUniqueWithoutReportTypeInput = {
@@ -83518,6 +85539,7 @@ export namespace Prisma {
     lobReasons?: LOBReasonCreateNestedManyWithoutWorkspaceInput
     reportTypes?: ReportTypeCreateNestedManyWithoutWorkspaceInput
     reports?: ReportCreateNestedManyWithoutWorkspaceInput
+    importJobs?: ImportJobCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateWithoutReportLogsInput = {
@@ -83546,6 +85568,7 @@ export namespace Prisma {
     lobReasons?: LOBReasonUncheckedCreateNestedManyWithoutWorkspaceInput
     reportTypes?: ReportTypeUncheckedCreateNestedManyWithoutWorkspaceInput
     reports?: ReportUncheckedCreateNestedManyWithoutWorkspaceInput
+    importJobs?: ImportJobUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceCreateOrConnectWithoutReportLogsInput = {
@@ -83685,6 +85708,7 @@ export namespace Prisma {
     createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
+    createdImportJobs?: ImportJobCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutGeneratedReportLogsInput = {
@@ -83741,6 +85765,7 @@ export namespace Prisma {
     createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
+    createdImportJobs?: ImportJobUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutGeneratedReportLogsInput = {
@@ -83785,6 +85810,7 @@ export namespace Prisma {
     lobReasons?: LOBReasonUpdateManyWithoutWorkspaceNestedInput
     reportTypes?: ReportTypeUpdateManyWithoutWorkspaceNestedInput
     reports?: ReportUpdateManyWithoutWorkspaceNestedInput
+    importJobs?: ImportJobUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateWithoutReportLogsInput = {
@@ -83813,6 +85839,7 @@ export namespace Prisma {
     lobReasons?: LOBReasonUncheckedUpdateManyWithoutWorkspaceNestedInput
     reportTypes?: ReportTypeUncheckedUpdateManyWithoutWorkspaceNestedInput
     reports?: ReportUncheckedUpdateManyWithoutWorkspaceNestedInput
+    importJobs?: ImportJobUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type ReportTypeUpsertWithoutLogsInput = {
@@ -83970,6 +85997,7 @@ export namespace Prisma {
     createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
+    createdImportJobs?: ImportJobUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutGeneratedReportLogsInput = {
@@ -84026,6 +86054,7 @@ export namespace Prisma {
     createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
+    createdImportJobs?: ImportJobUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type WorkspaceCreateWithoutReportsInput = {
@@ -84054,6 +86083,7 @@ export namespace Prisma {
     lobReasons?: LOBReasonCreateNestedManyWithoutWorkspaceInput
     reportTypes?: ReportTypeCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogCreateNestedManyWithoutWorkspaceInput
+    importJobs?: ImportJobCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateWithoutReportsInput = {
@@ -84082,6 +86112,7 @@ export namespace Prisma {
     lobReasons?: LOBReasonUncheckedCreateNestedManyWithoutWorkspaceInput
     reportTypes?: ReportTypeUncheckedCreateNestedManyWithoutWorkspaceInput
     reportLogs?: ReportLogUncheckedCreateNestedManyWithoutWorkspaceInput
+    importJobs?: ImportJobUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceCreateOrConnectWithoutReportsInput = {
@@ -84182,6 +86213,7 @@ export namespace Prisma {
     createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
     generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutCreatedReportsInput = {
@@ -84238,6 +86270,7 @@ export namespace Prisma {
     createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
     updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
     generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
+    createdImportJobs?: ImportJobUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutCreatedReportsInput = {
@@ -84340,6 +86373,7 @@ export namespace Prisma {
     lobReasons?: LOBReasonUpdateManyWithoutWorkspaceNestedInput
     reportTypes?: ReportTypeUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUpdateManyWithoutWorkspaceNestedInput
+    importJobs?: ImportJobUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateWithoutReportsInput = {
@@ -84368,6 +86402,7 @@ export namespace Prisma {
     lobReasons?: LOBReasonUncheckedUpdateManyWithoutWorkspaceNestedInput
     reportTypes?: ReportTypeUncheckedUpdateManyWithoutWorkspaceNestedInput
     reportLogs?: ReportLogUncheckedUpdateManyWithoutWorkspaceNestedInput
+    importJobs?: ImportJobUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type ReportTypeUpsertWithoutReportsInput = {
@@ -84480,6 +86515,7 @@ export namespace Prisma {
     createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCreatedReportsInput = {
@@ -84536,6 +86572,7 @@ export namespace Prisma {
     createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type ReportFilterUpsertWithWhereUniqueWithoutReportInput = {
@@ -84665,6 +86702,382 @@ export namespace Prisma {
     logs?: ReportLogUncheckedUpdateManyWithoutReportNestedInput
   }
 
+  export type WorkspaceCreateWithoutImportJobsInput = {
+    id?: string
+    companyName: string
+    employeeCount: string
+    timeZone?: string
+    language?: string
+    currencyLocale?: string
+    loadSampleData?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    owner: UserCreateNestedOneWithoutOwnedWorkspaceInput
+    users?: UserCreateNestedManyWithoutWorkspaceInput
+    departments?: DepartmentCreateNestedManyWithoutWorkspaceInput
+    targetCycles?: TargetCycleCreateNestedManyWithoutWorkspaceInput
+    leadLifeCycles?: LeadLifeCycleCreateNestedManyWithoutWorkspaceInput
+    leadDynamicFields?: LeadDynamicFieldCreateNestedManyWithoutWorkspaceInput
+    leads?: LeadCreateNestedManyWithoutWorkspaceInput
+    leadActivities?: LeadActivityCreateNestedManyWithoutWorkspaceInput
+    leadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutWorkspaceInput
+    holidays?: HolidayCreateNestedManyWithoutWorkspaceInput
+    holidaySyncLogs?: HolidaySyncLogCreateNestedManyWithoutWorkspaceInput
+    countries?: CountryCreateNestedManyWithoutWorkspaceInput
+    locationLevels?: LocationLevelCreateNestedManyWithoutWorkspaceInput
+    lobReasons?: LOBReasonCreateNestedManyWithoutWorkspaceInput
+    reportTypes?: ReportTypeCreateNestedManyWithoutWorkspaceInput
+    reports?: ReportCreateNestedManyWithoutWorkspaceInput
+    reportLogs?: ReportLogCreateNestedManyWithoutWorkspaceInput
+  }
+
+  export type WorkspaceUncheckedCreateWithoutImportJobsInput = {
+    id?: string
+    companyName: string
+    employeeCount: string
+    timeZone?: string
+    language?: string
+    currencyLocale?: string
+    loadSampleData?: boolean
+    ownerId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    users?: UserUncheckedCreateNestedManyWithoutWorkspaceInput
+    departments?: DepartmentUncheckedCreateNestedManyWithoutWorkspaceInput
+    targetCycles?: TargetCycleUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadLifeCycles?: LeadLifeCycleUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadDynamicFields?: LeadDynamicFieldUncheckedCreateNestedManyWithoutWorkspaceInput
+    leads?: LeadUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadActivities?: LeadActivityUncheckedCreateNestedManyWithoutWorkspaceInput
+    leadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutWorkspaceInput
+    holidays?: HolidayUncheckedCreateNestedManyWithoutWorkspaceInput
+    holidaySyncLogs?: HolidaySyncLogUncheckedCreateNestedManyWithoutWorkspaceInput
+    countries?: CountryUncheckedCreateNestedManyWithoutWorkspaceInput
+    locationLevels?: LocationLevelUncheckedCreateNestedManyWithoutWorkspaceInput
+    lobReasons?: LOBReasonUncheckedCreateNestedManyWithoutWorkspaceInput
+    reportTypes?: ReportTypeUncheckedCreateNestedManyWithoutWorkspaceInput
+    reports?: ReportUncheckedCreateNestedManyWithoutWorkspaceInput
+    reportLogs?: ReportLogUncheckedCreateNestedManyWithoutWorkspaceInput
+  }
+
+  export type WorkspaceCreateOrConnectWithoutImportJobsInput = {
+    where: WorkspaceWhereUniqueInput
+    create: XOR<WorkspaceCreateWithoutImportJobsInput, WorkspaceUncheckedCreateWithoutImportJobsInput>
+  }
+
+  export type UserCreateWithoutCreatedImportJobsInput = {
+    id?: string
+    name?: string | null
+    username?: string | null
+    email: string
+    password?: string | null
+    phone?: string | null
+    googleId?: string | null
+    isOnboarded?: boolean
+    isActive?: boolean
+    isEmailVerified?: boolean
+    isLocked?: boolean
+    verificationToken?: string | null
+    verificationTokenExpires?: Date | string | null
+    invitationToken?: string | null
+    invitationExpires?: Date | string | null
+    deletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    role?: RoleCreateNestedOneWithoutUsersInput
+    workspace?: WorkspaceCreateNestedOneWithoutUsersInput
+    ownedWorkspace?: WorkspaceCreateNestedOneWithoutOwnerInput
+    department?: DepartmentCreateNestedOneWithoutUsersInput
+    office?: OfficeCreateNestedOneWithoutUsersInput
+    country?: LocationCreateNestedOneWithoutUsersAtCountryInput
+    state?: LocationCreateNestedOneWithoutUsersAtStateInput
+    district?: LocationCreateNestedOneWithoutUsersAtDistrictInput
+    assignedLocations?: UserLocationAssignmentCreateNestedManyWithoutUserInput
+    supervisor?: UserCreateNestedOneWithoutSubordinatesInput
+    subordinates?: UserCreateNestedManyWithoutSupervisorInput
+    targetSettings?: TargetSettingCreateNestedManyWithoutUserInput
+    violations?: TargetViolationCreateNestedManyWithoutUserInput
+    devices?: DeviceCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogCreateNestedManyWithoutUserInput
+    performedLeadActivities?: LeadActivityCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalCreateNestedManyWithoutApprovedByInput
+    rosterEntries?: RosterEntryCreateNestedManyWithoutUserInput
+    followUps?: FollowUpCreateNestedManyWithoutUserInput
+    createdLeads?: LeadCreateNestedManyWithoutCreatedByInput
+    assignedLeads?: LeadCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportCreateNestedManyWithoutCreatedByInput
+    generatedReportLogs?: ReportLogCreateNestedManyWithoutGeneratedByInput
+  }
+
+  export type UserUncheckedCreateWithoutCreatedImportJobsInput = {
+    id?: string
+    name?: string | null
+    username?: string | null
+    email: string
+    password?: string | null
+    phone?: string | null
+    googleId?: string | null
+    isOnboarded?: boolean
+    isActive?: boolean
+    isEmailVerified?: boolean
+    isLocked?: boolean
+    verificationToken?: string | null
+    verificationTokenExpires?: Date | string | null
+    invitationToken?: string | null
+    invitationExpires?: Date | string | null
+    deletedAt?: Date | string | null
+    roleId?: string | null
+    workspaceId?: string | null
+    departmentId?: string | null
+    officeId?: string | null
+    countryId?: string | null
+    stateId?: string | null
+    districtId?: string | null
+    supervisorId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    ownedWorkspace?: WorkspaceUncheckedCreateNestedOneWithoutOwnerInput
+    assignedLocations?: UserLocationAssignmentUncheckedCreateNestedManyWithoutUserInput
+    subordinates?: UserUncheckedCreateNestedManyWithoutSupervisorInput
+    targetSettings?: TargetSettingUncheckedCreateNestedManyWithoutUserInput
+    violations?: TargetViolationUncheckedCreateNestedManyWithoutUserInput
+    devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
+    performedLeadActivities?: LeadActivityUncheckedCreateNestedManyWithoutPerformedByInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutRequestedByInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutAssignedToInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedCreateNestedManyWithoutApprovedByInput
+    rosterEntries?: RosterEntryUncheckedCreateNestedManyWithoutUserInput
+    followUps?: FollowUpUncheckedCreateNestedManyWithoutUserInput
+    createdLeads?: LeadUncheckedCreateNestedManyWithoutCreatedByInput
+    assignedLeads?: LeadUncheckedCreateNestedManyWithoutAssignedToInput
+    closedLeads?: LeadUncheckedCreateNestedManyWithoutClosedByInput
+    createdHolidays?: HolidayUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedHolidays?: HolidayUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdCountries?: CountryUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedCountries?: CountryUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLocationLevels?: LocationLevelUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLOBReasons?: LOBReasonUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedReportTypes?: ReportTypeUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
+    generatedReportLogs?: ReportLogUncheckedCreateNestedManyWithoutGeneratedByInput
+  }
+
+  export type UserCreateOrConnectWithoutCreatedImportJobsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutCreatedImportJobsInput, UserUncheckedCreateWithoutCreatedImportJobsInput>
+  }
+
+  export type WorkspaceUpsertWithoutImportJobsInput = {
+    update: XOR<WorkspaceUpdateWithoutImportJobsInput, WorkspaceUncheckedUpdateWithoutImportJobsInput>
+    create: XOR<WorkspaceCreateWithoutImportJobsInput, WorkspaceUncheckedCreateWithoutImportJobsInput>
+    where?: WorkspaceWhereInput
+  }
+
+  export type WorkspaceUpdateToOneWithWhereWithoutImportJobsInput = {
+    where?: WorkspaceWhereInput
+    data: XOR<WorkspaceUpdateWithoutImportJobsInput, WorkspaceUncheckedUpdateWithoutImportJobsInput>
+  }
+
+  export type WorkspaceUpdateWithoutImportJobsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    companyName?: StringFieldUpdateOperationsInput | string
+    employeeCount?: StringFieldUpdateOperationsInput | string
+    timeZone?: StringFieldUpdateOperationsInput | string
+    language?: StringFieldUpdateOperationsInput | string
+    currencyLocale?: StringFieldUpdateOperationsInput | string
+    loadSampleData?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    owner?: UserUpdateOneRequiredWithoutOwnedWorkspaceNestedInput
+    users?: UserUpdateManyWithoutWorkspaceNestedInput
+    departments?: DepartmentUpdateManyWithoutWorkspaceNestedInput
+    targetCycles?: TargetCycleUpdateManyWithoutWorkspaceNestedInput
+    leadLifeCycles?: LeadLifeCycleUpdateManyWithoutWorkspaceNestedInput
+    leadDynamicFields?: LeadDynamicFieldUpdateManyWithoutWorkspaceNestedInput
+    leads?: LeadUpdateManyWithoutWorkspaceNestedInput
+    leadActivities?: LeadActivityUpdateManyWithoutWorkspaceNestedInput
+    leadStageApprovals?: LeadStageApprovalUpdateManyWithoutWorkspaceNestedInput
+    holidays?: HolidayUpdateManyWithoutWorkspaceNestedInput
+    holidaySyncLogs?: HolidaySyncLogUpdateManyWithoutWorkspaceNestedInput
+    countries?: CountryUpdateManyWithoutWorkspaceNestedInput
+    locationLevels?: LocationLevelUpdateManyWithoutWorkspaceNestedInput
+    lobReasons?: LOBReasonUpdateManyWithoutWorkspaceNestedInput
+    reportTypes?: ReportTypeUpdateManyWithoutWorkspaceNestedInput
+    reports?: ReportUpdateManyWithoutWorkspaceNestedInput
+    reportLogs?: ReportLogUpdateManyWithoutWorkspaceNestedInput
+  }
+
+  export type WorkspaceUncheckedUpdateWithoutImportJobsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    companyName?: StringFieldUpdateOperationsInput | string
+    employeeCount?: StringFieldUpdateOperationsInput | string
+    timeZone?: StringFieldUpdateOperationsInput | string
+    language?: StringFieldUpdateOperationsInput | string
+    currencyLocale?: StringFieldUpdateOperationsInput | string
+    loadSampleData?: BoolFieldUpdateOperationsInput | boolean
+    ownerId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    users?: UserUncheckedUpdateManyWithoutWorkspaceNestedInput
+    departments?: DepartmentUncheckedUpdateManyWithoutWorkspaceNestedInput
+    targetCycles?: TargetCycleUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadLifeCycles?: LeadLifeCycleUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadDynamicFields?: LeadDynamicFieldUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leads?: LeadUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadActivities?: LeadActivityUncheckedUpdateManyWithoutWorkspaceNestedInput
+    leadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutWorkspaceNestedInput
+    holidays?: HolidayUncheckedUpdateManyWithoutWorkspaceNestedInput
+    holidaySyncLogs?: HolidaySyncLogUncheckedUpdateManyWithoutWorkspaceNestedInput
+    countries?: CountryUncheckedUpdateManyWithoutWorkspaceNestedInput
+    locationLevels?: LocationLevelUncheckedUpdateManyWithoutWorkspaceNestedInput
+    lobReasons?: LOBReasonUncheckedUpdateManyWithoutWorkspaceNestedInput
+    reportTypes?: ReportTypeUncheckedUpdateManyWithoutWorkspaceNestedInput
+    reports?: ReportUncheckedUpdateManyWithoutWorkspaceNestedInput
+    reportLogs?: ReportLogUncheckedUpdateManyWithoutWorkspaceNestedInput
+  }
+
+  export type UserUpsertWithoutCreatedImportJobsInput = {
+    update: XOR<UserUpdateWithoutCreatedImportJobsInput, UserUncheckedUpdateWithoutCreatedImportJobsInput>
+    create: XOR<UserCreateWithoutCreatedImportJobsInput, UserUncheckedCreateWithoutCreatedImportJobsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutCreatedImportJobsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutCreatedImportJobsInput, UserUncheckedUpdateWithoutCreatedImportJobsInput>
+  }
+
+  export type UserUpdateWithoutCreatedImportJobsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    username?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    googleId?: NullableStringFieldUpdateOperationsInput | string | null
+    isOnboarded?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isEmailVerified?: BoolFieldUpdateOperationsInput | boolean
+    isLocked?: BoolFieldUpdateOperationsInput | boolean
+    verificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    verificationTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    invitationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    invitationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    role?: RoleUpdateOneWithoutUsersNestedInput
+    workspace?: WorkspaceUpdateOneWithoutUsersNestedInput
+    ownedWorkspace?: WorkspaceUpdateOneWithoutOwnerNestedInput
+    department?: DepartmentUpdateOneWithoutUsersNestedInput
+    office?: OfficeUpdateOneWithoutUsersNestedInput
+    country?: LocationUpdateOneWithoutUsersAtCountryNestedInput
+    state?: LocationUpdateOneWithoutUsersAtStateNestedInput
+    district?: LocationUpdateOneWithoutUsersAtDistrictNestedInput
+    assignedLocations?: UserLocationAssignmentUpdateManyWithoutUserNestedInput
+    supervisor?: UserUpdateOneWithoutSubordinatesNestedInput
+    subordinates?: UserUpdateManyWithoutSupervisorNestedInput
+    targetSettings?: TargetSettingUpdateManyWithoutUserNestedInput
+    violations?: TargetViolationUpdateManyWithoutUserNestedInput
+    devices?: DeviceUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
+    performedLeadActivities?: LeadActivityUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUpdateManyWithoutApprovedByNestedInput
+    rosterEntries?: RosterEntryUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUpdateManyWithoutUserNestedInput
+    createdLeads?: LeadUpdateManyWithoutCreatedByNestedInput
+    assignedLeads?: LeadUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
+    generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutCreatedImportJobsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    username?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    googleId?: NullableStringFieldUpdateOperationsInput | string | null
+    isOnboarded?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isEmailVerified?: BoolFieldUpdateOperationsInput | boolean
+    isLocked?: BoolFieldUpdateOperationsInput | boolean
+    verificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    verificationTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    invitationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    invitationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    roleId?: NullableStringFieldUpdateOperationsInput | string | null
+    workspaceId?: NullableStringFieldUpdateOperationsInput | string | null
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    officeId?: NullableStringFieldUpdateOperationsInput | string | null
+    countryId?: NullableStringFieldUpdateOperationsInput | string | null
+    stateId?: NullableStringFieldUpdateOperationsInput | string | null
+    districtId?: NullableStringFieldUpdateOperationsInput | string | null
+    supervisorId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ownedWorkspace?: WorkspaceUncheckedUpdateOneWithoutOwnerNestedInput
+    assignedLocations?: UserLocationAssignmentUncheckedUpdateManyWithoutUserNestedInput
+    subordinates?: UserUncheckedUpdateManyWithoutSupervisorNestedInput
+    targetSettings?: TargetSettingUncheckedUpdateManyWithoutUserNestedInput
+    violations?: TargetViolationUncheckedUpdateManyWithoutUserNestedInput
+    devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
+    performedLeadActivities?: LeadActivityUncheckedUpdateManyWithoutPerformedByNestedInput
+    requestedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutRequestedByNestedInput
+    assignedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutAssignedToNestedInput
+    approvedLeadStageApprovals?: LeadStageApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
+    rosterEntries?: RosterEntryUncheckedUpdateManyWithoutUserNestedInput
+    followUps?: FollowUpUncheckedUpdateManyWithoutUserNestedInput
+    createdLeads?: LeadUncheckedUpdateManyWithoutCreatedByNestedInput
+    assignedLeads?: LeadUncheckedUpdateManyWithoutAssignedToNestedInput
+    closedLeads?: LeadUncheckedUpdateManyWithoutClosedByNestedInput
+    createdHolidays?: HolidayUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedHolidays?: HolidayUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdCountries?: CountryUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedCountries?: CountryUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLocationLevels?: LocationLevelUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLocationLevels?: LocationLevelUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdLOBReasons?: LOBReasonUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLOBReasons?: LOBReasonUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReportTypes?: ReportTypeUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
+    generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
+  }
+
   export type RolePermissionCreateManyRoleInput = {
     permissionId: string
   }
@@ -84763,6 +87176,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutRoleInput = {
@@ -84819,6 +87233,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutRoleInput = {
@@ -85091,6 +87506,20 @@ export namespace Prisma {
     createdAt?: Date | string
   }
 
+  export type ImportJobCreateManyWorkspaceInput = {
+    id?: string
+    fileName: string
+    totalRows?: number | null
+    processedRows?: number
+    successCount?: number
+    failedCount?: number
+    status?: $Enums.ImportJobStatus
+    errorFileUrl?: string | null
+    createdById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type UserUpdateWithoutWorkspaceInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: NullableStringFieldUpdateOperationsInput | string | null
@@ -85145,6 +87574,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutWorkspaceInput = {
@@ -85201,6 +87631,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutWorkspaceInput = {
@@ -85861,6 +88292,48 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type ImportJobUpdateWithoutWorkspaceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    fileName?: StringFieldUpdateOperationsInput | string
+    totalRows?: NullableIntFieldUpdateOperationsInput | number | null
+    processedRows?: IntFieldUpdateOperationsInput | number
+    successCount?: IntFieldUpdateOperationsInput | number
+    failedCount?: IntFieldUpdateOperationsInput | number
+    status?: EnumImportJobStatusFieldUpdateOperationsInput | $Enums.ImportJobStatus
+    errorFileUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: UserUpdateOneWithoutCreatedImportJobsNestedInput
+  }
+
+  export type ImportJobUncheckedUpdateWithoutWorkspaceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    fileName?: StringFieldUpdateOperationsInput | string
+    totalRows?: NullableIntFieldUpdateOperationsInput | number | null
+    processedRows?: IntFieldUpdateOperationsInput | number
+    successCount?: IntFieldUpdateOperationsInput | number
+    failedCount?: IntFieldUpdateOperationsInput | number
+    status?: EnumImportJobStatusFieldUpdateOperationsInput | $Enums.ImportJobStatus
+    errorFileUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ImportJobUncheckedUpdateManyWithoutWorkspaceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    fileName?: StringFieldUpdateOperationsInput | string
+    totalRows?: NullableIntFieldUpdateOperationsInput | number | null
+    processedRows?: IntFieldUpdateOperationsInput | number
+    successCount?: IntFieldUpdateOperationsInput | number
+    failedCount?: IntFieldUpdateOperationsInput | number
+    status?: EnumImportJobStatusFieldUpdateOperationsInput | $Enums.ImportJobStatus
+    errorFileUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type UserCreateManyDepartmentInput = {
     id?: string
     name?: string | null
@@ -85943,6 +88416,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutDepartmentInput = {
@@ -85999,6 +88473,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutDepartmentInput = {
@@ -86593,6 +89068,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutOfficeInput = {
@@ -86649,6 +89125,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutOfficeInput = {
@@ -87178,6 +89655,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCountryInput = {
@@ -87234,6 +89712,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutCountryInput = {
@@ -87318,6 +89797,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutStateInput = {
@@ -87374,6 +89854,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutStateInput = {
@@ -87458,6 +89939,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutDistrictInput = {
@@ -87514,6 +89996,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutDistrictInput = {
@@ -88691,6 +91174,20 @@ export namespace Prisma {
     createdAt?: Date | string
   }
 
+  export type ImportJobCreateManyCreatedByInput = {
+    id?: string
+    workspaceId: string
+    fileName: string
+    totalRows?: number | null
+    processedRows?: number
+    successCount?: number
+    failedCount?: number
+    status?: $Enums.ImportJobStatus
+    errorFileUrl?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type UserLocationAssignmentUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     workspaceId?: StringFieldUpdateOperationsInput | string
@@ -88769,6 +91266,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSupervisorInput = {
@@ -88825,6 +91323,7 @@ export namespace Prisma {
     updatedReportTypes?: ReportTypeUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     generatedReportLogs?: ReportLogUncheckedUpdateManyWithoutGeneratedByNestedInput
+    createdImportJobs?: ImportJobUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutSupervisorInput = {
@@ -90069,6 +92568,48 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type ImportJobUpdateWithoutCreatedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    fileName?: StringFieldUpdateOperationsInput | string
+    totalRows?: NullableIntFieldUpdateOperationsInput | number | null
+    processedRows?: IntFieldUpdateOperationsInput | number
+    successCount?: IntFieldUpdateOperationsInput | number
+    failedCount?: IntFieldUpdateOperationsInput | number
+    status?: EnumImportJobStatusFieldUpdateOperationsInput | $Enums.ImportJobStatus
+    errorFileUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    workspace?: WorkspaceUpdateOneRequiredWithoutImportJobsNestedInput
+  }
+
+  export type ImportJobUncheckedUpdateWithoutCreatedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    fileName?: StringFieldUpdateOperationsInput | string
+    totalRows?: NullableIntFieldUpdateOperationsInput | number | null
+    processedRows?: IntFieldUpdateOperationsInput | number
+    successCount?: IntFieldUpdateOperationsInput | number
+    failedCount?: IntFieldUpdateOperationsInput | number
+    status?: EnumImportJobStatusFieldUpdateOperationsInput | $Enums.ImportJobStatus
+    errorFileUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ImportJobUncheckedUpdateManyWithoutCreatedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    fileName?: StringFieldUpdateOperationsInput | string
+    totalRows?: NullableIntFieldUpdateOperationsInput | number | null
+    processedRows?: IntFieldUpdateOperationsInput | number
+    successCount?: IntFieldUpdateOperationsInput | number
+    failedCount?: IntFieldUpdateOperationsInput | number
+    status?: EnumImportJobStatusFieldUpdateOperationsInput | $Enums.ImportJobStatus
+    errorFileUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type FollowUpImageCreateManyFollowUpInput = {
     id?: string
     url: string
@@ -90530,6 +93071,10 @@ export namespace Prisma {
      * @deprecated Use ReportFilterDefaultArgs instead
      */
     export type ReportFilterArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = ReportFilterDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use ImportJobDefaultArgs instead
+     */
+    export type ImportJobArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = ImportJobDefaultArgs<ExtArgs>
 
   /**
    * Batch Payload for updateMany & deleteMany & createMany
