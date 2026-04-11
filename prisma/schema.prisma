@@ -562,6 +562,9 @@ model Lead {
   @@index([workspaceId, nextFollowUpAt, deletedAt, isClosed])
   @@index([workspaceId, createdAt(sort: Desc), deletedAt, isClosed])
   @@index([workspaceId, approvalState, pendingApprovalRequestedAt])
+  @@index([name])
+  @@index([email])
+  @@index([phone])
   @@map("leads")
 }
 

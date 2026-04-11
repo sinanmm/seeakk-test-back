@@ -392,6 +392,45 @@ export const permanentlyDeleteLead = async (req: Request, res: Response, next: N
   }
 };
 
+export const bulkDeleteLeads = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = requireWorkspace(req, res);
+  if (!workspaceId) return;
+
+  const { ids, permanent } = req.body;
+
+  if (!Array.isArray(ids) || ids.length === 0) {
+    return res.status(422).json({
+      success: false,
+      message: 'Lead IDs are required and must be an array.',
+    });
+  }
+
+  try {
+    await leadService.bulkDeleteLeads(workspaceId, ids, Boolean(permanent));
+
+    await auditService.log({
+      userId: req.user?.id,
+      workspaceId,
+      action: permanent ? 'LEADS_BULK_PERMANENTLY_DELETED' : 'LEADS_BULK_ARCHIVED',
+      entityType: 'Lead',
+      entityId: 'multiple',
+      details: {
+        count: ids.length,
+        ids: ids.slice(0, 50), // Log first 50 for safety
+      },
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: `${ids.length} leads ${permanent ? 'permanently deleted' : 'archived'} successfully`,
+    });
+  } catch (error) {
+    handleServiceError(error, res, next, 'bulkDeleteLeads');
+  }
+};
+
 export const exportLeads = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
   const workspaceId = requireWorkspace(req, res);
   if (!workspaceId) return;

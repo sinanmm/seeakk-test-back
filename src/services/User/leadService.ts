@@ -249,19 +249,40 @@ const escapeCsv = (value: unknown): string => {
 const buildLeadCacheKey = (workspaceId: string, query: ListLeadsQueryInput | ExportLeadsQueryInput): string =>
   `leads:${workspaceId}:${JSON.stringify(query)}`;
 
-const clearLeadCache = async (workspaceId: string): Promise<void> => {
+export const clearLeadCache = async (workspaceId: string): Promise<void> => {
   if (!redisClient.isOpen) return;
 
-  const keysToDelete: string[] = [];
+  try {
+    const keysToDelete: string[] = [];
+    const pattern = `leads:${workspaceId}:*`;
 
-  for await (const key of (redisClient as any).scanIterator({ MATCH: `leads:${workspaceId}:*`, COUNT: 100 })) {
-    if (typeof key === 'string' && key.length > 0) {
-      keysToDelete.push(key);
+    // Try scan iterator first (best for perf)
+    for await (const key of (redisClient as any).scanIterator({ MATCH: pattern, COUNT: 250 })) {
+      if (typeof key === 'string' && key.length > 0) {
+        keysToDelete.push(key);
+      }
     }
-  }
 
-  if (keysToDelete.length > 0) {
-    await redisClient.del(keysToDelete);
+    // Fallback search if scan found nothing but we expect keys
+    if (keysToDelete.length === 0) {
+      const keys = await (redisClient as any).keys(pattern);
+      if (Array.isArray(keys)) {
+        keysToDelete.push(...keys);
+      }
+    }
+
+    if (keysToDelete.length > 0) {
+      const uniqueKeys = Array.from(new Set(keysToDelete));
+      await Promise.all(
+        // Batch delete in chunks of 50 to avoid Redis command size limits
+        Array.from({ length: Math.ceil(uniqueKeys.length / 50) }, (_, i) =>
+          redisClient.del(uniqueKeys.slice(i * 50, (i + 1) * 50)),
+        ),
+      );
+    }
+  } catch (error) {
+    // Silently fail cache clearing to not block the main operation, but log it
+    console.error('Failed to clear lead cache:', error);
   }
 };
 
@@ -1175,6 +1196,69 @@ export const permanentlyDeleteLead = async (workspaceId: string, id: string): Pr
     });
   });
 
+  await clearLeadCache(workspaceId);
+};
+
+export const bulkDeleteLeads = async (workspaceId: string, ids: string[], permanent: boolean = false): Promise<void> => {
+  await assertModuleReady();
+
+  if (!ids || ids.length === 0) return;
+
+  // Clear cache BEFORE 
+  await clearLeadCache(workspaceId);
+
+  if (permanent) {
+    await prisma.$transaction(async (tx) => {
+      // 1. Delete associated dynamic values first
+      await (tx as any).leadDynamicValue.deleteMany({
+        where: { leadId: { in: ids } },
+      });
+
+      // 2. Performance: Use updateMany instead of individual updates to avoid timeout
+      await (tx as any).lead.updateMany({
+        where: { id: { in: ids }, workspaceId },
+        data: {
+          email: null,
+          phone: null,
+          expectedRevenue: null,
+          generatedRevenue: 0,
+          assignedToId: null,
+          stageId: null,
+          lifecycleId: null,
+          sourceId: null,
+          nextFollowUpAt: null,
+          stageEnteredAt: null,
+          stageExpiresAt: null,
+          slaAction: null,
+          slaWarningDays: null,
+          approvalState: 'NONE',
+          pendingApprovalToStageId: null,
+          pendingApprovalRequestedAt: null,
+          isClosed: false,
+          isLOB: false,
+          closedAt: null,
+          closedById: null,
+          closureType: null,
+          deletedAt: new Date(),
+        },
+      });
+    }, { 
+      // Increase timeout to 30s to be safe for large batches
+      timeout: 30000 
+    });
+  } else {
+    // Standard archiving is fast with updateMany
+    await (prisma as any).lead.updateMany({
+      where: { id: { in: ids }, workspaceId },
+      data: {
+        deletedAt: new Date(),
+      },
+    });
+  }
+
+  // Clear cache AFTER
+  // We keep the tiny delay for consistency, then wipe the cache
+  await new Promise((resolve) => setTimeout(resolve, 150));
   await clearLeadCache(workspaceId);
 };
 

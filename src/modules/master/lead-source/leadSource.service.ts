@@ -12,6 +12,11 @@ const clearActiveLeadSourcesCache = async (): Promise<void> => {
   }
 };
 
+const normalizeLeadSourceName = (value: string): string =>
+  value
+    .trim()
+    .replace(/\s+/g, ' ');
+
 const parseCount = (value: unknown): number => {
   if (typeof value === 'number') return value;
   if (typeof value === 'bigint') return Number(value);
@@ -217,6 +222,58 @@ export const getActiveLeadSources = async (): Promise<LeadSourceResponse[]> => {
   }
 
   return mappedRecords;
+};
+
+export const resolveOrCreateLeadSourceByName = async (
+  name: string,
+  createdBy?: string,
+): Promise<LeadSourceResponse> => {
+  const normalizedName = normalizeLeadSourceName(name);
+  if (!normalizedName) {
+    const error: any = new Error('Lead source name is required.');
+    error.statusCode = 422;
+    throw error;
+  }
+
+  const existing = await prisma.leadSource.findFirst({
+    where: {
+      name: {
+        equals: normalizedName,
+        mode: 'insensitive',
+      },
+    },
+  });
+
+  if (existing) {
+    if (existing.deletedAt || existing.status !== 'ACTIVE') {
+      const restored = await prisma.leadSource.update({
+        where: { id: existing.id },
+        data: {
+          name: normalizedName,
+          status: 'ACTIVE',
+          deletedAt: null,
+        },
+      });
+      await clearActiveLeadSourcesCache();
+      const [mapped] = await mapCreatorNames([restored]);
+      return mapped;
+    }
+
+    const [mapped] = await mapCreatorNames([existing]);
+    return mapped;
+  }
+
+  const created = await prisma.leadSource.create({
+    data: {
+      name: normalizedName,
+      status: 'ACTIVE',
+      createdBy,
+    },
+  });
+
+  await clearActiveLeadSourcesCache();
+  const [mapped] = await mapCreatorNames([created]);
+  return mapped;
 };
 
 export const updateLeadSource = async (id: string, input: UpdateLeadSourceInput): Promise<LeadSourceResponse> => {
