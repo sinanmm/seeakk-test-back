@@ -134,7 +134,7 @@ export const handleLeadApproval = async (req: Request, res: Response, next: Next
     return res.status(200).json({
       success: true,
       message: result.message,
-      data: result.approval,
+      data: result,
     });
   } catch (error) {
     handleServiceError(error, res, next, 'handleLeadApproval');

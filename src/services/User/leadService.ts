@@ -249,19 +249,43 @@ const escapeCsv = (value: unknown): string => {
 const buildLeadCacheKey = (workspaceId: string, query: ListLeadsQueryInput | ExportLeadsQueryInput): string =>
   `leads:${workspaceId}:${JSON.stringify(query)}`;
 
-const clearLeadCache = async (workspaceId: string): Promise<void> => {
+export const clearLeadCache = async (workspaceId: string): Promise<void> => {
   if (!redisClient.isOpen) return;
 
-  const keysToDelete: string[] = [];
+  try {
+    const keysToDelete: string[] = [];
+    const pattern = `leads:${workspaceId}:*`;
 
-  for await (const key of (redisClient as any).scanIterator({ MATCH: `leads:${workspaceId}:*`, COUNT: 100 })) {
-    if (typeof key === 'string' && key.length > 0) {
-      keysToDelete.push(key);
+    // Try scan iterator first (best for perf)
+    for await (const key of (redisClient as any).scanIterator({ MATCH: pattern, COUNT: 250 })) {
+      if (typeof key === 'string' && key.length > 0) {
+        keysToDelete.push(key);
+      }
     }
-  }
 
-  if (keysToDelete.length > 0) {
-    await redisClient.del(keysToDelete);
+    // Fallback search if scan found nothing but we expect keys
+    if (keysToDelete.length === 0) {
+      const keys = await (redisClient as any).keys(pattern);
+      if (Array.isArray(keys)) {
+        keysToDelete.push(...keys);
+      }
+    }
+
+    if (uniqueKeys.length > 0) {
+      const uniqueKeysFinal = Array.from(new Set(uniqueKeys));
+      await Promise.all(
+        Array.from({ length: Math.ceil(uniqueKeysFinal.length / 50) }, (_, i) =>
+          redisClient.del(uniqueKeysFinal.slice(i * 50, (i + 1) * 50)),
+        ),
+      );
+    }
+    
+    // Tiny delay to allow Redis deletions to fully propagate through the cluster/event loop
+    // and ensure subsequent GETs don't race and hit a stale shard or mid-delete key.
+    await new Promise((resolve) => setTimeout(resolve, 50));
+  } catch (error) {
+    // Silently fail cache clearing to not block the main operation, but log it
+    console.error('Failed to clear lead cache:', error);
   }
 };
 
@@ -448,6 +472,10 @@ const shouldRefreshSla = (
   nextLifecycleId?: string | null,
 ): boolean => existing.stageId !== (nextStageId ?? null) || existing.lifecycleId !== (nextLifecycleId ?? null);
 
+const shouldRequireApprovalForStage = (
+  stage?: { isApprovalRequired?: boolean | null; isClosed?: boolean | null; name?: string | null } | null,
+): boolean => Boolean(stage?.isApprovalRequired);
+
 const sweepThrottleByWorkspace = new Map<string, number>();
 
 const shouldRunSweepNow = (workspaceId: string): boolean => {
@@ -469,6 +497,23 @@ const getLobStageForWorkspace = async (_workspaceId: string) =>
     select: {
       id: true,
       name: true,
+      isLOB: true,
+      isClosed: true,
+    },
+  });
+
+const getDefaultStageForWorkspace = async (_workspaceId: string) =>
+  prisma.leadStage.findFirst({
+    where: {
+      deletedAt: null,
+      status: 'ACTIVE',
+      isLOB: false,
+    },
+    orderBy: [{ order: 'asc' }, { createdAt: 'asc' }],
+    select: {
+      id: true,
+      name: true,
+      isApprovalRequired: true,
       isLOB: true,
       isClosed: true,
     },
@@ -559,10 +604,6 @@ const ensureLOBPayload = (stage: { isLOB: boolean; name: string } | null, reason
   if (!reasonId) {
     throw createServiceError('reasonId is required when moving a lead to LOB.', 422);
   }
-
-  if (!remarks || !remarks.trim()) {
-    throw createServiceError('remarks are required when moving a lead to LOB.', 422);
-  }
 };
 
 const ensureValidLOBReasonForStage = async (
@@ -620,8 +661,13 @@ const findDuplicateLead = async (
 const buildListWhere = (workspaceId: string, query: ListLeadsQueryInput | ExportLeadsQueryInput) => {
   const where: any = {
     workspaceId,
-    deletedAt: null,
   };
+
+  if (query.status === 'ARCHIVED') {
+    where.deletedAt = { not: null };
+  } else {
+    where.deletedAt = null;
+  }
 
   if (query.search) {
     where.OR = [
@@ -699,7 +745,7 @@ export const createLead = async (
 
   ensureAssignmentAllowed(actor, input.assignedToId);
   const assignedToId = await resolveAssignedUserId(workspaceId, input.assignedToId);
-  const stage = await resolveStage(input.stageId);
+  const stage = (await resolveStage(input.stageId)) || (await getDefaultStageForWorkspace(workspaceId)) || null;
   const lifecycle = await resolveLifecycle(workspaceId, input.lifecycleId);
   const source = await resolveSource(input.sourceId);
   ensureLOBPayload(stage, input.reasonId, input.remarks ?? null);
@@ -878,6 +924,19 @@ export const updateLead = async (
         ? await resolveLifecycle(workspaceId, existing.lifecycleId)
         : null;
 
+  if (
+    input.stageId !== undefined &&
+    stage?.id &&
+    existing.stageId &&
+    stage.id !== existing.stageId &&
+    shouldRequireApprovalForStage(stage)
+  ) {
+    throw createServiceError(
+      'This stage change requires approval. Use the stage transition flow instead of a direct lead update.',
+      409,
+    );
+  }
+
   const remarks = input.remarks === null ? null : input.remarks ?? null;
   const reasonId = input.reasonId === null ? null : input.reasonId ?? null;
   ensureLOBPayload(stage, reasonId, remarks);
@@ -1003,7 +1062,7 @@ export const changeStage = async (
   ensureLOBPayload(targetStage, input.reasonId, input.remarks ?? null);
   await ensureValidLOBReasonForStage(workspaceId, targetStage, input.reasonId);
 
-  if (existing.stageId !== targetStage.id && targetStage.isApprovalRequired) {
+  if (existing.stageId !== targetStage.id && shouldRequireApprovalForStage(targetStage)) {
     if (!existing.stageId) {
       throw createServiceError('Lead does not have a current stage to request approval from.', 409);
     }
@@ -1144,11 +1203,99 @@ export const permanentlyDeleteLead = async (workspaceId: string, id: string): Pr
       },
     });
 
-    await (tx as any).lead.delete({
+    await (tx as any).lead.update({
       where: { id },
+      data: {
+        name: `Deleted Lead ${id.slice(-6)}`,
+        email: null,
+        phone: null,
+        expectedRevenue: null,
+        generatedRevenue: 0,
+        assignedToId: null,
+        stageId: null,
+        lifecycleId: null,
+        sourceId: null,
+        nextFollowUpAt: null,
+        stageEnteredAt: null,
+        stageExpiresAt: null,
+        slaAction: null,
+        slaWarningDays: null,
+        approvalState: 'NONE',
+        pendingApprovalToStageId: null,
+        pendingApprovalRequestedAt: null,
+        isClosed: false,
+        isLOB: false,
+        closedAt: null,
+        closedById: null,
+        closureType: null,
+        deletedAt: new Date(),
+      },
     });
   });
 
+  await clearLeadCache(workspaceId);
+};
+
+export const bulkDeleteLeads = async (workspaceId: string, ids: string[], permanent: boolean = false): Promise<void> => {
+  await assertModuleReady();
+
+  if (!ids || ids.length === 0) return;
+
+  // Clear cache BEFORE 
+  await clearLeadCache(workspaceId);
+
+  if (permanent) {
+    await prisma.$transaction(async (tx) => {
+      // 1. Delete associated dynamic values first
+      await (tx as any).leadDynamicValue.deleteMany({
+        where: { leadId: { in: ids } },
+      });
+
+      // 2. Performance: Use updateMany instead of individual updates to avoid timeout
+      await (tx as any).lead.updateMany({
+        where: { id: { in: ids }, workspaceId },
+        data: {
+          email: null,
+          phone: null,
+          expectedRevenue: null,
+          generatedRevenue: 0,
+          assignedToId: null,
+          stageId: null,
+          lifecycleId: null,
+          sourceId: null,
+          nextFollowUpAt: null,
+          stageEnteredAt: null,
+          stageExpiresAt: null,
+          slaAction: null,
+          slaWarningDays: null,
+          approvalState: 'NONE',
+          pendingApprovalToStageId: null,
+          pendingApprovalRequestedAt: null,
+          isClosed: false,
+          isLOB: false,
+          closedAt: null,
+          closedById: null,
+          closureType: null,
+          deletedAt: new Date(),
+        },
+      });
+    }, { 
+      // Increase timeout to 30s to be safe for large batches
+      timeout: 30000 
+    });
+  } else {
+    // Standard archiving is fast with updateMany
+    await (prisma as any).lead.updateMany({
+      where: { id: { in: ids }, workspaceId },
+      data: {
+        deletedAt: new Date(),
+      },
+    });
+  }
+
+  // Clear cache AFTER
+  // We keep the tiny delay for consistency, then wipe the cache
+  await new Promise((resolve) => setTimeout(resolve, 150));
   await clearLeadCache(workspaceId);
 };
 

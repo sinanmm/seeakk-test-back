@@ -5,6 +5,7 @@ import app from './app';
 import { connectRedis } from './config/redis';
 import prisma from './config/prisma';
 import { scheduleDailySync } from './modules/holidays/holidays.jobs';
+import './modules/leads/leadImport.jobs';
 
 const PORT = process.env.PORT || 5000;
 

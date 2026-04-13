@@ -143,6 +143,51 @@ export const listClosedLeads = async (where: any, skip: number, take: number) =>
   return { rows, total };
 };
 
+export const reconcileClosedLeadFlags = async (workspaceId: string): Promise<number> => {
+  const staleClosedLeads = await (prisma as any).lead.findMany({
+    where: {
+      workspaceId,
+      deletedAt: null,
+      isClosed: false,
+      OR: [
+        {
+          stage: {
+            is: {
+              isClosed: true,
+            },
+          },
+        },
+      ],
+    },
+    select: {
+      id: true,
+      updatedAt: true,
+      createdById: true,
+      closedAt: true,
+      closedById: true,
+    },
+  });
+
+  if (staleClosedLeads.length === 0) {
+    return 0;
+  }
+
+  await prisma.$transaction(
+    staleClosedLeads.map((lead: any) =>
+      (prisma as any).lead.update({
+        where: { id: lead.id },
+        data: {
+          isClosed: true,
+          closedAt: lead.closedAt || lead.updatedAt || new Date(),
+          closedById: lead.closedById || lead.createdById || null,
+        },
+      }),
+    ),
+  );
+
+  return staleClosedLeads.length;
+};
+
 export const exportClosedLeads = async (where: any) =>
   (prisma as any).lead.findMany({
     where,

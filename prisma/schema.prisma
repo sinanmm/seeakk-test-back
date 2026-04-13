@@ -105,6 +105,7 @@ model Workspace {
   reportTypes        ReportType[]
   reports            Report[]
   reportLogs         ReportLog[]
+  importJobs         ImportJob[]
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
@@ -561,6 +562,9 @@ model Lead {
   @@index([workspaceId, nextFollowUpAt, deletedAt, isClosed])
   @@index([workspaceId, createdAt(sort: Desc), deletedAt, isClosed])
   @@index([workspaceId, approvalState, pendingApprovalRequestedAt])
+  @@index([name])
+  @@index([email])
+  @@index([phone])
   @@map("leads")
 }
 
@@ -856,6 +860,7 @@ model User {
   updatedReportTypes       ReportType[] @relation("ReportTypeUpdatedBy")
   createdReports           Report[]     @relation("ReportCreatedBy")
   generatedReportLogs      ReportLog[]  @relation("ReportLogGeneratedBy")
+  createdImportJobs        ImportJob[]  @relation("ImportJobCreatedBy")
 
   createdAt                DateTime    @default(now())
   updatedAt                DateTime    @updatedAt
@@ -1134,4 +1139,35 @@ model ReportFilter {
   @@index([reportId])
   @@index([filterKey])
   @@map("report_filters")
+}
+
+enum ImportJobStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+model ImportJob {
+  id              String          @id @default(uuid())
+  workspaceId     String
+  fileName        String
+  totalRows       Int?            @default(0)
+  processedRows   Int             @default(0)
+  successCount    Int             @default(0)
+  failedCount     Int             @default(0)
+  status          ImportJobStatus @default(PENDING)
+  errorFileUrl    String?         @db.Text
+  createdById     String?
+
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  workspace       Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdBy       User?           @relation("ImportJobCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([workspaceId])
+  @@index([status])
+  @@index([workspaceId, status])
+  @@map("import_jobs")
 }

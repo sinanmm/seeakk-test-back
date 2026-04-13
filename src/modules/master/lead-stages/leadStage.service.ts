@@ -142,28 +142,32 @@ export const createLeadStage = async (
   input: CreateLeadStageInput,
   createdBy?: string,
 ): Promise<LeadStageResponse> => {
+  const normalizedInput = {
+    ...input,
+  };
+
   const duplicate = await prisma.leadStage.findFirst({
     where: {
       deletedAt: null,
-      name: { equals: input.name, mode: 'insensitive' },
+      name: { equals: normalizedInput.name, mode: 'insensitive' },
     },
     select: { id: true },
   });
 
   if (duplicate) {
-    const error: any = new Error(`Lead stage "${input.name}" already exists.`);
+    const error: any = new Error(`Lead stage "${normalizedInput.name}" already exists.`);
     error.statusCode = 409;
     throw error;
   }
 
-  await assertRuleAssignmentsIfProvided(input.ruleAssignments);
+  await assertRuleAssignmentsIfProvided(normalizedInput.ruleAssignments);
 
   const created = await prisma.$transaction(
     async (tx) => {
       await tx.leadStage.updateMany({
         where: {
           deletedAt: null,
-          order: { gte: input.order },
+          order: { gte: normalizedInput.order },
         },
         data: {
           order: { increment: 1 },
@@ -172,20 +176,20 @@ export const createLeadStage = async (
 
       const stage = await tx.leadStage.create({
         data: {
-          name: input.name,
-          color: input.color,
-          isApprovalRequired: input.isApprovalRequired,
-          isClosed: input.isClosed,
-          isLOB: input.isLOB,
-          order: input.order,
-          status: input.status,
+          name: normalizedInput.name,
+          color: normalizedInput.color,
+          isApprovalRequired: normalizedInput.isApprovalRequired,
+          isClosed: normalizedInput.isClosed,
+          isLOB: normalizedInput.isLOB,
+          order: normalizedInput.order,
+          status: normalizedInput.status,
           createdBy,
         },
         include: LEAD_STAGE_WITH_RULES_INCLUDE,
       });
 
-      if (input.ruleAssignments && input.ruleAssignments.length > 0) {
-        await applyStageRuleAssignments(tx, stage.id, input.ruleAssignments);
+      if (normalizedInput.ruleAssignments && normalizedInput.ruleAssignments.length > 0) {
+        await applyStageRuleAssignments(tx, stage.id, normalizedInput.ruleAssignments);
       }
 
       return tx.leadStage.findUniqueOrThrow({
@@ -301,15 +305,19 @@ export const updateLeadStage = async (id: string, input: UpdateLeadStageInput): 
     await assertRuleAssignmentsIfProvided(input.ruleAssignments);
   }
 
+  const normalizedInput = {
+    ...input,
+  };
+
   const updated = await prisma.$transaction(
     async (tx) => {
-      if (input.order !== undefined && input.order !== existing.order) {
-        if (input.order > existing.order) {
+      if (normalizedInput.order !== undefined && normalizedInput.order !== existing.order) {
+        if (normalizedInput.order > existing.order) {
           await tx.leadStage.updateMany({
             where: {
               id: { not: id },
               deletedAt: null,
-              order: { gt: existing.order, lte: input.order },
+              order: { gt: existing.order, lte: normalizedInput.order },
             },
             data: {
               order: { decrement: 1 },
@@ -320,7 +328,7 @@ export const updateLeadStage = async (id: string, input: UpdateLeadStageInput): 
             where: {
               id: { not: id },
               deletedAt: null,
-              order: { gte: input.order, lt: existing.order },
+              order: { gte: normalizedInput.order, lt: existing.order },
             },
             data: {
               order: { increment: 1 },
@@ -332,28 +340,28 @@ export const updateLeadStage = async (id: string, input: UpdateLeadStageInput): 
       await tx.leadStage.update({
         where: { id },
         data: {
-          ...(input.name !== undefined ? { name: input.name } : {}),
-          ...(input.color !== undefined ? { color: input.color } : {}),
-          ...(input.isApprovalRequired !== undefined ? { isApprovalRequired: input.isApprovalRequired } : {}),
-          ...(input.isClosed !== undefined ? { isClosed: input.isClosed } : {}),
-          ...(input.isLOB !== undefined ? { isLOB: input.isLOB } : {}),
-          ...(input.order !== undefined ? { order: input.order } : {}),
-          ...(input.status !== undefined ? { status: input.status } : {}),
+          ...(normalizedInput.name !== undefined ? { name: normalizedInput.name } : {}),
+          ...(normalizedInput.color !== undefined ? { color: normalizedInput.color } : {}),
+          ...(normalizedInput.isApprovalRequired !== undefined ? { isApprovalRequired: normalizedInput.isApprovalRequired } : {}),
+          ...(normalizedInput.isClosed !== undefined ? { isClosed: normalizedInput.isClosed } : {}),
+          ...(normalizedInput.isLOB !== undefined ? { isLOB: normalizedInput.isLOB } : {}),
+          ...(normalizedInput.order !== undefined ? { order: normalizedInput.order } : {}),
+          ...(normalizedInput.status !== undefined ? { status: normalizedInput.status } : {}),
         },
         include: LEAD_STAGE_WITH_RULES_INCLUDE,
       });
 
-      if (input.ruleAssignments !== undefined) {
+      if (normalizedInput.ruleAssignments !== undefined) {
         await tx.stageRule.updateMany({
           where: {
             stageId: id,
-            id: { notIn: input.ruleAssignments.map((rule) => rule.ruleId) },
+            id: { notIn: normalizedInput.ruleAssignments.map((rule) => rule.ruleId) },
           },
           data: { stageId: null },
         });
 
-        if (input.ruleAssignments.length > 0) {
-          await applyStageRuleAssignments(tx, id, input.ruleAssignments);
+        if (normalizedInput.ruleAssignments.length > 0) {
+          await applyStageRuleAssignments(tx, id, normalizedInput.ruleAssignments);
         }
       }
 
