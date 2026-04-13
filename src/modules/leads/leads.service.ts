@@ -127,17 +127,34 @@ const buildAccessWhere = async (workspaceId: string, actor: Actor): Promise<any>
 
 const buildClosedWhere = async (workspaceId: string, actor: Actor, query: ClosedLeadQueryInput) => {
   const accessWhere = await buildAccessWhere(workspaceId, actor);
+  const andConditions: any[] = [
+    {
+      OR: [
+        { isClosed: true },
+        {
+          stage: {
+            is: {
+              isClosed: true,
+            },
+          },
+        },
+      ],
+    },
+  ];
+
+  if (Object.keys(accessWhere).length > 0) {
+    andConditions.push(accessWhere);
+  }
 
   const where: any = {
     workspaceId,
     deletedAt: null,
-    isClosed: true,
-    ...accessWhere,
+    AND: andConditions,
   };
 
   if (query.search) {
     where.AND = [
-      ...(where.AND || []),
+      ...where.AND,
       {
         OR: [
           { name: { contains: query.search, mode: 'insensitive' } },
@@ -169,6 +186,7 @@ const buildClosedWhere = async (workspaceId: string, actor: Actor, query: Closed
 
 export const listClosedLeads = async (workspaceId: string, actor: Actor, query: ClosedLeadQueryInput) => {
   await ensureModuleReady();
+  await leadsRepository.reconcileClosedLeadFlags(workspaceId);
 
   const where = await buildClosedWhere(workspaceId, actor, query);
   const skip = (query.page - 1) * query.limit;
@@ -240,6 +258,7 @@ export const reopenClosedLead = async (workspaceId: string, actor: Actor, id: st
 
 export const exportClosedLeads = async (workspaceId: string, actor: Actor, query: ClosedLeadQueryInput) => {
   await ensureModuleReady();
+  await leadsRepository.reconcileClosedLeadFlags(workspaceId);
 
   const where = await buildClosedWhere(workspaceId, actor, query);
   const rows = await leadsRepository.exportClosedLeads(where);
@@ -282,7 +301,7 @@ export const exportClosedLeads = async (workspaceId: string, actor: Actor, query
 };
 
 export const isClosureStage = (stage?: { isClosed?: boolean | null; name?: string | null } | null): boolean =>
-  Boolean(stage?.isClosed || normalizeRoleKey(stage?.name) === 'closure');
+  Boolean(stage?.isClosed);
 
 export const buildClosureUpdateData = (
   stage: { isClosed?: boolean | null; name?: string | null } | null,

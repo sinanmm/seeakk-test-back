@@ -1,4 +1,5 @@
 import prisma from '../../config/prisma';
+import { redisClient } from '../../config/redis';
 import { assertActiveLOBReason } from '../master/lob-reasons/lobReasons.service';
 import * as repository from './leadApprovals.repository';
 import type {
@@ -20,6 +21,39 @@ const createServiceError = (message: string, statusCode: number): Error & { stat
   const error = new Error(message) as Error & { statusCode: number };
   error.statusCode = statusCode;
   return error;
+};
+
+const clearWorkspaceLeadCache = async (workspaceId: string): Promise<void> => {
+  if (!redisClient.isOpen) return;
+
+  try {
+    const keysToDelete: string[] = [];
+    const pattern = `leads:${workspaceId}:*`;
+
+    for await (const key of (redisClient as any).scanIterator({ MATCH: pattern, COUNT: 250 })) {
+      if (typeof key === 'string' && key.length > 0) {
+        keysToDelete.push(key);
+      }
+    }
+
+    if (keysToDelete.length === 0) {
+      const keys = await (redisClient as any).keys(pattern);
+      if (Array.isArray(keys)) {
+        keysToDelete.push(...keys);
+      }
+    }
+
+    if (keysToDelete.length > 0) {
+      const uniqueKeys = Array.from(new Set(keysToDelete));
+      await Promise.all(
+        Array.from({ length: Math.ceil(uniqueKeys.length / 50) }, (_, index) =>
+          redisClient.del(uniqueKeys.slice(index * 50, (index + 1) * 50)),
+        ),
+      );
+    }
+  } catch (error) {
+    console.error('Failed to clear lead cache after approval action:', error);
+  }
 };
 
 const normalizeRoleKey = (role?: string | null): string =>
@@ -153,6 +187,9 @@ const resolveDefaultApprover = async (workspaceId: string, requestedById: string
   return null;
 };
 
+const isImmediateClosureStage = (stage?: { isClosed?: boolean | null; name?: string | null } | null): boolean =>
+  Boolean(stage?.isClosed);
+
 const buildApprovalLeadUpdateData = (approval: any) => {
   const now = new Date();
   const targetStage = approval.toStage;
@@ -160,6 +197,8 @@ const buildApprovalLeadUpdateData = (approval: any) => {
   const slaSnapshot = isTerminal
     ? emptySlaSnapshot()
     : buildLeadSlaSnapshot(approval.lead?.lifecycle, targetStage?.id || null, now);
+
+  const requestData = normalizeRequestData(approval.requestData);
 
   return {
     stageId: targetStage?.id || null,
@@ -175,6 +214,7 @@ const buildApprovalLeadUpdateData = (approval: any) => {
     closedAt: targetStage?.isLOB || targetStage?.isClosed ? now : null,
     closedById: targetStage?.isLOB || targetStage?.isClosed ? approval.approvedById || null : null,
     closureType: targetStage?.isLOB ? 'LOST' : targetStage?.isClosed ? 'WON' : null,
+    generatedRevenue: isTerminal ? Number(requestData.generatedRevenue) || 0 : undefined,
   };
 };
 
@@ -221,7 +261,7 @@ export const createLeadApproval = async (
     throw createServiceError('The requested approval does not match the lead’s current stage.', 409);
   }
 
-  if (lead.stageId === targetStage.id) {
+  if (input.fromStageId === targetStage.id) {
     throw createServiceError('Lead is already in the requested stage.', 409);
   }
 
@@ -434,7 +474,14 @@ export const processLeadApproval = async (
     throw createServiceError('Approval not found.', 404);
   }
 
+  await clearWorkspaceLeadCache(workspaceId);
+
+  const refreshedLead = approval.lead?.id
+    ? await repository.findLeadScoped(workspaceId, approval.lead.id)
+    : null;
+
   return {
+    lead: refreshedLead,
     approval: buildApprovalResponse(result),
     message: 'Approval processed successfully',
   };

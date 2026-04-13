@@ -225,7 +225,7 @@ export const changeStage = async (req: Request, res: Response, next: NextFunctio
     }
 
     const lead = result.lead;
-    const isClosureStage = Boolean(lead.stage?.isClosed || normalizeStageKey(lead.stage?.name) === 'closure');
+    const isClosureStage = Boolean(lead.stage?.isClosed);
     const action = lead.isLOB
       ? 'LEAD_LOB_APPLIED'
       : lead.isClosed && isClosureStage

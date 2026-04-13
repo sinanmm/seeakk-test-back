@@ -271,15 +271,18 @@ export const clearLeadCache = async (workspaceId: string): Promise<void> => {
       }
     }
 
-    if (keysToDelete.length > 0) {
-      const uniqueKeys = Array.from(new Set(keysToDelete));
+    if (uniqueKeys.length > 0) {
+      const uniqueKeysFinal = Array.from(new Set(uniqueKeys));
       await Promise.all(
-        // Batch delete in chunks of 50 to avoid Redis command size limits
-        Array.from({ length: Math.ceil(uniqueKeys.length / 50) }, (_, i) =>
-          redisClient.del(uniqueKeys.slice(i * 50, (i + 1) * 50)),
+        Array.from({ length: Math.ceil(uniqueKeysFinal.length / 50) }, (_, i) =>
+          redisClient.del(uniqueKeysFinal.slice(i * 50, (i + 1) * 50)),
         ),
       );
     }
+    
+    // Tiny delay to allow Redis deletions to fully propagate through the cluster/event loop
+    // and ensure subsequent GETs don't race and hit a stale shard or mid-delete key.
+    await new Promise((resolve) => setTimeout(resolve, 50));
   } catch (error) {
     // Silently fail cache clearing to not block the main operation, but log it
     console.error('Failed to clear lead cache:', error);
@@ -469,6 +472,10 @@ const shouldRefreshSla = (
   nextLifecycleId?: string | null,
 ): boolean => existing.stageId !== (nextStageId ?? null) || existing.lifecycleId !== (nextLifecycleId ?? null);
 
+const shouldRequireApprovalForStage = (
+  stage?: { isApprovalRequired?: boolean | null; isClosed?: boolean | null; name?: string | null } | null,
+): boolean => Boolean(stage?.isApprovalRequired);
+
 const sweepThrottleByWorkspace = new Map<string, number>();
 
 const shouldRunSweepNow = (workspaceId: string): boolean => {
@@ -490,6 +497,23 @@ const getLobStageForWorkspace = async (_workspaceId: string) =>
     select: {
       id: true,
       name: true,
+      isLOB: true,
+      isClosed: true,
+    },
+  });
+
+const getDefaultStageForWorkspace = async (_workspaceId: string) =>
+  prisma.leadStage.findFirst({
+    where: {
+      deletedAt: null,
+      status: 'ACTIVE',
+      isLOB: false,
+    },
+    orderBy: [{ order: 'asc' }, { createdAt: 'asc' }],
+    select: {
+      id: true,
+      name: true,
+      isApprovalRequired: true,
       isLOB: true,
       isClosed: true,
     },
@@ -721,7 +745,7 @@ export const createLead = async (
 
   ensureAssignmentAllowed(actor, input.assignedToId);
   const assignedToId = await resolveAssignedUserId(workspaceId, input.assignedToId);
-  const stage = await resolveStage(input.stageId);
+  const stage = (await resolveStage(input.stageId)) || (await getDefaultStageForWorkspace(workspaceId)) || null;
   const lifecycle = await resolveLifecycle(workspaceId, input.lifecycleId);
   const source = await resolveSource(input.sourceId);
   ensureLOBPayload(stage, input.reasonId, input.remarks ?? null);
@@ -900,6 +924,19 @@ export const updateLead = async (
         ? await resolveLifecycle(workspaceId, existing.lifecycleId)
         : null;
 
+  if (
+    input.stageId !== undefined &&
+    stage?.id &&
+    existing.stageId &&
+    stage.id !== existing.stageId &&
+    shouldRequireApprovalForStage(stage)
+  ) {
+    throw createServiceError(
+      'This stage change requires approval. Use the stage transition flow instead of a direct lead update.',
+      409,
+    );
+  }
+
   const remarks = input.remarks === null ? null : input.remarks ?? null;
   const reasonId = input.reasonId === null ? null : input.reasonId ?? null;
   ensureLOBPayload(stage, reasonId, remarks);
@@ -1025,7 +1062,7 @@ export const changeStage = async (
   ensureLOBPayload(targetStage, input.reasonId, input.remarks ?? null);
   await ensureValidLOBReasonForStage(workspaceId, targetStage, input.reasonId);
 
-  if (existing.stageId !== targetStage.id && targetStage.isApprovalRequired) {
+  if (existing.stageId !== targetStage.id && shouldRequireApprovalForStage(targetStage)) {
     if (!existing.stageId) {
       throw createServiceError('Lead does not have a current stage to request approval from.', 409);
     }

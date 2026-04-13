@@ -73,7 +73,7 @@ const mapCreatorNames = async <T extends { createdBy: string | null }>(
 const countLeadUsage = async (leadSourceId: string): Promise<number> => {
   const leadDelegate = (prisma as any).lead;
   if (leadDelegate?.count) {
-    return await leadDelegate.count({ where: { leadSourceId } });
+    return await leadDelegate.count({ where: { sourceId: leadSourceId } });
   }
 
   const tableRows = await prisma.$queryRaw<Array<{ table_name: string | null }>>`
