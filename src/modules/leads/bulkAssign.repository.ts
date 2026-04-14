@@ -1,6 +1,8 @@
 import { Prisma } from '@prisma/client';
 import prisma from '../../config/prisma';
 
+const { sql, join } = Prisma as any;
+
 export const ensureBulkAssignSchemaReady = async (): Promise<boolean> => {
   const rows = await prisma.$queryRaw<Array<{ ready: boolean }>>`
     SELECT
@@ -180,11 +182,11 @@ export const bulkAssignLeads = async (input: {
       return { updatedCount: 0, failedLeadIds };
     }
 
-    const assignmentValues = Prisma.join(
-      validAssignments.map((assignment: { leadId: string; assignTo: string }) => Prisma.sql`(${assignment.leadId}, ${assignment.assignTo})`),
+    const assignmentValues = join(
+      validAssignments.map((assignment: { leadId: string; assignTo: string }) => sql`(${assignment.leadId}, ${assignment.assignTo})`),
     );
 
-    const updatedRows = (await (tx as any).$queryRaw(Prisma.sql`
+    const updatedRows = (await (tx as any).$queryRaw(sql`
       UPDATE "leads" AS l
       SET "assignedToId" = v.assign_to_id,
           "updatedAt" = NOW()
