@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import prisma from '../../config/prisma';
 import logger from '../../utils/logger';
+import { seedDefaultMasterData } from '../../services/Seeding/seedingService';
 
 export const setupWorkspace = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
   try {
@@ -50,6 +51,9 @@ export const setupWorkspace = async (req: Request, res: Response, next: NextFunc
       },
       include: { role: true },
     });
+
+    // 4. Seed default master data for the new workspace
+    await seedDefaultMasterData(newWorkspace.id, user.id);
 
     logger.info('Workspace successfully configured', {
       workspaceId: newWorkspace.id,

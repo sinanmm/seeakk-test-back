@@ -240,6 +240,7 @@ model LeadSource {
   workspace   Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   leads       Lead[]
 
+  @@unique([workspaceId, name])
   @@index([workspaceId])
   @@index([name])
   @@index([status])
@@ -267,6 +268,7 @@ model LeadStage {
   approvalsFrom      LeadStageApproval[] @relation("LeadStageApprovalFromStage")
   approvalsTo        LeadStageApproval[] @relation("LeadStageApprovalToStage")
 
+  @@unique([workspaceId, name])
   @@index([workspaceId])
   @@index([name])
   @@index([status])
@@ -298,6 +300,7 @@ model StageRule {
   stage      LeadStage?       @relation(fields: [stageId], references: [id], onDelete: SetNull)
   leadInputs LeadStageInput[]
 
+  @@unique([workspaceId, name])
   @@index([workspaceId])
   @@index([name])
   @@index([status])
