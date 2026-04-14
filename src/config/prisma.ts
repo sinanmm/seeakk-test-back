@@ -77,7 +77,7 @@ const createPrismaClient = () => {
 
   // Retry on transient connection failures from pooled PostgreSQL connections.
   // Do NOT force disconnect/connect here; doing so can interrupt concurrent requests.
-  client.$use(async (params, next) => {
+  client.$use(async (params: any, next: any) => {
     const maxAttempts = 3;
     let attempt = 0;
     let lastError: unknown;
