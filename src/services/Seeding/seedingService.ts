@@ -8,7 +8,7 @@ export const seedDefaultMasterData = async (workspaceId: string, createdById?: s
     // 1. Seed Default Lead Sources
     const defaultSources = ['Google', 'Facebook', 'Referral', 'Direct', 'Organic Search'];
     
-    await prisma.leadSource.createMany({
+    await (prisma as any).leadSource.createMany({
       data: defaultSources.map((name) => ({
         name,
         workspaceId,
@@ -29,7 +29,7 @@ export const seedDefaultMasterData = async (workspaceId: string, createdById?: s
     ];
 
     for (const stage of defaultStages) {
-      await prisma.leadStage.create({
+      await (prisma as any).leadStage.create({
         data: {
           ...stage,
           workspaceId,
