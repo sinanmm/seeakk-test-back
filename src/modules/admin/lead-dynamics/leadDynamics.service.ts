@@ -174,7 +174,7 @@ export const createLeadDynamicField = async (
   await ensureUniqueName(workspaceId, input.name);
   const options = validateOptionsByInputType(input.inputType, input.options);
 
-  const created = await prisma.$transaction(async (tx) => {
+  const created = await prisma.$transaction(async (tx: any) => {
     await shiftSortOrderForCreate(tx, workspaceId, input.sortOrder);
 
     const field = await (tx as any).leadDynamicField.create({
@@ -311,7 +311,7 @@ export const updateLeadDynamicField = async (
         }));
   const nextOptions = validateOptionsByInputType(nextInputType, sourceOptions);
 
-  const updated = await prisma.$transaction(async (tx) => {
+  const updated = await prisma.$transaction(async (tx: any) => {
     await shiftSortOrderForUpdate(tx, workspaceId, id, existing.sortOrder, nextSortOrder);
 
     await (tx as any).leadDynamicField.update({
@@ -381,7 +381,7 @@ export const deleteLeadDynamicField = async (id: string, workspaceId: string): P
     throw createServiceError('Field is used in leads and cannot be deleted.', 400);
   }
 
-  await prisma.$transaction(async (tx) => {
+  await prisma.$transaction(async (tx: any) => {
     await (tx as any).leadDynamicValue.deleteMany({
       where: {
         fieldId: id,
@@ -464,7 +464,7 @@ export const saveLeadDynamicValues = async (
     }
   }
 
-  const records = await prisma.$transaction(async (tx) => {
+  const records = await prisma.$transaction(async (tx: any) => {
     await (tx as any).leadDynamicValue.deleteMany({
       where: {
         leadId: trimmedLeadId,

@@ -130,7 +130,7 @@ export const executeDynamicQuery = async <T = Record<string, unknown>>(query: Pr
   prisma.$queryRaw<T[]>(query);
 
 export const createReport = async (data: Prisma.ReportUncheckedCreateInput, filters: Array<{ filterKey: string; filterValue: string }>) =>
-  prisma.$transaction(async (tx) => {
+  prisma.$transaction(async (tx: any) => {
     const report = await tx.report.create({
       data,
       select: reportSelect,
@@ -189,7 +189,7 @@ export const replaceReportDefinition = async (
   data: Prisma.ReportUncheckedUpdateInput,
   filters: Array<{ filterKey: string; filterValue: string }>,
 ) =>
-  prisma.$transaction(async (tx) => {
+  prisma.$transaction(async (tx: any) => {
     await tx.report.update({
       where: { id },
       data,

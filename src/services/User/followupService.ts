@@ -462,7 +462,7 @@ export const completeFollowUp = async (
 
   const completedAt = new Date();
 
-  const completed = await prisma.$transaction(async (tx) => {
+  const completed = await prisma.$transaction(async (tx: any) => {
     const updated = await (tx as any).followUp.update({
       where: { id: existing.id },
       data: {

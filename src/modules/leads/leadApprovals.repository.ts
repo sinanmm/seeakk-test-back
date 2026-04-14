@@ -149,7 +149,7 @@ export const createApprovalRequest = async (input: {
   ipAddress?: string;
   userAgent?: string;
 }) =>
-  prisma.$transaction(async (tx) => {
+  prisma.$transaction(async (tx: any) => {
     const approval = await (tx as any).leadStageApproval.create({
       data: {
         workspaceId: input.workspaceId,
@@ -300,7 +300,7 @@ export const processApproval = async (input: {
   ipAddress?: string;
   userAgent?: string;
 }) =>
-  prisma.$transaction(async (tx) => {
+  prisma.$transaction(async (tx: any) => {
     const approval = await (tx as any).leadStageApproval.findUnique({
       where: { id: input.approvalId },
       include: {

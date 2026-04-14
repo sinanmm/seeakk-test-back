@@ -351,7 +351,7 @@ export const createStageRule = async (
   await assertStageIfProvided(scopedStageId);
 
   const runCreateTransaction = async () =>
-    prisma.$transaction(async (tx) => {
+    prisma.$transaction(async (tx: any) => {
       await tx.stageRule.updateMany({
         where: {
           deletedAt: null,
@@ -539,7 +539,7 @@ export const updateStageRule = async (id: string, input: UpdateStageRuleInput): 
 
   await assertStageIfProvided(targetStageId);
 
-  const updated = await prisma.$transaction(async (tx) => {
+  const updated = await prisma.$transaction(async (tx: any) => {
     const hasScopeChanged = targetStageId !== existing.stageId;
 
     if (hasScopeChanged) {
@@ -642,7 +642,7 @@ export const deleteStageRule = async (id: string): Promise<void> => {
     throw error;
   }
 
-  await prisma.$transaction(async (tx) => {
+  await prisma.$transaction(async (tx: any) => {
     await tx.stageRule.update({
       where: { id },
       data: {

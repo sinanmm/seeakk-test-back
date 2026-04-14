@@ -240,7 +240,7 @@ const createTargetCycleWithDelegates = async (
 
   await ensureNameIsAvailableSql(prisma as any, workspaceId, input.name);
 
-  const createdCycle = await prisma.$transaction(async (tx) => {
+  const createdCycle = await prisma.$transaction(async (tx: any) => {
     const cycle = await (tx as any).targetCycle.create({
       data: {
         name: input.name,
@@ -288,7 +288,7 @@ const createTargetCycleWithSql = async (
   const totalDays = validateRangesAndComputeTotalDays(input.ranges);
   await ensureNameIsAvailableSql(prisma as any, workspaceId, input.name);
 
-  const created = await prisma.$transaction(async (tx) => {
+  const created = await prisma.$transaction(async (tx: any) => {
     const cycleId = createId('tc');
     const cycleRows = (await (tx as any).$queryRawUnsafe(
       `INSERT INTO "target_cycles"
@@ -503,7 +503,7 @@ export const updateTargetCycle = async (
 
     const totalDays = validateRangesAndComputeTotalDays(targetRanges);
 
-    const updatedCycle = await prisma.$transaction(async (tx) => {
+    const updatedCycle = await prisma.$transaction(async (tx: any) => {
       if (input.ranges) {
         await (tx as any).targetCycleRange.deleteMany({ where: { targetCycleId: id } });
         await (tx as any).targetCycleRange.createMany({
@@ -557,7 +557,7 @@ export const updateTargetCycle = async (
 
   const totalDays = validateRangesAndComputeTotalDays(targetRanges);
 
-  const updated = await prisma.$transaction(async (tx) => {
+  const updated = await prisma.$transaction(async (tx: any) => {
     if (input.ranges) {
       await (tx as any).$queryRawUnsafe(
         `DELETE FROM "target_cycle_ranges" WHERE "targetCycleId" = $1`,

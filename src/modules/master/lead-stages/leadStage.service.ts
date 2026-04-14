@@ -163,7 +163,7 @@ export const createLeadStage = async (
   await assertRuleAssignmentsIfProvided(normalizedInput.ruleAssignments);
 
   const created = await prisma.$transaction(
-    async (tx) => {
+    async (tx: any) => {
       await tx.leadStage.updateMany({
         where: {
           deletedAt: null,
@@ -310,7 +310,7 @@ export const updateLeadStage = async (id: string, input: UpdateLeadStageInput): 
   };
 
   const updated = await prisma.$transaction(
-    async (tx) => {
+    async (tx: any) => {
       if (normalizedInput.order !== undefined && normalizedInput.order !== existing.order) {
         if (normalizedInput.order > existing.order) {
           await tx.leadStage.updateMany({
@@ -459,7 +459,7 @@ export const deleteLeadStage = async (id: string): Promise<void> => {
     throw error;
   }
 
-  await prisma.$transaction(async (tx) => {
+  await prisma.$transaction(async (tx: any) => {
     await tx.leadStage.update({
       where: { id },
       data: {

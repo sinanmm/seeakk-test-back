@@ -295,7 +295,7 @@ export const createLifeCycle = async (
     transitions.flatMap((transition) => [transition.fromStageId, transition.toStageId]),
   );
 
-  const lifeCycle = await prisma.$transaction(async (tx) => {
+  const lifeCycle = await prisma.$transaction(async (tx: any) => {
     if (input.isDefault) {
       await (tx as any).leadLifeCycle.updateMany({
         where: { workspaceId },
@@ -448,7 +448,7 @@ export const updateLifeCycle = async (
     transitions.flatMap((transition) => [transition.fromStageId, transition.toStageId]),
   );
 
-  const updated = await prisma.$transaction(async (tx) => {
+  const updated = await prisma.$transaction(async (tx: any) => {
     if (input.isDefault) {
       await (tx as any).leadLifeCycle.updateMany({
         where: { workspaceId },

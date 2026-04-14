@@ -231,7 +231,7 @@ export const createUser = async (input: CreateUserInput, workspaceId: string) =>
 
   if (canRestoreSoftDeletedByEmail && existingEmail) {
     user = await prisma.$transaction(
-      async (tx) => {
+      async (tx: any) => {
         // Clear historical visibility assignments before restoring account.
         await (tx as any).userLocationAssignment.deleteMany({
           where: { userId: existingEmail.id },

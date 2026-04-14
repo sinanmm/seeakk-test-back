@@ -90,10 +90,11 @@ const isManagerialRole = (role?: string | null): boolean => {
   return normalized === 'admin' || normalized === 'superadmin' || normalized === 'manager';
 };
 
-const resolveDisplayName = (user: { name: string | null; username: string | null; email: string }): string => {
+const resolveDisplayName = (user?: { name?: string | null; username?: string | null; email?: string } | null): string => {
+  if (!user) return '';
   if (user.name && user.name.trim()) return user.name.trim();
   if (user.username && user.username.trim()) return user.username.trim();
-  return user.email;
+  return user.email || '';
 };
 
 const leadInclude = {
@@ -544,7 +545,7 @@ const maybeRunLeadSlaSweep = async (workspaceId: string): Promise<void> => {
 
   for (const lead of expiredAutoLobLeads) {
     const now = new Date();
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: any) => {
       await (tx as any).lead.update({
         where: { id: lead.id },
         data: {
@@ -754,7 +755,7 @@ export const createLead = async (
     ? emptySlaSnapshot()
     : await buildLeadSlaSnapshot(lifecycle, stage?.id || null);
 
-  const createdLeadId = await prisma.$transaction(async (tx) => {
+  const createdLeadId = await prisma.$transaction(async (tx: any) => {
     const closureData = buildClosureUpdateData(stage, actor.id);
 
     const lead = await (tx as any).lead.create({
@@ -973,7 +974,7 @@ export const updateLead = async (
         slaWarningDays: existing.slaWarningDays,
       };
 
-  const updatedLeadId = await prisma.$transaction(async (tx) => {
+  const updatedLeadId = await prisma.$transaction(async (tx: any) => {
     await (tx as any).lead.update({
       where: { id },
       data: {
@@ -1196,7 +1197,7 @@ export const permanentlyDeleteLead = async (workspaceId: string, id: string): Pr
     throw createServiceError('Lead not found in this workspace.', 404);
   }
 
-  await prisma.$transaction(async (tx) => {
+  await prisma.$transaction(async (tx: any) => {
     await (tx as any).leadDynamicValue.deleteMany({
       where: {
         leadId: id,
@@ -1245,7 +1246,7 @@ export const bulkDeleteLeads = async (workspaceId: string, ids: string[], perman
   await clearLeadCache(workspaceId);
 
   if (permanent) {
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: any) => {
       // 1. Delete associated dynamic values first
       await (tx as any).leadDynamicValue.deleteMany({
         where: { leadId: { in: ids } },

@@ -171,7 +171,7 @@ export const createCountryWithRootLocation = async (
   countryData: any,
   rootLocationData: any,
 ) =>
-  prisma.$transaction(async (tx) => {
+  prisma.$transaction(async (tx: any) => {
     const country = await (tx as any).country.create({
       data: countryData,
       select: countrySelect,
@@ -283,7 +283,7 @@ export const configureLocationLevels = async (
   actorId: string,
   levels: Array<{ name: string; order: number; isActive?: boolean }>,
 ) =>
-  prisma.$transaction(async (tx) => {
+  prisma.$transaction(async (tx: any) => {
       const existing = await (tx as any).locationLevel.findMany({
       where: {
         workspaceId,

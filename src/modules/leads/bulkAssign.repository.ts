@@ -150,7 +150,7 @@ export const bulkAssignLeads = async (input: {
 
   if (assignments.length === 0) return { updatedCount: 0, failedLeadIds: [] };
 
-  const result = await prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction(async (tx: any) => {
     const activeLeadRows = await (tx as any).lead.findMany({
       where: {
         id: { in: assignments.map((assignment) => assignment.leadId) },
@@ -184,7 +184,7 @@ export const bulkAssignLeads = async (input: {
       validAssignments.map((assignment) => Prisma.sql`(${assignment.leadId}, ${assignment.assignTo})`),
     );
 
-    const updatedRows = await tx.$queryRaw<Array<{ id: string; assignedToId: string }>>(Prisma.sql`
+    const updatedRows = (await (tx as any).$queryRaw(Prisma.sql`
       UPDATE "leads" AS l
       SET "assignedToId" = v.assign_to_id,
           "updatedAt" = NOW()
@@ -195,10 +195,10 @@ export const bulkAssignLeads = async (input: {
         AND l."isClosed" = false
         AND l."isLOB" = false
       RETURNING l."id", l."assignedToId"
-    `);
+    `)) as Array<{ id: string; assignedToId: string }>;
 
     await (tx as any).leadActivity.createMany({
-      data: updatedRows.map((row) => ({
+      data: updatedRows.map((row: any) => ({
         leadId: row.id,
         performedById: actorId,
         workspaceId,
@@ -212,7 +212,7 @@ export const bulkAssignLeads = async (input: {
       })),
     });
 
-    await tx.auditLog.create({
+    await (tx as any).auditLog.create({
       data: {
         userId: actorId,
         workspaceId,
@@ -220,11 +220,11 @@ export const bulkAssignLeads = async (input: {
         entityType: 'Lead',
         details: {
           assignmentType,
-          assignedToIds: Array.from(new Set(updatedRows.map((row) => row.assignedToId).filter(Boolean))),
+          assignedToIds: Array.from(new Set(updatedRows.map((row: any) => row.assignedToId).filter(Boolean))),
           assigneeLabels: assigneeLabelMap,
           totalLeads: updatedRows.length,
           filters,
-          leadIds: updatedRows.map((row) => row.id),
+          leadIds: updatedRows.map((row: any) => row.id),
           failedLeadIds,
         } as any,
         ipAddress,
