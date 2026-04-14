@@ -52,12 +52,30 @@ const handleServiceError = (error: any, res: Response, next: NextFunction, actio
   next(error);
 };
 
+const getWorkspaceId = (req: Request, res: Response): string | null => {
+  const workspaceId = req.user?.workspaceId;
+  if (!workspaceId) {
+    res.status(403).json({
+      success: false,
+      message: 'Workspace context is required.',
+    });
+    return null;
+  }
+
+  return workspaceId;
+};
+
 export const createLeadStage = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
   const input = validate<CreateLeadStageInput>(createLeadStageSchema, req.body, res);
   if (!input) return;
 
   try {
-    const data = await leadStageService.createLeadStage(input, req.user?.id);
+    const workspaceId = req.user?.workspaceId;
+    if (!workspaceId) {
+      return res.status(400).json({ success: false, message: 'User workspace not found.' });
+    }
+
+    const data = await leadStageService.createLeadStage(workspaceId, input, req.user?.id);
 
     await auditService.log({
       userId: req.user?.id,
@@ -85,7 +103,12 @@ export const listLeadStages = async (req: Request, res: Response, next: NextFunc
   if (!query) return;
 
   try {
-    const result = await leadStageService.listLeadStages(query);
+    const workspaceId = req.user?.workspaceId;
+    if (!workspaceId) {
+      return res.status(400).json({ success: false, message: 'User workspace not found.' });
+    }
+
+    const result = await leadStageService.listLeadStages(workspaceId, query);
     return res.status(200).json({
       success: true,
       message: 'Lead stages fetched successfully',
@@ -99,7 +122,12 @@ export const listLeadStages = async (req: Request, res: Response, next: NextFunc
 
 export const getPipelineLeadStages = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
   try {
-    const data = await leadStageService.getPipelineLeadStages();
+    const workspaceId = req.user?.workspaceId;
+    if (!workspaceId) {
+      return res.status(400).json({ success: false, message: 'User workspace not found.' });
+    }
+
+    const data = await leadStageService.getPipelineLeadStages(workspaceId);
     return res.status(200).json({
       success: true,
       message: 'Lead stage pipeline fetched successfully',
@@ -116,7 +144,12 @@ export const updateLeadStage = async (req: Request, res: Response, next: NextFun
   if (!input) return;
 
   try {
-    const data = await leadStageService.updateLeadStage(id, input);
+    const workspaceId = req.user?.workspaceId;
+    if (!workspaceId) {
+      return res.status(400).json({ success: false, message: 'User workspace not found.' });
+    }
+
+    const data = await leadStageService.updateLeadStage(workspaceId, id, input);
 
     await auditService.log({
       userId: req.user?.id,
@@ -144,7 +177,12 @@ export const reorderLeadStages = async (req: Request, res: Response, next: NextF
   if (!input) return;
 
   try {
-    const data = await leadStageService.reorderLeadStages(input);
+    const workspaceId = req.user?.workspaceId;
+    if (!workspaceId) {
+      return res.status(400).json({ success: false, message: 'User workspace not found.' });
+    }
+
+    const data = await leadStageService.reorderLeadStages(workspaceId, input);
 
     await auditService.log({
       userId: req.user?.id,
@@ -170,7 +208,12 @@ export const toggleLeadStageStatus = async (req: Request, res: Response, next: N
   const id = req.params['id'] as string;
 
   try {
-    const data = await leadStageService.toggleLeadStageStatus(id);
+    const workspaceId = req.user?.workspaceId;
+    if (!workspaceId) {
+      return res.status(400).json({ success: false, message: 'User workspace not found.' });
+    }
+
+    const data = await leadStageService.toggleLeadStageStatus(workspaceId, id);
 
     await auditService.log({
       userId: req.user?.id,
@@ -197,7 +240,12 @@ export const deleteLeadStage = async (req: Request, res: Response, next: NextFun
   const id = req.params['id'] as string;
 
   try {
-    await leadStageService.deleteLeadStage(id);
+    const workspaceId = req.user?.workspaceId;
+    if (!workspaceId) {
+      return res.status(400).json({ success: false, message: 'User workspace not found.' });
+    }
+
+    await leadStageService.deleteLeadStage(workspaceId, id);
 
     await auditService.log({
       userId: req.user?.id,

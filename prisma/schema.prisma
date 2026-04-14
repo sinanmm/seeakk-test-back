@@ -90,6 +90,9 @@ model Workspace {
   ownerId        String       @unique
   users          User[]       @relation("WorkspaceMembers")
   departments    Department[]
+  leadSources    LeadSource[]
+  leadStages     LeadStage[]
+  stageRules     StageRule[]
   targetCycles   TargetCycle[]
   leadLifeCycles LeadLifeCycle[]
   leadDynamicFields LeadDynamicField[]
@@ -226,22 +229,27 @@ model Department {
 }
 
 model LeadSource {
-  id        String           @id @default(uuid())
-  name      String           @unique
-  status    LeadSourceStatus @default(ACTIVE)
-  createdBy String?
-  createdAt DateTime         @default(now())
-  updatedAt DateTime         @updatedAt
-  deletedAt DateTime?
-  leads     Lead[]
+  id          String           @id @default(uuid())
+  workspaceId String
+  name        String
+  status      LeadSourceStatus @default(ACTIVE)
+  createdBy   String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  deletedAt   DateTime?
+  workspace   Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  leads       Lead[]
 
+  @@index([workspaceId])
   @@index([name])
   @@index([status])
+  @@index([workspaceId, status, createdAt(sort: Desc)])
   @@map("lead_sources")
 }
 
 model LeadStage {
   id                 String          @id @default(uuid())
+  workspaceId        String
   name               String
   color              String          @default("#10b981")
   isApprovalRequired Boolean         @default(false)
@@ -253,19 +261,23 @@ model LeadStage {
   createdAt          DateTime        @default(now())
   updatedAt          DateTime        @updatedAt
   deletedAt          DateTime?
+  workspace          Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   rules              StageRule[]
   leads              Lead[]
   approvalsFrom      LeadStageApproval[] @relation("LeadStageApprovalFromStage")
   approvalsTo        LeadStageApproval[] @relation("LeadStageApprovalToStage")
 
+  @@index([workspaceId])
   @@index([name])
   @@index([status])
   @@index([order])
+  @@index([workspaceId, status, order])
   @@map("lead_stages")
 }
 
 model StageRule {
   id        String     @id @default(uuid())
+  workspaceId String
   name      String     @default("Untitled Rule")
   inputType InputType  @default(TEXT)
   sortOrder Int        @default(1)
@@ -282,13 +294,16 @@ model StageRule {
   updatedAt DateTime   @default(now()) @updatedAt
   deletedAt DateTime?
 
+  workspace  Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   stage      LeadStage?       @relation(fields: [stageId], references: [id], onDelete: SetNull)
   leadInputs LeadStageInput[]
 
+  @@index([workspaceId])
   @@index([name])
   @@index([status])
   @@index([sortOrder])
   @@index([stageId])
+  @@index([workspaceId, status, sortOrder])
   @@map("stage_rules")
 }
 

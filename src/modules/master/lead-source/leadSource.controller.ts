@@ -49,12 +49,30 @@ const handleServiceError = (error: any, res: Response, next: NextFunction, actio
   next(error);
 };
 
+const getWorkspaceId = (req: Request, res: Response): string | null => {
+  const workspaceId = req.user?.workspaceId;
+  if (!workspaceId) {
+    res.status(403).json({
+      success: false,
+      message: 'Workspace context is required.',
+    });
+    return null;
+  }
+
+  return workspaceId;
+};
+
 export const createLeadSource = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
   const input = validate<CreateLeadSourceInput>(createLeadSourceSchema, req.body, res);
   if (!input) return;
 
   try {
-    const data = await leadSourceService.createLeadSource(input, req.user?.id);
+    const workspaceId = req.user?.workspaceId;
+    if (!workspaceId) {
+      return res.status(400).json({ success: false, message: 'User workspace not found.' });
+    }
+
+    const data = await leadSourceService.createLeadSource(workspaceId, input, req.user?.id);
 
     await auditService.log({
       userId: req.user?.id,
@@ -82,7 +100,12 @@ export const listLeadSources = async (req: Request, res: Response, next: NextFun
   if (!query) return;
 
   try {
-    const result = await leadSourceService.listLeadSources(query);
+    const workspaceId = req.user?.workspaceId;
+    if (!workspaceId) {
+      return res.status(400).json({ success: false, message: 'User workspace not found.' });
+    }
+
+    const result = await leadSourceService.listLeadSources(workspaceId, query);
     return res.status(200).json({
       success: true,
       message: 'Lead sources fetched successfully',
@@ -96,7 +119,12 @@ export const listLeadSources = async (req: Request, res: Response, next: NextFun
 
 export const getActiveLeadSources = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
   try {
-    const data = await leadSourceService.getActiveLeadSources();
+    const workspaceId = req.user?.workspaceId;
+    if (!workspaceId) {
+      return res.status(400).json({ success: false, message: 'User workspace not found.' });
+    }
+
+    const data = await leadSourceService.getActiveLeadSources(workspaceId);
     return res.status(200).json({
       success: true,
       message: 'Active lead sources fetched successfully',
@@ -113,7 +141,12 @@ export const updateLeadSource = async (req: Request, res: Response, next: NextFu
   if (!input) return;
 
   try {
-    const data = await leadSourceService.updateLeadSource(id, input);
+    const workspaceId = req.user?.workspaceId;
+    if (!workspaceId) {
+      return res.status(400).json({ success: false, message: 'User workspace not found.' });
+    }
+
+    const data = await leadSourceService.updateLeadSource(workspaceId, id, input);
 
     await auditService.log({
       userId: req.user?.id,
@@ -140,7 +173,12 @@ export const toggleLeadSourceStatus = async (req: Request, res: Response, next: 
   const id = req.params['id'] as string;
 
   try {
-    const data = await leadSourceService.toggleLeadSourceStatus(id);
+    const workspaceId = req.user?.workspaceId;
+    if (!workspaceId) {
+      return res.status(400).json({ success: false, message: 'User workspace not found.' });
+    }
+
+    const data = await leadSourceService.toggleLeadSourceStatus(workspaceId, id);
 
     await auditService.log({
       userId: req.user?.id,
@@ -167,7 +205,12 @@ export const deleteLeadSource = async (req: Request, res: Response, next: NextFu
   const id = req.params['id'] as string;
 
   try {
-    await leadSourceService.deleteLeadSource(id);
+    const workspaceId = req.user?.workspaceId;
+    if (!workspaceId) {
+      return res.status(400).json({ success: false, message: 'User workspace not found.' });
+    }
+
+    await leadSourceService.deleteLeadSource(workspaceId, id);
 
     await auditService.log({
       userId: req.user?.id,

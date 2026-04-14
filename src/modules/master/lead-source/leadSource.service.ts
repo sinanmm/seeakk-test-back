@@ -3,12 +3,13 @@ import { redisClient } from '../../../config/redis';
 import { ListLeadSourcesResponse, LeadSourceResponse } from './leadSource.types';
 import { CreateLeadSourceInput, ListLeadSourcesQuery, UpdateLeadSourceInput } from './leadSource.validator';
 
-const ACTIVE_CACHE_KEY = 'lead_sources:active';
 const ACTIVE_CACHE_TTL_SECONDS = 300;
+const getCacheKey = (workspaceId: string): string => `lead_sources:active:${workspaceId}`;
+const leadSourceDelegate = (prisma as any).leadSource;
 
-const clearActiveLeadSourcesCache = async (): Promise<void> => {
+const clearActiveLeadSourcesCache = async (workspaceId: string): Promise<void> => {
   if (redisClient.isOpen) {
-    await redisClient.del(ACTIVE_CACHE_KEY);
+    await redisClient.del(getCacheKey(workspaceId));
   }
 };
 
@@ -104,11 +105,15 @@ const countLeadUsage = async (leadSourceId: string): Promise<number> => {
 };
 
 export const createLeadSource = async (
+  workspaceId: string,
   input: CreateLeadSourceInput,
   createdBy?: string,
 ): Promise<LeadSourceResponse> => {
-  const existing = await prisma.leadSource.findUnique({
-    where: { name: input.name },
+  const existing = await leadSourceDelegate.findFirst({
+    where: {
+      workspaceId,
+      name: { equals: input.name, mode: 'insensitive' },
+    },
   });
 
   if (existing && !existing.deletedAt) {
@@ -118,37 +123,43 @@ export const createLeadSource = async (
   }
 
   if (existing && existing.deletedAt) {
-    const restored = await prisma.leadSource.update({
+    const restored = await leadSourceDelegate.update({
       where: { id: existing.id },
       data: {
         status: input.status,
         deletedAt: null,
         createdBy: createdBy ?? existing.createdBy,
+        workspaceId,
       },
     });
-    await clearActiveLeadSourcesCache();
+    await clearActiveLeadSourcesCache(workspaceId);
     const [mapped] = await mapCreatorNames([restored]);
-    return mapped;
+    return mapped as LeadSourceResponse;
   }
 
-  const created = await prisma.leadSource.create({
+  const created = await leadSourceDelegate.create({
     data: {
+      workspaceId,
       name: input.name,
       status: input.status,
       createdBy,
     },
   });
 
-  await clearActiveLeadSourcesCache();
+  await clearActiveLeadSourcesCache(workspaceId);
   const [mapped] = await mapCreatorNames([created]);
-  return mapped;
+  return mapped as LeadSourceResponse;
 };
 
-export const listLeadSources = async (query: ListLeadSourcesQuery): Promise<ListLeadSourcesResponse> => {
+export const listLeadSources = async (
+  workspaceId: string,
+  query: ListLeadSourcesQuery,
+): Promise<ListLeadSourcesResponse> => {
   const { page, limit, search, status } = query;
   const skip = (page - 1) * limit;
 
   const where = {
+    workspaceId,
     deletedAt: null,
     ...(search
       ? {
@@ -159,8 +170,8 @@ export const listLeadSources = async (query: ListLeadSourcesQuery): Promise<List
   };
 
   const [total, records] = await prisma.$transaction([
-    prisma.leadSource.count({ where }),
-    prisma.leadSource.findMany({
+    leadSourceDelegate.count({ where }),
+    leadSourceDelegate.findMany({
       where,
       skip,
       take: limit,
@@ -177,7 +188,7 @@ export const listLeadSources = async (query: ListLeadSourcesQuery): Promise<List
     }),
   ]);
 
-  const mappedRecords = await mapCreatorNames(records);
+  const mappedRecords = (await mapCreatorNames(records)) as LeadSourceResponse[];
 
   return {
     data: mappedRecords,
@@ -190,16 +201,17 @@ export const listLeadSources = async (query: ListLeadSourcesQuery): Promise<List
   };
 };
 
-export const getActiveLeadSources = async (): Promise<LeadSourceResponse[]> => {
+export const getActiveLeadSources = async (workspaceId: string): Promise<LeadSourceResponse[]> => {
   if (redisClient.isOpen) {
-    const cached = await redisClient.get(ACTIVE_CACHE_KEY);
+    const cached = await redisClient.get(getCacheKey(workspaceId));
     if (cached) {
       return JSON.parse(cached) as LeadSourceResponse[];
     }
   }
 
-  const records = await prisma.leadSource.findMany({
+  const records = await leadSourceDelegate.findMany({
     where: {
+      workspaceId,
       status: 'ACTIVE',
       deletedAt: null,
     },
@@ -215,16 +227,17 @@ export const getActiveLeadSources = async (): Promise<LeadSourceResponse[]> => {
     },
   });
 
-  const mappedRecords = await mapCreatorNames(records);
+  const mappedRecords = (await mapCreatorNames(records)) as LeadSourceResponse[];
 
   if (redisClient.isOpen) {
-    await redisClient.setEx(ACTIVE_CACHE_KEY, ACTIVE_CACHE_TTL_SECONDS, JSON.stringify(mappedRecords));
+    await redisClient.setEx(getCacheKey(workspaceId), ACTIVE_CACHE_TTL_SECONDS, JSON.stringify(mappedRecords));
   }
 
   return mappedRecords;
 };
 
 export const resolveOrCreateLeadSourceByName = async (
+  workspaceId: string,
   name: string,
   createdBy?: string,
 ): Promise<LeadSourceResponse> => {
@@ -235,8 +248,9 @@ export const resolveOrCreateLeadSourceByName = async (
     throw error;
   }
 
-  const existing = await prisma.leadSource.findFirst({
+  const existing = await leadSourceDelegate.findFirst({
     where: {
+      workspaceId,
       name: {
         equals: normalizedName,
         mode: 'insensitive',
@@ -246,39 +260,45 @@ export const resolveOrCreateLeadSourceByName = async (
 
   if (existing) {
     if (existing.deletedAt || existing.status !== 'ACTIVE') {
-      const restored = await prisma.leadSource.update({
+      const restored = await leadSourceDelegate.update({
         where: { id: existing.id },
         data: {
           name: normalizedName,
+          workspaceId,
           status: 'ACTIVE',
           deletedAt: null,
         },
       });
-      await clearActiveLeadSourcesCache();
+      await clearActiveLeadSourcesCache(workspaceId);
       const [mapped] = await mapCreatorNames([restored]);
-      return mapped;
+      return mapped as LeadSourceResponse;
     }
 
     const [mapped] = await mapCreatorNames([existing]);
-    return mapped;
+    return mapped as LeadSourceResponse;
   }
 
-  const created = await prisma.leadSource.create({
+  const created = await leadSourceDelegate.create({
     data: {
+      workspaceId,
       name: normalizedName,
       status: 'ACTIVE',
       createdBy,
     },
   });
 
-  await clearActiveLeadSourcesCache();
+  await clearActiveLeadSourcesCache(workspaceId);
   const [mapped] = await mapCreatorNames([created]);
-  return mapped;
+  return mapped as LeadSourceResponse;
 };
 
-export const updateLeadSource = async (id: string, input: UpdateLeadSourceInput): Promise<LeadSourceResponse> => {
-  const existing = await prisma.leadSource.findFirst({
-    where: { id, deletedAt: null },
+export const updateLeadSource = async (
+  workspaceId: string,
+  id: string,
+  input: UpdateLeadSourceInput,
+): Promise<LeadSourceResponse> => {
+  const existing = await leadSourceDelegate.findFirst({
+    where: { id, workspaceId, deletedAt: null },
   });
 
   if (!existing) {
@@ -288,8 +308,11 @@ export const updateLeadSource = async (id: string, input: UpdateLeadSourceInput)
   }
 
   if (input.name && input.name !== existing.name) {
-    const nameTaken = await prisma.leadSource.findUnique({
-      where: { name: input.name },
+    const nameTaken = await leadSourceDelegate.findFirst({
+      where: {
+        workspaceId,
+        name: { equals: input.name, mode: 'insensitive' },
+      },
     });
 
     if (nameTaken && nameTaken.id !== id && !nameTaken.deletedAt) {
@@ -305,7 +328,7 @@ export const updateLeadSource = async (id: string, input: UpdateLeadSourceInput)
     }
   }
 
-  const updated = await prisma.leadSource.update({
+  const updated = await leadSourceDelegate.update({
     where: { id },
     data: {
       ...(input.name !== undefined ? { name: input.name } : {}),
@@ -313,14 +336,14 @@ export const updateLeadSource = async (id: string, input: UpdateLeadSourceInput)
     },
   });
 
-  await clearActiveLeadSourcesCache();
+  await clearActiveLeadSourcesCache(workspaceId);
   const [mapped] = await mapCreatorNames([updated]);
-  return mapped;
+  return mapped as LeadSourceResponse;
 };
 
-export const toggleLeadSourceStatus = async (id: string): Promise<LeadSourceResponse> => {
-  const existing = await prisma.leadSource.findFirst({
-    where: { id, deletedAt: null },
+export const toggleLeadSourceStatus = async (workspaceId: string, id: string): Promise<LeadSourceResponse> => {
+  const existing = await leadSourceDelegate.findFirst({
+    where: { id, workspaceId, deletedAt: null },
   });
 
   if (!existing) {
@@ -330,19 +353,19 @@ export const toggleLeadSourceStatus = async (id: string): Promise<LeadSourceResp
   }
 
   const nextStatus = existing.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
-  const updated = await prisma.leadSource.update({
+  const updated = await leadSourceDelegate.update({
     where: { id },
     data: { status: nextStatus },
   });
 
-  await clearActiveLeadSourcesCache();
+  await clearActiveLeadSourcesCache(workspaceId);
   const [mapped] = await mapCreatorNames([updated]);
-  return mapped;
+  return mapped as LeadSourceResponse;
 };
 
-export const deleteLeadSource = async (id: string): Promise<void> => {
-  const existing = await prisma.leadSource.findFirst({
-    where: { id, deletedAt: null },
+export const deleteLeadSource = async (workspaceId: string, id: string): Promise<void> => {
+  const existing = await leadSourceDelegate.findFirst({
+    where: { id, workspaceId, deletedAt: null },
   });
 
   if (!existing) {
@@ -358,10 +381,10 @@ export const deleteLeadSource = async (id: string): Promise<void> => {
     throw error;
   }
 
-  await prisma.leadSource.update({
+  await leadSourceDelegate.update({
     where: { id },
     data: { deletedAt: new Date() },
   });
 
-  await clearActiveLeadSourcesCache();
+  await clearActiveLeadSourcesCache(workspaceId);
 };

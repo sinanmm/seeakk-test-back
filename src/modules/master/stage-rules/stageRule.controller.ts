@@ -119,6 +119,19 @@ const handleServiceError = (error: any, res: Response, next: NextFunction, actio
   next(error);
 };
 
+const getWorkspaceId = (req: Request, res: Response): string | null => {
+  const workspaceId = req.user?.workspaceId;
+  if (!workspaceId) {
+    res.status(403).json({
+      success: false,
+      message: 'Workspace context is required.',
+    });
+    return null;
+  }
+
+  return workspaceId;
+};
+
 export const createStageRule = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
   debugStageRuleRequest('create.beforeValidation', req);
   const input = validate<CreateStageRuleInput>(createStageRuleSchema, req.body, res);
@@ -126,10 +139,12 @@ export const createStageRule = async (req: Request, res: Response, next: NextFun
     debugStageRuleRequest('create.validationFailed', req);
     return;
   }
+  const workspaceId = getWorkspaceId(req, res);
+  if (!workspaceId) return;
   debugStageRuleRequest('create.afterValidation', req, { input });
 
   try {
-    const data = await stageRuleService.createStageRule(input, req.user?.id);
+    const data = await stageRuleService.createStageRule(workspaceId, input, req.user?.id);
 
     await auditService.log({
       userId: req.user?.id,
@@ -159,10 +174,12 @@ export const listStageRules = async (req: Request, res: Response, next: NextFunc
     debugStageRuleRequest('list.validationFailed', req);
     return;
   }
+  const workspaceId = getWorkspaceId(req, res);
+  if (!workspaceId) return;
   debugStageRuleRequest('list.afterValidation', req, { query });
 
   try {
-    const result = await stageRuleService.listStageRules(query);
+    const result = await stageRuleService.listStageRules(workspaceId, query);
     return res.status(200).json({
       success: true,
       message: 'Stage rules fetched successfully',
@@ -175,8 +192,11 @@ export const listStageRules = async (req: Request, res: Response, next: NextFunc
 };
 
 export const getActiveStageRules = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = getWorkspaceId(req, res);
+  if (!workspaceId) return;
+
   try {
-    const data = await stageRuleService.getActiveStageRules();
+    const data = await stageRuleService.getActiveStageRules(workspaceId);
     return res.status(200).json({
       success: true,
       message: 'Active stage rules fetched successfully',
@@ -195,10 +215,12 @@ export const updateStageRule = async (req: Request, res: Response, next: NextFun
     debugStageRuleRequest('update.validationFailed', req, { id });
     return;
   }
+  const workspaceId = getWorkspaceId(req, res);
+  if (!workspaceId) return;
   debugStageRuleRequest('update.afterValidation', req, { id, input });
 
   try {
-    const data = await stageRuleService.updateStageRule(id, input);
+    const data = await stageRuleService.updateStageRule(workspaceId, id, input);
 
     await auditService.log({
       userId: req.user?.id,
@@ -223,9 +245,11 @@ export const updateStageRule = async (req: Request, res: Response, next: NextFun
 
 export const deleteStageRule = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
   const id = req.params['id'] as string;
+  const workspaceId = getWorkspaceId(req, res);
+  if (!workspaceId) return;
 
   try {
-    await stageRuleService.deleteStageRule(id);
+    await stageRuleService.deleteStageRule(workspaceId, id);
 
     await auditService.log({
       userId: req.user?.id,
