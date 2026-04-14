@@ -397,7 +397,7 @@ export const getTodayFollowUps = async (
 
   if (redisClient.isOpen) {
     const cached = await redisClient.get(cacheKey);
-    if (cached) {
+    if (typeof cached === 'string' && cached.length > 0) {
       return JSON.parse(cached);
     }
   }
