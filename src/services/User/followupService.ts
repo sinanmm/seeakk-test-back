@@ -210,10 +210,10 @@ const getLeadTableColumns = async (): Promise<{
   `;
 
   const idColumn = ['id', 'leadId', 'lead_id'].find((column) =>
-    columnRows.some((row) => row.column_name === column),
+    columnRows.some((row: { column_name: string }) => row.column_name === column),
   ) || null;
   const workspaceColumn = ['workspaceId', 'workspace_id'].find((column) =>
-    columnRows.some((row) => row.column_name === column),
+    columnRows.some((row: { column_name: string }) => row.column_name === column),
   ) || null;
 
   return {
