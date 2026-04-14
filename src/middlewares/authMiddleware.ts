@@ -14,6 +14,16 @@ const normalizeRoleKey = (role: string): string =>
     .trim()
     .replace(/[\s_-]+/g, '');
 
+const isPrivilegedRole = (role?: string | null): boolean => {
+  const normalized = normalizeRoleKey(role || '');
+  return (
+    normalized === 'superadmin' ||
+    normalized === 'admin' ||
+    normalized === 'administrator' ||
+    normalized.includes('admin')
+  );
+};
+
 const maskAuthHeader = (authHeader?: string): string => {
   if (!authHeader) return 'NOTHING RECEIVED';
   if (!authHeader.toLowerCase().startsWith('bearer ')) return '[NON_BEARER_TOKEN_REDACTED]';
@@ -147,8 +157,7 @@ export const checkPermission = (permissionKey: string) => {
     const cacheKey = `role_permissions:${roleId}`;
 
     try {
-      const roleName = normalizeRoleKey(req.user.role?.name || '');
-      if (['superadmin', 'admin', 'administrator'].includes(roleName)) {
+      if (isPrivilegedRole(req.user.role?.name)) {
         return next();
       }
 
@@ -243,8 +252,7 @@ export const checkAnyPermission = (permissionKeys: string[]) => {
     const cacheKey = `role_permissions:${roleId}`;
 
     try {
-      const roleName = normalizeRoleKey(req.user.role?.name || '');
-      if (['superadmin', 'admin', 'administrator'].includes(roleName)) {
+      if (isPrivilegedRole(req.user.role?.name)) {
         return next();
       }
 
