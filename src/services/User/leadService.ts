@@ -271,8 +271,8 @@ export const clearLeadCache = async (workspaceId: string): Promise<void> => {
       }
     }
 
-    if (uniqueKeys.length > 0) {
-      const uniqueKeysFinal = Array.from(new Set(uniqueKeys));
+    if (keysToDelete.length > 0) {
+      const uniqueKeysFinal = Array.from(new Set(keysToDelete));
       await Promise.all(
         Array.from({ length: Math.ceil(uniqueKeysFinal.length / 50) }, (_, i) =>
           redisClient.del(uniqueKeysFinal.slice(i * 50, (i + 1) * 50)),

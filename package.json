@@ -4,10 +4,12 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon --watch src --ext ts,json --exec \"ts-node --transpile-only src/server.ts\"",
+    "dev": "nodemon --watch src --ext ts,json --exec ts-node --transpile-only src/server.ts",
     "dev:once": "ts-node --transpile-only src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
+    "postinstall": "prisma generate",
+    "migrate": "prisma migrate deploy",
     "prisma:seed": "ts-node --transpile-only src/scripts/seedPermissions.ts",
     "prisma:generate": "node ./node_modules/prisma/build/index.js generate",
     "prisma:push": "node ./node_modules/prisma/build/index.js db push",
