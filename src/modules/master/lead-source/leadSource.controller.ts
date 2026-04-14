@@ -85,7 +85,7 @@ export const createLeadSource = async (req: Request, res: Response, next: NextFu
 
     await auditService.log({
       userId: req.user?.id,
-      workspaceId: req.user?.workspaceId || undefined,
+      workspaceId: workspaceId,
       action: 'MASTER_CREATE_LEAD_SOURCE',
       entityType: 'LeadSource',
       entityId: data.id,
@@ -153,7 +153,7 @@ export const updateLeadSource = async (req: Request, res: Response, next: NextFu
 
     await auditService.log({
       userId: req.user?.id,
-      workspaceId: req.user?.workspaceId || undefined,
+      workspaceId: workspaceId,
       action: 'MASTER_UPDATE_LEAD_SOURCE',
       entityType: 'LeadSource',
       entityId: data.id,
@@ -183,7 +183,7 @@ export const toggleLeadSourceStatus = async (req: Request, res: Response, next: 
 
     await auditService.log({
       userId: req.user?.id,
-      workspaceId: req.user?.workspaceId || undefined,
+      workspaceId: workspaceId,
       action: 'MASTER_TOGGLE_LEAD_SOURCE_STATUS',
       entityType: 'LeadSource',
       entityId: data.id,
@@ -213,7 +213,7 @@ export const deleteLeadSource = async (req: Request, res: Response, next: NextFu
 
     await auditService.log({
       userId: req.user?.id,
-      workspaceId: req.user?.workspaceId || undefined,
+      workspaceId: workspaceId,
       action: 'MASTER_DELETE_LEAD_SOURCE',
       entityType: 'LeadSource',
       entityId: id,
