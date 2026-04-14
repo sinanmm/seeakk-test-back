@@ -78,7 +78,7 @@ export const createLeadSource = async (req: Request, res: Response, next: NextFu
   if (!input) return;
 
   try {
-    const workspaceId = await requireWorkspace(req, res);
+    const workspaceId = await getWorkspaceId(req, res);
     if (!workspaceId) return;
 
     const data = await leadSourceService.createLeadSource(workspaceId, input, req.user?.id);
