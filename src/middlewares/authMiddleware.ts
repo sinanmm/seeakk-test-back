@@ -148,7 +148,7 @@ export const checkPermission = (permissionKey: string) => {
 
     try {
       const roleName = normalizeRoleKey(req.user.role?.name || '');
-      if (roleName === 'superadmin') {
+      if (['superadmin', 'admin', 'administrator'].includes(roleName)) {
         return next();
       }
 
@@ -244,7 +244,7 @@ export const checkAnyPermission = (permissionKeys: string[]) => {
 
     try {
       const roleName = normalizeRoleKey(req.user.role?.name || '');
-      if (roleName === 'superadmin') {
+      if (['superadmin', 'admin', 'administrator'].includes(roleName)) {
         return next();
       }
 
