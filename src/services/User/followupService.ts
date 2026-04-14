@@ -254,9 +254,10 @@ const invalidateTodayCache = async (
 ): Promise<void> => {
   if (!redisClient.isOpen || dates.length === 0) return;
 
-  const uniqueKeys = Array.from(new Set(dates.map((date) => buildTodayCacheKey(workspaceId, userId, date))));
-  if (uniqueKeys.length > 0) {
-    await redisClient.del(uniqueKeys);
+  const keysToDelete = Array.from(new Set(dates.map((date) => buildTodayCacheKey(workspaceId, userId, date))));
+  if (keysToDelete.length > 0) {
+    // Standard Redis del can take an array in node-redis v4
+    await redisClient.del(keysToDelete);
   }
 };
 

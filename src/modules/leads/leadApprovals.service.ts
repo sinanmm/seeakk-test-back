@@ -44,12 +44,11 @@ const clearWorkspaceLeadCache = async (workspaceId: string): Promise<void> => {
     }
 
     if (keysToDelete.length > 0) {
-      const uniqueKeys = Array.from(new Set(keysToDelete));
-      await Promise.all(
-        Array.from({ length: Math.ceil(uniqueKeys.length / 50) }, (_, index) =>
-          redisClient.del(uniqueKeys.slice(index * 50, (index + 1) * 50)),
-        ),
-      );
+      const uniqueKeysFinal = Array.from(new Set(keysToDelete));
+      for (let i = 0; i < uniqueKeysFinal.length; i += 50) {
+        const batch = uniqueKeysFinal.slice(i, i + 50);
+        await redisClient.del(batch);
+      }
     }
   } catch (error) {
     console.error('Failed to clear lead cache after approval action:', error);

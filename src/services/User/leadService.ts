@@ -267,24 +267,24 @@ export const clearLeadCache = async (workspaceId: string): Promise<void> => {
     if (keysToDelete.length === 0) {
       const keys = await (redisClient as any).keys(pattern);
       if (Array.isArray(keys)) {
-        keysToDelete.push(...keys);
+        keys.forEach(k => {
+          if (typeof k === 'string' && k.length > 0) keysToDelete.push(k);
+        });
       }
     }
 
-    if (uniqueKeys.length > 0) {
-      const uniqueKeysFinal = Array.from(new Set(uniqueKeys));
-      await Promise.all(
-        Array.from({ length: Math.ceil(uniqueKeysFinal.length / 50) }, (_, i) =>
-          redisClient.del(uniqueKeysFinal.slice(i * 50, (i + 1) * 50)),
-        ),
-      );
+    if (keysToDelete.length > 0) {
+      const uniqueKeysFinal = Array.from(new Set(keysToDelete));
+      // Process in batches of 50 to avoid blocking Redis or hitting payload limits
+      for (let i = 0; i < uniqueKeysFinal.length; i += 50) {
+        const batch = uniqueKeysFinal.slice(i, i + 50);
+        await redisClient.del(batch);
+      }
     }
     
-    // Tiny delay to allow Redis deletions to fully propagate through the cluster/event loop
-    // and ensure subsequent GETs don't race and hit a stale shard or mid-delete key.
+    // Tiny delay to allow Redis deletions to fully propagate
     await new Promise((resolve) => setTimeout(resolve, 50));
   } catch (error) {
-    // Silently fail cache clearing to not block the main operation, but log it
     console.error('Failed to clear lead cache:', error);
   }
 };
