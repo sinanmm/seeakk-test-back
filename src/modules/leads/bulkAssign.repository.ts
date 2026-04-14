@@ -41,7 +41,7 @@ export const getTeamUserIds = async (workspaceId: string, supervisorId: string):
     },
   });
 
-  return rows.map((row) => row.id);
+  return rows.map((row: { id: string }) => row.id);
 };
 
 export const findAssignableUser = async (workspaceId: string, userId: string) =>
@@ -153,7 +153,7 @@ export const bulkAssignLeads = async (input: {
   const result = await prisma.$transaction(async (tx: any) => {
     const activeLeadRows = await (tx as any).lead.findMany({
       where: {
-        id: { in: assignments.map((assignment) => assignment.leadId) },
+        id: { in: assignments.map((assignment: { leadId: string }) => assignment.leadId) },
         workspaceId,
         deletedAt: null,
         isClosed: false,
@@ -166,22 +166,22 @@ export const bulkAssignLeads = async (input: {
     if (activeLeadIds.length === 0) {
       return {
         updatedCount: 0,
-        failedLeadIds: assignments.map((assignment) => assignment.leadId),
+        failedLeadIds: assignments.map((assignment: { leadId: string }) => assignment.leadId),
       };
     }
 
     const activeLeadIdSet = new Set(activeLeadIds);
-    const validAssignments = assignments.filter((assignment) => activeLeadIdSet.has(assignment.leadId));
+    const validAssignments = assignments.filter((assignment: { leadId: string }) => activeLeadIdSet.has(assignment.leadId));
     const failedLeadIds = assignments
-      .map((assignment) => assignment.leadId)
-      .filter((leadId) => !activeLeadIdSet.has(leadId));
+      .map((assignment: { leadId: string }) => assignment.leadId)
+      .filter((leadId: string) => !activeLeadIdSet.has(leadId));
 
     if (validAssignments.length === 0) {
       return { updatedCount: 0, failedLeadIds };
     }
 
     const assignmentValues = Prisma.join(
-      validAssignments.map((assignment) => Prisma.sql`(${assignment.leadId}, ${assignment.assignTo})`),
+      validAssignments.map((assignment: { leadId: string; assignTo: string }) => Prisma.sql`(${assignment.leadId}, ${assignment.assignTo})`),
     );
 
     const updatedRows = (await (tx as any).$queryRaw(Prisma.sql`
