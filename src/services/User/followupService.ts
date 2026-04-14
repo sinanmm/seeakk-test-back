@@ -93,10 +93,11 @@ const assertModuleReady = async (): Promise<void> => {
   }
 };
 
-const resolveDisplayName = (user: { name: string | null; username: string | null; email: string }): string => {
+const resolveDisplayName = (user?: { name?: string | null; username?: string | null; email?: string } | null): string => {
+  if (!user) return '';
   if (user.name && user.name.trim()) return user.name.trim();
   if (user.username && user.username.trim()) return user.username.trim();
-  return user.email;
+  return user.email || '';
 };
 
 const mapFollowUpRecord = (record: FollowUpRecord) => ({
@@ -229,15 +230,20 @@ const ensureLeadExistsInWorkspace = async (leadId: string, workspaceId: string):
     throw createServiceError('Lead module is not ready. Database table "leads" is missing or invalid.', 503);
   }
 
-  const rows = await prisma.$queryRawUnsafe<Array<{ id: string }>>(
-    `SELECT "${columns.idColumn}" AS id
+  const { idColumn, workspaceColumn } = columns;
+  if (!idColumn || !workspaceColumn) {
+    throw createServiceError('Lead module columns are missing.', 500);
+  }
+
+  const rows = (await (prisma as any).$queryRawUnsafe(
+    `SELECT "${idColumn}" AS id
      FROM "leads"
-     WHERE "${columns.idColumn}" = $1
-       AND "${columns.workspaceColumn}" = $2
+     WHERE "${idColumn}" = $1
+       AND "${workspaceColumn}" = $2
      LIMIT 1`,
     leadId,
     workspaceId,
-  );
+  )) as Array<{ id: string }>;
 
   if (rows.length === 0) {
     throw createServiceError('Lead not found in this workspace.', 404);
