@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { LOBReasonStatus } from '../../../../prisma/generated/client';
+import { LOBReasonStatus } from '@prisma/client';
 
 const emptyStringToUndefined = (value: unknown) =>
   typeof value === 'string' && value.trim() === '' ? undefined : value;

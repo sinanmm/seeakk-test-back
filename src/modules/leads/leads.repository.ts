@@ -1,4 +1,4 @@
-import { LeadClosureType } from '../../../prisma/generated/client';
+import { LeadClosureType } from '@prisma/client';
 import prisma from '../../config/prisma';
 
 export const closedLeadSelect = {

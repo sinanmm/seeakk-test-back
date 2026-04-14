@@ -1,4 +1,4 @@
-import { LOBReasonStatus, Prisma } from '../../../../prisma/generated/client';
+import { LOBReasonStatus, Prisma } from '@prisma/client';
 import prisma from '../../../config/prisma';
 
 export const lobReasonSelect = {

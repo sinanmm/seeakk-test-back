@@ -1,4 +1,4 @@
-import { LOBReasonStatus } from '../../../../prisma/generated/client';
+import { LOBReasonStatus } from '@prisma/client';
 import auditService from '../../../services/Audit/auditService';
 import * as repository from './lobReasons.repository';
 import type {

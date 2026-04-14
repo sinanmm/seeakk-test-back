@@ -1,4 +1,4 @@
-import { Prisma } from '../../../prisma/generated/client';
+import { Prisma } from '@prisma/client';
 import prisma from '../../config/prisma';
 import { reportTypeSelect } from './reportTypes.repository';
 

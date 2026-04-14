@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ReportBaseDataSource, ReportModule, ReportTypeStatus } from '../../../prisma/generated/client';
+import { ReportBaseDataSource, ReportModule, ReportTypeStatus } from '@prisma/client';
 
 const emptyStringToUndefined = (value: unknown) =>
   typeof value === 'string' && value.trim() === '' ? undefined : value;

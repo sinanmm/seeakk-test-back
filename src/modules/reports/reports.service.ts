@@ -1,4 +1,4 @@
-import { Prisma, ReportBaseDataSource, ReportTypeStatus } from '../../../prisma/generated/client';
+import { Prisma, ReportBaseDataSource, ReportTypeStatus } from '@prisma/client';
 import auditService from '../../services/Audit/auditService';
 import * as reportTypesRepository from './reportTypes.repository';
 import * as reportsRepository from './reports.repository';

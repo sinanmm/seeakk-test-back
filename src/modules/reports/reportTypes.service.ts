@@ -1,4 +1,4 @@
-import { Prisma, ReportBaseDataSource, ReportTypeStatus } from '../../../prisma/generated/client';
+import { Prisma, ReportBaseDataSource, ReportTypeStatus } from '@prisma/client';
 import { redisClient } from '../../config/redis';
 import auditService from '../../services/Audit/auditService';
 import * as repository from './reportTypes.repository';

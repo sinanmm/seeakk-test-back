@@ -1,4 +1,4 @@
-import { LocationType } from '../../../../prisma/generated/client';
+import { LocationType } from '@prisma/client';
 import auditService from '../../../services/Audit/auditService';
 import * as repository from './locations.repository';
 import type {

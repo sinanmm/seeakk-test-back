@@ -1,4 +1,4 @@
-import { LeadClosureType } from '../../../prisma/generated/client';
+import { LeadClosureType } from '@prisma/client';
 import type { ClosedLeadQueryInput, UpdateClosedLeadInput } from './leads.validation';
 import * as leadsRepository from './leads.repository';
 

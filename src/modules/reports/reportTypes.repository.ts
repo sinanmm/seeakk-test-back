@@ -1,4 +1,4 @@
-import { Prisma, ReportTypeStatus } from '../../../prisma/generated/client';
+import { Prisma, ReportTypeStatus } from '@prisma/client';
 import prisma from '../../config/prisma';
 
 export const reportTypeSelect = {

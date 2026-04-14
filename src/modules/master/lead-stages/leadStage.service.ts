@@ -1,6 +1,6 @@
 import prisma from '../../../config/prisma';
 import { redisClient } from '../../../config/redis';
-import { Prisma } from '../../../../prisma/generated/client';
+import { Prisma } from '@prisma/client';
 import {
   ListLeadStagesResponse,
   LeadStageResponse,

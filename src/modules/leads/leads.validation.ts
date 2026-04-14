@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { LeadClosureType } from '../../../prisma/generated/client';
+import { LeadClosureType } from '@prisma/client';
 
 export const closedLeadQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
