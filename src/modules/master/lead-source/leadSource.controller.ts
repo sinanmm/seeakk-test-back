@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
+import prisma from '../../../config/prisma';
 import auditService from '../../../services/Audit/auditService';
 import logger from '../../../utils/logger';
 import * as leadSourceService from './leadSource.service';
