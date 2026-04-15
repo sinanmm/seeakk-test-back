@@ -356,25 +356,8 @@ const resolveStage = async (stageId: string | null | undefined) => {
 
 const resolveLifecycle = async (workspaceId: string, lifecycleId?: string | null) => {
   if (!lifecycleId) {
-    return prisma.leadLifeCycle.findFirst({
-      where: {
-        workspaceId,
-        isDefault: true,
-      },
-      select: {
-        id: true,
-        name: true,
-        transitions: {
-          orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
-          select: {
-            fromStageId: true,
-            numberOfDays: true,
-            expiryAction: true,
-            warningDays: true,
-          },
-        },
-      },
-    });
+    // Lifecycle is opt-in per lead; do not auto-attach workspace default.
+    return null;
   }
 
   const lifecycle = await prisma.leadLifeCycle.findFirst({

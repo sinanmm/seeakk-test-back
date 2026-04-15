@@ -61,6 +61,16 @@ const normalizeRoleKey = (role?: string | null): string =>
     .trim()
     .replace(/[\s_-]+/g, '');
 
+const isPrivilegedRoleName = (role?: string | null): boolean => {
+  const normalized = normalizeRoleKey(role);
+  return (
+    normalized === 'superadmin' ||
+    normalized === 'admin' ||
+    normalized === 'administrator' ||
+    normalized.includes('admin')
+  );
+};
+
 const resolveDisplayName = (user?: { name?: string | null; username?: string | null; email?: string | null } | null): string => {
   if (user?.name?.trim()) return user.name.trim();
   if (user?.username?.trim()) return user.username.trim();
@@ -151,8 +161,8 @@ const normalizeRequestData = (requestData: unknown): Record<string, any> => {
 };
 
 const getPermissionKeys = async (actor: Actor): Promise<string[]> => {
+  if (isPrivilegedRoleName(actor.role?.name)) return ['*'];
   if (!actor.roleId) return [];
-  if (normalizeRoleKey(actor.role?.name) === 'superadmin') return ['*'];
   return repository.getRolePermissionKeys(actor.roleId);
 };
 

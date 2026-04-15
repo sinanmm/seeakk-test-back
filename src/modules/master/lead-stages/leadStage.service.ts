@@ -282,8 +282,8 @@ export const getPipelineLeadStages = async (workspaceId: string): Promise<LeadSt
 };
 
 export const updateLeadStage = async (
-  id: string,
   workspaceId: string,
+  id: string,
   input: UpdateLeadStageInput,
 ): Promise<LeadStageResponse> => {
   const existing = await leadStageDelegate.findFirst({
