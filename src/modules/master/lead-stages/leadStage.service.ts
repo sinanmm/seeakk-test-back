@@ -88,6 +88,11 @@ const mapCreatorNames = async <T extends { createdBy: string | null }>(
   }));
 };
 
+const normalizeLeadStageName = (value: string): string =>
+  value
+    .trim()
+    .replace(/\s+/g, ' ');
+
 const countLeadUsage = async (stageId: string): Promise<number> =>
   (prisma as any).lead.count({
     where: {
@@ -149,6 +154,7 @@ export const createLeadStage = async (
 ): Promise<LeadStageResponse> => {
   const normalizedInput = {
     ...input,
+    name: normalizeLeadStageName(input.name),
   };
 
   const duplicate = await leadStageDelegate.findFirst({
@@ -301,13 +307,15 @@ export const updateLeadStage = async (
     throw error;
   }
 
-  if (input.name && input.name.toLowerCase() !== existing.name.toLowerCase()) {
+  const nextName = input.name !== undefined ? normalizeLeadStageName(input.name) : undefined;
+
+  if (nextName && nextName.toLowerCase() !== existing.name.toLowerCase()) {
     const duplicate = await leadStageDelegate.findFirst({
       where: {
         workspaceId,
         id: { not: id },
         deletedAt: null,
-        name: { equals: input.name, mode: 'insensitive' },
+        name: { equals: nextName, mode: 'insensitive' },
       },
       select: { id: true },
     });
@@ -325,6 +333,7 @@ export const updateLeadStage = async (
 
   const normalizedInput = {
     ...input,
+    ...(nextName !== undefined ? { name: nextName } : {}),
   };
 
   const updated = await prisma.$transaction(
@@ -357,9 +366,10 @@ export const updateLeadStage = async (
         }
       }
 
-      await tx.leadStage.update({
-        where: { id },
-        data: {
+      try {
+        await tx.leadStage.update({
+          where: { id },
+          data: {
           ...(normalizedInput.name !== undefined ? { name: normalizedInput.name } : {}),
           ...(normalizedInput.color !== undefined ? { color: normalizedInput.color } : {}),
           ...(normalizedInput.isApprovalRequired !== undefined ? { isApprovalRequired: normalizedInput.isApprovalRequired } : {}),
@@ -367,9 +377,18 @@ export const updateLeadStage = async (
           ...(normalizedInput.isLOB !== undefined ? { isLOB: normalizedInput.isLOB } : {}),
           ...(normalizedInput.order !== undefined ? { order: normalizedInput.order } : {}),
           ...(normalizedInput.status !== undefined ? { status: normalizedInput.status } : {}),
-        },
-        include: LEAD_STAGE_WITH_RULES_INCLUDE,
-      });
+          },
+          include: LEAD_STAGE_WITH_RULES_INCLUDE,
+        });
+      } catch (error: any) {
+        // Convert unique constraint into a friendly conflict response.
+        if (error?.code === 'P2002') {
+          const err: any = new Error(`Lead stage "${normalizedInput.name || existing.name}" already exists.`);
+          err.statusCode = 409;
+          throw err;
+        }
+        throw error;
+      }
 
       if (normalizedInput.ruleAssignments !== undefined) {
         await tx.stageRule.updateMany({
