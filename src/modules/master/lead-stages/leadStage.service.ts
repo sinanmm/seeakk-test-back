@@ -93,6 +93,31 @@ const normalizeLeadStageName = (value: string): string =>
     .trim()
     .replace(/\s+/g, ' ');
 
+const releaseDeletedStageNameConflicts = async (workspaceId: string, targetName: string, exceptId?: string): Promise<void> => {
+  const deletedConflicts = await leadStageDelegate.findMany({
+    where: {
+      workspaceId,
+      deletedAt: { not: null },
+      ...(exceptId ? { id: { not: exceptId } } : {}),
+      name: { equals: targetName, mode: 'insensitive' },
+    },
+    select: { id: true, name: true },
+  });
+
+  if (deletedConflicts.length === 0) return;
+
+  await prisma.$transaction(
+    deletedConflicts.map((item: { id: string; name: string }) =>
+      leadStageDelegate.update({
+        where: { id: item.id },
+        data: {
+          name: `${item.name}__archived__${item.id.slice(0, 8)}`,
+        },
+      }),
+    ),
+  );
+};
+
 const countLeadUsage = async (stageId: string): Promise<number> =>
   (prisma as any).lead.count({
     where: {
@@ -156,6 +181,8 @@ export const createLeadStage = async (
     ...input,
     name: normalizeLeadStageName(input.name),
   };
+
+  await releaseDeletedStageNameConflicts(workspaceId, normalizedInput.name);
 
   const duplicate = await leadStageDelegate.findFirst({
     where: {
@@ -308,6 +335,10 @@ export const updateLeadStage = async (
   }
 
   const nextName = input.name !== undefined ? normalizeLeadStageName(input.name) : undefined;
+
+  if (nextName) {
+    await releaseDeletedStageNameConflicts(workspaceId, nextName, id);
+  }
 
   if (nextName && nextName.toLowerCase() !== existing.name.toLowerCase()) {
     const duplicate = await leadStageDelegate.findFirst({
@@ -510,6 +541,7 @@ export const deleteLeadStage = async (workspaceId: string, id: string): Promise<
     await tx.leadStage.update({
       where: { id },
       data: {
+        name: `${existing.name}__archived__${existing.id.slice(0, 8)}`,
         deletedAt: new Date(),
         status: 'INACTIVE',
       },
