@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import auditService from '../../../services/Audit/auditService';
 import logger from '../../../utils/logger';
+import { resolveWorkspaceIdForUser } from '../../../utils/workspaceContext';
 import * as leadSourceService from './leadSource.service';
 import {
   CreateLeadSourceInput,
@@ -37,6 +38,24 @@ const handleServiceError = (error: any, res: Response, next: NextFunction, actio
     return;
   }
 
+  if (error?.code === 'P2022') {
+    res.status(503).json({
+      success: false,
+      message:
+        'Lead Source module schema is outdated in the database. Run Prisma migration/db push so workspace-scoped master data can be used.',
+    });
+    return;
+  }
+
+  if (String(error?.message || '').includes('workspaceId')) {
+    res.status(503).json({
+      success: false,
+      message:
+        'Lead Source module schema is outdated in the database. Run Prisma migration/db push so workspace-scoped master data can be used.',
+    });
+    return;
+  }
+
   if (error?.statusCode) {
     res.status(error.statusCode).json({
       success: false,
@@ -49,16 +68,41 @@ const handleServiceError = (error: any, res: Response, next: NextFunction, actio
   next(error);
 };
 
+const getWorkspaceId = async (req: Request, res: Response): Promise<string | null> => {
+  if (!req.user?.id) {
+    res.status(403).json({
+      success: false,
+      message: 'Authentication required.',
+    });
+    return null;
+  }
+
+  const workspaceId = await resolveWorkspaceIdForUser(req.user.id, req.user.workspaceId);
+
+  if (!workspaceId) {
+    res.status(403).json({
+      success: false,
+      message: 'Workspace context is required. Please complete workspace setup or refresh your session.',
+    });
+    return null;
+  }
+
+  return workspaceId;
+};
+
 export const createLeadSource = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
   const input = validate<CreateLeadSourceInput>(createLeadSourceSchema, req.body, res);
   if (!input) return;
 
   try {
-    const data = await leadSourceService.createLeadSource(input, req.user?.id);
+    const workspaceId = await getWorkspaceId(req, res);
+    if (!workspaceId) return;
+
+    const data = await leadSourceService.createLeadSource(workspaceId, input, req.user?.id);
 
     await auditService.log({
       userId: req.user?.id,
-      workspaceId: req.user?.workspaceId || undefined,
+      workspaceId: workspaceId,
       action: 'MASTER_CREATE_LEAD_SOURCE',
       entityType: 'LeadSource',
       entityId: data.id,
@@ -82,7 +126,10 @@ export const listLeadSources = async (req: Request, res: Response, next: NextFun
   if (!query) return;
 
   try {
-    const result = await leadSourceService.listLeadSources(query);
+    const workspaceId = await getWorkspaceId(req, res);
+    if (!workspaceId) return;
+
+    const result = await leadSourceService.listLeadSources(workspaceId, query);
     return res.status(200).json({
       success: true,
       message: 'Lead sources fetched successfully',
@@ -96,7 +143,10 @@ export const listLeadSources = async (req: Request, res: Response, next: NextFun
 
 export const getActiveLeadSources = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
   try {
-    const data = await leadSourceService.getActiveLeadSources();
+    const workspaceId = await getWorkspaceId(req, res);
+    if (!workspaceId) return;
+
+    const data = await leadSourceService.getActiveLeadSources(workspaceId);
     return res.status(200).json({
       success: true,
       message: 'Active lead sources fetched successfully',
@@ -113,11 +163,14 @@ export const updateLeadSource = async (req: Request, res: Response, next: NextFu
   if (!input) return;
 
   try {
-    const data = await leadSourceService.updateLeadSource(id, input);
+    const workspaceId = await getWorkspaceId(req, res);
+    if (!workspaceId) return;
+
+    const data = await leadSourceService.updateLeadSource(workspaceId, id, input);
 
     await auditService.log({
       userId: req.user?.id,
-      workspaceId: req.user?.workspaceId || undefined,
+      workspaceId: workspaceId,
       action: 'MASTER_UPDATE_LEAD_SOURCE',
       entityType: 'LeadSource',
       entityId: data.id,
@@ -140,11 +193,14 @@ export const toggleLeadSourceStatus = async (req: Request, res: Response, next: 
   const id = req.params['id'] as string;
 
   try {
-    const data = await leadSourceService.toggleLeadSourceStatus(id);
+    const workspaceId = await getWorkspaceId(req, res);
+    if (!workspaceId) return;
+
+    const data = await leadSourceService.toggleLeadSourceStatus(workspaceId, id);
 
     await auditService.log({
       userId: req.user?.id,
-      workspaceId: req.user?.workspaceId || undefined,
+      workspaceId: workspaceId,
       action: 'MASTER_TOGGLE_LEAD_SOURCE_STATUS',
       entityType: 'LeadSource',
       entityId: data.id,
@@ -167,11 +223,14 @@ export const deleteLeadSource = async (req: Request, res: Response, next: NextFu
   const id = req.params['id'] as string;
 
   try {
-    await leadSourceService.deleteLeadSource(id);
+    const workspaceId = await getWorkspaceId(req, res);
+    if (!workspaceId) return;
+
+    await leadSourceService.deleteLeadSource(workspaceId, id);
 
     await auditService.log({
       userId: req.user?.id,
-      workspaceId: req.user?.workspaceId || undefined,
+      workspaceId: workspaceId,
       action: 'MASTER_DELETE_LEAD_SOURCE',
       entityType: 'LeadSource',
       entityId: id,

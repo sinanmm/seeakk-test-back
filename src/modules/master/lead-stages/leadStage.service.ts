@@ -14,12 +14,14 @@ import {
   UpdateLeadStageInput,
 } from './leadStage.validator';
 
-const PIPELINE_CACHE_KEY = 'lead_stages:pipeline';
 const PIPELINE_CACHE_TTL_SECONDS = 300;
+const getPipelineCacheKey = (workspaceId: string): string => `lead_stages:pipeline:${workspaceId}`;
+const leadStageDelegate = (prisma as any).leadStage;
+const stageRuleDelegate = (prisma as any).stageRule;
 
-const clearPipelineCache = async (): Promise<void> => {
+const clearPipelineCache = async (workspaceId: string): Promise<void> => {
   if (redisClient.isOpen) {
-    await redisClient.del(PIPELINE_CACHE_KEY);
+    await redisClient.del(getPipelineCacheKey(workspaceId));
   }
 };
 
@@ -100,13 +102,15 @@ const remapSingleStage = async (record: any): Promise<LeadStageResponse> => {
 };
 
 const assertRuleAssignmentsIfProvided = async (
+  workspaceId: string,
   ruleAssignments?: Array<{ ruleId: string; required: boolean }>,
 ): Promise<void> => {
   if (!ruleAssignments || ruleAssignments.length === 0) return;
 
   const uniqueRuleIds = Array.from(new Set(ruleAssignments.map((rule) => rule.ruleId)));
-  const rules = await prisma.stageRule.findMany({
+  const rules = await stageRuleDelegate.findMany({
     where: {
+      workspaceId,
       id: { in: uniqueRuleIds },
       deletedAt: null,
     },
@@ -139,6 +143,7 @@ const applyStageRuleAssignments = async (
 };
 
 export const createLeadStage = async (
+  workspaceId: string,
   input: CreateLeadStageInput,
   createdBy?: string,
 ): Promise<LeadStageResponse> => {
@@ -146,8 +151,9 @@ export const createLeadStage = async (
     ...input,
   };
 
-  const duplicate = await prisma.leadStage.findFirst({
+  const duplicate = await leadStageDelegate.findFirst({
     where: {
+      workspaceId,
       deletedAt: null,
       name: { equals: normalizedInput.name, mode: 'insensitive' },
     },
@@ -160,12 +166,13 @@ export const createLeadStage = async (
     throw error;
   }
 
-  await assertRuleAssignmentsIfProvided(normalizedInput.ruleAssignments);
+  await assertRuleAssignmentsIfProvided(workspaceId, normalizedInput.ruleAssignments);
 
   const created = await prisma.$transaction(
     async (tx: any) => {
       await tx.leadStage.updateMany({
         where: {
+          workspaceId,
           deletedAt: null,
           order: { gte: normalizedInput.order },
         },
@@ -177,6 +184,7 @@ export const createLeadStage = async (
       const stage = await tx.leadStage.create({
         data: {
           name: normalizedInput.name,
+          workspaceId,
           color: normalizedInput.color,
           isApprovalRequired: normalizedInput.isApprovalRequired,
           isClosed: normalizedInput.isClosed,
@@ -200,15 +208,19 @@ export const createLeadStage = async (
     { maxWait: 10_000, timeout: 15_000 },
   );
 
-  await clearPipelineCache();
+  await clearPipelineCache(workspaceId);
   return remapSingleStage(created);
 };
 
-export const listLeadStages = async (query: ListLeadStagesQuery): Promise<ListLeadStagesResponse> => {
+export const listLeadStages = async (
+  workspaceId: string,
+  query: ListLeadStagesQuery,
+): Promise<ListLeadStagesResponse> => {
   const { page, limit, search, status } = query;
   const skip = (page - 1) * limit;
 
   const where = {
+    workspaceId,
     deletedAt: null,
     ...(search
       ? {
@@ -219,8 +231,8 @@ export const listLeadStages = async (query: ListLeadStagesQuery): Promise<ListLe
   };
 
   const [total, records] = await prisma.$transaction([
-    prisma.leadStage.count({ where }),
-    prisma.leadStage.findMany({
+    leadStageDelegate.count({ where }),
+    leadStageDelegate.findMany({
       where,
       include: LEAD_STAGE_WITH_RULES_INCLUDE,
       skip,
@@ -242,16 +254,17 @@ export const listLeadStages = async (query: ListLeadStagesQuery): Promise<ListLe
   };
 };
 
-export const getPipelineLeadStages = async (): Promise<LeadStageResponse[]> => {
+export const getPipelineLeadStages = async (workspaceId: string): Promise<LeadStageResponse[]> => {
   if (redisClient.isOpen) {
-    const cached = await redisClient.get(PIPELINE_CACHE_KEY);
+    const cached = await redisClient.get(getPipelineCacheKey(workspaceId));
     if (cached) {
       return JSON.parse(cached) as LeadStageResponse[];
     }
   }
 
-  const records = await prisma.leadStage.findMany({
+  const records = await leadStageDelegate.findMany({
     where: {
+      workspaceId,
       deletedAt: null,
       status: 'ACTIVE',
     },
@@ -262,15 +275,19 @@ export const getPipelineLeadStages = async (): Promise<LeadStageResponse[]> => {
   const mappedRecords = (await mapCreatorNames(records)) as LeadStageResponse[];
 
   if (redisClient.isOpen) {
-    await redisClient.setEx(PIPELINE_CACHE_KEY, PIPELINE_CACHE_TTL_SECONDS, JSON.stringify(mappedRecords));
+    await redisClient.setEx(getPipelineCacheKey(workspaceId), PIPELINE_CACHE_TTL_SECONDS, JSON.stringify(mappedRecords));
   }
 
   return mappedRecords;
 };
 
-export const updateLeadStage = async (id: string, input: UpdateLeadStageInput): Promise<LeadStageResponse> => {
-  const existing = await prisma.leadStage.findFirst({
-    where: { id, deletedAt: null },
+export const updateLeadStage = async (
+  id: string,
+  workspaceId: string,
+  input: UpdateLeadStageInput,
+): Promise<LeadStageResponse> => {
+  const existing = await leadStageDelegate.findFirst({
+    where: { id, workspaceId, deletedAt: null },
     include: {
       rules: {
         select: { id: true },
@@ -285,8 +302,9 @@ export const updateLeadStage = async (id: string, input: UpdateLeadStageInput): 
   }
 
   if (input.name && input.name.toLowerCase() !== existing.name.toLowerCase()) {
-    const duplicate = await prisma.leadStage.findFirst({
+    const duplicate = await leadStageDelegate.findFirst({
       where: {
+        workspaceId,
         id: { not: id },
         deletedAt: null,
         name: { equals: input.name, mode: 'insensitive' },
@@ -302,7 +320,7 @@ export const updateLeadStage = async (id: string, input: UpdateLeadStageInput): 
   }
 
   if (input.ruleAssignments !== undefined) {
-    await assertRuleAssignmentsIfProvided(input.ruleAssignments);
+    await assertRuleAssignmentsIfProvided(workspaceId, input.ruleAssignments);
   }
 
   const normalizedInput = {
@@ -315,6 +333,7 @@ export const updateLeadStage = async (id: string, input: UpdateLeadStageInput): 
         if (normalizedInput.order > existing.order) {
           await tx.leadStage.updateMany({
             where: {
+              workspaceId,
               id: { not: id },
               deletedAt: null,
               order: { gt: existing.order, lte: normalizedInput.order },
@@ -326,6 +345,7 @@ export const updateLeadStage = async (id: string, input: UpdateLeadStageInput): 
         } else {
           await tx.leadStage.updateMany({
             where: {
+              workspaceId,
               id: { not: id },
               deletedAt: null,
               order: { gte: normalizedInput.order, lt: existing.order },
@@ -353,9 +373,10 @@ export const updateLeadStage = async (id: string, input: UpdateLeadStageInput): 
 
       if (normalizedInput.ruleAssignments !== undefined) {
         await tx.stageRule.updateMany({
-          where: {
-            stageId: id,
-            id: { notIn: normalizedInput.ruleAssignments.map((rule) => rule.ruleId) },
+        where: {
+          workspaceId,
+          stageId: id,
+          id: { notIn: normalizedInput.ruleAssignments.map((rule) => rule.ruleId) },
           },
           data: { stageId: null },
         });
@@ -373,14 +394,18 @@ export const updateLeadStage = async (id: string, input: UpdateLeadStageInput): 
     { maxWait: 10_000, timeout: 15_000 },
   );
 
-  await clearPipelineCache();
+  await clearPipelineCache(workspaceId);
   return remapSingleStage(updated);
 };
 
-export const reorderLeadStages = async (input: ReorderLeadStagesInput): Promise<LeadStageResponse[]> => {
+export const reorderLeadStages = async (
+  workspaceId: string,
+  input: ReorderLeadStagesInput,
+): Promise<LeadStageResponse[]> => {
   const ids = input.map((item) => item.id);
-  const existingCount = await prisma.leadStage.count({
+  const existingCount = await leadStageDelegate.count({
     where: {
+      workspaceId,
       id: { in: ids },
       deletedAt: null,
     },
@@ -394,29 +419,31 @@ export const reorderLeadStages = async (input: ReorderLeadStagesInput): Promise<
 
   await prisma.$transaction(
     input.map((item) =>
-      prisma.leadStage.update({
+      leadStageDelegate.update({
         where: { id: item.id },
         data: { order: item.order },
       }),
     ),
   );
 
-  const records = await prisma.leadStage.findMany({
+  const records = await leadStageDelegate.findMany({
     where: {
+      workspaceId,
       deletedAt: null,
     },
     include: LEAD_STAGE_WITH_RULES_INCLUDE,
     orderBy: { order: 'asc' },
   });
 
-  await clearPipelineCache();
+  await clearPipelineCache(workspaceId);
   return (await mapCreatorNames(records)) as LeadStageResponse[];
 };
 
-export const toggleLeadStageStatus = async (id: string): Promise<LeadStageResponse> => {
-  const existing = await prisma.leadStage.findFirst({
+export const toggleLeadStageStatus = async (workspaceId: string, id: string): Promise<LeadStageResponse> => {
+  const existing = await leadStageDelegate.findFirst({
     where: {
       id,
+      workspaceId,
       deletedAt: null,
     },
   });
@@ -428,20 +455,21 @@ export const toggleLeadStageStatus = async (id: string): Promise<LeadStageRespon
   }
 
   const nextStatus = existing.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
-  const updated = await prisma.leadStage.update({
+  const updated = await leadStageDelegate.update({
     where: { id },
     data: { status: nextStatus },
     include: LEAD_STAGE_WITH_RULES_INCLUDE,
   });
 
-  await clearPipelineCache();
+  await clearPipelineCache(workspaceId);
   return remapSingleStage(updated);
 };
 
-export const deleteLeadStage = async (id: string): Promise<void> => {
-  const existing = await prisma.leadStage.findFirst({
+export const deleteLeadStage = async (workspaceId: string, id: string): Promise<void> => {
+  const existing = await leadStageDelegate.findFirst({
     where: {
       id,
+      workspaceId,
       deletedAt: null,
     },
   });
@@ -470,6 +498,7 @@ export const deleteLeadStage = async (id: string): Promise<void> => {
 
     await tx.leadStage.updateMany({
       where: {
+        workspaceId,
         deletedAt: null,
         order: { gt: existing.order },
       },
@@ -479,16 +508,18 @@ export const deleteLeadStage = async (id: string): Promise<void> => {
     });
   });
 
-  await clearPipelineCache();
+  await clearPipelineCache(workspaceId);
 };
 
 export const validateLeadStageTransition = async (
+  workspaceId: string,
   targetStageId: string,
   leadData: Record<string, unknown>,
 ): Promise<StageTransitionValidationResult> => {
-  const targetStage = await prisma.leadStage.findFirst({
+  const targetStage = await leadStageDelegate.findFirst({
     where: {
       id: targetStageId,
+      workspaceId,
       deletedAt: null,
       status: 'ACTIVE',
     },
@@ -501,5 +532,5 @@ export const validateLeadStageTransition = async (
     throw error;
   }
 
-  return validateLeadStageTransitionInputs(targetStageId, leadData);
+  return validateLeadStageTransitionInputs(workspaceId, targetStageId, leadData);
 };

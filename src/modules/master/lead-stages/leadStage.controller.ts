@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import auditService from '../../../services/Audit/auditService';
 import logger from '../../../utils/logger';
+import { resolveWorkspaceIdForUser } from '../../../utils/workspaceContext';
 import * as leadStageService from './leadStage.service';
 import {
   CreateLeadStageInput,
@@ -52,16 +53,41 @@ const handleServiceError = (error: any, res: Response, next: NextFunction, actio
   next(error);
 };
 
+const getWorkspaceId = async (req: Request, res: Response): Promise<string | null> => {
+  if (!req.user?.id) {
+    res.status(403).json({
+      success: false,
+      message: 'Authentication required.',
+    });
+    return null;
+  }
+
+  const workspaceId = await resolveWorkspaceIdForUser(req.user.id, req.user.workspaceId);
+
+  if (!workspaceId) {
+    res.status(403).json({
+      success: false,
+      message: 'Workspace context is required. Please complete workspace setup or refresh your session.',
+    });
+    return null;
+  }
+
+  return workspaceId;
+};
+
 export const createLeadStage = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
   const input = validate<CreateLeadStageInput>(createLeadStageSchema, req.body, res);
   if (!input) return;
 
   try {
-    const data = await leadStageService.createLeadStage(input, req.user?.id);
+    const workspaceId = await getWorkspaceId(req, res);
+    if (!workspaceId) return;
+
+    const data = await leadStageService.createLeadStage(workspaceId, input, req.user?.id);
 
     await auditService.log({
       userId: req.user?.id,
-      workspaceId: req.user?.workspaceId || undefined,
+      workspaceId,
       action: 'MASTER_CREATE_LEAD_STAGE',
       entityType: 'LeadStage',
       entityId: data.id,
@@ -85,7 +111,10 @@ export const listLeadStages = async (req: Request, res: Response, next: NextFunc
   if (!query) return;
 
   try {
-    const result = await leadStageService.listLeadStages(query);
+    const workspaceId = await getWorkspaceId(req, res);
+    if (!workspaceId) return;
+
+    const result = await leadStageService.listLeadStages(workspaceId, query);
     return res.status(200).json({
       success: true,
       message: 'Lead stages fetched successfully',
@@ -99,7 +128,10 @@ export const listLeadStages = async (req: Request, res: Response, next: NextFunc
 
 export const getPipelineLeadStages = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
   try {
-    const data = await leadStageService.getPipelineLeadStages();
+    const workspaceId = await getWorkspaceId(req, res);
+    if (!workspaceId) return;
+
+    const data = await leadStageService.getPipelineLeadStages(workspaceId);
     return res.status(200).json({
       success: true,
       message: 'Lead stage pipeline fetched successfully',
@@ -116,11 +148,14 @@ export const updateLeadStage = async (req: Request, res: Response, next: NextFun
   if (!input) return;
 
   try {
-    const data = await leadStageService.updateLeadStage(id, input);
+    const workspaceId = await getWorkspaceId(req, res);
+    if (!workspaceId) return;
+
+    const data = await leadStageService.updateLeadStage(workspaceId, id, input);
 
     await auditService.log({
       userId: req.user?.id,
-      workspaceId: req.user?.workspaceId || undefined,
+      workspaceId,
       action: 'MASTER_UPDATE_LEAD_STAGE',
       entityType: 'LeadStage',
       entityId: data.id,
@@ -144,11 +179,14 @@ export const reorderLeadStages = async (req: Request, res: Response, next: NextF
   if (!input) return;
 
   try {
-    const data = await leadStageService.reorderLeadStages(input);
+    const workspaceId = await getWorkspaceId(req, res);
+    if (!workspaceId) return;
+
+    const data = await leadStageService.reorderLeadStages(workspaceId, input);
 
     await auditService.log({
       userId: req.user?.id,
-      workspaceId: req.user?.workspaceId || undefined,
+      workspaceId,
       action: 'MASTER_REORDER_LEAD_STAGES',
       entityType: 'LeadStage',
       details: { stages: input },
@@ -170,11 +208,14 @@ export const toggleLeadStageStatus = async (req: Request, res: Response, next: N
   const id = req.params['id'] as string;
 
   try {
-    const data = await leadStageService.toggleLeadStageStatus(id);
+    const workspaceId = await getWorkspaceId(req, res);
+    if (!workspaceId) return;
+
+    const data = await leadStageService.toggleLeadStageStatus(workspaceId, id);
 
     await auditService.log({
       userId: req.user?.id,
-      workspaceId: req.user?.workspaceId || undefined,
+      workspaceId,
       action: 'MASTER_TOGGLE_LEAD_STAGE_STATUS',
       entityType: 'LeadStage',
       entityId: data.id,
@@ -197,11 +238,14 @@ export const deleteLeadStage = async (req: Request, res: Response, next: NextFun
   const id = req.params['id'] as string;
 
   try {
-    await leadStageService.deleteLeadStage(id);
+    const workspaceId = await getWorkspaceId(req, res);
+    if (!workspaceId) return;
+
+    await leadStageService.deleteLeadStage(workspaceId, id);
 
     await auditService.log({
       userId: req.user?.id,
-      workspaceId: req.user?.workspaceId || undefined,
+      workspaceId,
       action: 'MASTER_DELETE_LEAD_STAGE',
       entityType: 'LeadStage',
       entityId: id,

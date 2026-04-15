@@ -11,15 +11,17 @@ import {
   UpdateStageRuleInput,
 } from './stageRule.validator';
 
-const ACTIVE_CACHE_KEY = 'stage_rules:active';
 const ACTIVE_CACHE_TTL_SECONDS = 300;
+const getActiveCacheKey = (workspaceId: string): string => `stage_rules:active:${workspaceId}`;
+const leadStageDelegate = (prisma as any).leadStage;
+const stageRuleDelegate = (prisma as any).stageRule;
 let stageRuleSchemaCheckedAt: number | null = null;
 const STAGE_RULE_SCHEMA_CHECK_TTL_MS = 60_000;
 const isStageRuleConsoleDebugEnabled = process.env.DEBUG_STAGE_RULES_CONSOLE === 'true';
 
-const clearActiveStageRulesCache = async (): Promise<void> => {
+const clearActiveStageRulesCache = async (workspaceId: string): Promise<void> => {
   if (redisClient.isOpen) {
-    await redisClient.del(ACTIVE_CACHE_KEY);
+    await redisClient.del(getActiveCacheKey(workspaceId));
   }
 };
 
@@ -304,12 +306,13 @@ const mapCreatorNames = async <T extends { createdBy: string | null }>(
   }));
 };
 
-const assertStageIfProvided = async (stageId?: string | null): Promise<void> => {
+const assertStageIfProvided = async (workspaceId: string, stageId?: string | null): Promise<void> => {
   if (!stageId) return;
 
-  const stage = await prisma.leadStage.findFirst({
+  const stage = await leadStageDelegate.findFirst({
     where: {
       id: stageId,
+      workspaceId,
       deletedAt: null,
     },
     select: { id: true },
@@ -330,6 +333,7 @@ const remapSingleRule = async (record: any): Promise<StageRuleResponse> => {
 };
 
 export const createStageRule = async (
+  workspaceId: string,
   input: CreateStageRuleInput,
   createdBy?: string,
 ): Promise<StageRuleResponse> => {
@@ -348,12 +352,13 @@ export const createStageRule = async (
   await ensureStageRuleSchemaReady();
 
   const scopedStageId = input.stageId ?? null;
-  await assertStageIfProvided(scopedStageId);
+  await assertStageIfProvided(workspaceId, scopedStageId);
 
   const runCreateTransaction = async () =>
     prisma.$transaction(async (tx: any) => {
       await tx.stageRule.updateMany({
         where: {
+          workspaceId,
           deletedAt: null,
           ...stageScopeFilter(scopedStageId),
           sortOrder: { gte: input.sortOrder },
@@ -366,6 +371,7 @@ export const createStageRule = async (
       return tx.stageRule.create({
         data: {
           name: input.name,
+          workspaceId,
           inputType: input.inputType,
           sortOrder: input.sortOrder,
           required: input.required,
@@ -411,17 +417,21 @@ export const createStageRule = async (
     }
   }
 
-  await clearActiveStageRulesCache();
+  await clearActiveStageRulesCache(workspaceId);
   return remapSingleRule(created);
 };
 
-export const listStageRules = async (query: ListStageRulesQuery): Promise<ListStageRulesResponse> => {
+export const listStageRules = async (
+  workspaceId: string,
+  query: ListStageRulesQuery,
+): Promise<ListStageRulesResponse> => {
   await ensureStageRuleSchemaReady();
 
   const { page, limit, search, status, stageId } = query;
   const skip = (page - 1) * limit;
 
   const where = {
+    workspaceId,
     deletedAt: null,
     ...(search
       ? {
@@ -433,8 +443,8 @@ export const listStageRules = async (query: ListStageRulesQuery): Promise<ListSt
   };
 
   const [total, records] = await prisma.$transaction([
-    prisma.stageRule.count({ where }),
-    prisma.stageRule.findMany({
+    stageRuleDelegate.count({ where }),
+    stageRuleDelegate.findMany({
       where,
       skip,
       take: limit,
@@ -468,18 +478,19 @@ export const listStageRules = async (query: ListStageRulesQuery): Promise<ListSt
   };
 };
 
-export const getActiveStageRules = async (): Promise<StageRuleResponse[]> => {
+export const getActiveStageRules = async (workspaceId: string): Promise<StageRuleResponse[]> => {
   await ensureStageRuleSchemaReady();
 
   if (redisClient.isOpen) {
-    const cached = await redisClient.get(ACTIVE_CACHE_KEY);
+    const cached = await redisClient.get(getActiveCacheKey(workspaceId));
     if (cached) {
       return JSON.parse(cached) as StageRuleResponse[];
     }
   }
 
-  const records = await prisma.stageRule.findMany({
+  const records = await stageRuleDelegate.findMany({
     where: {
+      workspaceId,
       deletedAt: null,
       status: 'ACTIVE',
     },
@@ -502,17 +513,21 @@ export const getActiveStageRules = async (): Promise<StageRuleResponse[]> => {
   const mappedRecords = (await mapCreatorNames(records)) as StageRuleResponse[];
 
   if (redisClient.isOpen) {
-    await redisClient.setEx(ACTIVE_CACHE_KEY, ACTIVE_CACHE_TTL_SECONDS, JSON.stringify(mappedRecords));
+    await redisClient.setEx(getActiveCacheKey(workspaceId), ACTIVE_CACHE_TTL_SECONDS, JSON.stringify(mappedRecords));
   }
 
   return mappedRecords;
 };
 
-export const updateStageRule = async (id: string, input: UpdateStageRuleInput): Promise<StageRuleResponse> => {
+export const updateStageRule = async (
+  workspaceId: string,
+  id: string,
+  input: UpdateStageRuleInput,
+): Promise<StageRuleResponse> => {
   await ensureStageRuleSchemaReady();
 
-  const existing = await prisma.stageRule.findFirst({
-    where: { id, deletedAt: null },
+  const existing = await stageRuleDelegate.findFirst({
+    where: { id, workspaceId, deletedAt: null },
     select: {
       id: true,
       name: true,
@@ -537,7 +552,7 @@ export const updateStageRule = async (id: string, input: UpdateStageRuleInput): 
   const targetStageId = input.stageId !== undefined ? input.stageId : existing.stageId;
   const targetSortOrder = input.sortOrder ?? existing.sortOrder;
 
-  await assertStageIfProvided(targetStageId);
+  await assertStageIfProvided(workspaceId, targetStageId);
 
   const updated = await prisma.$transaction(async (tx: any) => {
     const hasScopeChanged = targetStageId !== existing.stageId;
@@ -546,6 +561,7 @@ export const updateStageRule = async (id: string, input: UpdateStageRuleInput): 
       await tx.stageRule.updateMany({
         where: {
           id: { not: id },
+          workspaceId,
           deletedAt: null,
           ...stageScopeFilter(existing.stageId),
           sortOrder: { gt: existing.sortOrder },
@@ -558,6 +574,7 @@ export const updateStageRule = async (id: string, input: UpdateStageRuleInput): 
       await tx.stageRule.updateMany({
         where: {
           id: { not: id },
+          workspaceId,
           deletedAt: null,
           ...stageScopeFilter(targetStageId),
           sortOrder: { gte: targetSortOrder },
@@ -571,6 +588,7 @@ export const updateStageRule = async (id: string, input: UpdateStageRuleInput): 
         await tx.stageRule.updateMany({
           where: {
             id: { not: id },
+            workspaceId,
             deletedAt: null,
             ...stageScopeFilter(existing.stageId),
             sortOrder: { gt: existing.sortOrder, lte: targetSortOrder },
@@ -583,6 +601,7 @@ export const updateStageRule = async (id: string, input: UpdateStageRuleInput): 
         await tx.stageRule.updateMany({
           where: {
             id: { not: id },
+            workspaceId,
             deletedAt: null,
             ...stageScopeFilter(existing.stageId),
             sortOrder: { gte: targetSortOrder, lt: existing.sortOrder },
@@ -620,15 +639,15 @@ export const updateStageRule = async (id: string, input: UpdateStageRuleInput): 
     });
   });
 
-  await clearActiveStageRulesCache();
+  await clearActiveStageRulesCache(workspaceId);
   return remapSingleRule(updated);
 };
 
-export const deleteStageRule = async (id: string): Promise<void> => {
+export const deleteStageRule = async (workspaceId: string, id: string): Promise<void> => {
   await ensureStageRuleSchemaReady();
 
-  const existing = await prisma.stageRule.findFirst({
-    where: { id, deletedAt: null },
+  const existing = await stageRuleDelegate.findFirst({
+    where: { id, workspaceId, deletedAt: null },
     select: {
       id: true,
       sortOrder: true,
@@ -654,6 +673,7 @@ export const deleteStageRule = async (id: string): Promise<void> => {
     await tx.stageRule.updateMany({
       where: {
         id: { not: id },
+        workspaceId,
         deletedAt: null,
         ...stageScopeFilter(existing.stageId),
         sortOrder: { gt: existing.sortOrder },
@@ -664,14 +684,18 @@ export const deleteStageRule = async (id: string): Promise<void> => {
     });
   });
 
-  await clearActiveStageRulesCache();
+  await clearActiveStageRulesCache(workspaceId);
 };
 
-export const getActiveStageRulesForExecution = async (stageId: string): Promise<StageRuleResponse[]> => {
+export const getActiveStageRulesForExecution = async (
+  workspaceId: string,
+  stageId: string,
+): Promise<StageRuleResponse[]> => {
   await ensureStageRuleSchemaReady();
 
-  const records = await prisma.stageRule.findMany({
+  const records = await stageRuleDelegate.findMany({
     where: {
+      workspaceId,
       deletedAt: null,
       status: 'ACTIVE',
       OR: [{ stageId: null }, { stageId }],
@@ -696,10 +720,11 @@ export const getActiveStageRulesForExecution = async (stageId: string): Promise<
 };
 
 export const validateLeadStageTransitionInputs = async (
+  workspaceId: string,
   targetStageId: string,
   leadData: Record<string, unknown>,
 ): Promise<StageTransitionValidationResult> => {
-  const rules = await getActiveStageRulesForExecution(targetStageId);
+  const rules = await getActiveStageRulesForExecution(workspaceId, targetStageId);
 
   const missingFields = rules
     .filter((rule) => rule.required)

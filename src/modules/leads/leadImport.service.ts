@@ -69,7 +69,7 @@ const processRows = async (jobId: string, rows: any[], workspaceId: string, user
         if (sourceCache.has(lowerSource)) {
           sourceId = sourceCache.get(lowerSource);
         } else {
-          const sourceRecord = await resolveOrCreateLeadSourceByName(trimmedSource, userId);
+          const sourceRecord = await resolveOrCreateLeadSourceByName(workspaceId, trimmedSource, userId);
           sourceId = sourceRecord.id;
           sourceCache.set(lowerSource, sourceRecord.id);
         }
