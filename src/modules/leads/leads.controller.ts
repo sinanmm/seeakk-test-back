@@ -4,9 +4,15 @@ import logger from '../../utils/logger';
 import * as leadsService from './leads.service';
 import type { ClosedLeadIdInput, ClosedLeadQueryInput, UpdateClosedLeadInput } from './leads.validation';
 import { closedLeadQuerySchema, leadIdSchema, updateClosedLeadSchema } from './leads.validation';
+import { resolveWorkspaceIdForUser } from '../../utils/workspaceContext';
 
-const requireWorkspace = (req: Request, res: Response): string | null => {
-  const workspaceId = req.user?.workspaceId ?? null;
+const requireWorkspace = async (req: Request, res: Response): Promise<string | null> => {
+  if (!req.user?.id) {
+    res.status(401).json({ success: false, message: 'Not authorized' });
+    return null;
+  }
+
+  const workspaceId = await resolveWorkspaceIdForUser(req.user.id, req.user.workspaceId);
   if (!workspaceId) {
     res.status(403).json({
       success: false,
@@ -56,7 +62,7 @@ const getActor = (req: Request) => ({
 });
 
 export const listClosedLeads = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
-  const workspaceId = requireWorkspace(req, res);
+  const workspaceId = await requireWorkspace(req, res);
   if (!workspaceId) return;
 
   const query = validate<ClosedLeadQueryInput>(closedLeadQuerySchema, req.query, res);
@@ -71,7 +77,7 @@ export const listClosedLeads = async (req: Request, res: Response, next: NextFun
 };
 
 export const updateClosure = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
-  const workspaceId = requireWorkspace(req, res);
+  const workspaceId = await requireWorkspace(req, res);
   if (!workspaceId) return;
 
   const params = validate<ClosedLeadIdInput>(leadIdSchema, req.params, res);
@@ -108,7 +114,7 @@ export const updateClosure = async (req: Request, res: Response, next: NextFunct
 };
 
 export const reopenLead = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
-  const workspaceId = requireWorkspace(req, res);
+  const workspaceId = await requireWorkspace(req, res);
   if (!workspaceId) return;
 
   const params = validate<ClosedLeadIdInput>(leadIdSchema, req.params, res);
@@ -140,7 +146,7 @@ export const reopenLead = async (req: Request, res: Response, next: NextFunction
 };
 
 export const exportClosedLeads = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
-  const workspaceId = requireWorkspace(req, res);
+  const workspaceId = await requireWorkspace(req, res);
   if (!workspaceId) return;
 
   const query = validate<ClosedLeadQueryInput>(closedLeadQuerySchema, req.query, res);
