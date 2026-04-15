@@ -2,19 +2,25 @@ import { Request, Response, NextFunction } from 'express';
 import { leadImportQueue } from './leadImport.jobs';
 import prisma from '../../config/prisma';
 import logger from '../../utils/logger';
+import { resolveWorkspaceIdForUser } from '../../utils/workspaceContext';
 
 export const importLeads = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
   try {
     const file = req.file;
-    const workspaceId = req.user?.workspaceId || req.body.workspaceId;
     const userId = req.user?.id;
 
     if (!file) {
       return res.status(400).json({ success: false, message: 'No file uploaded' });
     }
 
-    if (!workspaceId || !userId) {
-      return res.status(400).json({ success: false, message: 'Workspace ID and User Auth required' });
+    if (!userId) {
+      return res.status(400).json({ success: false, message: 'User authentication required' });
+    }
+
+    const workspaceId = await resolveWorkspaceIdForUser(userId, req.user?.workspaceId);
+
+    if (!workspaceId) {
+      return res.status(400).json({ success: false, message: 'Workspace context is required' });
     }
 
     const job = await prisma.importJob.create({

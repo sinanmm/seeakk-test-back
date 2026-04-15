@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
-import prisma from '../../../config/prisma';
 import auditService from '../../../services/Audit/auditService';
 import logger from '../../../utils/logger';
+import { resolveWorkspaceIdForUser } from '../../../utils/workspaceContext';
 import * as leadSourceService from './leadSource.service';
 import {
   CreateLeadSourceInput,
@@ -38,6 +38,24 @@ const handleServiceError = (error: any, res: Response, next: NextFunction, actio
     return;
   }
 
+  if (error?.code === 'P2022') {
+    res.status(503).json({
+      success: false,
+      message:
+        'Lead Source module schema is outdated in the database. Run Prisma migration/db push so workspace-scoped master data can be used.',
+    });
+    return;
+  }
+
+  if (String(error?.message || '').includes('workspaceId')) {
+    res.status(503).json({
+      success: false,
+      message:
+        'Lead Source module schema is outdated in the database. Run Prisma migration/db push so workspace-scoped master data can be used.',
+    });
+    return;
+  }
+
   if (error?.statusCode) {
     res.status(error.statusCode).json({
       success: false,
@@ -51,21 +69,20 @@ const handleServiceError = (error: any, res: Response, next: NextFunction, actio
 };
 
 const getWorkspaceId = async (req: Request, res: Response): Promise<string | null> => {
-  let workspaceId = req.user?.workspaceId;
-
-  // Fallback: If workspaceId is missing from token (stale session), fetch from DB
-  if (!workspaceId && req.user?.id) {
-    const user = await prisma.user.findUnique({
-      where: { id: req.user.id },
-      select: { workspaceId: true },
+  if (!req.user?.id) {
+    res.status(403).json({
+      success: false,
+      message: 'Authentication required.',
     });
-    workspaceId = user?.workspaceId;
+    return null;
   }
+
+  const workspaceId = await resolveWorkspaceIdForUser(req.user.id, req.user.workspaceId);
 
   if (!workspaceId) {
     res.status(403).json({
       success: false,
-      message: 'Workspace context is required. Please refresh your session.',
+      message: 'Workspace context is required. Please complete workspace setup or refresh your session.',
     });
     return null;
   }

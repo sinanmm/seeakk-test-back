@@ -6,11 +6,60 @@ import { CreateLeadSourceInput, ListLeadSourcesQuery, UpdateLeadSourceInput } fr
 const ACTIVE_CACHE_TTL_SECONDS = 300;
 const getCacheKey = (workspaceId: string): string => `lead_sources:active:${workspaceId}`;
 const leadSourceDelegate = (prisma as any).leadSource;
+let leadSourceSchemaCheckedAt: number | null = null;
+const LEAD_SOURCE_SCHEMA_CHECK_TTL_MS = 60_000;
+
+const requireWorkspaceId = (workspaceId: string): string => {
+  const ws = typeof workspaceId === 'string' ? workspaceId.trim() : '';
+  if (!ws) {
+    const error: any = new Error('Workspace context is required.');
+    error.statusCode = 403;
+    throw error;
+  }
+  return ws;
+};
 
 const clearActiveLeadSourcesCache = async (workspaceId: string): Promise<void> => {
   if (redisClient.isOpen) {
     await redisClient.del(getCacheKey(workspaceId));
   }
+};
+
+const ensureLeadSourceSchemaReady = async (): Promise<void> => {
+  const now = Date.now();
+  if (leadSourceSchemaCheckedAt && now - leadSourceSchemaCheckedAt < LEAD_SOURCE_SCHEMA_CHECK_TTL_MS) {
+    return;
+  }
+
+  const tableRows = await prisma.$queryRaw<Array<{ table_name: string | null }>>`
+    SELECT to_regclass('public.lead_sources')::text AS table_name
+  `;
+
+  if (!tableRows[0]?.table_name) {
+    const error: any = new Error(
+      'Lead Source module is not ready. Database table "lead_sources" is missing. Run Prisma migration/db push.',
+    );
+    error.statusCode = 503;
+    throw error;
+  }
+
+  const columnRows = await prisma.$queryRaw<Array<{ column_name: string }>>`
+    SELECT column_name
+    FROM information_schema.columns
+    WHERE table_schema = 'public'
+      AND table_name = 'lead_sources'
+  `;
+
+  const columnSet = new Set(columnRows.map((row) => row.column_name));
+  if (!columnSet.has('workspaceId')) {
+    const error: any = new Error(
+      'Lead Source module schema is outdated in the database. Run Prisma migration/db push so workspace-scoped master data can be used.',
+    );
+    error.statusCode = 503;
+    throw error;
+  }
+
+  leadSourceSchemaCheckedAt = now;
 };
 
 const normalizeLeadSourceName = (value: string): string =>
@@ -109,9 +158,11 @@ export const createLeadSource = async (
   input: CreateLeadSourceInput,
   createdBy?: string,
 ): Promise<LeadSourceResponse> => {
+  const ws = requireWorkspaceId(workspaceId);
+  await ensureLeadSourceSchemaReady();
   const existing = await leadSourceDelegate.findFirst({
     where: {
-      workspaceId,
+      workspaceId: ws,
       name: { equals: input.name, mode: 'insensitive' },
     },
   });
@@ -129,24 +180,24 @@ export const createLeadSource = async (
         status: input.status,
         deletedAt: null,
         createdBy: createdBy ?? existing.createdBy,
-        workspaceId,
+        workspaceId: ws,
       },
     });
-    await clearActiveLeadSourcesCache(workspaceId);
+    await clearActiveLeadSourcesCache(ws);
     const [mapped] = await mapCreatorNames([restored]);
     return mapped as LeadSourceResponse;
   }
 
   const created = await leadSourceDelegate.create({
     data: {
-      workspaceId,
+      workspaceId: ws,
       name: input.name,
       status: input.status,
       createdBy,
     },
   });
 
-  await clearActiveLeadSourcesCache(workspaceId);
+  await clearActiveLeadSourcesCache(ws);
   const [mapped] = await mapCreatorNames([created]);
   return mapped as LeadSourceResponse;
 };
@@ -155,6 +206,7 @@ export const listLeadSources = async (
   workspaceId: string,
   query: ListLeadSourcesQuery,
 ): Promise<ListLeadSourcesResponse> => {
+  await ensureLeadSourceSchemaReady();
   const { page, limit, search, status } = query;
   const skip = (page - 1) * limit;
 
@@ -202,6 +254,7 @@ export const listLeadSources = async (
 };
 
 export const getActiveLeadSources = async (workspaceId: string): Promise<LeadSourceResponse[]> => {
+  await ensureLeadSourceSchemaReady();
   if (redisClient.isOpen) {
     const cached = await redisClient.get(getCacheKey(workspaceId));
     if (cached) {
@@ -241,6 +294,8 @@ export const resolveOrCreateLeadSourceByName = async (
   name: string,
   createdBy?: string,
 ): Promise<LeadSourceResponse> => {
+  const ws = requireWorkspaceId(workspaceId);
+  await ensureLeadSourceSchemaReady();
   const normalizedName = normalizeLeadSourceName(name);
   if (!normalizedName) {
     const error: any = new Error('Lead source name is required.');
@@ -250,7 +305,7 @@ export const resolveOrCreateLeadSourceByName = async (
 
   const existing = await leadSourceDelegate.findFirst({
     where: {
-      workspaceId,
+      workspaceId: ws,
       name: {
         equals: normalizedName,
         mode: 'insensitive',
@@ -264,12 +319,12 @@ export const resolveOrCreateLeadSourceByName = async (
         where: { id: existing.id },
         data: {
           name: normalizedName,
-          workspaceId,
+          workspaceId: ws,
           status: 'ACTIVE',
           deletedAt: null,
         },
       });
-      await clearActiveLeadSourcesCache(workspaceId);
+      await clearActiveLeadSourcesCache(ws);
       const [mapped] = await mapCreatorNames([restored]);
       return mapped as LeadSourceResponse;
     }
@@ -280,14 +335,14 @@ export const resolveOrCreateLeadSourceByName = async (
 
   const created = await leadSourceDelegate.create({
     data: {
-      workspaceId,
+      workspaceId: ws,
       name: normalizedName,
       status: 'ACTIVE',
       createdBy,
     },
   });
 
-  await clearActiveLeadSourcesCache(workspaceId);
+  await clearActiveLeadSourcesCache(ws);
   const [mapped] = await mapCreatorNames([created]);
   return mapped as LeadSourceResponse;
 };
@@ -297,6 +352,7 @@ export const updateLeadSource = async (
   id: string,
   input: UpdateLeadSourceInput,
 ): Promise<LeadSourceResponse> => {
+  await ensureLeadSourceSchemaReady();
   const existing = await leadSourceDelegate.findFirst({
     where: { id, workspaceId, deletedAt: null },
   });
@@ -342,6 +398,7 @@ export const updateLeadSource = async (
 };
 
 export const toggleLeadSourceStatus = async (workspaceId: string, id: string): Promise<LeadSourceResponse> => {
+  await ensureLeadSourceSchemaReady();
   const existing = await leadSourceDelegate.findFirst({
     where: { id, workspaceId, deletedAt: null },
   });
@@ -364,6 +421,7 @@ export const toggleLeadSourceStatus = async (workspaceId: string, id: string): P
 };
 
 export const deleteLeadSource = async (workspaceId: string, id: string): Promise<void> => {
+  await ensureLeadSourceSchemaReady();
   const existing = await leadSourceDelegate.findFirst({
     where: { id, workspaceId, deletedAt: null },
   });

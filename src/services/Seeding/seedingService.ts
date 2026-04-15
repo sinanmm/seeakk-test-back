@@ -2,8 +2,14 @@ import prisma from '../../config/prisma';
 import logger from '../../utils/logger';
 
 export const seedDefaultMasterData = async (workspaceId: string, createdById?: string): Promise<void> => {
+  const ws = typeof workspaceId === 'string' ? workspaceId.trim() : '';
+  if (!ws) {
+    logger.warn('seedDefaultMasterData: skipped — workspaceId is missing.');
+    return;
+  }
+
   try {
-    logger.info(`Seeding default master data for workspace: ${workspaceId}`);
+    logger.info(`Seeding default master data for workspace: ${ws}`);
 
     // 1. Seed Default Lead Sources
     const defaultSources = ['Google', 'Facebook', 'Referral', 'Direct', 'Organic Search'];
@@ -11,7 +17,7 @@ export const seedDefaultMasterData = async (workspaceId: string, createdById?: s
     await (prisma as any).leadSource.createMany({
       data: defaultSources.map((name) => ({
         name,
-        workspaceId,
+        workspaceId: ws,
         createdBy: createdById,
         status: 'ACTIVE',
       })),
@@ -32,16 +38,16 @@ export const seedDefaultMasterData = async (workspaceId: string, createdById?: s
       await (prisma as any).leadStage.create({
         data: {
           ...stage,
-          workspaceId,
+          workspaceId: ws,
           createdBy: createdById,
           status: 'ACTIVE',
         },
       });
     }
 
-    logger.info(`Successfully seeded default master data for workspace: ${workspaceId}`);
+    logger.info(`Successfully seeded default master data for workspace: ${ws}`);
   } catch (error) {
-    logger.error(`Error seeding default data for workspace ${workspaceId}:`, error);
+    logger.error(`Error seeding default data for workspace ${ws}:`, error);
     // We don't throw here to avoid failing the whole workspace setup if seeding fails
   }
 };
