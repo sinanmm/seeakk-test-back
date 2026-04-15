@@ -87,6 +87,30 @@ export const todayFollowUpsQuerySchema = z.object({
 
 export type TodayFollowUpsQueryInput = z.infer<typeof todayFollowUpsQuerySchema>;
 
+export const reminderAlertsQuerySchema = z.object({
+  userId: z.preprocess(emptyStringToUndefined, z.string().trim().optional()).optional(),
+  minutesAhead: z
+    .string()
+    .optional()
+    .transform((value) => {
+      if (!value) return 15;
+      const parsed = parseInt(value, 10);
+      if (Number.isNaN(parsed)) return 15;
+      return Math.min(120, Math.max(1, parsed));
+    }),
+  includePastMinutes: z
+    .string()
+    .optional()
+    .transform((value) => {
+      if (!value) return 5;
+      const parsed = parseInt(value, 10);
+      if (Number.isNaN(parsed)) return 5;
+      return Math.min(60, Math.max(0, parsed));
+    }),
+});
+
+export type ReminderAlertsQueryInput = z.infer<typeof reminderAlertsQuerySchema>;
+
 export const historyQuerySchema = z
   .object({
     userId: z.preprocess(emptyStringToUndefined, z.string().trim().optional()).optional(),

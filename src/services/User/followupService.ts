@@ -9,6 +9,7 @@ import type {
   CreateFollowUpInput,
   FollowUpStatus,
   HistoryQueryInput,
+  ReminderAlertsQueryInput,
   TodayFollowUpsQueryInput,
 } from '../../validations/followupValidation';
 
@@ -39,6 +40,13 @@ type FollowUpRecord = {
     url: string;
     createdAt: Date;
   }>;
+};
+
+type ReminderFollowUpRecord = FollowUpRecord & {
+  lead: {
+    id: string;
+    name: string;
+  };
 };
 
 const createServiceError = (message: string, statusCode: number): Error & { statusCode: number } => {
@@ -116,6 +124,21 @@ const mapFollowUpRecord = (record: FollowUpRecord) => ({
   })),
 });
 
+const mapReminderFollowUpRecord = (record: ReminderFollowUpRecord) => ({
+  id: record.id,
+  leadId: record.leadId,
+  leadName: record.lead?.name || 'Lead',
+  userId: record.userId,
+  type: record.type,
+  description: record.description,
+  scheduledAt: record.scheduledAt.toISOString(),
+  minutesUntil: Math.ceil((record.scheduledAt.getTime() - Date.now()) / 60_000),
+  user: {
+    ...record.user,
+    displayName: resolveDisplayName(record.user),
+  },
+});
+
 const buildFollowUpInclude = {
   user: {
     select: {
@@ -132,6 +155,24 @@ const buildFollowUpInclude = {
       url: true,
       createdAt: true,
     },
+  },
+} as const;
+
+const buildReminderInclude = {
+  user: buildFollowUpInclude.user,
+  lead: {
+    select: {
+      id: true,
+      name: true,
+    },
+  },
+  images: {
+    select: {
+      id: true,
+      url: true,
+      createdAt: true,
+    },
+    take: 0,
   },
 } as const;
 
@@ -430,6 +471,48 @@ export const getTodayFollowUps = async (
   }
 
   return payload;
+};
+
+export const getReminderAlerts = async (
+  workspaceId: string,
+  actor: { id: string; role?: { name?: string | null } | null },
+  query: ReminderAlertsQueryInput,
+) => {
+  await assertModuleReady();
+
+  const targetUserId = await resolveTargetUserId(workspaceId, actor, query.userId);
+  const timeZone = await getWorkspaceTimeZone(workspaceId);
+
+  const now = new Date();
+  const windowStart = new Date(now.getTime() - query.includePastMinutes * 60_000);
+  const windowEnd = new Date(now.getTime() + query.minutesAhead * 60_000);
+
+  const records = await (prisma as any).followUp.findMany({
+    where: buildFollowUpWhere({
+      workspaceId,
+      userId: targetUserId,
+      status: FOLLOWUP_PENDING,
+      startDate: windowStart,
+      endDate: windowEnd,
+    }),
+    orderBy: [{ scheduledAt: 'asc' }, { createdAt: 'asc' }],
+    include: buildReminderInclude,
+    take: 50,
+  });
+
+  const items = (records as ReminderFollowUpRecord[]).map(mapReminderFollowUpRecord);
+
+  return {
+    timeZone,
+    generatedAt: now.toISOString(),
+    window: {
+      start: windowStart.toISOString(),
+      end: windowEnd.toISOString(),
+      minutesAhead: query.minutesAhead,
+      includePastMinutes: query.includePastMinutes,
+    },
+    items,
+  };
 };
 
 export const completeFollowUp = async (
