@@ -6,6 +6,7 @@ import { connectRedis } from './config/redis';
 import prisma from './config/prisma';
 import { scheduleDailySync } from './modules/holidays/holidays.jobs';
 import './modules/leads/leadImport.jobs';
+import { startFollowUpReminders } from './services/User/followupReminder.jobs';
 
 const PORT = process.env.PORT || 5000;
 
@@ -40,6 +41,7 @@ const startServer = async () => {
         console.log('PostgreSQL connected via Prisma');
         // Start background jobs
         scheduleDailySync().catch(err => console.error('Failed to schedule holiday jobs:', err));
+        startFollowUpReminders();
       })
       .catch((error) => {
         console.error('PostgreSQL initial connection failed. API is running in degraded mode:', error);

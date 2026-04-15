@@ -70,3 +70,40 @@ export const sendPasswordResetEmail = async (email: string, name: string | null 
     resetLink,
   );
 };
+
+export const sendFollowUpReminderEmail = async (
+  email: string,
+  input: {
+    userDisplayName: string;
+    leadName: string;
+    scheduledAt: Date;
+    description?: string;
+    type?: string;
+  },
+): Promise<void> => {
+  const appUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  const when = input.scheduledAt.toLocaleString();
+  const subject = `Follow-up reminder: ${input.leadName}`;
+  const deepLink = `${appUrl}/calendar/today`;
+
+  await sendOrLogEmail(
+    email,
+    subject,
+    `
+      <h2>Follow-up reminder</h2>
+      <p>Hi ${input.userDisplayName},</p>
+      <p>You have a follow-up scheduled soon.</p>
+      <ul>
+        <li><b>Lead</b>: ${input.leadName}</li>
+        <li><b>When</b>: ${when}</li>
+        ${input.type ? `<li><b>Type</b>: ${input.type}</li>` : ''}
+        ${input.description ? `<li><b>Notes</b>: ${input.description}</li>` : ''}
+      </ul>
+      <a href="${deepLink}" style="padding: 10px 16px; background-color: #10b981; color: white; text-decoration: none; border-radius: 8px; display: inline-block; margin-top: 10px;">Open Today Follow-ups</a>
+      <br/><br/>
+      <p>If the button does not work, copy this link: <br/> ${deepLink}</p>
+    `,
+    'Today Follow-ups',
+    deepLink,
+  );
+};
