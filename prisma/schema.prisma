@@ -240,7 +240,7 @@ model LeadSource {
   workspace   Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   leads       Lead[]
 
-  @@unique([workspaceId, name])
+  // Duplicate stage names are allowed by product requirement.
   @@index([workspaceId])
   @@index([name])
   @@index([status])

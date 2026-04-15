@@ -13,6 +13,8 @@ import {
   followUpIdParamSchema,
   HistoryQueryInput,
   historyQuerySchema,
+  ReminderAlertsQueryInput,
+  reminderAlertsQuerySchema,
   TodayFollowUpsQueryInput,
   todayFollowUpsQuerySchema,
 } from '../../validations/followupValidation';
@@ -144,6 +146,25 @@ export const getTodayFollowUps = async (req: Request, res: Response, next: NextF
     });
   } catch (error) {
     handleServiceError(error, res, next, 'getTodayFollowUps');
+  }
+};
+
+export const getReminderAlerts = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = requireWorkspace(req, res);
+  if (!workspaceId) return;
+
+  const query = validate<ReminderAlertsQueryInput>(reminderAlertsQuerySchema, req.query, res);
+  if (!query) return;
+
+  try {
+    const data = await followupService.getReminderAlerts(workspaceId, getActor(req), query);
+    return res.status(200).json({
+      success: true,
+      message: 'Follow-up alerts fetched successfully',
+      data,
+    });
+  } catch (error) {
+    handleServiceError(error, res, next, 'getReminderAlerts');
   }
 };
 

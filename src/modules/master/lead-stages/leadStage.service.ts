@@ -157,21 +157,6 @@ export const createLeadStage = async (
     name: normalizeLeadStageName(input.name),
   };
 
-  const duplicate = await leadStageDelegate.findFirst({
-    where: {
-      workspaceId,
-      deletedAt: null,
-      name: { equals: normalizedInput.name, mode: 'insensitive' },
-    },
-    select: { id: true },
-  });
-
-  if (duplicate) {
-    const error: any = new Error(`Lead stage "${normalizedInput.name}" already exists.`);
-    error.statusCode = 409;
-    throw error;
-  }
-
   await assertRuleAssignmentsIfProvided(workspaceId, normalizedInput.ruleAssignments);
 
   const created = await prisma.$transaction(
@@ -309,24 +294,6 @@ export const updateLeadStage = async (
 
   const nextName = input.name !== undefined ? normalizeLeadStageName(input.name) : undefined;
 
-  if (nextName && nextName.toLowerCase() !== existing.name.toLowerCase()) {
-    const duplicate = await leadStageDelegate.findFirst({
-      where: {
-        workspaceId,
-        id: { not: id },
-        deletedAt: null,
-        name: { equals: nextName, mode: 'insensitive' },
-      },
-      select: { id: true },
-    });
-
-    if (duplicate) {
-      const error: any = new Error(`Lead stage "${input.name}" already exists.`);
-      error.statusCode = 409;
-      throw error;
-    }
-  }
-
   if (input.ruleAssignments !== undefined) {
     await assertRuleAssignmentsIfProvided(workspaceId, input.ruleAssignments);
   }
@@ -366,10 +333,9 @@ export const updateLeadStage = async (
         }
       }
 
-      try {
-        await tx.leadStage.update({
-          where: { id },
-          data: {
+      await tx.leadStage.update({
+        where: { id },
+        data: {
           ...(normalizedInput.name !== undefined ? { name: normalizedInput.name } : {}),
           ...(normalizedInput.color !== undefined ? { color: normalizedInput.color } : {}),
           ...(normalizedInput.isApprovalRequired !== undefined ? { isApprovalRequired: normalizedInput.isApprovalRequired } : {}),
@@ -377,18 +343,9 @@ export const updateLeadStage = async (
           ...(normalizedInput.isLOB !== undefined ? { isLOB: normalizedInput.isLOB } : {}),
           ...(normalizedInput.order !== undefined ? { order: normalizedInput.order } : {}),
           ...(normalizedInput.status !== undefined ? { status: normalizedInput.status } : {}),
-          },
-          include: LEAD_STAGE_WITH_RULES_INCLUDE,
-        });
-      } catch (error: any) {
-        // Convert unique constraint into a friendly conflict response.
-        if (error?.code === 'P2002') {
-          const err: any = new Error(`Lead stage "${normalizedInput.name || existing.name}" already exists.`);
-          err.statusCode = 409;
-          throw err;
-        }
-        throw error;
-      }
+        },
+        include: LEAD_STAGE_WITH_RULES_INCLUDE,
+      });
 
       if (normalizedInput.ruleAssignments !== undefined) {
         await tx.stageRule.updateMany({
