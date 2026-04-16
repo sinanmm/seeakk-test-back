@@ -12,8 +12,13 @@ import {
   type ResetPasswordInput,
   type ListUsersQuery,
 } from '../../validations/adminUserValidation';
+import {
+  createInviteSchema,
+  type CreateInviteInput,
+} from '../../modules/invites/invite.validation';
 import logger from '../../utils/logger';
 import auditService from '../../services/Audit/auditService';
+import { inviteService } from '../../modules/invites/invite.service';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -100,6 +105,41 @@ export const createUser = async (req: Request, res: Response, next: NextFunction
     });
   } catch (error: any) {
     handleServiceError(error, res, next, 'createUser');
+  }
+};
+
+/**
+ * POST /api/admin/users/invite
+ * Create an inactive user and send a one-time invite link.
+ */
+export const inviteUser = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = requireWorkspace(req, res);
+  if (!workspaceId) return;
+
+  const input = validate<CreateInviteInput>(createInviteSchema, req.body, res);
+  if (!input) return;
+
+  try {
+    const result = await inviteService.createInvite(
+      input,
+      {
+        id: req.user!.id,
+        workspaceId,
+        name: req.user?.name || null,
+      },
+      {
+        ipAddress: req.ip,
+        userAgent: req.headers['user-agent'],
+      },
+    );
+
+    return res.status(201).json({
+      success: true,
+      message: 'Invitation sent successfully.',
+      data: result,
+    });
+  } catch (error: any) {
+    handleServiceError(error, res, next, 'inviteUser');
   }
 };
 

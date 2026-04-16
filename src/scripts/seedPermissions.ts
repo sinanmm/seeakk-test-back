@@ -91,6 +91,35 @@ const permissions = [
   { key: 'SYSTEM_CONFIG', group: 'SYSTEM_SETTINGS', description: 'Manage system settings' },
 ];
 
+async function syncSuperAdminRole() {
+  const superAdminRole = await prisma.role.upsert({
+    where: { name: 'superadmin' },
+    update: {
+      description: 'Workspace Owner with full system access',
+      status: 'ACTIVE',
+    },
+    create: {
+      name: 'superadmin',
+      description: 'Workspace Owner with full system access',
+      status: 'ACTIVE',
+    },
+  });
+
+  const allPermissions = await prisma.permission.findMany({
+    select: { id: true },
+  });
+
+  if (allPermissions.length === 0) return;
+
+  await prisma.rolePermission.createMany({
+    data: allPermissions.map((permission: { id: string }) => ({
+      roleId: superAdminRole.id,
+      permissionId: permission.id,
+    })),
+    skipDuplicates: true,
+  });
+}
+
 async function main() {
   console.log('Seeding permissions...');
   let failed = 0;
@@ -114,6 +143,8 @@ async function main() {
   if (failed > 0) {
     throw new Error(`Permission seeding failed for ${failed} item(s).`);
   }
+
+  await syncSuperAdminRole();
 
   console.log('Permissions seeded successfully!');
 }

@@ -3,6 +3,39 @@ import prisma from '../../config/prisma';
 import logger from '../../utils/logger';
 import { seedDefaultMasterData } from '../../services/Seeding/seedingService';
 
+const SUPERADMIN_ROLE_NAME = 'superadmin';
+
+const ensureWorkspaceOwnerRole = async () => {
+  const superAdminRole = await prisma.role.upsert({
+    where: { name: SUPERADMIN_ROLE_NAME },
+    update: {
+      description: 'Workspace Owner with full system access',
+      status: 'ACTIVE',
+    },
+    create: {
+      name: SUPERADMIN_ROLE_NAME,
+      description: 'Workspace Owner with full system access',
+      status: 'ACTIVE',
+    },
+  });
+
+  const permissions = await prisma.permission.findMany({
+    select: { id: true },
+  });
+
+  if (permissions.length > 0) {
+    await prisma.rolePermission.createMany({
+      data: permissions.map((permission) => ({
+        roleId: superAdminRole.id,
+        permissionId: permission.id,
+      })),
+      skipDuplicates: true,
+    });
+  }
+
+  return superAdminRole;
+};
+
 export const setupWorkspace = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
   try {
     const user = req.user;
@@ -20,13 +53,8 @@ export const setupWorkspace = async (req: Request, res: Response, next: NextFunc
       return res.status(400).json({ message: 'Company Name and Employee Count are required.' });
     }
 
-    // 1. Find or create the admin role
-    let adminRole = await prisma.role.findUnique({ where: { name: 'admin' } });
-    if (!adminRole) {
-      adminRole = await prisma.role.create({
-        data: { name: 'admin', description: 'Super Administrator' },
-      });
-    }
+    // 1. Ensure the workspace owner is promoted to superadmin with full access.
+    const superAdminRole = await ensureWorkspaceOwnerRole();
 
     // 2. Create the workspace and link to the owner simultaneously
     const newWorkspace = await prisma.workspace.create({
@@ -41,11 +69,11 @@ export const setupWorkspace = async (req: Request, res: Response, next: NextFunc
       },
     });
 
-    // 3. Update user: assign admin role, mark as onboarded, link workspace
+    // 3. Update user: assign superadmin role, mark as onboarded, link workspace
     const updatedUser = await prisma.user.update({
       where: { id: user.id },
       data: {
-        roleId: adminRole.id,
+        roleId: superAdminRole.id,
         isOnboarded: true,
         workspaceId: newWorkspace.id,
       },

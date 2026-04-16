@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "npm run test:unit",
+    "test:unit": "node --require ts-node/register/transpile-only --test \"src/**/*.test.ts\"",
     "dev": "nodemon --watch src --ext ts,json --exec ts-node --transpile-only src/server.ts",
     "dev:once": "ts-node --transpile-only src/server.ts",
     "build": "tsc",
@@ -11,6 +12,7 @@
     "postinstall": "npx prisma generate",
     "migrate": "npx prisma migrate deploy",
     "prisma:seed": "ts-node --transpile-only src/scripts/seedPermissions.ts",
+    "db:promote-workspace-owners": "ts-node --transpile-only src/scripts/promoteWorkspaceOwnersToSuperAdmin.ts",
     "prisma:generate": "npx prisma generate",
     "prisma:push": "npx prisma db push",
     "prisma:migrate:deploy": "npx prisma migrate deploy",

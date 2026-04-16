@@ -1,0 +1,273 @@
+import bcrypt from 'bcryptjs';
+import auditService from '../../services/Audit/auditService';
+import { sendInvitationEmail } from '../../services/Email/emailService';
+import { createInviteTokenPair, hashInviteToken } from '../../utils/inviteToken';
+import { InviteError } from './invite.errors';
+import * as repository from './invite.repository';
+import type { AcceptInviteInput, CreateInviteInput, ValidateInviteQueryInput } from './invite.validation';
+
+type Actor = {
+  id: string;
+  workspaceId?: string | null;
+  name?: string | null;
+};
+
+type InviteServiceDependencies = {
+  repository: typeof repository;
+  tokenFactory: typeof createInviteTokenPair;
+  hashToken: typeof hashInviteToken;
+  sendInvitationEmail: typeof sendInvitationEmail;
+  hashPassword: typeof bcrypt.hash;
+  audit: typeof auditService;
+  now: () => Date;
+};
+
+const INVITE_TTL_MS = 24 * 60 * 60 * 1000;
+
+const buildExpiryDate = (now: Date): Date => new Date(now.getTime() + INVITE_TTL_MS);
+
+const toResponseUser = (user: any) => ({
+  id: user.id,
+  name: user.name,
+  email: user.email,
+  workspaceId: user.workspaceId,
+  role: user.role
+    ? {
+        id: user.role.id,
+        name: user.role.name,
+      }
+    : null,
+});
+
+export const createInviteService = (deps: InviteServiceDependencies) => {
+  const assertWorkspace = async (workspaceId: string) => {
+    const workspace = await deps.repository.findWorkspaceById(workspaceId);
+    if (!workspace) {
+      throw new InviteError('Workspace not found for invite creation.', 404, 'WORKSPACE_NOT_FOUND');
+    }
+    return workspace;
+  };
+
+  const resolveRoleId = async (value?: string) => {
+    if (!value) return null;
+    const role = await deps.repository.findRoleByIdOrName(value);
+    if (!role) {
+      throw new InviteError(`Role with ID '${value}' does not exist.`, 400, 'ROLE_NOT_FOUND');
+    }
+    return role.id;
+  };
+
+  const resolveDepartmentId = async (value: string | undefined, workspaceId: string) => {
+    if (!value) return null;
+    const department = await deps.repository.findDepartmentByIdOrName(value, workspaceId);
+    if (!department) {
+      throw new InviteError('Department not found in this workspace.', 400, 'DEPARTMENT_NOT_FOUND');
+    }
+    return department.id;
+  };
+
+  const assertOffice = async (officeId: string | undefined, workspaceId: string) => {
+    if (!officeId) return null;
+    const office = await deps.repository.findOfficeById(officeId, workspaceId);
+    if (!office) {
+      throw new InviteError('Active office not found in this workspace.', 400, 'OFFICE_NOT_FOUND');
+    }
+    return office.id;
+  };
+
+  const assertSupervisor = async (supervisorId: string | undefined, workspaceId: string) => {
+    if (!supervisorId) return null;
+    const supervisor = await deps.repository.findSupervisorById(supervisorId, workspaceId);
+    if (!supervisor) {
+      throw new InviteError('Supervisor not found in this workspace.', 400, 'SUPERVISOR_NOT_FOUND');
+    }
+    return supervisor.id;
+  };
+
+  const getValidatedInvite = async (rawToken: string) => {
+    const tokenHash = deps.hashToken(rawToken);
+    const invite = await deps.repository.findInviteByTokenHash(tokenHash);
+
+    if (!invite || !invite.user) {
+      throw new InviteError('Invite token is invalid.', 404, 'INVITE_NOT_FOUND');
+    }
+
+    const now = deps.now();
+    if (invite.usedAt) {
+      throw new InviteError('Invite token has already been used.', 409, 'INVITE_ALREADY_USED');
+    }
+
+    if (invite.expiresAt <= now) {
+      throw new InviteError('Invite token has expired.', 410, 'INVITE_EXPIRED');
+    }
+
+    if (!invite.user.workspaceId || invite.user.workspaceId !== invite.workspaceId) {
+      throw new InviteError('Invite token is not valid for this workspace.', 409, 'INVITE_WORKSPACE_MISMATCH');
+    }
+
+    return invite;
+  };
+
+  return {
+    async createInvite(input: CreateInviteInput, actor: Actor, context?: { ipAddress?: string; userAgent?: string }) {
+      const workspaceId = actor.workspaceId?.trim();
+      if (!workspaceId) {
+        throw new InviteError('Inviting users requires an authenticated workspace context.', 403, 'WORKSPACE_REQUIRED');
+      }
+
+      const workspace = await assertWorkspace(workspaceId);
+
+      const existingEmail = await deps.repository.findUserByEmail(input.email);
+      const canRestoreSoftDeletedByEmail = Boolean(existingEmail && existingEmail.deletedAt);
+      if (existingEmail && !canRestoreSoftDeletedByEmail) {
+        throw new InviteError('A user with this email already exists.', 409, 'EMAIL_ALREADY_EXISTS');
+      }
+
+      if (input.username) {
+        const existingUsername = await deps.repository.findUserByUsername(input.username);
+        if (existingUsername) {
+          throw new InviteError('This username is already taken.', 409, 'USERNAME_ALREADY_EXISTS');
+        }
+      }
+
+      const [roleId, departmentId, officeId, supervisorId] = await Promise.all([
+        resolveRoleId(input.roleId),
+        resolveDepartmentId(input.departmentId, workspaceId),
+        assertOffice(input.officeId, workspaceId),
+        assertSupervisor(input.supervisorId, workspaceId),
+      ]);
+
+      const { rawToken, tokenHash } = deps.tokenFactory();
+      const now = deps.now();
+      const expiresAt = buildExpiryDate(now);
+
+      const result = await deps.repository.createInvitedUserWithInvite({
+        workspaceId,
+        createdBy: actor.id,
+        tokenHash,
+        expiresAt,
+        restoreUserId: canRestoreSoftDeletedByEmail ? existingEmail?.id : null,
+        userData: {
+          name: input.name,
+          username: input.username ?? null,
+          email: input.email,
+          phone: input.phone ?? null,
+          roleId,
+          departmentId,
+          supervisorId,
+          officeId,
+          countryId: input.countryId ?? null,
+          stateId: input.stateId ?? null,
+          districtId: input.districtId ?? null,
+          assignedLocationIds: input.assignedLocationIds,
+        },
+      });
+
+      await deps.sendInvitationEmail(result.user.email, {
+        recipientName: result.user.name || result.user.email,
+        workspaceName: workspace.companyName,
+        inviterName: actor.name || actor.id,
+        inviteToken: rawToken,
+        expiresAt,
+      });
+
+      await deps.audit.log({
+        userId: actor.id,
+        workspaceId,
+        action: 'USER_INVITE_CREATED',
+        entityType: 'Invite',
+        entityId: result.invite.id,
+        details: {
+          inviteeUserId: result.user.id,
+          inviteeEmail: result.user.email,
+          expiresAt: expiresAt.toISOString(),
+        },
+        ipAddress: context?.ipAddress,
+        userAgent: context?.userAgent,
+      });
+
+      return {
+        invite: {
+          id: result.invite.id,
+          email: result.user.email,
+          expiresAt: result.invite.expiresAt.toISOString(),
+          createdAt: result.invite.createdAt.toISOString(),
+        },
+        user: toResponseUser(result.user),
+      };
+    },
+
+    async validateInvite(query: ValidateInviteQueryInput) {
+      const invite = await getValidatedInvite(query.token);
+
+      return {
+        valid: true,
+        invite: {
+          email: invite.user.email,
+          expiresAt: invite.expiresAt.toISOString(),
+          workspace: invite.user.workspace
+            ? {
+                id: invite.user.workspace.id,
+                companyName: invite.user.workspace.companyName,
+              }
+            : null,
+          role: invite.user.role
+            ? {
+                id: invite.user.role.id,
+                name: invite.user.role.name,
+              }
+            : null,
+          user: {
+            id: invite.user.id,
+            name: invite.user.name,
+          },
+        },
+      };
+    },
+
+    async acceptInvite(input: AcceptInviteInput, context?: { ipAddress?: string; userAgent?: string }) {
+      const invite = await getValidatedInvite(input.token);
+      const passwordHash = await deps.hashPassword(input.password, 12);
+      const acceptedAt = deps.now();
+
+      const user = await deps.repository.acceptInvite({
+        inviteId: invite.id,
+        userId: invite.user.id,
+        passwordHash,
+        acceptedAt,
+      });
+
+      if (!user) {
+        throw new InviteError('Invite token has already been used or expired.', 409, 'INVITE_ALREADY_CONSUMED');
+      }
+
+      await deps.audit.log({
+        userId: user.id,
+        workspaceId: user.workspaceId || undefined,
+        action: 'USER_INVITE_ACCEPTED',
+        entityType: 'Invite',
+        entityId: invite.id,
+        details: {
+          acceptedAt: acceptedAt.toISOString(),
+        },
+        ipAddress: context?.ipAddress,
+        userAgent: context?.userAgent,
+      });
+
+      return {
+        message: 'Invitation accepted successfully.',
+        user: toResponseUser(user),
+      };
+    },
+  };
+};
+
+export const inviteService = createInviteService({
+  repository,
+  tokenFactory: createInviteTokenPair,
+  hashToken: hashInviteToken,
+  sendInvitationEmail,
+  hashPassword: bcrypt.hash,
+  audit: auditService,
+  now: () => new Date(),
+});
