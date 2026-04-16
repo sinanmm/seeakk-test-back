@@ -1,13 +1,19 @@
 import { NextFunction, Request, Response } from 'express';
 import logger from '../../utils/logger';
 import * as dashboardService from './dashboard.service';
+import { resolveWorkspaceIdForUser } from '../../utils/workspaceContext';
 import {
   dashboardSummaryQuerySchema,
   type DashboardSummaryQueryInput,
 } from './dashboard.validation';
 
-const requireWorkspace = (req: Request, res: Response): string | null => {
-  const workspaceId = req.user?.workspaceId ?? null;
+const requireWorkspace = async (req: Request, res: Response): Promise<string | null> => {
+  if (!req.user?.id) {
+    res.status(401).json({ success: false, message: 'Not authorized' });
+    return null;
+  }
+
+  const workspaceId = await resolveWorkspaceIdForUser(req.user.id, req.user.workspaceId);
   if (!workspaceId) {
     res.status(403).json({
       success: false,
@@ -57,7 +63,7 @@ const getActor = (req: Request) => ({
 });
 
 export const getDashboardSummary = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
-  const workspaceId = requireWorkspace(req, res);
+  const workspaceId = await requireWorkspace(req, res);
   if (!workspaceId) return;
 
   const query = validate<DashboardSummaryQueryInput>(dashboardSummaryQuerySchema, req.query, res);
