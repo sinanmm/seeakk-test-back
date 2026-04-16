@@ -75,7 +75,13 @@ export const getDashboardSummary = async (req: Request, res: Response, next: Nex
       success: true,
       data,
     });
-  } catch (error) {
+  } catch (error: any) {
+    logger.error('Dashboard Summary Error:', {
+      message: error.message,
+      stack: error.stack,
+      workspaceId,
+      userId: req.user?.id
+    });
     handleServiceError(error, res, next, 'getDashboardSummary');
   }
 };

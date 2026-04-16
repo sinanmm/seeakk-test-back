@@ -208,25 +208,7 @@ export const getDashboardSummary = async (
   const previousThirtyDayEnd = endOfDay(addDays(now, -30));
   const growthStartDate = getGrowthStartDate(query.range);
 
-  const [
-    todayLeadCount,
-    yesterdayLeadCount,
-    totalLeadCount,
-    recentLeadCount,
-    previousRecentLeadCount,
-    totalClosedLeadCount,
-    closedThisWeekCount,
-    closedLastWeekCount,
-    activeUserCount,
-    activeUsersJoinedThisWeek,
-    activeUsersJoinedLastWeek,
-    leadGrowthTimestamps,
-    stageCounts,
-    stages,
-    recentAuditLogs,
-    followUps,
-    lobStageBreakdown,
-  ] = await Promise.all([
+  const results = await Promise.allSettled([
     dashboardRepository.countLeads(workspaceId, { createdAt: { gte: todayStart, lte: todayEnd } }),
     dashboardRepository.countLeads(workspaceId, { createdAt: { gte: yesterdayStart, lte: yesterdayEnd } }),
     dashboardRepository.countLeads(workspaceId),
@@ -263,6 +245,31 @@ export const getDashboardSummary = async (
     dashboardRepository.findTodayFollowUps(workspaceId, actor.id, todayStart, todayEnd, 5),
     getLOBStageBreakdown(workspaceId, actor, {}),
   ]);
+
+  const getValue = <T>(index: number, fallback: T): T => {
+    const result = results[index];
+    if (result.status === 'fulfilled') return result.value as T;
+    logger.error(`Dashboard sub-query failed at index ${index}`, { error: (result as PromiseRejectedResult).reason });
+    return fallback;
+  };
+
+  const todayLeadCount = getValue(0, 0);
+  const yesterdayLeadCount = getValue(1, 0);
+  const totalLeadCount = getValue(2, 0);
+  const recentLeadCount = getValue(3, 0);
+  const previousRecentLeadCount = getValue(4, 0);
+  const totalClosedLeadCount = getValue(5, 0);
+  const closedThisWeekCount = getValue(6, 0);
+  const closedLastWeekCount = getValue(7, 0);
+  const activeUserCount = getValue(8, 0);
+  const activeUsersJoinedThisWeek = getValue(9, 0);
+  const activeUsersJoinedLastWeek = getValue(10, 0);
+  const leadGrowthTimestamps = getValue<any[]>(11, []);
+  const stageCounts = getValue<any[]>(12, []);
+  const stages = getValue<any[]>(13, []);
+  const recentAuditLogs = getValue<any[]>(14, []);
+  const followUps = getValue<any[]>(15, []);
+  const lobStageBreakdown = getValue<any>(16, { labels: [], lob_counts: [], total_reference: 0 });
 
   const leadIds = Array.from(
     new Set(
@@ -341,7 +348,7 @@ export const getDashboardSummary = async (
         id: item.id,
         user: resolveDisplayName(item.user),
         action: humanizeAuditAction(item.action),
-        target,
+        target: target || 'Unknown',
         time: timeAgo(item.createdAt),
         avatar: null,
         status: getActivityStatus(item.action),
@@ -353,7 +360,7 @@ export const getDashboardSummary = async (
     })),
     meetings: followUps.map((item) => ({
       id: item.id,
-      title: `${item.type} - ${item.lead.name}`,
+      title: `${item.type} - ${item.lead?.name || 'Unknown Lead'}`,
       time: formatTime(item.scheduledAt),
       type: /video|meet|zoom/i.test(item.type) ? 'video' : 'call',
     })),
