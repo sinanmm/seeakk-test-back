@@ -71,6 +71,42 @@ export const sendPasswordResetEmail = async (email: string, name: string | null 
   );
 };
 
+export const sendInvitationEmail = async (
+  email: string,
+  input: {
+    recipientName: string;
+    workspaceName: string;
+    inviterName?: string | null;
+    inviteToken: string;
+    expiresAt: Date;
+  },
+): Promise<void> => {
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  const backendUrl = process.env.BACKEND_URL || 'http://localhost:5000';
+  const inviteLink = `${frontendUrl}/invite/accept?token=${encodeURIComponent(input.inviteToken)}`;
+  const fallbackValidateLink = `${backendUrl}/api/auth/invite/validate?token=${encodeURIComponent(input.inviteToken)}`;
+  const displayName = input.recipientName?.trim() || email;
+  const inviterName = input.inviterName?.trim() || 'your administrator';
+
+  await sendOrLogEmail(
+    email,
+    `You're invited to join ${input.workspaceName} on Seeakk`,
+    `
+      <h2>You're invited to Seeakk</h2>
+      <p>Hi ${displayName},</p>
+      <p>${inviterName} invited you to join the workspace <b>${input.workspaceName}</b>.</p>
+      <p>Use the secure invitation link below to set your password and activate your account.</p>
+      <a href="${inviteLink}" style="padding: 10px 20px; background-color: #10b981; color: white; text-decoration: none; border-radius: 5px; display: inline-block; margin-top: 10px;">Accept Invitation</a>
+      <br/><br/>
+      <p>If the button does not work, copy this link into your browser: <br/> ${inviteLink}</p>
+      <p>API validation endpoint: <br/> ${fallbackValidateLink}</p>
+      <p>This invitation expires on ${input.expiresAt.toUTCString()} and can only be used once.</p>
+    `,
+    'Invitation Link',
+    inviteLink,
+  );
+};
+
 export const sendFollowUpReminderEmail = async (
   email: string,
   input: {

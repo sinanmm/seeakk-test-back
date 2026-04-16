@@ -32,7 +32,16 @@ export const getAllLocations = async (workspaceId: string) => {
       isActive: true,
       countryId: { not: null },
     },
-    orderBy: { name: 'asc' }
+    include: {
+      level: {
+        select: {
+          id: true,
+          levelName: true,
+          levelOrder: true,
+        },
+      },
+    },
+    orderBy: [{ parentId: 'asc' }, { name: 'asc' }],
   });
 };
 

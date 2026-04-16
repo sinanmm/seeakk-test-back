@@ -108,6 +108,7 @@ model Workspace {
   reports            Report[]
   reportLogs         ReportLog[]
   importJobs         ImportJob[]
+  invites            Invite[]
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
@@ -878,6 +879,8 @@ model User {
   createdReports           Report[]     @relation("ReportCreatedBy")
   generatedReportLogs      ReportLog[]  @relation("ReportLogGeneratedBy")
   createdImportJobs        ImportJob[]  @relation("ImportJobCreatedBy")
+  receivedInvites          Invite[]     @relation("InviteUser")
+  createdInvites           Invite[]     @relation("InviteCreatedBy")
 
   createdAt                DateTime    @default(now())
   updatedAt                DateTime    @updatedAt
@@ -891,6 +894,27 @@ model User {
   @@index([workspaceId, roleId, deletedAt])
   @@index([workspaceId, supervisorId, deletedAt])
   @@map("users")
+}
+
+model Invite {
+  id          String    @id @default(cuid())
+  userId      String
+  workspaceId String
+  tokenHash   String    @unique
+  expiresAt   DateTime
+  usedAt      DateTime?
+  createdBy   String
+  createdAt   DateTime  @default(now())
+
+  user        User      @relation("InviteUser", fields: [userId], references: [id], onDelete: Cascade)
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  creator     User      @relation("InviteCreatedBy", fields: [createdBy], references: [id], onDelete: Restrict)
+
+  @@index([workspaceId, userId])
+  @@index([workspaceId, createdBy])
+  @@index([workspaceId, expiresAt])
+  @@index([workspaceId, usedAt])
+  @@map("invites")
 }
 
 model FollowUp {

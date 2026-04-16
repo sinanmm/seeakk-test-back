@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import * as authController from '../../controllers/Auth/authController';
+import * as authInviteController from '../../controllers/Auth/authInviteController';
 import { protect, authorize } from '../../middlewares/authMiddleware';
 import { authLimiter } from '../../middlewares/rateLimiter';
 
@@ -18,6 +19,8 @@ router.post('/activate', authController.activateAccount);
 router.post('/login', authLimiter, authController.login);
 
 router.post('/google', authController.googleLogin);
+router.get('/invite/validate', authInviteController.validateInvite);
+router.post('/invite/accept', authInviteController.acceptInvite);
 
 router.post('/refresh', authController.refreshToken);
 
