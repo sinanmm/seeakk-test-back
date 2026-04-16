@@ -32,6 +32,7 @@ import auditRoutes from './routes/Audit/auditRoutes';
 import holidayRoutes from './modules/holidays/holidays.routes';
 import reportTypeRoutes from './modules/reports/reportTypes.routes';
 import reportRoutes from './modules/reports/reports.routes';
+import dashboardRoutes from './modules/dashboard/dashboard.routes';
 import logger from './utils/logger';
 import { globalLimiter } from './middlewares/rateLimiter';
 import { notFound, errorHandler } from './middlewares/errorMiddleware';
@@ -107,6 +108,7 @@ app.use('/api/audit', auditRoutes);
 app.use('/api/holidays', holidayRoutes);
 app.use('/api/report-types', reportTypeRoutes);
 app.use('/api/reports', reportRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 // Health check
 app.get('/', (req: Request, res: Response) => {
