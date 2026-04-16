@@ -2,6 +2,7 @@ import { LeadApprovalState } from '@prisma/client';
 import * as dashboardRepository from './dashboard.repository';
 import { getStageBreakdown as getLOBStageBreakdown } from '../leads/lobAnalysis.service';
 import type { DashboardSummaryQueryInput } from './dashboard.validation';
+import logger from '../../utils/logger';
 
 type Actor = {
   id: string;
@@ -244,6 +245,9 @@ export const getDashboardSummary = async (
     dashboardRepository.findRecentLeadAuditLogs(workspaceId, 6),
     dashboardRepository.findTodayFollowUps(workspaceId, actor.id, todayStart, todayEnd, 5),
     getLOBStageBreakdown(workspaceId, actor, {}),
+    dashboardRepository.countLeads(workspaceId, {
+      approvalState: LeadApprovalState.PENDING,
+    }),
   ]);
 
   const getValue = <T>(index: number, fallback: T): T => {
@@ -270,6 +274,7 @@ export const getDashboardSummary = async (
   const recentAuditLogs = getValue<any[]>(14, []);
   const followUps = getValue<any[]>(15, []);
   const lobStageBreakdown = getValue<any>(16, { labels: [], lob_counts: [], total_reference: 0 });
+  const pendingApprovals = getValue<number>(17, 0);
 
   const leadIds = Array.from(
     new Set(
@@ -354,7 +359,7 @@ export const getDashboardSummary = async (
         status: getActivityStatus(item.action),
       };
     }),
-    lob: lobStageBreakdown.labels.map((label, index) => ({
+    lob: (lobStageBreakdown.labels as string[]).map((label: string, index: number) => ({
       name: label,
       lost: lobStageBreakdown.lob_counts[index] || 0,
     })),
@@ -366,9 +371,7 @@ export const getDashboardSummary = async (
     })),
     scheduleDateLabel: formatScheduleLabel(now),
     range: query.range,
-    pendingApprovals: await dashboardRepository.countLeads(workspaceId, {
-      approvalState: LeadApprovalState.PENDING,
-    }),
+    pendingApprovals,
     formatted: {
       totalLeads: formatNumber(totalLeadCount),
       closedLeads: formatNumber(totalClosedLeadCount),

@@ -17,14 +17,10 @@ export const ensureDashboardSchemaReady = async (): Promise<boolean> => {
   const rows = await prisma.$queryRaw<Array<{ ready: boolean }>>`
     SELECT
       COUNT(*) FILTER (WHERE table_name = 'leads') > 0
-      AND COUNT(*) FILTER (WHERE table_name = 'users') > 0
-      AND COUNT(*) FILTER (WHERE table_name = 'lead_stages') > 0
-      AND COUNT(*) FILTER (WHERE table_name = 'follow_ups') > 0
-      AND COUNT(*) FILTER (WHERE table_name = 'audit_logs') > 0
-      AND COUNT(*) FILTER (WHERE table_name = 'lead_lob_logs') > 0 AS ready
+      AND COUNT(*) FILTER (WHERE table_name = 'users') > 0 AS ready
     FROM information_schema.tables
     WHERE table_schema = 'public'
-      AND table_name IN ('leads', 'users', 'lead_stages', 'follow_ups', 'audit_logs', 'lead_lob_logs')
+      AND table_name IN ('leads', 'users')
   `;
 
   return Boolean(rows[0]?.ready);
