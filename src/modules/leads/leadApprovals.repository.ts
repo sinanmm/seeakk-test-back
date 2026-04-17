@@ -77,10 +77,11 @@ export const findLeadScoped = async (workspaceId: string, leadId: string) =>
     },
   });
 
-export const findStageById = async (stageId: string) =>
+export const findStageById = async (workspaceId: string, stageId: string) =>
   prisma.leadStage.findFirst({
     where: {
       id: stageId,
+      workspaceId,
       deletedAt: null,
       status: 'ACTIVE',
     },

@@ -240,7 +240,7 @@ export const createLeadApproval = async (
     throw createServiceError('Lead not found in this workspace.', 404);
   }
 
-  const targetStage = await repository.findStageById(input.toStageId);
+  const targetStage = await repository.findStageById(workspaceId, input.toStageId);
   if (!targetStage) {
     throw createServiceError('Target lead stage was not found.', 404);
   }

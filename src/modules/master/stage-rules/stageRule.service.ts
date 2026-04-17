@@ -724,13 +724,24 @@ export const validateLeadStageTransitionInputs = async (
   targetStageId: string,
   leadData: Record<string, unknown>,
 ): Promise<StageTransitionValidationResult> => {
+  const normalizeKey = (value: string): string =>
+    value
+      .toLowerCase()
+      .trim()
+      .replace(/[\s_-]+/g, '');
+
   const rules = await getActiveStageRulesForExecution(workspaceId, targetStageId);
+  const normalizedData = Object.entries(leadData || {}).reduce<Record<string, unknown>>((acc, [key, value]) => {
+    acc[key] = value;
+    acc[normalizeKey(key)] = value;
+    return acc;
+  }, {});
 
   const missingFields = rules
     .filter((rule) => rule.required)
     .map((rule) => rule.name)
     .filter((field) => {
-      const value = leadData[field];
+      const value = normalizedData[field] ?? normalizedData[normalizeKey(field)];
       if (value === null || value === undefined) return true;
       if (typeof value === 'string' && value.trim() === '') return true;
       return false;
