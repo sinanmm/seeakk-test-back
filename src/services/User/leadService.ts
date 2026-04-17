@@ -2,6 +2,7 @@ import prisma from '../../config/prisma';
 import { redisClient } from '../../config/redis';
 import { buildClosureUpdateData, isClosureStage } from '../../modules/leads/leads.service';
 import * as leadApprovalService from '../../modules/leads/leadApprovals.service';
+import { validateLeadStageTransition } from '../../modules/master/lead-stages/leadStage.service';
 import { assertActiveLOBReason } from '../../modules/master/lob-reasons/lobReasons.service';
 import type {
   AssignLeadInput,
@@ -329,12 +330,13 @@ const resolveAssignedUserId = async (
   return assignedToId;
 };
 
-const resolveStage = async (stageId: string | null | undefined) => {
+const resolveStage = async (workspaceId: string, stageId: string | null | undefined) => {
   if (!stageId) return null;
 
   const stage = await prisma.leadStage.findFirst({
     where: {
       id: stageId,
+      workspaceId,
       deletedAt: null,
       status: 'ACTIVE',
     },
@@ -473,6 +475,7 @@ const shouldRunSweepNow = (workspaceId: string): boolean => {
 const getLobStageForWorkspace = async (_workspaceId: string) =>
   prisma.leadStage.findFirst({
     where: {
+      workspaceId: _workspaceId,
       deletedAt: null,
       status: 'ACTIVE',
       OR: [{ isLOB: true }, { name: { equals: 'LOB', mode: 'insensitive' } }],
@@ -489,6 +492,7 @@ const getLobStageForWorkspace = async (_workspaceId: string) =>
 const getDefaultStageForWorkspace = async (_workspaceId: string) =>
   prisma.leadStage.findFirst({
     where: {
+      workspaceId: _workspaceId,
       deletedAt: null,
       status: 'ACTIVE',
       isLOB: false,
@@ -559,12 +563,13 @@ const maybeRunLeadSlaSweep = async (workspaceId: string): Promise<void> => {
   await clearLeadCache(workspaceId);
 };
 
-const resolveSource = async (sourceId: string | null | undefined) => {
+const resolveSource = async (workspaceId: string, sourceId: string | null | undefined) => {
   if (!sourceId) return null;
 
   const source = await prisma.leadSource.findFirst({
     where: {
       id: sourceId,
+      workspaceId,
       deletedAt: null,
       status: 'ACTIVE',
     },
@@ -579,6 +584,71 @@ const resolveSource = async (sourceId: string | null | undefined) => {
   }
 
   return source;
+};
+
+const normalizeRuleFieldKey = (value: string): string =>
+  value
+    .toLowerCase()
+    .trim()
+    .replace(/[\s_-]+/g, '');
+
+type StageValidationPatch = {
+  name?: string;
+  email?: string | null;
+  phone?: string | null;
+  expectedRevenue?: number | null;
+  assignedToId?: string | null;
+  sourceId?: string | null;
+  lifecycleId?: string | null;
+  nextFollowUpAt?: Date | null;
+  followUpDescription?: string | null;
+  reasonId?: string | null;
+  remarks?: string | null;
+  stageId?: string | null;
+};
+
+const toValidationLeadData = async (
+  lead: LeadIncludeRecord,
+  patch: StageValidationPatch,
+): Promise<Record<string, unknown>> => {
+  const dynamicValues = await (prisma as any).leadDynamicValue.findMany({
+    where: { leadId: lead.id },
+    select: {
+      value: true,
+      field: {
+        select: {
+          name: true,
+        },
+      },
+    },
+  });
+
+  const data: Record<string, unknown> = {
+    name: patch.name ?? lead.name,
+    email: patch.email !== undefined ? patch.email : lead.email,
+    phone: patch.phone !== undefined ? patch.phone : lead.phone,
+    expectedRevenue: patch.expectedRevenue !== undefined ? patch.expectedRevenue : lead.expectedRevenue,
+    assignedToId: patch.assignedToId !== undefined ? patch.assignedToId : lead.assignedToId,
+    sourceId: patch.sourceId !== undefined ? patch.sourceId : lead.sourceId,
+    lifecycleId: patch.lifecycleId !== undefined ? patch.lifecycleId : lead.lifecycleId,
+    nextFollowUpAt: patch.nextFollowUpAt !== undefined ? patch.nextFollowUpAt : lead.nextFollowUpAt,
+    followUpDescription: patch.followUpDescription ?? undefined,
+    reasonId: patch.reasonId !== undefined ? patch.reasonId : undefined,
+    remarks: patch.remarks !== undefined ? patch.remarks : undefined,
+  };
+
+  Object.entries(data).forEach(([key, value]) => {
+    data[normalizeRuleFieldKey(key)] = value;
+  });
+
+  for (const entry of dynamicValues) {
+    const fieldName = entry?.field?.name?.trim();
+    if (!fieldName) continue;
+    data[fieldName] = entry.value;
+    data[normalizeRuleFieldKey(fieldName)] = entry.value;
+  }
+
+  return data;
 };
 
 const ensureLOBPayload = (stage: { isLOB: boolean; name: string } | null, reasonId?: string | null, remarks?: string | null): void => {
@@ -729,9 +799,9 @@ export const createLead = async (
 
   ensureAssignmentAllowed(actor, input.assignedToId);
   const assignedToId = await resolveAssignedUserId(workspaceId, input.assignedToId);
-  const stage = (await resolveStage(input.stageId)) || (await getDefaultStageForWorkspace(workspaceId)) || null;
+  const stage = (await resolveStage(workspaceId, input.stageId)) || (await getDefaultStageForWorkspace(workspaceId)) || null;
   const lifecycle = await resolveLifecycle(workspaceId, input.lifecycleId);
-  const source = await resolveSource(input.sourceId);
+  const source = await resolveSource(workspaceId, input.sourceId);
   ensureLOBPayload(stage, input.reasonId, input.remarks ?? null);
   await ensureValidLOBReasonForStage(workspaceId, stage, input.reasonId);
   const slaSnapshot = stage?.isLOB || stage?.isClosed
@@ -898,9 +968,9 @@ export const updateLead = async (
   const assignedToId = input.assignedToId !== undefined
     ? (ensureAssignmentAllowed(actor, input.assignedToId), await resolveAssignedUserId(workspaceId, input.assignedToId))
     : existing.assignedToId;
-  const stage = input.stageId !== undefined ? await resolveStage(input.stageId) : existing.stage;
+  const stage = input.stageId !== undefined ? await resolveStage(workspaceId, input.stageId) : existing.stage;
   const lifecycle = input.lifecycleId !== undefined ? await resolveLifecycle(workspaceId, input.lifecycleId) : existing.lifecycle;
-  const source = input.sourceId !== undefined ? await resolveSource(input.sourceId) : existing.source;
+  const source = input.sourceId !== undefined ? await resolveSource(workspaceId, input.sourceId) : existing.source;
   const lifecycleForSla =
     input.lifecycleId !== undefined
       ? lifecycle
@@ -919,6 +989,16 @@ export const updateLead = async (
       'This stage change requires approval. Use the stage transition flow instead of a direct lead update.',
       409,
     );
+  }
+
+  if (
+    input.stageId !== undefined &&
+    stage?.id &&
+    existing.stageId &&
+    stage.id !== existing.stageId
+  ) {
+    const validationData = await toValidationLeadData(existing, input);
+    await validateLeadStageTransition(workspaceId, stage.id, validationData);
   }
 
   const remarks = input.remarks === null ? null : input.remarks ?? null;
@@ -1037,10 +1117,15 @@ export const changeStage = async (
   await assertModuleReady();
 
   const existing = await getLeadScoped(workspaceId, id);
-  const targetStage = await resolveStage(input.stageId);
+  const targetStage = await resolveStage(workspaceId, input.stageId);
 
   if (!targetStage) {
     throw createServiceError('Lead stage was not found.', 404);
+  }
+
+  if (existing.stageId && existing.stageId !== targetStage.id) {
+    const validationData = await toValidationLeadData(existing, input);
+    await validateLeadStageTransition(workspaceId, targetStage.id, validationData);
   }
 
   ensureLOBPayload(targetStage, input.reasonId, input.remarks ?? null);
