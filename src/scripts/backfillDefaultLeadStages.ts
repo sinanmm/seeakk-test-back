@@ -7,6 +7,9 @@ dotenv.config();
 const prisma = new PrismaClient() as any;
 
 async function main() {
+  const enforceStageFlagsOnExisting = process.argv.includes('--enforce-existing');
+  const recreateDeletedDefaults = process.argv.includes('--recreate-deleted');
+
   const workspaces = await prisma.workspace.findMany({
     select: { id: true, ownerId: true },
     orderBy: { createdAt: 'asc' },
@@ -21,7 +24,10 @@ async function main() {
   let totalUpdated = 0;
 
   for (const workspace of workspaces) {
-    const { created, updated } = await ensureDefaultLeadStagesForWorkspace(workspace.id, workspace.ownerId || undefined);
+    const { created, updated } = await ensureDefaultLeadStagesForWorkspace(workspace.id, workspace.ownerId || undefined, {
+      enforceStageFlagsOnExisting,
+      recreateDeletedDefaults,
+    });
     totalCreated += created;
     totalUpdated += updated;
     console.log(
@@ -42,4 +48,3 @@ main()
   .finally(async () => {
     await prisma.$disconnect();
   });
-

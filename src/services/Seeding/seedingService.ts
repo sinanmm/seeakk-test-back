@@ -62,14 +62,19 @@ const normalizeName = (value: string): string =>
 export const ensureDefaultLeadStagesForWorkspace = async (
   workspaceId: string,
   createdById?: string,
+  options?: {
+    enforceStageFlagsOnExisting?: boolean;
+    recreateDeletedDefaults?: boolean;
+  },
 ): Promise<{ created: number; updated: number }> => {
   const ws = typeof workspaceId === 'string' ? workspaceId.trim() : '';
   if (!ws) return { created: 0, updated: 0 };
+  const enforceStageFlagsOnExisting = Boolean(options?.enforceStageFlagsOnExisting);
+  const recreateDeletedDefaults = Boolean(options?.recreateDeletedDefaults);
 
   const existingStages = await (prisma as any).leadStage.findMany({
     where: {
       workspaceId: ws,
-      deletedAt: null,
     },
     select: {
       id: true,
@@ -79,6 +84,7 @@ export const ensureDefaultLeadStagesForWorkspace = async (
       isClosed: true,
       isLOB: true,
       status: true,
+      deletedAt: true,
     },
     orderBy: [{ order: 'asc' }, { createdAt: 'asc' }],
   });
@@ -91,7 +97,8 @@ export const ensureDefaultLeadStagesForWorkspace = async (
     }
   }
 
-  let nextOrder = existingStages.reduce((max: number, stage: any) => Math.max(max, stage.order || 0), 0) + 1;
+  const activeStages = existingStages.filter((stage: any) => stage.deletedAt === null);
+  let nextOrder = activeStages.reduce((max: number, stage: any) => Math.max(max, stage.order || 0), 0) + 1;
   let created = 0;
   let updated = 0;
 
@@ -99,14 +106,35 @@ export const ensureDefaultLeadStagesForWorkspace = async (
     const existing = existingByName.get(normalizeName(stage.name));
 
     if (existing) {
+      if (existing.deletedAt && !recreateDeletedDefaults) {
+        continue;
+      }
+
+      if (!enforceStageFlagsOnExisting && !existing.deletedAt) {
+        continue;
+      }
+
       await (prisma as any).leadStage.update({
         where: { id: existing.id },
         data: {
-          isApprovalRequired: stage.isApprovalRequired,
-          isClosed: stage.isClosed,
-          isLOB: stage.isLOB,
-          status: 'ACTIVE',
-          deletedAt: null,
+          ...(enforceStageFlagsOnExisting
+            ? {
+                isApprovalRequired: stage.isApprovalRequired,
+                isClosed: stage.isClosed,
+                isLOB: stage.isLOB,
+                status: 'ACTIVE',
+              }
+            : {}),
+          ...(existing.deletedAt && recreateDeletedDefaults
+            ? {
+                deletedAt: null,
+                status: 'ACTIVE',
+                order: nextOrder++,
+                isApprovalRequired: stage.isApprovalRequired,
+                isClosed: stage.isClosed,
+                isLOB: stage.isLOB,
+              }
+            : {}),
         },
       });
       updated += 1;
