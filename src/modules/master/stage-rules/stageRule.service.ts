@@ -10,11 +10,27 @@ import {
   ListStageRulesQuery,
   UpdateStageRuleInput,
 } from './stageRule.validator';
+import { Prisma } from '@prisma/client';
 
 const ACTIVE_CACHE_TTL_SECONDS = 300;
 const getActiveCacheKey = (workspaceId: string): string => `stage_rules:active:${workspaceId}`;
 const leadStageDelegate = (prisma as any).leadStage;
 const stageRuleDelegate = (prisma as any).stageRule;
+
+const parseRuleOptions = (raw: unknown): string[] => {
+  if (raw == null) return [];
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .filter((item): item is string => typeof item === 'string')
+    .map((item) => item.trim())
+    .filter(Boolean);
+};
+
+const withParsedRuleOptions = <T extends Record<string, unknown>>(record: T): T & { options: string[] } => ({
+  ...record,
+  options: parseRuleOptions((record as { options?: unknown }).options),
+});
+
 let stageRuleSchemaCheckedAt: number | null = null;
 const STAGE_RULE_SCHEMA_CHECK_TTL_MS = 60_000;
 const isStageRuleConsoleDebugEnabled = process.env.DEBUG_STAGE_RULES_CONSOLE === 'true';
@@ -133,6 +149,11 @@ const ensureStageRuleSchemaReady = async (): Promise<void> => {
   // Legacy pre-refactor columns may still enforce constraints not used by new Prisma model.
   await ensureLegacyStageRuleColumnsCompatible();
 
+  await prisma.$executeRawUnsafe(`
+    ALTER TABLE "stage_rules"
+      ADD COLUMN IF NOT EXISTS "options" JSONB;
+  `);
+
   const colSet = new Set(columns.map((column) => column.column_name));
   const lowerColSet = new Set(columns.map((column) => column.column_name.toLowerCase()));
   const requiredColumns = ['name', 'inputType', 'sortOrder', 'required', 'status', 'deletedAt'];
@@ -170,7 +191,8 @@ const ensureStageRuleSchemaReady = async (): Promise<void> => {
         ADD COLUMN IF NOT EXISTS "createdBy" TEXT,
         ADD COLUMN IF NOT EXISTS "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
         ADD COLUMN IF NOT EXISTS "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        ADD COLUMN IF NOT EXISTS "deletedAt" TIMESTAMP(3);
+        ADD COLUMN IF NOT EXISTS "deletedAt" TIMESTAMP(3),
+        ADD COLUMN IF NOT EXISTS "options" JSONB;
     `);
 
     await prisma.$executeRawUnsafe(`
@@ -328,7 +350,8 @@ const assertStageIfProvided = async (workspaceId: string, stageId?: string | nul
 const stageScopeFilter = (stageId: string | null): { stageId: string | null } => ({ stageId });
 
 const remapSingleRule = async (record: any): Promise<StageRuleResponse> => {
-  const [mapped] = await mapCreatorNames([record]);
+  const normalized = withParsedRuleOptions(record);
+  const [mapped] = await mapCreatorNames([normalized]);
   return mapped as StageRuleResponse;
 };
 
@@ -378,11 +401,15 @@ export const createStageRule = async (
           status: input.status,
           stageId: scopedStageId,
           createdBy,
+          ...(input.inputType === 'RADIO' || input.inputType === 'SELECT'
+            ? { options: input.options as Prisma.InputJsonValue }
+            : {}),
         },
         select: {
           id: true,
           name: true,
           inputType: true,
+          options: true,
           sortOrder: true,
           required: true,
           status: true,
@@ -453,6 +480,7 @@ export const listStageRules = async (
         id: true,
         name: true,
         inputType: true,
+        options: true,
         sortOrder: true,
         required: true,
         status: true,
@@ -465,7 +493,7 @@ export const listStageRules = async (
     }),
   ]);
 
-  const mappedRecords = await mapCreatorNames(records);
+  const mappedRecords = await mapCreatorNames(records.map((record: any) => withParsedRuleOptions(record)));
 
   return {
     data: mappedRecords as StageRuleResponse[],
@@ -499,6 +527,7 @@ export const getActiveStageRules = async (workspaceId: string): Promise<StageRul
       id: true,
       name: true,
       inputType: true,
+      options: true,
       sortOrder: true,
       required: true,
       status: true,
@@ -510,7 +539,7 @@ export const getActiveStageRules = async (workspaceId: string): Promise<StageRul
     },
   });
 
-  const mappedRecords = (await mapCreatorNames(records)) as StageRuleResponse[];
+  const mappedRecords = (await mapCreatorNames(records.map((record: any) => withParsedRuleOptions(record)))) as StageRuleResponse[];
 
   if (redisClient.isOpen) {
     await redisClient.setEx(getActiveCacheKey(workspaceId), ACTIVE_CACHE_TTL_SECONDS, JSON.stringify(mappedRecords));
@@ -532,6 +561,7 @@ export const updateStageRule = async (
       id: true,
       name: true,
       inputType: true,
+      options: true,
       sortOrder: true,
       required: true,
       status: true,
@@ -553,6 +583,17 @@ export const updateStageRule = async (
   const targetSortOrder = input.sortOrder ?? existing.sortOrder;
 
   await assertStageIfProvided(workspaceId, targetStageId);
+
+  const mergedInputType = input.inputType ?? existing.inputType;
+  const existingOptions = parseRuleOptions((existing as { options?: unknown }).options);
+  const effectiveOptions = input.options !== undefined ? input.options : existingOptions;
+  if (mergedInputType === 'RADIO' || mergedInputType === 'SELECT') {
+    if (effectiveOptions.length < 1) {
+      const error: any = new Error('Radio and select rules require at least one option.');
+      error.statusCode = 422;
+      throw error;
+    }
+  }
 
   const updated = await prisma.$transaction(async (tx: any) => {
     const hasScopeChanged = targetStageId !== existing.stageId;
@@ -622,11 +663,19 @@ export const updateStageRule = async (
         ...(input.required !== undefined ? { required: input.required } : {}),
         ...(input.status !== undefined ? { status: input.status } : {}),
         ...(input.stageId !== undefined ? { stageId: input.stageId } : {}),
+        ...(input.options !== undefined && (mergedInputType === 'RADIO' || mergedInputType === 'SELECT')
+          ? {
+              options:
+                input.options.length > 0 ? (input.options as Prisma.InputJsonValue) : Prisma.JsonNull,
+            }
+          : {}),
+        ...(mergedInputType === 'TEXT' || mergedInputType === 'TEXTAREA' ? { options: Prisma.JsonNull } : {}),
       },
       select: {
         id: true,
         name: true,
         inputType: true,
+        options: true,
         sortOrder: true,
         required: true,
         status: true,
@@ -698,13 +747,14 @@ export const getActiveStageRulesForExecution = async (
       workspaceId,
       deletedAt: null,
       status: 'ACTIVE',
-      OR: [{ stageId: null }, { stageId }],
+      stageId,
     },
     orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
     select: {
       id: true,
       name: true,
       inputType: true,
+      options: true,
       sortOrder: true,
       required: true,
       status: true,
@@ -716,41 +766,49 @@ export const getActiveStageRulesForExecution = async (
     },
   });
 
-  return (await mapCreatorNames(records)) as StageRuleResponse[];
+  return (await mapCreatorNames(records.map((record: any) => withParsedRuleOptions(record)))) as StageRuleResponse[];
 };
 
 export const validateLeadStageTransitionInputs = async (
   workspaceId: string,
   targetStageId: string,
-  leadData: Record<string, unknown>,
+  _leadData: Record<string, unknown>,
+  stageRuleAnswers?: Record<string, string>,
 ): Promise<StageTransitionValidationResult> => {
-  const normalizeKey = (value: string): string =>
-    value
-      .toLowerCase()
-      .trim()
-      .replace(/[\s_-]+/g, '');
-
   const rules = await getActiveStageRulesForExecution(workspaceId, targetStageId);
-  const normalizedData = Object.entries(leadData || {}).reduce<Record<string, unknown>>((acc, [key, value]) => {
-    acc[key] = value;
-    acc[normalizeKey(key)] = value;
-    return acc;
-  }, {});
+  const answers = stageRuleAnswers || {};
 
-  const missingFields = rules
-    .filter((rule) => rule.required)
-    .map((rule) => rule.name)
-    .filter((field) => {
-      const value = normalizedData[field] ?? normalizedData[normalizeKey(field)];
-      if (value === null || value === undefined) return true;
-      if (typeof value === 'string' && value.trim() === '') return true;
-      return false;
-    });
+  const missingFields: string[] = [];
+  const invalidFields: string[] = [];
+
+  for (const rule of rules) {
+    const rawValue = answers[rule.id];
+    const value = typeof rawValue === 'string' ? rawValue.trim() : '';
+
+    if (rule.required && !value) {
+      missingFields.push(rule.name);
+      continue;
+    }
+
+    if (!value) continue;
+
+    const opts = rule.options || [];
+    if ((rule.inputType === 'RADIO' || rule.inputType === 'SELECT') && opts.length > 0 && !opts.includes(value)) {
+      invalidFields.push(rule.name);
+    }
+  }
 
   if (missingFields.length > 0) {
-    const error: any = new Error(`Required fields missing: ${missingFields.join(', ')}`);
+    const error: any = new Error(`Required stage rule fields missing: ${missingFields.join(', ')}`);
     error.statusCode = 400;
     error.details = { missingFields };
+    throw error;
+  }
+
+  if (invalidFields.length > 0) {
+    const error: any = new Error(`Invalid option value for: ${invalidFields.join(', ')}`);
+    error.statusCode = 400;
+    error.details = { invalidFields };
     throw error;
   }
 

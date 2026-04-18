@@ -283,6 +283,8 @@ model StageRule {
   workspaceId String
   name      String     @default("Untitled Rule")
   inputType InputType  @default(TEXT)
+  /// JSON string[] — choices for RADIO / SELECT
+  options   Json?
   sortOrder Int        @default(1)
   required  Boolean    @default(false)
   // Legacy columns kept for backward compatibility to avoid destructive schema pushes.

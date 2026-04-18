@@ -85,12 +85,18 @@ export const updateLeadSchema = z.object({
 
 export type UpdateLeadInput = z.infer<typeof updateLeadSchema>;
 
+const stageRuleValueEntrySchema = z.object({
+  ruleId: requiredId('ruleId'),
+  value: z.string(),
+});
+
 export const changeStageSchema = z.object({
   stageId: requiredId('stageId'),
   reasonId: optionalId('reasonId'),
   remarks: z.preprocess(emptyStringToUndefined, z.string().trim().max(2000, 'remarks is too long').optional()),
   nextFollowUpAt: parseOptionalDateField('nextFollowUpAt'),
   followUpDescription: z.preprocess(emptyStringToUndefined, z.string().trim().max(1000, 'followUpDescription is too long').optional()),
+  stageRuleValues: z.array(stageRuleValueEntrySchema).optional().default([]),
 });
 
 export type ChangeStageInput = z.infer<typeof changeStageSchema>;

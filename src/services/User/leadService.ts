@@ -3,6 +3,7 @@ import { redisClient } from '../../config/redis';
 import { buildClosureUpdateData, isClosureStage } from '../../modules/leads/leads.service';
 import * as leadApprovalService from '../../modules/leads/leadApprovals.service';
 import { validateLeadStageTransition } from '../../modules/master/lead-stages/leadStage.service';
+import { getActiveStageRulesForExecution } from '../../modules/master/stage-rules/stageRule.service';
 import { assertActiveLOBReason } from '../../modules/master/lob-reasons/lobReasons.service';
 import type {
   AssignLeadInput,
@@ -592,6 +593,33 @@ const normalizeRuleFieldKey = (value: string): string =>
     .trim()
     .replace(/[\s_-]+/g, '');
 
+const stageRuleValuesToAnswerMap = (
+  entries?: Array<{ ruleId: string; value: string }>,
+): Record<string, string> => {
+  const map: Record<string, string> = {};
+  for (const entry of entries || []) {
+    if (!entry?.ruleId?.trim()) continue;
+    map[entry.ruleId.trim()] = typeof entry.value === 'string' ? entry.value : '';
+  }
+  return map;
+};
+
+const persistLeadStageRuleValues = async (
+  leadId: string,
+  entries?: Array<{ ruleId: string; value: string }>,
+): Promise<void> => {
+  if (!entries?.length) return;
+  const rows = entries
+    .filter((entry) => entry.ruleId?.trim() && entry.value?.trim())
+    .map((entry) => ({
+      leadId,
+      ruleId: entry.ruleId.trim(),
+      value: entry.value.trim(),
+    }));
+  if (!rows.length) return;
+  await (prisma as any).leadStageInput.createMany({ data: rows });
+};
+
 type StageValidationPatch = {
   name?: string;
   email?: string | null;
@@ -998,7 +1026,7 @@ export const updateLead = async (
     stage.id !== existing.stageId
   ) {
     const validationData = await toValidationLeadData(existing, input);
-    await validateLeadStageTransition(workspaceId, stage.id, validationData);
+    await validateLeadStageTransition(workspaceId, stage.id, validationData, undefined);
   }
 
   const remarks = input.remarks === null ? null : input.remarks ?? null;
@@ -1125,7 +1153,8 @@ export const changeStage = async (
 
   if (existing.stageId && existing.stageId !== targetStage.id) {
     const validationData = await toValidationLeadData(existing, input);
-    await validateLeadStageTransition(workspaceId, targetStage.id, validationData);
+    const stageRuleAnswers = stageRuleValuesToAnswerMap(input.stageRuleValues);
+    await validateLeadStageTransition(workspaceId, targetStage.id, validationData, stageRuleAnswers);
   }
 
   ensureLOBPayload(targetStage, input.reasonId, input.remarks ?? null);
@@ -1135,6 +1164,14 @@ export const changeStage = async (
     if (!existing.stageId) {
       throw createServiceError('Lead does not have a current stage to request approval from.', 409);
     }
+
+    const executionRules = await getActiveStageRulesForExecution(workspaceId, targetStage.id);
+    const ruleNameById = new Map(executionRules.map((rule) => [rule.id, rule.name]));
+    const stageRuleValuesForRequest = (input.stageRuleValues ?? []).map((entry) => ({
+      ruleId: entry.ruleId,
+      value: entry.value,
+      ruleName: ruleNameById.get(entry.ruleId) || entry.ruleId,
+    }));
 
     const result = await leadApprovalService.createLeadApproval(
       workspaceId,
@@ -1148,6 +1185,7 @@ export const changeStage = async (
           remarks: input.remarks ?? null,
           nextFollowUpAt: input.nextFollowUpAt ? input.nextFollowUpAt.toISOString() : null,
           followUpDescription: input.followUpDescription ?? null,
+          stageRuleValues: stageRuleValuesForRequest,
         },
       },
     );
@@ -1166,6 +1204,10 @@ export const changeStage = async (
     nextFollowUpAt: input.nextFollowUpAt,
     followUpDescription: input.followUpDescription,
   });
+
+  if (existing.stageId && existing.stageId !== targetStage.id) {
+    await persistLeadStageRuleValues(id, input.stageRuleValues);
+  }
 
   return {
     approvalRequired: false,
