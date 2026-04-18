@@ -4,6 +4,7 @@ export interface StageRuleResponse {
   id: string;
   name: string;
   inputType: 'TEXT' | 'TEXTAREA' | 'RADIO' | 'SELECT';
+  options?: string[];
   sortOrder: number;
   required: boolean;
   status: 'ACTIVE' | 'INACTIVE';

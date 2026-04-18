@@ -9,14 +9,33 @@ const stageRuleNameSchema = z
 export const inputTypeSchema = z.enum(['TEXT', 'TEXTAREA', 'RADIO', 'SELECT']);
 export const ruleStatusSchema = z.enum(['ACTIVE', 'INACTIVE']);
 
-export const createStageRuleSchema = z.object({
-  name: stageRuleNameSchema,
-  inputType: inputTypeSchema,
-  sortOrder: z.number().int().min(1, 'Sort order must be greater than or equal to 1'),
-  required: z.boolean().default(false),
-  status: ruleStatusSchema.default('ACTIVE'),
-  stageId: z.string().trim().min(1, 'Stage id must be valid').optional(),
-});
+const optionsSchema = z
+  .array(z.string().trim().min(1, 'Option cannot be empty'))
+  .max(50, 'Too many options')
+  .optional()
+  .default([]);
+
+export const createStageRuleSchema = z
+  .object({
+    name: stageRuleNameSchema,
+    inputType: inputTypeSchema,
+    sortOrder: z.number().int().min(1, 'Sort order must be greater than or equal to 1'),
+    required: z.boolean().default(false),
+    status: ruleStatusSchema.default('ACTIVE'),
+    stageId: z.string().trim().min(1, 'Stage id must be valid').optional(),
+    options: optionsSchema,
+  })
+  .superRefine((data, ctx) => {
+    if (data.inputType === 'RADIO' || data.inputType === 'SELECT') {
+      if (!data.options || data.options.length < 1) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'At least one option is required for radio or select fields.',
+          path: ['options'],
+        });
+      }
+    }
+  });
 
 export type CreateStageRuleInput = z.infer<typeof createStageRuleSchema>;
 
@@ -28,6 +47,7 @@ export const updateStageRuleSchema = z
     required: z.boolean().optional(),
     status: ruleStatusSchema.optional(),
     stageId: z.string().trim().min(1, 'Stage id must be valid').nullable().optional(),
+    options: z.array(z.string().trim().min(1, 'Option cannot be empty')).max(50, 'Too many options').optional(),
   })
   .refine(
     (value) =>
@@ -36,9 +56,22 @@ export const updateStageRuleSchema = z
       value.sortOrder !== undefined ||
       value.required !== undefined ||
       value.status !== undefined ||
-      value.stageId !== undefined,
+      value.stageId !== undefined ||
+      value.options !== undefined,
     { message: 'At least one field is required for update.' },
-  );
+  )
+  .superRefine((data, ctx) => {
+    const type = data.inputType;
+    if (type === 'RADIO' || type === 'SELECT') {
+      if (data.options !== undefined && data.options.length < 1) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'At least one option is required for radio or select fields.',
+          path: ['options'],
+        });
+      }
+    }
+  });
 
 export type UpdateStageRuleInput = z.infer<typeof updateStageRuleSchema>;
 

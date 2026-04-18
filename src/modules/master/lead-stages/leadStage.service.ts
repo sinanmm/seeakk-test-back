@@ -29,6 +29,7 @@ const STAGE_RULE_SAFE_SELECT = {
   id: true,
   name: true,
   inputType: true,
+  options: true,
   sortOrder: true,
   required: true,
   status: true,
@@ -101,8 +102,25 @@ const countLeadUsage = async (stageId: string): Promise<number> =>
     },
   });
 
+const normalizeStageRuleOptions = (rule: Record<string, unknown>): Record<string, unknown> => {
+  const raw = rule.options;
+  const options =
+    Array.isArray(raw) && raw.every((item) => typeof item === 'string')
+      ? (raw as string[]).map((item) => item.trim()).filter(Boolean)
+      : [];
+  return { ...rule, options };
+};
+
+const normalizeLeadStageRecord = (record: any): any => {
+  if (!record?.rules?.length) return record;
+  return {
+    ...record,
+    rules: record.rules.map((rule: Record<string, unknown>) => normalizeStageRuleOptions(rule)),
+  };
+};
+
 const remapSingleStage = async (record: any): Promise<LeadStageResponse> => {
-  const [mapped] = await mapCreatorNames([record]);
+  const [mapped] = await mapCreatorNames([normalizeLeadStageRecord(record)]);
   return mapped as LeadStageResponse;
 };
 
@@ -232,7 +250,7 @@ export const listLeadStages = async (
     }),
   ]);
 
-  const mappedRecords = await mapCreatorNames(records);
+  const mappedRecords = await mapCreatorNames(records.map((record: any) => normalizeLeadStageRecord(record)));
 
   return {
     data: mappedRecords as LeadStageResponse[],
@@ -263,7 +281,7 @@ export const getPipelineLeadStages = async (workspaceId: string): Promise<LeadSt
     orderBy: { order: 'asc' },
   });
 
-  const mappedRecords = (await mapCreatorNames(records)) as LeadStageResponse[];
+  const mappedRecords = (await mapCreatorNames(records.map((record: any) => normalizeLeadStageRecord(record)))) as LeadStageResponse[];
 
   if (redisClient.isOpen) {
     await redisClient.setEx(getPipelineCacheKey(workspaceId), PIPELINE_CACHE_TTL_SECONDS, JSON.stringify(mappedRecords));
@@ -491,6 +509,7 @@ export const validateLeadStageTransition = async (
   workspaceId: string,
   targetStageId: string,
   leadData: Record<string, unknown>,
+  stageRuleAnswers?: Record<string, string>,
 ): Promise<StageTransitionValidationResult> => {
   const targetStage = await leadStageDelegate.findFirst({
     where: {
@@ -508,5 +527,5 @@ export const validateLeadStageTransition = async (
     throw error;
   }
 
-  return validateLeadStageTransitionInputs(workspaceId, targetStageId, leadData);
+  return validateLeadStageTransitionInputs(workspaceId, targetStageId, leadData, stageRuleAnswers);
 };

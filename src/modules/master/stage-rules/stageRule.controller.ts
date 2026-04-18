@@ -21,6 +21,7 @@ const pickStageRulePayload = (payload: unknown): Record<string, unknown> | null 
   return {
     name: source.name,
     inputType: source.inputType,
+    options: source.options,
     sortOrder: source.sortOrder,
     required: source.required,
     status: source.status,

@@ -5,6 +5,7 @@ export interface StageRuleResponse {
   id: string;
   name: string;
   inputType: InputTypeValue;
+  options: string[];
   sortOrder: number;
   required: boolean;
   status: RuleStatusValue;
