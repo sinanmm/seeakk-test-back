@@ -13,6 +13,7 @@
     "migrate": "npx prisma migrate deploy",
     "prisma:seed": "ts-node --transpile-only src/scripts/seedPermissions.ts",
     "db:promote-workspace-owners": "ts-node --transpile-only src/scripts/promoteWorkspaceOwnersToSuperAdmin.ts",
+    "db:backfill-default-lead-stages": "ts-node --transpile-only src/scripts/backfillDefaultLeadStages.ts",
     "prisma:generate": "npx prisma generate",
     "prisma:push": "npx prisma db push",
     "prisma:migrate:deploy": "npx prisma migrate deploy",
