@@ -312,6 +312,7 @@ export const processApproval = async (input: {
             assignedToId: true,
           },
         },
+        fromStage: { select: { id: true, name: true } },
         toStage: {
           select: {
             id: true,
@@ -359,6 +360,15 @@ export const processApproval = async (input: {
       }
 
       if (approval.toStage?.isLOB) {
+        const snapshotPrevId =
+          typeof requestData.previousStageId === 'string' && requestData.previousStageId.trim()
+            ? requestData.previousStageId.trim()
+            : approval.fromStageId ?? null;
+        const snapshotPrevName =
+          typeof requestData.previousStageName === 'string' && requestData.previousStageName.trim()
+            ? requestData.previousStageName.trim()
+            : approval.fromStage?.name?.trim() || null;
+
         await (tx as any).leadLOBLog.create({
           data: {
             leadId: approval.leadId,
@@ -371,6 +381,8 @@ export const processApproval = async (input: {
               typeof requestData.remarks === 'string' && requestData.remarks.trim()
                 ? requestData.remarks.trim()
                 : null,
+            previousStageId: snapshotPrevId,
+            previousStageName: snapshotPrevName,
             changedById: input.approvedById,
           },
         });

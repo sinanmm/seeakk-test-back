@@ -70,6 +70,8 @@ type LeadIncludeRecord = {
     id: string;
     reasonId: string;
     remarks: string | null;
+    previousStageId: string | null;
+    previousStageName: string | null;
     changedById: string;
     changedAt: Date;
   }>;
@@ -154,6 +156,8 @@ const leadInclude = {
       id: true,
       reasonId: true,
       remarks: true,
+      previousStageId: true,
+      previousStageName: true,
       changedById: true,
       changedAt: true,
     },
@@ -522,6 +526,13 @@ const maybeRunLeadSlaSweep = async (workspaceId: string): Promise<void> => {
     },
     select: {
       id: true,
+      stageId: true,
+      stage: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
     },
     take: 100,
   });
@@ -554,6 +565,8 @@ const maybeRunLeadSlaSweep = async (workspaceId: string): Promise<void> => {
           leadId: lead.id,
           reasonId: 'SYSTEM_SLA_EXPIRED',
           remarks: 'Moved automatically to LOB after stage SLA expired.',
+          previousStageId: lead.stageId,
+          previousStageName: lead.stage?.name?.trim() || null,
           changedById: 'system',
           workspaceId,
         },
@@ -883,6 +896,8 @@ export const createLead = async (
           leadId: lead.id,
           reasonId: input.reasonId!,
           remarks: input.remarks?.trim() || null,
+          previousStageId: null,
+          previousStageName: null,
           changedById: actor.id,
           workspaceId,
         },
@@ -1119,6 +1134,8 @@ export const updateLead = async (
           leadId: id,
           reasonId: reasonId!,
           remarks: remarks?.trim() || null,
+          previousStageId: existing.stageId,
+          previousStageName: existing.stage?.name?.trim() || null,
           changedById: actor.id,
           workspaceId,
         },
@@ -1186,6 +1203,12 @@ export const changeStage = async (
           nextFollowUpAt: input.nextFollowUpAt ? input.nextFollowUpAt.toISOString() : null,
           followUpDescription: input.followUpDescription ?? null,
           stageRuleValues: stageRuleValuesForRequest,
+          ...(targetStage.isLOB && existing.stageId
+            ? {
+                previousStageId: existing.stageId,
+                previousStageName: existing.stage?.name ?? null,
+              }
+            : {}),
         },
       },
     );

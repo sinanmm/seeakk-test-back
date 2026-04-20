@@ -593,6 +593,9 @@ model LeadLOBLog {
   leadId      String
   reasonId    String
   remarks     String?
+  /// Pipeline stage the lead was in immediately before this LOB event (denormalized name for analytics).
+  previousStageId   String?
+  previousStageName String?
   changedById String
   changedAt   DateTime @default(now())
   workspaceId String
@@ -601,6 +604,8 @@ model LeadLOBLog {
 
   @@index([leadId, changedAt])
   @@index([workspaceId, reasonId])
+  @@index([previousStageId])
+  @@index([workspaceId, previousStageId])
   @@map("lead_lob_logs")
 }
 
