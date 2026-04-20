@@ -278,7 +278,19 @@ export const createLeadApproval = async (
     throw createServiceError('This stage does not require approval.', 409);
   }
 
-  const requestData = normalizeRequestData(input.requestData);
+  let requestData = normalizeRequestData(input.requestData);
+  if (targetStage.isLOB && lead.stageId) {
+    const prevId =
+      typeof requestData.previousStageId === 'string' && requestData.previousStageId.trim()
+        ? requestData.previousStageId.trim()
+        : lead.stageId;
+    const prevName =
+      typeof requestData.previousStageName === 'string' && requestData.previousStageName.trim()
+        ? requestData.previousStageName.trim()
+        : lead.stage?.name?.trim() || null;
+    requestData = { ...requestData, previousStageId: prevId, previousStageName: prevName };
+  }
+
   if (targetStage.isLOB) {
     const reasonId = typeof requestData.reasonId === 'string' ? requestData.reasonId.trim() : '';
     if (!reasonId) {
@@ -433,15 +445,25 @@ export const processLeadApproval = async (
 
   const permissionKeys = await getPermissionKeys(actor);
   const isSuperAdmin = permissionKeys.includes('*');
-  if (!isSuperAdmin && approval.assignedToId && approval.assignedToId !== actor.id) {
+
+  const canApproveAny =
+    isSuperAdmin ||
+    permissionKeys.includes('LEAD_APPROVAL_APPROVE') ||
+    permissionKeys.includes('LEADS_APPROVE');
+  const canDenyAny =
+    isSuperAdmin ||
+    permissionKeys.includes('LEAD_APPROVAL_DENY') ||
+    permissionKeys.includes('LEADS_REJECT');
+
+  if (!isSuperAdmin && approval.assignedToId && approval.assignedToId !== actor.id && !(canApproveAny || canDenyAny)) {
     throw createServiceError('This approval request is assigned to another approver.', 403);
   }
 
-  if (input.action === 'APPROVE' && !isSuperAdmin && !permissionKeys.includes('LEAD_APPROVAL_APPROVE') && !permissionKeys.includes('LEADS_APPROVE')) {
+  if (input.action === 'APPROVE' && !canApproveAny) {
     throw createServiceError('You do not have permission to approve lead stage requests.', 403);
   }
 
-  if (input.action === 'DENY' && !isSuperAdmin && !permissionKeys.includes('LEAD_APPROVAL_DENY') && !permissionKeys.includes('LEADS_REJECT')) {
+  if (input.action === 'DENY' && !canDenyAny) {
     throw createServiceError('You do not have permission to deny lead stage requests.', 403);
   }
 
