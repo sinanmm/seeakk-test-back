@@ -21,15 +21,15 @@ const validateLocationHierarchy = async (
 ): Promise<void> => {
   const [country, state, district] = await prisma.$transaction([
     (prisma as any).location.findFirst({
-      where: { id: countryId, workspaceId, type: 'COUNTRY' },
+      where: { id: countryId, workspaceId, type: 'COUNTRY', deletedAt: null, isActive: true },
       select: { id: true },
     }),
     (prisma as any).location.findFirst({
-      where: { id: stateId, workspaceId, type: 'STATE' },
-      select: { id: true, parentId: true },
+      where: { id: stateId, workspaceId, countryId, deletedAt: null, isActive: true },
+      select: { id: true, parentId: true, type: true, level: { select: { levelOrder: true } } },
     }),
     (prisma as any).location.findFirst({
-      where: { id: districtId, workspaceId, type: 'DISTRICT' },
+      where: { id: districtId, workspaceId, countryId, deletedAt: null, isActive: true },
       select: { id: true, parentId: true },
     }),
   ]);
@@ -38,16 +38,35 @@ const validateLocationHierarchy = async (
     throw createServiceError('Country not found in this workspace.', 400);
   }
   if (!state) {
-    throw createServiceError('State not found in this workspace.', 400);
+    throw createServiceError('Level 1 location not found in this workspace.', 400);
   }
   if (!district) {
-    throw createServiceError('District not found in this workspace.', 400);
+    throw createServiceError('Deepest location not found in this workspace.', 400);
   }
-  if (state.parentId !== country.id) {
-    throw createServiceError('Invalid location hierarchy: state does not belong to country.', 400);
+
+  const isFirstLevel = state.parentId === country.id && (state.type === 'STATE' || state.level?.levelOrder === 1);
+  if (!isFirstLevel) {
+    throw createServiceError('Invalid location hierarchy: level 1 location must belong to selected country.', 400);
   }
-  if (district.parentId !== state.id) {
-    throw createServiceError('Invalid location hierarchy: district does not belong to state.', 400);
+
+  if (district.id === state.id) {
+    return;
+  }
+
+  let cursorId: string | null = district.parentId || null;
+  let guard = 0;
+  while (cursorId && guard < 12) {
+    if (cursorId === state.id) return;
+    const parent = await (prisma as any).location.findFirst({
+      where: { id: cursorId, workspaceId, deletedAt: null },
+      select: { id: true, parentId: true },
+    });
+    cursorId = parent?.parentId || null;
+    guard += 1;
+  }
+
+  if (cursorId !== state.id) {
+    throw createServiceError('Invalid location hierarchy: deepest location does not belong to level 1 location.', 400);
   }
 };
 
