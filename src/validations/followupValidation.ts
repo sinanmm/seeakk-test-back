@@ -42,7 +42,7 @@ const positiveIntString = (label: string, defaultValue: number, max = 100) =>
     });
 
 const followUpTypeSchema = z.enum(['CALL', 'VISIT', 'MEETING']);
-const followUpStatusSchema = z.enum(['PENDING', 'COMPLETED']);
+const followUpStatusSchema = z.enum(['PENDING', 'COMPLETED', 'MISSED']);
 const calendarViewSchema = z.enum(['month', 'week', 'day', 'list']);
 
 export const createFollowUpSchema = z.object({
@@ -60,6 +60,12 @@ export const completeFollowUpSchema = z.object({
 });
 
 export type CompleteFollowUpInput = z.infer<typeof completeFollowUpSchema>;
+
+export const snoozeFollowUpSchema = z.object({
+  scheduledAt: parseDateField('scheduledAt'),
+});
+
+export type SnoozeFollowUpInput = z.infer<typeof snoozeFollowUpSchema>;
 
 export const followUpIdParamSchema = z.object({
   id: requiredId('id'),

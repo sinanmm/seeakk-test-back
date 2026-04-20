@@ -932,6 +932,7 @@ model FollowUp {
 
   type        String
   description String?
+  completionDescription String?
   status      String   @default("PENDING")
 
   scheduledAt DateTime
