@@ -32,6 +32,8 @@ export const findLOBEvents = async (workspaceId: string, changedAtRange?: { gte?
       leadId: true,
       reasonId: true,
       remarks: true,
+      previousStageId: true,
+      previousStageName: true,
       changedById: true,
       changedAt: true,
       lead: {
@@ -183,3 +185,15 @@ export const findUsersByIds = async (workspaceId: string, userIds: string[]) => 
     },
   });
 };
+
+export const findWorkspaceStages = async (workspaceId: string) =>
+  prisma.leadStage.findMany({
+    where: {
+      workspaceId,
+      deletedAt: null,
+    },
+    select: {
+      id: true,
+      name: true,
+    },
+  });
