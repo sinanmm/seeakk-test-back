@@ -156,7 +156,7 @@ const leadInclude = {
   },
   followUps: {
     orderBy: [{ scheduledAt: 'desc' as const }, { createdAt: 'desc' as const }],
-    take: 1,
+    take: 10,
     select: {
       description: true,
       scheduledAt: true,
@@ -225,7 +225,8 @@ const mapLeadRecord = (lead: LeadIncludeRecord) => ({
   deletedAt: lead.deletedAt ? lead.deletedAt.toISOString() : null,
   createdAt: lead.createdAt.toISOString(),
   updatedAt: lead.updatedAt.toISOString(),
-  followUpDescription: lead.followUps[0]?.description || null,
+  followUpDescription:
+    lead.followUps.find((item) => typeof item.description === 'string' && item.description.trim().length > 0)?.description || null,
   slaState: (() => {
     if (!lead.stageExpiresAt || !lead.slaAction || lead.isClosed || lead.isLOB) return null;
     const now = Date.now();
