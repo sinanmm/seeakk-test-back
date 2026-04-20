@@ -138,6 +138,7 @@ export const findLOBApprovalTransitions = async (workspaceId: string, leadIds: s
       approvedAt: true,
       approvedById: true,
       fromStageId: true,
+      requestData: true,
       fromStage: {
         select: {
           id: true,
@@ -212,7 +213,6 @@ export const findWorkspaceStages = async (workspaceId: string) =>
   prisma.leadStage.findMany({
     where: {
       workspaceId,
-      deletedAt: null,
     },
     select: {
       id: true,

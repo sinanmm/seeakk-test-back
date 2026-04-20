@@ -109,6 +109,7 @@ const deriveFromStage = (
   approvalsByLead: Map<string, any[]>,
   auditsByLead: Map<string, any[]>,
   stageIdByNameKey: Map<string, string>,
+  stageNameById: Map<string, string>,
 ) => {
   const storedId =
     typeof event.previousStageId === 'string' && event.previousStageId.trim() ? event.previousStageId.trim() : null;
@@ -132,9 +133,24 @@ const deriveFromStage = (
   });
 
   if (approvalMatch?.fromStageId) {
+    const requestData = (approvalMatch.requestData || {}) as Record<string, unknown>;
+    const requestStageName =
+      typeof requestData.previousStageName === 'string' && requestData.previousStageName.trim()
+        ? requestData.previousStageName.trim()
+        : null;
+    const requestStageId =
+      typeof requestData.previousStageId === 'string' && requestData.previousStageId.trim()
+        ? requestData.previousStageId.trim()
+        : null;
+    const resolvedId = requestStageId || approvalMatch.fromStageId;
+    const resolvedName =
+      requestStageName ||
+      approvalMatch.fromStage?.name ||
+      (resolvedId ? stageNameById.get(resolvedId) || null : null) ||
+      null;
     return {
-      id: approvalMatch.fromStageId,
-      name: approvalMatch.fromStage?.name || 'Unknown Stage',
+      id: resolvedId || null,
+      name: resolvedName || 'Unknown Stage',
     };
   }
 
@@ -151,20 +167,19 @@ const deriveFromStage = (
       (typeof details.previousStageName === 'string' && details.previousStageName.trim()
         ? details.previousStageName
         : null) ||
-      (typeof details.fromStageName === 'string' && details.fromStageName.trim() ? details.fromStageName : null) ||
-      (typeof details.stageName === 'string' && details.stageName.trim() ? details.stageName : null);
+      (typeof details.fromStageName === 'string' && details.fromStageName.trim() ? details.fromStageName : null);
     const previousStageId =
       (typeof details.previousStageId === 'string' && details.previousStageId.trim()
         ? details.previousStageId
         : null) ||
-      (typeof details.fromStageId === 'string' && details.fromStageId.trim() ? details.fromStageId : null) ||
-      (typeof details.stageId === 'string' && details.stageId.trim() ? details.stageId : null);
+      (typeof details.fromStageId === 'string' && details.fromStageId.trim() ? details.fromStageId : null);
 
     const resolvedId = previousStageId || stageIdByNameKey.get(normalizeStageKey(previousStageName));
+    const resolvedName = previousStageName || (resolvedId ? stageNameById.get(resolvedId) || null : null);
 
     return {
       id: resolvedId || null,
-      name: previousStageName || 'Unknown Stage',
+      name: resolvedName || 'Unknown Stage',
     };
   }
 
@@ -233,14 +248,16 @@ const normalizeLOBEvents = async (workspaceId: string, filters: LOBAnalysisQuery
   });
 
   const stageIdByNameKey = new Map<string, string>();
+  const stageNameById = new Map<string, string>();
   stageRows.forEach((stage) => {
     stageIdByNameKey.set(normalizeStageKey(stage.name), stage.id);
+    stageNameById.set(stage.id, stage.name);
   });
 
   return rawEvents
     .filter((item: any) => matchesLocation(item.lead?.assignedTo, filters.location_id))
     .map((item: any) => {
-      const fromStage = deriveFromStage(item, approvalsByLead, auditsByLead, stageIdByNameKey);
+      const fromStage = deriveFromStage(item, approvalsByLead, auditsByLead, stageIdByNameKey, stageNameById);
       const reason = reasonsById.get(item.reasonId);
       const changedBy = item.changedById === 'system'
         ? { displayName: 'System' }
