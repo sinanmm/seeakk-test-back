@@ -517,6 +517,30 @@ const getDefaultStageForWorkspace = async (_workspaceId: string) =>
       deletedAt: null,
       status: 'ACTIVE',
       isLOB: false,
+      isClosed: false,
+    },
+    orderBy: [{ order: 'asc' }, { createdAt: 'asc' }],
+    select: {
+      id: true,
+      name: true,
+      isApprovalRequired: true,
+      isLOB: true,
+      isClosed: true,
+    },
+  });
+
+const getNewStageForWorkspace = async (_workspaceId: string) =>
+  prisma.leadStage.findFirst({
+    where: {
+      workspaceId: _workspaceId,
+      deletedAt: null,
+      status: 'ACTIVE',
+      isLOB: false,
+      isClosed: false,
+      OR: [
+        { name: { equals: 'new', mode: 'insensitive' } },
+        { name: { equals: 'new lead', mode: 'insensitive' } },
+      ],
     },
     orderBy: [{ order: 'asc' }, { createdAt: 'asc' }],
     select: {
@@ -856,7 +880,11 @@ export const createLead = async (
 
   ensureAssignmentAllowed(actor, input.assignedToId);
   const assignedToId = await resolveAssignedUserId(workspaceId, input.assignedToId);
-  const stage = (await resolveStage(workspaceId, input.stageId)) || (await getDefaultStageForWorkspace(workspaceId)) || null;
+  const stage =
+    (await resolveStage(workspaceId, input.stageId)) ||
+    (await getNewStageForWorkspace(workspaceId)) ||
+    (await getDefaultStageForWorkspace(workspaceId)) ||
+    null;
   const lifecycle = await resolveLifecycle(workspaceId, input.lifecycleId);
   const source = await resolveSource(workspaceId, input.sourceId);
   ensureLOBPayload(stage, input.reasonId, input.remarks ?? null);

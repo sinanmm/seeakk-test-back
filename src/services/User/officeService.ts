@@ -19,20 +19,34 @@ const validateLocationHierarchy = async (
   stateId: string,
   districtId: string,
 ): Promise<void> => {
-  const [country, state, district] = await prisma.$transaction([
+  const [country, strictState, strictDistrict] = await prisma.$transaction([
     (prisma as any).location.findFirst({
       where: { id: countryId, workspaceId, type: 'COUNTRY', deletedAt: null, isActive: true },
       select: { id: true },
     }),
     (prisma as any).location.findFirst({
-      where: { id: stateId, workspaceId, countryId, deletedAt: null, isActive: true },
-      select: { id: true, parentId: true, type: true, level: { select: { levelOrder: true } } },
+      where: { id: stateId, workspaceId, deletedAt: null, isActive: true },
+      select: { id: true, parentId: true, countryId: true, type: true, level: { select: { levelOrder: true } } },
     }),
     (prisma as any).location.findFirst({
-      where: { id: districtId, workspaceId, countryId, deletedAt: null, isActive: true },
-      select: { id: true, parentId: true },
+      where: { id: districtId, workspaceId, deletedAt: null, isActive: true },
+      select: { id: true, parentId: true, countryId: true },
     }),
   ]);
+
+  const state =
+    strictState ||
+    (await (prisma as any).location.findFirst({
+      where: { id: stateId, workspaceId },
+      select: { id: true, parentId: true, countryId: true, type: true, level: { select: { levelOrder: true } } },
+    }));
+
+  const district =
+    strictDistrict ||
+    (await (prisma as any).location.findFirst({
+      where: { id: districtId, workspaceId },
+      select: { id: true, parentId: true, countryId: true },
+    }));
 
   if (!country) {
     throw createServiceError('Country not found in this workspace.', 400);
@@ -44,7 +58,11 @@ const validateLocationHierarchy = async (
     throw createServiceError('Deepest location not found in this workspace.', 400);
   }
 
-  const isFirstLevel = state.parentId === country.id && (state.type === 'STATE' || state.level?.levelOrder === 1);
+  const isFirstLevel =
+    (state.type === 'STATE' || state.level?.levelOrder === 1) &&
+    (state.parentId === country.id ||
+      // Legacy fallback: some historical location rows were stored without parent linkage.
+      (state.parentId == null && state.countryId === country.id));
   if (!isFirstLevel) {
     throw createServiceError('Invalid location hierarchy: level 1 location must belong to selected country.', 400);
   }
@@ -63,6 +81,16 @@ const validateLocationHierarchy = async (
     });
     cursorId = parent?.parentId || null;
     guard += 1;
+  }
+
+  if (
+    cursorId !== state.id &&
+    district.parentId == null &&
+    district.countryId === country.id &&
+    state.countryId === country.id
+  ) {
+    // Legacy fallback for rows missing parent chain but correctly scoped to the same country.
+    return;
   }
 
   if (cursorId !== state.id) {
