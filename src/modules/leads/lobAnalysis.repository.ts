@@ -32,8 +32,6 @@ export const findLOBEvents = async (workspaceId: string, changedAtRange?: { gte?
       leadId: true,
       reasonId: true,
       remarks: true,
-      previousStageId: true,
-      previousStageName: true,
       changedById: true,
       changedAt: true,
       lead: {
