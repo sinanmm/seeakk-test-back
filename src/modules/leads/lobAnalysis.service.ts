@@ -48,6 +48,12 @@ const resolveDisplayName = (user?: { name?: string | null; username?: string | n
   return 'Unknown User';
 };
 
+const normalizeStageKey = (value?: string | null): string =>
+  String(value || '')
+    .toLowerCase()
+    .trim()
+    .replace(/[\s_-]+/g, '');
+
 const startOfDay = (value: string) => {
   const date = new Date(value);
   date.setHours(0, 0, 0, 0);
@@ -97,10 +103,27 @@ const deriveFromStage = (
     leadId: string;
     changedById: string;
     changedAt: Date;
+    previousStageId?: string | null;
+    previousStageName?: string | null;
   },
   approvalsByLead: Map<string, any[]>,
   auditsByLead: Map<string, any[]>,
+  stageIdByNameKey: Map<string, string>,
 ) => {
+  const storedId =
+    typeof event.previousStageId === 'string' && event.previousStageId.trim() ? event.previousStageId.trim() : null;
+  const storedName =
+    typeof event.previousStageName === 'string' && event.previousStageName.trim()
+      ? event.previousStageName.trim()
+      : null;
+  if (storedId || storedName) {
+    const resolvedId = storedId || stageIdByNameKey.get(normalizeStageKey(storedName));
+    return {
+      id: resolvedId || null,
+      name: storedName || 'Unknown Stage',
+    };
+  }
+
   const approvalCandidates = approvalsByLead.get(event.leadId) || [];
   const approvalMatch = approvalCandidates.find((item) => {
     if (!item.approvedAt) return false;
@@ -119,15 +142,29 @@ const deriveFromStage = (
   const auditMatch = auditTrail.find((item) => {
     if (!item.createdAt || item.createdAt >= event.changedAt) return false;
     if (item.action === 'LEAD_LOB_APPLIED') return false;
-    const details = (item.details || {}) as Record<string, unknown>;
-    return typeof details.stageId === 'string' && details.stageId.trim().length > 0;
+    return true;
   });
 
   if (auditMatch) {
     const details = (auditMatch.details || {}) as Record<string, unknown>;
+    const previousStageName =
+      (typeof details.previousStageName === 'string' && details.previousStageName.trim()
+        ? details.previousStageName
+        : null) ||
+      (typeof details.fromStageName === 'string' && details.fromStageName.trim() ? details.fromStageName : null) ||
+      (typeof details.stageName === 'string' && details.stageName.trim() ? details.stageName : null);
+    const previousStageId =
+      (typeof details.previousStageId === 'string' && details.previousStageId.trim()
+        ? details.previousStageId
+        : null) ||
+      (typeof details.fromStageId === 'string' && details.fromStageId.trim() ? details.fromStageId : null) ||
+      (typeof details.stageId === 'string' && details.stageId.trim() ? details.stageId : null);
+
+    const resolvedId = previousStageId || stageIdByNameKey.get(normalizeStageKey(previousStageName));
+
     return {
-      id: typeof details.stageId === 'string' ? details.stageId : null,
-      name: typeof details.stageName === 'string' && details.stageName.trim() ? details.stageName : 'Unknown Stage',
+      id: resolvedId || null,
+      name: previousStageName || 'Unknown Stage',
     };
   }
 
@@ -142,7 +179,7 @@ const normalizeLOBEvents = async (workspaceId: string, filters: LOBAnalysisQuery
   const rawEvents = await repository.findLOBEvents(workspaceId, changedAtRange);
   const leadIds = Array.from(new Set<string>(rawEvents.map((item: any) => String(item.leadId))));
 
-  const [approvalRows, auditRows, reasonRows, userRows] = await Promise.all([
+  const [approvalRows, auditRows, reasonRows, userRows, stageRows] = await Promise.all([
     repository.findLOBApprovalTransitions(workspaceId, leadIds),
     repository.findLeadStageAuditTrail(workspaceId, leadIds),
     repository.findLOBReasonsByIds(
@@ -165,6 +202,7 @@ const normalizeLOBEvents = async (workspaceId: string, filters: LOBAnalysisQuery
         ),
       ),
     ),
+    repository.findWorkspaceStages(workspaceId),
   ]);
 
   const approvalsByLead = new Map<string, any[]>();
@@ -194,10 +232,15 @@ const normalizeLOBEvents = async (workspaceId: string, filters: LOBAnalysisQuery
     });
   });
 
+  const stageIdByNameKey = new Map<string, string>();
+  stageRows.forEach((stage) => {
+    stageIdByNameKey.set(normalizeStageKey(stage.name), stage.id);
+  });
+
   return rawEvents
     .filter((item: any) => matchesLocation(item.lead?.assignedTo, filters.location_id))
     .map((item: any) => {
-      const fromStage = deriveFromStage(item, approvalsByLead, auditsByLead);
+      const fromStage = deriveFromStage(item, approvalsByLead, auditsByLead, stageIdByNameKey);
       const reason = reasonsById.get(item.reasonId);
       const changedBy = item.changedById === 'system'
         ? { displayName: 'System' }
@@ -308,6 +351,7 @@ export const getAuditTrail = async (workspaceId: string, _actor: Actor, query: L
       lead_id: item.leadId,
       lead_name: item.leadName,
       from_stage: item.fromStageName,
+      from_stage_id: item.fromStageId,
       reason: item.reasonName,
       changed_by: item.changedByName,
       comment: item.remarks,
