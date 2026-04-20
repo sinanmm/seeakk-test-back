@@ -66,6 +66,11 @@ type LeadIncludeRecord = {
   source: { id: string; name: string; status: string } | null;
   createdBy: { id: string; name: string | null; username: string | null; email: string };
   closedBy: { id: string; name: string | null; username: string | null; email: string } | null;
+  followUps: Array<{
+    description: string | null;
+    scheduledAt: Date;
+    status: string;
+  }>;
   lobLogs: Array<{
     id: string;
     reasonId: string;
@@ -149,6 +154,15 @@ const leadInclude = {
       email: true,
     },
   },
+  followUps: {
+    orderBy: [{ scheduledAt: 'desc' as const }, { createdAt: 'desc' as const }],
+    take: 1,
+    select: {
+      description: true,
+      scheduledAt: true,
+      status: true,
+    },
+  },
   lobLogs: {
     orderBy: { changedAt: 'desc' as const },
     take: 5,
@@ -211,6 +225,7 @@ const mapLeadRecord = (lead: LeadIncludeRecord) => ({
   deletedAt: lead.deletedAt ? lead.deletedAt.toISOString() : null,
   createdAt: lead.createdAt.toISOString(),
   updatedAt: lead.updatedAt.toISOString(),
+  followUpDescription: lead.followUps[0]?.description || null,
   slaState: (() => {
     if (!lead.stageExpiresAt || !lead.slaAction || lead.isClosed || lead.isLOB) return null;
     const now = Date.now();
