@@ -25,11 +25,11 @@ const validateLocationHierarchy = async (
       select: { id: true },
     }),
     (prisma as any).location.findFirst({
-      where: { id: stateId, workspaceId, countryId, deletedAt: null, isActive: true },
+      where: { id: stateId, workspaceId, deletedAt: null, isActive: true },
       select: { id: true, parentId: true, type: true, level: { select: { levelOrder: true } } },
     }),
     (prisma as any).location.findFirst({
-      where: { id: districtId, workspaceId, countryId, deletedAt: null, isActive: true },
+      where: { id: districtId, workspaceId, deletedAt: null, isActive: true },
       select: { id: true, parentId: true },
     }),
   ]);
