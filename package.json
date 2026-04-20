@@ -11,6 +11,7 @@
     "start": "node dist/server.js",
     "postinstall": "npx prisma generate",
     "migrate": "npx prisma migrate deploy",
+    "release": "npx prisma migrate deploy",
     "prisma:seed": "ts-node --transpile-only src/scripts/seedPermissions.ts",
     "db:promote-workspace-owners": "ts-node --transpile-only src/scripts/promoteWorkspaceOwnersToSuperAdmin.ts",
     "db:backfill-default-lead-stages": "ts-node --transpile-only src/scripts/backfillDefaultLeadStages.ts",

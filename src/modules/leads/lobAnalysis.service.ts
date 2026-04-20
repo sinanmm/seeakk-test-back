@@ -92,7 +92,7 @@ const ensureModuleReady = async (): Promise<void> => {
   const ready = await repository.ensureLOBAnalysisSchemaReady();
   if (!ready) {
     throw createServiceError(
-      'LOB analysis module is not ready. Required database schema is missing. Run Prisma migration/db push.',
+      'LOB analysis module is not ready: database is missing required tables or lead_lob_logs columns (previousStageId, previousStageName). On production run `npm run migrate` (prisma migrate deploy) so migration 20260418183000_lead_lob_log_previous_stage is applied, then redeploy.',
       503,
     );
   }
