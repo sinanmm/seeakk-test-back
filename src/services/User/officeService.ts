@@ -19,7 +19,7 @@ const validateLocationHierarchy = async (
   stateId: string,
   districtId: string,
 ): Promise<void> => {
-  const [country, state, district] = await prisma.$transaction([
+  const [country, strictState, strictDistrict] = await prisma.$transaction([
     (prisma as any).location.findFirst({
       where: { id: countryId, workspaceId, type: 'COUNTRY', deletedAt: null, isActive: true },
       select: { id: true },
@@ -33,6 +33,20 @@ const validateLocationHierarchy = async (
       select: { id: true, parentId: true, countryId: true },
     }),
   ]);
+
+  const state =
+    strictState ||
+    (await (prisma as any).location.findFirst({
+      where: { id: stateId, workspaceId },
+      select: { id: true, parentId: true, countryId: true, type: true, level: { select: { levelOrder: true } } },
+    }));
+
+  const district =
+    strictDistrict ||
+    (await (prisma as any).location.findFirst({
+      where: { id: districtId, workspaceId },
+      select: { id: true, parentId: true, countryId: true },
+    }));
 
   if (!country) {
     throw createServiceError('Country not found in this workspace.', 400);
