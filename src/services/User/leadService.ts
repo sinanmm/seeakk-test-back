@@ -163,31 +163,16 @@ const leadInclude = {
       status: true,
     },
   },
-  lobLogs: {
-    orderBy: { changedAt: 'desc' as const },
-    take: 5,
-    select: {
-      id: true,
-      reasonId: true,
-      remarks: true,
-      previousStageId: true,
-      previousStageName: true,
-      changedById: true,
-      changedAt: true,
-    },
-  },
 } as const;
 
 const hasGeneratedDelegates = (): boolean => {
   const lead = (prisma as any).lead;
-  const leadLobLog = (prisma as any).leadLOBLog;
   const followUp = (prisma as any).followUp;
   return Boolean(
     lead?.findFirst &&
       lead?.findMany &&
       lead?.create &&
       lead?.update &&
-      leadLobLog?.create &&
       followUp?.create,
   );
 };
@@ -196,11 +181,8 @@ const assertModuleReady = async (): Promise<void> => {
   const leadTable = await prisma.$queryRaw<Array<{ table_name: string | null }>>`
     SELECT to_regclass('public.leads')::text AS table_name
   `;
-  const lobTable = await prisma.$queryRaw<Array<{ table_name: string | null }>>`
-    SELECT to_regclass('public.lead_lob_logs')::text AS table_name
-  `;
 
-  if (!leadTable[0]?.table_name || !lobTable[0]?.table_name) {
+  if (!leadTable[0]?.table_name) {
     throw createServiceError(
       'Leads module is not ready. Required database schema is missing. Run Prisma migration/db push.',
       503,
@@ -254,7 +236,7 @@ const mapLeadRecord = (lead: LeadIncludeRecord) => ({
         displayName: resolveDisplayName(lead.closedBy),
       }
     : null,
-  lobLogs: lead.lobLogs.map((item) => ({
+  lobLogs: ((lead as any).lobLogs || []).map((item: any) => ({
     ...item,
     changedAt: item.changedAt.toISOString(),
   })),
