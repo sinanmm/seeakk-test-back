@@ -62,7 +62,16 @@ const ensureWorkspaceOwnerSuperAdmin = async (user: any): Promise<any> => {
       roleId: superAdminRole.id,
       workspaceId: user.workspaceId || ownedWorkspace.id,
     },
-    include: { role: true },
+    include: {
+      role: true,
+      workspace: {
+        select: {
+          id: true,
+          companyName: true,
+          logoUrl: true,
+        },
+      },
+    },
   });
 
   logger.info('Promoted workspace owner to superadmin during auth', {
@@ -125,7 +134,16 @@ export const protect = async (req: Request, res: Response, next: NextFunction): 
     // Fetch user from PostgreSQL via Prisma with role included
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
-      include: { role: true },
+      include: {
+        role: true,
+        workspace: {
+          select: {
+            id: true,
+            companyName: true,
+            logoUrl: true,
+          },
+        },
+      },
     });
 
     if (!user) {

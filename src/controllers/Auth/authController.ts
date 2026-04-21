@@ -65,7 +65,17 @@ const ensureWorkspaceOwnerSuperAdmin = async (user: any): Promise<any> => {
       roleId: superAdminRole.id,
       workspaceId: user.workspaceId || ownedWorkspace.id,
     },
-    include: { role: true, devices: true },
+    include: {
+      role: true,
+      devices: true,
+      workspace: {
+        select: {
+          id: true,
+          companyName: true,
+          logoUrl: true,
+        },
+      },
+    },
   });
 };
 
@@ -302,7 +312,11 @@ export const login = async (req: Request, res: Response): Promise<any> => {
 
     let user = await prisma.user.findUnique({
       where: { email },
-      include: { role: true, devices: true },
+      include: {
+        role: true,
+        devices: true,
+        workspace: { select: { id: true, companyName: true, logoUrl: true } },
+      },
     });
 
     if (!user) {
@@ -364,6 +378,7 @@ export const login = async (req: Request, res: Response): Promise<any> => {
         role: user.role,
         isOnboarded: user.isOnboarded,
         devices: user.devices,
+        workspace: user.workspace,
       },
       ...tokens,
     });
@@ -400,7 +415,11 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
 
     let user = await prisma.user.findUnique({
       where: { email },
-      include: { role: true, devices: true },
+      include: {
+        role: true,
+        devices: true,
+        workspace: { select: { id: true, companyName: true, logoUrl: true } },
+      },
     });
 
     if (!user) {
@@ -411,7 +430,11 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
           googleId: sub,
           isEmailVerified: true,
         },
-        include: { role: true, devices: true },
+        include: {
+          role: true,
+          devices: true,
+          workspace: { select: { id: true, companyName: true, logoUrl: true } },
+        },
       });
     }
 
@@ -419,7 +442,11 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
       user = await prisma.user.update({
         where: { id: user.id },
         data: { googleId: sub, isEmailVerified: true },
-        include: { role: true, devices: true },
+        include: {
+          role: true,
+          devices: true,
+          workspace: { select: { id: true, companyName: true, logoUrl: true } },
+        },
       });
     }
 
@@ -468,6 +495,7 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
         role: user.role,
         isOnboarded: user.isOnboarded,
         devices: user.devices,
+        workspace: user.workspace,
       },
       ...tokens,
     });
@@ -505,7 +533,11 @@ export const refreshToken = async (req: Request, res: Response): Promise<any> =>
 
     let user = await prisma.user.findUnique({
       where: { id: userId },
-      include: { role: true, devices: true },
+      include: {
+        role: true,
+        devices: true,
+        workspace: { select: { id: true, companyName: true, logoUrl: true } },
+      },
     });
 
     if (!user || !user.isActive) {
@@ -529,6 +561,7 @@ export const refreshToken = async (req: Request, res: Response): Promise<any> =>
         role: user.role,
         isOnboarded: user.isOnboarded,
         devices: user.devices,
+        workspace: user.workspace,
       },
       ...tokens,
     });
@@ -586,6 +619,7 @@ export const getMe = async (req: Request, res: Response): Promise<any> => {
         role: user.role,
         isEmailVerified: user.isEmailVerified,
         isOnboarded: user.isOnboarded,
+        workspace: user.workspace || null,
       },
     });
   } catch (error) {

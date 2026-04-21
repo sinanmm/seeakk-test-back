@@ -81,6 +81,7 @@ model RolePermission {
 model Workspace {
   id             String       @id @default(cuid())
   companyName    String
+  logoUrl        String?      @db.Text
   employeeCount  String
   timeZone       String       @default("UTC")
   language       String       @default("en-US")

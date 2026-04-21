@@ -13,6 +13,7 @@ export interface Role {
 export interface Workspace {
   id: string;
   companyName: string;
+  logoUrl?: string | null;
   employeeCount: string;
   timeZone: string;
   language: string;
