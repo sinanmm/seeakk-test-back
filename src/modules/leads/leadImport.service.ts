@@ -23,6 +23,20 @@ const normalizeCell = (value: unknown): string => {
   return normalized;
 };
 
+const hasMeaningfulFallbackData = (input: {
+  phone: string;
+  email: string;
+  companyName: string;
+  address: string;
+}): boolean => {
+  const phoneDigits = input.phone.replace(/\D/g, '');
+  const hasPhone = phoneDigits.length >= 7;
+  const hasEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.email);
+  const hasCompany = /[A-Za-z0-9]/.test(input.companyName) && input.companyName.length >= 2;
+  const hasAddress = /[A-Za-z0-9]/.test(input.address) && input.address.length >= 5;
+  return hasPhone || hasEmail || hasCompany || hasAddress;
+};
+
 const ensureLeadImportSchemaReady = async (): Promise<LeadImportSchemaState> => {
   const leadTableRows = await prisma.$queryRaw<Array<{ table_name: string | null }>>`
     SELECT to_regclass('public.leads')::text AS table_name
@@ -147,10 +161,14 @@ const processRows = async (jobId: string, rows: any[], workspaceId: string, user
 
       let resolvedName = name;
       if (!resolvedName) {
-        // Spreadsheet exports often carry trailing/source-only rows; skip non-actionable rows.
-        const hasIdentifyingData = [phone, email, addressStr, companyNameStr]
-          .some((value) => Boolean(value));
-        if (!hasIdentifyingData) {
+        // Only synthesize names when row has strong identifying data; skip noisy/trailing artifacts.
+        const hasStrongIdentifiers = hasMeaningfulFallbackData({
+          phone,
+          email,
+          companyName: companyNameStr,
+          address: addressStr,
+        });
+        if (!hasStrongIdentifiers) {
           continue;
         }
 
