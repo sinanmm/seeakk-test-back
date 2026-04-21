@@ -179,6 +179,79 @@ const hasGeneratedDelegates = (): boolean => {
   );
 };
 
+/**
+ * Scalar columns on public.leads required by the current Prisma `Lead` model (@@map("leads")).
+ * Keep in sync with prisma/schema.prisma — if a migration adds a column, add it here so production
+ * returns a clear 503 instead of a generic Prisma P2022 at query time.
+ */
+const LEAD_MODEL_DB_COLUMNS = [
+  'id',
+  'name',
+  'email',
+  'phone',
+  'companyName',
+  'address',
+  'expectedRevenue',
+  'generatedRevenue',
+  'assignedToId',
+  'stageId',
+  'lifecycleId',
+  'sourceId',
+  'nextFollowUpAt',
+  'stageEnteredAt',
+  'stageExpiresAt',
+  'slaAction',
+  'slaWarningDays',
+  'approvalState',
+  'pendingApprovalToStageId',
+  'pendingApprovalRequestedAt',
+  'isClosed',
+  'isLOB',
+  'closedAt',
+  'closedById',
+  'closureType',
+  'workspaceId',
+  'createdById',
+  'deletedAt',
+  'createdAt',
+  'updatedAt',
+] as const;
+
+let leadsColumnCheckValidUntil = 0;
+const LEADS_COLUMN_CHECK_TTL_MS = 60_000;
+
+const ensureLeadsColumnsMatchPrismaModel = async (): Promise<void> => {
+  if (Date.now() < leadsColumnCheckValidUntil) {
+    return;
+  }
+
+  const rows = await prisma.$queryRaw<Array<{ column_name: string }>>`
+    SELECT column_name::text AS column_name
+    FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'leads'
+  `;
+
+  const present = new Set(rows.map((row) => row.column_name.toLowerCase()));
+  const missing = LEAD_MODEL_DB_COLUMNS.filter((col) => !present.has(col.toLowerCase()));
+
+  if (missing.length > 0) {
+    const companyOrAddress = missing.filter((c) => c === 'companyName' || c === 'address');
+    const companyHint =
+      companyOrAddress.length > 0
+        ? ' Recent UI expects company/address: apply migration `20260420140000_lead_company_address` (included in repo migrations).'
+        : '';
+
+    throw createServiceError(
+      `Leads module is not ready: table "leads" is missing column(s): ${missing.join(', ')}.` +
+        ' On the server that uses this DATABASE_URL, run `npx prisma migrate deploy`, then restart the API.' +
+        companyHint,
+      503,
+    );
+  }
+
+  leadsColumnCheckValidUntil = Date.now() + LEADS_COLUMN_CHECK_TTL_MS;
+};
+
 const assertModuleReady = async (): Promise<void> => {
   const leadTable = await prisma.$queryRaw<Array<{ table_name: string | null }>>`
     SELECT to_regclass('public.leads')::text AS table_name
@@ -190,6 +263,8 @@ const assertModuleReady = async (): Promise<void> => {
       503,
     );
   }
+
+  await ensureLeadsColumnsMatchPrismaModel();
 
   if (!hasGeneratedDelegates()) {
     throw createServiceError(

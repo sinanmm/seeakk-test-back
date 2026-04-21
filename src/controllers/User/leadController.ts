@@ -61,9 +61,15 @@ function validate<T>(
 
 const handleServiceError = (error: any, res: Response, next: NextFunction, action: string): void => {
   if (error?.code === 'P2021' || error?.code === 'P2022') {
+    const meta = error?.meta as { column?: string; table?: string; modelName?: string } | undefined;
+    const detail =
+      error?.code === 'P2022'
+        ? `Database column out of sync (missing: ${meta?.column ?? 'unknown'}).`
+        : `Database table out of sync (missing: ${meta?.table ?? meta?.modelName ?? 'unknown'}).`;
+    logger.error(`Lead schema mismatch (${error?.code})`, { action, meta: error?.meta, message: error?.message });
     res.status(503).json({
       success: false,
-      message: 'Leads module is not ready. Required database schema is missing. Run Prisma migration/db push.',
+      message: `Leads module is not ready. ${detail} Run \`npx prisma migrate deploy\` on the production database for this service's DATABASE_URL, then restart the API.`,
     });
     return;
   }
