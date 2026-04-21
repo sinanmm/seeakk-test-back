@@ -16,12 +16,8 @@ const normalizeRoleKey = (role: string): string =>
 
 const isPrivilegedRole = (role?: string | null): boolean => {
   const normalized = normalizeRoleKey(role || '');
-  return (
-    normalized === 'superadmin' ||
-    normalized === 'admin' ||
-    normalized === 'administrator' ||
-    normalized.includes('admin')
-  );
+  // Only workspace owners (superadmin) get global permission bypass.
+  return normalized === 'superadmin';
 };
 
 const maskAuthHeader = (authHeader?: string): string => {
