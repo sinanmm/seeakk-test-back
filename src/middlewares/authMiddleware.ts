@@ -8,6 +8,8 @@ interface JwtPayload {
   userId: string;
 }
 
+const SUPERADMIN_ROLE_NAME = 'superadmin';
+
 const normalizeRoleKey = (role: string): string =>
   role
     .toLowerCase()
@@ -18,6 +20,58 @@ const isPrivilegedRole = (role?: string | null): boolean => {
   const normalized = normalizeRoleKey(role || '');
   // Only workspace owners (superadmin) get global permission bypass.
   return normalized === 'superadmin';
+};
+
+const ensureWorkspaceOwnerSuperAdmin = async (user: any): Promise<any> => {
+  if (!user?.id) return user;
+  if (normalizeRoleKey(user.role?.name || '') === SUPERADMIN_ROLE_NAME) return user;
+
+  const ownedWorkspace = await prisma.workspace.findFirst({
+    where: { ownerId: user.id },
+    select: { id: true },
+  });
+  if (!ownedWorkspace) return user;
+
+  const superAdminRole = await prisma.role.upsert({
+    where: { name: SUPERADMIN_ROLE_NAME },
+    update: {
+      description: 'Workspace Owner with full system access',
+      status: 'ACTIVE',
+    },
+    create: {
+      name: SUPERADMIN_ROLE_NAME,
+      description: 'Workspace Owner with full system access',
+      status: 'ACTIVE',
+    },
+  });
+
+  const permissions = await prisma.permission.findMany({ select: { id: true } });
+  if (permissions.length > 0) {
+    await prisma.rolePermission.createMany({
+      data: permissions.map((permission) => ({
+        roleId: superAdminRole.id,
+        permissionId: permission.id,
+      })),
+      skipDuplicates: true,
+    });
+  }
+
+  const updatedUser = await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      roleId: superAdminRole.id,
+      workspaceId: user.workspaceId || ownedWorkspace.id,
+    },
+    include: { role: true },
+  });
+
+  logger.info('Promoted workspace owner to superadmin during auth', {
+    userId: user.id,
+    workspaceId: ownedWorkspace.id,
+    action: 'owner_auto_superadmin',
+  });
+
+  return updatedUser;
 };
 
 const maskAuthHeader = (authHeader?: string): string => {
@@ -87,7 +141,7 @@ export const protect = async (req: Request, res: Response, next: NextFunction): 
       return res.status(403).json({ message: 'User account is suspended or inactive.' });
     }
 
-    req.user = user;
+    req.user = await ensureWorkspaceOwnerSuperAdmin(user);
     next();
   } catch (error: any) {
     logger.error('Authentication Error', { error: error.message, action: 'auth_failed' });
