@@ -82,7 +82,14 @@ export const setupWorkspace = async (req: Request, res: Response, next: NextFunc
       });
     } catch (error: any) {
       // Backward-compatible fallback when server code is newer than production DB migration state.
-      if (error?.code === 'P2022' && typeof error?.meta?.column === 'string' && error.meta.column.includes('logoUrl')) {
+      const missingLogoColumn =
+        (error?.code === 'P2022' &&
+          typeof error?.meta?.column === 'string' &&
+          error.meta.column.includes('logoUrl')) ||
+        (typeof error?.message === 'string' &&
+          (error.message.includes('workspaces.logoUrl') || error.message.includes('logoUrl')));
+
+      if (missingLogoColumn) {
         newWorkspace = await prisma.workspace.create({
           data: {
             companyName,
