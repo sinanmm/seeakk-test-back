@@ -5,7 +5,11 @@ import logger from '../../utils/logger';
 import { clearLeadCache } from '../../services/User/leadService';
 import { resolveOrCreateLeadSourceByName } from '../master/lead-source/leadSource.service';
 
-const ensureLeadImportSchemaReady = async (): Promise<void> => {
+type LeadImportSchemaState = {
+  presentColumns: Set<string>;
+};
+
+const ensureLeadImportSchemaReady = async (): Promise<LeadImportSchemaState> => {
   const leadTableRows = await prisma.$queryRaw<Array<{ table_name: string | null }>>`
     SELECT to_regclass('public.leads')::text AS table_name
   `;
@@ -22,7 +26,7 @@ const ensureLeadImportSchemaReady = async (): Promise<void> => {
     WHERE table_schema = 'public' AND table_name = 'leads'
   `;
   const presentColumns = new Set(leadColumns.map((row) => row.column_name.toLowerCase()));
-  const requiredColumns = ['name', 'companyName', 'address', 'workspaceId', 'createdById'] as const;
+  const requiredColumns = ['name', 'workspaceId', 'createdById'] as const;
   const missingColumns = requiredColumns.filter((col) => !presentColumns.has(col.toLowerCase()));
 
   if (missingColumns.length > 0) {
@@ -30,6 +34,8 @@ const ensureLeadImportSchemaReady = async (): Promise<void> => {
       `Lead import is not ready: missing columns in "leads": ${missingColumns.join(', ')}. Run \`npx prisma migrate deploy\` on this server DATABASE_URL, then restart the API.`,
     );
   }
+
+  return { presentColumns };
 };
 
 export const processImportJob = async (jobId: string, fileBase64: string, workspaceId: string, userId: string) => {
@@ -62,8 +68,9 @@ export const processImportJob = async (jobId: string, fileBase64: string, worksp
 };
 
 const processRows = async (jobId: string, rows: any[], workspaceId: string, userId: string) => {
+  let schemaState: LeadImportSchemaState;
   try {
-    await ensureLeadImportSchemaReady();
+    schemaState = await ensureLeadImportSchemaReady();
   } catch (schemaError: any) {
     await prisma.importJob.update({
       where: { id: jobId },
@@ -88,18 +95,25 @@ const processRows = async (jobId: string, rows: any[], workspaceId: string, user
   let failed = 0;
   const errors: any[] = [];
   const sourceCache = new Map<string, string>();
+  let latestImportedLeadId: string | null = null;
 
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
     try {
-      // Current template headers are typically: 'Lead Name', 'Mobile', 'Email', 'Adress', 'Source'
+      // Current template headers are typically: 'Lead Name', 'Mobile', 'Email', 'Address', 'Company Name', 'Source'
       // We keep broad aliases so older/messy files still import.
       // Headers are lowercased and trimmed by our mapHeaders hook.
       const name = row['lead name'] || row['name'] || row['leadname'] || row['first name'] || row['contact name'];
       const phone = row['mobile'] || row['phone'] || row['contact number'] || row['cell'];
       const email = row['email'] || row['email address'];
       const addressStr = row['adress'] || row['address'] || row['street'] || row['location'];
-      const companyNameStr = row['company name'] || row['company'] || row['organisation'] || row['organization'];
+      const companyNameStr =
+        row['companyname'] ||
+        row['company name'] ||
+        row['company_name'] ||
+        row['company'] ||
+        row['organisation'] ||
+        row['organization'];
       const expectedRevenueStr = row['expected revenue'] || row['expectedrevenue'] || row['revenue'];
       const sourceNameStr = row['source'] || row['lead source'] || row['leadsource'];
 
@@ -130,19 +144,42 @@ const processRows = async (jobId: string, rows: any[], workspaceId: string, user
         }
       }
 
-      await (prisma as any).lead.create({
-        data: {
-          name: name.trim(),
-          email: email ? email.trim() : null,
-          phone: phone ? phone.trim() : null,
-          companyName: companyNameStr ? String(companyNameStr).trim() : null,
-          address: addressStr ? String(addressStr).trim() : null,
-          expectedRevenue,
-          sourceId: sourceId,
-          workspaceId,
-          createdById: userId,
-        }
-      });
+      const insertData: Record<string, unknown> = {
+        name: name.trim(),
+        workspaceId,
+        createdById: userId,
+      };
+
+      if (schemaState.presentColumns.has('email')) {
+        insertData.email = email ? email.trim() : null;
+      }
+      if (schemaState.presentColumns.has('phone')) {
+        insertData.phone = phone ? phone.trim() : null;
+      }
+      if (schemaState.presentColumns.has('companyname')) {
+        insertData.companyName = companyNameStr ? String(companyNameStr).trim() : null;
+      }
+      if (schemaState.presentColumns.has('address')) {
+        insertData.address = addressStr ? String(addressStr).trim() : null;
+      }
+      if (schemaState.presentColumns.has('expectedrevenue')) {
+        insertData.expectedRevenue = expectedRevenue ?? null;
+      }
+      if (schemaState.presentColumns.has('sourceid')) {
+        insertData.sourceId = sourceId ?? null;
+      }
+
+      const columnEntries = Object.entries(insertData);
+      const columnNames = columnEntries.map(([column]) => `"${column}"`).join(', ');
+      const placeholders = columnEntries.map((_, index) => `$${index + 1}`).join(', ');
+      const values = columnEntries.map(([, value]) => value);
+
+      const insertedRows = await prisma.$queryRawUnsafe<Array<{ id: string }>>(
+        `INSERT INTO "leads" (${columnNames}) VALUES (${placeholders}) RETURNING "id"`,
+        ...values,
+      );
+
+      latestImportedLeadId = insertedRows[0]?.id || latestImportedLeadId;
 
       success++;
     } catch (err: any) {
@@ -190,7 +227,7 @@ const processRows = async (jobId: string, rows: any[], workspaceId: string, user
   try {
     await (prisma as any).leadActivity.create({
       data: {
-        leadId: (await prisma.lead.findFirst({ where: { workspaceId, createdById: userId }, orderBy: { createdAt: 'desc' } }))?.id || '',
+        leadId: latestImportedLeadId || '',
         performedById: userId,
         workspaceId,
         action: 'IMPORT_BULK',
