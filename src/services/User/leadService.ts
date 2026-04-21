@@ -856,15 +856,25 @@ const findDuplicateLead = async (
   }
 };
 
-const buildListWhere = (workspaceId: string, query: ListLeadsQueryInput | ExportLeadsQueryInput) => {
+const buildListWhere = (
+  workspaceId: string,
+  query: ListLeadsQueryInput | ExportLeadsQueryInput,
+  options?: { includeArchived?: boolean },
+) => {
   const where: any = {
     workspaceId,
   };
 
-  if (query.status === 'ARCHIVED') {
+  const includeArchived = Boolean(options?.includeArchived);
+
+  if (!includeArchived) {
+    if (query.status === 'ARCHIVED') {
+      where.deletedAt = { not: null };
+    } else {
+      where.deletedAt = null;
+    }
+  } else if (query.status === 'ARCHIVED') {
     where.deletedAt = { not: null };
-  } else {
-    where.deletedAt = null;
   }
 
   if (query.search) {
@@ -1546,18 +1556,34 @@ export const bulkDeleteLeads = async (workspaceId: string, ids: string[], perman
   await clearLeadCache(workspaceId);
 };
 
+const buildLeadExportCsvRow = (lead: LeadIncludeRecord): unknown[] => [
+  lead.id,
+  lead.name,
+  lead.email || '',
+  lead.phone || '',
+  lead.companyName || '',
+  lead.address || '',
+  lead.expectedRevenue ?? '',
+  lead.assignedTo ? resolveDisplayName(lead.assignedTo) : '',
+  lead.stage?.name || '',
+  lead.lifecycle?.name || '',
+  lead.source?.name || '',
+  lead.nextFollowUpAt ? lead.nextFollowUpAt.toISOString() : '',
+  lead.isClosed ? 'Yes' : 'No',
+  lead.isLOB ? 'Yes' : 'No',
+  lead.deletedAt ? lead.deletedAt.toISOString() : '',
+  resolveDisplayName(lead.createdBy),
+  lead.createdAt.toISOString(),
+  lead.updatedAt.toISOString(),
+];
+
 export const exportLeads = async (
   workspaceId: string,
   query: ExportLeadsQueryInput,
 ): Promise<{ filename: string; content: string; contentType: string }> => {
   await assertModuleReady();
 
-  const where = buildListWhere(workspaceId, query);
-  const rows = await (prisma as any).lead.findMany({
-    where,
-    orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
-    include: leadInclude,
-  });
+  const where = buildListWhere(workspaceId, query, { includeArchived: query.includeArchived });
 
   const headers = [
     'Lead ID',
@@ -1574,30 +1600,40 @@ export const exportLeads = async (
     'Next Follow Up At',
     'Is Closed',
     'Is LOB',
+    'Archived At',
     'Created By',
     'Created At',
     'Updated At',
   ];
 
-  const lines = (rows as LeadIncludeRecord[]).map((lead) => [
-    lead.id,
-    lead.name,
-    lead.email || '',
-    lead.phone || '',
-    lead.companyName || '',
-    lead.address || '',
-    lead.expectedRevenue ?? '',
-    lead.assignedTo ? resolveDisplayName(lead.assignedTo) : '',
-    lead.stage?.name || '',
-    lead.lifecycle?.name || '',
-    lead.source?.name || '',
-    lead.nextFollowUpAt ? lead.nextFollowUpAt.toISOString() : '',
-    lead.isClosed ? 'Yes' : 'No',
-    lead.isLOB ? 'Yes' : 'No',
-    resolveDisplayName(lead.createdBy),
-    lead.createdAt.toISOString(),
-    lead.updatedAt.toISOString(),
-  ]);
+  // Cursor batching: stable order by id so exports scale without loading the full table into memory.
+  const EXPORT_BATCH = 750;
+  const lines: unknown[][] = [];
+  let cursorId: string | undefined;
+
+  for (;;) {
+    const batch = (await (prisma as any).lead.findMany({
+      where,
+      take: EXPORT_BATCH,
+      orderBy: { id: 'asc' },
+      ...(cursorId ? { cursor: { id: cursorId }, skip: 1 } : {}),
+      include: leadInclude,
+    })) as LeadIncludeRecord[];
+
+    if (!batch.length) {
+      break;
+    }
+
+    for (const lead of batch) {
+      lines.push(buildLeadExportCsvRow(lead));
+    }
+
+    if (batch.length < EXPORT_BATCH) {
+      break;
+    }
+
+    cursorId = batch[batch.length - 1]!.id;
+  }
 
   const content = [headers, ...lines].map((row) => row.map(escapeCsv).join(',')).join('\n');
   return {

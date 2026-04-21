@@ -145,6 +145,8 @@ export type ListLeadsQueryInput = z.infer<typeof listLeadsQuerySchema>;
 
 export const exportLeadsQuerySchema = listLeadsQuerySchema.extend({
   format: z.preprocess(emptyStringToUndefined, z.enum(['csv']).optional()).default('csv'),
+  /** When true, export includes soft-deleted (archived) leads as well as active rows. */
+  includeArchived: z.coerce.boolean().optional().default(false),
 });
 
 export type ExportLeadsQueryInput = z.infer<typeof exportLeadsQuerySchema>;

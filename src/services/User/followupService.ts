@@ -19,6 +19,8 @@ const FOLLOWUP_COMPLETED = 'COMPLETED';
 const FOLLOWUP_MISSED = 'MISSED';
 const TODAY_CACHE_TTL_SECONDS = 60;
 const MISSED_AFTER_MINUTES = Number(process.env.FOLLOWUP_MISSED_AFTER_MINUTES || 0);
+const FOLLOWUP_SCHEMA_CHECK_TTL_MS = 60_000;
+let followupSchemaCheckValidUntil = 0;
 
 type FollowUpRecord = {
   id: string;
@@ -101,6 +103,10 @@ const hasGeneratedDelegates = (): boolean => {
 };
 
 const assertModuleReady = async (): Promise<void> => {
+  if (Date.now() < followupSchemaCheckValidUntil) {
+    return;
+  }
+
   const followUpTable = await prisma.$queryRaw<Array<{ table_name: string | null }>>`
     SELECT to_regclass('public.follow_ups')::text AS table_name
   `;
@@ -121,6 +127,86 @@ const assertModuleReady = async (): Promise<void> => {
       503,
     );
   }
+
+  const requiredFollowUpsColumns = [
+    'id',
+    'leadId',
+    'userId',
+    'workspaceId',
+    'type',
+    'description',
+    'completionDescription',
+    'status',
+    'scheduledAt',
+    'completedAt',
+    'createdAt',
+    'updatedAt',
+  ] as const;
+  const requiredFollowUpImageColumns = ['id', 'followUpId', 'url', 'createdAt'] as const;
+  const requiredWorkspacesColumns = ['id', 'timeZone'] as const;
+  const requiredLeadsColumns = ['id', 'name'] as const;
+
+  const [
+    followUpsColumns,
+    followUpImagesColumns,
+    workspacesColumns,
+    leadsColumns,
+  ] = await Promise.all([
+    prisma.$queryRaw<Array<{ column_name: string }>>`
+      SELECT column_name::text AS column_name
+      FROM information_schema.columns
+      WHERE table_schema = 'public' AND table_name = 'follow_ups'
+    `,
+    prisma.$queryRaw<Array<{ column_name: string }>>`
+      SELECT column_name::text AS column_name
+      FROM information_schema.columns
+      WHERE table_schema = 'public' AND table_name = 'follow_up_images'
+    `,
+    prisma.$queryRaw<Array<{ column_name: string }>>`
+      SELECT column_name::text AS column_name
+      FROM information_schema.columns
+      WHERE table_schema = 'public' AND table_name = 'workspaces'
+    `,
+    prisma.$queryRaw<Array<{ column_name: string }>>`
+      SELECT column_name::text AS column_name
+      FROM information_schema.columns
+      WHERE table_schema = 'public' AND table_name = 'leads'
+    `,
+  ]);
+
+  const getMissingColumns = (rows: Array<{ column_name: string }>, requiredColumns: readonly string[]) => {
+    const present = new Set(rows.map((row) => row.column_name.toLowerCase()));
+    return requiredColumns.filter((col) => !present.has(col.toLowerCase()));
+  };
+
+  const missingFollowUps = getMissingColumns(followUpsColumns, requiredFollowUpsColumns);
+  const missingFollowUpImages = getMissingColumns(followUpImagesColumns, requiredFollowUpImageColumns);
+  const missingWorkspaces = getMissingColumns(workspacesColumns, requiredWorkspacesColumns);
+  const missingLeads = getMissingColumns(leadsColumns, requiredLeadsColumns);
+
+  const missingParts: string[] = [];
+  if (missingFollowUps.length > 0) {
+    missingParts.push(`follow_ups(${missingFollowUps.join(', ')})`);
+  }
+  if (missingFollowUpImages.length > 0) {
+    missingParts.push(`follow_up_images(${missingFollowUpImages.join(', ')})`);
+  }
+  if (missingWorkspaces.length > 0) {
+    missingParts.push(`workspaces(${missingWorkspaces.join(', ')})`);
+  }
+  if (missingLeads.length > 0) {
+    missingParts.push(`leads(${missingLeads.join(', ')})`);
+  }
+
+  if (missingParts.length > 0) {
+    throw createServiceError(
+      `Follow-up module is not ready: missing required schema columns ${missingParts.join('; ')}.` +
+        ' On the server that uses this DATABASE_URL, run `npx prisma migrate deploy`, then restart the API.',
+      503,
+    );
+  }
+
+  followupSchemaCheckValidUntil = Date.now() + FOLLOWUP_SCHEMA_CHECK_TTL_MS;
 };
 
 const resolveDisplayName = (user?: { name?: string | null; username?: string | null; email?: string } | null): string => {
