@@ -1,17 +1,17 @@
 import { Router } from 'express';
-import { authorize, protect } from '../../middlewares/authMiddleware';
+import { checkPermission, protect } from '../../middlewares/authMiddleware';
 import * as officeController from '../../controllers/User/officeController';
 
 const router = Router();
 
 router.use(protect);
 
-router.get('/', authorize('admin', 'super admin', 'super-admin', 'manager'), officeController.listOffices);
-router.get('/:id', authorize('admin', 'super admin', 'super-admin', 'manager'), officeController.getOfficeById);
+router.get('/', checkPermission('LOCATION_VIEW'), officeController.listOffices);
+router.get('/:id', checkPermission('LOCATION_VIEW'), officeController.getOfficeById);
 
-router.post('/', authorize('admin', 'super admin', 'super-admin'), officeController.createOffice);
-router.put('/:id', authorize('admin', 'super admin', 'super-admin'), officeController.updateOffice);
-router.delete('/:id', authorize('admin', 'super admin', 'super-admin'), officeController.deleteOffice);
-router.patch('/:id/status', authorize('admin', 'super admin', 'super-admin'), officeController.toggleOfficeStatus);
+router.post('/', checkPermission('LOCATION_MANAGE'), officeController.createOffice);
+router.put('/:id', checkPermission('LOCATION_MANAGE'), officeController.updateOffice);
+router.delete('/:id', checkPermission('LOCATION_MANAGE'), officeController.deleteOffice);
+router.patch('/:id/status', checkPermission('LOCATION_MANAGE'), officeController.toggleOfficeStatus);
 
 export default router;
