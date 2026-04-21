@@ -528,6 +528,8 @@ model Lead {
   name            String
   email           String?
   phone           String?
+  companyName     String?
+  address         String?
   expectedRevenue Float?
   generatedRevenue Float        @default(0)
   assignedToId    String?

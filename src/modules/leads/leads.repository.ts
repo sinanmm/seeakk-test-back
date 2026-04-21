@@ -6,6 +6,8 @@ export const closedLeadSelect = {
   name: true,
   email: true,
   phone: true,
+  companyName: true,
+  address: true,
   expectedRevenue: true,
   generatedRevenue: true,
   assignedToId: true,

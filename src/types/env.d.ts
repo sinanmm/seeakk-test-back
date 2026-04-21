@@ -13,6 +13,10 @@ declare global {
       GOOGLE_CLIENT_ID?: string;
       GOOGLE_CLIENT_SECRET?: string;
       FRONTEND_URL?: string;
+      /** Comma- or space-separated extra browser origins for CORS. */
+      ALLOWED_ORIGINS?: string;
+      /** Set to "false" to stop trusting all https://*.vercel.app origins. */
+      CORS_ALLOW_VERCEL_APP?: string;
       BACKEND_URL?: string;
     }
   }

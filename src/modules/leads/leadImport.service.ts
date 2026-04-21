@@ -48,11 +48,13 @@ const processRows = async (jobId: string, rows: any[], workspaceId: string, user
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
     try {
-      // The template uses headers: 'Lead Name', 'Mobile', 'Email', 'Expected Revenue', 'Source'
-      // These are lowercased and end-trimmed by our mapHeaders hook
+      // Current template headers are: 'Lead Name', 'Mobile', 'Email', 'Adress', 'Source'
+      // We keep backward-compatible aliases (including revenue) so older files still import.
+      // Headers are lowercased and trimmed by our mapHeaders hook.
       const name = row['lead name'] || row['name'] || row['leadname'] || row['first name'] || row['contact name'];
       const phone = row['mobile'] || row['phone'] || row['contact number'] || row['cell'];
       const email = row['email'] || row['email address'];
+      const addressStr = row['adress'] || row['address'] || row['street'] || row['location'];
       const expectedRevenueStr = row['expected revenue'] || row['expectedrevenue'] || row['revenue'];
       const sourceNameStr = row['source'] || row['lead source'] || row['leadsource'];
 
@@ -94,6 +96,9 @@ const processRows = async (jobId: string, rows: any[], workspaceId: string, user
           createdById: userId,
         }
       });
+
+      // Address is currently not a native column on lead; keeping parser support avoids import breakage.
+      void addressStr;
       success++;
     } catch (err: any) {
       failed++;

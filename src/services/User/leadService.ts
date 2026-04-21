@@ -36,6 +36,8 @@ type LeadIncludeRecord = {
   name: string;
   email: string | null;
   phone: string | null;
+  companyName: string | null;
+  address: string | null;
   expectedRevenue: number | null;
   generatedRevenue: number;
   assignedToId: string | null;
@@ -163,31 +165,16 @@ const leadInclude = {
       status: true,
     },
   },
-  lobLogs: {
-    orderBy: { changedAt: 'desc' as const },
-    take: 5,
-    select: {
-      id: true,
-      reasonId: true,
-      remarks: true,
-      previousStageId: true,
-      previousStageName: true,
-      changedById: true,
-      changedAt: true,
-    },
-  },
 } as const;
 
 const hasGeneratedDelegates = (): boolean => {
   const lead = (prisma as any).lead;
-  const leadLobLog = (prisma as any).leadLOBLog;
   const followUp = (prisma as any).followUp;
   return Boolean(
     lead?.findFirst &&
       lead?.findMany &&
       lead?.create &&
       lead?.update &&
-      leadLobLog?.create &&
       followUp?.create,
   );
 };
@@ -196,11 +183,8 @@ const assertModuleReady = async (): Promise<void> => {
   const leadTable = await prisma.$queryRaw<Array<{ table_name: string | null }>>`
     SELECT to_regclass('public.leads')::text AS table_name
   `;
-  const lobTable = await prisma.$queryRaw<Array<{ table_name: string | null }>>`
-    SELECT to_regclass('public.lead_lob_logs')::text AS table_name
-  `;
 
-  if (!leadTable[0]?.table_name || !lobTable[0]?.table_name) {
+  if (!leadTable[0]?.table_name) {
     throw createServiceError(
       'Leads module is not ready. Required database schema is missing. Run Prisma migration/db push.',
       503,
@@ -254,7 +238,7 @@ const mapLeadRecord = (lead: LeadIncludeRecord) => ({
         displayName: resolveDisplayName(lead.closedBy),
       }
     : null,
-  lobLogs: lead.lobLogs.map((item) => ({
+  lobLogs: ((lead as any).lobLogs || []).map((item: any) => ({
     ...item,
     changedAt: item.changedAt.toISOString(),
   })),
@@ -677,6 +661,8 @@ type StageValidationPatch = {
   name?: string;
   email?: string | null;
   phone?: string | null;
+  companyName?: string | null;
+  address?: string | null;
   expectedRevenue?: number | null;
   assignedToId?: string | null;
   sourceId?: string | null;
@@ -708,6 +694,8 @@ const toValidationLeadData = async (
     name: patch.name ?? lead.name,
     email: patch.email !== undefined ? patch.email : lead.email,
     phone: patch.phone !== undefined ? patch.phone : lead.phone,
+    companyName: patch.companyName !== undefined ? patch.companyName : lead.companyName,
+    address: patch.address !== undefined ? patch.address : lead.address,
     expectedRevenue: patch.expectedRevenue !== undefined ? patch.expectedRevenue : lead.expectedRevenue,
     assignedToId: patch.assignedToId !== undefined ? patch.assignedToId : lead.assignedToId,
     sourceId: patch.sourceId !== undefined ? patch.sourceId : lead.sourceId,
@@ -901,6 +889,8 @@ export const createLead = async (
         name: input.name.trim(),
         email: input.email?.trim() || null,
         phone: input.phone?.trim() || null,
+        companyName: input.companyName?.trim() || null,
+        address: input.address?.trim() || null,
         expectedRevenue: input.expectedRevenue ?? null,
         assignedToId,
         stageId: stage?.id || null,
@@ -1131,6 +1121,10 @@ export const updateLead = async (
         ...(input.name !== undefined ? { name: input.name.trim() } : {}),
         ...(input.email !== undefined ? { email } : {}),
         ...(input.phone !== undefined ? { phone } : {}),
+        ...(input.companyName !== undefined
+          ? { companyName: input.companyName === null ? null : input.companyName.trim() }
+          : {}),
+        ...(input.address !== undefined ? { address: input.address === null ? null : input.address.trim() } : {}),
         ...(input.expectedRevenue !== undefined
           ? { expectedRevenue: input.expectedRevenue === null ? null : input.expectedRevenue }
           : {}),
@@ -1495,6 +1489,8 @@ export const exportLeads = async (
     'Name',
     'Email',
     'Phone',
+    'Company Name',
+    'Address',
     'Expected Revenue',
     'Assigned To',
     'Stage',
@@ -1513,6 +1509,8 @@ export const exportLeads = async (
     lead.name,
     lead.email || '',
     lead.phone || '',
+    lead.companyName || '',
+    lead.address || '',
     lead.expectedRevenue ?? '',
     lead.assignedTo ? resolveDisplayName(lead.assignedTo) : '',
     lead.stage?.name || '',
