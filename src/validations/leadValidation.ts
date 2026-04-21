@@ -65,6 +65,7 @@ export const createLeadSchema = z.object({
   followUpDescription: z.preprocess(emptyStringToUndefined, z.string().trim().max(1000, 'followUpDescription is too long').optional()),
   reasonId: optionalId('reasonId'),
   remarks: z.preprocess(emptyStringToUndefined, z.string().trim().max(2000, 'remarks is too long').optional()),
+  skipAutoStageAssignment: z.coerce.boolean().optional().default(false),
 });
 
 export type CreateLeadInput = z.infer<typeof createLeadSchema>;

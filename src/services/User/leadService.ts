@@ -953,11 +953,13 @@ export const createLead = async (
 
   ensureAssignmentAllowed(actor, input.assignedToId);
   const assignedToId = await resolveAssignedUserId(workspaceId, input.assignedToId);
-  const stage =
-    (await resolveStage(workspaceId, input.stageId)) ||
-    (await getNewStageForWorkspace(workspaceId)) ||
-    (await getDefaultStageForWorkspace(workspaceId)) ||
-    null;
+  const shouldAutoAssignStage = !input.skipAutoStageAssignment || Boolean(input.stageId);
+  const stage = shouldAutoAssignStage
+    ? (await resolveStage(workspaceId, input.stageId)) ||
+      (await getNewStageForWorkspace(workspaceId)) ||
+      (await getDefaultStageForWorkspace(workspaceId)) ||
+      null
+    : null;
   const lifecycle = await resolveLifecycle(workspaceId, input.lifecycleId);
   const source = await resolveSource(workspaceId, input.sourceId);
   ensureLOBPayload(stage, input.reasonId, input.remarks ?? null);
