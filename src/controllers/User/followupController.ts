@@ -15,6 +15,8 @@ import {
   historyQuerySchema,
   ReminderAlertsQueryInput,
   reminderAlertsQuerySchema,
+  SnoozeFollowUpInput,
+  snoozeFollowUpSchema,
   TodayFollowUpsQueryInput,
   todayFollowUpsQuerySchema,
 } from '../../validations/followupValidation';
@@ -203,6 +205,42 @@ export const completeFollowUp = async (req: Request, res: Response, next: NextFu
     });
   } catch (error) {
     handleServiceError(error, res, next, 'completeFollowUp');
+  }
+};
+
+export const snoozeFollowUp = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = requireWorkspace(req, res);
+  if (!workspaceId) return;
+
+  const params = validate<FollowUpIdParamInput>(followUpIdParamSchema, req.params, res);
+  if (!params) return;
+
+  const input = validate<SnoozeFollowUpInput>(snoozeFollowUpSchema, req.body, res);
+  if (!input) return;
+
+  try {
+    const data = await followupService.snoozeFollowUp(workspaceId, getActor(req), params.id, input);
+    await auditService.log({
+      userId: req.user?.id,
+      workspaceId,
+      action: 'FOLLOWUP_SNOOZED',
+      entityType: 'FollowUp',
+      entityId: data.id,
+      details: {
+        leadId: data.leadId,
+        scheduledAt: data.scheduledAt,
+      },
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Follow-up snoozed successfully',
+      data,
+    });
+  } catch (error) {
+    handleServiceError(error, res, next, 'snoozeFollowUp');
   }
 };
 

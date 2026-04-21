@@ -10,12 +10,15 @@ import type {
   FollowUpStatus,
   HistoryQueryInput,
   ReminderAlertsQueryInput,
+  SnoozeFollowUpInput,
   TodayFollowUpsQueryInput,
 } from '../../validations/followupValidation';
 
 const FOLLOWUP_PENDING = 'PENDING';
 const FOLLOWUP_COMPLETED = 'COMPLETED';
+const FOLLOWUP_MISSED = 'MISSED';
 const TODAY_CACHE_TTL_SECONDS = 60;
+const MISSED_AFTER_MINUTES = Number(process.env.FOLLOWUP_MISSED_AFTER_MINUTES || 0);
 
 type FollowUpRecord = {
   id: string;
@@ -24,6 +27,7 @@ type FollowUpRecord = {
   workspaceId: string;
   type: string;
   description: string | null;
+  completionDescription: string | null;
   status: string;
   scheduledAt: Date;
   completedAt: Date | null;
@@ -35,6 +39,12 @@ type FollowUpRecord = {
     username: string | null;
     email: string;
   };
+  lead: {
+    id: string;
+    name: string;
+    email: string | null;
+    phone: string | null;
+  };
   images: Array<{
     id: string;
     url: string;
@@ -42,7 +52,19 @@ type FollowUpRecord = {
   }>;
 };
 
-type ReminderFollowUpRecord = FollowUpRecord & {
+type ReminderFollowUpRecord = {
+  id: string;
+  leadId: string;
+  userId: string;
+  type: string;
+  description: string | null;
+  scheduledAt: Date;
+  user: {
+    id: string;
+    name: string | null;
+    username: string | null;
+    email: string;
+  };
   lead: {
     id: string;
     name: string;
@@ -118,6 +140,9 @@ const mapFollowUpRecord = (record: FollowUpRecord) => ({
     ...record.user,
     displayName: resolveDisplayName(record.user),
   },
+  lead: {
+    ...record.lead,
+  },
   images: record.images.map((image) => ({
     ...image,
     createdAt: image.createdAt.toISOString(),
@@ -140,6 +165,14 @@ const mapReminderFollowUpRecord = (record: ReminderFollowUpRecord) => ({
 });
 
 const buildFollowUpInclude = {
+  lead: {
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      phone: true,
+    },
+  },
   user: {
     select: {
       id: true,
@@ -482,6 +515,20 @@ export const getReminderAlerts = async (
 
   const targetUserId = await resolveTargetUserId(workspaceId, actor, query.userId);
   const timeZone = await getWorkspaceTimeZone(workspaceId);
+  if (MISSED_AFTER_MINUTES > 0) {
+    const cutoff = new Date(Date.now() - MISSED_AFTER_MINUTES * 60_000);
+    await (prisma as any).followUp.updateMany({
+      where: {
+        workspaceId,
+        userId: targetUserId,
+        status: FOLLOWUP_PENDING,
+        scheduledAt: { lt: cutoff },
+      },
+      data: {
+        status: FOLLOWUP_MISSED,
+      },
+    });
+  }
 
   const now = new Date();
   const windowStart = new Date(now.getTime() - query.includePastMinutes * 60_000);
@@ -551,7 +598,7 @@ export const completeFollowUp = async (
       data: {
         status: FOLLOWUP_COMPLETED,
         completedAt,
-        description: input.description.trim(),
+        completionDescription: input.description.trim(),
       },
       include: buildFollowUpInclude,
     });
@@ -623,4 +670,47 @@ export const getHistory = async (
       totalPages: Math.max(1, Math.ceil(total / query.limit)),
     },
   };
+};
+
+export const snoozeFollowUp = async (
+  workspaceId: string,
+  actor: { id: string; role?: { name?: string | null } | null },
+  id: string,
+  input: SnoozeFollowUpInput,
+) => {
+  await assertModuleReady();
+
+  const existing = await (prisma as any).followUp.findFirst({
+    where: { id, workspaceId },
+    include: buildFollowUpInclude,
+  });
+
+  if (!existing) {
+    throw createServiceError('Follow-up not found in this workspace.', 404);
+  }
+  if (existing.userId !== actor.id && !isManagerialRole(actor.role?.name)) {
+    throw createServiceError('You are not allowed to snooze another user\'s follow-up.', 403);
+  }
+  if (existing.status === FOLLOWUP_COMPLETED) {
+    throw createServiceError('Completed follow-ups cannot be snoozed.', 409);
+  }
+  if (input.scheduledAt.getTime() <= Date.now()) {
+    throw createServiceError('Snooze time must be in the future.', 422);
+  }
+
+  const updated = await (prisma as any).followUp.update({
+    where: { id: existing.id },
+    data: {
+      scheduledAt: input.scheduledAt,
+      status: FOLLOWUP_PENDING,
+    },
+    include: buildFollowUpInclude,
+  });
+
+  const todayRange = await getDayRangeForWorkspace(workspaceId);
+  const previousDateKey = moment(existing.scheduledAt).utc().format('YYYY-MM-DD');
+  const nextDateKey = moment(input.scheduledAt).utc().format('YYYY-MM-DD');
+  await invalidateTodayCache(workspaceId, existing.userId, [previousDateKey, nextDateKey, todayRange.cacheDateKey]);
+
+  return mapFollowUpRecord(updated as FollowUpRecord);
 };

@@ -3,6 +3,7 @@ import { leadImportQueue } from './leadImport.jobs';
 import prisma from '../../config/prisma';
 import logger from '../../utils/logger';
 import { resolveWorkspaceIdForUser } from '../../utils/workspaceContext';
+import path from 'path';
 
 export const importLeads = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
   try {
@@ -11,6 +12,14 @@ export const importLeads = async (req: Request, res: Response, next: NextFunctio
 
     if (!file) {
       return res.status(400).json({ success: false, message: 'No file uploaded' });
+    }
+
+    const fileExtension = path.extname(file.originalname || '').toLowerCase();
+    if (fileExtension !== '.csv') {
+      return res.status(400).json({
+        success: false,
+        message: 'Only CSV files are supported for import. Export your template to .csv before upload.',
+      });
     }
 
     if (!userId) {

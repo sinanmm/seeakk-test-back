@@ -10,5 +10,6 @@ router.get('/alerts', protect, followupController.getReminderAlerts);
 router.get('/history', protect, followupController.getHistory);
 router.post('/', protect, followupController.createFollowUp);
 router.post('/:id/complete', protect, followupController.completeFollowUp);
+router.patch('/:id/snooze', protect, followupController.snoozeFollowUp);
 
 export default router;
