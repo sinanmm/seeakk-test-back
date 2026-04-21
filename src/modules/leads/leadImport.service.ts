@@ -145,15 +145,21 @@ const processRows = async (jobId: string, rows: any[], workspaceId: string, user
         continue;
       }
 
-      if (!name) {
+      let resolvedName = name;
+      if (!resolvedName) {
         // Spreadsheet exports often carry trailing/source-only rows; skip non-actionable rows.
         const hasIdentifyingData = [phone, email, addressStr, companyNameStr]
           .some((value) => Boolean(value));
         if (!hasIdentifyingData) {
           continue;
         }
-        const foundHeaders = Object.keys(row).join(', ');
-        throw new Error(`Missing required field 'Name'. (We detected these columns in your file: [${foundHeaders}])`);
+
+        // Senior-safe fallback for bulk uploads: derive a deterministic lead name when row has usable data.
+        resolvedName =
+          companyNameStr ||
+          phone ||
+          email ||
+          `Imported Lead Row ${i + 2}`;
       }
 
       let sourceId: string | undefined = undefined;
@@ -179,7 +185,7 @@ const processRows = async (jobId: string, rows: any[], workspaceId: string, user
       }
 
       const insertData: Record<string, unknown> = {
-        name: name.trim(),
+        name: resolvedName,
         workspaceId,
         createdById: userId,
       };
