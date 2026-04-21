@@ -72,7 +72,6 @@ const ensureWorkspaceOwnerSuperAdmin = async (user: any): Promise<any> => {
         select: {
           id: true,
           companyName: true,
-          logoUrl: true,
         },
       },
     },
@@ -315,7 +314,7 @@ export const login = async (req: Request, res: Response): Promise<any> => {
       include: {
         role: true,
         devices: true,
-        workspace: { select: { id: true, companyName: true, logoUrl: true } },
+        workspace: { select: { id: true, companyName: true } },
       },
     });
 
@@ -418,7 +417,7 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
       include: {
         role: true,
         devices: true,
-        workspace: { select: { id: true, companyName: true, logoUrl: true } },
+        workspace: { select: { id: true, companyName: true } },
       },
     });
 
@@ -433,7 +432,7 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
         include: {
           role: true,
           devices: true,
-          workspace: { select: { id: true, companyName: true, logoUrl: true } },
+          workspace: { select: { id: true, companyName: true } },
         },
       });
     }
@@ -445,7 +444,7 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
         include: {
           role: true,
           devices: true,
-          workspace: { select: { id: true, companyName: true, logoUrl: true } },
+          workspace: { select: { id: true, companyName: true } },
         },
       });
     }
@@ -536,7 +535,7 @@ export const refreshToken = async (req: Request, res: Response): Promise<any> =>
       include: {
         role: true,
         devices: true,
-        workspace: { select: { id: true, companyName: true, logoUrl: true } },
+        workspace: { select: { id: true, companyName: true } },
       },
     });
 

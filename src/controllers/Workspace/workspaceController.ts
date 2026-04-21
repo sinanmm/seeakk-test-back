@@ -66,18 +66,38 @@ export const setupWorkspace = async (req: Request, res: Response, next: NextFunc
     const superAdminRole = await ensureWorkspaceOwnerRole();
 
     // 2. Create the workspace and link to the owner simultaneously
-    const newWorkspace = await prisma.workspace.create({
-      data: {
-        companyName,
-        logoUrl: normalizedLogoUrl || null,
-        employeeCount,
-        timeZone: timeZone || 'UTC',
-        language: language || 'en-US',
-        currencyLocale: currencyLocale || 'USD',
-        loadSampleData: loadSampleData || false,
-        ownerId: user.id,
-      },
-    });
+    let newWorkspace;
+    try {
+      newWorkspace = await prisma.workspace.create({
+        data: {
+          companyName,
+          logoUrl: normalizedLogoUrl || null,
+          employeeCount,
+          timeZone: timeZone || 'UTC',
+          language: language || 'en-US',
+          currencyLocale: currencyLocale || 'USD',
+          loadSampleData: loadSampleData || false,
+          ownerId: user.id,
+        },
+      });
+    } catch (error: any) {
+      // Backward-compatible fallback when server code is newer than production DB migration state.
+      if (error?.code === 'P2022' && typeof error?.meta?.column === 'string' && error.meta.column.includes('logoUrl')) {
+        newWorkspace = await prisma.workspace.create({
+          data: {
+            companyName,
+            employeeCount,
+            timeZone: timeZone || 'UTC',
+            language: language || 'en-US',
+            currencyLocale: currencyLocale || 'USD',
+            loadSampleData: loadSampleData || false,
+            ownerId: user.id,
+          },
+        });
+      } else {
+        throw error;
+      }
+    }
 
     // 3. Update user: assign superadmin role, mark as onboarded, link workspace
     const updatedUser = await prisma.user.update({
