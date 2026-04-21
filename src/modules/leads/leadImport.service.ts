@@ -33,8 +33,9 @@ const hasMeaningfulFallbackData = (input: {
   const hasPhone = phoneDigits.length >= 7;
   const hasEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.email);
   const hasCompany = /[A-Za-z0-9]/.test(input.companyName) && input.companyName.length >= 2;
-  const hasAddress = /[A-Za-z0-9]/.test(input.address) && input.address.length >= 5;
-  return hasPhone || hasEmail || hasCompany || hasAddress;
+  // Address-only rows are often noisy spreadsheet residue; do not auto-create leads from them.
+  void input.address;
+  return hasPhone || hasEmail || hasCompany;
 };
 
 const ensureLeadImportSchemaReady = async (): Promise<LeadImportSchemaState> => {
