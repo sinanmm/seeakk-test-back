@@ -27,13 +27,20 @@ const SUPERADMIN_ROLE_NAME = 'superadmin';
 
 const ensureWorkspaceOwnerSuperAdmin = async (user: any): Promise<any> => {
   if (!user?.id) return user;
-  if (normalizeRoleKey(user.role?.name || '') === SUPERADMIN_ROLE_NAME) return user;
 
   const ownedWorkspace = await prisma.workspace.findFirst({
     where: { ownerId: user.id },
     select: { id: true },
   });
   if (!ownedWorkspace) return user;
+
+  // If owner is already superadmin and linked correctly, keep current user as-is.
+  if (
+    normalizeRoleKey(user.role?.name || '') === SUPERADMIN_ROLE_NAME &&
+    user.workspaceId === ownedWorkspace.id
+  ) {
+    return user;
+  }
 
   const superAdminRole = await prisma.role.upsert({
     where: { name: SUPERADMIN_ROLE_NAME },
