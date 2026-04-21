@@ -28,6 +28,11 @@ export const errorHandler = (err: any, req: Request, res: Response, next: NextFu
     message = `Duplicate field value entered: ${Object.keys(err.keyValue).join(', ')}`;
   }
 
+  if (err.type === 'entity.too.large') {
+    statusCode = 413;
+    message = 'Request payload is too large. Please upload a smaller file.';
+  }
+
   logger.error(err.message, {
     stack: err.stack,
     path: req.originalUrl,

@@ -38,6 +38,7 @@ import { globalLimiter } from './middlewares/rateLimiter';
 import { notFound, errorHandler } from './middlewares/errorMiddleware';
 
 const app = express();
+const requestBodyLimit = process.env.REQUEST_BODY_LIMIT || '5mb';
 
 const splitOriginList = (raw?: string | null): string[] =>
   (raw || '')
@@ -95,8 +96,8 @@ app.use(morgan('combined', { stream: { write: (message: string) => logger.info(m
 
 app.use(cors(corsOptions));
 app.options(/.*/, cors(corsOptions));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: requestBodyLimit }));
+app.use(express.urlencoded({ extended: true, limit: requestBodyLimit }));
 
 // Global rate limiting
 app.use('/api/', globalLimiter);
