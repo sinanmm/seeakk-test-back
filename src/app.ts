@@ -39,26 +39,49 @@ import { notFound, errorHandler } from './middlewares/errorMiddleware';
 
 const app = express();
 
-const allowedOrigins = new Set(
-  [
-    process.env.FRONTEND_URL,
-    'https://lms-frontend-amber-beta.vercel.app',
-    'http://localhost:5173',
-    'http://127.0.0.1:5173',
-  ]
-    .map((origin) => origin?.trim())
-    .filter((origin): origin is string => Boolean(origin)),
-);
+const splitOriginList = (raw?: string | null): string[] =>
+  (raw || '')
+    .split(/[\s,]+/)
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0);
 
-const isAllowedOrigin = (origin?: string): origin is string => Boolean(origin && allowedOrigins.has(origin));
+const allowVercelApp =
+  String(process.env.CORS_ALLOW_VERCEL_APP ?? 'true').toLowerCase() !== 'false';
+
+const allowedOrigins = new Set<string>([
+  ...splitOriginList(process.env.FRONTEND_URL),
+  ...splitOriginList(process.env.ALLOWED_ORIGINS),
+  'https://lms-frontend-amber-beta.vercel.app',
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+]);
+
+const isAllowedOrigin = (origin: string): boolean => allowedOrigins.has(origin);
+
+/** Vercel production + preview deploys use https://*.vercel.app */
+const isVercelAppOrigin = (origin: string): boolean => {
+  if (!allowVercelApp) return false;
+  try {
+    const { protocol, hostname } = new URL(origin);
+    if (protocol !== 'https:') return false;
+    return hostname.endsWith('.vercel.app') && hostname.length > '.vercel.app'.length;
+  } catch {
+    return false;
+  }
+};
 
 const corsOptions: cors.CorsOptions = {
   origin: (origin, callback) => {
-    if (!origin || isAllowedOrigin(origin)) {
+    if (!origin) {
+      callback(null, true);
+      return;
+    }
+    if (isAllowedOrigin(origin) || isVercelAppOrigin(origin)) {
       callback(null, true);
       return;
     }
 
+    logger.warn('CORS request rejected', { origin });
     callback(new Error(`CORS blocked for origin: ${origin}`));
   },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
