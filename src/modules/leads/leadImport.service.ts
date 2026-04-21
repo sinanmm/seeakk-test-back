@@ -1,4 +1,5 @@
 import { Readable } from 'stream';
+import { randomUUID } from 'crypto';
 import csvParser from 'csv-parser';
 import prisma from '../../config/prisma';
 import logger from '../../utils/logger';
@@ -117,6 +118,12 @@ const processRows = async (jobId: string, rows: any[], workspaceId: string, user
       const expectedRevenueStr = row['expected revenue'] || row['expectedrevenue'] || row['revenue'];
       const sourceNameStr = row['source'] || row['lead source'] || row['leadsource'];
 
+      const isEffectivelyEmptyRow = [name, phone, email, addressStr, companyNameStr, sourceNameStr]
+        .every((value) => !value || String(value).trim() === '');
+      if (isEffectivelyEmptyRow) {
+        continue;
+      }
+
       if (!name || name.trim() === '') {
         const foundHeaders = Object.keys(row).join(', ');
         throw new Error(`Missing required field 'Name'. (We detected these columns in your file: [${foundHeaders}])`);
@@ -149,6 +156,17 @@ const processRows = async (jobId: string, rows: any[], workspaceId: string, user
         workspaceId,
         createdById: userId,
       };
+
+      if (schemaState.presentColumns.has('id')) {
+        // Some production databases drifted and lost DB-side id defaults; set id explicitly for safe bulk imports.
+        insertData.id = randomUUID();
+      }
+      if (schemaState.presentColumns.has('createdat')) {
+        insertData.createdAt = new Date();
+      }
+      if (schemaState.presentColumns.has('updatedat')) {
+        insertData.updatedAt = new Date();
+      }
 
       if (schemaState.presentColumns.has('email')) {
         insertData.email = email ? email.trim() : null;
