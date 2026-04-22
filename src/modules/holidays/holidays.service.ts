@@ -9,6 +9,8 @@ const createHolidayServiceError = (message: string, statusCode = 400): Error & {
   return error;
 };
 
+const DEFAULT_HOLIDAY_COLOR = '#fda4af';
+
 const normalizeHolidayDate = (value: unknown): Date => {
   if (value instanceof Date && !Number.isNaN(value.getTime())) {
     return value;
@@ -36,7 +38,22 @@ const normalizeHolidayDate = (value: unknown): Date => {
 const normalizeHolidayPayload = <T extends Record<string, any>>(data: T): T => ({
   ...data,
   holidayDate: normalizeHolidayDate(data.holidayDate),
+  color: normalizeHolidayColor(data.color),
 });
+
+const normalizeHolidayColor = (value: unknown): string => {
+  if (typeof value !== 'string' || !value.trim()) {
+    return DEFAULT_HOLIDAY_COLOR;
+  }
+
+  const trimmedValue = value.trim();
+  const normalizedValue = trimmedValue.startsWith('#') ? trimmedValue : `#${trimmedValue}`;
+  if (!/^#[0-9a-fA-F]{6}$/.test(normalizedValue)) {
+    throw createHolidayServiceError('Holiday color must be a valid 6-digit hex color.');
+  }
+
+  return normalizedValue.toLowerCase();
+};
 
 export const getWorkspaceHolidays = async (workspaceId: string, options?: { activeOnly?: boolean }) => {
   return prisma.holiday.findMany({
@@ -78,6 +95,7 @@ export const createHoliday = async (data: any) => {
       userId: normalizedData.createdById,
       workspaceId: normalizedData.workspaceId,
       details: {
+        color: holiday.color,
         source: holiday.source,
         holidayDate: holiday.holidayDate,
         name: holiday.name
@@ -170,6 +188,7 @@ export const getCalendarView = async (workspaceId: string, user: any, month: str
     
     return {
       date: dateStr,
+      color: h.color || DEFAULT_HOLIDAY_COLOR,
       title: h.name,
       type: 'HOLIDAY',
       source: h.source
@@ -216,6 +235,7 @@ export const getWorkspaceCalendarView = async (workspaceId: string, month: strin
 
     return {
       date: dateStr,
+      color: h.color || DEFAULT_HOLIDAY_COLOR,
       title: h.name,
       type: 'HOLIDAY',
       source: h.source,

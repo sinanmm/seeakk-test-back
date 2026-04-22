@@ -1,0 +1,2 @@
+ALTER TABLE "holidays"
+ADD COLUMN "color" TEXT NOT NULL DEFAULT '#fda4af';

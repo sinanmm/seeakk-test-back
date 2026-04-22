@@ -1050,6 +1050,7 @@ model Holiday {
   workspaceId    String
   name           String
   holidayDate    DateTime      @db.Date
+  color          String        @default("#fda4af")
   countryId      String?
   stateId        String?
   districtId     String?
