@@ -8,7 +8,7 @@ export const notFound = (req: Request, res: Response, next: NextFunction): void 
 };
 
 export const errorHandler = (err: any, req: Request, res: Response, next: NextFunction): void => {
-  let statusCode = res.statusCode === 200 ? 500 : res.statusCode;
+  let statusCode = err.statusCode || (res.statusCode === 200 ? 500 : res.statusCode);
   let message = err.message;
 
   if (err.name === 'CastError' && err.kind === 'ObjectId') {

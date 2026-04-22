@@ -3,6 +3,41 @@ import logger from '../../utils/logger';
 import { eachDayOfInterval, isWeekend, format, parseISO } from 'date-fns';
 import { redisClient } from '../../config/redis';
 
+const createHolidayServiceError = (message: string, statusCode = 400): Error & { statusCode: number } => {
+  const error = new Error(message) as Error & { statusCode: number };
+  error.statusCode = statusCode;
+  return error;
+};
+
+const normalizeHolidayDate = (value: unknown): Date => {
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    return value;
+  }
+
+  if (typeof value !== 'string' || !value.trim()) {
+    throw createHolidayServiceError('Holiday date is required.');
+  }
+
+  const trimmedValue = value.trim();
+  const isoDateOnlyMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(trimmedValue);
+  if (isoDateOnlyMatch) {
+    const [, year, month, day] = isoDateOnlyMatch;
+    return new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
+  }
+
+  const parsedDate = new Date(trimmedValue);
+  if (Number.isNaN(parsedDate.getTime())) {
+    throw createHolidayServiceError('Holiday date must be a valid date.');
+  }
+
+  return parsedDate;
+};
+
+const normalizeHolidayPayload = <T extends Record<string, any>>(data: T): T => ({
+  ...data,
+  holidayDate: normalizeHolidayDate(data.holidayDate),
+});
+
 export const getApplicableHolidays = async (workspaceId: string, user: any) => {
   const allHolidays = await prisma.holiday.findMany({
     where: { workspaceId, status: 'ACTIVE' },
@@ -18,19 +53,21 @@ export const getApplicableHolidays = async (workspaceId: string, user: any) => {
 };
 
 export const createHoliday = async (data: any) => {
+  const normalizedData = normalizeHolidayPayload(data);
+
   // Clear cache mapped to workspace
   if (redisClient.isOpen) {
-    await redisClient.del(`holidays:calendar:${data.workspaceId}`);
+    await redisClient.del(`holidays:calendar:${normalizedData.workspaceId}`);
   }
-  const holiday = await prisma.holiday.create({ data });
+  const holiday = await prisma.holiday.create({ data: normalizedData });
   
   await prisma.auditLog.create({
     data: {
       action: 'CREATE_HOLIDAY',
       entityType: 'Holiday',
       entityId: holiday.id,
-      userId: data.createdById,
-      workspaceId: data.workspaceId,
+      userId: normalizedData.createdById,
+      workspaceId: normalizedData.workspaceId,
       details: {
         source: holiday.source,
         holidayDate: holiday.holidayDate,
@@ -43,11 +80,12 @@ export const createHoliday = async (data: any) => {
 };
 
 export const updateHoliday = async (id: string, data: any) => {
+  const normalizedData = normalizeHolidayPayload(data);
   const holiday = await prisma.holiday.findUnique({ where: { id } });
   if (holiday && redisClient.isOpen) {
     await redisClient.del(`holidays:calendar:${holiday.workspaceId}`);
   }
-  const updatedHoliday = await prisma.holiday.update({ where: { id }, data });
+  const updatedHoliday = await prisma.holiday.update({ where: { id }, data: normalizedData });
   
   if (holiday) {
     await prisma.auditLog.create({
@@ -55,9 +93,9 @@ export const updateHoliday = async (id: string, data: any) => {
         action: 'UPDATE_HOLIDAY',
         entityType: 'Holiday',
         entityId: id,
-        userId: data.updatedById,
+        userId: normalizedData.updatedById,
         workspaceId: holiday.workspaceId,
-        details: { oldVal: holiday, newVal: data }
+        details: { oldVal: holiday, newVal: normalizedData }
       }
     });
   }
