@@ -20,8 +20,11 @@ const handleServiceError = (error: any, res: Response, next: NextFunction) => {
 };
 
 export const getRoles = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = requireWorkspace(req, res);
+  if (!workspaceId) return;
+
   try {
-    const roles = await masterDataService.getRoles();
+    const roles = await masterDataService.getRoles(workspaceId);
     res.status(200).json({ success: true, data: { roles } });
   } catch (error) {
     handleServiceError(error, res, next);

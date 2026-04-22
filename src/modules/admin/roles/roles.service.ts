@@ -4,6 +4,33 @@ import { RoleResponse, ListRolesResponse } from './roles.types';
 import logger from '../../../utils/logger';
 import { redisClient } from '../../../config/redis';
 
+const SUPERADMIN_ROLE_NAME = 'superadmin';
+
+const normalizeRoleKey = (value?: string | null): string =>
+  (value || '').trim().toLowerCase().replace(/[\s_-]+/g, '');
+
+const getWorkspaceRoleWhere = async (workspaceId: string) => {
+  const workspaceUsers = await prisma.user.findMany({
+    where: { workspaceId },
+    select: { id: true },
+  });
+
+  const creatorIds = workspaceUsers.map((user) => user.id);
+
+  if (creatorIds.length === 0) {
+    return {
+      name: SUPERADMIN_ROLE_NAME,
+    };
+  }
+
+  return {
+    OR: [
+      { name: SUPERADMIN_ROLE_NAME },
+      { createdBy: { in: creatorIds } },
+    ],
+  };
+};
+
 /**
  * Fetch all permissions by their keys.
  */
@@ -72,11 +99,13 @@ export const createRole = async (input: CreateRoleInput, userId: string): Promis
 /**
  * GET /api/admin/roles
  */
-export const listRoles = async (query: ListRolesQuery): Promise<ListRolesResponse> => {
+export const listRoles = async (query: ListRolesQuery, workspaceId: string): Promise<ListRolesResponse> => {
   const { page, limit, search, status } = query;
   const skip = (page - 1) * limit;
+  const workspaceRoleWhere = await getWorkspaceRoleWhere(workspaceId);
 
   const where: any = {
+    ...workspaceRoleWhere,
     ...(status ? { status } : {}),
     ...(search
       ? {
@@ -125,7 +154,8 @@ export const listRoles = async (query: ListRolesQuery): Promise<ListRolesRespons
 /**
  * GET /api/admin/roles/:id
  */
-export const getRoleById = async (id: string): Promise<RoleResponse> => {
+export const getRoleById = async (id: string, workspaceId: string): Promise<RoleResponse> => {
+  const workspaceRoleWhere = await getWorkspaceRoleWhere(workspaceId);
   const role = await (prisma.role as any).findUnique({
     where: { id },
     include: {
@@ -139,6 +169,21 @@ export const getRoleById = async (id: string): Promise<RoleResponse> => {
 
   if (!role) {
     const err: any = new Error('Role not found.');
+    err.statusCode = 404;
+    throw err;
+  }
+
+  const isVisibleInWorkspace =
+    normalizeRoleKey(role.name) === SUPERADMIN_ROLE_NAME ||
+    ((workspaceRoleWhere as any).OR || []).some((condition: any) => {
+      if (condition?.createdBy?.in) {
+        return condition.createdBy.in.includes(role.createdBy);
+      }
+      return false;
+    });
+
+  if (!isVisibleInWorkspace) {
+    const err: any = new Error('Role not found in this workspace.');
     err.statusCode = 404;
     throw err;
   }
@@ -157,13 +202,27 @@ export const getRoleById = async (id: string): Promise<RoleResponse> => {
 /**
  * PUT /api/admin/roles/:id
  */
-export const updateRole = async (id: string, input: UpdateRoleInput): Promise<RoleResponse> => {
+export const updateRole = async (id: string, input: UpdateRoleInput, workspaceId: string): Promise<RoleResponse> => {
   const { name, status, description, permissions: permissionKeys } = input;
+  const workspaceRoleWhere = await getWorkspaceRoleWhere(workspaceId);
 
   // 1. Check if role exists
   const existingRole = await (prisma.role as any).findUnique({ where: { id } });
   if (!existingRole) {
     const err: any = new Error('Role not found.');
+    err.statusCode = 404;
+    throw err;
+  }
+
+  const allowedCreatorIds =
+    ((workspaceRoleWhere as any).OR || [])
+      .flatMap((condition: any) => (condition?.createdBy?.in ? condition.createdBy.in : [])) || [];
+  const isWorkspaceVisibleRole =
+    normalizeRoleKey(existingRole.name) === SUPERADMIN_ROLE_NAME ||
+    allowedCreatorIds.includes(existingRole.createdBy);
+
+  if (!isWorkspaceVisibleRole) {
+    const err: any = new Error('Role not found in this workspace.');
     err.statusCode = 404;
     throw err;
   }
@@ -228,7 +287,7 @@ export const updateRole = async (id: string, input: UpdateRoleInput): Promise<Ro
   }
 
   // Get current permissions
-  const roleWithPerms = await getRoleById(id);
+  const roleWithPerms = await getRoleById(id, workspaceId);
 
   return roleWithPerms;
 };
@@ -250,7 +309,8 @@ export const listPermissions = async () => {
 /**
  * DELETE /api/admin/roles/:id
  */
-export const deleteRole = async (id: string): Promise<void> => {
+export const deleteRole = async (id: string, workspaceId: string): Promise<void> => {
+  const workspaceRoleWhere = await getWorkspaceRoleWhere(workspaceId);
   // 1. Check if role exists
   const role = await (prisma.role as any).findUnique({
     where: { id },
@@ -263,8 +323,21 @@ export const deleteRole = async (id: string): Promise<void> => {
     throw err;
   }
 
+  const allowedCreatorIds =
+    ((workspaceRoleWhere as any).OR || [])
+      .flatMap((condition: any) => (condition?.createdBy?.in ? condition.createdBy.in : [])) || [];
+  const isWorkspaceVisibleRole =
+    normalizeRoleKey(role.name) === SUPERADMIN_ROLE_NAME ||
+    allowedCreatorIds.includes(role.createdBy);
+
+  if (!isWorkspaceVisibleRole) {
+    const err: any = new Error('Role not found in this workspace.');
+    err.statusCode = 404;
+    throw err;
+  }
+
   // 2. Prevent deleting system roles
-  if (['admin', 'super admin'].includes(role.name.toLowerCase())) {
+  if (['admin', 'superadmin'].includes(normalizeRoleKey(role.name))) {
     const err: any = new Error('System protected roles cannot be deleted.');
     err.statusCode = 403;
     throw err;

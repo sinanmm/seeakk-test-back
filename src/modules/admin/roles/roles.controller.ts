@@ -80,7 +80,11 @@ export const listRoles = async (req: Request, res: Response, next: NextFunction)
   if (!query) return;
 
   try {
-    const result = await rolesService.listRoles(query);
+    const workspaceId = req.user?.workspaceId;
+    if (!workspaceId) {
+      return res.status(403).json({ success: false, message: 'Forbidden: No workspace linked.' });
+    }
+    const result = await rolesService.listRoles(query, workspaceId);
     return res.status(200).json({
       success: true,
       message: 'Roles fetched successfully.',
@@ -99,7 +103,11 @@ export const getRoleById = async (req: Request, res: Response, next: NextFunctio
   const id = req.params['id'] as string;
 
   try {
-    const result = await rolesService.getRoleById(id);
+    const workspaceId = req.user?.workspaceId;
+    if (!workspaceId) {
+      return res.status(403).json({ success: false, message: 'Forbidden: No workspace linked.' });
+    }
+    const result = await rolesService.getRoleById(id, workspaceId);
     return res.status(200).json({
       success: true,
       message: 'Role fetched successfully.',
@@ -119,7 +127,11 @@ export const updateRole = async (req: Request, res: Response, next: NextFunction
   if (!input) return;
 
   try {
-    const result = await rolesService.updateRole(id, input);
+    const workspaceId = req.user?.workspaceId;
+    if (!workspaceId) {
+      return res.status(403).json({ success: false, message: 'Forbidden: No workspace linked.' });
+    }
+    const result = await rolesService.updateRole(id, input, workspaceId);
 
     await auditService.log({
       userId: req.user!.id,
@@ -165,7 +177,11 @@ export const deleteRole = async (req: Request, res: Response, next: NextFunction
   const id = req.params['id'] as string;
 
   try {
-    await rolesService.deleteRole(id);
+    const workspaceId = req.user?.workspaceId;
+    if (!workspaceId) {
+      return res.status(403).json({ success: false, message: 'Forbidden: No workspace linked.' });
+    }
+    await rolesService.deleteRole(id, workspaceId);
 
     await auditService.log({
       userId: req.user!.id,
