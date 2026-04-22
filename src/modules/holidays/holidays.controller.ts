@@ -17,7 +17,7 @@ export const getAllHolidays = async (req: Request, res: Response, next: NextFunc
   if (!workspaceId) return;
 
   try {
-    const holidays = await holidayService.getApplicableHolidays(workspaceId, req.user);
+    const holidays = await holidayService.getWorkspaceHolidays(workspaceId);
     res.status(200).json({ success: true, data: { holidays } });
   } catch (error) {
     next(error);
@@ -66,7 +66,7 @@ export const getCalendarView = async (req: Request, res: Response, next: NextFun
 
   try {
     const month = req.query.month as string;
-    const view = await holidayService.getCalendarView(workspaceId, req.user, month);
+    const view = await holidayService.getWorkspaceCalendarView(workspaceId, month);
     res.status(200).json({ success: true, data: view });
   } catch (error) {
     next(error);

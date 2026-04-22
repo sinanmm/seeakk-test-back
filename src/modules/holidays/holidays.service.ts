@@ -38,10 +38,18 @@ const normalizeHolidayPayload = <T extends Record<string, any>>(data: T): T => (
   holidayDate: normalizeHolidayDate(data.holidayDate),
 });
 
-export const getApplicableHolidays = async (workspaceId: string, user: any) => {
-  const allHolidays = await prisma.holiday.findMany({
-    where: { workspaceId, status: 'ACTIVE' },
+export const getWorkspaceHolidays = async (workspaceId: string, options?: { activeOnly?: boolean }) => {
+  return prisma.holiday.findMany({
+    where: {
+      workspaceId,
+      ...(options?.activeOnly ? { status: 'ACTIVE' } : {}),
+    },
+    orderBy: [{ holidayDate: 'asc' }, { name: 'asc' }],
   });
+};
+
+export const getApplicableHolidays = async (workspaceId: string, user: any) => {
+  const allHolidays = await getWorkspaceHolidays(workspaceId, { activeOnly: true });
 
   // Location logic Priority: District > State > Country > Global
   return allHolidays.filter(h =>
@@ -58,6 +66,7 @@ export const createHoliday = async (data: any) => {
   // Clear cache mapped to workspace
   if (redisClient.isOpen) {
     await redisClient.del(`holidays:calendar:${normalizedData.workspaceId}`);
+    await redisClient.del(`holidays:calendar:${normalizedData.workspaceId}:workspace`);
   }
   const holiday = await prisma.holiday.create({ data: normalizedData });
   
@@ -84,6 +93,7 @@ export const updateHoliday = async (id: string, data: any) => {
   const holiday = await prisma.holiday.findUnique({ where: { id } });
   if (holiday && redisClient.isOpen) {
     await redisClient.del(`holidays:calendar:${holiday.workspaceId}`);
+    await redisClient.del(`holidays:calendar:${holiday.workspaceId}:workspace`);
   }
   const updatedHoliday = await prisma.holiday.update({ where: { id }, data: normalizedData });
   
@@ -107,6 +117,7 @@ export const deleteHoliday = async (id: string) => {
   const holiday = await prisma.holiday.findUnique({ where: { id } });
   if (holiday && redisClient.isOpen) {
     await redisClient.del(`holidays:calendar:${holiday.workspaceId}`);
+    await redisClient.del(`holidays:calendar:${holiday.workspaceId}:workspace`);
   }
   const deleted = await prisma.holiday.update({ where: { id }, data: { status: 'INACTIVE' } });
   
@@ -165,6 +176,52 @@ export const getCalendarView = async (workspaceId: string, user: any, month: str
     };
   });
   
+  if (month) {
+    return views.filter((v: any) => v.date.startsWith(month));
+  }
+  return views;
+};
+
+export const getWorkspaceCalendarView = async (workspaceId: string, month: string) => {
+  let holidays = [];
+
+  const cacheKey = `holidays:calendar:${workspaceId}:workspace`;
+  if (redisClient.isOpen) {
+    const cached = await redisClient.get(cacheKey);
+    if (cached) {
+      holidays = JSON.parse(cached);
+    }
+  }
+
+  if (holidays.length === 0) {
+    holidays = await getWorkspaceHolidays(workspaceId, { activeOnly: true });
+    if (redisClient.isOpen) {
+      await redisClient.setEx(cacheKey, 3600, JSON.stringify(holidays));
+    }
+  }
+
+  const views = holidays.map((h: any) => {
+    let dateStr =
+      typeof h.holidayDate === 'string'
+        ? h.holidayDate.split('T')[0]
+        : new Date(h.holidayDate).toISOString().split('T')[0];
+
+    if (h.isRecurring && month) {
+      const [, m, d] = dateStr.split('-');
+      const [reqY, reqM] = month.split('-');
+      if (reqM === m || !month) {
+        dateStr = `${reqY}-${m}-${d}`;
+      }
+    }
+
+    return {
+      date: dateStr,
+      title: h.name,
+      type: 'HOLIDAY',
+      source: h.source,
+    };
+  });
+
   if (month) {
     return views.filter((v: any) => v.date.startsWith(month));
   }
