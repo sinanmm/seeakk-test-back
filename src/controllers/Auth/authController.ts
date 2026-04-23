@@ -489,10 +489,11 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
       return res.status(401).json({ message: 'Invalid or expired Google token' });
     }
 
-    const { email, name, sub, email_verified: emailVerified } = payload;
-    if (!email) {
+    const { email: googleEmail, name, sub, email_verified: emailVerified } = payload;
+    if (!googleEmail) {
       return res.status(400).json({ message: 'Google account email is missing' });
     }
+    const email = googleEmail.toLowerCase().trim();
     if (!sub) {
       return res.status(400).json({ message: 'Google account identifier is missing' });
     }
@@ -536,7 +537,26 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
       });
     }
 
-    user = await ensureWorkspaceOwnerSuperAdmin(user);
+    // Owner-role sync is best-effort. Login must not fail if this maintenance step errors.
+    try {
+      user = await ensureWorkspaceOwnerSuperAdmin(user);
+    } catch (error: any) {
+      logger.error('Failed to sync workspace owner superadmin role during Google login', {
+        userId: user?.id,
+        error: error?.message,
+        action: 'google_login_owner_role_sync_failed',
+      });
+
+      // Fall back to current persisted state to allow login to proceed
+      if (user?.id) {
+        const fallbackUser = await prisma.user.findUnique({
+          where: { id: user.id },
+          include: authenticatedUserInclude,
+        });
+        if (fallbackUser) user = fallbackUser;
+      }
+    }
+
     if (!user) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
@@ -554,7 +574,14 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
     const tokens = generateTokens(user as any);
 
     if (redisClient?.isOpen) {
-      await redisClient.set(`refresh:${tokens.tokenId}`, user.id);
+      try {
+        await redisClient.set(`refresh:${tokens.tokenId}`, user.id);
+      } catch (redisError: any) {
+        logger.warn('Failed to store refresh token in Redis during Google login', {
+          userId: user.id,
+          error: redisError?.message,
+        });
+      }
     } else {
       console.warn('Redis not connected. Skipping refresh token storage for Google login.');
     }
