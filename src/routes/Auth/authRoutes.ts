@@ -11,9 +11,6 @@ router.get('/verify-email', authController.verifyEmail);
 router.get('/reset-password', authController.renderResetPasswordPage);
 router.post('/reset-password/confirm', authController.resetPasswordWithToken);
 
-// Example of RBAC logic in action: Only Admin & Managers can invite new team members
-router.post('/invite', protect, authorize('admin', 'manager'), authController.inviteUser);
-router.post('/activate', authController.activateAccount);
 
 // Explicitly lock down the login route to block extreme credential stuffing dictionary attacks
 router.post('/login', authLimiter, authController.login);

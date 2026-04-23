@@ -147,13 +147,7 @@ const invalidateUserSessions = async (userId: string): Promise<void> => {
   }
 };
 
-export const inviteUser = async (req: Request, res: Response): Promise<any> => {
-  return res.status(501).json({ message: 'inviteUser is not implemented yet' });
-};
 
-export const activateAccount = async (req: Request, res: Response): Promise<any> => {
-  return res.status(501).json({ message: 'activateAccount is not implemented yet' });
-};
 
 export const register = async (req: Request, res: Response): Promise<any> => {
   try {
