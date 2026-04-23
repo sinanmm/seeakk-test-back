@@ -5,17 +5,25 @@ dotenv.config();
 
 const prisma = new PrismaClient() as any;
 
-async function ensureSuperAdminRole() {
+async function ensureSuperAdminRole(workspaceId: string) {
   const superAdminRole = await prisma.role.upsert({
-    where: { name: 'superadmin' },
+    where: {
+      workspaceId_name: {
+        workspaceId,
+        name: 'superadmin',
+      },
+    },
     update: {
       description: 'Workspace Owner with full system access',
       status: 'ACTIVE',
+      isSystemRole: true,
     },
     create: {
+      workspaceId,
       name: 'superadmin',
       description: 'Workspace Owner with full system access',
       status: 'ACTIVE',
+      isSystemRole: true,
     },
   });
 
@@ -37,25 +45,32 @@ async function ensureSuperAdminRole() {
 }
 
 async function main() {
-  const superAdminRole = await ensureSuperAdminRole();
-
-  const workspaceOwners = await prisma.workspace.findMany({
-    select: { ownerId: true },
+  const workspaces = await prisma.workspace.findMany({
+    select: { id: true, ownerId: true },
   });
 
-  const ownerIds = [...new Set(workspaceOwners.map((workspace: { ownerId: string | null }) => workspace.ownerId).filter(Boolean))];
-
-  if (ownerIds.length === 0) {
+  if (workspaces.length === 0) {
     console.log('No workspace owners found. Nothing to promote.');
     return;
   }
 
-  const result = await prisma.user.updateMany({
-    where: { id: { in: ownerIds } },
-    data: { roleId: superAdminRole.id },
-  });
+  let promoted = 0;
+  for (const workspace of workspaces) {
+    const superAdminRole = await ensureSuperAdminRole(workspace.id);
+    const result = await prisma.user.updateMany({
+      where: {
+        id: workspace.ownerId,
+      },
+      data: {
+        roleId: superAdminRole.id,
+        workspaceId: workspace.id,
+      },
+    });
 
-  console.log(`Promoted ${result.count} workspace owner(s) to superadmin.`);
+    promoted += result.count;
+  }
+
+  console.log(`Promoted ${promoted} workspace owner(s) to workspace-scoped superadmin.`);
 }
 
 main()

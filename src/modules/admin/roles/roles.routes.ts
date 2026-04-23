@@ -26,6 +26,14 @@ router.get(
   rolesController.listRoles
 );
 
+// GET /api/admin/roles/meta/permissions - List all available permissions
+router.get(
+  '/meta/permissions',
+  protect,
+  checkPermission('ROLES_VIEW'),
+  rolesController.listPermissions
+);
+
 // GET /api/admin/roles/:id - Get role with permissions
 router.get(
   '/:id',
@@ -40,14 +48,6 @@ router.put(
   protect,
   checkPermission('ROLES_EDIT'),
   rolesController.updateRole
-);
-
-// GET /api/admin/roles/meta/permissions - List all available permissions
-router.get(
-  '/meta/permissions',
-  protect,
-  checkPermission('ROLES_VIEW'),
-  rolesController.listPermissions
 );
 
 // DELETE /api/admin/roles/:id - Delete role

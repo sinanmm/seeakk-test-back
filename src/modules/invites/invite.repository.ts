@@ -34,9 +34,10 @@ export const findUserByUsername = (username: string) =>
     select: { id: true },
   });
 
-export const findRoleByIdOrName = (value: string) =>
+export const findRoleByIdOrName = (value: string, workspaceId: string) =>
   prisma.role.findFirst({
     where: {
+      workspaceId,
       OR: [
         { id: value },
         { name: { equals: value, mode: 'insensitive' } },

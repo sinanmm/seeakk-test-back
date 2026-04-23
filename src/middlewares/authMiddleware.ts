@@ -22,6 +22,14 @@ const isPrivilegedRole = (role?: string | null): boolean => {
   return normalized === 'superadmin';
 };
 
+const isRoleScopedToUserWorkspace = (user: any): boolean => {
+  if (!user?.roleId || !user?.workspaceId || !user?.role?.workspaceId) {
+    return true;
+  }
+
+  return user.role.workspaceId === user.workspaceId;
+};
+
 const ensureWorkspaceOwnerSuperAdmin = async (user: any): Promise<any> => {
   if (!user?.id) return user;
 
@@ -40,15 +48,23 @@ const ensureWorkspaceOwnerSuperAdmin = async (user: any): Promise<any> => {
   }
 
   const superAdminRole = await prisma.role.upsert({
-    where: { name: SUPERADMIN_ROLE_NAME },
+    where: {
+      workspaceId_name: {
+        workspaceId: ownedWorkspace.id,
+        name: SUPERADMIN_ROLE_NAME,
+      },
+    },
     update: {
       description: 'Workspace Owner with full system access',
       status: 'ACTIVE',
+      isSystemRole: true,
     },
     create: {
+      workspaceId: ownedWorkspace.id,
       name: SUPERADMIN_ROLE_NAME,
       description: 'Workspace Owner with full system access',
       status: 'ACTIVE',
+      isSystemRole: true,
     },
   });
 
@@ -164,7 +180,22 @@ export const protect = async (req: Request, res: Response, next: NextFunction): 
       return res.status(403).json({ message: 'User account is suspended or inactive.' });
     }
 
-    req.user = await ensureWorkspaceOwnerSuperAdmin(user);
+    const hydratedUser = await ensureWorkspaceOwnerSuperAdmin(user);
+
+    if (!isRoleScopedToUserWorkspace(hydratedUser)) {
+      logger.error('Access denied. Role belongs to a different workspace.', {
+        userId: hydratedUser.id,
+        userWorkspaceId: hydratedUser.workspaceId,
+        roleId: hydratedUser.roleId,
+        roleWorkspaceId: hydratedUser.role?.workspaceId,
+        action: 'auth_role_workspace_mismatch',
+      });
+      return res.status(403).json({
+        message: 'Forbidden: The assigned role does not belong to this workspace.',
+      });
+    }
+
+    req.user = hydratedUser;
     next();
   } catch (error: any) {
     logger.error('Authentication Error', { error: error.message, action: 'auth_failed' });

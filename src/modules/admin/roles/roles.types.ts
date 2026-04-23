@@ -1,10 +1,12 @@
-import { RoleStatus } from './roles.validator';
+import { RoleStatus } from '@prisma/client';
 
 export interface RoleResponse {
   id: string;
+  workspaceId?: string;
   name: string;
   status: RoleStatus;
   description?: string | null;
+  isSystemRole?: boolean;
   createdAt: Date;
   updatedAt: Date;
   permissionsCount?: number;

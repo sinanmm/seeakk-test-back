@@ -6,17 +6,25 @@ import { seedDefaultMasterData } from '../../services/Seeding/seedingService';
 const SUPERADMIN_ROLE_NAME = 'superadmin';
 const MAX_LOGO_DATA_URL_LENGTH = 2_000_000;
 
-const ensureWorkspaceOwnerRole = async () => {
+const ensureWorkspaceOwnerRole = async (workspaceId: string) => {
   const superAdminRole = await prisma.role.upsert({
-    where: { name: SUPERADMIN_ROLE_NAME },
+    where: {
+      workspaceId_name: {
+        workspaceId,
+        name: SUPERADMIN_ROLE_NAME,
+      },
+    },
     update: {
       description: 'Workspace Owner with full system access',
       status: 'ACTIVE',
+      isSystemRole: true,
     },
     create: {
+      workspaceId,
       name: SUPERADMIN_ROLE_NAME,
       description: 'Workspace Owner with full system access',
       status: 'ACTIVE',
+      isSystemRole: true,
     },
   });
 
@@ -62,10 +70,7 @@ export const setupWorkspace = async (req: Request, res: Response, next: NextFunc
       }
     }
 
-    // 1. Ensure the workspace owner is promoted to superadmin with full access.
-    const superAdminRole = await ensureWorkspaceOwnerRole();
-
-    // 2. Create the workspace and link to the owner simultaneously
+    // 1. Create the workspace and link to the owner simultaneously
     let newWorkspace;
     try {
       newWorkspace = await prisma.workspace.create({
@@ -105,6 +110,9 @@ export const setupWorkspace = async (req: Request, res: Response, next: NextFunc
         throw error;
       }
     }
+
+    // 2. Ensure the workspace owner gets the workspace-scoped superadmin role.
+    const superAdminRole = await ensureWorkspaceOwnerRole(newWorkspace.id);
 
     // 3. Update user: assign superadmin role, mark as onboarded, link workspace
     const updatedUser = await prisma.user.update({

@@ -49,7 +49,11 @@ export const createRole = async (req: Request, res: Response, next: NextFunction
   if (!input) return;
 
   try {
-    const result = await rolesService.createRole(input, req.user!.id);
+    const workspaceId = req.user?.workspaceId;
+    if (!workspaceId) {
+      return res.status(403).json({ success: false, message: 'Forbidden: No workspace linked.' });
+    }
+    const result = await rolesService.createRole(input, req.user!.id, workspaceId);
 
     await auditService.log({
       userId: req.user!.id,
