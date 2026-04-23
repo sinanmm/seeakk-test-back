@@ -264,3 +264,41 @@ export const acceptInvite = async (input: {
     return user;
   });
 };
+
+export const findInviteById = (id: string, workspaceId: string) =>
+  (prisma as any).invite.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      workspaceId: true,
+      tokenHash: true,
+      expiresAt: true,
+      usedAt: true,
+      revokedAt: true,
+      status: true,
+      userId: true,
+      user: {
+        select: INVITE_USER_SELECT,
+      },
+    },
+  });
+
+export const updateInviteForResend = (id: string, tokenHash: string, expiresAt: Date, resentAt: Date) =>
+  (prisma as any).invite.update({
+    where: { id },
+    data: {
+      tokenHash,
+      expiresAt,
+      resentAt,
+      status: 'PENDING',
+    },
+  });
+
+export const updateInviteForRevoke = (id: string, revokedAt: Date) =>
+  (prisma as any).invite.update({
+    where: { id },
+    data: {
+      revokedAt,
+      status: 'REVOKED',
+    },
+  });

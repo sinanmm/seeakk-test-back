@@ -921,6 +921,9 @@ model Invite {
   expiresAt   DateTime
   usedAt      DateTime?
   createdBy   String
+  status      String    @default("PENDING")
+  revokedAt   DateTime?
+  resentAt    DateTime?
   createdAt   DateTime  @default(now())
 
   user        User      @relation("InviteUser", fields: [userId], references: [id], onDelete: Cascade)

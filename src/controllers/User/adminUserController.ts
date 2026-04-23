@@ -144,6 +144,56 @@ export const inviteUser = async (req: Request, res: Response, next: NextFunction
 };
 
 /**
+ * POST /api/admin/users/invite/:id/resend
+ */
+export const resendInvite = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = requireWorkspace(req, res);
+  if (!workspaceId) return;
+
+  const inviteId = req.params['id'] as string;
+
+  try {
+    const result = await inviteService.resendInvite(
+      inviteId,
+      { id: req.user!.id, workspaceId, name: req.user?.name || null },
+      { ipAddress: req.ip, userAgent: req.headers['user-agent'] },
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: result.message,
+    });
+  } catch (error: any) {
+    handleServiceError(error, res, next, 'resendInvite');
+  }
+};
+
+/**
+ * POST /api/admin/users/invite/:id/revoke
+ */
+export const revokeInvite = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = requireWorkspace(req, res);
+  if (!workspaceId) return;
+
+  const inviteId = req.params['id'] as string;
+
+  try {
+    const result = await inviteService.revokeInvite(
+      inviteId,
+      { id: req.user!.id, workspaceId },
+      { ipAddress: req.ip, userAgent: req.headers['user-agent'] },
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: result.message,
+    });
+  } catch (error: any) {
+    handleServiceError(error, res, next, 'revokeInvite');
+  }
+};
+
+/**
  * GET /api/admin/users
  * Paginated, filterable list of workspace users.
  */

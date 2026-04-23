@@ -93,6 +93,10 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
     }
 
     const now = deps.now();
+    if (invite.revokedAt || invite.status === 'REVOKED') {
+      throw new InviteError('Invite token has been revoked.', 403, 'INVITE_REVOKED');
+    }
+
     if (invite.usedAt) {
       throw new InviteError('Invite token has already been used.', 409, 'INVITE_ALREADY_USED');
     }
@@ -259,7 +263,83 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
         user: toResponseUser(user),
       };
     },
+
+    async resendInvite(inviteId: string, actor: Actor, context?: { ipAddress?: string; userAgent?: string }) {
+      const workspaceId = actor.workspaceId?.trim();
+      if (!workspaceId) throw new InviteError('Workspace context required.', 403, 'WORKSPACE_REQUIRED');
+      const workspace = await assertWorkspace(workspaceId);
+
+      const invite = await deps.repository.findInviteById(inviteId, workspaceId);
+      if (!invite || invite.workspaceId !== workspaceId) {
+        throw new InviteError('Invite not found.', 404, 'INVITE_NOT_FOUND');
+      }
+
+      if (invite.usedAt) throw new InviteError('Cannot resend accepted invite.', 409, 'INVITE_ALREADY_USED');
+      if (invite.revokedAt || invite.status === 'REVOKED') throw new InviteError('Cannot resend revoked invite.', 409, 'INVITE_REVOKED');
+
+      const { rawToken, tokenHash } = deps.tokenFactory();
+      const now = deps.now();
+      const expiresAt = buildExpiryDate(now);
+
+      await deps.repository.updateInviteForResend(inviteId, tokenHash, expiresAt, now);
+
+      await deps.sendInvitationEmail(invite.user.email, {
+        recipientName: invite.user.name || invite.user.email,
+        workspaceName: workspace.companyName,
+        inviterName: actor.name || actor.id,
+        inviteToken: rawToken,
+        expiresAt,
+      });
+
+      await deps.audit.log({
+        userId: actor.id,
+        workspaceId,
+        action: 'USER_INVITE_RESENT',
+        entityType: 'Invite',
+        entityId: inviteId,
+        details: { expiresAt: expiresAt.toISOString() },
+        ipAddress: context?.ipAddress,
+        userAgent: context?.userAgent,
+      });
+
+      return { message: 'Invite resent successfully.' };
+    },
+
+    async revokeInvite(inviteId: string, actor: Actor, context?: { ipAddress?: string; userAgent?: string }) {
+      const workspaceId = actor.workspaceId?.trim();
+      if (!workspaceId) throw new InviteError('Workspace context required.', 403, 'WORKSPACE_REQUIRED');
+
+      const invite = await deps.repository.findInviteById(inviteId, workspaceId);
+      if (!invite || invite.workspaceId !== workspaceId) {
+        throw new InviteError('Invite not found.', 404, 'INVITE_NOT_FOUND');
+      }
+
+      if (invite.usedAt) throw new InviteError('Cannot revoke accepted invite.', 409, 'INVITE_ALREADY_USED');
+      if (invite.revokedAt || invite.status === 'REVOKED') throw new InviteError('Invite is already revoked.', 409, 'INVITE_ALREADY_REVOKED');
+
+      const now = deps.now();
+      await deps.repository.updateInviteForRevoke(inviteId, now);
+
+      await deps.audit.log({
+        userId: actor.id,
+        workspaceId,
+        action: 'USER_INVITE_REVOKED',
+        entityType: 'Invite',
+        entityId: inviteId,
+        ipAddress: context?.ipAddress,
+        userAgent: context?.userAgent,
+      });
+
+      return { message: 'Invite revoked successfully.' };
+    },
   };
+};
+
+export const computeInviteStatus = (invite: any, now: Date) => {
+  if (invite.revokedAt || invite.status === 'REVOKED') return 'REVOKED';
+  if (invite.usedAt) return 'ACCEPTED';
+  if (invite.expiresAt <= now) return 'EXPIRED';
+  return 'PENDING';
 };
 
 export const inviteService = createInviteService({

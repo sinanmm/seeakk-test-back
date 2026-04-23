@@ -40,6 +40,8 @@ router.get('/meta/supervisors', masterDataController.getSupervisors);
 // POST   /api/admin/users           — Create a user
 router.post('/', checkPermission('USERS_CREATE'), adminUserController.createUser);
 router.post('/invite', checkPermission('USERS_CREATE'), adminUserController.inviteUser);
+router.post('/invite/:id/resend', checkPermission('USERS_EDIT'), adminUserController.resendInvite);
+router.post('/invite/:id/revoke', checkPermission('USERS_EDIT'), adminUserController.revokeInvite);
 
 // GET    /api/admin/users           — List users (paginated + filterable)
 router.get('/', checkPermission('USERS_VIEW'), adminUserController.listUsers);
