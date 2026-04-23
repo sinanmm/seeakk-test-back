@@ -455,13 +455,26 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
     try {
       payload = await verifyGoogleToken(token);
     } catch (error: any) {
+      if (error?.statusCode === 503) {
+        logger.error('Google login backend misconfiguration', {
+          error: error.message,
+          action: 'google_login_config_error',
+        });
+        return res.status(503).json({ message: 'Google login is not configured on server. Please contact support.' });
+      }
       logger.warn('Google login verification failed', { error: error.message, action: 'google_login_failed' });
       return res.status(401).json({ message: 'Invalid or expired Google token' });
     }
 
-    const { email, name, sub } = payload;
+    const { email, name, sub, email_verified: emailVerified } = payload;
     if (!email) {
       return res.status(400).json({ message: 'Google account email is missing' });
+    }
+    if (!sub) {
+      return res.status(400).json({ message: 'Google account identifier is missing' });
+    }
+    if (emailVerified === false) {
+      return res.status(403).json({ message: 'Google account email is not verified' });
     }
 
     // 1. Try to find the user by googleId FIRST (Most reliable identifier)
@@ -542,8 +555,17 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
       ...tokens,
     });
   } catch (error: any) {
-    console.error('googleLogin error:', error.message, error.stack);
-    return res.status(500).json({ message: 'Google login failed', details: error.message });
+    logger.error('Google login failed unexpectedly', {
+      error: error?.message,
+      code: error?.code,
+      action: 'google_login_unexpected_error',
+    });
+
+    if (error?.code === 'P2002') {
+      return res.status(409).json({ message: 'An account conflict occurred while linking Google login.' });
+    }
+
+    return res.status(500).json({ message: 'Google login failed. Please try again shortly.' });
   }
 };
 

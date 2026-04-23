@@ -1,17 +1,29 @@
 import { OAuth2Client } from 'google-auth-library';
 
-const googleClientId = process.env.GOOGLE_CLIENT_ID?.trim();
+let cachedClient: OAuth2Client | null = null;
+let cachedAudience: string | null = null;
 
-if (!googleClientId) {
-  throw new Error('GOOGLE_CLIENT_ID is required for Google authentication');
-}
+const getGoogleClient = (): { client: OAuth2Client; audience: string } => {
+  const audience = process.env.GOOGLE_CLIENT_ID?.trim();
+  if (!audience) {
+    const err: any = new Error('GOOGLE_CLIENT_ID is not configured on backend');
+    err.statusCode = 503;
+    throw err;
+  }
 
-const client = new OAuth2Client(googleClientId);
+  if (!cachedClient || cachedAudience !== audience) {
+    cachedClient = new OAuth2Client(audience);
+    cachedAudience = audience;
+  }
+
+  return { client: cachedClient, audience };
+};
 
 const verifyGoogleToken = async (token: string) => {
+  const { client, audience } = getGoogleClient();
   const ticket = await client.verifyIdToken({
     idToken: token,
-    audience: googleClientId,
+    audience,
   });
 
   const payload = ticket.getPayload();
