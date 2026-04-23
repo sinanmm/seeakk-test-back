@@ -1,5 +1,6 @@
 import nodemailer from 'nodemailer';
 
+const isProduction = process.env.NODE_ENV === 'production';
 const isEmailConfigured = (): boolean => Boolean(process.env.EMAIL_USER && process.env.EMAIL_PASS);
 
 const transporter = nodemailer.createTransport({
@@ -11,21 +12,30 @@ const transporter = nodemailer.createTransport({
 });
 
 const sendOrLogEmail = async (to: string, subject: string, html: string, previewLinkLabel: string, previewLink: string): Promise<void> => {
+  if (isProduction && !isEmailConfigured()) {
+    throw new Error("Email service not configured in production");
+  }
+
   if (!isEmailConfigured()) {
-    console.log('--- Mock Email Sent ---');
-    console.log('To:', to);
-    console.log('Subject:', subject);
-    console.log(`${previewLinkLabel}:`, previewLink);
-    console.log('-----------------------');
+    console.warn("⚠️ Email not configured — using mock mode");
+    console.log("Mock email:", { to, subject, link: previewLink });
     return;
   }
 
-  await transporter.sendMail({
-    from: process.env.EMAIL_FROM || process.env.EMAIL_USER || 'no-reply@seeakk.com',
-    to,
-    subject,
-    html,
-  });
+  try {
+    await transporter.sendMail({
+      from: process.env.EMAIL_FROM || process.env.EMAIL_USER || 'no-reply@seeakk.com',
+      to,
+      subject,
+      html,
+    });
+  } catch (error) {
+    console.error("Email send failed:", error);
+
+    if (isProduction) {
+      throw new Error("Email delivery failed");
+    }
+  }
 };
 
 export const sendVerificationEmail = async (email: string, token: string): Promise<void> => {
