@@ -462,11 +462,30 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
       return res.status(400).json({ message: 'Google account email is missing' });
     }
 
+    // 1. Try to find the user by googleId FIRST (Most reliable identifier)
     let user = await prisma.user.findUnique({
-      where: { email },
+      where: { googleId: sub },
       include: authenticatedUserInclude,
     });
 
+    // 2. If not found by googleId, try finding by email
+    if (!user) {
+      user = await prisma.user.findUnique({
+        where: { email },
+        include: authenticatedUserInclude,
+      });
+
+      // 3. If found by email, safely link the googleId to this account
+      if (user) {
+        user = await prisma.user.update({
+          where: { id: user.id },
+          data: { googleId: sub, isEmailVerified: true },
+          include: authenticatedUserInclude,
+        });
+      }
+    }
+
+    // 4. If still not found, safely create a new user
     if (!user) {
       user = await prisma.user.create({
         data: {
@@ -475,14 +494,6 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
           googleId: sub,
           isEmailVerified: true,
         },
-        include: authenticatedUserInclude,
-      });
-    }
-
-    if (!user.googleId || user.googleId !== sub) {
-      user = await prisma.user.update({
-        where: { id: user.id },
-        data: { googleId: sub, isEmailVerified: true },
         include: authenticatedUserInclude,
       });
     }
@@ -528,9 +539,9 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
       user: serializeAuthenticatedUser(user),
       ...tokens,
     });
-  } catch (error) {
-    console.error('googleLogin error:', error);
-    return res.status(500).json({ message: 'Google login failed' });
+  } catch (error: any) {
+    console.error('googleLogin error:', error.message, error.stack);
+    return res.status(500).json({ message: 'Google login failed', details: error.message });
   }
 };
 
