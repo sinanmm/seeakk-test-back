@@ -615,7 +615,12 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
       return res.status(409).json({ message: 'An account conflict occurred while linking Google login.' });
     }
 
-    return res.status(500).json({ message: 'Google login failed. Please try again shortly.' });
+    res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+    return res.status(500).json({ 
+      message: 'Google login failed. Please try again shortly.',
+      error: error?.message,
+      code: error?.code
+    });
   }
 };
 
