@@ -1,26 +1,15 @@
 import prisma from '../../config/prisma';
 
-const SUPERADMIN_ROLE_NAME = 'superadmin';
-
 export const getRoles = async (workspaceId: string) => {
-  const workspaceUsers = await prisma.user.findMany({
-    where: { workspaceId },
-    select: { id: true },
-  });
-
-  const creatorIds = workspaceUsers.map((user) => user.id);
-
   return prisma.role.findMany({
     where: {
+      workspaceId,
       status: 'ACTIVE',
-      OR: creatorIds.length
-        ? [
-            { name: SUPERADMIN_ROLE_NAME },
-            { createdBy: { in: creatorIds } },
-          ]
-        : [{ name: SUPERADMIN_ROLE_NAME }],
     },
-    orderBy: { name: 'asc' }
+    orderBy: [
+      { isSystemRole: 'desc' },
+      { name: 'asc' },
+    ],
   });
 };
 

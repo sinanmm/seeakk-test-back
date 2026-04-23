@@ -48,11 +48,11 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
     return workspace;
   };
 
-  const resolveRoleId = async (value?: string) => {
+  const resolveRoleId = async (value: string | undefined, workspaceId: string) => {
     if (!value) return null;
-    const role = await deps.repository.findRoleByIdOrName(value);
+    const role = await deps.repository.findRoleByIdOrName(value, workspaceId);
     if (!role) {
-      throw new InviteError(`Role with ID '${value}' does not exist.`, 400, 'ROLE_NOT_FOUND');
+      throw new InviteError('Role not found in this workspace.', 400, 'ROLE_NOT_FOUND');
     }
     return role.id;
   };
@@ -131,7 +131,7 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
       }
 
       const [roleId, departmentId, officeId, supervisorId] = await Promise.all([
-        resolveRoleId(input.roleId),
+        resolveRoleId(input.roleId, workspaceId),
         resolveDepartmentId(input.departmentId, workspaceId),
         assertOffice(input.officeId, workspaceId),
         assertSupervisor(input.supervisorId, workspaceId),

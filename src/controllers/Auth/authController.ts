@@ -11,6 +11,42 @@ import { trackUserDevice } from '../../utils/deviceTracker';
 import logger from '../../utils/logger';
 import auditService from '../../services/Audit/auditService';
  
+const authenticatedUserInclude = {
+  role: {
+    include: {
+      permissions: {
+        include: {
+          permission: {
+            select: { key: true },
+          },
+        },
+      },
+    },
+  },
+  devices: true,
+  workspace: { select: { id: true, companyName: true } },
+} as const;
+
+const serializeAuthenticatedUser = (user: any) => ({
+  id: user.id,
+  name: user.name,
+  email: user.email,
+  role: user.role
+    ? {
+        id: user.role.id,
+        name: user.role.name,
+        status: user.role.status,
+        isSystemRole: user.role.isSystemRole,
+      }
+    : null,
+  permissions: Array.isArray(user.role?.permissions)
+    ? user.role.permissions.map((rolePermission: any) => rolePermission.permission.key)
+    : [],
+  isOnboarded: user.isOnboarded,
+  devices: user.devices,
+  workspace: user.workspace,
+});
+
 const parsePositiveInt = (value: unknown, fallback: number): number => {
   const parsed = Number(value);
   if (!Number.isFinite(parsed) || parsed < 1) return fallback;
@@ -24,6 +60,14 @@ const normalizeRoleKey = (role: string): string =>
     .replace(/[\s_-]+/g, '');
 
 const SUPERADMIN_ROLE_NAME = 'superadmin';
+
+const isRoleScopedToUserWorkspace = (user: any): boolean => {
+  if (!user?.roleId || !user?.workspaceId || !user?.role?.workspaceId) {
+    return true;
+  }
+
+  return user.role.workspaceId === user.workspaceId;
+};
 
 const ensureWorkspaceOwnerSuperAdmin = async (user: any): Promise<any> => {
   if (!user?.id) return user;
@@ -43,15 +87,23 @@ const ensureWorkspaceOwnerSuperAdmin = async (user: any): Promise<any> => {
   }
 
   const superAdminRole = await prisma.role.upsert({
-    where: { name: SUPERADMIN_ROLE_NAME },
+    where: {
+      workspaceId_name: {
+        workspaceId: ownedWorkspace.id,
+        name: SUPERADMIN_ROLE_NAME,
+      },
+    },
     update: {
       description: 'Workspace Owner with full system access',
       status: 'ACTIVE',
+      isSystemRole: true,
     },
     create: {
+      workspaceId: ownedWorkspace.id,
       name: SUPERADMIN_ROLE_NAME,
       description: 'Workspace Owner with full system access',
       status: 'ACTIVE',
+      isSystemRole: true,
     },
   });
 
@@ -72,16 +124,7 @@ const ensureWorkspaceOwnerSuperAdmin = async (user: any): Promise<any> => {
       roleId: superAdminRole.id,
       workspaceId: user.workspaceId || ownedWorkspace.id,
     },
-    include: {
-      role: true,
-      devices: true,
-      workspace: {
-        select: {
-          id: true,
-          companyName: true,
-        },
-      },
-    },
+    include: authenticatedUserInclude,
   });
 };
 
@@ -318,11 +361,7 @@ export const login = async (req: Request, res: Response): Promise<any> => {
 
     let user = await prisma.user.findUnique({
       where: { email },
-      include: {
-        role: true,
-        devices: true,
-        workspace: { select: { id: true, companyName: true } },
-      },
+      include: authenticatedUserInclude,
     });
 
     if (!user) {
@@ -359,6 +398,24 @@ export const login = async (req: Request, res: Response): Promise<any> => {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
+    if (!isRoleScopedToUserWorkspace(user)) {
+      return res.status(403).json({
+        message: 'Account role is not valid for this workspace. Please contact support or your administrator.',
+      });
+    }
+
+    if (!isRoleScopedToUserWorkspace(user)) {
+      logger.error('Login blocked because role is linked to a different workspace', {
+        userId: user.id,
+        userWorkspaceId: user.workspaceId,
+        roleId: user.roleId,
+        roleWorkspaceId: user.role?.workspaceId,
+      });
+      return res.status(403).json({
+        message: 'Account role is not valid for this workspace. Please contact support or your administrator.',
+      });
+    }
+
     logger.info('Login successful', { email, userId: user.id, action: 'login_success' });
 
     const tokens = generateTokens(user as any);
@@ -377,15 +434,7 @@ export const login = async (req: Request, res: Response): Promise<any> => {
     }).catch(e => console.error('Audit err:', e));
 
     return res.status(200).json({
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        isOnboarded: user.isOnboarded,
-        devices: user.devices,
-        workspace: user.workspace,
-      },
+      user: serializeAuthenticatedUser(user),
       ...tokens,
     });
   } catch (error) {
@@ -421,11 +470,7 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
 
     let user = await prisma.user.findUnique({
       where: { email },
-      include: {
-        role: true,
-        devices: true,
-        workspace: { select: { id: true, companyName: true } },
-      },
+      include: authenticatedUserInclude,
     });
 
     if (!user) {
@@ -436,11 +481,7 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
           googleId: sub,
           isEmailVerified: true,
         },
-        include: {
-          role: true,
-          devices: true,
-          workspace: { select: { id: true, companyName: true } },
-        },
+        include: authenticatedUserInclude,
       });
     }
 
@@ -448,11 +489,7 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
       user = await prisma.user.update({
         where: { id: user.id },
         data: { googleId: sub, isEmailVerified: true },
-        include: {
-          role: true,
-          devices: true,
-          workspace: { select: { id: true, companyName: true } },
-        },
+        include: authenticatedUserInclude,
       });
     }
 
@@ -494,15 +531,7 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
     }).catch(e => console.error('Audit err:', e));
 
     return res.json({
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        isOnboarded: user.isOnboarded,
-        devices: user.devices,
-        workspace: user.workspace,
-      },
+      user: serializeAuthenticatedUser(user),
       ...tokens,
     });
   } catch (error) {
@@ -539,11 +568,7 @@ export const refreshToken = async (req: Request, res: Response): Promise<any> =>
 
     let user = await prisma.user.findUnique({
       where: { id: userId },
-      include: {
-        role: true,
-        devices: true,
-        workspace: { select: { id: true, companyName: true } },
-      },
+      include: authenticatedUserInclude,
     });
 
     if (!user || !user.isActive) {
@@ -555,20 +580,18 @@ export const refreshToken = async (req: Request, res: Response): Promise<any> =>
       return res.status(403).json({ message: 'User not found or inactive' });
     }
 
+    if (!isRoleScopedToUserWorkspace(user)) {
+      return res.status(403).json({
+        message: 'Account role is not valid for this workspace. Please contact support or your administrator.',
+      });
+    }
+
     const tokens = generateTokens(user as any);
     await redisClient.set(`refresh:${tokens.tokenId}`, user.id);
     await trackUserDevice(req, user as any);
 
     return res.status(200).json({
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        isOnboarded: user.isOnboarded,
-        devices: user.devices,
-        workspace: user.workspace,
-      },
+      user: serializeAuthenticatedUser(user),
       ...tokens,
     });
   } catch (error) {

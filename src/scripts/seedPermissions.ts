@@ -91,33 +91,49 @@ const permissions = [
   { key: 'SYSTEM_CONFIG', group: 'SYSTEM_SETTINGS', description: 'Manage system settings' },
 ];
 
-async function syncSuperAdminRole() {
-  const superAdminRole = await prisma.role.upsert({
-    where: { name: 'superadmin' },
-    update: {
-      description: 'Workspace Owner with full system access',
-      status: 'ACTIVE',
-    },
-    create: {
-      name: 'superadmin',
-      description: 'Workspace Owner with full system access',
-      status: 'ACTIVE',
-    },
+async function syncWorkspaceSuperAdminRoles() {
+  const workspaces = await prisma.workspace.findMany({
+    select: { id: true },
   });
+
+  if (workspaces.length === 0) return;
 
   const allPermissions = await prisma.permission.findMany({
     select: { id: true },
   });
 
-  if (allPermissions.length === 0) return;
+  for (const workspace of workspaces) {
+    const superAdminRole = await prisma.role.upsert({
+      where: {
+        workspaceId_name: {
+          workspaceId: workspace.id,
+          name: 'superadmin',
+        },
+      },
+      update: {
+        description: 'Workspace Owner with full system access',
+        status: 'ACTIVE',
+        isSystemRole: true,
+      },
+      create: {
+        workspaceId: workspace.id,
+        name: 'superadmin',
+        description: 'Workspace Owner with full system access',
+        status: 'ACTIVE',
+        isSystemRole: true,
+      },
+    });
 
-  await prisma.rolePermission.createMany({
-    data: allPermissions.map((permission: { id: string }) => ({
-      roleId: superAdminRole.id,
-      permissionId: permission.id,
-    })),
-    skipDuplicates: true,
-  });
+    if (allPermissions.length === 0) continue;
+
+    await prisma.rolePermission.createMany({
+      data: allPermissions.map((permission: { id: string }) => ({
+        roleId: superAdminRole.id,
+        permissionId: permission.id,
+      })),
+      skipDuplicates: true,
+    });
+  }
 }
 
 async function main() {
@@ -144,7 +160,7 @@ async function main() {
     throw new Error(`Permission seeding failed for ${failed} item(s).`);
   }
 
-  await syncSuperAdminRole();
+  await syncWorkspaceSuperAdminRoles();
 
   console.log('Permissions seeded successfully!');
 }

@@ -1,9 +1,5 @@
+import { RoleStatus } from '@prisma/client';
 import { z } from 'zod';
-
-export enum RoleStatus {
-  ACTIVE = 'ACTIVE',
-  INACTIVE = 'INACTIVE',
-}
 
 export const createRoleSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').max(50, 'Name too long'),

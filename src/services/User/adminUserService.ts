@@ -73,9 +73,10 @@ const USER_SELECT = {
   workspace: { select: { id: true, companyName: true } },
 } as const;
 
-const resolveRoleId = async (value: string): Promise<string | null> => {
+const resolveRoleId = async (value: string, workspaceId: string): Promise<string | null> => {
   const role = await prisma.role.findFirst({
     where: {
+      workspaceId,
       OR: [
         { id: value },
         { name: { equals: value, mode: 'insensitive' } },
@@ -153,7 +154,7 @@ export const createUser = async (input: CreateUserInput, workspaceId: string) =>
   }
 
   // 2. Resolve/validate roleId (supports id or role name)
-  const normalizedRoleId = roleId ? await resolveRoleId(roleId) : null;
+  const normalizedRoleId = roleId ? await resolveRoleId(roleId, workspaceId) : null;
   if (roleId) {
     if (!normalizedRoleId) {
       const err: any = new Error(`Role with ID '${roleId}' does not exist.`);
@@ -355,7 +356,7 @@ export const updateUser = async (id: string, input: UpdateUserInput, workspaceId
   const normalizedRoleId =
     input.roleId !== undefined
       ? input.roleId
-        ? await resolveRoleId(input.roleId)
+        ? await resolveRoleId(input.roleId, workspaceId)
         : null
       : undefined;
   if (input.roleId) {
