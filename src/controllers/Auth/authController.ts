@@ -347,11 +347,13 @@ export const resetPasswordWithToken = async (req: Request, res: Response): Promi
 
 export const login = async (req: Request, res: Response): Promise<any> => {
   try {
-    const { email, password } = req.body;
+    const { email: rawEmail, password } = req.body;
 
-    if (!email || !password) {
+    if (!rawEmail || !password) {
       return res.status(400).json({ message: 'Email and password are required' });
     }
+
+    const email = rawEmail.toLowerCase().trim();
 
     let user = await prisma.user.findUnique({
       where: { email },
@@ -393,12 +395,6 @@ export const login = async (req: Request, res: Response): Promise<any> => {
     }
 
     if (!isRoleScopedToUserWorkspace(user)) {
-      return res.status(403).json({
-        message: 'Account role is not valid for this workspace. Please contact support or your administrator.',
-      });
-    }
-
-    if (!isRoleScopedToUserWorkspace(user)) {
       logger.error('Login blocked because role is linked to a different workspace', {
         userId: user.id,
         userWorkspaceId: user.workspaceId,
@@ -413,7 +409,12 @@ export const login = async (req: Request, res: Response): Promise<any> => {
     logger.info('Login successful', { email, userId: user.id, action: 'login_success' });
 
     const tokens = generateTokens(user as any);
-    await redisClient.set(`refresh:${tokens.tokenId}`, user.id);
+
+    if (redisClient?.isOpen) {
+      await redisClient.set(`refresh:${tokens.tokenId}`, user.id);
+    } else {
+      console.warn('Redis not connected. Skipping refresh token storage for login.');
+    }
     // Fire and forget non-critical tracking to drastically speed up login response time
     trackUserDevice(req, user as any).catch(e => console.error('Device track err:', e));
     auditService.log({
@@ -431,8 +432,9 @@ export const login = async (req: Request, res: Response): Promise<any> => {
       user: serializeAuthenticatedUser(user),
       ...tokens,
     });
-  } catch (error) {
-    return res.status(500).json({ message: 'Login failed' });
+  } catch (error: any) {
+    console.error('Login error:', error.message, error.stack);
+    return res.status(500).json({ message: 'Login failed', details: error.message });
   }
 };
 
