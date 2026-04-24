@@ -12,7 +12,7 @@ import { trackUserDevice } from '../../utils/deviceTracker';
 import logger from '../../utils/logger';
 import auditService from '../../services/Audit/auditService';
  
-const authenticatedUserSelect = {
+const authenticatedUserBaseSelect = {
   id: true,
   name: true,
   email: true,
@@ -22,24 +22,6 @@ const authenticatedUserSelect = {
   isOnboarded: true,
   isActive: true,
   isEmailVerified: true,
-  role: {
-    select: {
-      id: true,
-      name: true,
-      status: true,
-      isSystemRole: true,
-      workspaceId: true,
-      permissions: {
-        select: {
-          permission: {
-            select: { key: true },
-          },
-        },
-      },
-    },
-  },
-  devices: true,
-  workspace: { select: { id: true, companyName: true } },
 } as const;
 
 const isPrismaSchemaMismatchError = (error: any): boolean => error?.code === 'P2021' || error?.code === 'P2022';
@@ -57,6 +39,88 @@ const isTransientDatabaseError = (error: any): boolean => {
     message.includes('can not perform operation: connection is closed') ||
     message.includes('connection is closed')
   );
+};
+
+const hydrateAuthenticatedUser = async (user: any): Promise<any> => {
+  if (!user?.id) return user;
+
+  const hydrated = { ...user } as any;
+
+  // Role is optional in older/partial schemas; hydrate best-effort.
+  if (hydrated.roleId) {
+    try {
+      const role = await prisma.role.findUnique({
+        where: { id: hydrated.roleId },
+        select: {
+          id: true,
+          name: true,
+          status: true,
+          isSystemRole: true,
+          workspaceId: true,
+        },
+      });
+      hydrated.role = role || null;
+    } catch {
+      try {
+        const roleMinimal = await prisma.role.findUnique({
+          where: { id: hydrated.roleId },
+          select: { id: true, name: true, workspaceId: true },
+        });
+        hydrated.role = roleMinimal
+          ? { ...roleMinimal, status: undefined, isSystemRole: undefined }
+          : null;
+      } catch {
+        hydrated.role = null;
+      }
+    }
+  } else {
+    hydrated.role = null;
+  }
+
+  if (hydrated.role?.id) {
+    try {
+      const rolePermissions = await prisma.rolePermission.findMany({
+        where: { roleId: hydrated.role.id },
+        include: {
+          permission: { select: { key: true } },
+        },
+      });
+      hydrated.role.permissions = rolePermissions;
+    } catch {
+      hydrated.role.permissions = [];
+    }
+  }
+
+  try {
+    hydrated.devices = await prisma.device.findMany({
+      where: { userId: hydrated.id },
+      orderBy: { lastActive: 'desc' },
+    });
+  } catch {
+    hydrated.devices = [];
+  }
+
+  if (hydrated.workspaceId) {
+    try {
+      hydrated.workspace = await prisma.workspace.findUnique({
+        where: { id: hydrated.workspaceId },
+        select: { id: true, companyName: true },
+      });
+    } catch {
+      try {
+        hydrated.workspace = await prisma.workspace.findUnique({
+          where: { id: hydrated.workspaceId },
+          select: { id: true },
+        });
+      } catch {
+        hydrated.workspace = null;
+      }
+    }
+  } else {
+    hydrated.workspace = null;
+  }
+
+  return hydrated;
 };
 
 const serializeAuthenticatedUser = (user: any, resolvedWorkspaceId?: string | null) => {
@@ -204,7 +268,7 @@ const ensureWorkspaceOwnerSuperAdmin = async (user: any): Promise<any> => {
       roleId: superAdminRole.id,
       workspaceId: user.workspaceId || ownedWorkspace.id,
     },
-    select: authenticatedUserSelect,
+    select: authenticatedUserBaseSelect,
   });
 };
 
@@ -435,9 +499,9 @@ export const login = async (req: Request, res: Response): Promise<any> => {
 
     const email = rawEmail.toLowerCase().trim();
 
-    let user = await prisma.user.findUnique({
+    let user: any = await prisma.user.findUnique({
       where: { email },
-      select: authenticatedUserSelect,
+      select: authenticatedUserBaseSelect,
     });
 
     if (!user) {
@@ -480,7 +544,7 @@ export const login = async (req: Request, res: Response): Promise<any> => {
       // Fall back to current persisted user state so authentication can proceed.
       const fallbackUser = await prisma.user.findUnique({
         where: { id: user.id },
-        select: authenticatedUserSelect,
+        select: authenticatedUserBaseSelect,
       });
       if (fallbackUser) {
         user = fallbackUser;
@@ -490,6 +554,7 @@ export const login = async (req: Request, res: Response): Promise<any> => {
     if (!user) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
+    user = await hydrateAuthenticatedUser(user);
 
     if (!isRoleScopedToUserWorkspace(user)) {
       logger.error('Login blocked because role is linked to a different workspace', {
@@ -618,16 +683,16 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
     }
 
     // 1. Try to find the user by googleId FIRST (Most reliable identifier)
-    let user = await prisma.user.findUnique({
+    let user: any = await prisma.user.findUnique({
       where: { googleId: sub },
-      select: authenticatedUserSelect,
+      select: authenticatedUserBaseSelect,
     });
 
     // 2. If not found by googleId, try finding by email
     if (!user) {
       user = await prisma.user.findUnique({
         where: { email },
-        select: authenticatedUserSelect,
+        select: authenticatedUserBaseSelect,
       });
 
       // 3. If found by email, safely link the googleId to this account
@@ -635,7 +700,7 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
         user = await prisma.user.update({
           where: { id: user.id },
           data: { googleId: sub, isEmailVerified: true },
-          select: authenticatedUserSelect,
+          select: authenticatedUserBaseSelect,
         });
       }
     }
@@ -649,7 +714,7 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
           googleId: sub,
           isEmailVerified: true,
         },
-        select: authenticatedUserSelect,
+        select: authenticatedUserBaseSelect,
       });
     }
 
@@ -667,7 +732,7 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
       if (user?.id) {
         const fallbackUser = await prisma.user.findUnique({
           where: { id: user.id },
-          select: authenticatedUserSelect,
+          select: authenticatedUserBaseSelect,
         });
         if (fallbackUser) user = fallbackUser;
       }
@@ -676,6 +741,7 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
     if (!user) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
+    user = await hydrateAuthenticatedUser(user);
 
     if (!user.isActive) {
       return res.status(403).json({ message: 'Account is inactive' });
@@ -823,9 +889,9 @@ export const refreshToken = async (req: Request, res: Response): Promise<any> =>
     // Rotate - invalidate old token
     await redisClient.del(`refresh:${tokenId}`);
 
-    let user = await prisma.user.findUnique({
+    let user: any = await prisma.user.findUnique({
       where: { id: userId },
-      select: authenticatedUserSelect,
+      select: authenticatedUserBaseSelect,
     });
 
     if (!user || !user.isActive) {
@@ -843,7 +909,7 @@ export const refreshToken = async (req: Request, res: Response): Promise<any> =>
       if (user?.id) {
         const fallbackUser = await prisma.user.findUnique({
           where: { id: user.id },
-          select: authenticatedUserSelect,
+          select: authenticatedUserBaseSelect,
         });
         if (fallbackUser) user = fallbackUser;
       }
@@ -852,6 +918,7 @@ export const refreshToken = async (req: Request, res: Response): Promise<any> =>
     if (!user) {
       return res.status(403).json({ message: 'User not found or inactive' });
     }
+    user = await hydrateAuthenticatedUser(user);
 
     if (!isRoleScopedToUserWorkspace(user)) {
       return res.status(403).json({
