@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import prisma from '../../config/prisma';
 import { redisClient } from '../../config/redis';
 import logger from '../../utils/logger';
-import { sendPasswordResetEmail } from '../Email/emailService';
+import { sendPasswordResetEmail, isEmailServiceConfigured } from '../Email/emailService';
 import type {
   CreateUserInput,
   UpdateUserInput,
@@ -580,15 +580,48 @@ export const resetUserPassword = async (
     };
   }
 
+  const fallbackToGeneratedPasswordReset = async (reason: string) => {
+    const generatedPassword = generateSecurePassword();
+    const hashedPassword = await bcrypt.hash(generatedPassword, 12);
+
+    await (prisma as any).user.update({
+      where: { id },
+      data: { password: hashedPassword },
+    });
+
+    await invalidateUserSessions(id);
+    logger.warn('Admin reset password fallback used generated password', {
+      id,
+      workspaceId,
+      reason,
+    });
+
+    return {
+      message:
+        'Email service is unavailable. Password has been reset with a generated password. Share it securely and ask the user to change it after login.',
+      generatedPassword,
+      delivery: 'MANUAL',
+    };
+  };
+
   const jwtSecret = process.env.JWT_SECRET;
   if (!jwtSecret) {
-    const err: any = new Error('JWT_SECRET is missing. Cannot generate reset token.');
-    err.statusCode = 500;
-    throw err;
+    return fallbackToGeneratedPasswordReset('jwt_secret_missing');
+  }
+
+  if (!isEmailServiceConfigured()) {
+    return fallbackToGeneratedPasswordReset('email_service_not_configured');
   }
 
   const token = jwt.sign({ userId: existing.id, purpose: 'password_reset' }, jwtSecret, { expiresIn: '30m' });
-  await sendPasswordResetEmail(existing.email, existing.name, token);
+  try {
+    await sendPasswordResetEmail(existing.email, existing.name, token);
+  } catch (error: any) {
+    if (String(error?.message || '').toLowerCase().includes('email')) {
+      return fallbackToGeneratedPasswordReset('email_delivery_failed');
+    }
+    throw error;
+  }
 
   logger.info('Admin requested password reset link', { id, email: existing.email, workspaceId });
   return {

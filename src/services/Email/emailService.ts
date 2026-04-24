@@ -2,6 +2,7 @@ import nodemailer from 'nodemailer';
 
 const isProduction = process.env.NODE_ENV === 'production';
 const isEmailConfigured = (): boolean => Boolean(process.env.EMAIL_USER && process.env.EMAIL_PASS);
+export const isEmailServiceConfigured = (): boolean => isEmailConfigured();
 
 const transporter = nodemailer.createTransport({
   service: process.env.EMAIL_SERVICE || 'gmail',

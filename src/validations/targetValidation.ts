@@ -30,12 +30,45 @@ const parseOptionalDateField = (label: string) =>
     return value;
   }, z.date({ message: `${label} must be a valid date` }).optional());
 
+const parseNonNegativeIntField = (label: string, fallback = 0) =>
+  z.preprocess((value) => {
+    if (value === undefined || value === null || value === '') return fallback;
+    if (typeof value === 'number') return value;
+    if (typeof value === 'string') {
+      const trimmed = value.trim();
+      if (!trimmed) return fallback;
+      const parsed = Number(trimmed);
+      return Number.isFinite(parsed) ? parsed : value;
+    }
+    return value;
+  }, z.number({ message: `${label} must be a valid number` }).int(`${label} must be a whole number`).min(0, `${label} cannot be negative`));
+
+const parseNonNegativeFloatField = (label: string, fallback = 0) =>
+  z.preprocess((value) => {
+    if (value === undefined || value === null || value === '') return fallback;
+    if (typeof value === 'number') return value;
+    if (typeof value === 'string') {
+      const trimmed = value.trim();
+      if (!trimmed) return fallback;
+      const parsed = Number(trimmed);
+      return Number.isFinite(parsed) ? parsed : value;
+    }
+    return value;
+  }, z.number({ message: `${label} must be a valid number` }).min(0, `${label} cannot be negative`));
+
+const parseCycleField = () =>
+  z.preprocess((value) => {
+    if (typeof value !== 'string') return value;
+    const normalized = value.trim().toUpperCase();
+    return normalized || value;
+  }, z.nativeEnum(TargetCycle).default('MONTHLY'));
+
 export const createTargetSchema = z.object({
   targetTypeId: z.string().cuid('Invalid Target Type ID'),
-  cycle: z.nativeEnum(TargetCycle).default('MONTHLY'),
-  monthlyTargetLeads: z.number().int().min(0).default(0),
-  dailyFollowupTarget: z.number().int().min(0).default(0),
-  revenueTarget: z.number().min(0).default(0),
+  cycle: parseCycleField(),
+  monthlyTargetLeads: parseNonNegativeIntField('monthlyTargetLeads', 0),
+  dailyFollowupTarget: parseNonNegativeIntField('dailyFollowupTarget', 0),
+  revenueTarget: parseNonNegativeFloatField('revenueTarget', 0),
   startDate: parseDateField('startDate'),
   endDate: parseOptionalDateField('endDate'),
 });
