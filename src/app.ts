@@ -99,6 +99,12 @@ app.options(/.*/, cors(corsOptions));
 app.use(express.json({ limit: requestBodyLimit }));
 app.use(express.urlencoded({ extended: true, limit: requestBodyLimit }));
 
+// Security Headers for Google OAuth
+app.use((req, res, next) => {
+  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+  next();
+});
+
 // Global rate limiting
 app.use('/api/', globalLimiter);
 app.use('/api/auth', authRoutes);
