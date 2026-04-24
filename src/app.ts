@@ -40,10 +40,12 @@ import { notFound, errorHandler } from './middlewares/errorMiddleware';
 const app = express();
 const requestBodyLimit = process.env.REQUEST_BODY_LIMIT || '5mb';
 
+const normalizeOrigin = (origin: string): string => origin.trim().replace(/\/+$/, '');
+
 const splitOriginList = (raw?: string | null): string[] =>
   (raw || '')
     .split(/[\s,]+/)
-    .map((item) => item.trim())
+    .map((item) => normalizeOrigin(item))
     .filter((item) => item.length > 0);
 
 const allowVercelApp =
@@ -57,7 +59,7 @@ const allowedOrigins = new Set<string>([
   'http://127.0.0.1:5173',
 ]);
 
-const isAllowedOrigin = (origin: string): boolean => allowedOrigins.has(origin);
+const isAllowedOrigin = (origin: string): boolean => allowedOrigins.has(normalizeOrigin(origin));
 
 /** Vercel production + preview deploys use https://*.vercel.app */
 const isVercelAppOrigin = (origin: string): boolean => {
@@ -83,7 +85,7 @@ const corsOptions: cors.CorsOptions = {
     }
 
     logger.warn('CORS request rejected', { origin });
-    callback(new Error(`CORS blocked for origin: ${origin}`));
+    callback(null, false);
   },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'x-device-id', 'x-access-token', 'Accept', 'Origin'],
@@ -93,6 +95,22 @@ const corsOptions: cors.CorsOptions = {
 
 // Middleware
 app.use(morgan('combined', { stream: { write: (message: string) => logger.info(message.trim()) } }));
+
+// Ensure allowed origins always receive CORS headers even on fast-fail/error paths.
+app.use((req: Request, res: Response, next) => {
+  const origin = req.headers.origin;
+  if (typeof origin === 'string' && (isAllowedOrigin(origin) || isVercelAppOrigin(origin))) {
+    res.header('Access-Control-Allow-Origin', origin);
+    res.header('Vary', 'Origin');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header(
+      'Access-Control-Allow-Headers',
+      'Content-Type, Authorization, x-device-id, x-access-token, Accept, Origin',
+    );
+    res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
+  }
+  next();
+});
 
 app.use(cors(corsOptions));
 app.options(/.*/, cors(corsOptions));
