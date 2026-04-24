@@ -44,6 +44,21 @@ const authenticatedUserSelect = {
 
 const isPrismaSchemaMismatchError = (error: any): boolean => error?.code === 'P2021' || error?.code === 'P2022';
 
+const isTransientDatabaseError = (error: any): boolean => {
+  const code = String(error?.code || '');
+  const message = String(error?.message || '').toLowerCase();
+  return (
+    code === 'P1001' ||
+    code === 'P1017' ||
+    code === 'P2024' ||
+    message.includes('error in postgresql connection') ||
+    message.includes('connection terminated unexpectedly') ||
+    message.includes('server closed the connection unexpectedly') ||
+    message.includes('can not perform operation: connection is closed') ||
+    message.includes('connection is closed')
+  );
+};
+
 const serializeAuthenticatedUser = (user: any, resolvedWorkspaceId?: string | null) => {
   const permissionKeys = Array.isArray(user.role?.permissions)
     ? user.role.permissions
@@ -535,6 +550,12 @@ export const login = async (req: Request, res: Response): Promise<any> => {
     });
   } catch (error: any) {
     console.error('Login error:', error.message, error.stack);
+    if (isTransientDatabaseError(error)) {
+      return res.status(503).json({
+        message: 'Database connection is temporarily unavailable. Please try again shortly.',
+        code: error?.code,
+      });
+    }
     if (isPrismaSchemaMismatchError(error)) {
       return res.status(503).json({
         message: 'Authentication service is temporarily unavailable due to database schema mismatch. Run migrations and retry.',
@@ -733,6 +754,13 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
       action: 'google_login_unexpected_error',
     });
 
+    if (isTransientDatabaseError(error)) {
+      return res.status(503).json({
+        message: 'Database connection is temporarily unavailable. Please try again shortly.',
+        code: error?.code,
+      });
+    }
+
     if (error?.code === 'P2002') {
       return res.status(409).json({ message: 'An account conflict occurred while linking Google login.' });
     }
@@ -855,6 +883,12 @@ export const refreshToken = async (req: Request, res: Response): Promise<any> =>
     });
   } catch (error) {
     const err: any = error;
+    if (isTransientDatabaseError(err)) {
+      return res.status(503).json({
+        message: 'Database connection is temporarily unavailable. Please try again shortly.',
+        code: err?.code,
+      });
+    }
     if (err?.statusCode) {
       return res.status(err.statusCode).json({
         message: err.message,
