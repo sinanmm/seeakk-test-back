@@ -12,11 +12,25 @@ import { trackUserDevice } from '../../utils/deviceTracker';
 import logger from '../../utils/logger';
 import auditService from '../../services/Audit/auditService';
  
-const authenticatedUserInclude = {
+const authenticatedUserSelect = {
+  id: true,
+  name: true,
+  email: true,
+  password: true,
+  roleId: true,
+  workspaceId: true,
+  isOnboarded: true,
+  isActive: true,
+  isEmailVerified: true,
   role: {
-    include: {
+    select: {
+      id: true,
+      name: true,
+      status: true,
+      isSystemRole: true,
+      workspaceId: true,
       permissions: {
-        include: {
+        select: {
           permission: {
             select: { key: true },
           },
@@ -27,6 +41,8 @@ const authenticatedUserInclude = {
   devices: true,
   workspace: { select: { id: true, companyName: true } },
 } as const;
+
+const isPrismaSchemaMismatchError = (error: any): boolean => error?.code === 'P2021' || error?.code === 'P2022';
 
 const serializeAuthenticatedUser = (user: any, resolvedWorkspaceId?: string | null) => {
   const permissionKeys = Array.isArray(user.role?.permissions)
@@ -173,7 +189,7 @@ const ensureWorkspaceOwnerSuperAdmin = async (user: any): Promise<any> => {
       roleId: superAdminRole.id,
       workspaceId: user.workspaceId || ownedWorkspace.id,
     },
-    include: authenticatedUserInclude,
+    select: authenticatedUserSelect,
   });
 };
 
@@ -406,7 +422,7 @@ export const login = async (req: Request, res: Response): Promise<any> => {
 
     let user = await prisma.user.findUnique({
       where: { email },
-      include: authenticatedUserInclude,
+      select: authenticatedUserSelect,
     });
 
     if (!user) {
@@ -420,12 +436,6 @@ export const login = async (req: Request, res: Response): Promise<any> => {
 
     if (!user.isActive) {
       return res.status(403).json({ message: 'Account is inactive' });
-    }
-
-    if ((user as any).isLocked) {
-      return res.status(403).json({
-        message: 'Your account has been locked due to target non-compliance. Please contact your supervisor or admin.',
-      });
     }
 
     if (!user.isEmailVerified) {
@@ -455,7 +465,7 @@ export const login = async (req: Request, res: Response): Promise<any> => {
       // Fall back to current persisted user state so authentication can proceed.
       const fallbackUser = await prisma.user.findUnique({
         where: { id: user.id },
-        include: authenticatedUserInclude,
+        select: authenticatedUserSelect,
       });
       if (fallbackUser) {
         user = fallbackUser;
@@ -525,6 +535,12 @@ export const login = async (req: Request, res: Response): Promise<any> => {
     });
   } catch (error: any) {
     console.error('Login error:', error.message, error.stack);
+    if (isPrismaSchemaMismatchError(error)) {
+      return res.status(503).json({
+        message: 'Authentication service is temporarily unavailable due to database schema mismatch. Run migrations and retry.',
+        code: error.code,
+      });
+    }
     if (error?.statusCode) {
       return res.status(error.statusCode).json({ message: error.message, code: error.code });
     }
@@ -569,11 +585,11 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
     }
 
     const { email: googleEmail, name, sub, email_verified: emailVerified } = payload;
-    if (!googleEmail) {
+    if (typeof googleEmail !== 'string' || !googleEmail.trim()) {
       return res.status(400).json({ message: 'Google account email is missing' });
     }
     const email = googleEmail.toLowerCase().trim();
-    if (!sub) {
+    if (typeof sub !== 'string' || !sub.trim()) {
       return res.status(400).json({ message: 'Google account identifier is missing' });
     }
     if (emailVerified === false) {
@@ -583,14 +599,14 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
     // 1. Try to find the user by googleId FIRST (Most reliable identifier)
     let user = await prisma.user.findUnique({
       where: { googleId: sub },
-      include: authenticatedUserInclude,
+      select: authenticatedUserSelect,
     });
 
     // 2. If not found by googleId, try finding by email
     if (!user) {
       user = await prisma.user.findUnique({
         where: { email },
-        include: authenticatedUserInclude,
+        select: authenticatedUserSelect,
       });
 
       // 3. If found by email, safely link the googleId to this account
@@ -598,7 +614,7 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
         user = await prisma.user.update({
           where: { id: user.id },
           data: { googleId: sub, isEmailVerified: true },
-          include: authenticatedUserInclude,
+          select: authenticatedUserSelect,
         });
       }
     }
@@ -612,7 +628,7 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
           googleId: sub,
           isEmailVerified: true,
         },
-        include: authenticatedUserInclude,
+        select: authenticatedUserSelect,
       });
     }
 
@@ -630,7 +646,7 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
       if (user?.id) {
         const fallbackUser = await prisma.user.findUnique({
           where: { id: user.id },
-          include: authenticatedUserInclude,
+          select: authenticatedUserSelect,
         });
         if (fallbackUser) user = fallbackUser;
       }
@@ -642,12 +658,6 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
 
     if (!user.isActive) {
       return res.status(403).json({ message: 'Account is inactive' });
-    }
-
-    if ((user as any).isLocked) {
-      return res.status(403).json({
-        message: 'Your account has been locked due to target non-compliance. Please contact your supervisor or admin.',
-      });
     }
 
     if (!isRoleScopedToUserWorkspace(user)) {
@@ -726,6 +736,12 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
     if (error?.code === 'P2002') {
       return res.status(409).json({ message: 'An account conflict occurred while linking Google login.' });
     }
+    if (isPrismaSchemaMismatchError(error)) {
+      return res.status(503).json({
+        message: 'Google login is temporarily unavailable due to database schema mismatch. Run migrations and retry.',
+        code: error.code,
+      });
+    }
 
     if (error?.statusCode) {
       return res.status(error.statusCode).json({
@@ -781,7 +797,7 @@ export const refreshToken = async (req: Request, res: Response): Promise<any> =>
 
     let user = await prisma.user.findUnique({
       where: { id: userId },
-      include: authenticatedUserInclude,
+      select: authenticatedUserSelect,
     });
 
     if (!user || !user.isActive) {
@@ -799,7 +815,7 @@ export const refreshToken = async (req: Request, res: Response): Promise<any> =>
       if (user?.id) {
         const fallbackUser = await prisma.user.findUnique({
           where: { id: user.id },
-          include: authenticatedUserInclude,
+          select: authenticatedUserSelect,
         });
         if (fallbackUser) user = fallbackUser;
       }
