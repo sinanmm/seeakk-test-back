@@ -280,7 +280,6 @@ export const findInviteById = (id: string, workspaceId: string) =>
       tokenHash: true,
       expiresAt: true,
       usedAt: true,
-      revokedAt: true,
       status: true,
       userId: true,
       user: {
@@ -300,11 +299,10 @@ export const updateInviteForResend = (id: string, tokenHash: string, expiresAt: 
     },
   });
 
-export const updateInviteForRevoke = (id: string, revokedAt: Date) =>
+export const updateInviteForRevoke = (id: string) =>
   (prisma as any).invite.update({
     where: { id },
     data: {
-      revokedAt,
       status: 'REVOKED',
     },
   });
@@ -318,7 +316,6 @@ export const findLatestInviteForUser = (userId: string, workspaceId: string) =>
       status: true,
       expiresAt: true,
       usedAt: true,
-      revokedAt: true,
       resentAt: true,
       createdAt: true,
     },
@@ -330,12 +327,11 @@ export const expirePendingInvitesForUser = (userId: string, workspaceId: string,
       userId,
       workspaceId,
       usedAt: null,
-      revokedAt: null,
+      status: 'PENDING',
       expiresAt: { lte: now },
     },
     data: {
       status: 'EXPIRED',
-      revokedAt: now,
     },
   });
 

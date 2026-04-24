@@ -93,7 +93,7 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
     }
 
     const now = deps.now();
-    if (invite.revokedAt || invite.status === 'REVOKED') {
+    if (invite.status === 'REVOKED') {
       throw new InviteError('Invite token has been revoked.', 403, 'INVITE_REVOKED');
     }
 
@@ -275,7 +275,7 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
       }
 
       if (invite.usedAt) throw new InviteError('Cannot resend accepted invite.', 409, 'INVITE_ALREADY_USED');
-      if (invite.revokedAt || invite.status === 'REVOKED') throw new InviteError('Cannot resend revoked invite.', 409, 'INVITE_REVOKED');
+      if (invite.status === 'REVOKED') throw new InviteError('Cannot resend revoked invite.', 409, 'INVITE_REVOKED');
 
       const { rawToken, tokenHash } = deps.tokenFactory();
       const now = deps.now();
@@ -315,10 +315,10 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
       }
 
       if (invite.usedAt) throw new InviteError('Cannot revoke accepted invite.', 409, 'INVITE_ALREADY_USED');
-      if (invite.revokedAt || invite.status === 'REVOKED') throw new InviteError('Invite is already revoked.', 409, 'INVITE_ALREADY_REVOKED');
+      if (invite.status === 'REVOKED') throw new InviteError('Invite is already revoked.', 409, 'INVITE_ALREADY_REVOKED');
 
       const now = deps.now();
-      await deps.repository.updateInviteForRevoke(inviteId, now);
+      await deps.repository.updateInviteForRevoke(inviteId);
 
       await deps.audit.log({
         userId: actor.id,
@@ -412,7 +412,7 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
 };
 
 export const computeInviteStatus = (invite: any, now: Date) => {
-  if (invite.revokedAt || invite.status === 'REVOKED') return 'REVOKED';
+  if (invite.status === 'REVOKED') return 'REVOKED';
   if (invite.usedAt) return 'ACCEPTED';
   if (invite.expiresAt <= now) return 'EXPIRED';
   return 'PENDING';

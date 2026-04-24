@@ -922,7 +922,6 @@ model Invite {
   usedAt      DateTime?
   createdBy   String
   status      String    @default("PENDING")
-  revokedAt   DateTime?
   resentAt    DateTime?
   createdAt   DateTime  @default(now())
 
