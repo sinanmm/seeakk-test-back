@@ -502,6 +502,8 @@ export const login = async (req: Request, res: Response): Promise<any> => {
 
 export const googleLogin = async (req: Request, res: Response): Promise<any> => {
   try {
+    console.log('Incoming Google token:', req.body);
+
     const token = extractGoogleCredentialToken(req.body);
 
     if (!token) {
@@ -681,7 +683,6 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
       });
     }
 
-    res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
     return res.status(500).json({ 
       message: 'Google login failed. Please try again shortly.',
       error: error?.message,
