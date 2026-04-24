@@ -431,7 +431,24 @@ export const login = async (req: Request, res: Response): Promise<any> => {
 
     logger.info('Login successful', { email, userId: user.id, action: 'login_success' });
 
-    const tokens = generateTokens(user as any);
+    let tokens;
+    try {
+      tokens = generateTokens(user as any);
+    } catch (error: any) {
+      if (error?.statusCode) {
+        logger.error('Login token generation failed', {
+          userId: user.id,
+          error: error.message,
+          secretName: error.secretName,
+          action: 'login_token_generation_failed',
+        });
+        return res.status(error.statusCode).json({
+          message: error.message,
+          code: error.code,
+        });
+      }
+      throw error;
+    }
 
     if (redisClient?.isOpen) {
       await redisClient.set(`refresh:${tokens.tokenId}`, user.id);
@@ -457,6 +474,9 @@ export const login = async (req: Request, res: Response): Promise<any> => {
     });
   } catch (error: any) {
     console.error('Login error:', error.message, error.stack);
+    if (error?.statusCode) {
+      return res.status(error.statusCode).json({ message: error.message, code: error.code });
+    }
     return res.status(500).json({ message: 'Login failed', details: error.message });
   }
 };
@@ -571,7 +591,24 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
       });
     }
 
-    const tokens = generateTokens(user as any);
+    let tokens;
+    try {
+      tokens = generateTokens(user as any);
+    } catch (error: any) {
+      if (error?.statusCode) {
+        logger.error('Google login token generation failed', {
+          userId: user.id,
+          error: error.message,
+          secretName: error.secretName,
+          action: 'google_login_token_generation_failed',
+        });
+        return res.status(error.statusCode).json({
+          message: error.message,
+          code: error.code,
+        });
+      }
+      throw error;
+    }
 
     if (redisClient?.isOpen) {
       try {
@@ -613,6 +650,13 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
 
     if (error?.code === 'P2002') {
       return res.status(409).json({ message: 'An account conflict occurred while linking Google login.' });
+    }
+
+    if (error?.statusCode) {
+      return res.status(error.statusCode).json({
+        message: error.message,
+        code: error.code,
+      });
     }
 
     res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
@@ -679,6 +723,13 @@ export const refreshToken = async (req: Request, res: Response): Promise<any> =>
       ...tokens,
     });
   } catch (error) {
+    const err: any = error;
+    if (err?.statusCode) {
+      return res.status(err.statusCode).json({
+        message: err.message,
+        code: err.code,
+      });
+    }
     return res.status(500).json({ message: 'Failed to refresh token' });
   }
 };

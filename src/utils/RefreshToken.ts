@@ -8,15 +8,30 @@ interface Tokens {
   tokenId: string;
 }
 
+const requireTokenSecret = (name: 'JWT_SECRET' | 'JWT_REFRESH_SECRET'): string => {
+  const value = process.env[name]?.trim();
+  if (!value) {
+    const error: any = new Error(`${name} is not configured on the backend`);
+    error.statusCode = 503;
+    error.code = 'AUTH_SECRET_MISSING';
+    error.secretName = name;
+    throw error;
+  }
+
+  return value;
+};
+
 const generateTokens = (user: User): Tokens => {
   const tokenId = uuidv4();
+  const jwtSecret = requireTokenSecret('JWT_SECRET');
+  const jwtRefreshSecret = requireTokenSecret('JWT_REFRESH_SECRET');
 
   const accessToken = jwt.sign(
     {
       userId: user.id,
       roleId: user.roleId,
     },
-    process.env.JWT_SECRET as string,
+    jwtSecret,
     { expiresIn: '15m' }
   );
 
@@ -25,7 +40,7 @@ const generateTokens = (user: User): Tokens => {
       userId: user.id,
       tokenId,
     },
-    process.env.JWT_REFRESH_SECRET as string,
+    jwtRefreshSecret,
     { expiresIn: '7d' }
   );
 
