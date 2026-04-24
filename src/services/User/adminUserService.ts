@@ -88,6 +88,47 @@ const USER_SELECT = {
   workspace: { select: { id: true, companyName: true } },
 } as const;
 
+const USER_SELECT_LEGACY_INVITE = {
+  ...USER_SELECT,
+  receivedInvites: {
+    orderBy: { createdAt: 'desc' as const },
+    take: 1,
+    select: {
+      id: true,
+      expiresAt: true,
+      usedAt: true,
+      revokedAt: true,
+      resentAt: true,
+      createdAt: true,
+    },
+  },
+} as const;
+
+const isMissingInviteStatusColumnError = (error: any): boolean => {
+  const message = String(error?.message || '').toLowerCase();
+  return (
+    error?.code === 'P2022' &&
+    (message.includes('invites.status') || message.includes('column') || message.includes('does not exist'))
+  );
+};
+
+const withInviteStatusFallback = async <T>(
+  queryFactory: (selectShape: typeof USER_SELECT | typeof USER_SELECT_LEGACY_INVITE) => Promise<T>,
+): Promise<T> => {
+  try {
+    return await queryFactory(USER_SELECT);
+  } catch (error: any) {
+    if (!isMissingInviteStatusColumnError(error)) throw error;
+
+    logger.warn('Invite status column missing; falling back to legacy invite select shape', {
+      code: error?.code,
+      message: error?.message,
+    });
+
+    return queryFactory(USER_SELECT_LEGACY_INVITE);
+  }
+};
+
 const resolveRoleId = async (value: string, workspaceId: string): Promise<string | null> => {
   const role = await prisma.role.findFirst({
     where: {
@@ -253,24 +294,24 @@ export const createUser = async (input: CreateUserInput, workspaceId: string) =>
           where: { userId: existingEmail.id },
         });
 
-        return (tx as any).user.update({
+        return withInviteStatusFallback((selectShape) => (tx as any).user.update({
           where: { id: existingEmail.id },
           data: {
             ...createData,
             deletedAt: null,
           },
-          select: USER_SELECT,
-        });
+          select: selectShape,
+        }));
       },
       { maxWait: 10_000, timeout: 20_000 },
     );
   } else {
     // Avoid interactive transaction for normal creates; a single write is faster and
     // prevents "Transaction already closed" timeouts under transient latency spikes.
-    user = await (prisma as any).user.create({
+    user = await withInviteStatusFallback((selectShape) => (prisma as any).user.create({
       data: createData,
-      select: USER_SELECT,
-    });
+      select: selectShape,
+    }));
   }
 
   logger.info('Admin created new user', { newUserId: user.id, email: user.email, workspaceId });
@@ -310,13 +351,15 @@ export const listUsers = async (query: ListUsersQuery, workspaceId: string) => {
   // PgBouncer/pooled PostgreSQL can intermittently close transaction-scoped reads.
   const [total, users] = await Promise.all([
     (prisma as any).user.count({ where }),
-    (prisma as any).user.findMany({
-      where,
-      skip,
-      take: limit,
-      orderBy: { createdAt: 'desc' },
-      select: USER_SELECT,
-    }),
+    withInviteStatusFallback((selectShape) =>
+      (prisma as any).user.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        select: selectShape,
+      }),
+    ),
   ]);
 
   const totalPages = Math.max(1, Math.ceil(total / limit));
@@ -338,13 +381,15 @@ export const listUsers = async (query: ListUsersQuery, workspaceId: string) => {
  * Get a single user by ID, scoped to the workspace.
  */
 export const getUserById = async (id: string, workspaceId: string) => {
-  const user = await (prisma as any).user.findFirst({
-    where: { id, workspaceId, deletedAt: null },
-    select: {
-      ...USER_SELECT,
-      _count: { select: { devices: true, subordinates: true } },
-    },
-  });
+  const user = await withInviteStatusFallback((selectShape) =>
+    (prisma as any).user.findFirst({
+      where: { id, workspaceId, deletedAt: null },
+      select: {
+        ...selectShape,
+        _count: { select: { devices: true, subordinates: true } },
+      },
+    }),
+  );
 
   if (!user) {
     const err: any = new Error('User not found in this workspace.');
@@ -445,33 +490,35 @@ export const updateUser = async (id: string, input: UpdateUserInput, workspaceId
     await invalidateUserSessions(id);
   }
 
-  const user = await (prisma as any).user.update({
-    where: { id },
-    data: {
-      ...(input.name !== undefined ? { name: input.name } : {}),
-      ...(input.username !== undefined ? { username: input.username } : {}),
-      ...(input.phone !== undefined ? { phone: input.phone } : {}),
-      ...(normalizedRoleId !== undefined ? { roleId: normalizedRoleId } : {}),
-      ...(normalizedDepartmentId !== undefined ? { departmentId: normalizedDepartmentId } : {}),
-      ...(input.supervisorId !== undefined ? { supervisorId: input.supervisorId } : {}),
-      ...(input.officeId !== undefined ? { officeId: input.officeId } : {}),
-      ...(input.countryId !== undefined ? { countryId: input.countryId } : {}),
-      ...(input.stateId !== undefined ? { stateId: input.stateId } : {}),
-      ...(input.districtId !== undefined ? { districtId: input.districtId } : {}),
-      ...(input.isEmailVerified !== undefined ? { isEmailVerified: input.isEmailVerified } : {}),
-      ...(input.assignedLocationIds !== undefined && input.assignedLocationIds.length > 0
-        ? {
-            assignedLocations: {
-              create: input.assignedLocationIds.map((locId) => ({
-                locationId: locId,
-                workspaceId,
-              })),
-            },
-          }
-        : {}),
-    },
-    select: USER_SELECT,
-  });
+  const user = await withInviteStatusFallback((selectShape) =>
+    (prisma as any).user.update({
+      where: { id },
+      data: {
+        ...(input.name !== undefined ? { name: input.name } : {}),
+        ...(input.username !== undefined ? { username: input.username } : {}),
+        ...(input.phone !== undefined ? { phone: input.phone } : {}),
+        ...(normalizedRoleId !== undefined ? { roleId: normalizedRoleId } : {}),
+        ...(normalizedDepartmentId !== undefined ? { departmentId: normalizedDepartmentId } : {}),
+        ...(input.supervisorId !== undefined ? { supervisorId: input.supervisorId } : {}),
+        ...(input.officeId !== undefined ? { officeId: input.officeId } : {}),
+        ...(input.countryId !== undefined ? { countryId: input.countryId } : {}),
+        ...(input.stateId !== undefined ? { stateId: input.stateId } : {}),
+        ...(input.districtId !== undefined ? { districtId: input.districtId } : {}),
+        ...(input.isEmailVerified !== undefined ? { isEmailVerified: input.isEmailVerified } : {}),
+        ...(input.assignedLocationIds !== undefined && input.assignedLocationIds.length > 0
+          ? {
+              assignedLocations: {
+                create: input.assignedLocationIds.map((locId) => ({
+                  locationId: locId,
+                  workspaceId,
+                })),
+              },
+            }
+          : {}),
+      },
+      select: selectShape,
+    }),
+  );
 
   logger.info('Admin updated user', { id, workspaceId, changes: Object.keys(input) });
 
