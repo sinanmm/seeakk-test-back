@@ -69,6 +69,25 @@ const isRoleScopedToUserWorkspace = (user: any): boolean => {
   return user.role.workspaceId === user.workspaceId;
 };
 
+const extractGoogleCredentialToken = (body: any): string => {
+  const candidates = [
+    body?.credential,
+    body?.token,
+    body?.credentialResponse?.credential,
+    body?.idToken,
+    body?.response?.credential,
+  ];
+
+  for (const candidate of candidates) {
+    if (typeof candidate === 'string') {
+      const token = candidate.trim();
+      if (token) return token;
+    }
+  }
+
+  return '';
+};
+
 const ensureWorkspaceOwnerSuperAdmin = async (user: any): Promise<any> => {
   if (!user?.id) return user;
 
@@ -483,10 +502,13 @@ export const login = async (req: Request, res: Response): Promise<any> => {
 
 export const googleLogin = async (req: Request, res: Response): Promise<any> => {
   try {
-    const credential = typeof req.body?.credential === 'string' ? req.body.credential.trim() : '';
-    const token = typeof req.body?.token === 'string' ? req.body.token.trim() : credential;
+    const token = extractGoogleCredentialToken(req.body);
 
     if (!token) {
+      logger.warn('Google login request missing credential token', {
+        action: 'google_login_missing_token',
+        bodyKeys: req.body && typeof req.body === 'object' ? Object.keys(req.body) : [],
+      });
       return res.status(400).json({ message: 'Google credential token is required' });
     }
 
