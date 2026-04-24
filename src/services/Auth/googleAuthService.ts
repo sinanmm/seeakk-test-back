@@ -1,19 +1,31 @@
 import { OAuth2Client } from 'google-auth-library';
 
 let cachedClient: OAuth2Client | null = null;
-let cachedAudience: string | null = null;
+let cachedAudienceKey: string | null = null;
 
-const getGoogleClient = (): { client: OAuth2Client; audience: string } => {
-  const audience = process.env.GOOGLE_CLIENT_ID?.trim();
-  if (!audience) {
+const parseGoogleClientIds = (): string[] => {
+  const raw = process.env.GOOGLE_CLIENT_ID?.trim();
+  if (!raw) return [];
+  return raw
+    .split(/[\s,]+/)
+    .map((part) => part.trim())
+    .filter((part) => part.length > 0);
+};
+
+const getGoogleClient = (): { client: OAuth2Client; audience: string | string[] } => {
+  const clientIds = parseGoogleClientIds();
+  if (clientIds.length === 0) {
     const err: any = new Error('GOOGLE_CLIENT_ID is not configured on backend');
     err.statusCode = 503;
     throw err;
   }
 
-  if (!cachedClient || cachedAudience !== audience) {
-    cachedClient = new OAuth2Client(audience);
-    cachedAudience = audience;
+  const audience: string | string[] = clientIds.length === 1 ? clientIds[0] : clientIds;
+  const cacheKey = clientIds.join('|');
+
+  if (!cachedClient || cachedAudienceKey !== cacheKey) {
+    cachedClient = new OAuth2Client(clientIds[0]);
+    cachedAudienceKey = cacheKey;
   }
 
   return { client: cachedClient, audience };

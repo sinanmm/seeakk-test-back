@@ -6,6 +6,7 @@ import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import prisma from '../../config/prisma';
 import { redisClient } from '../../config/redis';
+import { resolveWorkspaceIdForUser } from '../../utils/workspaceContext';
 import { sendVerificationEmail } from '../../services/Email/emailService';
 import { trackUserDevice } from '../../utils/deviceTracker';
 import logger from '../../utils/logger';
@@ -27,25 +28,54 @@ const authenticatedUserInclude = {
   workspace: { select: { id: true, companyName: true } },
 } as const;
 
-const serializeAuthenticatedUser = (user: any) => ({
-  id: user.id,
-  name: user.name,
-  email: user.email,
-  role: user.role
-    ? {
-        id: user.role.id,
-        name: user.role.name,
-        status: user.role.status,
-        isSystemRole: user.role.isSystemRole,
-      }
-    : null,
-  permissions: Array.isArray(user.role?.permissions)
-    ? user.role.permissions.map((rolePermission: any) => rolePermission.permission.key)
-    : [],
-  isOnboarded: user.isOnboarded,
-  devices: user.devices,
-  workspace: user.workspace,
-});
+const serializeAuthenticatedUser = (user: any, resolvedWorkspaceId?: string | null) => {
+  const permissionKeys = Array.isArray(user.role?.permissions)
+    ? user.role.permissions
+        .map((rolePermission: any) => rolePermission?.permission?.key)
+        .filter((key: unknown): key is string => typeof key === 'string' && key.length > 0)
+    : [];
+
+  const workspaceId =
+    (typeof resolvedWorkspaceId === 'string' && resolvedWorkspaceId.trim()) ||
+    (typeof user.workspaceId === 'string' && user.workspaceId.trim()) ||
+    (typeof user.workspace?.id === 'string' && user.workspace.id.trim()) ||
+    null;
+
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role
+      ? {
+          id: user.role.id,
+          name: user.role.name,
+          status: user.role.status,
+          isSystemRole: user.role.isSystemRole,
+        }
+      : null,
+    permissions: permissionKeys,
+    isOnboarded: user.isOnboarded,
+    devices: user.devices,
+    workspaceId,
+    workspace: user.workspace,
+  };
+};
+
+const resolveWorkspaceForAuthPayload = async (user: {
+  id: string;
+  workspaceId?: string | null;
+}): Promise<string | null> => {
+  try {
+    return await resolveWorkspaceIdForUser(user.id, user.workspaceId ?? null);
+  } catch (error: any) {
+    logger.warn('Failed to resolve workspace id for auth payload', {
+      userId: user.id,
+      error: error?.message,
+      action: 'auth_resolve_workspace_failed',
+    });
+    return null;
+  }
+};
 
 const parsePositiveInt = (value: unknown, fallback: number): number => {
   const parsed = Number(value);
@@ -416,10 +446,10 @@ export const login = async (req: Request, res: Response): Promise<any> => {
         return res.status(401).json({ message: 'Invalid credentials' });
       }
 
-      logger.error('Failed to sync workspace owner superadmin role during Google login', {
+      logger.error('Failed to sync workspace owner superadmin role during password login', {
         userId: user.id,
         error: error?.message,
-        action: 'google_login_owner_role_sync_failed',
+        action: 'login_owner_role_sync_failed',
       });
 
       // Fall back to current persisted user state so authentication can proceed.
@@ -469,7 +499,7 @@ export const login = async (req: Request, res: Response): Promise<any> => {
       throw error;
     }
 
-    if (redisClient?.isOpen) {
+    if (redisClient?.isReady) {
       await redisClient.set(`refresh:${tokens.tokenId}`, user.id);
     } else {
       console.warn('Redis not connected. Skipping refresh token storage for login.');
@@ -487,8 +517,10 @@ export const login = async (req: Request, res: Response): Promise<any> => {
       userAgent: req.headers['user-agent'],
     }).catch(e => console.error('Audit err:', e));
 
+    const resolvedWorkspaceId = await resolveWorkspaceForAuthPayload(user);
+
     return res.status(200).json({
-      user: serializeAuthenticatedUser(user),
+      user: serializeAuthenticatedUser(user, resolvedWorkspaceId),
       ...tokens,
     });
   } catch (error: any) {
@@ -502,7 +534,10 @@ export const login = async (req: Request, res: Response): Promise<any> => {
 
 export const googleLogin = async (req: Request, res: Response): Promise<any> => {
   try {
-    console.log('Incoming Google token:', req.body);
+    logger.debug('Incoming Google login request', {
+      action: 'google_login_request',
+      bodyKeys: req.body && typeof req.body === 'object' ? Object.keys(req.body) : [],
+    });
 
     const token = extractGoogleCredentialToken(req.body);
 
@@ -615,6 +650,19 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
       });
     }
 
+    if (!isRoleScopedToUserWorkspace(user)) {
+      logger.error('Google login blocked because role is linked to a different workspace', {
+        userId: user.id,
+        userWorkspaceId: user.workspaceId,
+        roleId: user.roleId,
+        roleWorkspaceId: user.role?.workspaceId,
+        action: 'google_login_role_workspace_mismatch',
+      });
+      return res.status(403).json({
+        message: 'Account role is not valid for this workspace. Please contact support or your administrator.',
+      });
+    }
+
     let tokens;
     try {
       tokens = generateTokens(user as any);
@@ -634,7 +682,7 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
       throw error;
     }
 
-    if (redisClient?.isOpen) {
+    if (redisClient?.isReady) {
       try {
         await redisClient.set(`refresh:${tokens.tokenId}`, user.id);
       } catch (redisError: any) {
@@ -661,13 +709,16 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
       userAgent: req.headers['user-agent'],
     }).catch(e => console.error('Audit err:', e));
 
-    return res.json({
-      user: serializeAuthenticatedUser(user),
+    const resolvedWorkspaceId = await resolveWorkspaceForAuthPayload(user);
+
+    return res.status(200).json({
+      user: serializeAuthenticatedUser(user, resolvedWorkspaceId),
       ...tokens,
     });
   } catch (error: any) {
     logger.error('Google login failed unexpectedly', {
       error: error?.message,
+      stack: error?.stack,
       code: error?.code,
       action: 'google_login_unexpected_error',
     });
@@ -708,6 +759,11 @@ export const refreshToken = async (req: Request, res: Response): Promise<any> =>
 
     const { userId, tokenId } = decoded;
 
+    if (!redisClient?.isReady) {
+      logger.warn('Refresh token rejected - Redis session store not ready', { userId, tokenId, action: 'refresh_redis_unready' });
+      return res.status(503).json({ message: 'Session service temporarily unavailable. Please try again shortly.' });
+    }
+
     const storedUserId = await redisClient.get(`refresh:${tokenId}`);
     if (!storedUserId || storedUserId !== userId) {
       logger.warn('Refresh token rejected - stolen or already used', { userId, tokenId, action: 'refresh_token_rejected' });
@@ -726,7 +782,23 @@ export const refreshToken = async (req: Request, res: Response): Promise<any> =>
       return res.status(403).json({ message: 'User not found or inactive' });
     }
 
-    user = await ensureWorkspaceOwnerSuperAdmin(user);
+    try {
+      user = await ensureWorkspaceOwnerSuperAdmin(user);
+    } catch (error: any) {
+      logger.error('Failed to sync workspace owner superadmin role during token refresh', {
+        userId: user?.id,
+        error: error?.message,
+        action: 'refresh_owner_role_sync_failed',
+      });
+      if (user?.id) {
+        const fallbackUser = await prisma.user.findUnique({
+          where: { id: user.id },
+          include: authenticatedUserInclude,
+        });
+        if (fallbackUser) user = fallbackUser;
+      }
+    }
+
     if (!user) {
       return res.status(403).json({ message: 'User not found or inactive' });
     }
@@ -737,12 +809,26 @@ export const refreshToken = async (req: Request, res: Response): Promise<any> =>
       });
     }
 
-    const tokens = generateTokens(user as any);
+    let tokens;
+    try {
+      tokens = generateTokens(user as any);
+    } catch (error: any) {
+      if (error?.statusCode) {
+        return res.status(error.statusCode).json({
+          message: error.message,
+          code: error.code,
+        });
+      }
+      throw error;
+    }
+
     await redisClient.set(`refresh:${tokens.tokenId}`, user.id);
-    await trackUserDevice(req, user as any);
+    trackUserDevice(req, user as any).catch((e) => console.error('Device track err:', e));
+
+    const resolvedWorkspaceId = await resolveWorkspaceForAuthPayload(user);
 
     return res.status(200).json({
-      user: serializeAuthenticatedUser(user),
+      user: serializeAuthenticatedUser(user, resolvedWorkspaceId),
       ...tokens,
     });
   } catch (error) {
