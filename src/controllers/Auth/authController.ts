@@ -533,7 +533,7 @@ export const login = async (req: Request, res: Response): Promise<any> => {
 };
 
 export const googleLogin = async (req: Request, res: Response): Promise<any> => {
-  try {
+    console.log("DEBUG Google Login: Step 1 - Incoming request body keys:", Object.keys(req.body || {}));
     logger.debug('Incoming Google login request', {
       action: 'google_login_request',
       bodyKeys: req.body && typeof req.body === 'object' ? Object.keys(req.body) : [],
@@ -549,14 +549,18 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
       return res.status(400).json({ message: 'Google credential token is required' });
     }
 
+    console.log("DEBUG Google Login: Step 2 - Token extracted:", !!token);
     if (typeof token !== 'string' || token.split('.').length !== 3) {
+      console.log("DEBUG Google Login: Invalid token format");
       return res.status(400).json({ message: 'Send a valid Google ID token (JWT), not Google client ID' });
     }
 
     let payload: any;
     try {
       payload = await verifyGoogleToken(token);
+      console.log("DEBUG Google Login: Step 3 - Token verified, email:", payload?.email);
     } catch (error: any) {
+      console.log("DEBUG Google Login: Step 3 - Token verification FAILED:", error.message);
       if (error?.statusCode === 503) {
         logger.error('Google login backend misconfiguration', {
           error: error.message,
@@ -580,11 +584,11 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
       return res.status(403).json({ message: 'Google account email is not verified' });
     }
 
-    // 1. Try to find the user by googleId FIRST (Most reliable identifier)
     let user = await prisma.user.findUnique({
       where: { googleId: sub },
       include: authenticatedUserInclude,
     });
+    console.log("DEBUG Google Login: Step 4 - Lookup by googleId:", !!user);
 
     // 2. If not found by googleId, try finding by email
     if (!user) {
@@ -603,7 +607,6 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
       }
     }
 
-    // 4. If still not found, safely create a new user
     if (!user) {
       user = await prisma.user.create({
         data: {
@@ -614,6 +617,7 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
         },
         include: authenticatedUserInclude,
       });
+      console.log("DEBUG Google Login: Step 7 - New user created");
     }
 
     // Owner-role sync is best-effort. Login must not fail if this maintenance step errors.
