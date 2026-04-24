@@ -24,7 +24,8 @@ export const getRoles = async (req: Request, res: Response, next: NextFunction):
   if (!workspaceId) return;
 
   try {
-    const roles = await masterDataService.getRoles(workspaceId);
+    const includeInactive = String(req.query.includeInactive || '').toLowerCase() === 'true';
+    const roles = await masterDataService.getRoles(workspaceId, { includeInactive });
     res.status(200).json({ success: true, data: { roles } });
   } catch (error) {
     handleServiceError(error, res, next);

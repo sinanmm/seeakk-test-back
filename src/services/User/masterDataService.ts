@@ -1,12 +1,14 @@
 import prisma from '../../config/prisma';
 
-export const getRoles = async (workspaceId: string) => {
+export const getRoles = async (workspaceId: string, options?: { includeInactive?: boolean }) => {
+  const includeInactive = options?.includeInactive === true;
   return prisma.role.findMany({
     where: {
       workspaceId,
-      status: 'ACTIVE',
+      ...(includeInactive ? {} : { status: 'ACTIVE' }),
     },
     orderBy: [
+      { status: 'asc' },
       { isSystemRole: 'desc' },
       { name: 'asc' },
     ],
