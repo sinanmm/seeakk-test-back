@@ -332,6 +332,82 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
 
       return { message: 'Invite revoked successfully.' };
     },
+
+    async sendInviteToUser(userId: string, actor: Actor, context?: { ipAddress?: string; userAgent?: string }) {
+      const workspaceId = actor.workspaceId?.trim();
+      if (!workspaceId) throw new InviteError('Workspace context required.', 403, 'WORKSPACE_REQUIRED');
+
+      const workspace = await assertWorkspace(workspaceId);
+      const user = await deps.repository.findInvitableUserById(userId, workspaceId);
+      if (!user) {
+        throw new InviteError('User not found in this workspace.', 404, 'USER_NOT_FOUND');
+      }
+
+      if (user.isActive) {
+        throw new InviteError('Invite can only be sent to inactive users.', 409, 'USER_ALREADY_ACTIVE');
+      }
+
+      if (!user.role?.id) {
+        throw new InviteError('Assign a role before sending invite.', 400, 'USER_ROLE_REQUIRED');
+      }
+
+      if (!user.workspaceId || user.workspaceId !== workspaceId) {
+        throw new InviteError('User workspace mismatch. Cannot send invite.', 409, 'USER_WORKSPACE_MISMATCH');
+      }
+
+      const now = deps.now();
+      await deps.repository.expirePendingInvitesForUser(user.id, workspaceId, now);
+
+      const latestInvite = await deps.repository.findLatestInviteForUser(user.id, workspaceId);
+      const latestStatus = latestInvite ? computeInviteStatus(latestInvite, now) : null;
+      if (latestStatus === 'PENDING') {
+        throw new InviteError('An active invite already exists for this user.', 409, 'INVITE_ALREADY_PENDING');
+      }
+
+      const { rawToken, tokenHash } = deps.tokenFactory();
+      const expiresAt = buildExpiryDate(now);
+      const invite = await deps.repository.createInviteForUser({
+        userId: user.id,
+        workspaceId,
+        tokenHash,
+        expiresAt,
+        createdBy: actor.id,
+      });
+
+      await deps.sendInvitationEmail(user.email, {
+        recipientName: user.name || user.email,
+        workspaceName: workspace.companyName,
+        inviterName: actor.name || actor.id,
+        inviteToken: rawToken,
+        expiresAt,
+      });
+
+      await deps.audit.log({
+        userId: actor.id,
+        workspaceId,
+        action: 'USER_INVITE_SENT',
+        entityType: 'Invite',
+        entityId: invite.id,
+        details: {
+          inviteeUserId: user.id,
+          inviteeEmail: user.email,
+          expiresAt: expiresAt.toISOString(),
+        },
+        ipAddress: context?.ipAddress,
+        userAgent: context?.userAgent,
+      });
+
+      return {
+        message: 'Invite sent successfully.',
+        invite: {
+          id: invite.id,
+          status: invite.status,
+          expiresAt: invite.expiresAt.toISOString(),
+          createdAt: invite.createdAt.toISOString(),
+        },
+        user: toResponseUser(user),
+      };
+    },
   };
 };
 

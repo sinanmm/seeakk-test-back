@@ -51,6 +51,8 @@ const USER_SELECT = {
   name: true,
   username: true,
   email: true,
+  roleId: true,
+  workspaceId: true,
   phone: true,
   isActive: true,
   isEmailVerified: true,
@@ -65,6 +67,19 @@ const USER_SELECT = {
   country: { select: { id: true, name: true } },
   state: { select: { id: true, name: true } },
   district: { select: { id: true, name: true } },
+  receivedInvites: {
+    orderBy: { createdAt: 'desc' as const },
+    take: 1,
+    select: {
+      id: true,
+      status: true,
+      expiresAt: true,
+      usedAt: true,
+      revokedAt: true,
+      resentAt: true,
+      createdAt: true,
+    },
+  },
   assignedLocations: {
     select: {
       location: { select: { id: true, name: true, type: true } },

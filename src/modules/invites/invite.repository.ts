@@ -83,6 +83,12 @@ export const findUserById = (userId: string) =>
     select: INVITE_USER_SELECT,
   });
 
+export const findInvitableUserById = (userId: string, workspaceId: string) =>
+  (prisma as any).user.findFirst({
+    where: { id: userId, workspaceId, deletedAt: null },
+    select: INVITE_USER_SELECT,
+  });
+
 export const createInvitedUserWithInvite = async (input: {
   workspaceId: string;
   createdBy: string;
@@ -300,5 +306,59 @@ export const updateInviteForRevoke = (id: string, revokedAt: Date) =>
     data: {
       revokedAt,
       status: 'REVOKED',
+    },
+  });
+
+export const findLatestInviteForUser = (userId: string, workspaceId: string) =>
+  (prisma as any).invite.findFirst({
+    where: { userId, workspaceId },
+    orderBy: { createdAt: 'desc' },
+    select: {
+      id: true,
+      status: true,
+      expiresAt: true,
+      usedAt: true,
+      revokedAt: true,
+      resentAt: true,
+      createdAt: true,
+    },
+  });
+
+export const expirePendingInvitesForUser = (userId: string, workspaceId: string, now: Date) =>
+  (prisma as any).invite.updateMany({
+    where: {
+      userId,
+      workspaceId,
+      usedAt: null,
+      revokedAt: null,
+      expiresAt: { lte: now },
+    },
+    data: {
+      status: 'EXPIRED',
+      revokedAt: now,
+    },
+  });
+
+export const createInviteForUser = (input: {
+  userId: string;
+  workspaceId: string;
+  tokenHash: string;
+  expiresAt: Date;
+  createdBy: string;
+}) =>
+  (prisma as any).invite.create({
+    data: {
+      userId: input.userId,
+      workspaceId: input.workspaceId,
+      tokenHash: input.tokenHash,
+      expiresAt: input.expiresAt,
+      createdBy: input.createdBy,
+      status: 'PENDING',
+    },
+    select: {
+      id: true,
+      createdAt: true,
+      expiresAt: true,
+      status: true,
     },
   });

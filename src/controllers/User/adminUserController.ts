@@ -379,3 +379,30 @@ export const resetUserPassword = async (req: Request, res: Response, next: NextF
     handleServiceError(error, res, next, 'resetUserPassword');
   }
 };
+
+/**
+ * POST /api/admin/users/:id/send-invite
+ * Send invite to an existing inactive user in actor workspace.
+ */
+export const sendInviteToUser = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = requireWorkspace(req, res);
+  if (!workspaceId) return;
+
+  const userId = req.params['id'] as string;
+
+  try {
+    const result = await inviteService.sendInviteToUser(
+      userId,
+      { id: req.user!.id, workspaceId, name: req.user?.name || null },
+      { ipAddress: req.ip, userAgent: req.headers['user-agent'] },
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: result.message,
+      data: result,
+    });
+  } catch (error: any) {
+    handleServiceError(error, res, next, 'sendInviteToUser');
+  }
+};
