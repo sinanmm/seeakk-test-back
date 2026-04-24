@@ -135,7 +135,7 @@ export const listRoles = async (query: ListRolesQuery, workspaceId: string): Pro
       take: limit,
       orderBy: [{ isSystemRole: 'desc' }, { createdAt: 'desc' }],
       include: {
-        _count: { select: { permissions: true } },
+        _count: { select: { permissions: true, users: true } },
       },
     }),
   ]);
@@ -151,6 +151,7 @@ export const listRoles = async (query: ListRolesQuery, workspaceId: string): Pro
       createdAt: role.createdAt,
       updatedAt: role.updatedAt,
       permissionsCount: role._count.permissions,
+      usersCount: role._count.users,
     })),
     pagination: {
       page,
@@ -273,12 +274,19 @@ export const deleteRole = async (id: string, workspaceId: string): Promise<void>
   if (role.isSystemRole || normalizeRoleKey(role.name) === SUPERADMIN_ROLE_NAME) {
     const err: any = new Error('System protected roles cannot be deleted.');
     err.statusCode = 403;
+    err.code = 'ROLE_SYSTEM_PROTECTED';
     throw err;
   }
 
   if (role._count.users > 0) {
     const err: any = new Error(`Cannot delete role: ${role._count.users} users are currently assigned to this role.`);
     err.statusCode = 400;
+    err.code = 'ROLE_HAS_USERS';
+    err.details = {
+      assignedUsersCount: role._count.users,
+      roleId: role.id,
+      roleName: role.name,
+    };
     throw err;
   }
 

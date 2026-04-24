@@ -10,6 +10,7 @@ export interface RoleResponse {
   createdAt: Date;
   updatedAt: Date;
   permissionsCount?: number;
+  usersCount?: number;
   permissions?: string[];
 }
 

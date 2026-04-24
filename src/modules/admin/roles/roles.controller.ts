@@ -32,7 +32,12 @@ function validate<T>(
 
 const handleServiceError = (error: any, res: Response, next: NextFunction, action: string): void => {
   if (error?.statusCode) {
-    res.status(error.statusCode).json({ success: false, message: error.message });
+    res.status(error.statusCode).json({
+      success: false,
+      message: error.message,
+      code: error.code,
+      details: error.details,
+    });
     return;
   }
   logger.error(`Roles error during ${action}`, { error: error?.message });
