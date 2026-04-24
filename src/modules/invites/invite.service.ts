@@ -281,7 +281,7 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
       const now = deps.now();
       const expiresAt = buildExpiryDate(now);
 
-      await deps.repository.updateInviteForResend(inviteId, tokenHash, expiresAt, now);
+      await deps.repository.updateInviteForResend(inviteId, tokenHash, expiresAt);
 
       await deps.sendInvitationEmail(invite.user.email, {
         recipientName: invite.user.name || invite.user.email,

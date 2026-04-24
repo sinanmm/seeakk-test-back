@@ -922,7 +922,6 @@ model Invite {
   usedAt      DateTime?
   createdBy   String
   status      String    @default("PENDING")
-  resentAt    DateTime?
   createdAt   DateTime  @default(now())
 
   user        User      @relation("InviteUser", fields: [userId], references: [id], onDelete: Cascade)
