@@ -99,11 +99,11 @@ const USER_SELECT_LEGACY_INVITE = {
   },
 } as const;
 
-const isMissingInviteStatusColumnError = (error: any): boolean => {
+const isMissingInviteColumnError = (error: any): boolean => {
   const message = String(error?.message || '').toLowerCase();
   return (
     error?.code === 'P2022' &&
-    (message.includes('invites.status') || message.includes('column') || message.includes('does not exist'))
+    (message.includes('invites.') || message.includes('column') || message.includes('does not exist'))
   );
 };
 
@@ -113,7 +113,7 @@ const withInviteStatusFallback = async <T>(
   try {
     return await queryFactory(USER_SELECT);
   } catch (error: any) {
-    if (!isMissingInviteStatusColumnError(error)) throw error;
+    if (!isMissingInviteColumnError(error)) throw error;
 
     logger.warn('Invite column missing; falling back to legacy invite select shape', {
       code: error?.code,

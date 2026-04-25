@@ -26,6 +26,11 @@ const INVITE_TTL_MS = 24 * 60 * 60 * 1000;
 
 const buildExpiryDate = (now: Date): Date => new Date(now.getTime() + INVITE_TTL_MS);
 
+const buildInviteLink = (token: string): string => {
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  return `${frontendUrl}/invite/accept?token=${encodeURIComponent(token)}`;
+};
+
 const toResponseUser = (user: any) => ({
   id: user.id,
   name: user.name,
@@ -163,7 +168,7 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
         },
       });
 
-      await deps.sendInvitationEmail(result.user.email, {
+      const emailDelivered = await deps.sendInvitationEmail(result.user.email, {
         recipientName: result.user.name || result.user.email,
         workspaceName: workspace.companyName,
         inviterName: actor.name || actor.id,
@@ -194,6 +199,8 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
           createdAt: result.invite.createdAt.toISOString(),
         },
         user: toResponseUser(result.user),
+        delivery: emailDelivered ? 'EMAIL' : 'MANUAL',
+        inviteLink: emailDelivered ? null : buildInviteLink(rawToken),
       };
     },
 
@@ -278,7 +285,7 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
 
       await deps.repository.updateInviteForResend(inviteId, tokenHash, expiresAt);
 
-      await deps.sendInvitationEmail(invite.user.email, {
+      const emailDelivered = await deps.sendInvitationEmail(invite.user.email, {
         recipientName: invite.user.name || invite.user.email,
         workspaceName: workspace.companyName,
         inviterName: actor.name || actor.id,
@@ -297,7 +304,11 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
         userAgent: context?.userAgent,
       });
 
-      return { message: 'Invite resent successfully.' };
+      return {
+        message: 'Invite resent successfully.',
+        delivery: emailDelivered ? 'EMAIL' : 'MANUAL',
+        inviteLink: emailDelivered ? null : buildInviteLink(rawToken),
+      };
     },
 
     async revokeInvite(inviteId: string, actor: Actor, context?: { ipAddress?: string; userAgent?: string }) {
@@ -366,7 +377,7 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
         createdBy: actor.id,
       });
 
-      await deps.sendInvitationEmail(user.email, {
+      const emailDelivered = await deps.sendInvitationEmail(user.email, {
         recipientName: user.name || user.email,
         workspaceName: workspace.companyName,
         inviterName: actor.name || actor.id,
@@ -398,6 +409,8 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
           createdAt: invite.createdAt.toISOString(),
         },
         user: toResponseUser(user),
+        delivery: emailDelivered ? 'EMAIL' : 'MANUAL',
+        inviteLink: emailDelivered ? null : buildInviteLink(rawToken),
       };
     },
   };

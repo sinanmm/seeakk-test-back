@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import logger from '../../utils/logger';
 
 const isProduction = process.env.NODE_ENV === 'production';
 const isEmailConfigured = (): boolean => Boolean(process.env.EMAIL_USER && process.env.EMAIL_PASS);
@@ -12,15 +13,28 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-const sendOrLogEmail = async (to: string, subject: string, html: string, previewLinkLabel: string, previewLink: string): Promise<void> => {
+const sendOrLogEmail = async (
+  to: string,
+  subject: string,
+  html: string,
+  previewLinkLabel: string,
+  previewLink: string,
+): Promise<boolean> => {
   if (isProduction && !isEmailConfigured()) {
-    throw new Error("Email service not configured in production");
+    logger.warn('Email service not configured; skipping outbound email', {
+      to,
+      subject,
+      previewLinkLabel,
+      previewLink,
+      environment: process.env.NODE_ENV,
+    });
+    return false;
   }
 
   if (!isEmailConfigured()) {
     console.warn("⚠️ Email not configured — using mock mode");
     console.log("Mock email:", { to, subject, link: previewLink });
-    return;
+    return false;
   }
 
   try {
@@ -30,12 +44,15 @@ const sendOrLogEmail = async (to: string, subject: string, html: string, preview
       subject,
       html,
     });
+    return true;
   } catch (error) {
-    console.error("Email send failed:", error);
-
-    if (isProduction) {
-      throw new Error("Email delivery failed");
-    }
+    logger.error('Email delivery failed', {
+      to,
+      subject,
+      error: error instanceof Error ? error.message : String(error),
+      environment: process.env.NODE_ENV,
+    });
+    return false;
   }
 };
 
@@ -91,7 +108,7 @@ export const sendInvitationEmail = async (
     inviteToken: string;
     expiresAt: Date;
   },
-): Promise<void> => {
+): Promise<boolean> => {
   const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
   const backendUrl = process.env.BACKEND_URL || 'http://localhost:5000';
   const inviteLink = `${frontendUrl}/invite/accept?token=${encodeURIComponent(input.inviteToken)}`;
@@ -99,7 +116,7 @@ export const sendInvitationEmail = async (
   const displayName = input.recipientName?.trim() || email;
   const inviterName = input.inviterName?.trim() || 'your administrator';
 
-  await sendOrLogEmail(
+  return sendOrLogEmail(
     email,
     `You're invited to join ${input.workspaceName} on Seeakk`,
     `
