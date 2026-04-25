@@ -135,7 +135,7 @@ export const inviteUser = async (req: Request, res: Response, next: NextFunction
 
     return res.status(201).json({
       success: true,
-      message: 'Invitation sent successfully.',
+      message: result.message,
       data: result,
     });
   } catch (error: any) {
@@ -162,6 +162,7 @@ export const resendInvite = async (req: Request, res: Response, next: NextFuncti
     return res.status(200).json({
       success: true,
       message: result.message,
+      data: result,
     });
   } catch (error: any) {
     handleServiceError(error, res, next, 'resendInvite');

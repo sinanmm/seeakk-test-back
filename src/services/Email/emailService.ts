@@ -5,13 +5,30 @@ const isProduction = process.env.NODE_ENV === 'production';
 const isEmailConfigured = (): boolean => Boolean(process.env.EMAIL_USER && process.env.EMAIL_PASS);
 export const isEmailServiceConfigured = (): boolean => isEmailConfigured();
 
-const transporter = nodemailer.createTransport({
-  service: process.env.EMAIL_SERVICE || 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER || 'test@example.com',
-    pass: process.env.EMAIL_PASS || 'password',
-  },
-});
+const getTransporter = () => {
+  const user = process.env.EMAIL_USER || '';
+  const pass = process.env.EMAIL_PASS || '';
+  const service = process.env.EMAIL_SERVICE || '';
+  const host = process.env.EMAIL_HOST || '';
+  const port = Number(process.env.EMAIL_PORT || 0);
+  const secureFromEnv = String(process.env.EMAIL_SECURE || '').toLowerCase();
+  const secure =
+    secureFromEnv ? secureFromEnv === 'true' : port === 465;
+
+  if (host && Number.isFinite(port) && port > 0) {
+    return nodemailer.createTransport({
+      host,
+      port,
+      secure,
+      auth: { user, pass },
+    });
+  }
+
+  return nodemailer.createTransport({
+    service: service || 'gmail',
+    auth: { user, pass },
+  });
+};
 
 const sendOrLogEmail = async (
   to: string,
@@ -38,6 +55,7 @@ const sendOrLogEmail = async (
   }
 
   try {
+    const transporter = getTransporter();
     await transporter.sendMail({
       from: process.env.EMAIL_FROM || process.env.EMAIL_USER || 'no-reply@seeakk.com',
       to,
@@ -45,14 +63,19 @@ const sendOrLogEmail = async (
       html,
     });
     return true;
-  } catch (error) {
+  } catch (error: any) {
     logger.error('Email delivery failed', {
       to,
       subject,
       error: error instanceof Error ? error.message : String(error),
+      code: error?.code,
+      response: error?.response,
+      command: error?.command,
       environment: process.env.NODE_ENV,
     });
-    return false;
+    throw new Error(
+      `Email delivery failed for "${subject}". Check SMTP configuration and provider access.`,
+    );
   }
 };
 

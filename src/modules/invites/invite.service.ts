@@ -113,6 +113,27 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
     return invite;
   };
 
+  const sendInvitationOrThrow = async (
+    email: string,
+    input: {
+      recipientName: string;
+      workspaceName: string;
+      inviterName?: string | null;
+      inviteToken: string;
+      expiresAt: Date;
+    },
+  ): Promise<boolean> => {
+    try {
+      return await deps.sendInvitationEmail(email, input);
+    } catch (error: any) {
+      throw new InviteError(
+        error?.message || 'Failed to deliver invitation email. Please verify SMTP configuration.',
+        503,
+        'INVITE_EMAIL_DELIVERY_FAILED',
+      );
+    }
+  };
+
   return {
     async createInvite(input: CreateInviteInput, actor: Actor, context?: { ipAddress?: string; userAgent?: string }) {
       const workspaceId = actor.workspaceId?.trim();
@@ -168,7 +189,7 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
         },
       });
 
-      const emailDelivered = await deps.sendInvitationEmail(result.user.email, {
+      const emailDelivered = await sendInvitationOrThrow(result.user.email, {
         recipientName: result.user.name || result.user.email,
         workspaceName: workspace.companyName,
         inviterName: actor.name || actor.id,
@@ -192,6 +213,9 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
       });
 
       return {
+        message: emailDelivered
+          ? 'Invitation email sent successfully.'
+          : 'Invite created, but email delivery is unavailable. Share the invite link manually.',
         invite: {
           id: result.invite.id,
           email: result.user.email,
@@ -285,7 +309,7 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
 
       await deps.repository.updateInviteForResend(inviteId, tokenHash, expiresAt);
 
-      const emailDelivered = await deps.sendInvitationEmail(invite.user.email, {
+      const emailDelivered = await sendInvitationOrThrow(invite.user.email, {
         recipientName: invite.user.name || invite.user.email,
         workspaceName: workspace.companyName,
         inviterName: actor.name || actor.id,
@@ -305,7 +329,9 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
       });
 
       return {
-        message: 'Invite resent successfully.',
+        message: emailDelivered
+          ? 'Invite resent successfully.'
+          : 'Invite refreshed, but email delivery is unavailable. Share the invite link manually.',
         delivery: emailDelivered ? 'EMAIL' : 'MANUAL',
         inviteLink: emailDelivered ? null : buildInviteLink(rawToken),
       };
@@ -377,7 +403,7 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
         createdBy: actor.id,
       });
 
-      const emailDelivered = await deps.sendInvitationEmail(user.email, {
+      const emailDelivered = await sendInvitationOrThrow(user.email, {
         recipientName: user.name || user.email,
         workspaceName: workspace.companyName,
         inviterName: actor.name || actor.id,
@@ -401,7 +427,9 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
       });
 
       return {
-        message: 'Invite sent successfully.',
+        message: emailDelivered
+          ? 'Invite email sent successfully.'
+          : 'Invite created, but email delivery is unavailable. Share the invite link manually.',
         invite: {
           id: invite.id,
           status: computeInviteStatus(invite, now),
