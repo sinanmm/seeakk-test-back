@@ -125,6 +125,18 @@ export const setupWorkspace = async (req: Request, res: Response, next: NextFunc
       include: { role: true },
     });
 
+    const rolePermissions = await prisma.rolePermission.findMany({
+      where: { roleId: superAdminRole.id },
+      include: {
+        permission: {
+          select: { key: true },
+        },
+      },
+    });
+    const permissionKeys = rolePermissions
+      .map((rolePermission) => rolePermission.permission?.key)
+      .filter((key): key is string => typeof key === 'string' && key.length > 0);
+
     // 4. Seed default master data for the new workspace
     await seedDefaultMasterData(newWorkspace.id, user.id);
 
@@ -142,6 +154,7 @@ export const setupWorkspace = async (req: Request, res: Response, next: NextFunc
         name: updatedUser.name,
         email: updatedUser.email,
         role: updatedUser.role,
+        permissions: permissionKeys,
         isOnboarded: updatedUser.isOnboarded,
         workspaceId: updatedUser.workspaceId,
       },

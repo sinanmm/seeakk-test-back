@@ -124,11 +124,14 @@ const hydrateAuthenticatedUser = async (user: any): Promise<any> => {
 };
 
 const serializeAuthenticatedUser = (user: any, resolvedWorkspaceId?: string | null) => {
-  const permissionKeys = Array.isArray(user.role?.permissions)
+  const rawPermissionKeys = Array.isArray(user.role?.permissions)
     ? user.role.permissions
         .map((rolePermission: any) => rolePermission?.permission?.key)
         .filter((key: unknown): key is string => typeof key === 'string' && key.length > 0)
     : [];
+  const permissionKeys = normalizeRoleKey(user.role?.name || '') === SUPERADMIN_ROLE_NAME
+    ? Array.from(new Set([...rawPermissionKeys, 'SUPERADMIN']))
+    : rawPermissionKeys;
 
   const workspaceId =
     (typeof resolvedWorkspaceId === 'string' && resolvedWorkspaceId.trim()) ||
