@@ -343,8 +343,8 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
         throw new InviteError('User not found in this workspace.', 404, 'USER_NOT_FOUND');
       }
 
-      if (user.isActive) {
-        throw new InviteError('Invite can only be sent to inactive users.', 409, 'USER_ALREADY_ACTIVE');
+      if (user.isOnboarded) {
+        throw new InviteError('Invite can only be sent to users who have not completed onboarding.', 409, 'USER_ALREADY_ONBOARDED');
       }
 
       if (!user.role?.id) {
