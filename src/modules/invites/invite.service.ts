@@ -93,10 +93,6 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
     }
 
     const now = deps.now();
-    if (invite.status === 'REVOKED') {
-      throw new InviteError('Invite token has been revoked.', 403, 'INVITE_REVOKED');
-    }
-
     if (invite.usedAt) {
       throw new InviteError('Invite token has already been used.', 409, 'INVITE_ALREADY_USED');
     }
@@ -274,8 +270,7 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
         throw new InviteError('Invite not found.', 404, 'INVITE_NOT_FOUND');
       }
 
-      if (invite.usedAt) throw new InviteError('Cannot resend accepted invite.', 409, 'INVITE_ALREADY_USED');
-      if (invite.status === 'REVOKED') throw new InviteError('Cannot resend revoked invite.', 409, 'INVITE_REVOKED');
+      if (invite.usedAt) throw new InviteError('Cannot resend an already consumed invite.', 409, 'INVITE_ALREADY_USED');
 
       const { rawToken, tokenHash } = deps.tokenFactory();
       const now = deps.now();
@@ -314,11 +309,10 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
         throw new InviteError('Invite not found.', 404, 'INVITE_NOT_FOUND');
       }
 
-      if (invite.usedAt) throw new InviteError('Cannot revoke accepted invite.', 409, 'INVITE_ALREADY_USED');
-      if (invite.status === 'REVOKED') throw new InviteError('Invite is already revoked.', 409, 'INVITE_ALREADY_REVOKED');
+      if (invite.usedAt) throw new InviteError('Cannot revoke an already consumed invite.', 409, 'INVITE_ALREADY_USED');
 
       const now = deps.now();
-      await deps.repository.updateInviteForRevoke(inviteId);
+      await deps.repository.updateInviteForRevoke(inviteId, now);
 
       await deps.audit.log({
         userId: actor.id,
@@ -356,8 +350,6 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
       }
 
       const now = deps.now();
-      await deps.repository.expirePendingInvitesForUser(user.id, workspaceId, now);
-
       const latestInvite = await deps.repository.findLatestInviteForUser(user.id, workspaceId);
       const latestStatus = latestInvite ? computeInviteStatus(latestInvite, now) : null;
       if (latestStatus === 'PENDING') {
@@ -401,7 +393,7 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
         message: 'Invite sent successfully.',
         invite: {
           id: invite.id,
-          status: invite.status,
+          status: computeInviteStatus(invite, now),
           expiresAt: invite.expiresAt.toISOString(),
           createdAt: invite.createdAt.toISOString(),
         },
@@ -412,7 +404,6 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
 };
 
 export const computeInviteStatus = (invite: any, now: Date) => {
-  if (invite.status === 'REVOKED') return 'REVOKED';
   if (invite.usedAt) return 'ACCEPTED';
   if (invite.expiresAt <= now) return 'EXPIRED';
   return 'PENDING';

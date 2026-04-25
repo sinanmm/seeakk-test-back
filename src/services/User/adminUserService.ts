@@ -72,7 +72,6 @@ const USER_SELECT = {
     take: 1,
     select: {
       id: true,
-      status: true,
       expiresAt: true,
       usedAt: true,
       createdAt: true,
@@ -116,7 +115,7 @@ const withInviteStatusFallback = async <T>(
   } catch (error: any) {
     if (!isMissingInviteStatusColumnError(error)) throw error;
 
-    logger.warn('Invite status column missing; falling back to legacy invite select shape', {
+    logger.warn('Invite column missing; falling back to legacy invite select shape', {
       code: error?.code,
       message: error?.message,
     });
