@@ -2,6 +2,8 @@ import nodemailer from 'nodemailer';
 import logger from '../../utils/logger';
 
 const isProduction = process.env.NODE_ENV === 'production';
+const DEFAULT_FRONTEND_URL = 'https://lms-frontend-amber-beta.vercel.app';
+const DEFAULT_BACKEND_URL = 'https://backend-2612.onrender.com';
 
 const readEnv = (...keys: string[]): string => {
   for (const key of keys) {
@@ -40,6 +42,9 @@ const getEmailConfig = () => {
 
 const isEmailConfigured = (): boolean => getEmailConfig().configured;
 export const isEmailServiceConfigured = (): boolean => isEmailConfigured();
+
+const getFrontendUrl = (): string => (process.env.FRONTEND_URL || DEFAULT_FRONTEND_URL).trim().replace(/\/+$/, '');
+const getBackendUrl = (): string => (process.env.BACKEND_URL || DEFAULT_BACKEND_URL).trim().replace(/\/+$/, '');
 
 const getTransporter = () => {
   const { user, pass, service, host, port, secure } = getEmailConfig();
@@ -119,7 +124,7 @@ const sendOrLogEmail = async (
 };
 
 export const sendVerificationEmail = async (email: string, token: string): Promise<void> => {
-  const backendUrl = process.env.BACKEND_URL || 'http://localhost:5000';
+  const backendUrl = getBackendUrl();
   const verifyLink = `${backendUrl}/api/auth/verify-email?token=${token}`;
 
   await sendOrLogEmail(
@@ -139,7 +144,7 @@ export const sendVerificationEmail = async (email: string, token: string): Promi
 };
 
 export const sendPasswordResetEmail = async (email: string, name: string | null | undefined, token: string): Promise<void> => {
-  const backendUrl = process.env.BACKEND_URL || 'http://localhost:5000';
+  const backendUrl = getBackendUrl();
   const resetLink = `${backendUrl}/api/auth/reset-password?token=${encodeURIComponent(token)}`;
   const displayName = name?.trim() || 'there';
 
@@ -171,8 +176,8 @@ export const sendInvitationEmail = async (
     expiresAt: Date;
   },
 ): Promise<boolean> => {
-  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-  const backendUrl = process.env.BACKEND_URL || 'http://localhost:5000';
+  const frontendUrl = getFrontendUrl();
+  const backendUrl = getBackendUrl();
   const inviteLink = `${frontendUrl}/invite/accept?token=${encodeURIComponent(input.inviteToken)}`;
   const fallbackValidateLink = `${backendUrl}/api/auth/invite/validate?token=${encodeURIComponent(input.inviteToken)}`;
   const displayName = input.recipientName?.trim() || email;
@@ -207,7 +212,7 @@ export const sendFollowUpReminderEmail = async (
     type?: string;
   },
 ): Promise<void> => {
-  const appUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  const appUrl = getFrontendUrl();
   const when = input.scheduledAt.toLocaleString();
   const subject = `Follow-up reminder: ${input.leadName}`;
   const deepLink = `${appUrl}/calendar/today`;
