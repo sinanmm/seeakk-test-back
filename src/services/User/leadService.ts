@@ -64,7 +64,7 @@ type LeadIncludeRecord = {
   deletedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
-  assignedTo: { id: string; name: string | null; username: string | null; email: string } | null;
+  assignedTo: { id: string; name: string | null; username: string | null; email: string; supervisorId: string | null } | null;
   stage: { id: string; name: string; color: string; isLOB: boolean; isClosed: boolean } | null;
   lifecycle: { id: string; name: string; isDefault: boolean } | null;
   source: { id: string; name: string; status: string } | null;
@@ -119,6 +119,7 @@ const leadInclude = {
       name: true,
       username: true,
       email: true,
+      supervisorId: true,
     },
   },
   stage: {
@@ -1388,6 +1389,7 @@ export const changeStage = async (
         leadId: id,
         fromStageId: existing.stageId,
         toStageId: targetStage.id,
+        assignedToId: existing.assignedTo?.supervisorId || undefined,
         requestData: {
           reasonId: input.reasonId ?? null,
           remarks: input.remarks ?? null,

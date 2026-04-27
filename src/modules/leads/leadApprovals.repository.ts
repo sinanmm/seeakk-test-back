@@ -65,6 +65,7 @@ export const findLeadScoped = async (workspaceId: string, leadId: string) =>
           name: true,
           username: true,
           email: true,
+          supervisorId: true,
         },
       },
       createdBy: {

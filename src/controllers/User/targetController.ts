@@ -92,7 +92,10 @@ export const unlockUser = async (req: Request, res: Response, next: NextFunction
 
   try {
     const userId = req.params['id'] as string;
-    const user = await accountLockService.unlockUser(userId, workspaceId);
+    const user = await accountLockService.unlockUser(userId, workspaceId, {
+      id: req.user!.id,
+      roleName: req.user?.role?.name || null,
+    });
     res.status(200).json({ success: true, message: 'User account unlocked successfully.', data: { user } });
   } catch (error) {
     handleServiceError(error, res, next);
