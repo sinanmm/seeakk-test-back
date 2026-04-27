@@ -31,6 +31,13 @@ const buildInviteLink = (token: string): string => {
   return `${frontendUrl}/invite/accept?token=${encodeURIComponent(token)}`;
 };
 
+const INVITE_CREATED_MANUAL_MESSAGE =
+  'Invite created, but email delivery is unavailable. Share the invite link manually.';
+const INVITE_RESENT_MANUAL_MESSAGE =
+  'Invite refreshed, but email delivery is unavailable. Share the invite link manually.';
+const EXISTING_INVITE_MANUAL_MESSAGE =
+  'An active invite already existed. We refreshed it, but email delivery is unavailable. Share the invite link manually.';
+
 const toResponseUser = (user: any) => ({
   id: user.id,
   name: user.name,
@@ -126,7 +133,7 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
     try {
       const delivered = await deps.sendInvitationEmail(email, input);
       return {
-        emailDelivered: Boolean(delivered),
+        emailDelivered: delivered !== false,
         deliveryErrorMessage: null,
       };
     } catch (error: any) {
@@ -219,7 +226,7 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
       return {
         message: emailDelivered
           ? 'Invitation email sent successfully.'
-          : deliveryErrorMessage || 'Invite created, but email delivery is unavailable. Share the invite link manually.',
+          : INVITE_CREATED_MANUAL_MESSAGE,
         invite: {
           id: result.invite.id,
           email: result.user.email,
@@ -228,6 +235,7 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
         },
         user: toResponseUser(result.user),
         delivery: emailDelivered ? 'EMAIL' : 'MANUAL',
+        deliveryErrorMessage,
         inviteLink: emailDelivered ? null : buildInviteLink(rawToken),
       };
     },
@@ -335,8 +343,9 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
       return {
         message: emailDelivered
           ? 'Invite resent successfully.'
-          : deliveryErrorMessage || 'Invite refreshed, but email delivery is unavailable. Share the invite link manually.',
+          : INVITE_RESENT_MANUAL_MESSAGE,
         delivery: emailDelivered ? 'EMAIL' : 'MANUAL',
+        deliveryErrorMessage,
         inviteLink: emailDelivered ? null : buildInviteLink(rawToken),
       };
     },
@@ -425,8 +434,7 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
         return {
           message: emailDelivered
             ? 'An active invite already existed, so we resent a fresh invite email.'
-            : deliveryErrorMessage ||
-              'An active invite already existed. We refreshed it, but email delivery is unavailable. Share the invite link manually.',
+            : EXISTING_INVITE_MANUAL_MESSAGE,
           invite: {
             id: latestInvite.id,
             status: 'PENDING',
@@ -435,6 +443,7 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
           },
           user: toResponseUser(user),
           delivery: emailDelivered ? 'EMAIL' : 'MANUAL',
+          deliveryErrorMessage,
           inviteLink: emailDelivered ? null : buildInviteLink(rawToken),
         };
       }
@@ -475,7 +484,7 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
       return {
         message: emailDelivered
           ? 'Invite email sent successfully.'
-          : deliveryErrorMessage || 'Invite created, but email delivery is unavailable. Share the invite link manually.',
+          : INVITE_CREATED_MANUAL_MESSAGE,
         invite: {
           id: invite.id,
           status: computeInviteStatus(invite, now),
@@ -484,6 +493,7 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
         },
         user: toResponseUser(user),
         delivery: emailDelivered ? 'EMAIL' : 'MANUAL',
+        deliveryErrorMessage,
         inviteLink: emailDelivered ? null : buildInviteLink(rawToken),
       };
     },
