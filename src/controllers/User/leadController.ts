@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import auditService from '../../services/Audit/auditService';
 import logger from '../../utils/logger';
 import * as leadService from '../../services/User/leadService';
+import { emitWorkspaceEvent } from '../../realtime/socket';
 import type {
   AssignLeadInput,
   ChangeStageInput,
@@ -100,6 +101,7 @@ export const createLead = async (req: Request, res: Response, next: NextFunction
 
   try {
     const lead = await leadService.createLead(workspaceId, getActor(req), input);
+    emitWorkspaceEvent(workspaceId, 'lead_updated', { leadId: lead.id, action: 'created' });
 
     await auditService.log({
       userId: req.user?.id,
@@ -178,6 +180,7 @@ export const updateLead = async (req: Request, res: Response, next: NextFunction
 
   try {
     const lead = await leadService.updateLead(workspaceId, getActor(req), params.id, input);
+    emitWorkspaceEvent(workspaceId, 'lead_updated', { leadId: lead.id, action: 'updated' });
 
     await auditService.log({
       userId: req.user?.id,
@@ -217,6 +220,7 @@ export const changeStage = async (req: Request, res: Response, next: NextFunctio
 
   try {
     const result = await leadService.changeStage(workspaceId, getActor(req), params.id, input);
+    emitWorkspaceEvent(workspaceId, 'lead_updated', { leadId: params.id, action: 'stage_changed' });
 
     if (result.approvalRequired) {
       return res.status(202).json({
@@ -279,6 +283,7 @@ export const assignLead = async (req: Request, res: Response, next: NextFunction
 
   try {
     const lead = await leadService.assignLead(workspaceId, getActor(req), params.id, input);
+    emitWorkspaceEvent(workspaceId, 'lead_updated', { leadId: lead.id, action: 'reassigned' });
 
     await auditService.log({
       userId: req.user?.id,
@@ -315,6 +320,7 @@ export const extendLeadSla = async (req: Request, res: Response, next: NextFunct
 
   try {
     const lead = await leadService.extendLeadSla(workspaceId, params.id, input.extraDays);
+    emitWorkspaceEvent(workspaceId, 'lead_updated', { leadId: lead.id, action: 'sla_extended' });
 
     await auditService.log({
       userId: req.user?.id,
@@ -349,6 +355,7 @@ export const deleteLead = async (req: Request, res: Response, next: NextFunction
 
   try {
     await leadService.deleteLead(workspaceId, params.id);
+    emitWorkspaceEvent(workspaceId, 'lead_updated', { leadId: params.id, action: 'archived' });
 
     await auditService.log({
       userId: req.user?.id,
@@ -378,6 +385,7 @@ export const permanentlyDeleteLead = async (req: Request, res: Response, next: N
 
   try {
     await leadService.permanentlyDeleteLead(workspaceId, params.id);
+    emitWorkspaceEvent(workspaceId, 'lead_updated', { leadId: params.id, action: 'deleted' });
 
     await auditService.log({
       userId: req.user?.id,
@@ -413,6 +421,7 @@ export const bulkDeleteLeads = async (req: Request, res: Response, next: NextFun
 
   try {
     await leadService.bulkDeleteLeads(workspaceId, ids, Boolean(permanent));
+    emitWorkspaceEvent(workspaceId, 'lead_updated', { leadIds: ids, action: permanent ? 'bulk_deleted' : 'bulk_archived' });
 
     await auditService.log({
       userId: req.user?.id,

@@ -2,12 +2,14 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import app from './app';
+import { createServer } from 'http';
 import { connectRedis } from './config/redis';
 import prisma from './config/prisma';
 import { scheduleDailySync } from './modules/holidays/holidays.jobs';
 import './modules/leads/leadImport.jobs';
 import { verifyEmailTransport } from './services/Email/emailService';
 import { startFollowUpReminders } from './services/User/followupReminder.jobs';
+import { initRealtimeServer } from './realtime/socket';
 
 const PORT = process.env.PORT || 5000;
 
@@ -31,8 +33,10 @@ const startServer = async () => {
   try {
     // Connect Redis
     await connectRedis();
+    const httpServer = createServer(app);
+    initRealtimeServer(httpServer);
 
-    app.listen(PORT, () => {
+    httpServer.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
     });
 

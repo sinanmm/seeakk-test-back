@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { protect, authorize, checkPermission } from '../../middlewares/authMiddleware';
+import { protect, authorize, checkPermission, checkAnyPermission } from '../../middlewares/authMiddleware';
 import { globalLimiter } from '../../middlewares/rateLimiter';
 import * as adminUserController from '../../controllers/User/adminUserController';
 
@@ -78,6 +78,6 @@ router.get('/:id/targets', targetController.getUserTargets);
 router.put('/:userId/targets/:targetId', targetController.updateTarget);
 
 // POST   /api/admin/users/:id/unlock        — Unlock staff account
-router.post('/:id/unlock', targetController.unlockUser);
+router.post('/:id/unlock', checkAnyPermission(['USERS_UNLOCK', 'USERS_EDIT', 'SYSTEM_CONFIG']), targetController.unlockUser);
 
 export default router;

@@ -10,6 +10,7 @@ const permissions = [
   { key: 'USERS_VIEW', group: 'ADMIN_MANAGEMENT', description: 'View users list' },
   { key: 'USERS_CREATE', group: 'ADMIN_MANAGEMENT', description: 'Create new users' },
   { key: 'USERS_EDIT', group: 'ADMIN_MANAGEMENT', description: 'Edit existing users' },
+  { key: 'USERS_UNLOCK', group: 'ADMIN_MANAGEMENT', description: 'Unlock locked staff accounts' },
   { key: 'USERS_DELETE', group: 'ADMIN_MANAGEMENT', description: 'Soft-delete users' },
   { key: 'USERS_EXPORT', group: 'ADMIN_MANAGEMENT', description: 'Export users to CSV/Excel' },
 

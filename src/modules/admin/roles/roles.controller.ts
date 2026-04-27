@@ -10,6 +10,8 @@ import {
 } from './roles.validator';
 import logger from '../../../utils/logger';
 import auditService from '../../../services/Audit/auditService';
+import prisma from '../../../config/prisma';
+import { emitUsersEvent, emitWorkspaceEvent } from '../../../realtime/socket';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -59,6 +61,7 @@ export const createRole = async (req: Request, res: Response, next: NextFunction
       return res.status(403).json({ success: false, message: 'Forbidden: No workspace linked.' });
     }
     const result = await rolesService.createRole(input, req.user!.id, workspaceId);
+    emitWorkspaceEvent(workspaceId, 'role_updated', { roleId: result.id });
 
     await auditService.log({
       userId: req.user!.id,
@@ -141,6 +144,13 @@ export const updateRole = async (req: Request, res: Response, next: NextFunction
       return res.status(403).json({ success: false, message: 'Forbidden: No workspace linked.' });
     }
     const result = await rolesService.updateRole(id, input, workspaceId);
+    const impactedUsers = await prisma.user.findMany({
+      where: { workspaceId, roleId: id, deletedAt: null },
+      select: { id: true },
+    });
+    const impactedUserIds = impactedUsers.map((user) => user.id);
+    emitWorkspaceEvent(workspaceId, 'role_updated', { roleId: id, userIds: impactedUserIds });
+    emitUsersEvent(impactedUserIds, 'permissions_updated', { roleId: id });
 
     await auditService.log({
       userId: req.user!.id,
@@ -191,6 +201,7 @@ export const deleteRole = async (req: Request, res: Response, next: NextFunction
       return res.status(403).json({ success: false, message: 'Forbidden: No workspace linked.' });
     }
     await rolesService.deleteRole(id, workspaceId);
+    emitWorkspaceEvent(workspaceId, 'role_updated', { roleId: id });
 
     await auditService.log({
       userId: req.user!.id,
