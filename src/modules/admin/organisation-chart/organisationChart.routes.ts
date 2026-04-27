@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { checkPermission, protect } from '../../../middlewares/authMiddleware';
+import { checkAnyPermission, protect } from '../../../middlewares/authMiddleware';
 import * as organisationChartController from './organisationChart.controller';
 
 const router = Router();
@@ -8,9 +8,8 @@ const router = Router();
 router.get(
   '/',
   protect,
-  checkPermission('USERS_VIEW'),
+  checkAnyPermission(['USERS_VIEW', 'DEPARTMENTS_VIEW', 'SYSTEM_CONFIG']),
   organisationChartController.getOrganisationChart,
 );
 
 export default router;
-
