@@ -1005,21 +1005,20 @@ export const logout = async (req: Request, res: Response): Promise<any> => {
 
 export const getMe = async (req: Request, res: Response): Promise<any> => {
   try {
-    const user = req.user;
+    let user = req.user;
     if (!user) {
       return res.status(401).json({ message: 'Not authorized' });
     }
 
+    user = await hydrateAuthenticatedUser(user);
+    if (!user) {
+      return res.status(401).json({ message: 'Not authorized' });
+    }
+
+    const resolvedWorkspaceId = await resolveWorkspaceForAuthPayload(user);
+
     return res.status(200).json({
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        isEmailVerified: user.isEmailVerified,
-        isOnboarded: user.isOnboarded,
-        workspace: user.workspace || null,
-      },
+      user: serializeAuthenticatedUser(user, resolvedWorkspaceId),
     });
   } catch (error) {
     return res.status(500).json({ message: 'Failed to fetch user profile' });
