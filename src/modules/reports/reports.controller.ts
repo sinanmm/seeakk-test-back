@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import logger from '../../utils/logger';
 import * as reportsService from './reports.service';
+import { emitWorkspaceEvent } from '../../realtime/socket';
 import type {
   CreateReportInput,
   GenerateReportInput,
@@ -82,6 +83,7 @@ export const createReport = async (req: Request, res: Response, next: NextFuncti
 
   try {
     const result = await reportsService.createReport(workspaceId, getActor(req), input, getContext(req));
+    emitWorkspaceEvent(workspaceId, 'report_updated', { reportId: (result as any).id, action: 'created' });
     return res.status(201).json({
       success: true,
       message: 'Report created successfully.',
@@ -122,6 +124,7 @@ export const updateReport = async (req: Request, res: Response, next: NextFuncti
 
   try {
     const result = await reportsService.updateReport(workspaceId, getActor(req), params.id, input, getContext(req));
+    emitWorkspaceEvent(workspaceId, 'report_updated', { reportId: params.id, action: 'updated' });
     return res.status(200).json({
       success: true,
       message: 'Report updated successfully.',
@@ -160,6 +163,7 @@ export const generateSavedReport = async (req: Request, res: Response, next: Nex
 
   try {
     const result = await reportsService.generateSavedReport(workspaceId, getActor(req), params.id, getContext(req));
+    emitWorkspaceEvent(workspaceId, 'report_updated', { reportId: params.id, action: 'generated' });
     return res.status(200).json({
       success: true,
       ...result,
@@ -196,6 +200,7 @@ export const deleteReport = async (req: Request, res: Response, next: NextFuncti
 
   try {
     const result = await reportsService.deleteReport(workspaceId, getActor(req), params.id, getContext(req));
+    emitWorkspaceEvent(workspaceId, 'report_updated', { reportId: params.id, action: 'deleted' });
     return res.status(200).json({
       success: true,
       ...result,

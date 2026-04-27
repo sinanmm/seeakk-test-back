@@ -19,6 +19,7 @@ import {
 import logger from '../../utils/logger';
 import auditService from '../../services/Audit/auditService';
 import { inviteService } from '../../modules/invites/invite.service';
+import { emitUserEvent, emitWorkspaceEvent } from '../../realtime/socket';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -86,6 +87,7 @@ export const createUser = async (req: Request, res: Response, next: NextFunction
 
   try {
     const result = await adminUserService.createUser(input, workspaceId);
+    emitWorkspaceEvent(workspaceId, 'user_updated', { userId: (result as any).user.id, action: 'created' });
 
     await auditService.log({
       userId: req.user!.id,
@@ -253,6 +255,11 @@ export const updateUser = async (req: Request, res: Response, next: NextFunction
 
   try {
     const user = await adminUserService.updateUser(userId, input, workspaceId);
+    emitWorkspaceEvent(workspaceId, 'user_updated', { userId });
+    emitUserEvent(userId, 'user_updated', { userId });
+    if (input.roleId !== undefined) {
+      emitUserEvent(userId, 'permissions_updated', { userId, reason: 'role_changed' });
+    }
 
     await auditService.log({
       userId: req.user!.id,
@@ -288,6 +295,8 @@ export const deleteUser = async (req: Request, res: Response, next: NextFunction
 
   try {
     const result = await adminUserService.deleteUser(userId, workspaceId, requestingUserId);
+    emitWorkspaceEvent(workspaceId, 'user_updated', { userId, deleted: true });
+    emitUserEvent(userId, 'user_updated', { userId, deleted: true });
 
     await auditService.log({
       userId: requestingUserId,
@@ -325,6 +334,8 @@ export const updateUserStatus = async (req: Request, res: Response, next: NextFu
 
   try {
     const user = await adminUserService.updateUserStatus(userId, input, workspaceId, requestingUserId);
+    emitWorkspaceEvent(workspaceId, 'user_updated', { userId, isActive: user.isActive });
+    emitUserEvent(userId, 'user_updated', { userId, isActive: user.isActive });
 
     await auditService.log({
       userId: requestingUserId,
@@ -360,6 +371,7 @@ export const resetUserPassword = async (req: Request, res: Response, next: NextF
 
   try {
     const result = await adminUserService.resetUserPassword(userId, input, workspaceId);
+    emitUserEvent(userId, 'permissions_updated', { userId, reason: 'session_reset' });
 
     await auditService.log({
       userId: req.user!.id,
