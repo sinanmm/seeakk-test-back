@@ -122,8 +122,37 @@ test('createInvite creates an inactive invited user and sends the raw token by e
   assert.equal(sentEmails.length, 1);
   assert.equal(sentEmails[0][1].inviteToken, 'raw-token-123');
   assert.equal(result.user.email, 'invitee@example.com');
+  assert.equal(result.delivery, 'EMAIL');
+  assert.equal(result.inviteLink, null);
   assert.equal(auditLogs.length, 1);
   assert.equal(auditLogs[0].action, 'USER_INVITE_CREATED');
+});
+
+test('createInvite falls back to manual delivery without exposing SMTP failure as the toast message', async () => {
+  const { service } = buildService({
+    tokenFactory: () => ({ rawToken: 'manual-token-123', tokenHash: 'hash-token-123' }),
+    sendInvitationEmail: async () => {
+      throw new Error('Email delivery failed for "secret subject". Check SMTP configuration and provider access.');
+    },
+  });
+
+  const result = await service.createInvite(
+    {
+      name: 'Invited User',
+      email: 'invitee@example.com',
+      roleId: 'role_1',
+    },
+    { id: 'admin_1', workspaceId: 'ws_1', name: 'Admin User' },
+  );
+
+  assert.equal(result.delivery, 'MANUAL');
+  assert.equal(
+    result.message,
+    'Invite created, but email delivery is unavailable. Share the invite link manually.',
+  );
+  assert.match(result.inviteLink || '', /\/invite\/accept\?token=manual-token-123$/);
+  assert.match(result.deliveryErrorMessage || '', /Email delivery failed/);
+  assert.doesNotMatch(result.message, /SMTP|provider|secret subject/i);
 });
 
 test('validateInvite rejects used tokens', async () => {
