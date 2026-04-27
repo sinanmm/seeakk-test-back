@@ -12,6 +12,9 @@ import { trackUserDevice } from '../../utils/deviceTracker';
 import logger from '../../utils/logger';
 import auditService from '../../services/Audit/auditService';
  
+const DEFAULT_FRONTEND_URL = 'https://lms-frontend-amber-beta.vercel.app';
+const getFrontendUrl = (): string => (process.env.FRONTEND_URL || DEFAULT_FRONTEND_URL).trim().replace(/\/+$/, '');
+
 const authenticatedUserBaseSelect = {
   id: true,
   name: true,
@@ -392,7 +395,7 @@ export const verifyEmail = async (req: Request, res: Response): Promise<any> => 
           <div style="text-align: center; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
             <h1 style="color: #10b981;">Email Verified!</h1>
             <p style="color: #6b7280; font-size: 1.1rem; margin-top: 10px;">Your account has been successfully activated.</p>
-            <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/login"
+            <a href="${getFrontendUrl()}/login"
                style="display: inline-block; margin-top: 20px; padding: 10px 20px; background-color: #10b981; color: white; text-decoration: none; border-radius: 8px; font-weight: bold;">
               Go to Login
             </a>
@@ -481,7 +484,7 @@ export const resetPasswordWithToken = async (req: Request, res: Response): Promi
           <div style="text-align:center; background:#fff; padding:24px; border-radius:12px; box-shadow:0 4px 20px rgba(0,0,0,.08);">
             <h2 style="margin:0 0 8px; color:#16a34a;">Password Updated</h2>
             <p style="color:#64748b;">Your password has been reset successfully. You can now login with the new password.</p>
-            <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/login" style="display:inline-block; margin-top:12px; background:#2563eb; color:#fff; text-decoration:none; padding:10px 14px; border-radius:8px;">Go to Login</a>
+            <a href="${getFrontendUrl()}/login" style="display:inline-block; margin-top:12px; background:#2563eb; color:#fff; text-decoration:none; padding:10px 14px; border-radius:8px;">Go to Login</a>
           </div>
         </body>
       </html>
