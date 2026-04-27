@@ -12,6 +12,7 @@ declare module 'request-ip' {
 declare module 'nodemailer' {
   export interface Transporter {
     sendMail(options: unknown): Promise<unknown>;
+    verify(): Promise<unknown>;
   }
 
   export function createTransport(config: unknown): Transporter;

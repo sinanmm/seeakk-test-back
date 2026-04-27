@@ -6,6 +6,7 @@ import { connectRedis } from './config/redis';
 import prisma from './config/prisma';
 import { scheduleDailySync } from './modules/holidays/holidays.jobs';
 import './modules/leads/leadImport.jobs';
+import { verifyEmailTransport } from './services/Email/emailService';
 import { startFollowUpReminders } from './services/User/followupReminder.jobs';
 
 const PORT = process.env.PORT || 5000;
@@ -34,6 +35,19 @@ const startServer = async () => {
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
     });
+
+    verifyEmailTransport()
+      .then(() => {
+        console.log('Email transport verified');
+      })
+      .catch((error: any) => {
+        console.error('Email transport verification failed. Invitation emails will use manual fallback until SMTP is fixed.', {
+          message: error?.message,
+          code: error?.code,
+          command: error?.command,
+          responseCode: error?.responseCode,
+        });
+      });
 
     // Connect Prisma in background so API process can still boot and avoid ERR_CONNECTION_REFUSED.
     connectPrismaWithRetry()
