@@ -2,18 +2,47 @@ import nodemailer from 'nodemailer';
 import logger from '../../utils/logger';
 
 const isProduction = process.env.NODE_ENV === 'production';
-const isEmailConfigured = (): boolean => Boolean(process.env.EMAIL_USER && process.env.EMAIL_PASS);
+
+const readEnv = (...keys: string[]): string => {
+  for (const key of keys) {
+    const value = process.env[key]?.trim();
+    if (value) return value;
+  }
+  return '';
+};
+
+const isGmailProvider = (service: string, host: string): boolean =>
+  service.toLowerCase() === 'gmail' || host.toLowerCase().includes('gmail.com');
+
+const getEmailConfig = () => {
+  const service = readEnv('EMAIL_SERVICE', 'SMTP_SERVICE');
+  const host = readEnv('EMAIL_HOST', 'SMTP_HOST');
+  const portRaw = readEnv('EMAIL_PORT', 'SMTP_PORT');
+  const port = Number(portRaw || 0);
+  const secureRaw = readEnv('EMAIL_SECURE', 'SMTP_SECURE').toLowerCase();
+  const user = readEnv('EMAIL_USER', 'SMTP_USER');
+  const rawPass = readEnv('EMAIL_PASS', 'SMTP_PASS', 'EMAIL_PASSWORD', 'SMTP_PASSWORD');
+  const pass = isGmailProvider(service || 'gmail', host) ? rawPass.replace(/\s+/g, '') : rawPass;
+  const secure = secureRaw ? secureRaw === 'true' : port === 465;
+  const from = readEnv('EMAIL_FROM', 'SMTP_FROM') || user || 'no-reply@seeakk.com';
+
+  return {
+    service,
+    host,
+    port,
+    secure,
+    user,
+    pass,
+    from,
+    configured: Boolean(user && pass),
+  };
+};
+
+const isEmailConfigured = (): boolean => getEmailConfig().configured;
 export const isEmailServiceConfigured = (): boolean => isEmailConfigured();
 
 const getTransporter = () => {
-  const user = process.env.EMAIL_USER || '';
-  const pass = process.env.EMAIL_PASS || '';
-  const service = process.env.EMAIL_SERVICE || '';
-  const host = process.env.EMAIL_HOST || '';
-  const port = Number(process.env.EMAIL_PORT || 0);
-  const secureFromEnv = String(process.env.EMAIL_SECURE || '').toLowerCase();
-  const secure =
-    secureFromEnv ? secureFromEnv === 'true' : port === 465;
+  const { user, pass, service, host, port, secure } = getEmailConfig();
 
   if (host && Number.isFinite(port) && port > 0) {
     return nodemailer.createTransport({
@@ -28,6 +57,15 @@ const getTransporter = () => {
     service: service || 'gmail',
     auth: { user, pass },
   });
+};
+
+export const verifyEmailTransport = async (): Promise<void> => {
+  if (!isEmailConfigured()) {
+    throw new Error('Email service is not configured. Set EMAIL_USER and EMAIL_PASS or SMTP_USER and SMTP_PASS.');
+  }
+
+  const transporter = getTransporter();
+  await transporter.verify();
 };
 
 const sendOrLogEmail = async (
@@ -55,9 +93,10 @@ const sendOrLogEmail = async (
   }
 
   try {
+    const config = getEmailConfig();
     const transporter = getTransporter();
     await transporter.sendMail({
-      from: process.env.EMAIL_FROM || process.env.EMAIL_USER || 'no-reply@seeakk.com',
+      from: config.from,
       to,
       subject,
       html,
