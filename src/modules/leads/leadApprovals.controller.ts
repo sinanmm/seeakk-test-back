@@ -103,7 +103,7 @@ export const listLeadApprovals = async (req: Request, res: Response, next: NextF
   if (!query) return;
 
   try {
-    const result = await leadApprovalService.listApprovals(workspaceId, query);
+    const result = await leadApprovalService.listApprovals(workspaceId, getActor(req), query);
     return res.status(200).json({
       success: true,
       message: 'Lead approvals fetched successfully',

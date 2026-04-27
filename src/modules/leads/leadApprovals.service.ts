@@ -182,6 +182,13 @@ const resolveDefaultApprover = async (workspaceId: string, requestedById: string
 
   for (const candidate of candidates) {
     if (candidate.id === requestedById || !candidate.roleId) continue;
+    if (normalizeRoleKey(candidate.role?.name) === 'superadmin') {
+      return candidate.id;
+    }
+  }
+
+  for (const candidate of candidates) {
+    if (candidate.id === requestedById || !candidate.roleId) continue;
 
     const permissionKeys = await repository.getRolePermissionKeys(candidate.roleId);
     if (
@@ -308,7 +315,11 @@ export const createLeadApproval = async (
     throw createServiceError('This lead already has a pending stage approval request.', 409);
   }
 
-  const assignedToId = input.assignedToId ?? (await resolveDefaultApprover(workspaceId, actor.id));
+  const leadSupervisorId = lead.assignedTo?.supervisorId || null;
+  const assignedToId =
+    input.assignedToId ??
+    leadSupervisorId ??
+    (await resolveDefaultApprover(workspaceId, actor.id));
 
   const approval = await repository.createApprovalRequest({
     workspaceId,
@@ -330,12 +341,16 @@ export const createLeadApproval = async (
   };
 };
 
-export const listApprovals = async (workspaceId: string, query: ListLeadApprovalsQueryInput) => {
+export const listApprovals = async (workspaceId: string, actor: Actor, query: ListLeadApprovalsQueryInput) => {
   await ensureModuleReady();
 
+  const isSuperAdmin = isPrivilegedRoleName(actor.role?.name);
   const where: any = { workspaceId };
+  if (!isSuperAdmin) {
+    where.assignedToId = actor.id;
+  }
   if (query.status) where.status = query.status;
-  if (query.assignedTo) where.assignedToId = query.assignedTo;
+  if (query.assignedTo && isSuperAdmin) where.assignedToId = query.assignedTo;
   if (query.requestedBy) where.requestedById = query.requestedBy;
   if (query.search) {
     where.OR = [
@@ -445,26 +460,13 @@ export const processLeadApproval = async (
 
   const permissionKeys = await getPermissionKeys(actor);
   const isSuperAdmin = permissionKeys.includes('*');
-
-  const canApproveAny =
-    isSuperAdmin ||
-    permissionKeys.includes('LEAD_APPROVAL_APPROVE') ||
-    permissionKeys.includes('LEADS_APPROVE');
-  const canDenyAny =
-    isSuperAdmin ||
-    permissionKeys.includes('LEAD_APPROVAL_DENY') ||
-    permissionKeys.includes('LEADS_REJECT');
-
-  if (!isSuperAdmin && approval.assignedToId && approval.assignedToId !== actor.id && !(canApproveAny || canDenyAny)) {
-    throw createServiceError('This approval request is assigned to another approver.', 403);
-  }
-
-  if (input.action === 'APPROVE' && !canApproveAny) {
-    throw createServiceError('You do not have permission to approve lead stage requests.', 403);
-  }
-
-  if (input.action === 'DENY' && !canDenyAny) {
-    throw createServiceError('You do not have permission to deny lead stage requests.', 403);
+  if (!isSuperAdmin) {
+    if (!approval.assignedToId) {
+      throw createServiceError('This approval request is not assigned to an approver.', 403);
+    }
+    if (approval.assignedToId !== actor.id) {
+      throw createServiceError('This approval request is assigned to another approver.', 403);
+    }
   }
 
   const requestData = normalizeRequestData(approval.requestData);
