@@ -4,6 +4,7 @@ import auditService from '../../services/Audit/auditService';
 import logger from '../../utils/logger';
 import * as leadService from '../../services/User/leadService';
 import { emitWorkspaceEvent } from '../../realtime/socket';
+import { getActiveStageRulesForExecution } from '../../modules/master/stage-rules/stageRule.service';
 import type {
   AssignLeadInput,
   ChangeStageInput,
@@ -11,6 +12,7 @@ import type {
   ExtendLeadSlaInput,
   ExportLeadsQueryInput,
   LeadIdParamInput,
+  LeadStageRulesQueryInput,
   ListLeadsQueryInput,
   UpdateLeadInput,
 } from '../../validations/leadValidation';
@@ -21,6 +23,7 @@ import {
   extendLeadSlaSchema,
   exportLeadsQuerySchema,
   leadIdParamSchema,
+  leadStageRulesQuerySchema,
   listLeadsQuerySchema,
   updateLeadSchema,
 } from '../../validations/leadValidation';
@@ -491,5 +494,30 @@ export const listLeadAssignees = async (req: Request, res: Response, next: NextF
     });
   } catch (error) {
     handleServiceError(error, res, next, 'listLeadAssignees');
+  }
+};
+
+export const listLeadTransitionStageRules = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = requireWorkspace(req, res);
+  if (!workspaceId) return;
+
+  const query = validate<LeadStageRulesQueryInput>(leadStageRulesQuerySchema, req.query, res);
+  if (!query) return;
+
+  try {
+    const data = await getActiveStageRulesForExecution(workspaceId, query.stageId);
+    return res.status(200).json({
+      success: true,
+      message: 'Lead transition stage rules fetched successfully',
+      data,
+      pagination: {
+        page: 1,
+        limit: data.length || 100,
+        total: data.length,
+        totalPages: 1,
+      },
+    });
+  } catch (error) {
+    handleServiceError(error, res, next, 'listLeadTransitionStageRules');
   }
 };

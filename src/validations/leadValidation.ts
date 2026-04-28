@@ -137,6 +137,12 @@ export const leadIdParamSchema = z.object({
 
 export type LeadIdParamInput = z.infer<typeof leadIdParamSchema>;
 
+export const leadStageRulesQuerySchema = z.object({
+  stageId: requiredId('stageId'),
+});
+
+export type LeadStageRulesQueryInput = z.infer<typeof leadStageRulesQuerySchema>;
+
 export const listLeadsQuerySchema = z.object({
   page: pageSchema,
   limit: limitSchema,
