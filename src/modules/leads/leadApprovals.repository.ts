@@ -106,6 +106,20 @@ export const findPendingApprovalForLead = async (workspaceId: string, leadId: st
     orderBy: { createdAt: 'desc' },
   });
 
+export const findActiveUserById = async (workspaceId: string, userId: string) =>
+  (prisma as any).user.findFirst({
+    where: {
+      id: userId,
+      workspaceId,
+      deletedAt: null,
+      isActive: true,
+    },
+    select: {
+      id: true,
+      supervisorId: true,
+    },
+  });
+
 export const clearLeadPendingApprovalState = async (leadId: string) =>
   (prisma as any).lead.update({
     where: { id: leadId },
