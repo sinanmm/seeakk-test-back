@@ -40,7 +40,23 @@ import { notFound, errorHandler } from './middlewares/errorMiddleware';
 const app = express();
 const requestBodyLimit = process.env.REQUEST_BODY_LIMIT || '5mb';
 
-const normalizeOrigin = (origin: string): string => origin.trim().replace(/\/+$/, '');
+const normalizeOrigin = (origin: string): string => {
+  const trimmed = origin.trim().replace(/\/+$/, '');
+
+  try {
+    const parsed = new URL(trimmed);
+    const protocol = parsed.protocol.toLowerCase();
+    const hostname = parsed.hostname.toLowerCase();
+    const isDefaultPort =
+      parsed.port === '' ||
+      (protocol === 'https:' && parsed.port === '443') ||
+      (protocol === 'http:' && parsed.port === '80');
+
+    return `${protocol}//${hostname}${isDefaultPort ? '' : `:${parsed.port}`}`;
+  } catch {
+    return trimmed.toLowerCase();
+  }
+};
 
 const splitOriginList = (raw?: string | null): string[] =>
   (raw || '')

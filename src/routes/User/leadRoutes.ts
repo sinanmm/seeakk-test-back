@@ -7,6 +7,7 @@ const router = Router();
 router.use(protect);
 
 router.get('/meta/assignees', leadController.listLeadAssignees);
+router.get('/meta/stage-rules', leadController.listLeadTransitionStageRules);
 router.get('/export', leadController.exportLeads);
 router.get('/', leadController.listLeads);
 router.post('/', leadController.createLead);
