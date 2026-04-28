@@ -266,19 +266,23 @@ export const createLeadApproval = async (
     throw createServiceError('This lead already has a pending stage approval request.', 409);
   }
 
+  const requestingUser = await repository.findActiveUserById(workspaceId, actor.id);
+  const actorSupervisorId = requestingUser?.supervisorId || null;
   const leadSupervisorId = lead.assignedTo?.supervisorId || null;
-  if (!leadSupervisorId) {
+  const selectedSupervisorId = actorSupervisorId || input.assignedToId || leadSupervisorId;
+
+  if (!selectedSupervisorId) {
     throw createServiceError(
-      'The selected staff member must have a supervisor before requesting a stage approval.',
+      'The staff member requesting this stage change must have a selected supervisor before approval can be requested.',
       409,
     );
   }
 
-  if (input.assignedToId && input.assignedToId !== leadSupervisorId) {
-    throw createServiceError('Approval requests can only be assigned to the selected supervisor.', 409);
+  if (actorSupervisorId && input.assignedToId && input.assignedToId !== actorSupervisorId) {
+    throw createServiceError('Approval requests can only be assigned to the requesting staff member’s selected supervisor.', 409);
   }
 
-  const assignedSupervisor = await repository.findActiveUserById(workspaceId, leadSupervisorId);
+  const assignedSupervisor = await repository.findActiveUserById(workspaceId, selectedSupervisorId);
   if (!assignedSupervisor) {
     throw createServiceError('The selected supervisor is inactive or unavailable.', 409);
   }
