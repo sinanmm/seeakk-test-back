@@ -18,6 +18,36 @@ import type {
 /** Generate a cryptographically secure random password */
 const generateSecurePassword = (): string => crypto.randomBytes(12).toString('base64url');
 
+const assertValidSupervisor = async (
+  workspaceId: string,
+  supervisorId: string,
+  options?: { excludeUserId?: string },
+): Promise<void> => {
+  if (options?.excludeUserId && supervisorId === options.excludeUserId) {
+    const err: any = new Error('A user cannot be their own supervisor.');
+    err.statusCode = 400;
+    throw err;
+  }
+
+  const supervisor = await (prisma as any).user.findFirst({
+    where: {
+      id: supervisorId,
+      workspaceId,
+      deletedAt: null,
+      isActive: true,
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  if (!supervisor) {
+    const err: any = new Error('Supervisor not found in this workspace.');
+    err.statusCode = 400;
+    throw err;
+  }
+};
+
 /**
  * Invalidate all Redis refresh tokens belonging to a specific userId.
  * Redis SCAN iterates all `refresh:*` keys and deletes matches.
@@ -237,14 +267,7 @@ export const createUser = async (input: CreateUserInput, workspaceId: string) =>
 
   // 4. Validate supervisorId belongs to this workspace
   if (supervisorId) {
-    const supervisor = await prisma.user.findFirst({
-      where: { id: supervisorId, workspaceId } as any,
-    });
-    if (!supervisor) {
-      const err: any = new Error('Supervisor not found in this workspace.');
-      err.statusCode = 400;
-      throw err;
-    }
+    await assertValidSupervisor(workspaceId, supervisorId);
   }
 
   // 5. Hash password (or auto-generate one)
@@ -436,20 +459,9 @@ export const updateUser = async (id: string, input: UpdateUserInput, workspaceId
     }
   }
 
-  if (input.supervisorId) {
-    if (input.supervisorId === id) {
-      const err: any = new Error('A user cannot be their own supervisor.');
-      err.statusCode = 400;
-      throw err;
-    }
-    const supervisor = await (prisma as any).user.findFirst({
-      where: { id: input.supervisorId, workspaceId, deletedAt: null },
-    });
-    if (!supervisor) {
-      const err: any = new Error('Supervisor not found in this workspace.');
-      err.statusCode = 400;
-      throw err;
-    }
+  const nextSupervisorId = input.supervisorId === undefined ? undefined : input.supervisorId;
+  if (typeof nextSupervisorId === 'string' && nextSupervisorId) {
+    await assertValidSupervisor(workspaceId, nextSupervisorId, { excludeUserId: id });
   }
 
   if (input.officeId) {
@@ -494,7 +506,7 @@ export const updateUser = async (id: string, input: UpdateUserInput, workspaceId
         ...(input.phone !== undefined ? { phone: input.phone } : {}),
         ...(normalizedRoleId !== undefined ? { roleId: normalizedRoleId } : {}),
         ...(normalizedDepartmentId !== undefined ? { departmentId: normalizedDepartmentId } : {}),
-        ...(input.supervisorId !== undefined ? { supervisorId: input.supervisorId } : {}),
+        ...(nextSupervisorId !== undefined ? { supervisorId: nextSupervisorId } : {}),
         ...(input.officeId !== undefined ? { officeId: input.officeId } : {}),
         ...(input.countryId !== undefined ? { countryId: input.countryId } : {}),
         ...(input.stateId !== undefined ? { stateId: input.stateId } : {}),

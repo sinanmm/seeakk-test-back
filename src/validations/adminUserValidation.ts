@@ -14,6 +14,25 @@ const optionalId = (label: string) =>
       .optional(),
   );
 
+const emptyStringOrNullToNull = (value: unknown) => {
+  if (value === null) return null;
+  if (typeof value === 'string' && value.trim() === '') return null;
+  return value;
+};
+
+const nullableOptionalId = (label: string) =>
+  z.preprocess(
+    emptyStringOrNullToNull,
+    z.union([
+      z
+        .string()
+        .trim()
+        .min(1, `Invalid ${label} ID`)
+        .max(191, `Invalid ${label} ID`),
+      z.null(),
+    ]).optional(),
+  );
+
 const optionalText = (schema: z.ZodString) =>
   z.preprocess(emptyStringToUndefined, schema.optional());
 
@@ -45,7 +64,7 @@ export const updateUserSchema = z.object({
   phone: optionalText(z.string().max(20, 'Phone number too long')),
   roleId: optionalId('role'),
   departmentId: optionalId('department'),
-  supervisorId: optionalId('supervisor'),
+  supervisorId: nullableOptionalId('supervisor'),
   officeId: optionalId('office'),
   countryId: optionalId('country'),
   stateId: optionalId('state'),

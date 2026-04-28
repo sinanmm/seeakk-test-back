@@ -55,22 +55,6 @@ const clearWorkspaceLeadCache = async (workspaceId: string): Promise<void> => {
   }
 };
 
-const normalizeRoleKey = (role?: string | null): string =>
-  (role || '')
-    .toLowerCase()
-    .trim()
-    .replace(/[\s_-]+/g, '');
-
-const isPrivilegedRoleName = (role?: string | null): boolean => {
-  const normalized = normalizeRoleKey(role);
-  return (
-    normalized === 'superadmin' ||
-    normalized === 'admin' ||
-    normalized === 'administrator' ||
-    normalized.includes('admin')
-  );
-};
-
 const resolveDisplayName = (user?: { name?: string | null; username?: string | null; email?: string | null } | null): string => {
   if (user?.name?.trim()) return user.name.trim();
   if (user?.username?.trim()) return user.username.trim();
@@ -160,12 +144,6 @@ const normalizeRequestData = (requestData: unknown): Record<string, any> => {
   return requestData as Record<string, any>;
 };
 
-const getPermissionKeys = async (actor: Actor): Promise<string[]> => {
-  if (isPrivilegedRoleName(actor.role?.name)) return ['*'];
-  if (!actor.roleId) return [];
-  return repository.getRolePermissionKeys(actor.roleId);
-};
-
 const ensureModuleReady = async (): Promise<void> => {
   const ready = await repository.ensureLeadApprovalSchemaReady();
   if (!ready || !(prisma as any).leadStageApproval?.findFirst) {
@@ -174,33 +152,6 @@ const ensureModuleReady = async (): Promise<void> => {
       503,
     );
   }
-};
-
-const resolveDefaultApprover = async (workspaceId: string, requestedById: string): Promise<string | null> => {
-  const candidates = await repository.findApproverCandidates(workspaceId);
-  if (candidates.length === 0) return null;
-
-  for (const candidate of candidates) {
-    if (candidate.id === requestedById || !candidate.roleId) continue;
-    if (normalizeRoleKey(candidate.role?.name) === 'superadmin') {
-      return candidate.id;
-    }
-  }
-
-  for (const candidate of candidates) {
-    if (candidate.id === requestedById || !candidate.roleId) continue;
-
-    const permissionKeys = await repository.getRolePermissionKeys(candidate.roleId);
-    if (
-      permissionKeys.includes('LEAD_APPROVAL_APPROVE') ||
-      permissionKeys.includes('LEADS_APPROVE') ||
-      ['admin', 'manager', 'superadmin'].includes(normalizeRoleKey(candidate.role?.name))
-    ) {
-      return candidate.id;
-    }
-  }
-
-  return null;
 };
 
 const isImmediateClosureStage = (stage?: { isClosed?: boolean | null; name?: string | null } | null): boolean =>
@@ -316,10 +267,23 @@ export const createLeadApproval = async (
   }
 
   const leadSupervisorId = lead.assignedTo?.supervisorId || null;
-  const assignedToId =
-    input.assignedToId ??
-    leadSupervisorId ??
-    (await resolveDefaultApprover(workspaceId, actor.id));
+  if (!leadSupervisorId) {
+    throw createServiceError(
+      'The selected staff member must have a supervisor before requesting a stage approval.',
+      409,
+    );
+  }
+
+  if (input.assignedToId && input.assignedToId !== leadSupervisorId) {
+    throw createServiceError('Approval requests can only be assigned to the selected supervisor.', 409);
+  }
+
+  const assignedSupervisor = await repository.findActiveUserById(workspaceId, leadSupervisorId);
+  if (!assignedSupervisor) {
+    throw createServiceError('The selected supervisor is inactive or unavailable.', 409);
+  }
+
+  const assignedToId = assignedSupervisor.id;
 
   const approval = await repository.createApprovalRequest({
     workspaceId,
@@ -344,13 +308,9 @@ export const createLeadApproval = async (
 export const listApprovals = async (workspaceId: string, actor: Actor, query: ListLeadApprovalsQueryInput) => {
   await ensureModuleReady();
 
-  const isSuperAdmin = isPrivilegedRoleName(actor.role?.name);
-  const where: any = { workspaceId };
-  if (!isSuperAdmin) {
-    where.assignedToId = actor.id;
-  }
+  const where: any = { workspaceId, assignedToId: actor.id };
   if (query.status) where.status = query.status;
-  if (query.assignedTo && isSuperAdmin) where.assignedToId = query.assignedTo;
+  if (query.assignedTo) where.assignedToId = query.assignedTo === actor.id ? actor.id : '__no_matching_approver__';
   if (query.requestedBy) where.requestedById = query.requestedBy;
   if (query.search) {
     where.OR = [
@@ -458,15 +418,11 @@ export const processLeadApproval = async (
     throw createServiceError('Lead not found or already archived.', 404);
   }
 
-  const permissionKeys = await getPermissionKeys(actor);
-  const isSuperAdmin = permissionKeys.includes('*');
-  if (!isSuperAdmin) {
-    if (!approval.assignedToId) {
-      throw createServiceError('This approval request is not assigned to an approver.', 403);
-    }
-    if (approval.assignedToId !== actor.id) {
-      throw createServiceError('This approval request is assigned to another approver.', 403);
-    }
+  if (!approval.assignedToId) {
+    throw createServiceError('This approval request is not assigned to an approver.', 403);
+  }
+  if (approval.assignedToId !== actor.id) {
+    throw createServiceError('This approval request is assigned to another approver.', 403);
   }
 
   const requestData = normalizeRequestData(approval.requestData);

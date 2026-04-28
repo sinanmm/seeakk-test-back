@@ -2,12 +2,6 @@ import prisma from '../../config/prisma';
 import { redisClient } from '../../config/redis';
 import logger from '../../utils/logger';
 
-const normalizeRoleKey = (value?: string | null): string =>
-  (value || '').toLowerCase().trim().replace(/[\s_-]+/g, '');
-
-const isSuperAdminRole = (value?: string | null): boolean =>
-  normalizeRoleKey(value) === 'superadmin';
-
 /**
  * Invalidate all Redis refresh tokens belonging to a specific userId.
  */
@@ -74,10 +68,9 @@ export const unlockUser = async (
     throw error;
   }
 
-  const actorIsSuperAdmin = isSuperAdminRole(actor.roleName);
   const actorIsSupervisor = Boolean(targetUser.supervisorId && targetUser.supervisorId === actor.id);
-  if (!actorIsSuperAdmin && !actorIsSupervisor) {
-    const error: any = new Error('Only the selected supervisor or superadmin can unlock this staff account.');
+  if (!actorIsSupervisor) {
+    const error: any = new Error('Only the selected supervisor can unlock this staff account.');
     error.statusCode = 403;
     throw error;
   }
