@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { checkPermission, protect } from '../../../middlewares/authMiddleware';
+import { checkAnyPermission, checkPermission, protect } from '../../../middlewares/authMiddleware';
 import * as leadSourceController from './leadSource.controller';
 
 const router = Router();
@@ -21,7 +21,15 @@ router.get(
 router.get(
   '/active',
   protect,
-  checkPermission('LEAD_SOURCES_VIEW'),
+  checkAnyPermission([
+    'LEAD_SOURCES_VIEW',
+    'LEADS_CREATE',
+    'LEADS_EDIT',
+    'LEADS_VIEW_ALL',
+    'LEADS_VIEW_TEAM',
+    'LEADS_VIEW_OWN',
+    'SYSTEM_CONFIG',
+  ]),
   leadSourceController.getActiveLeadSources,
 );
 

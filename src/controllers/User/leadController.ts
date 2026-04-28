@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
+import prisma from '../../config/prisma';
 import auditService from '../../services/Audit/auditService';
 import logger from '../../utils/logger';
 import * as leadService from '../../services/User/leadService';
@@ -460,5 +461,35 @@ export const exportLeads = async (req: Request, res: Response, next: NextFunctio
     return res.status(200).send(exported.content);
   } catch (error) {
     handleServiceError(error, res, next, 'exportLeads');
+  }
+};
+
+export const listLeadAssignees = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = requireWorkspace(req, res);
+  if (!workspaceId) return;
+
+  try {
+    const users = await prisma.user.findMany({
+      where: {
+        workspaceId,
+        deletedAt: null,
+        isActive: true,
+      },
+      orderBy: [{ name: 'asc' }, { createdAt: 'asc' }],
+      select: {
+        id: true,
+        name: true,
+        username: true,
+        email: true,
+      },
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Lead assignees fetched successfully',
+      data: users,
+    });
+  } catch (error) {
+    handleServiceError(error, res, next, 'listLeadAssignees');
   }
 };

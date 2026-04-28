@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { authorize, protect } from '../../middlewares/authMiddleware';
+import { authorize, checkAnyPermission, protect } from '../../middlewares/authMiddleware';
 import * as leadLifeCycleController from '../../controllers/User/leadLifeCycleController';
 
 const router = Router();
@@ -8,13 +8,27 @@ router.use(protect);
 
 router.get(
   '/',
-  authorize('admin', 'super admin', 'super-admin', 'manager'),
+  checkAnyPermission([
+    'LEADS_CREATE',
+    'LEADS_EDIT',
+    'LEADS_VIEW_ALL',
+    'LEADS_VIEW_TEAM',
+    'LEADS_VIEW_OWN',
+    'SYSTEM_CONFIG',
+  ]),
   leadLifeCycleController.listLifeCycles,
 );
 
 router.get(
   '/stage-options',
-  authorize('admin', 'super admin', 'super-admin', 'manager'),
+  checkAnyPermission([
+    'LEADS_CREATE',
+    'LEADS_EDIT',
+    'LEADS_VIEW_ALL',
+    'LEADS_VIEW_TEAM',
+    'LEADS_VIEW_OWN',
+    'SYSTEM_CONFIG',
+  ]),
   leadLifeCycleController.getStageOptions,
 );
 
