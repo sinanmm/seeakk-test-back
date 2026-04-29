@@ -36,6 +36,7 @@ export const initRealtimeServer = (httpServer: HttpServer): SocketIOServer => {
   console.log('[Socket.io] Allowed origins:', allowedOrigins);
 
   io = new SocketIOServer(httpServer, {
+    path: '/socket.io',
     cors: {
       origin: allowedOrigins,
       credentials: true,
