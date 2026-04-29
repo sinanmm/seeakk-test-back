@@ -36,7 +36,7 @@ import dashboardRoutes from './modules/dashboard/dashboard.routes';
 import logger from './utils/logger';
 import prisma from './config/prisma';
 import { redisClient } from './config/redis';
-import { isAllowedOrigin } from './config/corsOrigins';
+import { corsOriginHandler, getAllowedOrigins } from './config/cors';
 import { globalLimiter } from './middlewares/rateLimiter';
 import { notFound, errorHandler } from './middlewares/errorMiddleware';
 
@@ -44,16 +44,9 @@ const app = express();
 const requestBodyLimit = process.env.REQUEST_BODY_LIMIT || '5mb';
 
 const corsOptions: cors.CorsOptions = {
-  origin: (origin, callback) => {
-    if (isAllowedOrigin(origin)) {
-      callback(null, true);
-      return;
-    }
-    logger.warn('CORS request rejected', { origin });
-    callback(new Error(`CORS blocked: ${origin}`));
-  },
+  origin: corsOriginHandler,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-device-id', 'x-access-token', 'Accept', 'Origin'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
   optionsSuccessStatus: 204,
 };
@@ -64,13 +57,13 @@ app.use(morgan('combined', { stream: { write: (message: string) => logger.info(m
 // Ensure allowed origins always receive CORS headers even on fast-fail/error paths.
 app.use((req: Request, res: Response, next) => {
   const origin = req.headers.origin;
-  if (typeof origin === 'string' && isAllowedOrigin(origin)) {
+  if (typeof origin === 'string' && getAllowedOrigins().includes(origin)) {
     res.header('Access-Control-Allow-Origin', origin);
     res.header('Vary', 'Origin');
     res.header('Access-Control-Allow-Credentials', 'true');
     res.header(
       'Access-Control-Allow-Headers',
-      'Content-Type, Authorization, x-device-id, x-access-token, Accept, Origin',
+      'Content-Type, Authorization',
     );
     res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
   }
