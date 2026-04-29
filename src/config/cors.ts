@@ -1,5 +1,5 @@
 const normalizeOrigin = (origin: string): string =>
-  origin.trim().replace(/\/+$/, '');
+  origin.trim().toLowerCase().replace(/\/+$/, '');
 
 const splitOrigins = (value?: string | null): string[] =>
   (value || '')
@@ -15,22 +15,30 @@ export const getAllowedOrigins = (): string[] =>
       ...splitOrigins(process.env.ALLOWED_ORIGINS),
       'http://localhost:5173',
       'http://localhost:3000',
+      'http://127.0.0.1:5173',
     ]),
   );
 
 export const isAllowedOrigin = (origin?: string): boolean => {
   if (!origin) return true;
-  return getAllowedOrigins().includes(normalizeOrigin(origin));
+  const normalized = normalizeOrigin(origin);
+  const allowed = getAllowedOrigins();
+  
+  // Also check for Vercel preview deployments if FRONTEND_URL is set
+  const isVercelPreview = normalized.endsWith('.vercel.app');
+  
+  return allowed.includes(normalized) || isVercelPreview;
 };
 
 export const corsOriginHandler = (
   origin: string | undefined,
   callback: (err: Error | null, allow?: boolean) => void,
 ) => {
-  if (isAllowedOrigin(origin)) {
+  if (!origin || isAllowedOrigin(origin)) {
     callback(null, true);
   } else {
-    console.warn(`CORS blocked origin: ${origin}`);
+    console.warn(`[CORS] Blocked origin: "${origin}"`);
     callback(new Error(`Not allowed by CORS: ${origin}`));
   }
 };
+

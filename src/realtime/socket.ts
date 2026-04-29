@@ -31,20 +31,30 @@ export const initRealtimeServer = (httpServer: HttpServer): SocketIOServer => {
     return io;
   }
 
-  const allowedOrigins = getAllowedOrigins();
-
-  console.log('[Socket.io] Allowed origins:', allowedOrigins);
-
   io = new SocketIOServer(httpServer, {
     path: '/socket.io',
     cors: {
-      origin: allowedOrigins,
+      origin: (origin, callback) => {
+        // If no origin (like mobile apps or local scripts), allow it
+        if (!origin) {
+          callback(null, true);
+          return;
+        }
+
+        if (isAllowedOrigin(origin)) {
+          callback(null, true);
+        } else {
+          console.warn(`[Socket.io] CORS blocked origin: ${origin}`);
+          callback(new Error('Not allowed by CORS'), false);
+        }
+      },
       credentials: true,
       methods: ['GET', 'POST'],
       allowedHeaders: [
         'Content-Type',
         'Authorization',
         'x-device-id',
+        'x-access-token',
       ],
     },
     transports: ['polling', 'websocket'],

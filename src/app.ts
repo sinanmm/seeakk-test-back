@@ -63,9 +63,13 @@ app.use((req: Request, res: Response, next) => {
     res.header('Access-Control-Allow-Credentials', 'true');
     res.header(
       'Access-Control-Allow-Headers',
-      'Content-Type, Authorization',
+      'Content-Type, Authorization, x-device-id, x-access-token, Accept, Origin',
     );
     res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
+  }
+  
+  if (req.method === 'OPTIONS') {
+    return res.status(204).end();
   }
   next();
 });
@@ -147,7 +151,14 @@ app.get('/', (req: Request, res: Response) => {
 });
 
 // Global error handling
-app.use(notFound);
+app.use((req, res, next) => {
+  // Exclude socket.io from 404 handler to avoid conflicts with Engine.io
+  if (req.path.startsWith('/socket.io')) {
+    return next('router');
+  }
+  notFound(req, res, next);
+});
 app.use(errorHandler);
 
 export default app;
+
