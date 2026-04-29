@@ -147,12 +147,6 @@ app.get('/', (req: Request, res: Response) => {
 });
 
 // Global error handling
-app.use((req, _res, next) => {
-  if (req.path.startsWith('/socket.io')) {
-    return next('router');
-  }
-  next();
-});
 app.use(notFound);
 app.use(errorHandler);
 

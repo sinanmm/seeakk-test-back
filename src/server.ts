@@ -33,8 +33,9 @@ const startServer = async () => {
   try {
     // Connect Redis
     await connectRedis();
-    const httpServer = createServer(app);
+    const httpServer = createServer();
     initRealtimeServer(httpServer);
+    httpServer.on('request', app);
 
     httpServer.listen(PORT, () => {
       console.log(`[Server] Running on port ${PORT}`);
