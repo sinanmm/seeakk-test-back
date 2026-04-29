@@ -37,7 +37,9 @@ const startServer = async () => {
     initRealtimeServer(httpServer);
 
     httpServer.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
+      console.log(`[Server] Running on port ${PORT}`);
+      console.log(`[Server] NODE_ENV: ${process.env.NODE_ENV}`);
+      console.log(`[Server] FRONTEND_URL: ${process.env.FRONTEND_URL}`);
     });
 
     verifyEmailTransport()
