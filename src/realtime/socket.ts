@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import { Server as SocketIOServer } from 'socket.io';
 import prisma from '../config/prisma';
 import logger from '../utils/logger';
-import { corsOriginHandler } from '../config/cors';
+import { getAllowedOrigins } from '../config/cors';
 
 type RealtimeEvent =
   | 'role_updated'
@@ -24,10 +24,13 @@ const toUserRoom = (userId: string) => `user:${userId}`;
 
 export const initRealtimeServer = (httpServer: HttpServer): SocketIOServer => {
   if (io) return io;
+  const allowedOrigins = getAllowedOrigins();
+  console.log('[Socket.io] Initializing...');
+  console.log('[Socket.io] Allowed origins:', allowedOrigins);
 
   io = new SocketIOServer(httpServer, {
     cors: {
-      origin: corsOriginHandler,
+      origin: allowedOrigins,
       credentials: true,
       methods: ['GET', 'POST'],
     },
@@ -35,6 +38,7 @@ export const initRealtimeServer = (httpServer: HttpServer): SocketIOServer => {
     pingTimeout: 60000,
     pingInterval: 25000,
   });
+  console.log('[Socket.io] Server initialized successfully');
 
   io.use(async (socket, next) => {
     try {

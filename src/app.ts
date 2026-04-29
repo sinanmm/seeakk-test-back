@@ -97,6 +97,13 @@ app.get('/healthz', (_req, res) => {
   res.status(200).json({ ok: true, timestamp: new Date().toISOString() });
 });
 
+app.get('/socket-test', (_req, res) => {
+  res.status(200).json({
+    socketio: 'Check /socket.io/ path directly',
+    timestamp: new Date().toISOString(),
+  });
+});
+
 // Readiness check
 app.get('/readyz', async (_req, res) => {
   try {

@@ -10,6 +10,7 @@ import './modules/leads/leadImport.jobs';
 import { verifyEmailTransport } from './services/Email/emailService';
 import { startFollowUpReminders } from './services/User/followupReminder.jobs';
 import { initRealtimeServer } from './realtime/socket';
+import { getAllowedOrigins } from './config/cors';
 
 const PORT = process.env.PORT || 5000;
 
@@ -38,6 +39,8 @@ const startServer = async () => {
 
     httpServer.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
+      console.log(`Socket.io initialized on ${PORT}`);
+      console.log('Allowed origins:', getAllowedOrigins());
     });
 
     verifyEmailTransport()
