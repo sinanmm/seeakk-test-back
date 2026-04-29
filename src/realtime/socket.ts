@@ -2,7 +2,7 @@ import { Server as HttpServer } from 'http';
 import jwt from 'jsonwebtoken';
 import { Server as SocketIOServer } from 'socket.io';
 import prisma from '../config/prisma';
-import { getAllowedOrigins } from '../config/cors';
+import { isAllowedOrigin } from '../config/cors';
 import logger from '../utils/logger';
 
 type RealtimeEvent =
