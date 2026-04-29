@@ -3,7 +3,6 @@ import jwt from 'jsonwebtoken';
 import { Server as SocketIOServer } from 'socket.io';
 import prisma from '../config/prisma';
 import logger from '../utils/logger';
-import { getAllowedOrigins } from '../config/cors';
 
 type RealtimeEvent =
   | 'role_updated'
@@ -24,21 +23,34 @@ const toUserRoom = (userId: string) => `user:${userId}`;
 
 export const initRealtimeServer = (httpServer: HttpServer): SocketIOServer => {
   if (io) return io;
-  const allowedOrigins = getAllowedOrigins();
-  console.log('[Socket.io] Initializing...');
-  console.log('[Socket.io] Allowed origins:', allowedOrigins);
 
   io = new SocketIOServer(httpServer, {
     cors: {
-      origin: allowedOrigins,
+      origin: [
+        'https://lms-frontend-amber-beta.vercel.app',
+        process.env.FRONTEND_URL,
+        process.env.ALLOWED_ORIGINS,
+        'http://localhost:5173',
+        'http://localhost:3000',
+      ].filter(Boolean) as string[],
       credentials: true,
       methods: ['GET', 'POST'],
+      allowedHeaders: [
+        'Content-Type',
+        'Authorization',
+        'x-device-id',
+      ],
     },
     transports: ['polling', 'websocket'],
     pingTimeout: 60000,
     pingInterval: 25000,
+    connectTimeout: 45000,
   });
-  console.log('[Socket.io] Server initialized successfully');
+  console.log('[Socket.io] Initialized with origins:', [
+    'https://lms-frontend-amber-beta.vercel.app',
+    process.env.FRONTEND_URL,
+    process.env.ALLOWED_ORIGINS,
+  ].filter(Boolean));
 
   io.use(async (socket, next) => {
     try {
