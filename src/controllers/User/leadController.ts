@@ -472,6 +472,7 @@ export const listLeadAssignees = async (req: Request, res: Response, next: NextF
   if (!workspaceId) return;
 
   try {
+    const actor = getActor(req);
     const users = await prisma.user.findMany({
       where: {
         workspaceId,
@@ -491,6 +492,9 @@ export const listLeadAssignees = async (req: Request, res: Response, next: NextF
       success: true,
       message: 'Lead assignees fetched successfully',
       data: users,
+      meta: {
+        canAssignOtherUsers: leadService.canAssignOtherUsers(actor),
+      },
     });
   } catch (error) {
     handleServiceError(error, res, next, 'listLeadAssignees');
