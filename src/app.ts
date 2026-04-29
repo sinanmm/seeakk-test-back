@@ -36,74 +36,21 @@ import dashboardRoutes from './modules/dashboard/dashboard.routes';
 import logger from './utils/logger';
 import prisma from './config/prisma';
 import { redisClient } from './config/redis';
+import { isAllowedOrigin } from './config/corsOrigins';
 import { globalLimiter } from './middlewares/rateLimiter';
 import { notFound, errorHandler } from './middlewares/errorMiddleware';
 
 const app = express();
 const requestBodyLimit = process.env.REQUEST_BODY_LIMIT || '5mb';
 
-const normalizeOrigin = (origin: string): string => {
-  const trimmed = origin.trim().replace(/\/+$/, '');
-
-  try {
-    const parsed = new URL(trimmed);
-    const protocol = parsed.protocol.toLowerCase();
-    const hostname = parsed.hostname.toLowerCase();
-    const isDefaultPort =
-      parsed.port === '' ||
-      (protocol === 'https:' && parsed.port === '443') ||
-      (protocol === 'http:' && parsed.port === '80');
-
-    return `${protocol}//${hostname}${isDefaultPort ? '' : `:${parsed.port}`}`;
-  } catch {
-    return trimmed.toLowerCase();
-  }
-};
-
-const splitOriginList = (raw?: string | null): string[] =>
-  (raw || '')
-    .split(/[\s,]+/)
-    .map((item) => normalizeOrigin(item))
-    .filter((item) => item.length > 0);
-
-const allowVercelApp =
-  String(process.env.CORS_ALLOW_VERCEL_APP ?? 'true').toLowerCase() !== 'false';
-
-const allowedOrigins = new Set<string>([
-  ...splitOriginList(process.env.FRONTEND_URL),
-  ...splitOriginList(process.env.ALLOWED_ORIGINS),
-  'https://lms-frontend-amber-beta.vercel.app',
-  'http://localhost:5173',
-  'http://127.0.0.1:5173',
-]);
-
-const isAllowedOrigin = (origin: string): boolean => allowedOrigins.has(normalizeOrigin(origin));
-
-/** Vercel production + preview deploys use https://*.vercel.app */
-const isVercelAppOrigin = (origin: string): boolean => {
-  if (!allowVercelApp) return false;
-  try {
-    const { protocol, hostname } = new URL(origin);
-    if (protocol !== 'https:') return false;
-    return hostname.endsWith('.vercel.app') && hostname.length > '.vercel.app'.length;
-  } catch {
-    return false;
-  }
-};
-
 const corsOptions: cors.CorsOptions = {
   origin: (origin, callback) => {
-    if (!origin) {
+    if (isAllowedOrigin(origin)) {
       callback(null, true);
       return;
     }
-    if (isAllowedOrigin(origin) || isVercelAppOrigin(origin)) {
-      callback(null, true);
-      return;
-    }
-
     logger.warn('CORS request rejected', { origin });
-    callback(null, false);
+    callback(new Error(`CORS blocked: ${origin}`));
   },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'x-device-id', 'x-access-token', 'Accept', 'Origin'],
@@ -117,7 +64,7 @@ app.use(morgan('combined', { stream: { write: (message: string) => logger.info(m
 // Ensure allowed origins always receive CORS headers even on fast-fail/error paths.
 app.use((req: Request, res: Response, next) => {
   const origin = req.headers.origin;
-  if (typeof origin === 'string' && (isAllowedOrigin(origin) || isVercelAppOrigin(origin))) {
+  if (typeof origin === 'string' && isAllowedOrigin(origin)) {
     res.header('Access-Control-Allow-Origin', origin);
     res.header('Vary', 'Origin');
     res.header('Access-Control-Allow-Credentials', 'true');

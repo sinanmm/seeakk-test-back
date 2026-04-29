@@ -1,4 +1,4 @@
-import nodemailer from 'nodemailer';
+import nodemailer, { Transporter } from 'nodemailer';
 import logger from '../../utils/logger';
 
 const isProduction = process.env.NODE_ENV === 'production';
@@ -46,7 +46,9 @@ export const isEmailServiceConfigured = (): boolean => isEmailConfigured();
 const getFrontendUrl = (): string => (process.env.FRONTEND_URL || DEFAULT_FRONTEND_URL).trim().replace(/\/+$/, '');
 const getBackendUrl = (): string => (process.env.BACKEND_URL || DEFAULT_BACKEND_URL).trim().replace(/\/+$/, '');
 
-const getTransporter = () => {
+let transporter: Transporter | null = null;
+
+const createTransporter = (): Transporter => {
   const { user, pass, service, host, port, secure } = getEmailConfig();
 
   if (host && Number.isFinite(port) && port > 0) {
@@ -70,13 +72,40 @@ const getTransporter = () => {
   });
 };
 
+const getTransporter = (): Transporter => {
+  if (!transporter) {
+    transporter = createTransporter();
+  }
+  return transporter as Transporter;
+};
+
+const sendWithRetry = async (
+  mailOptions: any,
+  retries: number = 2,
+): Promise<void> => {
+  for (let attempt = 0; attempt <= retries; attempt += 1) {
+    try {
+      await getTransporter().sendMail(mailOptions);
+      return;
+    } catch (error: any) {
+      const isLastAttempt = attempt === retries;
+      if (error?.code === 'EAUTH') {
+        transporter = null;
+      }
+      if (isLastAttempt) {
+        throw error;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 1000 * (attempt + 1)));
+    }
+  }
+};
+
 export const verifyEmailTransport = async (): Promise<void> => {
   if (!isEmailConfigured()) {
     throw new Error('Email service is not configured. Set EMAIL_USER and EMAIL_PASS or SMTP_USER and SMTP_PASS.');
   }
 
-  const transporter = getTransporter();
-  await transporter.verify();
+  await getTransporter().verify();
 };
 
 const sendOrLogEmail = async (
@@ -105,8 +134,7 @@ const sendOrLogEmail = async (
 
   try {
     const config = getEmailConfig();
-    const transporter = getTransporter();
-    await transporter.sendMail({
+    await sendWithRetry({
       from: config.from,
       to,
       subject,

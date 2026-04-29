@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import { Server as SocketIOServer } from 'socket.io';
 import prisma from '../config/prisma';
 import logger from '../utils/logger';
+import { allowedOrigins } from '../config/corsOrigins';
 
 type RealtimeEvent =
   | 'role_updated'
@@ -18,51 +19,6 @@ type RealtimePayload = Record<string, unknown> & {
 
 let io: SocketIOServer | null = null;
 
-const normalizeOrigin = (origin: string): string => {
-  const trimmed = origin.trim().replace(/\/+$/, '');
-
-  try {
-    const parsed = new URL(trimmed);
-    const protocol = parsed.protocol.toLowerCase();
-    const hostname = parsed.hostname.toLowerCase();
-    const isDefaultPort =
-      parsed.port === '' ||
-      (protocol === 'https:' && parsed.port === '443') ||
-      (protocol === 'http:' && parsed.port === '80');
-
-    return `${protocol}//${hostname}${isDefaultPort ? '' : `:${parsed.port}`}`;
-  } catch {
-    return trimmed.toLowerCase();
-  }
-};
-const splitOriginList = (raw?: string | null): string[] =>
-  (raw || '')
-    .split(/[\s,]+/)
-    .map((item) => normalizeOrigin(item))
-    .filter((item) => item.length > 0);
-
-const allowVercelApp =
-  String(process.env.CORS_ALLOW_VERCEL_APP ?? 'true').toLowerCase() !== 'false';
-
-const allowedOrigins = new Set<string>([
-  ...splitOriginList(process.env.FRONTEND_URL),
-  ...splitOriginList(process.env.ALLOWED_ORIGINS),
-  'https://lms-frontend-amber-beta.vercel.app',
-  'http://localhost:5173',
-  'http://127.0.0.1:5173',
-]);
-
-const isAllowedOrigin = (origin: string): boolean => allowedOrigins.has(normalizeOrigin(origin));
-const isVercelAppOrigin = (origin: string): boolean => {
-  if (!allowVercelApp) return false;
-  try {
-    const { protocol, hostname } = new URL(origin);
-    return protocol === 'https:' && hostname.endsWith('.vercel.app') && hostname.length > '.vercel.app'.length;
-  } catch {
-    return false;
-  }
-};
-
 const toWorkspaceRoom = (workspaceId: string) => `workspace:${workspaceId}`;
 const toUserRoom = (userId: string) => `user:${userId}`;
 
@@ -71,20 +27,11 @@ export const initRealtimeServer = (httpServer: HttpServer): SocketIOServer => {
 
   io = new SocketIOServer(httpServer, {
     cors: {
-      origin: (origin, callback) => {
-        if (!origin) {
-          callback(null, true);
-          return;
-        }
-        if (isAllowedOrigin(origin) || isVercelAppOrigin(origin)) {
-          callback(null, true);
-          return;
-        }
-        callback(new Error('Socket CORS origin blocked'));
-      },
+      origin: allowedOrigins,
       credentials: true,
       methods: ['GET', 'POST'],
     },
+    transports: ['polling', 'websocket'],
   });
 
   io.use(async (socket, next) => {
