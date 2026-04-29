@@ -46,7 +46,17 @@ const requestBodyLimit = process.env.REQUEST_BODY_LIMIT || '5mb';
 const corsOptions: cors.CorsOptions = {
   origin: corsOriginHandler,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization',
+    'x-device-id',
+    'x-request-id',
+    'x-workspace-id',
+    'Accept',
+    'Origin',
+    'X-Requested-With',
+  ],
+  exposedHeaders: ['Authorization'],
   credentials: true,
   optionsSuccessStatus: 204,
 };
@@ -63,15 +73,16 @@ app.use((req: Request, res: Response, next) => {
     res.header('Access-Control-Allow-Credentials', 'true');
     res.header(
       'Access-Control-Allow-Headers',
-      'Content-Type, Authorization',
+      'Content-Type, Authorization, x-device-id, x-request-id, x-workspace-id, Accept, Origin, X-Requested-With',
     );
     res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
+    res.header('Access-Control-Expose-Headers', 'Authorization');
   }
   next();
 });
 
 app.use(cors(corsOptions));
-app.options(/.*/, cors(corsOptions));
+app.options('*', cors(corsOptions));
 app.use(express.json({ limit: requestBodyLimit }));
 app.use(express.urlencoded({ extended: true, limit: requestBodyLimit }));
 
