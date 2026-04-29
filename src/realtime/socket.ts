@@ -2,6 +2,7 @@ import { Server as HttpServer } from 'http';
 import jwt from 'jsonwebtoken';
 import { Server as SocketIOServer } from 'socket.io';
 import prisma from '../config/prisma';
+import { getAllowedOrigins } from '../config/cors';
 import logger from '../utils/logger';
 
 type RealtimeEvent =
@@ -30,13 +31,7 @@ export const initRealtimeServer = (httpServer: HttpServer): SocketIOServer => {
     return io;
   }
 
-  const allowedOrigins = [
-    'https://lms-frontend-amber-beta.vercel.app',
-    process.env.FRONTEND_URL,
-    process.env.ALLOWED_ORIGINS,
-    'http://localhost:5173',
-    'http://localhost:3000',
-  ].filter(Boolean) as string[];
+  const allowedOrigins = getAllowedOrigins();
 
   console.log('[Socket.io] Allowed origins:', allowedOrigins);
 
