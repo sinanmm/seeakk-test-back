@@ -3,7 +3,7 @@ import logger from '../../utils/logger';
 
 const isProduction = process.env.NODE_ENV === 'production';
 const DEFAULT_FRONTEND_URL = 'https://lms-frontend-amber-beta.vercel.app';
-const DEFAULT_BACKEND_URL = 'https://backend-2612.onrender.com';
+const DEFAULT_BACKEND_URL = 'https://backend-26l2.onrender.com';
 
 const readEnv = (...keys: string[]): string => {
   for (const key of keys) {

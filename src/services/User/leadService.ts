@@ -424,6 +424,21 @@ const ensureAssignmentAllowed = (actor: Actor, assignedToId: string | null | und
   }
 };
 
+const ensureAssignmentUpdateAllowed = (
+  actor: Actor,
+  currentAssignedToId: string | null | undefined,
+  nextAssignedToId: string | null | undefined,
+): void => {
+  const current = currentAssignedToId ?? null;
+  const next = nextAssignedToId ?? null;
+
+  if (current === next) return;
+
+  if (!isManagerialRole(actor.role?.name)) {
+    throw createServiceError('You are not allowed to change the lead owner.', 403);
+  }
+};
+
 const resolveAssignedUserId = async (
   workspaceId: string,
   assignedToId: string | null | undefined,
@@ -1158,7 +1173,7 @@ export const updateLead = async (
   await findDuplicateLead(workspaceId, email, phone, id);
 
   const assignedToId = input.assignedToId !== undefined
-    ? (ensureAssignmentAllowed(actor, input.assignedToId), await resolveAssignedUserId(workspaceId, input.assignedToId))
+    ? (ensureAssignmentUpdateAllowed(actor, existing.assignedToId, input.assignedToId), await resolveAssignedUserId(workspaceId, input.assignedToId))
     : existing.assignedToId;
   const stage = input.stageId !== undefined ? await resolveStage(workspaceId, input.stageId) : existing.stage;
   const lifecycle = input.lifecycleId !== undefined ? await resolveLifecycle(workspaceId, input.lifecycleId) : existing.lifecycle;

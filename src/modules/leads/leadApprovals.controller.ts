@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import logger from '../../utils/logger';
 import * as leadApprovalService from './leadApprovals.service';
+import { emitWorkspaceEvent } from '../../realtime/socket';
 import type {
   CreateLeadApprovalInput,
   HandleLeadApprovalInput,
@@ -130,6 +131,14 @@ export const handleLeadApproval = async (req: Request, res: Response, next: Next
       ipAddress: req.ip,
       userAgent: req.headers['user-agent'],
     });
+
+    const leadId = result.lead?.id || result.approval?.leadId;
+    if (leadId) {
+      emitWorkspaceEvent(workspaceId, 'lead_updated', {
+        leadId,
+        action: input.action === 'APPROVE' ? 'approval_approved' : 'approval_denied',
+      });
+    }
 
     return res.status(200).json({
       success: true,
