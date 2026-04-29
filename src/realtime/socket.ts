@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import { Server as SocketIOServer } from 'socket.io';
 import prisma from '../config/prisma';
 import logger from '../utils/logger';
-import { allowedOrigins } from '../config/corsOrigins';
+import { corsOriginHandler } from '../config/cors';
 
 type RealtimeEvent =
   | 'role_updated'
@@ -27,11 +27,13 @@ export const initRealtimeServer = (httpServer: HttpServer): SocketIOServer => {
 
   io = new SocketIOServer(httpServer, {
     cors: {
-      origin: allowedOrigins,
+      origin: corsOriginHandler,
       credentials: true,
       methods: ['GET', 'POST'],
     },
     transports: ['polling', 'websocket'],
+    pingTimeout: 60000,
+    pingInterval: 25000,
   });
 
   io.use(async (socket, next) => {
