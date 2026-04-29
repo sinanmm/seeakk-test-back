@@ -36,7 +36,7 @@ import dashboardRoutes from './modules/dashboard/dashboard.routes';
 import logger from './utils/logger';
 import prisma from './config/prisma';
 import { redisClient } from './config/redis';
-import { corsOriginHandler, getAllowedOrigins } from './config/cors';
+import { corsOriginHandler, isAllowedOrigin } from './config/cors';
 import { globalLimiter } from './middlewares/rateLimiter';
 import { notFound, errorHandler } from './middlewares/errorMiddleware';
 
@@ -67,7 +67,7 @@ app.use(morgan('combined', { stream: { write: (message: string) => logger.info(m
 // Ensure allowed origins always receive CORS headers even on fast-fail/error paths.
 app.use((req: Request, res: Response, next) => {
   const origin = req.headers.origin;
-  if (typeof origin === 'string' && getAllowedOrigins().includes(origin)) {
+  if (typeof origin === 'string' && isAllowedOrigin(origin)) {
     res.header('Access-Control-Allow-Origin', origin);
     res.header('Vary', 'Origin');
     res.header('Access-Control-Allow-Credentials', 'true');
