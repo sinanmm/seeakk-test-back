@@ -42,15 +42,10 @@ const startServer = async () => {
 
     verifyEmailTransport()
       .then(() => {
-        console.log('Email transport verified');
+        console.log('✅ Email transport verified');
       })
       .catch((error: any) => {
-        console.error('Email transport verification failed. Invitation emails will use manual fallback until SMTP is fixed.', {
-          message: error?.message,
-          code: error?.code,
-          command: error?.command,
-          responseCode: error?.responseCode,
-        });
+        console.error('❌ Email transport failed:', error?.message || String(error));
       });
 
     // Connect Prisma in background so API process can still boot and avoid ERR_CONNECTION_REFUSED.
