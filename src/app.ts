@@ -34,6 +34,8 @@ import reportTypeRoutes from './modules/reports/reportTypes.routes';
 import reportRoutes from './modules/reports/reports.routes';
 import dashboardRoutes from './modules/dashboard/dashboard.routes';
 import logger from './utils/logger';
+import prisma from './config/prisma';
+import { redisClient } from './config/redis';
 import { globalLimiter } from './middlewares/rateLimiter';
 import { notFound, errorHandler } from './middlewares/errorMiddleware';
 
@@ -137,6 +139,31 @@ app.use(express.urlencoded({ extended: true, limit: requestBodyLimit }));
 app.use((req, res, next) => {
   res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
   next();
+});
+
+// Simple health check
+app.get('/healthz', (_req, res) => {
+  res.status(200).json({ ok: true, timestamp: new Date().toISOString() });
+});
+
+// Readiness check
+app.get('/readyz', async (_req, res) => {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    const redisReady = redisClient.isOpen;
+    res.status(200).json({
+      ok: true,
+      db: true,
+      redis: redisReady,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    res.status(503).json({
+      ok: false,
+      db: false,
+      timestamp: new Date().toISOString(),
+    });
+  }
 });
 
 // Global rate limiting
