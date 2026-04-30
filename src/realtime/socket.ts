@@ -44,7 +44,7 @@ export const initRealtimeServer = (httpServer: HttpServer): SocketIOServer => {
         'x-access-token',
       ],
     },
-    transports: ['websocket'],
+    transports: ['polling', 'websocket'],
     pingTimeout: 60000,
     pingInterval: 25000,
     connectTimeout: 45000,

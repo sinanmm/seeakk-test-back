@@ -46,7 +46,16 @@ const requestBodyLimit = process.env.REQUEST_BODY_LIMIT || '5mb';
 const corsOptions: cors.CorsOptions = {
   origin: corsOriginHandler,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization',
+    'x-device-id',
+    'x-request-id',
+    'x-workspace-id',
+    'Accept',
+    'Origin',
+    'X-Requested-With',
+  ],
   credentials: true,
   optionsSuccessStatus: 204,
 };
@@ -135,7 +144,7 @@ app.get('/', (req: Request, res: Response) => {
 // Global error handling
 app.use((req, res, next) => {
   // Never 404 on socket.io paths - let the Engine.io server handle them
-  if (req.path.startsWith('/socket.io')) return;
+  if (req.path.startsWith('/socket.io')) return next();
   notFound(req, res, next);
 });
 app.use(errorHandler);
