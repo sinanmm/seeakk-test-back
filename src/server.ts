@@ -31,6 +31,7 @@ const connectPrismaWithRetry = async (): Promise<void> => {
 };
 
 const startServer = async () => {
+  console.log('[Server] Bootstrapping server...');
   try {
     // Connect Redis
     await connectRedis();
@@ -42,7 +43,11 @@ const startServer = async () => {
       console.log(`[Server] NODE_ENV: ${process.env.NODE_ENV}`);
       console.log(`[Server] FRONTEND_URL: ${process.env.FRONTEND_URL}`);
       console.log(`[Socket.io] Initialized on ${PORT}`);
-      console.log('[CORS] Allowed origins:', getAllowedOrigins());
+      try {
+        console.log('[CORS] Allowed origins:', getAllowedOrigins());
+      } catch (e) {
+        console.error('[CORS] Error getting origins:', e);
+      }
     });
 
     verifyEmailTransport()

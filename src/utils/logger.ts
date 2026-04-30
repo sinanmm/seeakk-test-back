@@ -51,13 +51,14 @@ if (enableProcessHandlers) {
 
 const logger = winston.createLogger(loggerOptions);
 
-if (!isProduction) {
-  logger.add(
-    new winston.transports.Console({
-      format: winston.format.combine(winston.format.colorize(), winston.format.simple()),
-      level: 'debug',
-    })
-  );
-}
+// Always add Console transport in all environments for cloud logging (Render/Heroku/Vercel)
+logger.add(
+  new winston.transports.Console({
+    format: isProduction
+      ? winston.format.combine(winston.format.timestamp(), winston.format.json())
+      : winston.format.combine(winston.format.colorize(), winston.format.simple()),
+    level: isProduction ? 'info' : 'debug',
+  })
+);
 
 export default logger;
