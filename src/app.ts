@@ -66,7 +66,7 @@ app.use(morgan('combined', { stream: { write: (message: string) => logger.info(m
 
 // Production-grade CORS config
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
+app.options(/.*/, cors(corsOptions));
 
 app.use(express.json({ limit: requestBodyLimit }));
 app.use(express.urlencoded({ extended: true, limit: requestBodyLimit }));
