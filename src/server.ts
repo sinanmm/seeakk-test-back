@@ -1,20 +1,33 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
-import app from './app';
 import { createServer } from 'http';
 import { connectRedis } from './config/redis';
-import prisma from './config/prisma';
-import { scheduleDailySync } from './modules/holidays/holidays.jobs';
-import './modules/leads/leadImport.jobs';
-import { verifyEmailTransport } from './services/Email/emailService';
-import { startFollowUpReminders } from './services/User/followupReminder.jobs';
-import { initRealtimeServer } from './realtime/socket';
 import { getAllowedOrigins } from './config/cors';
 
 const PORT = process.env.PORT || 5000;
 
-const connectPrismaWithRetry = async (): Promise<void> => {
+process.on('uncaughtException', (error) => {
+  console.error('[Server] Uncaught exception during startup/runtime:', error);
+});
+
+process.on('unhandledRejection', (reason) => {
+  console.error('[Server] Unhandled rejection during startup/runtime:', reason);
+});
+
+const validateCriticalEnv = (): void => {
+  const missing: string[] = [];
+
+  if (!process.env.DATABASE_URL?.trim()) missing.push('DATABASE_URL');
+  if (!process.env.JWT_SECRET?.trim()) missing.push('JWT_SECRET');
+  if (!process.env.JWT_REFRESH_SECRET?.trim()) missing.push('JWT_REFRESH_SECRET');
+
+  if (missing.length > 0) {
+    throw new Error(`Missing required environment variables: ${missing.join(', ')}`);
+  }
+};
+
+const connectPrismaWithRetry = async (prisma: { $connect: () => Promise<void> }): Promise<void> => {
   const maxAttempts = 5;
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
     try {
@@ -33,10 +46,31 @@ const connectPrismaWithRetry = async (): Promise<void> => {
 const startServer = async () => {
   console.log('[Server] Bootstrapping server...');
   try {
+    validateCriticalEnv();
+
+    const [
+      { default: app },
+      { default: prisma },
+      { scheduleDailySync },
+      _leadImportJobs,
+      { verifyEmailTransport },
+      { startFollowUpReminders },
+      { initRealtimeServer },
+    ] = await Promise.all([
+      import('./app'),
+      import('./config/prisma'),
+      import('./modules/holidays/holidays.jobs'),
+      import('./modules/leads/leadImport.jobs'),
+      import('./services/Email/emailService'),
+      import('./services/User/followupReminder.jobs'),
+      import('./realtime/socket'),
+    ]);
+
     // Connect Redis
     await connectRedis();
-    const httpServer = createServer(app);
+    const httpServer = createServer();
     initRealtimeServer(httpServer);
+    httpServer.on('request', app);
 
     httpServer.listen(PORT, () => {
       console.log(`[Server] Running on port ${PORT}`);
@@ -59,7 +93,7 @@ const startServer = async () => {
       });
 
     // Connect Prisma in background so API process can still boot and avoid ERR_CONNECTION_REFUSED.
-    connectPrismaWithRetry()
+    connectPrismaWithRetry(prisma)
       .then(() => {
         console.log('PostgreSQL connected via Prisma');
         // Start background jobs
