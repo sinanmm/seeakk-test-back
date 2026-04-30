@@ -2,6 +2,7 @@ import { Server as HttpServer } from 'http';
 import jwt from 'jsonwebtoken';
 import { Server as SocketIOServer } from 'socket.io';
 import prisma from '../config/prisma';
+import { isAllowedOrigin } from '../config/cors';
 import logger from '../utils/logger';
 
 type RealtimeEvent =
@@ -22,23 +23,25 @@ const toWorkspaceRoom = (workspaceId: string) => `workspace:${workspaceId}`;
 const toUserRoom = (userId: string) => `user:${userId}`;
 
 export const initRealtimeServer = (httpServer: HttpServer): SocketIOServer => {
-  if (io) return io;
+  console.log('[Socket.io] initRealtimeServer called');
+  console.log('[Socket.io] httpServer:', !!httpServer);
+
+  if (io) {
+    console.log('[Socket.io] Returning existing instance');
+    return io;
+  }
 
   io = new SocketIOServer(httpServer, {
+    path: '/socket.io',
     cors: {
-      origin: [
-        'https://lms-frontend-amber-beta.vercel.app',
-        process.env.FRONTEND_URL,
-        process.env.ALLOWED_ORIGINS,
-        'http://localhost:5173',
-        'http://localhost:3000',
-      ].filter(Boolean) as string[],
+      origin: true,
       credentials: true,
       methods: ['GET', 'POST'],
       allowedHeaders: [
         'Content-Type',
         'Authorization',
         'x-device-id',
+        'x-access-token',
       ],
     },
     transports: ['polling', 'websocket'],
@@ -46,7 +49,8 @@ export const initRealtimeServer = (httpServer: HttpServer): SocketIOServer => {
     pingInterval: 25000,
     connectTimeout: 45000,
   });
-  console.log('[Socket.io] Initialized with origins:', [
+  console.log('[Socket.io] Server created successfully');
+  console.log('[Socket.io] Origins:', [
     'https://lms-frontend-amber-beta.vercel.app',
     process.env.FRONTEND_URL,
     process.env.ALLOWED_ORIGINS,

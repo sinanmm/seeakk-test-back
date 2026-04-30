@@ -38,9 +38,11 @@ const startServer = async () => {
     initRealtimeServer(httpServer);
 
     httpServer.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-      console.log(`Socket.io initialized on ${PORT}`);
-      console.log('Allowed origins:', getAllowedOrigins());
+      console.log(`[Server] Running on port ${PORT}`);
+      console.log(`[Server] NODE_ENV: ${process.env.NODE_ENV}`);
+      console.log(`[Server] FRONTEND_URL: ${process.env.FRONTEND_URL}`);
+      console.log(`[Socket.io] Initialized on ${PORT}`);
+      console.log('[CORS] Allowed origins:', getAllowedOrigins());
     });
 
     verifyEmailTransport()
