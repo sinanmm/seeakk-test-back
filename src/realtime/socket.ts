@@ -34,20 +34,7 @@ export const initRealtimeServer = (httpServer: HttpServer): SocketIOServer => {
   io = new SocketIOServer(httpServer, {
     path: '/socket.io',
     cors: {
-      origin: (origin, callback) => {
-        // If no origin (like mobile apps or local scripts), allow it
-        if (!origin) {
-          callback(null, true);
-          return;
-        }
-
-        if (isAllowedOrigin(origin)) {
-          callback(null, true);
-        } else {
-          console.warn(`[Socket.io] CORS blocked origin: ${origin}`);
-          callback(new Error('Not allowed by CORS'), false);
-        }
-      },
+      origin: true,
       credentials: true,
       methods: ['GET', 'POST'],
       allowedHeaders: [
@@ -57,7 +44,7 @@ export const initRealtimeServer = (httpServer: HttpServer): SocketIOServer => {
         'x-access-token',
       ],
     },
-    transports: ['polling', 'websocket'],
+    transports: ['websocket'],
     pingTimeout: 60000,
     pingInterval: 25000,
     connectTimeout: 45000,

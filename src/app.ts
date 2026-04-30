@@ -54,28 +54,10 @@ const corsOptions: cors.CorsOptions = {
 // Middleware
 app.use(morgan('combined', { stream: { write: (message: string) => logger.info(message.trim()) } }));
 
-// Ensure allowed origins always receive CORS headers even on fast-fail/error paths.
-app.use((req: Request, res: Response, next) => {
-  const origin = req.headers.origin;
-  if (typeof origin === 'string' && isAllowedOrigin(origin)) {
-    res.header('Access-Control-Allow-Origin', origin);
-    res.header('Vary', 'Origin');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    res.header(
-      'Access-Control-Allow-Headers',
-      'Content-Type, Authorization, x-device-id, x-access-token, Accept, Origin',
-    );
-    res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
-  }
-  
-  if (req.method === 'OPTIONS') {
-    return res.status(204).end();
-  }
-  next();
-});
-
+// Production-grade CORS config
 app.use(cors(corsOptions));
-app.options(/.*/, cors(corsOptions));
+app.options('*', cors(corsOptions));
+
 app.use(express.json({ limit: requestBodyLimit }));
 app.use(express.urlencoded({ extended: true, limit: requestBodyLimit }));
 
@@ -152,13 +134,12 @@ app.get('/', (req: Request, res: Response) => {
 
 // Global error handling
 app.use((req, res, next) => {
-  // Exclude socket.io from 404 handler to avoid conflicts with Engine.io
-  if (req.path.startsWith('/socket.io')) {
-    return next('router');
-  }
+  // Never 404 on socket.io paths - let the Engine.io server handle them
+  if (req.path.startsWith('/socket.io')) return;
   notFound(req, res, next);
 });
 app.use(errorHandler);
+
 
 export default app;
 
