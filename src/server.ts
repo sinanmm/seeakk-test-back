@@ -68,9 +68,11 @@ const startServer = async () => {
 
     // Connect Redis
     await connectRedis();
-    const httpServer = createServer();
+    // Pass Express as the initial request listener so Engine.IO (inside Socket.IO) can wrap it.
+    // Otherwise Socket.IO attaches first with zero captured listeners, and Express becomes a second
+    // listener — every request runs both handlers (risky for /socket.io after Engine.IO ends the response).
+    const httpServer = createServer(app);
     initRealtimeServer(httpServer);
-    httpServer.on('request', app);
 
     httpServer.listen(PORT, () => {
       console.log(`[Server] Running on port ${PORT}`);
