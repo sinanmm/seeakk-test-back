@@ -1,5 +1,6 @@
 import prisma from '../../config/prisma';
 import { redisClient } from '../../config/redis';
+import logger from '../../utils/logger';
 import { normalizeFollowUpType } from '../../constants/followUpType';
 import { buildClosureUpdateData, isClosureStage } from '../../modules/leads/leads.service';
 import * as leadApprovalService from '../../modules/leads/leadApprovals.service';
@@ -1385,43 +1386,56 @@ export const changeStage = async (
   await ensureValidLOBReasonForStage(workspaceId, targetStage, input.reasonId);
 
   if (existing.stageId !== targetStage.id && shouldRequireApprovalForStage(targetStage)) {
-    const executionRules = await getActiveStageRulesForExecution(workspaceId, targetStage.id);
-    const ruleNameById = new Map(executionRules.map((rule) => [rule.id, rule.name]));
-    const stageRuleValuesForRequest = (input.stageRuleValues ?? []).map((entry) => ({
-      ruleId: entry.ruleId,
-      value: entry.value,
-      ruleName: ruleNameById.get(entry.ruleId) || entry.ruleId,
-    }));
+    const requestingUser = await prisma.user.findUnique({
+      where: { id: actor.id },
+      select: { supervisorId: true },
+    });
 
-    const result = await leadApprovalService.createLeadApproval(
-      workspaceId,
-      { id: actor.id, roleId: actor.roleId ?? null, role: actor.role },
-      {
-        leadId: id,
-        fromStageId: existing.stageId!,
-        toStageId: targetStage.id,
-        requestData: {
-          reasonId: input.reasonId ?? null,
-          remarks: input.remarks ?? null,
-          nextFollowUpAt: input.nextFollowUpAt ? input.nextFollowUpAt.toISOString() : null,
-          nextFollowUpType: input.nextFollowUpType ?? null,
-          followUpDescription: input.followUpDescription ?? null,
-          stageRuleValues: stageRuleValuesForRequest,
-          ...(targetStage.isLOB && existing.stageId
-            ? {
-                previousStageId: existing.stageId,
-                previousStageName: existing.stage?.name ?? null,
-              }
-            : {}),
+    if (!requestingUser?.supervisorId && isManagerialRole(actor.role?.name)) {
+      logger.info('Bypassing lead stage approval for managerial user without supervisor', {
+        userId: actor.id,
+        role: actor.role?.name,
+        targetStage: targetStage.name,
+      });
+    } else {
+      const executionRules = await getActiveStageRulesForExecution(workspaceId, targetStage.id);
+      const ruleNameById = new Map(executionRules.map((rule) => [rule.id, rule.name]));
+      const stageRuleValuesForRequest = (input.stageRuleValues ?? []).map((entry) => ({
+        ruleId: entry.ruleId,
+        value: entry.value,
+        ruleName: ruleNameById.get(entry.ruleId) || entry.ruleId,
+      }));
+
+      const result = await leadApprovalService.createLeadApproval(
+        workspaceId,
+        { id: actor.id, roleId: actor.roleId ?? null, role: actor.role },
+        {
+          leadId: id,
+          fromStageId: existing.stageId!,
+          toStageId: targetStage.id,
+          requestData: {
+            reasonId: input.reasonId ?? null,
+            remarks: input.remarks ?? null,
+            nextFollowUpAt: input.nextFollowUpAt ? input.nextFollowUpAt.toISOString() : null,
+            nextFollowUpType: input.nextFollowUpType ?? null,
+            followUpDescription: input.followUpDescription ?? null,
+            stageRuleValues: stageRuleValuesForRequest,
+            ...(targetStage.isLOB && existing.stageId
+              ? {
+                  previousStageId: existing.stageId,
+                  previousStageName: existing.stage?.name ?? null,
+                }
+              : {}),
+          },
         },
-      },
-    );
+      );
 
-    return {
-      approvalRequired: true,
-      lead: result.lead,
-      approval: result.approval,
-    };
+      return {
+        approvalRequired: true,
+        lead: result.lead,
+        approval: result.approval,
+      };
+    }
   }
 
   const updatedLead = await updateLead(workspaceId, actor, id, {
