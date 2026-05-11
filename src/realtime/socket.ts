@@ -2,7 +2,7 @@ import { Server as HttpServer } from 'http';
 import jwt from 'jsonwebtoken';
 import { Server as SocketIOServer } from 'socket.io';
 import prisma from '../config/prisma';
-import { isAllowedOrigin } from '../config/cors';
+import { getAllowedOrigins, isAllowedOrigin } from '../config/cors';
 import logger from '../utils/logger';
 
 type RealtimeEvent =
@@ -22,6 +22,23 @@ let io: SocketIOServer | null = null;
 const toWorkspaceRoom = (workspaceId: string) => `workspace:${workspaceId}`;
 const toUserRoom = (userId: string) => `user:${userId}`;
 
+const socketCorsOrigin = (
+  origin: string | undefined,
+  callback: (err: Error | null, allow?: boolean) => void,
+): void => {
+  if (!origin || isAllowedOrigin(origin)) {
+    callback(null, true);
+    return;
+  }
+
+  logger.warn('Socket.io blocked by CORS', {
+    module: 'realtime',
+    origin,
+    allowedOrigins: getAllowedOrigins(),
+  });
+  callback(new Error(`Not allowed by Socket.io CORS: ${origin}`), false);
+};
+
 export const initRealtimeServer = (httpServer: HttpServer): SocketIOServer => {
   console.log('[Socket.io] initRealtimeServer called');
   console.log('[Socket.io] httpServer:', !!httpServer);
@@ -34,15 +51,34 @@ export const initRealtimeServer = (httpServer: HttpServer): SocketIOServer => {
   io = new SocketIOServer(httpServer, {
     path: '/socket.io',
     cors: {
-      origin: true,
+      origin: socketCorsOrigin,
       credentials: true,
       methods: ['GET', 'POST'],
       allowedHeaders: [
         'Content-Type',
         'Authorization',
+        'Accept',
+        'Origin',
+        'X-Requested-With',
         'x-device-id',
         'x-access-token',
+        'x-request-id',
+        'x-workspace-id',
       ],
+    },
+    allowRequest: (req, callback) => {
+      const origin = req.headers.origin;
+      if (!origin || isAllowedOrigin(origin)) {
+        callback(null, true);
+        return;
+      }
+
+      logger.warn('Socket.io request rejected by origin allowlist', {
+        module: 'realtime',
+        origin,
+        allowedOrigins: getAllowedOrigins(),
+      });
+      callback('Not allowed by Socket.io CORS', false);
     },
     transports: ['polling', 'websocket'],
     pingTimeout: 60000,
@@ -50,11 +86,7 @@ export const initRealtimeServer = (httpServer: HttpServer): SocketIOServer => {
     connectTimeout: 45000,
   });
   console.log('[Socket.io] Server created successfully');
-  console.log('[Socket.io] Origins:', [
-    'https://lms-frontend-amber-beta.vercel.app',
-    process.env.FRONTEND_URL,
-    process.env.ALLOWED_ORIGINS,
-  ].filter(Boolean));
+  console.log('[Socket.io] Allowed origins:', getAllowedOrigins());
 
   io.use(async (socket, next) => {
     try {
