@@ -10,6 +10,7 @@ type RealtimeEvent =
   | 'permissions_updated'
   | 'user_updated'
   | 'lead_updated'
+  | 'approval_updated'
   | 'report_updated';
 
 type RealtimePayload = Record<string, unknown> & {
