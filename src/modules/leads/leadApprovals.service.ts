@@ -276,9 +276,7 @@ export const createLeadApproval = async (
     );
   }
 
-  if (selectedSupervisorId === actor.id) {
-    throw createServiceError('Invalid hierarchy: You cannot be your own supervisor.', 400);
-  }
+  // Users are now allowed to be their own supervisor.
 
   const assignedSupervisor = await repository.findActiveUserById(workspaceId, selectedSupervisorId);
   if (!assignedSupervisor) {
@@ -427,7 +425,8 @@ export const processLeadApproval = async (
     throw createServiceError('This approval request is assigned to another approver.', 403);
   }
 
-  if (approval.requestedById === actor.id) {
+  // If a user is their own supervisor, they are allowed to approve their own request.
+  if (approval.requestedById === actor.id && approval.assignedToId !== actor.id) {
     throw createServiceError('Security violation: You cannot approve or deny your own stage change request.', 403);
   }
 

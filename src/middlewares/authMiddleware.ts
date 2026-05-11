@@ -407,3 +407,15 @@ export const checkAnyPermission = (permissionKeys: string[]) => {
     }
   };
 };
+export const hasPermission = async (user: any, permissionKey: string): Promise<boolean> => {
+  if (!user || !user.roleId) return false;
+  if (isPrivilegedRole(user.role?.name)) return true;
+
+  const rolePermissions = await (prisma as any).rolePermission.findMany({
+    where: { roleId: user.roleId },
+    include: { permission: { select: { key: true } } },
+  });
+
+  const permissions = rolePermissions.map((rp: any) => rp.permission.key);
+  return permissions.includes(permissionKey);
+};

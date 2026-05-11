@@ -13,6 +13,7 @@ const permissions = [
   { key: 'USERS_UNLOCK', group: 'ADMIN_MANAGEMENT', description: 'Unlock locked staff accounts' },
   { key: 'USERS_DELETE', group: 'ADMIN_MANAGEMENT', description: 'Soft-delete users' },
   { key: 'USERS_EXPORT', group: 'ADMIN_MANAGEMENT', description: 'Export users to CSV/Excel' },
+  { key: 'USERS_ASSIGN_SUPERVISOR', group: 'ADMIN_MANAGEMENT', description: 'Assign or change user supervisor' },
 
   // ROLES MANAGEMENT
   { key: 'ROLES_VIEW', group: 'ADMIN_MANAGEMENT', description: 'View roles and permissions' },

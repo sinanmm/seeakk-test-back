@@ -20,6 +20,7 @@ import logger from '../../utils/logger';
 import auditService from '../../services/Audit/auditService';
 import { inviteService } from '../../modules/invites/invite.service';
 import { emitUserEvent, emitWorkspaceEvent } from '../../realtime/socket';
+import { hasPermission } from '../../middlewares/authMiddleware';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -86,6 +87,16 @@ export const createUser = async (req: Request, res: Response, next: NextFunction
   if (!input) return;
 
   try {
+    if (input.supervisorId) {
+      const canAssign = await hasPermission(req.user, 'USERS_ASSIGN_SUPERVISOR');
+      if (!canAssign) {
+        return res.status(403).json({
+          success: false,
+          message: 'Forbidden: You do not have permission to assign a supervisor.',
+        });
+      }
+    }
+
     const result = await adminUserService.createUser(input, workspaceId);
     emitWorkspaceEvent(workspaceId, 'user_updated', { userId: (result as any).user.id, action: 'created' });
 
@@ -254,6 +265,16 @@ export const updateUser = async (req: Request, res: Response, next: NextFunction
   if (!input) return;
 
   try {
+    if (input.supervisorId !== undefined) {
+      const canAssign = await hasPermission(req.user, 'USERS_ASSIGN_SUPERVISOR');
+      if (!canAssign) {
+        return res.status(403).json({
+          success: false,
+          message: 'Forbidden: You do not have permission to change the supervisor.',
+        });
+      }
+    }
+
     const user = await adminUserService.updateUser(userId, input, workspaceId);
     emitWorkspaceEvent(workspaceId, 'user_updated', { userId });
     emitUserEvent(userId, 'user_updated', { userId });

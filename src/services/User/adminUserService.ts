@@ -23,11 +23,7 @@ const assertValidSupervisor = async (
   supervisorId: string,
   options?: { excludeUserId?: string },
 ): Promise<void> => {
-  if (options?.excludeUserId && supervisorId === options.excludeUserId) {
-    const err: any = new Error('A user cannot be their own supervisor.');
-    err.statusCode = 400;
-    throw err;
-  }
+  // Users are now allowed to be their own supervisor.
 
   const supervisor = await (prisma as any).user.findFirst({
     where: {
