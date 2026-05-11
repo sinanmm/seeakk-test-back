@@ -1385,10 +1385,6 @@ export const changeStage = async (
   await ensureValidLOBReasonForStage(workspaceId, targetStage, input.reasonId);
 
   if (existing.stageId !== targetStage.id && shouldRequireApprovalForStage(targetStage)) {
-    if (!existing.stageId) {
-      throw createServiceError('Lead does not have a current stage to request approval from.', 409);
-    }
-
     const executionRules = await getActiveStageRulesForExecution(workspaceId, targetStage.id);
     const ruleNameById = new Map(executionRules.map((rule) => [rule.id, rule.name]));
     const stageRuleValuesForRequest = (input.stageRuleValues ?? []).map((entry) => ({
@@ -1402,9 +1398,8 @@ export const changeStage = async (
       { id: actor.id, roleId: actor.roleId ?? null, role: actor.role },
       {
         leadId: id,
-        fromStageId: existing.stageId,
+        fromStageId: existing.stageId!,
         toStageId: targetStage.id,
-        assignedToId: existing.assignedTo?.supervisorId || undefined,
         requestData: {
           reasonId: input.reasonId ?? null,
           remarks: input.remarks ?? null,

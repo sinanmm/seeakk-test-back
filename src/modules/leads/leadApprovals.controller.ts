@@ -86,6 +86,18 @@ export const createLeadApproval = async (req: Request, res: Response, next: Next
       userAgent: req.headers['user-agent'],
     });
 
+    emitWorkspaceEvent(workspaceId, 'approval_updated', {
+      approvalId: result.approval.id,
+      leadId: result.lead.id,
+      status: 'PENDING',
+      action: 'REQUESTED',
+    });
+
+    emitWorkspaceEvent(workspaceId, 'lead_updated', {
+      leadId: result.lead.id,
+      action: 'approval_requested',
+    });
+
     return res.status(201).json({
       success: true,
       message: 'Approval requested successfully',
@@ -134,6 +146,13 @@ export const handleLeadApproval = async (req: Request, res: Response, next: Next
 
     const leadId = result.lead?.id || result.approval?.leadId;
     if (leadId) {
+      emitWorkspaceEvent(workspaceId, 'approval_updated', {
+        approvalId: params.id,
+        leadId,
+        status: result.approval.status,
+        action: input.action,
+      });
+
       emitWorkspaceEvent(workspaceId, 'lead_updated', {
         leadId,
         action: input.action === 'APPROVE' ? 'approval_approved' : 'approval_denied',

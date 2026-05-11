@@ -267,19 +267,17 @@ export const createLeadApproval = async (
   }
 
   const requestingUser = await repository.findActiveUserById(workspaceId, actor.id);
-  const actorSupervisorId = requestingUser?.supervisorId || null;
-  const leadSupervisorId = lead.assignedTo?.supervisorId || null;
-  const selectedSupervisorId = actorSupervisorId || input.assignedToId || leadSupervisorId;
+  const selectedSupervisorId = requestingUser?.supervisorId || null;
 
   if (!selectedSupervisorId) {
     throw createServiceError(
-      'The staff member requesting this stage change must have a selected supervisor before approval can be requested.',
+      'You must have a supervisor assigned to your account before you can request a stage change that requires approval. Please contact your administrator.',
       409,
     );
   }
 
-  if (actorSupervisorId && input.assignedToId && input.assignedToId !== actorSupervisorId) {
-    throw createServiceError('Approval requests can only be assigned to the requesting staff member’s selected supervisor.', 409);
+  if (selectedSupervisorId === actor.id) {
+    throw createServiceError('Invalid hierarchy: You cannot be your own supervisor.', 400);
   }
 
   const assignedSupervisor = await repository.findActiveUserById(workspaceId, selectedSupervisorId);
@@ -427,6 +425,10 @@ export const processLeadApproval = async (
   }
   if (approval.assignedToId !== actor.id) {
     throw createServiceError('This approval request is assigned to another approver.', 403);
+  }
+
+  if (approval.requestedById === actor.id) {
+    throw createServiceError('Security violation: You cannot approve or deny your own stage change request.', 403);
   }
 
   const requestData = normalizeRequestData(approval.requestData);
