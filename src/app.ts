@@ -152,7 +152,7 @@ app.get('/', (req: Request, res: Response) => {
 // Global error handling
 app.use((req, res, next) => {
   // Never 404 on socket.io paths - let the Engine.io server handle them
-  if (req.path.startsWith('/socket.io')) return next();
+  if (req.path === '/socket.io' || req.path.startsWith('/socket.io/')) return next();
   notFound(req, res, next);
 });
 app.use(errorHandler);
