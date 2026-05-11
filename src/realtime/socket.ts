@@ -49,7 +49,7 @@ export const initRealtimeServer = (httpServer: HttpServer): SocketIOServer => {
   }
 
   io = new SocketIOServer(httpServer, {
-    path: '/socket.io/',
+    path: '/socket.io',
     cors: {
       origin: socketCorsOrigin,
       credentials: true,
