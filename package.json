@@ -27,6 +27,9 @@
   "author": "",
   "license": "ISC",
   "description": "",
+  "engines": {
+    "node": ">=20 <25"
+  },
   "dependencies": {
     "@prisma/adapter-pg": "^5.22.0",
     "@prisma/client": "^5.22.0",

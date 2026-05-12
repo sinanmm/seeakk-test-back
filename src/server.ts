@@ -4,8 +4,9 @@ dotenv.config();
 import { createServer } from 'http';
 import { connectRedis } from './config/redis';
 import { getAllowedOrigins } from './config/cors';
+import { logStartupDiagnostics } from './config/startupDiagnostics';
 
-const PORT = process.env.PORT || 5000;
+const PORT = Number.parseInt(String(process.env.PORT || '5000'), 10) || 5000;
 
 process.on('uncaughtException', (error) => {
   console.error('[Server] Uncaught exception during startup/runtime:', error);
@@ -45,6 +46,7 @@ const connectPrismaWithRetry = async (prisma: { $connect: () => Promise<void> })
 
 const startServer = async () => {
   console.log('[Server] Bootstrapping server...');
+  logStartupDiagnostics();
   try {
     validateCriticalEnv();
 
@@ -74,11 +76,12 @@ const startServer = async () => {
     const httpServer = createServer(app);
     initRealtimeServer(httpServer);
 
-    httpServer.listen(PORT, () => {
-      console.log(`[Server] Running on port ${PORT}`);
+    // Bind all interfaces — required for Render/Docker/Kubernetes
+    httpServer.listen(PORT, '0.0.0.0', () => {
+      console.log(`[Server] Listening on http://0.0.0.0:${PORT} (process.env.PORT=${process.env.PORT || PORT})`);
       console.log(`[Server] NODE_ENV: ${process.env.NODE_ENV}`);
-      console.log(`[Server] FRONTEND_URL: ${process.env.FRONTEND_URL}`);
-      console.log(`[Socket.io] Initialized on ${PORT}`);
+      console.log(`[Server] FRONTEND_URL: ${process.env.FRONTEND_URL || '(unset)'}`);
+      console.log(`[Socket.io] Engine.IO path /socket.io on same HTTP server`);
       try {
         console.log('[CORS] Allowed origins:', getAllowedOrigins());
       } catch (e) {

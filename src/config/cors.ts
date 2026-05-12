@@ -1,9 +1,10 @@
 const normalizeOrigin = (origin: string): string =>
   origin.trim().toLowerCase().replace(/\/+$/, '');
 
+/** Split on comma, semicolon, or whitespace (common in Render / .env pastes). */
 const splitOrigins = (value?: string | null): string[] =>
   (value || '')
-    .split(/[\s,]+/)
+    .split(/[\s,;]+/)
     .map((origin) => normalizeOrigin(origin))
     .filter(Boolean);
 

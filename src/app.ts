@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
@@ -41,6 +42,9 @@ import { globalLimiter } from './middlewares/rateLimiter';
 import { notFound, errorHandler } from './middlewares/errorMiddleware';
 
 const app = express();
+// Render / Vercel / proxies: trust X-Forwarded-* for correct req.ip and secure cookies if used later
+app.set('trust proxy', 1);
+
 const requestBodyLimit = process.env.REQUEST_BODY_LIMIT || '5mb';
 
 const corsOptions: cors.CorsOptions = {
@@ -68,6 +72,15 @@ app.use(morgan('combined', { stream: { write: (message: string) => logger.info(m
 app.use(cors(corsOptions));
 app.options(/.*/, cors(corsOptions));
 
+// Correlation id for support / log cross-reference (idempotent if client sends X-Request-Id)
+app.use((req, res, next) => {
+  const incoming = (req.headers['x-request-id'] as string | undefined)?.trim();
+  const id = incoming && incoming.length <= 128 ? incoming : randomUUID();
+  res.setHeader('X-Request-Id', id);
+  (req as Request & { id?: string }).id = id;
+  next();
+});
+
 app.use(express.json({ limit: requestBodyLimit }));
 app.use(express.urlencoded({ extended: true, limit: requestBodyLimit }));
 
@@ -77,9 +90,14 @@ app.use((req, res, next) => {
   next();
 });
 
-// Simple health check
+// Liveness: no DB — for load balancers & browser checks (must stay fast)
 app.get('/healthz', (_req, res) => {
-  res.status(200).json({ ok: true, timestamp: new Date().toISOString() });
+  res.status(200).json({
+    ok: true,
+    timestamp: Date.now(),
+    uptime: process.uptime(),
+    service: 'seeakk-crm-backend',
+  });
 });
 
 app.get('/socket-test', (_req, res) => {
