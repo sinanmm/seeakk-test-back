@@ -1,4 +1,5 @@
 import bcrypt from 'bcryptjs';
+import logger from '../../utils/logger';
 import { getPublicFrontendUrl } from '../../config/publicUrls';
 import auditService from '../../services/Audit/auditService';
 import { sendInvitationEmail } from '../../services/Email/emailService';
@@ -134,10 +135,15 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
     try {
       const delivered = await deps.sendInvitationEmail(email, input);
       return {
-        emailDelivered: delivered !== false,
+        emailDelivered: delivered === true,
         deliveryErrorMessage: null,
       };
     } catch (error: any) {
+      logger.warn('Invitation email failed', {
+        module: 'invites',
+        email,
+        error: error?.message || String(error),
+      });
       return {
         emailDelivered: false,
         deliveryErrorMessage:

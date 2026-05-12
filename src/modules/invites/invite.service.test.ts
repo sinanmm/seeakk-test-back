@@ -67,7 +67,12 @@ const buildService = (overrides: Partial<any> = {}) => {
     repository: repo as any,
     tokenFactory: overrides.tokenFactory || (() => ({ rawToken: 'raw-token', tokenHash: 'hashed-token' })),
     hashToken: overrides.hashToken || ((token: string) => `hashed:${token}`),
-    sendInvitationEmail: overrides.sendInvitationEmail || (async (...args: any[]) => void sentEmails.push(args)),
+    sendInvitationEmail:
+      overrides.sendInvitationEmail ||
+      (async (...args: any[]) => {
+        sentEmails.push(args);
+        return true;
+      }),
     hashPassword:
       overrides.hashPassword ||
       (async (password: string, rounds: number) => {

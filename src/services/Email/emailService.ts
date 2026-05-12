@@ -201,17 +201,21 @@ export const sendInvitationEmail = async (
   const frontendUrl = getPublicFrontendUrl();
   const backendUrl = getPublicBackendUrl();
   if (!frontendUrl) {
-    logger.error('FRONTEND_URL is not set; invitation accept link will be invalid', { module: 'email' });
-    throw new Error('Server misconfiguration: FRONTEND_URL must be set for invitation emails.');
-  }
-  if (!backendUrl) {
-    logger.error('BACKEND_URL is not set; invitation validation link will be invalid', { module: 'email' });
-    throw new Error('Server misconfiguration: BACKEND_URL must be set for invitation emails.');
+    logger.error('FRONTEND_URL / ALLOWED_ORIGINS missing; cannot build invitation link', { module: 'email' });
+    throw new Error(
+      'Server misconfiguration: set FRONTEND_URL or ALLOWED_ORIGINS (first origin is used as fallback for invite links).',
+    );
   }
   const inviteLink = `${frontendUrl}/invite/accept?token=${encodeURIComponent(input.inviteToken)}`;
-  const fallbackValidateLink = `${backendUrl}/api/auth/invite/validate?token=${encodeURIComponent(input.inviteToken)}`;
+  const fallbackValidateLink = backendUrl
+    ? `${backendUrl}/api/auth/invite/validate?token=${encodeURIComponent(input.inviteToken)}`
+    : null;
   const displayName = input.recipientName?.trim() || email;
   const inviterName = input.inviterName?.trim() || 'your administrator';
+
+  const validateSection = fallbackValidateLink
+    ? `<p>API validation endpoint: <br/> ${fallbackValidateLink}</p>`
+    : '';
 
   const outcome = await sendOrLogEmail(
     email,
@@ -224,7 +228,7 @@ export const sendInvitationEmail = async (
       <a href="${inviteLink}" style="padding: 10px 20px; background-color: #10b981; color: white; text-decoration: none; border-radius: 5px; display: inline-block; margin-top: 10px;">Accept Invitation</a>
       <br/><br/>
       <p>If the button does not work, copy this link into your browser: <br/> ${inviteLink}</p>
-      <p>API validation endpoint: <br/> ${fallbackValidateLink}</p>
+      ${validateSection}
       <p>This invitation expires on ${input.expiresAt.toUTCString()} and can only be used once.</p>
     `,
     'Invitation Link',
