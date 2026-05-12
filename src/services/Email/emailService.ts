@@ -1,55 +1,16 @@
 import nodemailer, { Transporter } from 'nodemailer';
+import { describeEmailConfigForLogging, getSmtpConfig, isEmailConfigured } from '../../config/email.config';
+import { getPublicBackendUrl, getPublicFrontendUrl } from '../../config/publicUrls';
 import logger from '../../utils/logger';
 
 const isProduction = process.env.NODE_ENV === 'production';
-const DEFAULT_FRONTEND_URL = 'https://lms-frontend-amber-beta.vercel.app';
-const DEFAULT_BACKEND_URL = 'https://backend-26l2.onrender.com';
 
-const readEnv = (...keys: string[]): string => {
-  for (const key of keys) {
-    const value = process.env[key]?.trim();
-    if (value) return value;
-  }
-  return '';
-};
-
-const isGmailProvider = (service: string, host: string): boolean =>
-  service.toLowerCase() === 'gmail' || host.toLowerCase().includes('gmail.com');
-
-const getEmailConfig = () => {
-  const service = readEnv('EMAIL_SERVICE', 'SMTP_SERVICE');
-  const host = readEnv('EMAIL_HOST', 'SMTP_HOST');
-  const portRaw = readEnv('EMAIL_PORT', 'SMTP_PORT');
-  const port = Number(portRaw || 0);
-  const secureRaw = readEnv('EMAIL_SECURE', 'SMTP_SECURE').toLowerCase();
-  const user = readEnv('EMAIL_USER', 'SMTP_USER');
-  const rawPass = readEnv('EMAIL_PASS', 'SMTP_PASS', 'EMAIL_PASSWORD', 'SMTP_PASSWORD');
-  const pass = isGmailProvider(service || 'gmail', host) ? rawPass.replace(/\s+/g, '') : rawPass;
-  const secure = secureRaw ? secureRaw === 'true' : port === 465;
-  const from = readEnv('EMAIL_FROM', 'SMTP_FROM') || user || 'no-reply@seeakk.com';
-
-  return {
-    service,
-    host,
-    port,
-    secure,
-    user,
-    pass,
-    from,
-    configured: Boolean(user && pass),
-  };
-};
-
-const isEmailConfigured = (): boolean => getEmailConfig().configured;
 export const isEmailServiceConfigured = (): boolean => isEmailConfigured();
-
-const getFrontendUrl = (): string => (process.env.FRONTEND_URL || DEFAULT_FRONTEND_URL).trim().replace(/\/+$/, '');
-const getBackendUrl = (): string => (process.env.BACKEND_URL || DEFAULT_BACKEND_URL).trim().replace(/\/+$/, '');
 
 let transporter: Transporter | null = null;
 
 const createTransporter = (): Transporter => {
-  const { user, pass, service, host, port, secure } = getEmailConfig();
+  const { user, pass, service, host, port, secure } = getSmtpConfig();
 
   if (host && Number.isFinite(port) && port > 0) {
     return nodemailer.createTransport({
@@ -79,10 +40,7 @@ const getTransporter = (): Transporter => {
   return transporter as Transporter;
 };
 
-const sendWithRetry = async (
-  mailOptions: any,
-  retries: number = 2,
-): Promise<void> => {
+const sendWithRetry = async (mailOptions: Record<string, unknown>, retries: number = 2): Promise<void> => {
   for (let attempt = 0; attempt <= retries; attempt += 1) {
     try {
       await getTransporter().sendMail(mailOptions);
@@ -108,13 +66,23 @@ export const verifyEmailTransport = async (): Promise<void> => {
   await getTransporter().verify();
 };
 
+/** Log once at module load is noisy; callers (server) should log summary after import. */
+export const logEmailConfigSummary = (): void => {
+  logger.info('Email configuration summary', {
+    module: 'email',
+    ...describeEmailConfigForLogging(),
+  });
+};
+
+type SendOutcome = { sent: true } | { sent: false; reason: 'production_unconfigured' | 'dev_mock' };
+
 const sendOrLogEmail = async (
   to: string,
   subject: string,
   html: string,
   previewLinkLabel: string,
   previewLink: string,
-): Promise<boolean> => {
+): Promise<SendOutcome> => {
   if (isProduction && !isEmailConfigured()) {
     logger.warn('Email service not configured; skipping outbound email', {
       to,
@@ -122,25 +90,32 @@ const sendOrLogEmail = async (
       previewLinkLabel,
       previewLink,
       environment: process.env.NODE_ENV,
+      module: 'email',
     });
-    return false;
+    return { sent: false, reason: 'production_unconfigured' };
   }
 
   if (!isEmailConfigured()) {
-    console.warn("⚠️ Email not configured — using mock mode");
-    console.log("Mock email:", { to, subject, link: previewLink });
-    return false;
+    logger.warn('Email not configured — mock mode (dev)', {
+      to,
+      subject,
+      previewLinkLabel,
+      module: 'email',
+    });
+    console.warn('⚠️ Email not configured — using mock mode');
+    console.log('Mock email:', { to, subject, link: previewLink });
+    return { sent: false, reason: 'dev_mock' };
   }
 
   try {
-    const config = getEmailConfig();
+    const config = getSmtpConfig();
     await sendWithRetry({
       from: config.from,
       to,
       subject,
       html,
     });
-    return true;
+    return { sent: true };
   } catch (error: any) {
     logger.error('Email delivery failed', {
       to,
@@ -150,6 +125,7 @@ const sendOrLogEmail = async (
       response: error?.response,
       command: error?.command,
       environment: process.env.NODE_ENV,
+      module: 'email',
     });
     throw new Error(
       `Email delivery failed for "${subject}". Check SMTP configuration and provider access.`,
@@ -157,11 +133,16 @@ const sendOrLogEmail = async (
   }
 };
 
-export const sendVerificationEmail = async (email: string, token: string): Promise<void> => {
-  const backendUrl = getBackendUrl();
+/** @returns true if an SMTP message was accepted; false if skipped (mock / production without SMTP). */
+export const sendVerificationEmail = async (email: string, token: string): Promise<boolean> => {
+  const backendUrl = getPublicBackendUrl();
+  if (!backendUrl) {
+    logger.error('BACKEND_URL is not set; verification links will be invalid', { module: 'email' });
+    throw new Error('Server misconfiguration: BACKEND_URL must be set for verification emails.');
+  }
   const verifyLink = `${backendUrl}/api/auth/verify-email?token=${token}`;
 
-  await sendOrLogEmail(
+  const outcome = await sendOrLogEmail(
     email,
     'Verify your Seeakk Account',
     `
@@ -175,14 +156,20 @@ export const sendVerificationEmail = async (email: string, token: string): Promi
     'Verification Link',
     verifyLink,
   );
+  return outcome.sent;
 };
 
-export const sendPasswordResetEmail = async (email: string, name: string | null | undefined, token: string): Promise<void> => {
-  const backendUrl = getBackendUrl();
+/** @returns true if an SMTP message was accepted; false if skipped (mock / production without SMTP). */
+export const sendPasswordResetEmail = async (email: string, name: string | null | undefined, token: string): Promise<boolean> => {
+  const backendUrl = getPublicBackendUrl();
+  if (!backendUrl) {
+    logger.error('BACKEND_URL is not set; reset links will be invalid', { module: 'email' });
+    throw new Error('Server misconfiguration: BACKEND_URL must be set for password reset emails.');
+  }
   const resetLink = `${backendUrl}/api/auth/reset-password?token=${encodeURIComponent(token)}`;
   const displayName = name?.trim() || 'there';
 
-  await sendOrLogEmail(
+  const outcome = await sendOrLogEmail(
     email,
     'Reset your Seeakk password',
     `
@@ -198,6 +185,7 @@ export const sendPasswordResetEmail = async (email: string, name: string | null 
     'Reset Link',
     resetLink,
   );
+  return outcome.sent;
 };
 
 export const sendInvitationEmail = async (
@@ -210,14 +198,22 @@ export const sendInvitationEmail = async (
     expiresAt: Date;
   },
 ): Promise<boolean> => {
-  const frontendUrl = getFrontendUrl();
-  const backendUrl = getBackendUrl();
+  const frontendUrl = getPublicFrontendUrl();
+  const backendUrl = getPublicBackendUrl();
+  if (!frontendUrl) {
+    logger.error('FRONTEND_URL is not set; invitation accept link will be invalid', { module: 'email' });
+    throw new Error('Server misconfiguration: FRONTEND_URL must be set for invitation emails.');
+  }
+  if (!backendUrl) {
+    logger.error('BACKEND_URL is not set; invitation validation link will be invalid', { module: 'email' });
+    throw new Error('Server misconfiguration: BACKEND_URL must be set for invitation emails.');
+  }
   const inviteLink = `${frontendUrl}/invite/accept?token=${encodeURIComponent(input.inviteToken)}`;
   const fallbackValidateLink = `${backendUrl}/api/auth/invite/validate?token=${encodeURIComponent(input.inviteToken)}`;
   const displayName = input.recipientName?.trim() || email;
   const inviterName = input.inviterName?.trim() || 'your administrator';
 
-  return sendOrLogEmail(
+  const outcome = await sendOrLogEmail(
     email,
     `You're invited to join ${input.workspaceName} on Seeakk`,
     `
@@ -234,7 +230,10 @@ export const sendInvitationEmail = async (
     'Invitation Link',
     inviteLink,
   );
+  return outcome.sent;
 };
+
+export type FollowUpEmailDispatch = 'sent' | 'skipped_no_smtp' | 'mock_dev';
 
 export const sendFollowUpReminderEmail = async (
   email: string,
@@ -245,13 +244,17 @@ export const sendFollowUpReminderEmail = async (
     description?: string;
     type?: string;
   },
-): Promise<void> => {
-  const appUrl = getFrontendUrl();
+): Promise<FollowUpEmailDispatch> => {
+  const appUrl = getPublicFrontendUrl();
+  if (!appUrl) {
+    logger.error('FRONTEND_URL is not set; follow-up reminder deep link invalid', { module: 'email' });
+    throw new Error('Server misconfiguration: FRONTEND_URL must be set for follow-up reminder emails.');
+  }
   const when = input.scheduledAt.toLocaleString();
   const subject = `Follow-up reminder: ${input.leadName}`;
   const deepLink = `${appUrl}/calendar/today`;
 
-  await sendOrLogEmail(
+  const outcome = await sendOrLogEmail(
     email,
     subject,
     `
@@ -271,4 +274,7 @@ export const sendFollowUpReminderEmail = async (
     'Today Follow-ups',
     deepLink,
   );
+  if (outcome.sent) return 'sent';
+  if (outcome.reason === 'dev_mock') return 'mock_dev';
+  return 'skipped_no_smtp';
 };

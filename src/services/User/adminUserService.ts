@@ -680,7 +680,10 @@ export const resetUserPassword = async (
 
   const token = jwt.sign({ userId: existing.id, purpose: 'password_reset' }, jwtSecret, { expiresIn: '30m' });
   try {
-    await sendPasswordResetEmail(existing.email, existing.name, token);
+    const delivered = await sendPasswordResetEmail(existing.email, existing.name, token);
+    if (!delivered) {
+      return fallbackToGeneratedPasswordReset('email_delivery_failed');
+    }
   } catch (error: any) {
     if (String(error?.message || '').toLowerCase().includes('email')) {
       return fallbackToGeneratedPasswordReset('email_delivery_failed');

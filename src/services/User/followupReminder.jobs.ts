@@ -17,27 +17,37 @@ const memoryDedup = new Map<string, number>();
 
 const nowMs = () => Date.now();
 
-const seenRecently = async (followUpId: string, ttlSeconds: number): Promise<boolean> => {
-  const key = `followup:reminder:${followUpId}`;
+const dedupeKey = (followUpId: string) => `followup:reminder:${followUpId}`;
+
+/** True if a reminder was already recorded for this follow-up in the TTL window. */
+const isAlreadyMarked = async (followUpId: string, ttlSeconds: number): Promise<boolean> => {
+  const key = dedupeKey(followUpId);
 
   if (redisClient.isOpen) {
     const existing = await redisClient.get(key);
-    if (existing) return true;
-    await redisClient.setEx(key, ttlSeconds, '1');
-    return false;
+    return Boolean(existing);
   }
 
   const expiresAt = memoryDedup.get(key) || 0;
-  if (expiresAt > nowMs()) return true;
+  return expiresAt > nowMs();
+};
+
+/** Call only after a successful (or dev-mock) reminder dispatch so failed sends can retry. */
+const markReminderSent = async (followUpId: string, ttlSeconds: number): Promise<void> => {
+  const key = dedupeKey(followUpId);
+
+  if (redisClient.isOpen) {
+    await redisClient.setEx(key, ttlSeconds, '1');
+    return;
+  }
+
   memoryDedup.set(key, nowMs() + ttlSeconds * 1000);
-  return false;
 };
 
 const getReminderCandidates = async () => {
   const now = new Date();
   const windowEnd = new Date(now.getTime() + LEAD_TIME_MINUTES * 60_000);
 
-  // Reminder policy: pending follow-ups scheduled soon (within lead time window).
   return prisma.followUp.findMany({
     where: {
       status: 'PENDING',
@@ -75,12 +85,11 @@ const loopOnce = async (): Promise<void> => {
 
   for (const item of candidates) {
     try {
-      // De-dupe until after scheduledAt passes (+1h), so reminders are sent once.
       const ttlSeconds = Math.max(300, Math.ceil((item.scheduledAt.getTime() - Date.now()) / 1000) + 3600);
-      const alreadySent = await seenRecently(item.id, ttlSeconds);
+      const alreadySent = await isAlreadyMarked(item.id, ttlSeconds);
       if (alreadySent) continue;
 
-      await sendFollowUpReminderEmail(item.user.email, {
+      const dispatch = await sendFollowUpReminderEmail(item.user.email, {
         userDisplayName: formatDisplayName(item.user),
         leadName: item.lead?.name || 'Lead',
         scheduledAt: item.scheduledAt,
@@ -88,13 +97,32 @@ const loopOnce = async (): Promise<void> => {
         type: item.type,
       });
 
-      logger.info('Follow-up reminder sent', {
-        followUpId: item.id,
-        userId: item.user.id,
-        workspaceId: item.workspaceId,
-        scheduledAt: item.scheduledAt.toISOString(),
-        action: 'followup_reminder_sent',
-      });
+      if (dispatch === 'sent' || dispatch === 'mock_dev') {
+        await markReminderSent(item.id, ttlSeconds);
+      }
+
+      if (dispatch === 'sent') {
+        logger.info('Follow-up reminder sent', {
+          followUpId: item.id,
+          userId: item.user.id,
+          workspaceId: item.workspaceId,
+          scheduledAt: item.scheduledAt.toISOString(),
+          action: 'followup_reminder_sent',
+        });
+      } else if (dispatch === 'skipped_no_smtp') {
+        logger.warn('Follow-up reminder skipped (email not configured in production)', {
+          followUpId: item.id,
+          userId: item.user.id,
+          workspaceId: item.workspaceId,
+          action: 'followup_reminder_skipped',
+        });
+      } else {
+        logger.info('Follow-up reminder mock (dev, no SMTP)', {
+          followUpId: item.id,
+          userId: item.user.id,
+          action: 'followup_reminder_mock',
+        });
+      }
     } catch (error: any) {
       logger.error('Follow-up reminder failed', {
         followUpId: item.id,
@@ -124,10 +152,8 @@ export const startFollowUpReminders = (): void => {
   });
 
   const intervalMs = Math.max(10_000, POLL_SECONDS * 1000);
-  // Fire quickly once after boot, then poll.
   loopOnce().catch(() => undefined);
   setInterval(() => {
     loopOnce().catch(() => undefined);
   }, intervalMs);
 };
-

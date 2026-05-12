@@ -53,7 +53,7 @@ const startServer = async () => {
       { default: prisma },
       { scheduleDailySync },
       _leadImportJobs,
-      { verifyEmailTransport },
+      { verifyEmailTransport, logEmailConfigSummary },
       { startFollowUpReminders },
       { initRealtimeServer },
     ] = await Promise.all([
@@ -85,6 +85,12 @@ const startServer = async () => {
         console.error('[CORS] Error getting origins:', e);
       }
     });
+
+    try {
+      logEmailConfigSummary();
+    } catch {
+      /* ignore */
+    }
 
     verifyEmailTransport()
       .then(() => {

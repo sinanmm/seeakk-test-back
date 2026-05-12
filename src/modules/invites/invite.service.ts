@@ -1,4 +1,5 @@
 import bcrypt from 'bcryptjs';
+import { getPublicFrontendUrl } from '../../config/publicUrls';
 import auditService from '../../services/Audit/auditService';
 import { sendInvitationEmail } from '../../services/Email/emailService';
 import { createInviteTokenPair, hashInviteToken } from '../../utils/inviteToken';
@@ -23,12 +24,11 @@ type InviteServiceDependencies = {
 };
 
 const INVITE_TTL_MS = 24 * 60 * 60 * 1000;
-const DEFAULT_FRONTEND_URL = 'https://lms-frontend-amber-beta.vercel.app';
 
 const buildExpiryDate = (now: Date): Date => new Date(now.getTime() + INVITE_TTL_MS);
 
 const buildInviteLink = (token: string): string => {
-  const frontendUrl = (process.env.FRONTEND_URL || DEFAULT_FRONTEND_URL).trim().replace(/\/+$/, '');
+  const frontendUrl = getPublicFrontendUrl();
   return `${frontendUrl}/invite/accept?token=${encodeURIComponent(token)}`;
 };
 

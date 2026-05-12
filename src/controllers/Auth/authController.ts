@@ -7,13 +7,13 @@ import jwt from 'jsonwebtoken';
 import prisma from '../../config/prisma';
 import { redisClient } from '../../config/redis';
 import { resolveWorkspaceIdForUser } from '../../utils/workspaceContext';
+import { getPublicFrontendUrl } from '../../config/publicUrls';
 import { sendVerificationEmail } from '../../services/Email/emailService';
 import { trackUserDevice } from '../../utils/deviceTracker';
 import logger from '../../utils/logger';
 import auditService from '../../services/Audit/auditService';
- 
-const DEFAULT_FRONTEND_URL = 'https://lms-frontend-amber-beta.vercel.app';
-const getFrontendUrl = (): string => (process.env.FRONTEND_URL || DEFAULT_FRONTEND_URL).trim().replace(/\/+$/, '');
+
+const getFrontendUrl = (): string => getPublicFrontendUrl();
 
 const authenticatedUserBaseSelect = {
   id: true,
@@ -328,20 +328,32 @@ export const register = async (req: Request, res: Response): Promise<any> => {
       },
     });
 
-    await sendVerificationEmail(user.email, verificationToken);
+    let verificationEmailSent = false;
+    try {
+      verificationEmailSent = await sendVerificationEmail(user.email, verificationToken);
+    } catch (emailError: any) {
+      logger.error('Verification email dispatch failed after registration', {
+        userId: user.id,
+        error: emailError?.message || String(emailError),
+        action: 'verification_email_failed',
+      });
+    }
 
     await auditService.log({
       userId: user.id,
       action: 'USER_REGISTERED',
       entityType: 'User',
       entityId: user.id,
-      details: { email: user.email },
+      details: { email: user.email, verificationEmailSent },
       ipAddress: req.ip,
       userAgent: req.headers['user-agent'],
     });
 
     return res.status(201).json({
-      message: 'Registration successful. Please check your email to verify your account.',
+      message: verificationEmailSent
+        ? 'Registration successful. Please check your email to verify your account.'
+        : 'Registration successful, but the verification email could not be sent. Check spam or contact support if you do not receive it.',
+      emailSent: verificationEmailSent,
     });
   } catch (error: any) {
     logger.error('Error during registration', { error: error.message, email: req.body.email });

@@ -18,6 +18,14 @@ declare global {
       /** Set to "false" to stop trusting all https://*.vercel.app origins. */
       CORS_ALLOW_VERCEL_APP?: string;
       BACKEND_URL?: string;
+      EMAIL_SERVICE?: string;
+      EMAIL_HOST?: string;
+      EMAIL_PORT?: string;
+      EMAIL_SECURE?: string;
+      EMAIL_FROM?: string;
+      FOLLOWUP_REMINDER_ENABLED?: string;
+      FOLLOWUP_REMINDER_LEAD_TIME_MINUTES?: string;
+      FOLLOWUP_REMINDER_POLL_SECONDS?: string;
     }
   }
 }
