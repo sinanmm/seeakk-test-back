@@ -60,10 +60,23 @@ const sendWithRetry = async (mailOptions: Record<string, unknown>, retries: numb
 
 export const verifyEmailTransport = async (): Promise<void> => {
   if (!isEmailConfigured()) {
+    console.error('❌ [EmailService] Verification failed: Not configured');
     throw new Error('Email service is not configured. Set EMAIL_USER and EMAIL_PASS or SMTP_USER and SMTP_PASS.');
   }
 
-  await getTransporter().verify();
+  try {
+    console.log('[EmailService] Verifying SMTP connection...');
+    await getTransporter().verify();
+    console.log('✅ [EmailService] SMTP connection verified successfully');
+  } catch (error: any) {
+    console.error('❌ [EmailService] SMTP verification failed:', {
+      message: error.message,
+      code: error.code,
+      command: error.command,
+      response: error.response
+    });
+    throw error;
+  }
 };
 
 /** Log once at module load is noisy; callers (server) should log summary after import. */
@@ -109,14 +122,28 @@ const sendOrLogEmail = async (
 
   try {
     const config = getSmtpConfig();
+    console.log(`[EmailService] Attempting to send email to: ${to} (Subject: ${subject})`);
+    
     await sendWithRetry({
       from: config.from,
       to,
       subject,
       html,
     });
+    
+    console.log(`✅ [EmailService] Email sent successfully to: ${to}`);
     return { sent: true };
   } catch (error: any) {
+    console.error('❌ [EmailService] Detailed delivery failure:', {
+      to,
+      subject,
+      message: error.message,
+      code: error.code,
+      responseCode: error.responseCode,
+      response: error.response,
+      command: error.command
+    });
+
     logger.error('Email delivery failed', {
       to,
       subject,

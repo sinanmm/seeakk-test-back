@@ -39,7 +39,7 @@ export const getSmtpConfig = (): SmtpConfig => {
   const hasHostPort = Boolean(host && Number.isFinite(port) && port > 0);
   const transportMode: SmtpConfig['transportMode'] = hasHostPort ? 'custom_host' : 'well_known_service';
 
-  return {
+  const config = {
     service,
     host,
     port,
@@ -50,6 +50,15 @@ export const getSmtpConfig = (): SmtpConfig => {
     configured: Boolean(user && pass),
     transportMode,
   };
+
+  if (process.env.DEBUG_EMAIL === 'true') {
+    console.log('[EmailConfig] Resolved configuration:', {
+      ...config,
+      pass: config.pass ? '***REDACTED***' : '(empty)'
+    });
+  }
+
+  return config;
 };
 
 export const isEmailConfigured = (): boolean => getSmtpConfig().configured;

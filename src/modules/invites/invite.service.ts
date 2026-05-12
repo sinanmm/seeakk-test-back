@@ -133,7 +133,9 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
     },
   ): Promise<{ emailDelivered: boolean; deliveryErrorMessage: string | null }> => {
     try {
+      console.log(`[InviteService] Dispatching invitation email to: ${email}`);
       const delivered = await deps.sendInvitationEmail(email, input);
+      console.log(`[InviteService] Email dispatch result for ${email}: ${delivered}`);
       return {
         emailDelivered: delivered === true,
         deliveryErrorMessage: null,
