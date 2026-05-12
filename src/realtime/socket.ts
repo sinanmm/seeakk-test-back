@@ -55,37 +55,14 @@ export const initRealtimeServer = (httpServer: HttpServer): SocketIOServer => {
     cors: {
       origin: socketCorsOrigin,
       credentials: true,
-      methods: ['GET', 'POST', 'OPTIONS'],
-      allowedHeaders: [
-        'Content-Type',
-        'Authorization',
-        'Accept',
-        'Origin',
-        'X-Requested-With',
-        'x-device-id',
-        'x-access-token',
-        'x-request-id',
-        'x-workspace-id',
-      ],
-    },
-    allowRequest: (req, callback) => {
-      const origin = req.headers.origin;
-      if (!origin || isAllowedOrigin(origin)) {
-        callback(null, true);
-        return;
-      }
-
-      logger.warn('Socket.io request rejected by origin allowlist', {
-        module: 'realtime',
-        origin,
-        allowedOrigins: getAllowedOrigins(),
-      });
-      callback('Not allowed by Socket.io CORS', false);
+      methods: ['GET', 'POST'],
     },
     transports: ['polling', 'websocket'],
+    allowEIO3: true,
     pingTimeout: 60000,
     pingInterval: 25000,
-    connectTimeout: 45000,
+    upgradeTimeout: 30000,
+    maxHttpBufferSize: 1e8,
   });
   console.log('[Socket.io] Server created successfully', { path: SOCKET_IO_PATH });
   console.log('[Socket.io] Allowed origins:', getAllowedOrigins());

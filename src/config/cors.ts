@@ -24,7 +24,14 @@ export const isAllowedOrigin = (origin?: string): boolean => {
   const normalized = normalizeOrigin(origin);
   const allowed = getAllowedOrigins();
 
-  return allowed.includes(normalized);
+  // Exact match or matches a www/non-www variant
+  const isMatch = allowed.some(a => {
+    if (a === normalized) return true;
+    if (a.replace(/^https?:\/\/(www\.)?/, '') === normalized.replace(/^https?:\/\/(www\.)?/, '')) return true;
+    return false;
+  });
+
+  return isMatch;
 };
 
 export const corsOriginHandler = (

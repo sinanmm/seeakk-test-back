@@ -82,8 +82,19 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(express.json({ limit: requestBodyLimit }));
-app.use(express.urlencoded({ extended: true, limit: requestBodyLimit }));
+app.use((req, res, next) => {
+  if (req.path === SOCKET_IO_PATH || req.path.startsWith(`${SOCKET_IO_PATH}/`)) {
+    return next();
+  }
+  return express.json({ limit: requestBodyLimit })(req, res, next);
+});
+
+app.use((req, res, next) => {
+  if (req.path === SOCKET_IO_PATH || req.path.startsWith(`${SOCKET_IO_PATH}/`)) {
+    return next();
+  }
+  return express.urlencoded({ extended: true, limit: requestBodyLimit })(req, res, next);
+});
 
 // Security Headers for Google OAuth
 app.use((req, res, next) => {
