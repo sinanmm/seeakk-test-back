@@ -12,8 +12,14 @@ import { createServer } from 'http';
 import { connectRedis } from './config/redis';
 import { getAllowedOrigins } from './config/cors';
 import { logStartupDiagnostics } from './config/startupDiagnostics';
+import { buildSmtpAuthFailureHint } from './config/emailSmtpHints';
 
 const PORT = Number.parseInt(String(process.env.PORT || '5000'), 10) || 5000;
+
+const shouldSkipEmailVerifyAtStartup = (): boolean => {
+  const v = String(process.env.EMAIL_SKIP_VERIFY || '').trim().toLowerCase();
+  return v === 'true' || v === '1' || v === 'yes';
+};
 
 process.on('uncaughtException', (error) => {
   console.error('[Server] Uncaught exception during startup/runtime:', error);
@@ -102,13 +108,20 @@ const startServer = async () => {
       /* ignore */
     }
 
-    verifyEmailTransport()
-      .then(() => {
-        console.log('✅ Email transport verified');
-      })
-      .catch((error: any) => {
-        console.error('❌ Email transport failed:', error?.message || String(error));
-      });
+    if (shouldSkipEmailVerifyAtStartup()) {
+      console.warn(
+        '[Email] EMAIL_SKIP_VERIFY is set — skipping SMTP verify at startup. Mail sends will still use EMAIL_USER / EMAIL_PASS.',
+      );
+    } else {
+      verifyEmailTransport()
+        .then(() => {
+          console.log('✅ Email transport verified');
+        })
+        .catch((error: any) => {
+          console.error('❌ Email transport failed:', error?.message || String(error));
+          console.error('[Email] Hint:', buildSmtpAuthFailureHint(error));
+        });
+    }
 
     // Connect Prisma in background so API process can still boot and avoid ERR_CONNECTION_REFUSED.
     connectPrismaWithRetry(prisma)

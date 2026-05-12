@@ -1,7 +1,9 @@
 import nodemailer, { Transporter } from 'nodemailer';
 import { describeEmailConfigForLogging, getSmtpConfig, isEmailConfigured } from '../../config/email.config';
+import { buildSmtpAuthFailureHint } from '../../config/emailSmtpHints';
 import { getPublicBackendUrl, getPublicFrontendUrl } from '../../config/publicUrls';
 import logger from '../../utils/logger';
+import { sendEmailViaResend, verifyResendApiKey } from './resendTransport';
 
 const isProduction = process.env.NODE_ENV === 'production';
 
@@ -21,6 +23,20 @@ const createTransporter = (): Transporter => {
       connectionTimeout: 10000,
       greetingTimeout: 10000,
       socketTimeout: 10000,
+    });
+  }
+
+  const svc = (service || 'gmail').toLowerCase();
+  if (svc === 'gmail') {
+    return nodemailer.createTransport({
+      host: 'smtp.gmail.com',
+      port: 587,
+      secure: false,
+      requireTLS: true,
+      auth: { user, pass },
+      connectionTimeout: 15000,
+      greetingTimeout: 15000,
+      socketTimeout: 15000,
     });
   }
 
@@ -61,7 +77,22 @@ const sendWithRetry = async (mailOptions: Record<string, unknown>, retries: numb
 export const verifyEmailTransport = async (): Promise<void> => {
   if (!isEmailConfigured()) {
     console.error('❌ [EmailService] Verification failed: Not configured');
-    throw new Error('Email service is not configured. Set EMAIL_USER and EMAIL_PASS or SMTP_USER and SMTP_PASS.');
+    throw new Error(
+      'Email service is not configured. Set RESEND_API_KEY, or EMAIL_USER + EMAIL_PASS (or SMTP_USER + SMTP_PASS).',
+    );
+  }
+
+  const cfg = getSmtpConfig();
+  if (cfg.resendApiKey) {
+    try {
+      console.log('[EmailService] Verifying Resend API key...');
+      await verifyResendApiKey(cfg.resendApiKey);
+      console.log('✅ [EmailService] Resend API key verified');
+      return;
+    } catch (error: any) {
+      console.error('❌ [EmailService] Resend verification failed:', error?.message || String(error));
+      throw error;
+    }
   }
 
   try {
@@ -69,22 +100,41 @@ export const verifyEmailTransport = async (): Promise<void> => {
     await getTransporter().verify();
     console.log('✅ [EmailService] SMTP connection verified successfully');
   } catch (error: any) {
+    const hint = buildSmtpAuthFailureHint(error);
     console.error('❌ [EmailService] SMTP verification failed:', {
       message: error.message,
       code: error.code,
       command: error.command,
-      response: error.response
+      response: error.response,
     });
+    logger.warn('SMTP verify failed — recovery hint', { module: 'email', hint });
+    console.error('[EmailService] Recovery:', hint);
     throw error;
   }
 };
 
 /** Log once at module load is noisy; callers (server) should log summary after import. */
 export const logEmailConfigSummary = (): void => {
+  const summary = describeEmailConfigForLogging();
   logger.info('Email configuration summary', {
     module: 'email',
-    ...describeEmailConfigForLogging(),
+    ...summary,
   });
+
+  if (summary.resendConfigured === true) {
+    console.log('[Email] Outbound mail uses Resend (RESEND_API_KEY). Set EMAIL_FROM to a domain you verified in Resend.');
+  }
+
+  if (summary.smtpConfigured === true && summary.gmailStyleAuth === true) {
+    if (summary.gmailAppPasswordLengthLooksValid === false) {
+      console.warn(
+        '[Email] Gmail App Passwords are 16 characters (after removing spaces). Your configured password length does not match — you are likely using a normal Google account password, which Gmail SMTP rejects (535 BadCredentials). Create an App Password: Google Account → Security → 2-Step Verification → App passwords.',
+      );
+    }
+    if (summary.smtpUserLooksLikeEmail === false) {
+      console.warn('[Email] EMAIL_USER should be the full Gmail address (e.g. you@gmail.com) that owns the App Password.');
+    }
+  }
 };
 
 type SendOutcome = { sent: true } | { sent: false; reason: 'production_unconfigured' | 'dev_mock' };
@@ -123,17 +173,30 @@ const sendOrLogEmail = async (
   try {
     const config = getSmtpConfig();
     console.log(`[EmailService] Attempting to send email to: ${to} (Subject: ${subject})`);
-    
-    await sendWithRetry({
-      from: config.from,
-      to,
-      subject,
-      html,
-    });
-    
+
+    if (config.resendApiKey) {
+      await sendEmailViaResend({
+        apiKey: config.resendApiKey,
+        from: config.from,
+        to,
+        subject,
+        html,
+      });
+    } else {
+      await sendWithRetry({
+        from: config.from,
+        to,
+        subject,
+        html,
+      });
+    }
+
     console.log(`✅ [EmailService] Email sent successfully to: ${to}`);
     return { sent: true };
   } catch (error: any) {
+    if (error?.code === 'EAUTH') {
+      logger.warn(buildSmtpAuthFailureHint(error), { module: 'email', to, subject });
+    }
     console.error('❌ [EmailService] Detailed delivery failure:', {
       to,
       subject,
