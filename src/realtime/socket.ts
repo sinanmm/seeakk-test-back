@@ -2,6 +2,7 @@ import { Server as HttpServer } from 'http';
 import jwt from 'jsonwebtoken';
 import { Server as SocketIOServer } from 'socket.io';
 import prisma from '../config/prisma';
+import { SOCKET_IO_PATH } from '../config/socketConstants';
 import { getAllowedOrigins, isAllowedOrigin } from '../config/cors';
 import logger from '../utils/logger';
 
@@ -50,7 +51,7 @@ export const initRealtimeServer = (httpServer: HttpServer): SocketIOServer => {
   }
 
   io = new SocketIOServer(httpServer, {
-    path: '/socket.io',
+    path: SOCKET_IO_PATH,
     cors: {
       origin: socketCorsOrigin,
       credentials: true,
@@ -86,7 +87,7 @@ export const initRealtimeServer = (httpServer: HttpServer): SocketIOServer => {
     pingInterval: 25000,
     connectTimeout: 45000,
   });
-  console.log('[Socket.io] Server created successfully');
+  console.log('[Socket.io] Server created successfully', { path: SOCKET_IO_PATH });
   console.log('[Socket.io] Allowed origins:', getAllowedOrigins());
 
   io.use(async (socket, next) => {

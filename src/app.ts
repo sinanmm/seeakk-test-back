@@ -37,7 +37,8 @@ import dashboardRoutes from './modules/dashboard/dashboard.routes';
 import logger from './utils/logger';
 import prisma from './config/prisma';
 import { redisClient } from './config/redis';
-import { corsOriginHandler, isAllowedOrigin } from './config/cors';
+import { SOCKET_IO_PATH } from './config/socketConstants';
+import { corsOriginHandler } from './config/cors';
 import { globalLimiter } from './middlewares/rateLimiter';
 import { notFound, errorHandler } from './middlewares/errorMiddleware';
 
@@ -94,9 +95,8 @@ app.use((req, res, next) => {
 app.get('/healthz', (_req, res) => {
   res.status(200).json({
     ok: true,
-    timestamp: Date.now(),
     uptime: process.uptime(),
-    service: 'seeakk-crm-backend',
+    timestamp: Date.now(),
   });
 });
 
@@ -169,8 +169,8 @@ app.get('/', (req: Request, res: Response) => {
 
 // Global error handling
 app.use((req, res, next) => {
-  // Never 404 on socket.io paths - let the Engine.io server handle them
-  if (req.path === '/socket.io' || req.path.startsWith('/socket.io/')) return next();
+  // Never 404 on Engine.IO paths — Socket.IO handles these on the same Node HTTP server
+  if (req.path === SOCKET_IO_PATH || req.path.startsWith(`${SOCKET_IO_PATH}/`)) return next();
   notFound(req, res, next);
 });
 app.use(errorHandler);

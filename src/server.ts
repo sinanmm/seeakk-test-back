@@ -1,3 +1,10 @@
+/**
+ * Production HTTP stack (required for Socket.IO on Render):
+ * - Single Node HTTP server: createServer(app)
+ * - Socket.IO attaches to that server (never call app.listen() elsewhere)
+ * - Listen on 0.0.0.0:PORT so Render can route traffic
+ * - Engine.IO path defaults to /socket.io (see socketConstants + realtime/socket.ts)
+ */
 import dotenv from 'dotenv';
 dotenv.config();
 

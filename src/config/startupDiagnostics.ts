@@ -1,3 +1,5 @@
+import { SOCKET_IO_PATH } from './socketConstants';
+
 /**
  * Logs safe deployment diagnostics once at boot (no secrets).
  */
@@ -35,4 +37,5 @@ export const logStartupDiagnostics = (): void => {
     FRONTEND_URL: process.env.FRONTEND_URL ? '(set)' : '(missing)',
     ALLOWED_ORIGINS: process.env.ALLOWED_ORIGINS ? '(set)' : '(missing)',
   });
+  console.log('[Startup] Engine.IO path:', SOCKET_IO_PATH, '(must match client path)');
 };
