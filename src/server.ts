@@ -134,6 +134,41 @@ const startServer = async () => {
       .catch((error) => {
         console.error('PostgreSQL initial connection failed. API is running in degraded mode:', error);
       });
+
+    // Graceful Shutdown Handler
+    const shutdown = async (signal: string) => {
+      console.log(`\n[Server] Received ${signal}. Starting graceful shutdown...`);
+      
+      try {
+        const { disconnectRedis } = await import('./config/redis');
+        const { closeBullMQConnections } = await import('./config/bullmq');
+        
+        // 1. Stop accepting new HTTP requests
+        httpServer.close(() => {
+          console.log('[Server] HTTP server closed');
+        });
+
+        // 2. Close BullMQ connections
+        await closeBullMQConnections();
+        
+        // 3. Disconnect Redis
+        await disconnectRedis();
+
+        // 4. Disconnect Prisma
+        await prisma.$disconnect();
+        console.log('[Prisma] Database disconnected');
+
+        console.log('[Server] Shutdown complete. Goodbye!');
+        process.exit(0);
+      } catch (err) {
+        console.error('[Server] Error during shutdown:', err);
+        process.exit(1);
+      }
+    };
+
+    process.on('SIGTERM', () => shutdown('SIGTERM'));
+    process.on('SIGINT', () => shutdown('SIGINT'));
+
   } catch (error) {
     console.error('Failed to start server:', error);
     process.exit(1);

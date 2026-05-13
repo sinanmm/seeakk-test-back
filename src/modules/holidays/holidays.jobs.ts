@@ -2,6 +2,7 @@ import { Queue, Worker } from 'bullmq';
 import * as holidaySyncService from './holidays.sync';
 import logger from '../../utils/logger';
 import prisma from '../../config/prisma';
+import { getBullMQConnection } from '../../config/bullmq';
 
 const redisUrl = process.env.REDIS_URL?.trim();
 
@@ -9,8 +10,10 @@ export let holidayQueue: Queue | null = null;
 export let holidayWorker: Worker | null = null;
 
 if (redisUrl) {
+    const connection = getBullMQConnection();
+
     holidayQueue = new Queue('holiday-queue', { 
-        connection: { url: redisUrl, skipVersionCheck: true } as any
+        connection: connection as any
     });
 
     holidayWorker = new Worker('holiday-queue', async (job) => {
@@ -30,7 +33,7 @@ if (redisUrl) {
         } else if (job.name === 'sla-recalculation') {
             // Placeholder to iterate all active leads and recompute SLAs based on new holidays
         }
-    }, { connection: { url: redisUrl, skipVersionCheck: true } as any });
+    }, { connection: connection as any });
 
     holidayWorker.on('completed', (job) => {
         logger.info(`Job ${job.id} has completed!`);
