@@ -149,6 +149,22 @@ const isRecoverableTransportError = (error: any): boolean =>
   ['EAUTH', 'ENETUNREACH', 'ETIMEDOUT', 'ECONNECTION', 'ESOCKET', 'ECONNRESET'].includes(error?.code) ||
   String(error?.message || '').toLowerCase().includes('connection timeout');
 
+const isTransportTimeout = (error: any): boolean => {
+  const message = String(error?.message || '').toLowerCase();
+  return error?.code === 'ETIMEDOUT' || message.includes('connection timeout') || message.includes('timeout');
+};
+
+const enrichSmtpError = (error: any): Error => {
+  const cfg = getSmtpConfig();
+  if (cfg.gmailStyleAuth && !cfg.resendApiKey && isTransportTimeout(error)) {
+    return new Error(
+      'Gmail SMTP timed out from this hosting environment. Render commonly blocks or cannot route outbound SMTP ports. Configure RESEND_API_KEY and a verified EMAIL_FROM domain to send invites over HTTPS instead of SMTP.',
+    );
+  }
+
+  return error instanceof Error ? error : new Error(String(error || 'Email delivery failed.'));
+};
+
 const sendWithRetry = async (mailOptions: any, retries = 2): Promise<void> => {
   let lastError: any = null;
 
@@ -169,7 +185,7 @@ const sendWithRetry = async (mailOptions: any, retries = 2): Promise<void> => {
     }
   }
 
-  throw lastError;
+  throw enrichSmtpError(lastError);
 };
 
 export const verifyEmailTransport = async (): Promise<void> => {
@@ -207,7 +223,7 @@ export const verifyEmailTransport = async (): Promise<void> => {
       }
     }
 
-    throw lastError;
+    throw enrichSmtpError(lastError);
   } catch (error: any) {
     console.error('❌ [EmailService] Verification failed:', error.message);
     throw error;
