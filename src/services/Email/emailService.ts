@@ -16,18 +16,13 @@ const createTransporter = (): Transporter => {
   return nodemailer.createTransport({
     host,
     port,
-    secure, // true for 465, false for 587
+    secure,
     auth: { user, pass },
-    // Production hardening:
-    connectionTimeout: 10000, // 10 seconds
+    connectionTimeout: 10000,
     greetingTimeout: 10000,
     socketTimeout: 15000,
-    debug: process.env.DEBUG_EMAIL === 'true',
-    logger: process.env.DEBUG_EMAIL === 'true' as any,
     tls: {
-      // Prevents issues with mismatched certificates in some cloud proxy environments
       rejectUnauthorized: false,
-      // Forces Node to use IPv4 - This is the primary fix for ENETUNREACH on Render
       servername: host
     }
   });
@@ -47,7 +42,7 @@ const sendWithRetry = async (mailOptions: any, retries = 2): Promise<void> => {
       return;
     } catch (error: any) {
       if (error?.code === 'EAUTH') {
-        transporter = null; // Force recreation on auth error
+        transporter = null;
       }
       if (attempt === retries) throw error;
       await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
@@ -57,11 +52,10 @@ const sendWithRetry = async (mailOptions: any, retries = 2): Promise<void> => {
 
 export const verifyEmailTransport = async (): Promise<void> => {
   if (!isEmailConfigured()) {
-    throw new Error('Email service not configured. Set EMAIL_HOST, EMAIL_USER, and EMAIL_PASS.');
+    throw new Error('Email service not configured.');
   }
 
   const cfg = getSmtpConfig();
-  
   if (cfg.resendApiKey) {
     await verifyResendApiKey(cfg.resendApiKey);
     return;
@@ -72,11 +66,7 @@ export const verifyEmailTransport = async (): Promise<void> => {
     await getTransporter().verify();
     console.log('✅ [EmailService] SMTP connection verified successfully');
   } catch (error: any) {
-    console.error('❌ [EmailService] Verification failed:', {
-      message: error.message,
-      code: error.code,
-      command: error.command
-    });
+    console.error('❌ [EmailService] Verification failed:', error.message);
     throw error;
   }
 };
@@ -87,7 +77,6 @@ export const logEmailConfigSummary = (): void => {
     host: cfg.host,
     port: cfg.port,
     secure: cfg.secure,
-    user: cfg.user,
     configured: cfg.configured
   });
 };
@@ -101,20 +90,9 @@ const sendOrLogEmail = async (to: string, subject: string, html: string): Promis
   try {
     const config = getSmtpConfig();
     if (config.resendApiKey) {
-      await sendEmailViaResend({
-        apiKey: config.resendApiKey,
-        from: config.from,
-        to,
-        subject,
-        html,
-      });
+      await sendEmailViaResend({ apiKey: config.resendApiKey, from: config.from, to, subject, html });
     } else {
-      await sendWithRetry({
-        from: config.from,
-        to,
-        subject,
-        html,
-      });
+      await sendWithRetry({ from: config.from, to, subject, html });
     }
     return true;
   } catch (error: any) {
@@ -123,16 +101,67 @@ const sendOrLogEmail = async (to: string, subject: string, html: string): Promis
   }
 };
 
-// Simplified export wrappers for the rest of the application
-export const sendInvitationEmail = async (email: string, input: any) => {
-  const appUrl = getPublicFrontendUrl();
-  const inviteLink = `${appUrl}/invite/accept?token=${encodeURIComponent(input.inviteToken)}`;
-  
+// --- Exported Application Methods ---
+
+export const sendVerificationEmail = async (email: string, token: string): Promise<boolean> => {
+  const backendUrl = getPublicBackendUrl();
+  const verifyLink = `${backendUrl}/api/auth/verify-email?token=${token}`;
   return sendOrLogEmail(
     email,
-    `Invitation to join ${input.workspaceName}`,
-    `<h2>Welcome!</h2><p>Click below to join:</p><a href="${inviteLink}">Join Workspace</a>`
+    'Verify your Seeakk Account',
+    `<h2>Welcome!</h2><p>Verify your email here:</p><a href="${verifyLink}">Verify Email</a>`
   );
+};
+
+export const sendPasswordResetEmail = async (email: string, name: string | null | undefined, token: string): Promise<boolean> => {
+  const backendUrl = getPublicBackendUrl();
+  const resetLink = `${backendUrl}/api/auth/reset-password?token=${encodeURIComponent(token)}`;
+  return sendOrLogEmail(
+    email,
+    'Reset your Seeakk password',
+    `<h2>Reset Password</h2><p>Click below to reset:</p><a href="${resetLink}">Reset Password</a>`
+  );
+};
+
+export const sendInvitationEmail = async (
+  email: string,
+  input: {
+    recipientName: string;
+    workspaceName: string;
+    inviterName?: string | null;
+    inviteToken: string;
+    expiresAt: Date;
+  },
+): Promise<boolean> => {
+  const appUrl = getPublicFrontendUrl();
+  const inviteLink = `${appUrl}/invite/accept?token=${encodeURIComponent(input.inviteToken)}`;
+  return sendOrLogEmail(
+    email,
+    `You're invited to join ${input.workspaceName} on Seeakk`,
+    `<h2>Invitation</h2><p>You've been invited to ${input.workspaceName}.</p><a href="${inviteLink}">Join Now</a>`
+  );
+};
+
+export type FollowUpEmailDispatch = 'sent' | 'skipped_no_smtp' | 'mock_dev';
+
+export const sendFollowUpReminderEmail = async (
+  email: string,
+  input: {
+    userDisplayName: string;
+    leadName: string;
+    scheduledAt: Date;
+    description?: string;
+    type?: string;
+  },
+): Promise<FollowUpEmailDispatch> => {
+  const appUrl = getPublicFrontendUrl();
+  const deepLink = `${appUrl}/calendar/today`;
+  const sent = await sendOrLogEmail(
+    email,
+    `Follow-up reminder: ${input.leadName}`,
+    `<h2>Reminder</h2><p>Follow-up for ${input.leadName} at ${input.scheduledAt.toLocaleString()}</p><a href="${deepLink}">View Task</a>`
+  );
+  return sent ? 'sent' : 'skipped_no_smtp';
 };
 
 export const isEmailServiceConfigured = () => isEmailConfigured();

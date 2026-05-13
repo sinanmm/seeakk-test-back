@@ -12,6 +12,7 @@ const stripQuotes = (value: string): string =>
   value.replace(/^\uFEFF/, '').replace(/^["']|["']$/g, '').trim();
 
 export type SmtpConfig = {
+  service: string;
   host: string;
   port: number;
   secure: boolean;
@@ -21,9 +22,12 @@ export type SmtpConfig = {
   configured: boolean;
   /** Resend transactional API (optional fallback) */
   resendApiKey: string;
+  /** Used by SMTP hints to identify Gmail-specific rules */
+  gmailStyleAuth: boolean;
 };
 
 export const getSmtpConfig = (): SmtpConfig => {
+  const service = readEnv('EMAIL_SERVICE');
   // Production Requirement: Explicit Host/Port/Secure
   const host = stripQuotes(readEnv('EMAIL_HOST', 'smtp.gmail.com'));
   const port = Number(readEnv('EMAIL_PORT', '465'));
@@ -36,7 +40,7 @@ export const getSmtpConfig = (): SmtpConfig => {
   const rawPass = stripQuotes(readEnv('EMAIL_PASS'));
   
   // Normalize Gmail App Passwords (remove spaces) if it's a Gmail host
-  const isGmail = host.toLowerCase().includes('gmail.com');
+  const isGmail = host.toLowerCase().includes('gmail.com') || service.toLowerCase() === 'gmail';
   const pass = isGmail ? rawPass.replace(/\s+/g, '') : rawPass;
 
   const from = stripQuotes(readEnv('EMAIL_FROM')) || user || 'no-reply@seeakk.com';
@@ -46,6 +50,7 @@ export const getSmtpConfig = (): SmtpConfig => {
   const configured = smtpConfigured || Boolean(resendApiKey);
 
   const config = {
+    service,
     host,
     port,
     secure,
@@ -54,6 +59,7 @@ export const getSmtpConfig = (): SmtpConfig => {
     from,
     configured,
     resendApiKey,
+    gmailStyleAuth: isGmail
   };
 
   if (process.env.DEBUG_EMAIL === 'true') {
