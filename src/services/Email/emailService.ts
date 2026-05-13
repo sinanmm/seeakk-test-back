@@ -20,9 +20,11 @@ const createTransporter = (): Transporter => {
     auth: { user, pass },
     // Force IPv4 to avoid ENETUNREACH issues on Render
     family: 4,
-    connectionTimeout: 10000,
-    greetingTimeout: 10000,
-    socketTimeout: 15000,
+    // Enable pooling for better connection re-use on cloud platforms
+    pool: true,
+    connectionTimeout: 30000, // Increase to 30s for slow handshakes on Render
+    greetingTimeout: 30000,
+    socketTimeout: 45000,
     tls: {
       rejectUnauthorized: false,
       servername: host
