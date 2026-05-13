@@ -105,6 +105,39 @@ const sendOrLogEmail = async (to: string, subject: string, html: string): Promis
   }
 };
 
+const buildEmailConfigError = (): Error => {
+  const config = getSmtpConfig();
+  if (config.resendApiKey) {
+    return new Error('Resend email delivery is configured, but the API request failed.');
+  }
+
+  const missing = [
+    !config.host ? 'EMAIL_HOST/SMTP_HOST' : null,
+    !config.user ? 'EMAIL_USER/SMTP_USER' : null,
+    !config.pass ? 'EMAIL_PASS/SMTP_PASS' : null,
+  ].filter(Boolean);
+
+  if (missing.length > 0) {
+    return new Error(`Email service not configured. Missing: ${missing.join(', ')}.`);
+  }
+
+  return new Error('Email service not configured.');
+};
+
+const sendRequiredEmail = async (to: string, subject: string, html: string): Promise<void> => {
+  if (!isEmailConfigured()) {
+    throw buildEmailConfigError();
+  }
+
+  const config = getSmtpConfig();
+  if (config.resendApiKey) {
+    await sendEmailViaResend({ apiKey: config.resendApiKey, from: config.from, to, subject, html });
+    return;
+  }
+
+  await sendWithRetry({ from: config.from, to, subject, html });
+};
+
 // --- Exported Application Methods ---
 
 export const sendVerificationEmail = async (email: string, token: string): Promise<boolean> => {
@@ -138,12 +171,17 @@ export const sendInvitationEmail = async (
   },
 ): Promise<boolean> => {
   const appUrl = getPublicFrontendUrl();
+  if (!appUrl) {
+    throw new Error('FRONTEND_URL or ALLOWED_ORIGINS is required to build invite links.');
+  }
+
   const inviteLink = `${appUrl}/invite/accept?token=${encodeURIComponent(input.inviteToken)}`;
-  return sendOrLogEmail(
+  await sendRequiredEmail(
     email,
     `You're invited to join ${input.workspaceName} on Seeakk`,
     `<h2>Invitation</h2><p>You've been invited to ${input.workspaceName}.</p><a href="${inviteLink}">Join Now</a>`
   );
+  return true;
 };
 
 export type FollowUpEmailDispatch = 'sent' | 'skipped_no_smtp' | 'mock_dev';
