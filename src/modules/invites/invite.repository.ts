@@ -116,7 +116,7 @@ export const createInvitedUserWithInvite = async (input: {
     const baseData = {
       name: input.userData.name,
       username: input.userData.username ?? null,
-      email: input.userData.email,
+      email: input.userData.email.toLowerCase().trim(),
       password: null,
       phone: input.userData.phone ?? null,
       isEmailVerified: false,

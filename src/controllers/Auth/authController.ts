@@ -141,6 +141,7 @@ const serializeAuthenticatedUser = (user: any, resolvedWorkspaceId?: string | nu
     (typeof user.workspaceId === 'string' && user.workspaceId.trim()) ||
     (typeof user.workspace?.id === 'string' && user.workspace.id.trim()) ||
     null;
+  const isOnboarded = Boolean(user.isOnboarded || workspaceId);
 
   return {
     id: user.id,
@@ -155,11 +156,29 @@ const serializeAuthenticatedUser = (user: any, resolvedWorkspaceId?: string | nu
         }
       : null,
     permissions: permissionKeys,
-    isOnboarded: user.isOnboarded,
+    isOnboarded,
     devices: user.devices,
     workspaceId,
     workspace: user.workspace,
   };
+};
+
+const repairWorkspaceMemberOnboarding = async (user: any, workspaceId?: string | null): Promise<void> => {
+  if (!user?.id || !workspaceId || user.isOnboarded) return;
+
+  try {
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { isOnboarded: true },
+    });
+  } catch (error: any) {
+    logger.warn('Failed to repair workspace member onboarding flag during login', {
+      userId: user.id,
+      workspaceId,
+      error: error?.message,
+      action: 'auth_repair_onboarded_failed',
+    });
+  }
 };
 
 const resolveWorkspaceForAuthPayload = async (user: {
@@ -301,13 +320,16 @@ const invalidateUserSessions = async (userId: string): Promise<void> => {
 
 export const register = async (req: Request, res: Response): Promise<any> => {
   try {
-    const { email, password, name } = req.body;
+    const { email: rawEmail, password, name } = req.body;
 
-    if (!email || !password) {
+    if (!rawEmail || !password) {
       return res.status(400).json({ message: 'Email and password are required' });
     }
 
-    const existingUser = await prisma.user.findUnique({ where: { email } });
+    const email = String(rawEmail).toLowerCase().trim();
+    const existingUser = await prisma.user.findFirst({
+      where: { email: { equals: email, mode: 'insensitive' } },
+    });
     if (existingUser) {
       logger.warn('Failed registration - email already exists', { email, action: 'register_failed' });
       return res.status(400).json({ message: 'User already exists with this email' });
@@ -517,8 +539,8 @@ export const login = async (req: Request, res: Response): Promise<any> => {
 
     const email = rawEmail.toLowerCase().trim();
 
-    let user: any = await prisma.user.findUnique({
-      where: { email },
+    let user: any = await prisma.user.findFirst({
+      where: { email: { equals: email, mode: 'insensitive' } },
       select: authenticatedUserBaseSelect,
     });
 
@@ -626,6 +648,7 @@ export const login = async (req: Request, res: Response): Promise<any> => {
     }).catch(e => console.error('Audit err:', e));
 
     const resolvedWorkspaceId = await resolveWorkspaceForAuthPayload(user);
+    await repairWorkspaceMemberOnboarding(user, resolvedWorkspaceId);
 
     return res.status(200).json({
       user: serializeAuthenticatedUser(user, resolvedWorkspaceId),
@@ -708,8 +731,8 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
 
     // 2. If not found by googleId, try finding by email
     if (!user) {
-      user = await prisma.user.findUnique({
-        where: { email },
+      user = await prisma.user.findFirst({
+        where: { email: { equals: email, mode: 'insensitive' } },
         select: authenticatedUserBaseSelect,
       });
 
@@ -825,6 +848,7 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
     }).catch(e => console.error('Audit err:', e));
 
     const resolvedWorkspaceId = await resolveWorkspaceForAuthPayload(user);
+    await repairWorkspaceMemberOnboarding(user, resolvedWorkspaceId);
 
     return res.status(200).json({
       user: serializeAuthenticatedUser(user, resolvedWorkspaceId),

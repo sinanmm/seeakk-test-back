@@ -189,7 +189,7 @@ export const createUser = async (input: CreateUserInput, workspaceId: string) =>
   const {
     name,
     username,
-    email,
+    email: rawEmail,
     password,
     phone,
     roleId,
@@ -201,6 +201,7 @@ export const createUser = async (input: CreateUserInput, workspaceId: string) =>
     districtId,
     assignedLocationIds,
   } = input;
+  const email = rawEmail.toLowerCase().trim();
 
   // 1. Email and Username uniqueness (supports restore from soft-deleted record)
   const existingEmail = await (prisma as any).user.findFirst({
@@ -278,7 +279,7 @@ export const createUser = async (input: CreateUserInput, workspaceId: string) =>
     phone: phone ?? null,
     isEmailVerified: true,
     isActive: true,
-    isOnboarded: false,
+    isOnboarded: true,
     workspaceId,
     roleId: normalizedRoleId,
     departmentId: normalizedDepartmentId,
