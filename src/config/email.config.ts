@@ -56,7 +56,7 @@ export const getSmtpConfig = (): SmtpConfig => {
   const user = stripQuotes(readEnv('EMAIL_USER', 'SMTP_USER'));
   const rawPass = stripQuotes(readEnv('EMAIL_PASS', 'SMTP_PASS', 'EMAIL_PASSWORD', 'SMTP_PASSWORD'));
   const gmailStyleAuth = usesGmailSmtpTransport(service, host, port);
-  const pass = gmailStyleAuth ? rawPass.replace(/\s+/g, '') : rawPass;
+  const pass = rawPass.replace(/\s+/g, '');
   const secure = secureRaw ? secureRaw === 'true' : port === 465;
   const from = readEnv('EMAIL_FROM', 'SMTP_FROM') || user || 'no-reply@seeakk.com';
   const hasHostPort = Boolean(host && Number.isFinite(port) && port > 0);
