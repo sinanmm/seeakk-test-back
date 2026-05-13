@@ -1,3 +1,4 @@
+import dns from 'dns';
 import nodemailer, { Transporter } from 'nodemailer';
 import { getSmtpConfig, isEmailConfigured } from '../../config/email.config';
 import { getPublicBackendUrl, getPublicFrontendUrl } from '../../config/publicUrls';
@@ -5,6 +6,23 @@ import logger from '../../utils/logger';
 import { sendEmailViaResend, verifyResendApiKey } from './resendTransport';
 
 let transporter: Transporter | null = null;
+
+dns.setDefaultResultOrder?.('ipv4first');
+
+const lookupIpv4 = (hostname: string, options: unknown, callback?: unknown) => {
+  const cb = typeof options === 'function' ? options : callback;
+  const lookupOptions = typeof options === 'object' && options !== null ? options : {};
+
+  return dns.lookup(
+    hostname,
+    {
+      ...lookupOptions,
+      family: 4,
+      all: false,
+    },
+    cb as any,
+  );
+};
 
 /**
  * Creates a production-hardened Nodemailer transporter.
@@ -18,8 +36,10 @@ const createTransporter = (): Transporter => {
     port,
     secure,
     auth: { user, pass },
-    // Force IPv4 to avoid ENETUNREACH issues on Render
+    // Render often has no IPv6 egress route; force Gmail SMTP to IPv4.
     family: 4,
+    lookup: lookupIpv4,
+    dnsTimeout: 30000,
     // Enable pooling for better connection re-use on cloud platforms
     pool: true,
     connectionTimeout: 30000, // Increase to 30s for slow handshakes on Render
@@ -29,7 +49,7 @@ const createTransporter = (): Transporter => {
       rejectUnauthorized: false,
       servername: host
     }
-  });
+  } as any);
 };
 
 const getTransporter = (): Transporter => {
@@ -45,7 +65,7 @@ const sendWithRetry = async (mailOptions: any, retries = 2): Promise<void> => {
       await getTransporter().sendMail(mailOptions);
       return;
     } catch (error: any) {
-      if (error?.code === 'EAUTH') {
+      if (['EAUTH', 'ENETUNREACH', 'ETIMEDOUT', 'ECONNECTION', 'ESOCKET', 'ECONNRESET'].includes(error?.code)) {
         transporter = null;
       }
       if (attempt === retries) throw error;
