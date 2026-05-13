@@ -3,8 +3,12 @@
  * Optimized for Render, AWS, and other cloud providers.
  */
 
-const readEnv = (key: string, fallback: string = ''): string => {
-  return (process.env[key] || fallback).trim();
+const readEnv = (...keys: string[]): string => {
+  for (const key of keys) {
+    const value = process.env[key]?.trim();
+    if (value) return value;
+  }
+  return '';
 };
 
 /** Remove accidental wrapping quotes / BOM from pasted .env values */
@@ -27,23 +31,23 @@ export type SmtpConfig = {
 };
 
 export const getSmtpConfig = (): SmtpConfig => {
-  const service = readEnv('EMAIL_SERVICE');
+  const service = readEnv('EMAIL_SERVICE', 'SMTP_SERVICE');
   // Production Requirement: Explicit Host/Port/Secure
-  const host = stripQuotes(readEnv('EMAIL_HOST', 'smtp.gmail.com'));
-  const port = Number(readEnv('EMAIL_PORT', '465'));
+  const host = stripQuotes(readEnv('EMAIL_HOST', 'SMTP_HOST', 'smtp.gmail.com'));
+  const port = Number(readEnv('EMAIL_PORT', 'SMTP_PORT', '465'));
   
   // EMAIL_SECURE should be true for port 465
-  const secureRaw = readEnv('EMAIL_SECURE', 'true').toLowerCase();
+  const secureRaw = readEnv('EMAIL_SECURE', 'SMTP_SECURE', 'true').toLowerCase();
   const secure = secureRaw === 'true' || port === 465;
 
-  const user = stripQuotes(readEnv('EMAIL_USER'));
-  const rawPass = stripQuotes(readEnv('EMAIL_PASS'));
+  const user = stripQuotes(readEnv('EMAIL_USER', 'SMTP_USER'));
+  const rawPass = stripQuotes(readEnv('EMAIL_PASS', 'SMTP_PASS', 'EMAIL_PASSWORD', 'SMTP_PASSWORD'));
   
   // Normalize Gmail App Passwords (remove spaces) if it's a Gmail host
   const isGmail = host.toLowerCase().includes('gmail.com') || service.toLowerCase() === 'gmail';
   const pass = isGmail ? rawPass.replace(/\s+/g, '') : rawPass;
 
-  const from = stripQuotes(readEnv('EMAIL_FROM')) || user || 'no-reply@seeakk.com';
+  const from = stripQuotes(readEnv('EMAIL_FROM', 'SMTP_FROM')) || user || 'no-reply@seeakk.com';
   const resendApiKey = stripQuotes(readEnv('RESEND_API_KEY'));
 
   const smtpConfigured = Boolean(host && user && pass);
