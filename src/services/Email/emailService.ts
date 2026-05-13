@@ -154,6 +154,20 @@ const isTransportTimeout = (error: any): boolean => {
   return error?.code === 'ETIMEDOUT' || message.includes('connection timeout') || message.includes('timeout');
 };
 
+const isRenderRuntime = (): boolean => String(process.env.RENDER || '').toLowerCase() === 'true';
+
+const buildRenderSmtpBlockedError = (): Error =>
+  new Error(
+    'Gmail SMTP is not supported for this Render deployment. Set RESEND_API_KEY and EMAIL_FROM with a verified Resend sender/domain so invite emails are sent over HTTPS.',
+  );
+
+const assertSmtpAllowedForRuntime = (): void => {
+  const cfg = getSmtpConfig();
+  if (isRenderRuntime() && cfg.gmailStyleAuth && !cfg.resendApiKey) {
+    throw buildRenderSmtpBlockedError();
+  }
+};
+
 const enrichSmtpError = (error: any): Error => {
   const cfg = getSmtpConfig();
   if (cfg.gmailStyleAuth && !cfg.resendApiKey && isTransportTimeout(error)) {
@@ -166,6 +180,8 @@ const enrichSmtpError = (error: any): Error => {
 };
 
 const sendWithRetry = async (mailOptions: any, retries = 2): Promise<void> => {
+  assertSmtpAllowedForRuntime();
+
   let lastError: any = null;
 
   for (const endpoint of getSmtpEndpoints()) {
@@ -198,6 +214,7 @@ export const verifyEmailTransport = async (): Promise<void> => {
     await verifyResendApiKey(cfg.resendApiKey);
     return;
   }
+  assertSmtpAllowedForRuntime();
 
   try {
     let lastError: any = null;

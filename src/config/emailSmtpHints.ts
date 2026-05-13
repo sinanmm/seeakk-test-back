@@ -9,6 +9,8 @@ export const buildSmtpAuthFailureHint = (error: unknown): string => {
   const msg = `${err?.message || ''} ${err?.response || ''}`.toLowerCase();
 
   if (
+    msg.includes('gmail smtp is not supported for this render deployment') ||
+    msg.includes('set resend_api_key') ||
     msg.includes('gmail smtp timed out') ||
     msg.includes('connection timeout') ||
     msg.includes('enetunreach') ||
