@@ -8,6 +8,12 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
+import dns from 'dns';
+// Force IPv4 first to avoid ENETUNREACH issues on cloud providers like Render
+if (typeof dns.setDefaultResultOrder === 'function') {
+  dns.setDefaultResultOrder('ipv4first');
+}
+
 import { createServer } from 'http';
 import { connectRedis } from './config/redis';
 import { getAllowedOrigins } from './config/cors';

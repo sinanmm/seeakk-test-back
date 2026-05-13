@@ -18,6 +18,8 @@ const createTransporter = (): Transporter => {
     port,
     secure,
     auth: { user, pass },
+    // Force IPv4 to avoid ENETUNREACH issues on Render
+    family: 4,
     connectionTimeout: 10000,
     greetingTimeout: 10000,
     socketTimeout: 15000,
