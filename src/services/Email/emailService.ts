@@ -5,7 +5,14 @@ import { getPublicBackendUrl, getPublicFrontendUrl } from '../../config/publicUr
 import logger from '../../utils/logger';
 import { sendEmailViaResend, verifyResendApiKey } from './resendTransport';
 
-let transporter: Transporter | null = null;
+type SmtpEndpoint = {
+  host: string;
+  port: number;
+  secure: boolean;
+  label: string;
+};
+
+const transporterCache = new Map<string, Transporter>();
 
 dns.setDefaultResultOrder?.('ipv4first');
 
@@ -24,54 +31,105 @@ const lookupIpv4 = (hostname: string, options: unknown, callback?: unknown) => {
   );
 };
 
+const getTimeoutMs = (key: string, fallback: number): number => {
+  const parsed = Number(process.env[key]);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+};
+
+const getSmtpEndpoints = (): SmtpEndpoint[] => {
+  const cfg = getSmtpConfig();
+  const endpoints: SmtpEndpoint[] = [
+    {
+      host: cfg.host,
+      port: cfg.port,
+      secure: cfg.secure,
+      label: 'primary',
+    },
+  ];
+
+  // Render can time out on implicit TLS/465 even when STARTTLS/587 works.
+  // For Gmail, try STARTTLS as a second route before declaring delivery unavailable.
+  if (cfg.gmailStyleAuth && cfg.port !== 587) {
+    endpoints.push({
+      host: cfg.host || 'smtp.gmail.com',
+      port: 587,
+      secure: false,
+      label: 'gmail-starttls',
+    });
+  }
+
+  return endpoints;
+};
+
+const getTransportKey = (endpoint: SmtpEndpoint): string =>
+  `${endpoint.host}:${endpoint.port}:${endpoint.secure ? 'secure' : 'starttls'}`;
+
 /**
  * Creates a production-hardened Nodemailer transporter.
- * Optimized for port 465 (SSL) to prevent ENETUNREACH issues on cloud providers.
+ * Uses IPv4-only lookup and supports Gmail's STARTTLS fallback for cloud hosts.
  */
-const createTransporter = (): Transporter => {
-  const { user, pass, host, port, secure } = getSmtpConfig();
+const createTransporter = (endpoint: SmtpEndpoint): Transporter => {
+  const { user, pass } = getSmtpConfig();
+  const connectionTimeout = getTimeoutMs('EMAIL_CONNECTION_TIMEOUT_MS', 15000);
+  const greetingTimeout = getTimeoutMs('EMAIL_GREETING_TIMEOUT_MS', 15000);
+  const socketTimeout = getTimeoutMs('EMAIL_SOCKET_TIMEOUT_MS', 30000);
 
   return nodemailer.createTransport({
-    host,
-    port,
-    secure,
+    host: endpoint.host,
+    port: endpoint.port,
+    secure: endpoint.secure,
     auth: { user, pass },
     // Render often has no IPv6 egress route; force Gmail SMTP to IPv4.
     family: 4,
     lookup: lookupIpv4,
     dnsTimeout: 30000,
+    requireTLS: !endpoint.secure,
     // Enable pooling for better connection re-use on cloud platforms
     pool: true,
-    connectionTimeout: 30000, // Increase to 30s for slow handshakes on Render
-    greetingTimeout: 30000,
-    socketTimeout: 45000,
+    connectionTimeout,
+    greetingTimeout,
+    socketTimeout,
     tls: {
       rejectUnauthorized: false,
-      servername: host
+      servername: endpoint.host
     }
   } as any);
 };
 
-const getTransporter = (): Transporter => {
+const getTransporter = (endpoint: SmtpEndpoint): Transporter => {
+  const key = getTransportKey(endpoint);
+  let transporter = transporterCache.get(key);
   if (!transporter) {
-    transporter = createTransporter();
+    transporter = createTransporter(endpoint);
+    transporterCache.set(key, transporter);
   }
   return transporter;
 };
 
+const isRecoverableTransportError = (error: any): boolean =>
+  ['EAUTH', 'ENETUNREACH', 'ETIMEDOUT', 'ECONNECTION', 'ESOCKET', 'ECONNRESET'].includes(error?.code) ||
+  String(error?.message || '').toLowerCase().includes('connection timeout');
+
 const sendWithRetry = async (mailOptions: any, retries = 2): Promise<void> => {
-  for (let attempt = 0; attempt <= retries; attempt++) {
-    try {
-      await getTransporter().sendMail(mailOptions);
-      return;
-    } catch (error: any) {
-      if (['EAUTH', 'ENETUNREACH', 'ETIMEDOUT', 'ECONNECTION', 'ESOCKET', 'ECONNRESET'].includes(error?.code)) {
-        transporter = null;
+  let lastError: any = null;
+
+  for (const endpoint of getSmtpEndpoints()) {
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      try {
+        await getTransporter(endpoint).sendMail(mailOptions);
+        return;
+      } catch (error: any) {
+        lastError = error;
+        if (isRecoverableTransportError(error)) {
+          transporterCache.delete(getTransportKey(endpoint));
+        }
+        if (attempt === retries) break;
+        await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
       }
-      if (attempt === retries) throw error;
-      await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
     }
   }
+
+  throw lastError;
 };
 
 export const verifyEmailTransport = async (): Promise<void> => {
@@ -86,9 +144,29 @@ export const verifyEmailTransport = async (): Promise<void> => {
   }
 
   try {
-    console.log(`[EmailService] Verifying connection to ${cfg.host}:${cfg.port}...`);
-    await getTransporter().verify();
-    console.log('✅ [EmailService] SMTP connection verified successfully');
+    let lastError: any = null;
+    for (const endpoint of getSmtpEndpoints()) {
+      try {
+        console.log(`[EmailService] Verifying connection to ${endpoint.host}:${endpoint.port} (${endpoint.label})...`);
+        await getTransporter(endpoint).verify();
+        console.log(`✅ [EmailService] SMTP connection verified successfully via ${endpoint.host}:${endpoint.port}`);
+        return;
+      } catch (error: any) {
+        lastError = error;
+        if (isRecoverableTransportError(error)) {
+          transporterCache.delete(getTransportKey(endpoint));
+        }
+        logger.warn('SMTP endpoint verification failed', {
+          host: endpoint.host,
+          port: endpoint.port,
+          secure: endpoint.secure,
+          label: endpoint.label,
+          error: error?.message || String(error),
+        });
+      }
+    }
+
+    throw lastError;
   } catch (error: any) {
     console.error('❌ [EmailService] Verification failed:', error.message);
     throw error;
