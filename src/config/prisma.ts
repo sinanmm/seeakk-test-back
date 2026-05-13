@@ -33,13 +33,13 @@ const withConditionalPoolerParams = (url: string): string => {
         parsed.searchParams.set('pgbouncer', 'true');
       }
       if (!parsed.searchParams.has('connect_timeout')) {
-        parsed.searchParams.set('connect_timeout', String(connectTimeout));
+        parsed.searchParams.set('connect_timeout', String(Math.max(connectTimeout, 20)));
       }
       if (!parsed.searchParams.has('pool_timeout')) {
-        parsed.searchParams.set('pool_timeout', String(poolTimeout));
+        parsed.searchParams.set('pool_timeout', String(Math.max(poolTimeout, 60)));
       }
       if (!parsed.searchParams.has('connection_limit')) {
-        parsed.searchParams.set('connection_limit', String(connectionLimit));
+        parsed.searchParams.set('connection_limit', String(Math.min(connectionLimit, 10)));
       }
       // PgBouncer does not support prepared statements in transaction mode.
       if (!parsed.searchParams.has('statement_cache_size')) {
@@ -108,7 +108,7 @@ const createPrismaClient = () => {
       return next(params);
     }
 
-    const maxAttempts = 3;
+    const maxAttempts = 5;
     let attempt = 0;
     let lastError: unknown;
 
@@ -126,7 +126,8 @@ const createPrismaClient = () => {
 
         attempt += 1;
         if (attempt < maxAttempts) {
-          await delay(150 * attempt);
+          // Exponential backoff: 300ms, 600ms, 900ms, 1200ms...
+          await delay(300 * attempt);
         }
       }
     }
