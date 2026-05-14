@@ -124,7 +124,9 @@ export const protect = async (req: Request, res: Response, next: NextFunction): 
 
     const authHeader = req.headers.authorization || req.header('Authorization');
 
-    logger.info('AUTH DEBUG -> AUTH HEADER:', { authString: maskAuthHeader(authHeader) });
+    if (process.env.AUTH_DEBUG === 'true') {
+      logger.info('AUTH DEBUG -> AUTH HEADER:', { authString: maskAuthHeader(authHeader) });
+    }
 
     if (authHeader) {
       if (authHeader.toLowerCase().startsWith('bearer ')) {

@@ -1,5 +1,7 @@
 import { randomUUID } from 'crypto';
 import express, { Request, Response } from 'express';
+import compression from 'compression';
+import helmet from 'helmet';
 import cors from 'cors';
 import morgan from 'morgan';
 import authRoutes from './routes/Auth/authRoutes';
@@ -46,6 +48,30 @@ const app = express();
 // Render / Vercel / proxies: trust X-Forwarded-* for correct req.ip and secure cookies if used later
 app.set('trust proxy', 1);
 
+const shouldCompress = (req: Request): boolean => {
+  const p = req.path || '';
+  return p !== SOCKET_IO_PATH && !p.startsWith(`${SOCKET_IO_PATH}/`);
+};
+
+app.use(
+  compression({
+    threshold: 1024,
+    filter: (req, res) => {
+      if (!shouldCompress(req)) return false;
+      return compression.filter(req, res);
+    },
+  }),
+);
+
+app.use(
+  helmet({
+    contentSecurityPolicy: false,
+    crossOriginEmbedderPolicy: false,
+    crossOriginOpenerPolicy: false,
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+  }),
+);
+
 const requestBodyLimit = process.env.REQUEST_BODY_LIMIT || '5mb';
 
 const corsOptions: cors.CorsOptions = {
@@ -66,8 +92,10 @@ const corsOptions: cors.CorsOptions = {
   optionsSuccessStatus: 204,
 };
 
-// Middleware
-app.use(morgan('combined', { stream: { write: (message: string) => logger.info(message.trim()) } }));
+// Access logs: "tiny" in production reduces log volume unless ACCESS_LOG_VERBOSE=true
+const accessLogFormat =
+  process.env.NODE_ENV === 'production' && process.env.ACCESS_LOG_VERBOSE !== 'true' ? 'tiny' : 'combined';
+app.use(morgan(accessLogFormat, { stream: { write: (message: string) => logger.info(message.trim()) } }));
 
 // Production-grade CORS config
 app.use(cors(corsOptions));
@@ -136,6 +164,12 @@ app.get('/readyz', async (_req, res) => {
       timestamp: new Date().toISOString(),
     });
   }
+});
+
+// REST API: prevent shared caches from storing authenticated JSON (privacy + correctness)
+app.use('/api', (_req, res, next) => {
+  res.setHeader('Cache-Control', 'private, no-store, must-revalidate');
+  next();
 });
 
 // Global rate limiting

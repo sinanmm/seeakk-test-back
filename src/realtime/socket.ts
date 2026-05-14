@@ -59,6 +59,8 @@ export const initRealtimeServer = (httpServer: HttpServer): SocketIOServer => {
     },
     transports: ['polling', 'websocket'],
     allowEIO3: true,
+    /** Small CRM payloads: disabling permessage deflate reduces CPU on high-frequency emits (Render). */
+    perMessageDeflate: false,
     pingTimeout: 60000,
     pingInterval: 25000,
     upgradeTimeout: 30000,
