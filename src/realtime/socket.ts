@@ -75,7 +75,9 @@ export const initRealtimeServer = (httpServer: HttpServer): SocketIOServer => {
 
       if (!token) return next(new Error('Unauthorized socket connection'));
 
-      const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as { userId: string };
+      const decoded = jwt.verify(token, process.env.JWT_SECRET as string, {
+        clockTolerance: 30,
+      }) as { userId: string };
       const user = await prisma.user.findUnique({
         where: { id: decoded.userId },
         select: { id: true, workspaceId: true, isActive: true },
