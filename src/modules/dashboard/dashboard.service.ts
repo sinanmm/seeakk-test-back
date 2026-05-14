@@ -263,7 +263,7 @@ export const getDashboardSummary = async (
     dashboardRepository.findLeadCreationTimestamps(workspaceId, growthStartDate, leadAccess),
     dashboardRepository.groupLeadsByStage(workspaceId, leadAccess),
     dashboardRepository.findLeadStages(workspaceId),
-    dashboardRepository.findRecentLeadAuditLogs(workspaceId, 6),
+    dashboardRepository.findRecentLeadAuditLogs(workspaceId, 60),
     dashboardRepository.findTodayFollowUps(workspaceId, actor.id, todayStart, todayEnd, 5),
     getLOBStageBreakdown(workspaceId, actor, {}, leadAccess),
     dashboardRepository.countLeads(
@@ -296,20 +296,41 @@ export const getDashboardSummary = async (
   const leadGrowthTimestamps = getValue<any[]>(11, []);
   const stageCounts = getValue<any[]>(12, []);
   const stages = getValue<any[]>(13, []);
-  const recentAuditLogs = getValue<any[]>(14, []);
+  const rawAuditLogs = getValue<any[]>(14, []);
   const followUps = getValue<any[]>(15, []);
   const lobStageBreakdown = getValue<any>(16, { labels: [], lob_counts: [], total_reference: 0 });
   const pendingApprovals = getValue<number>(17, 0);
 
-  const leadIds = Array.from(
+  const auditLeadEntityIds = Array.from(
     new Set(
-      recentAuditLogs
+      rawAuditLogs
         .filter((item) => item.entityType === 'Lead' && item.entityId)
         .map((item) => String(item.entityId)),
     ),
   );
-  const leadRows = await dashboardRepository.findLeadsByIds(workspaceId, leadIds, leadAccess);
-  const leadNamesById = new Map(leadRows.map((lead) => [lead.id, lead.name]));
+  const auditLeadRows =
+    auditLeadEntityIds.length > 0
+      ? await dashboardRepository.findLeadsByIds(workspaceId, auditLeadEntityIds, leadAccess)
+      : [];
+  const auditVisibleLeadIds = new Set(auditLeadRows.map((lead) => lead.id));
+  const recentAuditLogs = rawAuditLogs
+    .filter(
+      (item) =>
+        item.entityType !== 'Lead' ||
+        !item.entityId ||
+        auditVisibleLeadIds.has(String(item.entityId)),
+    )
+    .slice(0, 6);
+  const visibleAuditLeadIds = new Set(
+    recentAuditLogs
+      .filter((item) => item.entityType === 'Lead' && item.entityId)
+      .map((item) => String(item.entityId)),
+  );
+  const leadNamesById = new Map(
+    auditLeadRows
+      .filter((lead) => visibleAuditLeadIds.has(lead.id))
+      .map((lead) => [lead.id, lead.name]),
+  );
 
   const stageCountMap = new Map<string, number>();
   stageCounts.forEach((row: any) => {

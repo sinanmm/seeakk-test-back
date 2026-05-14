@@ -1,5 +1,6 @@
 import * as repository from './bulkAssign.repository';
 import type { BulkAssignFiltersInput, BulkAssignInput, BulkAssignPreviewInput } from './bulkAssign.validation';
+import { buildAccessWhere } from './leads.service';
 
 type Actor = {
   id: string;
@@ -14,12 +15,6 @@ const createServiceError = (message: string, statusCode: number): Error & { stat
   error.statusCode = statusCode;
   return error;
 };
-
-const normalizeRoleKey = (role?: string | null): string =>
-  (role || '')
-    .toLowerCase()
-    .trim()
-    .replace(/[\s_-]+/g, '');
 
 const resolveDisplayName = (user?: { name?: string | null; username?: string | null; email?: string | null } | null): string => {
   if (user?.name?.trim()) return user.name.trim();
@@ -69,43 +64,6 @@ const ensureModuleReady = async (): Promise<void> => {
       503,
     );
   }
-};
-
-const getPermissionKeys = async (actor: Actor): Promise<string[]> => {
-  if (!actor.roleId) return [];
-  if (normalizeRoleKey(actor.role?.name) === 'superadmin') return ['*'];
-  return repository.getRolePermissionKeys(actor.roleId);
-};
-
-const buildAccessWhere = async (workspaceId: string, actor: Actor): Promise<any> => {
-  const permissions = await getPermissionKeys(actor);
-
-  if (permissions.includes('*') || permissions.includes('LEADS_VIEW_ALL')) {
-    return {};
-  }
-
-  if (permissions.includes('LEADS_VIEW_TEAM')) {
-    const teamUserIds = await repository.getTeamUserIds(workspaceId, actor.id);
-    const scopedIds = Array.from(new Set([actor.id, ...teamUserIds]));
-
-    return {
-      OR: [
-        { assignedToId: { in: scopedIds } },
-        { createdById: { in: scopedIds } },
-      ],
-    };
-  }
-
-  if (permissions.includes('LEADS_VIEW_OWN')) {
-    return {
-      OR: [
-        { assignedToId: actor.id },
-        { createdById: actor.id },
-      ],
-    };
-  }
-
-  throw createServiceError('Access denied. You need lead view permissions to bulk assign leads.', 403);
 };
 
 const buildLeadFilterWhere = async (workspaceId: string, actor: Actor, filters: BulkAssignFiltersInput): Promise<any> => {

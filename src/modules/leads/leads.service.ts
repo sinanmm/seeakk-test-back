@@ -29,13 +29,23 @@ const isPrivilegedRoleName = (role?: string | null): boolean => {
 
 export type LeadVisibilityMode = 'all' | 'team' | 'own' | 'none';
 
+/**
+ * Resolves effective lead visibility from permission keys alone.
+ * If multiple `LEADS_VIEW_*` keys are attached to a role (misconfiguration), the narrowest scope wins
+ * so we never expand access beyond what "own" or "team" already implies.
+ */
+export const resolveLeadScopeFromPermissionKeys = (permissions: string[]): LeadVisibilityMode => {
+  if (permissions.includes('*')) return 'all';
+  if (permissions.includes('LEADS_VIEW_OWN')) return 'own';
+  if (permissions.includes('LEADS_VIEW_TEAM')) return 'team';
+  if (permissions.includes('LEADS_VIEW_ALL')) return 'all';
+  return 'none';
+};
+
 /** Same visibility semantics as `buildAccessWhere`, without building lead Prisma filters. */
 export const resolveLeadVisibilityMode = async (workspaceId: string, actor: Actor): Promise<LeadVisibilityMode> => {
   const permissions = await getPermissionKeys(actor);
-  if (permissions.includes('*') || permissions.includes('LEADS_VIEW_ALL')) return 'all';
-  if (permissions.includes('LEADS_VIEW_TEAM')) return 'team';
-  if (permissions.includes('LEADS_VIEW_OWN')) return 'own';
-  return 'none';
+  return resolveLeadScopeFromPermissionKeys(permissions);
 };
 
 /** Restricts workspace user counts (e.g. Active Users KPI) to the same cohort as lead visibility. */
@@ -128,12 +138,13 @@ const assertReopenPermission = async (actor: Actor): Promise<void> => {
 /** Exported for dashboard / analytics so KPIs match the same lead visibility as list APIs. */
 export const buildAccessWhere = async (workspaceId: string, actor: Actor): Promise<any> => {
   const permissions = await getPermissionKeys(actor);
+  const scope = resolveLeadScopeFromPermissionKeys(permissions);
 
-  if (permissions.includes('*') || permissions.includes('LEADS_VIEW_ALL')) {
+  if (scope === 'all') {
     return {};
   }
 
-  if (permissions.includes('LEADS_VIEW_TEAM')) {
+  if (scope === 'team') {
     const teamUserIds = await leadsRepository.getTeamUserIds(workspaceId, actor.id);
     const scopedIds = Array.from(new Set([actor.id, ...teamUserIds]));
 
@@ -145,7 +156,7 @@ export const buildAccessWhere = async (workspaceId: string, actor: Actor): Promi
     };
   }
 
-  if (permissions.includes('LEADS_VIEW_OWN')) {
+  if (scope === 'own') {
     return {
       OR: [
         { assignedToId: actor.id },
