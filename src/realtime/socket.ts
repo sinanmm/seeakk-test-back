@@ -41,6 +41,16 @@ const socketCorsOrigin = (
   callback(new Error(`Not allowed by Socket.io CORS: ${origin}`), false);
 };
 
+/**
+ * Render's edge often drops Engine.IO WebSocket upgrades; long-polling is reliable.
+ * Set SOCKET_IO_ALLOW_UPGRADES=true on Render only if you have confirmed WS works for your service.
+ */
+const allowSocketTransportUpgrades = (): boolean => {
+  if (process.env.SOCKET_IO_ALLOW_UPGRADES === 'true') return true;
+  if (process.env.SOCKET_IO_ALLOW_UPGRADES === 'false') return false;
+  return process.env.RENDER !== 'true';
+};
+
 export const initRealtimeServer = (httpServer: HttpServer): SocketIOServer => {
   console.log('[Socket.io] initRealtimeServer called');
   console.log('[Socket.io] httpServer:', !!httpServer);
@@ -50,6 +60,8 @@ export const initRealtimeServer = (httpServer: HttpServer): SocketIOServer => {
     return io;
   }
 
+  const allowUpgrades = allowSocketTransportUpgrades();
+
   io = new SocketIOServer(httpServer, {
     path: SOCKET_IO_PATH,
     cors: {
@@ -57,7 +69,8 @@ export const initRealtimeServer = (httpServer: HttpServer): SocketIOServer => {
       credentials: true,
       methods: ['GET', 'POST'],
     },
-    transports: ['polling', 'websocket'],
+    allowUpgrades,
+    transports: allowUpgrades ? ['polling', 'websocket'] : ['polling'],
     allowEIO3: true,
     /** Small CRM payloads: disabling permessage deflate reduces CPU on high-frequency emits (Render). */
     perMessageDeflate: false,
@@ -66,7 +79,11 @@ export const initRealtimeServer = (httpServer: HttpServer): SocketIOServer => {
     upgradeTimeout: 30000,
     maxHttpBufferSize: 1e8,
   });
-  console.log('[Socket.io] Server created successfully', { path: SOCKET_IO_PATH });
+  console.log('[Socket.io] Server created successfully', {
+    path: SOCKET_IO_PATH,
+    allowUpgrades,
+    render: process.env.RENDER === 'true',
+  });
   console.log('[Socket.io] Allowed origins:', getAllowedOrigins());
 
   io.use(async (socket, next) => {
