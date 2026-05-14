@@ -1,4 +1,6 @@
 import prisma from '../../config/prisma';
+import type { Prisma } from '@prisma/client';
+import { mergeWorkspaceLeadFilters } from './leadQueryScope';
 
 export const ensureLOBAnalysisSchemaReady = async (): Promise<boolean> => {
   const rows = await prisma.$queryRaw<Array<{ ready: boolean }>>`
@@ -38,14 +40,17 @@ export const ensureLOBAnalysisSchemaReady = async (): Promise<boolean> => {
   return Boolean(rows[0]?.ready);
 };
 
-export const findLOBEvents = async (workspaceId: string, changedAtRange?: { gte?: Date; lte?: Date }) =>
+export const findLOBEvents = async (
+  workspaceId: string,
+  changedAtRange?: { gte?: Date; lte?: Date },
+  leadAccess: Prisma.LeadWhereInput = {},
+) =>
   (prisma as any).leadLOBLog.findMany({
     where: {
       workspaceId,
       ...(changedAtRange ? { changedAt: changedAtRange } : {}),
       lead: {
-        workspaceId,
-        deletedAt: null,
+        is: mergeWorkspaceLeadFilters(workspaceId, leadAccess, {}),
       },
     },
     orderBy: [{ changedAt: 'desc' }],
@@ -92,14 +97,13 @@ export const countLeadsForAnalytics = async (
     createdAt?: { gte?: Date; lte?: Date };
     assignedToId?: string;
   },
+  leadAccess: Prisma.LeadWhereInput = {},
 ) =>
   (prisma as any).lead.findMany({
-    where: {
-      workspaceId,
-      deletedAt: null,
+    where: mergeWorkspaceLeadFilters(workspaceId, leadAccess, {
       ...(filters?.createdAt ? { createdAt: filters.createdAt } : {}),
       ...(filters?.assignedToId ? { assignedToId: filters.assignedToId } : {}),
-    },
+    }),
     select: {
       id: true,
       assignedTo: {

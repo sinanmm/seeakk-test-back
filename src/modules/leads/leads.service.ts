@@ -104,7 +104,8 @@ const assertReopenPermission = async (actor: Actor): Promise<void> => {
   throw createServiceError('Access denied. Only admins or managers can reopen closed leads.', 403);
 };
 
-const buildAccessWhere = async (workspaceId: string, actor: Actor): Promise<any> => {
+/** Exported for dashboard / analytics so KPIs match the same lead visibility as list APIs. */
+export const buildAccessWhere = async (workspaceId: string, actor: Actor): Promise<any> => {
   const permissions = await getPermissionKeys(actor);
 
   if (permissions.includes('*') || permissions.includes('LEADS_VIEW_ALL')) {

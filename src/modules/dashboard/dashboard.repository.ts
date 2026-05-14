@@ -1,5 +1,6 @@
 import { Prisma } from '@prisma/client';
 import prisma from '../../config/prisma';
+import { mergeWorkspaceLeadFilters } from '../leads/leadQueryScope';
 
 const DASHBOARD_AUDIT_ACTIONS = [
   'LEAD_CREATED',
@@ -26,13 +27,13 @@ export const ensureDashboardSchemaReady = async (): Promise<boolean> => {
   return Boolean(rows[0]?.ready);
 };
 
-export const countLeads = async (workspaceId: string, where: Prisma.LeadWhereInput = {}) =>
+export const countLeads = async (
+  workspaceId: string,
+  where: Prisma.LeadWhereInput = {},
+  leadAccess: Prisma.LeadWhereInput = {},
+) =>
   prisma.lead.count({
-    where: {
-      workspaceId,
-      deletedAt: null,
-      ...where,
-    },
+    where: mergeWorkspaceLeadFilters(workspaceId, leadAccess, where),
   });
 
 export const countUsers = async (workspaceId: string, where: Prisma.UserWhereInput = {}) =>
@@ -44,15 +45,17 @@ export const countUsers = async (workspaceId: string, where: Prisma.UserWhereInp
     },
   });
 
-export const findLeadCreationTimestamps = async (workspaceId: string, startDate: Date) =>
+export const findLeadCreationTimestamps = async (
+  workspaceId: string,
+  startDate: Date,
+  leadAccess: Prisma.LeadWhereInput = {},
+) =>
   prisma.lead.findMany({
-    where: {
-      workspaceId,
-      deletedAt: null,
+    where: mergeWorkspaceLeadFilters(workspaceId, leadAccess, {
       createdAt: {
         gte: startDate,
       },
-    },
+    }),
     orderBy: {
       createdAt: 'asc',
     },
@@ -61,13 +64,10 @@ export const findLeadCreationTimestamps = async (workspaceId: string, startDate:
     },
   });
 
-export const groupLeadsByStage = async (workspaceId: string) =>
+export const groupLeadsByStage = async (workspaceId: string, leadAccess: Prisma.LeadWhereInput = {}) =>
   (prisma as any).lead.groupBy({
     by: ['stageId'],
-    where: {
-      workspaceId,
-      deletedAt: null,
-    },
+    where: mergeWorkspaceLeadFilters(workspaceId, leadAccess, {}),
     _count: {
       _all: true,
     },
@@ -124,16 +124,19 @@ export const findRecentLeadAuditLogs = async (workspaceId: string, take: number)
     },
   });
 
-export const findLeadsByIds = async (workspaceId: string, leadIds: string[]) => {
+export const findLeadsByIds = async (
+  workspaceId: string,
+  leadIds: string[],
+  leadAccess: Prisma.LeadWhereInput = {},
+) => {
   if (leadIds.length === 0) return [];
 
   return prisma.lead.findMany({
-    where: {
-      workspaceId,
+    where: mergeWorkspaceLeadFilters(workspaceId, leadAccess, {
       id: {
         in: leadIds,
       },
-    },
+    }),
     select: {
       id: true,
       name: true,

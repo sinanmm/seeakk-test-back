@@ -1,6 +1,8 @@
 import { LeadApprovalState } from '@prisma/client';
+import type { Prisma } from '@prisma/client';
 import * as dashboardRepository from './dashboard.repository';
 import { getStageBreakdown as getLOBStageBreakdown } from '../leads/lobAnalysis.service';
+import { buildAccessWhere } from '../leads/leads.service';
 import type { DashboardSummaryQueryInput } from './dashboard.validation';
 import logger from '../../utils/logger';
 
@@ -209,27 +211,42 @@ export const getDashboardSummary = async (
   const previousThirtyDayEnd = endOfDay(addDays(now, -30));
   const growthStartDate = getGrowthStartDate(query.range);
 
+  let leadAccess: Prisma.LeadWhereInput = {};
+  try {
+    leadAccess = await buildAccessWhere(workspaceId, actor);
+  } catch {
+    leadAccess = { id: { in: [] } };
+  }
+
   const results = await Promise.allSettled([
-    dashboardRepository.countLeads(workspaceId, { createdAt: { gte: todayStart, lte: todayEnd } }),
-    dashboardRepository.countLeads(workspaceId, { createdAt: { gte: yesterdayStart, lte: yesterdayEnd } }),
-    dashboardRepository.countLeads(workspaceId),
-    dashboardRepository.countLeads(workspaceId, { createdAt: { gte: currentThirtyDayStart, lte: todayEnd } }),
-    dashboardRepository.countLeads(workspaceId, { createdAt: { gte: previousThirtyDayStart, lte: previousThirtyDayEnd } }),
-    dashboardRepository.countLeads(workspaceId, { isClosed: true }),
-    dashboardRepository.countLeads(workspaceId, {
-      isClosed: true,
-      OR: [
-        { closedAt: { gte: currentWeekStart, lte: todayEnd } },
-        { closedAt: null, updatedAt: { gte: currentWeekStart, lte: todayEnd } },
-      ],
-    }),
-    dashboardRepository.countLeads(workspaceId, {
-      isClosed: true,
-      OR: [
-        { closedAt: { gte: previousWeekStart, lte: previousWeekEnd } },
-        { closedAt: null, updatedAt: { gte: previousWeekStart, lte: previousWeekEnd } },
-      ],
-    }),
+    dashboardRepository.countLeads(workspaceId, { createdAt: { gte: todayStart, lte: todayEnd } }, leadAccess),
+    dashboardRepository.countLeads(workspaceId, { createdAt: { gte: yesterdayStart, lte: yesterdayEnd } }, leadAccess),
+    dashboardRepository.countLeads(workspaceId, {}, leadAccess),
+    dashboardRepository.countLeads(workspaceId, { createdAt: { gte: currentThirtyDayStart, lte: todayEnd } }, leadAccess),
+    dashboardRepository.countLeads(workspaceId, { createdAt: { gte: previousThirtyDayStart, lte: previousThirtyDayEnd } }, leadAccess),
+    dashboardRepository.countLeads(workspaceId, { isClosed: true }, leadAccess),
+    dashboardRepository.countLeads(
+      workspaceId,
+      {
+        isClosed: true,
+        OR: [
+          { closedAt: { gte: currentWeekStart, lte: todayEnd } },
+          { closedAt: null, updatedAt: { gte: currentWeekStart, lte: todayEnd } },
+        ],
+      },
+      leadAccess,
+    ),
+    dashboardRepository.countLeads(
+      workspaceId,
+      {
+        isClosed: true,
+        OR: [
+          { closedAt: { gte: previousWeekStart, lte: previousWeekEnd } },
+          { closedAt: null, updatedAt: { gte: previousWeekStart, lte: previousWeekEnd } },
+        ],
+      },
+      leadAccess,
+    ),
     dashboardRepository.countUsers(workspaceId, { isActive: true }),
     dashboardRepository.countUsers(workspaceId, {
       isActive: true,
@@ -239,15 +256,19 @@ export const getDashboardSummary = async (
       isActive: true,
       createdAt: { gte: previousWeekStart, lte: previousWeekEnd },
     }),
-    dashboardRepository.findLeadCreationTimestamps(workspaceId, growthStartDate),
-    dashboardRepository.groupLeadsByStage(workspaceId),
+    dashboardRepository.findLeadCreationTimestamps(workspaceId, growthStartDate, leadAccess),
+    dashboardRepository.groupLeadsByStage(workspaceId, leadAccess),
     dashboardRepository.findLeadStages(workspaceId),
     dashboardRepository.findRecentLeadAuditLogs(workspaceId, 6),
     dashboardRepository.findTodayFollowUps(workspaceId, actor.id, todayStart, todayEnd, 5),
-    getLOBStageBreakdown(workspaceId, actor, {}),
-    dashboardRepository.countLeads(workspaceId, {
-      approvalState: LeadApprovalState.PENDING,
-    }),
+    getLOBStageBreakdown(workspaceId, actor, {}, leadAccess),
+    dashboardRepository.countLeads(
+      workspaceId,
+      {
+        approvalState: LeadApprovalState.PENDING,
+      },
+      leadAccess,
+    ),
   ]);
 
   const getValue = <T>(index: number, fallback: T): T => {
@@ -283,7 +304,7 @@ export const getDashboardSummary = async (
         .map((item) => String(item.entityId)),
     ),
   );
-  const leadRows = await dashboardRepository.findLeadsByIds(workspaceId, leadIds);
+  const leadRows = await dashboardRepository.findLeadsByIds(workspaceId, leadIds, leadAccess);
   const leadNamesById = new Map(leadRows.map((lead) => [lead.id, lead.name]));
 
   const stageCountMap = new Map<string, number>();

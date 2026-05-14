@@ -1,5 +1,6 @@
 import * as repository from './lobAnalysis.repository';
 import type { LOBAnalysisAuditQueryInput, LOBAnalysisQueryInput } from './lobAnalysis.validation';
+import type { Prisma } from '@prisma/client';
 
 type Actor = {
   id: string;
@@ -189,9 +190,13 @@ const deriveFromStage = (
   };
 };
 
-const normalizeLOBEvents = async (workspaceId: string, filters: LOBAnalysisQueryInput): Promise<NormalizedLOBEvent[]> => {
+const normalizeLOBEvents = async (
+  workspaceId: string,
+  filters: LOBAnalysisQueryInput,
+  leadAccess: Prisma.LeadWhereInput = {},
+): Promise<NormalizedLOBEvent[]> => {
   const changedAtRange = buildChangedAtRange(filters);
-  const rawEvents = await repository.findLOBEvents(workspaceId, changedAtRange);
+  const rawEvents = await repository.findLOBEvents(workspaceId, changedAtRange, leadAccess);
   const leadIds = Array.from(new Set<string>(rawEvents.map((item: any) => String(item.leadId))));
 
   const [approvalRows, auditRows, reasonRows, userRows, stageRows] = await Promise.all([
@@ -283,28 +288,41 @@ const normalizeLOBEvents = async (workspaceId: string, filters: LOBAnalysisQuery
     .filter((item: NormalizedLOBEvent) => (filters.stage ? item.fromStageId === filters.stage : true));
 };
 
-const countReferenceLeads = async (workspaceId: string, filters: LOBAnalysisQueryInput): Promise<number> => {
-  const rows = await repository.countLeadsForAnalytics(workspaceId, {
-    ...(filters.date_from || filters.date_to
-      ? {
-          createdAt: {
-            ...(filters.date_from ? { gte: startOfDay(filters.date_from) } : {}),
-            ...(filters.date_to ? { lte: endOfDay(filters.date_to) } : {}),
-          },
-        }
-      : {}),
-    ...(filters.user_id ? { assignedToId: filters.user_id } : {}),
-  });
+const countReferenceLeads = async (
+  workspaceId: string,
+  filters: LOBAnalysisQueryInput,
+  leadAccess: Prisma.LeadWhereInput = {},
+): Promise<number> => {
+  const rows = await repository.countLeadsForAnalytics(
+    workspaceId,
+    {
+      ...(filters.date_from || filters.date_to
+        ? {
+            createdAt: {
+              ...(filters.date_from ? { gte: startOfDay(filters.date_from) } : {}),
+              ...(filters.date_to ? { lte: endOfDay(filters.date_to) } : {}),
+            },
+          }
+        : {}),
+      ...(filters.user_id ? { assignedToId: filters.user_id } : {}),
+    },
+    leadAccess,
+  );
 
   return rows.filter((item: any) => matchesLocation(item.assignedTo, filters.location_id)).length;
 };
 
-export const getSummary = async (workspaceId: string, _actor: Actor, filters: LOBAnalysisQueryInput) => {
+export const getSummary = async (
+  workspaceId: string,
+  _actor: Actor,
+  filters: LOBAnalysisQueryInput,
+  leadAccess: Prisma.LeadWhereInput = {},
+) => {
   await ensureModuleReady();
 
   const [events, totalLeads] = await Promise.all([
-    normalizeLOBEvents(workspaceId, filters),
-    countReferenceLeads(workspaceId, filters),
+    normalizeLOBEvents(workspaceId, filters, leadAccess),
+    countReferenceLeads(workspaceId, filters, leadAccess),
   ]);
 
   const stageCounts = new Map<string, number>();
@@ -331,12 +349,17 @@ export const getSummary = async (workspaceId: string, _actor: Actor, filters: LO
   };
 };
 
-export const getStageBreakdown = async (workspaceId: string, _actor: Actor, filters: LOBAnalysisQueryInput) => {
+export const getStageBreakdown = async (
+  workspaceId: string,
+  _actor: Actor,
+  filters: LOBAnalysisQueryInput,
+  leadAccess: Prisma.LeadWhereInput = {},
+) => {
   await ensureModuleReady();
 
   const [events, totalReference] = await Promise.all([
-    normalizeLOBEvents(workspaceId, filters),
-    countReferenceLeads(workspaceId, filters),
+    normalizeLOBEvents(workspaceId, filters, leadAccess),
+    countReferenceLeads(workspaceId, filters, leadAccess),
   ]);
 
   const stageCounts = new Map<string, number>();
@@ -355,10 +378,15 @@ export const getStageBreakdown = async (workspaceId: string, _actor: Actor, filt
   };
 };
 
-export const getAuditTrail = async (workspaceId: string, _actor: Actor, query: LOBAnalysisAuditQueryInput) => {
+export const getAuditTrail = async (
+  workspaceId: string,
+  _actor: Actor,
+  query: LOBAnalysisAuditQueryInput,
+  leadAccess: Prisma.LeadWhereInput = {},
+) => {
   await ensureModuleReady();
 
-  const events = await normalizeLOBEvents(workspaceId, query);
+  const events = await normalizeLOBEvents(workspaceId, query, leadAccess);
   const sorted = [...events].sort((left, right) => right.createdAtDate.getTime() - left.createdAtDate.getTime());
   const skip = (query.page - 1) * query.limit;
   const pageRows = sorted.slice(skip, skip + query.limit);
