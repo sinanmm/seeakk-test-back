@@ -2,7 +2,7 @@ import { LeadApprovalState } from '@prisma/client';
 import type { Prisma } from '@prisma/client';
 import * as dashboardRepository from './dashboard.repository';
 import { getStageBreakdown as getLOBStageBreakdown } from '../leads/lobAnalysis.service';
-import { buildAccessWhere } from '../leads/leads.service';
+import { buildAccessWhere, buildActiveUsersScopedWhere } from '../leads/leads.service';
 import type { DashboardSummaryQueryInput } from './dashboard.validation';
 import logger from '../../utils/logger';
 
@@ -218,6 +218,8 @@ export const getDashboardSummary = async (
     leadAccess = { id: { in: [] } };
   }
 
+  const activeUserWhere = await buildActiveUsersScopedWhere(workspaceId, actor);
+
   const results = await Promise.allSettled([
     dashboardRepository.countLeads(workspaceId, { createdAt: { gte: todayStart, lte: todayEnd } }, leadAccess),
     dashboardRepository.countLeads(workspaceId, { createdAt: { gte: yesterdayStart, lte: yesterdayEnd } }, leadAccess),
@@ -247,14 +249,16 @@ export const getDashboardSummary = async (
       },
       leadAccess,
     ),
-    dashboardRepository.countUsers(workspaceId, { isActive: true }),
+    dashboardRepository.countUsers(workspaceId, { isActive: true, ...activeUserWhere }),
     dashboardRepository.countUsers(workspaceId, {
       isActive: true,
       createdAt: { gte: currentWeekStart, lte: todayEnd },
+      ...activeUserWhere,
     }),
     dashboardRepository.countUsers(workspaceId, {
       isActive: true,
       createdAt: { gte: previousWeekStart, lte: previousWeekEnd },
+      ...activeUserWhere,
     }),
     dashboardRepository.findLeadCreationTimestamps(workspaceId, growthStartDate, leadAccess),
     dashboardRepository.groupLeadsByStage(workspaceId, leadAccess),

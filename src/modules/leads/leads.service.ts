@@ -1,4 +1,5 @@
 import { LeadClosureType } from '@prisma/client';
+import type { Prisma } from '@prisma/client';
 import type { ClosedLeadQueryInput, UpdateClosedLeadInput } from './leads.validation';
 import * as leadsRepository from './leads.repository';
 
@@ -20,14 +21,34 @@ const normalizeRoleKey = (role?: string | null): string =>
     .trim()
     .replace(/[\s_-]+/g, '');
 
+/** DB role names that bypass permission resolution (full access). Keep explicit — avoid substring heuristics. */
 const isPrivilegedRoleName = (role?: string | null): boolean => {
   const normalized = normalizeRoleKey(role);
-  return (
-    normalized === 'superadmin' ||
-    normalized === 'admin' ||
-    normalized === 'administrator' ||
-    normalized.includes('admin')
-  );
+  return normalized === 'superadmin' || normalized === 'admin' || normalized === 'administrator';
+};
+
+export type LeadVisibilityMode = 'all' | 'team' | 'own' | 'none';
+
+/** Same visibility semantics as `buildAccessWhere`, without building lead Prisma filters. */
+export const resolveLeadVisibilityMode = async (workspaceId: string, actor: Actor): Promise<LeadVisibilityMode> => {
+  const permissions = await getPermissionKeys(actor);
+  if (permissions.includes('*') || permissions.includes('LEADS_VIEW_ALL')) return 'all';
+  if (permissions.includes('LEADS_VIEW_TEAM')) return 'team';
+  if (permissions.includes('LEADS_VIEW_OWN')) return 'own';
+  return 'none';
+};
+
+/** Restricts workspace user counts (e.g. Active Users KPI) to the same cohort as lead visibility. */
+export const buildActiveUsersScopedWhere = async (
+  workspaceId: string,
+  actor: Actor,
+): Promise<Prisma.UserWhereInput> => {
+  const mode = await resolveLeadVisibilityMode(workspaceId, actor);
+  if (mode === 'all') return {};
+  if (mode === 'none') return { id: { in: [] } };
+  if (mode === 'own') return { id: actor.id };
+  const teamUserIds = await leadsRepository.getTeamUserIds(workspaceId, actor.id);
+  return { id: { in: Array.from(new Set([actor.id, ...teamUserIds])) } };
 };
 
 const resolveDisplayName = (user?: { name?: string | null; username?: string | null; email?: string | null } | null): string | null => {
