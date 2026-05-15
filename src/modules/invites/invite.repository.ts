@@ -121,7 +121,7 @@ export const createInvitedUserWithInvite = async (input: {
       phone: input.userData.phone ?? null,
       isEmailVerified: false,
       isActive: false,
-      isOnboarded: true,
+      isOnboarded: false,
       workspaceId: input.workspaceId,
       roleId: input.userData.roleId ?? null,
       departmentId: input.userData.departmentId ?? null,

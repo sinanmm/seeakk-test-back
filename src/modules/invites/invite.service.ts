@@ -5,6 +5,7 @@ import auditService from '../../services/Audit/auditService';
 import { sendInvitationEmail } from '../../services/Email/emailService';
 import { createInviteTokenPair, hashInviteToken } from '../../utils/inviteToken';
 import { InviteError } from './invite.errors';
+import { getInviteSendBlockReason } from './inviteEligibility';
 import * as repository from './invite.repository';
 import type { AcceptInviteInput, CreateInviteInput, ValidateInviteQueryInput } from './invite.validation';
 
@@ -117,6 +118,10 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
 
     if (!invite.user.workspaceId || invite.user.workspaceId !== invite.workspaceId) {
       throw new InviteError('Invite token is not valid for this workspace.', 409, 'INVITE_WORKSPACE_MISMATCH');
+    }
+
+    if (invite.user.isActive && invite.user.isEmailVerified) {
+      throw new InviteError('This invitation has already been accepted.', 409, 'INVITE_ALREADY_USED');
     }
 
     return invite;
@@ -396,12 +401,13 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
         throw new InviteError('User not found in this workspace.', 404, 'USER_NOT_FOUND');
       }
 
-      if (user.isOnboarded) {
-        throw new InviteError('Invite can only be sent to users who have not completed onboarding.', 409, 'USER_ALREADY_ONBOARDED');
-      }
-
-      if (!user.role?.id) {
-        throw new InviteError('Assign a role before sending invite.', 400, 'USER_ROLE_REQUIRED');
+      const inviteBlockReason = getInviteSendBlockReason(user);
+      if (inviteBlockReason) {
+        const statusCode =
+          inviteBlockReason.includes('Assign a role') ? 400
+          : inviteBlockReason.includes('already has an active') ? 409
+          : 409;
+        throw new InviteError(inviteBlockReason, statusCode, 'USER_NOT_INVITE_ELIGIBLE');
       }
 
       if (!user.workspaceId || user.workspaceId !== workspaceId) {
