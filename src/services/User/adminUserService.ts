@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import prisma from '../../config/prisma';
 import { redisClient } from '../../config/redis';
 import logger from '../../utils/logger';
-import { sendPasswordResetEmail, isEmailServiceConfigured } from '../Email/emailService';
+import { buildPasswordResetUrl, sendPasswordResetEmail, isEmailServiceConfigured } from '../Email/emailService';
 import type {
   CreateUserInput,
   UpdateUserInput,
@@ -711,5 +711,76 @@ export const resetUserPassword = async (
   logger.info('Admin requested password reset link', { id, email: existing.email, workspaceId });
   return {
     message: 'Password reset link sent to user email.',
+  };
+};
+
+/**
+ * Issue a one-time password setup link for an active user without changing
+ * their password until the link is actually used.
+ */
+export const createUserAccessLink = async (id: string, workspaceId: string) => {
+  const existing = await (prisma as any).user.findFirst({
+    where: { id, workspaceId, deletedAt: null },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      isActive: true,
+    },
+  });
+
+  if (!existing) {
+    const err: any = new Error('User not found in this workspace.');
+    err.statusCode = 404;
+    throw err;
+  }
+
+  if (!existing.isActive) {
+    const err: any = new Error('Only active users can receive an access link. Use the invite action for pending users or reactivate the account first.');
+    err.statusCode = 409;
+    throw err;
+  }
+
+  const jwtSecret = process.env.JWT_SECRET;
+  if (!jwtSecret) {
+    const err: any = new Error('Cannot create access link because JWT_SECRET is not configured.');
+    err.statusCode = 500;
+    throw err;
+  }
+
+  const token = jwt.sign({ userId: existing.id, purpose: 'password_reset' }, jwtSecret, { expiresIn: '30m' });
+  const accessLink = buildPasswordResetUrl(token);
+
+  let delivery: 'EMAIL' | 'MANUAL' = 'MANUAL';
+  let deliveryErrorMessage: string | null = null;
+
+  if (isEmailServiceConfigured()) {
+    try {
+      const delivered = await sendPasswordResetEmail(existing.email, existing.name, token);
+      if (delivered) {
+        delivery = 'EMAIL';
+      } else {
+        deliveryErrorMessage = 'Email delivery is unavailable. Share the access link manually.';
+      }
+    } catch (error: any) {
+      deliveryErrorMessage = error?.message || 'Email delivery is unavailable. Share the access link manually.';
+    }
+  } else {
+    deliveryErrorMessage = 'Email delivery is unavailable. Share the access link manually.';
+  }
+
+  logger.info('Admin created user access link', {
+    id,
+    workspaceId,
+    delivery,
+  });
+
+  return {
+    message: delivery === 'EMAIL'
+      ? 'Password setup link sent successfully.'
+      : 'Password setup link generated. Share it manually.',
+    delivery,
+    deliveryErrorMessage,
+    accessLink,
   };
 };

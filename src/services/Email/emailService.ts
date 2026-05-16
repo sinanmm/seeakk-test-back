@@ -323,9 +323,16 @@ export const sendVerificationEmail = async (email: string, token: string): Promi
   );
 };
 
-export const sendPasswordResetEmail = async (email: string, name: string | null | undefined, token: string): Promise<boolean> => {
+export const buildPasswordResetUrl = (token: string): string => {
   const backendUrl = getPublicBackendUrl();
-  const resetLink = `${backendUrl}/api/auth/reset-password?token=${encodeURIComponent(token)}`;
+  if (!backendUrl) {
+    throw new Error('Cannot build password reset link. Set BACKEND_URL for this deployment.');
+  }
+  return `${backendUrl}/api/auth/reset-password?token=${encodeURIComponent(token)}`;
+};
+
+export const sendPasswordResetEmail = async (email: string, name: string | null | undefined, token: string): Promise<boolean> => {
+  const resetLink = buildPasswordResetUrl(token);
   return sendOrLogEmail(
     email,
     'Reset your Seeakk password',

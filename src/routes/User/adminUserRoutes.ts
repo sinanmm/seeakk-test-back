@@ -60,6 +60,7 @@ router.patch('/:id/status', adminUserController.updateUserStatus);
 
 // POST   /api/admin/users/:id/reset-password  — Reset password
 router.post('/:id/reset-password', adminUserController.resetUserPassword);
+router.post('/:id/access-link', checkPermission('USERS_EDIT'), adminUserController.sendUserAccessLink);
 router.post('/:id/send-invite', checkPermission('USERS_EDIT'), adminUserController.sendInviteToUser);
 
 // ─── Target Settings Routes ──────────────────────────────────────────────────

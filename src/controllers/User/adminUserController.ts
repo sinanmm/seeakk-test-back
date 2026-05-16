@@ -419,6 +419,40 @@ export const resetUserPassword = async (req: Request, res: Response, next: NextF
 };
 
 /**
+ * POST /api/admin/users/:id/access-link
+ * Create a one-time password setup link for an active user.
+ */
+export const sendUserAccessLink = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = requireWorkspace(req, res);
+  if (!workspaceId) return;
+
+  const userId = req.params['id'] as string;
+
+  try {
+    const result = await adminUserService.createUserAccessLink(userId, workspaceId);
+
+    await auditService.log({
+      userId: req.user!.id,
+      workspaceId,
+      action: result.delivery === 'EMAIL' ? 'ADMIN_ACCESS_LINK_SENT' : 'ADMIN_ACCESS_LINK_CREATED',
+      entityType: 'User',
+      entityId: userId,
+      details: { delivery: result.delivery },
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: result.message,
+      data: result,
+    });
+  } catch (error: any) {
+    handleServiceError(error, res, next, 'sendUserAccessLink');
+  }
+};
+
+/**
  * POST /api/admin/users/:id/send-invite
  * Send invite to an existing inactive user in actor workspace.
  */
