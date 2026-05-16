@@ -160,6 +160,27 @@ test('createInvite falls back to manual delivery without exposing SMTP failure a
   assert.doesNotMatch(result.message, /SMTP|provider|secret subject/i);
 });
 
+test('createInvite requires a workspace role before creating an invite', async () => {
+  const { service } = buildService();
+
+  await assert.rejects(
+    () =>
+      service.createInvite(
+        {
+          name: 'Invited User',
+          email: 'invitee@example.com',
+        },
+        { id: 'admin_1', workspaceId: 'ws_1', name: 'Admin User' },
+      ),
+    (error: any) => {
+      assert.ok(error instanceof InviteError);
+      assert.equal(error.code, 'ROLE_REQUIRED');
+      assert.equal(error.statusCode, 400);
+      return true;
+    },
+  );
+});
+
 test('validateInvite rejects used tokens', async () => {
   const { service } = buildService({
     repository: {

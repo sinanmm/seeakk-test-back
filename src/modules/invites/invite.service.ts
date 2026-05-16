@@ -195,6 +195,10 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
         assertSupervisor(input.supervisorId, workspaceId),
       ]);
 
+      if (!roleId) {
+        throw new InviteError('Assign a role before sending invite.', 400, 'ROLE_REQUIRED');
+      }
+
       const { rawToken, tokenHash } = deps.tokenFactory();
       const now = deps.now();
       const expiresAt = buildExpiryDate(now);
