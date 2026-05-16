@@ -5,7 +5,7 @@ import { buildInviteAcceptUrl } from './inviteLinks';
 import { sendInvitationEmail } from '../../services/Email/emailService';
 import { createInviteTokenPair, hashInviteToken } from '../../utils/inviteToken';
 import { InviteError } from './invite.errors';
-import { toInviteEligibilityUser, userHasActivatedAccount } from './inviteEligibility';
+import { getInviteSendBlockReason, toInviteEligibilityUser, userHasActivatedAccount } from './inviteEligibility';
 import * as repository from './invite.repository';
 import type { AcceptInviteInput, CreateInviteInput, ValidateInviteQueryInput } from './invite.validation';
 
@@ -335,6 +335,9 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
       }
 
       if (invite.usedAt) throw new InviteError('Cannot resend an already consumed invite.', 409, 'INVITE_ALREADY_USED');
+      if (userHasActivatedAccount(toInviteEligibilityUser(invite.user))) {
+        throw new InviteError('This account is already active. Use reset password instead of resending an invite.', 409, 'USER_ALREADY_ACTIVE');
+      }
 
       const { rawToken, tokenHash } = deps.tokenFactory();
       const now = deps.now();
@@ -417,10 +420,17 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
         throw new InviteError('User workspace mismatch. Cannot send invite.', 409, 'USER_WORKSPACE_MISMATCH');
       }
 
-      // Ensure the generated link opens the password-setup page (no active-account gate for admins).
-      console.log(`[InviteService] Reprovisioning user ${user.id} for new invitation (Active account check bypassed)`);
-      user = await deps.repository.reprovisionUserForInvite(user.id);
-
+      const invitee = toInviteEligibilityUser(user);
+      const blockReason = getInviteSendBlockReason(invitee);
+      if (blockReason) {
+        const missingRole = !invitee.role?.id;
+        const activeAccount = userHasActivatedAccount(invitee);
+        throw new InviteError(
+          blockReason,
+          missingRole ? 400 : 409,
+          missingRole ? 'USER_ROLE_REQUIRED' : activeAccount ? 'USER_ALREADY_ACTIVE' : 'USER_NOT_INVITABLE',
+        );
+      }
 
       const now = deps.now();
       const latestInvite = await deps.repository.findLatestInviteForUser(user.id, workspaceId);

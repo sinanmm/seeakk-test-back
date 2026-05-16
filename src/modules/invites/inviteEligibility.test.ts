@@ -98,15 +98,15 @@ test('getInviteSendBlockReason requires a role', () => {
   );
 });
 
-test('getInviteSendBlockReason does not block active accounts (reprovision on send)', () => {
-  assert.equal(
+test('getInviteSendBlockReason blocks active accounts', () => {
+  assert.match(
     getInviteSendBlockReason({
       isActive: true,
       isEmailVerified: true,
       isOnboarded: true,
       hasPassword: true,
       role: { id: 'role_1' },
-    }),
-    null,
+    }) || '',
+    /already active/i,
   );
 });

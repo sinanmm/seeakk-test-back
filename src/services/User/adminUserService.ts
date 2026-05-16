@@ -112,6 +112,8 @@ const USER_SELECT = {
   password: true,
 } as const;
 
+type AdminUserRecord = { password?: string | null } & Record<string, any>;
+
 const toAdminUserResponse = <T extends { password?: string | null }>(user: T) => {
   const { password, ...rest } = user;
   return {
@@ -379,8 +381,8 @@ export const listUsers = async (query: ListUsersQuery, workspaceId: string) => {
   // Avoid wrapping paginated read queries in a Prisma transaction on pooled connections.
   // PgBouncer/pooled PostgreSQL can intermittently close transaction-scoped reads.
   const [total, users] = await Promise.all([
-    (prisma as any).user.count({ where }),
-    withInviteStatusFallback((selectShape) =>
+    (prisma as any).user.count({ where }) as Promise<number>,
+    withInviteStatusFallback<AdminUserRecord[]>((selectShape) =>
       (prisma as any).user.findMany({
         where,
         skip,
@@ -508,7 +510,7 @@ export const updateUser = async (id: string, input: UpdateUserInput, workspaceId
     await invalidateUserSessions(id);
   }
 
-  const user = await withInviteStatusFallback((selectShape) =>
+  const user = await withInviteStatusFallback<AdminUserRecord>((selectShape) =>
     (prisma as any).user.update({
       where: { id },
       data: {

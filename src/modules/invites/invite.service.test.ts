@@ -217,3 +217,32 @@ test('acceptInvite hashes password, activates user, and marks invite as used', a
   assert.equal(result.user.workspaceId, 'ws_1');
   assert.equal(auditLogs[auditLogs.length - 1].action, 'USER_INVITE_ACCEPTED');
 });
+
+test('sendInviteToUser rejects active accounts instead of reprovisioning them', async () => {
+  const { service } = buildService({
+    repository: {
+      ...baseRepository,
+      findInvitableUserById: async () => ({
+        id: 'user_1',
+        name: 'Active User',
+        email: 'active@example.com',
+        workspaceId: 'ws_1',
+        password: '$2a$12$hash',
+        isActive: true,
+        isEmailVerified: true,
+        isOnboarded: true,
+        role: { id: 'role_1', name: 'manager' },
+      }),
+    },
+  });
+
+  await assert.rejects(
+    () => service.sendInviteToUser('user_1', { id: 'admin_1', workspaceId: 'ws_1', name: 'Admin User' }),
+    (error: any) => {
+      assert.ok(error instanceof InviteError);
+      assert.equal(error.code, 'USER_ALREADY_ACTIVE');
+      assert.equal(error.statusCode, 409);
+      return true;
+    },
+  );
+});
