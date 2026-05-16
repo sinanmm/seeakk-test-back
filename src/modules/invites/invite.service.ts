@@ -120,7 +120,7 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
       throw new InviteError('Invite token is not valid for this workspace.', 409, 'INVITE_WORKSPACE_MISMATCH');
     }
 
-    if (invite.user.isActive && invite.user.isEmailVerified) {
+    if (invite.user.isOnboarded || (invite.user.isActive && invite.user.isEmailVerified)) {
       throw new InviteError('This invitation has already been accepted.', 409, 'INVITE_ALREADY_USED');
     }
 

@@ -95,7 +95,7 @@ const USER_SELECT = {
   district: { select: { id: true, name: true } },
   receivedInvites: {
     orderBy: { createdAt: 'desc' as const },
-    take: 1,
+    take: 5,
     select: {
       id: true,
       expiresAt: true,
@@ -115,7 +115,7 @@ const USER_SELECT_LEGACY_INVITE = {
   ...USER_SELECT,
   receivedInvites: {
     orderBy: { createdAt: 'desc' as const },
-    take: 1,
+    take: 5,
     select: {
       id: true,
       expiresAt: true,
