@@ -239,8 +239,9 @@ test('acceptInvite hashes password, activates user, and marks invite as used', a
   assert.equal(auditLogs[auditLogs.length - 1].action, 'USER_INVITE_ACCEPTED');
 });
 
-test('sendInviteToUser rejects active accounts instead of reprovisioning them', async () => {
-  const { service } = buildService({
+test('sendInviteToUser reprovisions active accounts and returns a clipboard access link', async () => {
+  let reprovisioned = false;
+  const { service, sentEmails } = buildService({
     repository: {
       ...baseRepository,
       findInvitableUserById: async () => ({
@@ -254,16 +255,34 @@ test('sendInviteToUser rejects active accounts instead of reprovisioning them', 
         isOnboarded: true,
         role: { id: 'role_1', name: 'manager' },
       }),
+      reprovisionUserForInvite: async () => {
+        reprovisioned = true;
+        return {
+          id: 'user_1',
+          name: 'Active User',
+          email: 'active@example.com',
+          workspaceId: 'ws_1',
+          password: null,
+          isActive: true,
+          isEmailVerified: true,
+          isOnboarded: false,
+          role: { id: 'role_1', name: 'manager' },
+        };
+      },
+      findLatestInviteForUser: async () => null,
+      createInviteForUser: async () => ({
+        id: 'invite_2',
+        createdAt: new Date('2026-04-15T10:00:00.000Z'),
+        expiresAt: new Date('2026-04-16T10:00:00.000Z'),
+        usedAt: null,
+      }),
     },
   });
 
-  await assert.rejects(
-    () => service.sendInviteToUser('user_1', { id: 'admin_1', workspaceId: 'ws_1', name: 'Admin User' }),
-    (error: any) => {
-      assert.ok(error instanceof InviteError);
-      assert.equal(error.code, 'USER_ALREADY_ACTIVE');
-      assert.equal(error.statusCode, 409);
-      return true;
-    },
-  );
+  const result = await service.sendInviteToUser('user_1', { id: 'admin_1', workspaceId: 'ws_1', name: 'Admin User' });
+
+  assert.equal(reprovisioned, true);
+  assert.equal(result.delivery, 'CLIPBOARD');
+  assert.match(result.inviteLink || '', /activate-account\?token=/);
+  assert.equal(sentEmails.length, 0);
 });

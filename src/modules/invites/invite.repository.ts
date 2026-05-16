@@ -306,6 +306,19 @@ export const updateInviteForRevoke = (id: string, now: Date) =>
     },
   });
 
+/** Clears credentials so a fresh invite token can be accepted on /invite/accept. */
+export const reprovisionUserForInvite = (userId: string) =>
+  (prisma as any).user.update({
+    where: { id: userId },
+    data: {
+      password: null,
+      isOnboarded: false,
+      invitationToken: null,
+      invitationExpires: null,
+    },
+    select: INVITE_USER_SELECT,
+  });
+
 export const findLatestInviteForUser = (userId: string, workspaceId: string) =>
   (prisma as any).invite.findFirst({
     where: { userId, workspaceId },

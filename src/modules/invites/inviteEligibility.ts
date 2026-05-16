@@ -48,13 +48,10 @@ export const userIsInvitePending = (user: InviteEligibilityUser): boolean => {
   return !userHasActivatedAccount(user);
 };
 
-/** Blocks sending an invite email when another account action is the correct workflow. */
+/** Blocks admin invite link generation when another account action is required. */
 export const getInviteSendBlockReason = (user: InviteEligibilityUser): string | null => {
   if (!user.role?.id) {
     return 'Assign a role before sending invite.';
-  }
-  if (userHasActivatedAccount(user)) {
-    return 'This account is already active. Use reset password instead of sending an invite.';
   }
   if (userIsDeactivatedFormerMember(user)) {
     return 'This account was deactivated. Reactivate it or reset the password instead of sending an invite.';
