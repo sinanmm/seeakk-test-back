@@ -341,8 +341,6 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
         throw new InviteError('Invite not found.', 404, 'INVITE_NOT_FOUND');
       }
 
-      if (invite.usedAt) throw new InviteError('Cannot resend an already consumed invite.', 409, 'INVITE_ALREADY_USED');
-
       const invitee = toInviteEligibilityUser(invite.user);
       if (userHasActivatedAccount(invitee)) {
         await deps.repository.reprovisionUserForInvite(invite.user.id);
