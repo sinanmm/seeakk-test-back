@@ -22,6 +22,7 @@ type InviteServiceDependencies = {
   sendInvitationEmail: typeof sendInvitationEmail;
   hashPassword: typeof bcrypt.hash;
   audit: typeof auditService;
+  generateTokens: (user: any) => { accessToken: string; refreshToken: string; tokenId: string };
   now: () => Date;
 };
 
@@ -321,9 +322,12 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
         userAgent: context?.userAgent,
       });
 
+      const tokens = deps.generateTokens(user);
+
       return {
         message: 'Invitation accepted successfully.',
         user: toResponseUser(user),
+        ...tokens,
       };
     },
 
@@ -501,5 +505,11 @@ export const inviteService = createInviteService({
   sendInvitationEmail,
   hashPassword: bcrypt.hash,
   audit: auditService,
+  generateTokens: (user: any) => {
+    // Basic token generation for the service layer.
+    // For full hydration (roles/permissions), the controller or a shared utility should be used.
+    const { accessToken, refreshToken, tokenId } = require('../../utils/RefreshToken').default(user);
+    return { accessToken, refreshToken, tokenId };
+  },
   now: () => new Date(),
 });
