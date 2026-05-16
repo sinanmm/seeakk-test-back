@@ -1,6 +1,11 @@
 import type { NextFunction, Request, Response } from 'express';
 import { acceptInviteSchema, type AcceptInviteInput, type ValidateInviteQueryInput, validateInviteQuerySchema } from '../../modules/invites/invite.validation';
 import { inviteService } from '../../modules/invites/invite.service';
+import generateTokens from '../../utils/RefreshToken';
+import { hydrateAuthenticatedUser } from '../../utils/userHydration';
+import { serializeAuthenticatedUser } from '../../utils/authSerializers';
+import { resolveWorkspaceIdForUser } from '../../utils/workspaceContext';
+import { redisClient } from '../../config/redis';
 
 const validate = <T>(
   schema: { safeParse: (data: unknown) => { success: boolean; data?: T; error?: any } },
@@ -58,10 +63,23 @@ export const acceptInvite = async (req: Request, res: Response, next: NextFuncti
       userAgent: req.headers['user-agent'],
     });
 
+    // Auto-login: Hydrate, generate tokens, and return full auth payload
+    const hydratedUser = await hydrateAuthenticatedUser(result.user);
+    const tokens = generateTokens(hydratedUser);
+    
+    if (redisClient?.isReady) {
+      await redisClient.set(`refresh:${tokens.tokenId}`, hydratedUser.id);
+    }
+
+    const resolvedWorkspaceId = await resolveWorkspaceIdForUser(hydratedUser.id, hydratedUser.workspaceId);
+
     return res.status(200).json({
       success: true,
       message: result.message,
-      data: result,
+      data: {
+        user: serializeAuthenticatedUser(hydratedUser, resolvedWorkspaceId),
+        ...tokens,
+      }
     });
   } catch (error) {
     return handleInviteError(error, res, next);

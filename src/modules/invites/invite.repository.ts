@@ -10,6 +10,7 @@ const INVITE_USER_SELECT = {
   isEmailVerified: true,
   isOnboarded: true,
   workspaceId: true,
+  roleId: true,
   role: { select: { id: true, name: true } },
   workspace: { select: { id: true, companyName: true } },
 } as const;

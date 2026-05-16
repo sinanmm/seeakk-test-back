@@ -12,156 +12,27 @@ import { sendVerificationEmail } from '../../services/Email/emailService';
 import { trackUserDevice } from '../../utils/deviceTracker';
 import logger from '../../utils/logger';
 import auditService from '../../services/Audit/auditService';
+import { 
+  serializeAuthenticatedUser, 
+  normalizeRoleKey, 
+  SUPERADMIN_ROLE_NAME 
+} from '../../utils/authSerializers';
+import { 
+  hydrateAuthenticatedUser, 
+  authenticatedUserBaseSelect 
+} from '../../utils/userHydration';
+import { 
+  isPrismaSchemaMismatchError, 
+  isTransientDatabaseError 
+} from '../../utils/databaseErrors';
 
 const getFrontendUrl = (): string => getPublicFrontendUrl();
 
-const authenticatedUserBaseSelect = {
-  id: true,
-  name: true,
-  email: true,
-  password: true,
-  roleId: true,
-  workspaceId: true,
-  isOnboarded: true,
-  isActive: true,
-  isEmailVerified: true,
-} as const;
+// Hydration and base selection moved to userHydration utility.
 
-const isPrismaSchemaMismatchError = (error: any): boolean => error?.code === 'P2021' || error?.code === 'P2022';
 
-const isTransientDatabaseError = (error: any): boolean => {
-  const code = String(error?.code || '');
-  const message = String(error?.message || '').toLowerCase();
-  return (
-    code === 'P1001' ||
-    code === 'P1017' ||
-    code === 'P2024' ||
-    message.includes('error in postgresql connection') ||
-    message.includes('connection terminated unexpectedly') ||
-    message.includes('server closed the connection unexpectedly') ||
-    message.includes('can not perform operation: connection is closed') ||
-    message.includes('connection is closed')
-  );
-};
+// Serialization and constants moved to authSerializers utility.
 
-const hydrateAuthenticatedUser = async (user: any): Promise<any> => {
-  if (!user?.id) return user;
-
-  const hydrated = { ...user } as any;
-
-  // Role is optional in older/partial schemas; hydrate best-effort.
-  if (hydrated.roleId) {
-    try {
-      const role = await prisma.role.findUnique({
-        where: { id: hydrated.roleId },
-        select: {
-          id: true,
-          name: true,
-          status: true,
-          isSystemRole: true,
-          workspaceId: true,
-        },
-      });
-      hydrated.role = role || null;
-    } catch {
-      try {
-        const roleMinimal = await prisma.role.findUnique({
-          where: { id: hydrated.roleId },
-          select: { id: true, name: true, workspaceId: true },
-        });
-        hydrated.role = roleMinimal
-          ? { ...roleMinimal, status: undefined, isSystemRole: undefined }
-          : null;
-      } catch {
-        hydrated.role = null;
-      }
-    }
-  } else {
-    hydrated.role = null;
-  }
-
-  if (hydrated.role?.id) {
-    try {
-      const rolePermissions = await prisma.rolePermission.findMany({
-        where: { roleId: hydrated.role.id },
-        include: {
-          permission: { select: { key: true } },
-        },
-      });
-      hydrated.role.permissions = rolePermissions;
-    } catch {
-      hydrated.role.permissions = [];
-    }
-  }
-
-  try {
-    hydrated.devices = await prisma.device.findMany({
-      where: { userId: hydrated.id },
-      orderBy: { lastActive: 'desc' },
-    });
-  } catch {
-    hydrated.devices = [];
-  }
-
-  if (hydrated.workspaceId) {
-    try {
-      hydrated.workspace = await prisma.workspace.findUnique({
-        where: { id: hydrated.workspaceId },
-        select: { id: true, companyName: true },
-      });
-    } catch {
-      try {
-        hydrated.workspace = await prisma.workspace.findUnique({
-          where: { id: hydrated.workspaceId },
-          select: { id: true },
-        });
-      } catch {
-        hydrated.workspace = null;
-      }
-    }
-  } else {
-    hydrated.workspace = null;
-  }
-
-  return hydrated;
-};
-
-const serializeAuthenticatedUser = (user: any, resolvedWorkspaceId?: string | null) => {
-  const rawPermissionKeys = Array.isArray(user.role?.permissions)
-    ? user.role.permissions
-        .map((rolePermission: any) => rolePermission?.permission?.key)
-        .filter((key: unknown): key is string => typeof key === 'string' && key.length > 0)
-    : [];
-  const permissionKeys = normalizeRoleKey(user.role?.name || '') === SUPERADMIN_ROLE_NAME
-    ? Array.from(new Set([...rawPermissionKeys, 'SUPERADMIN']))
-    : rawPermissionKeys;
-
-  const workspaceId =
-    (typeof resolvedWorkspaceId === 'string' && resolvedWorkspaceId.trim()) ||
-    (typeof user.workspaceId === 'string' && user.workspaceId.trim()) ||
-    (typeof user.workspace?.id === 'string' && user.workspace.id.trim()) ||
-    null;
-  const isOnboarded = Boolean(user.isOnboarded || workspaceId);
-
-  return {
-    id: user.id,
-    name: user.name,
-    email: user.email,
-    role: user.role
-      ? {
-          id: user.role.id,
-          name: user.role.name,
-          status: user.role.status,
-          isSystemRole: user.role.isSystemRole,
-        }
-      : null,
-    permissions: permissionKeys,
-    isOnboarded,
-    devices: user.devices,
-    workspaceId,
-    workspace: user.workspace,
-  };
-};
 
 const repairWorkspaceMemberOnboarding = async (user: any, workspaceId?: string | null): Promise<void> => {
   if (!user?.id || !workspaceId || user.isOnboarded || !user.password) return;
@@ -203,13 +74,8 @@ const parsePositiveInt = (value: unknown, fallback: number): number => {
   return Math.floor(parsed);
 };
 
-const normalizeRoleKey = (role: string): string =>
-  role
-    .toLowerCase()
-    .trim()
-    .replace(/[\s_-]+/g, '');
+// normalizeRoleKey and constants moved to authSerializers utility.
 
-const SUPERADMIN_ROLE_NAME = 'superadmin';
 
 const isRoleScopedToUserWorkspace = (user: any): boolean => {
   if (!user?.roleId || !user?.workspaceId || !user?.role?.workspaceId) {
