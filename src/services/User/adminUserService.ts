@@ -109,7 +109,16 @@ const USER_SELECT = {
     },
   },
   workspace: { select: { id: true, companyName: true } },
+  password: true,
 } as const;
+
+const toAdminUserResponse = <T extends { password?: string | null }>(user: T) => {
+  const { password, ...rest } = user;
+  return {
+    ...rest,
+    hasPassword: Boolean(password),
+  };
+};
 
 const USER_SELECT_LEGACY_INVITE = {
   ...USER_SELECT,
@@ -267,9 +276,15 @@ export const createUser = async (input: CreateUserInput, workspaceId: string) =>
     await assertValidSupervisor(workspaceId, supervisorId);
   }
 
-  // 5. Hash password (or auto-generate one)
-  const rawPassword = password || generateSecurePassword();
-  const hashedPassword = await bcrypt.hash(rawPassword, 12);
+  if (!password) {
+    const err: any = new Error(
+      'Password is required for direct user creation. To onboard by email, use POST /admin/users/invite with no password.',
+    );
+    err.statusCode = 422;
+    throw err;
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 12);
 
   const createData = {
     name,
@@ -332,8 +347,7 @@ export const createUser = async (input: CreateUserInput, workspaceId: string) =>
   logger.info('Admin created new user', { newUserId: user.id, email: user.email, workspaceId });
 
   return {
-    user,
-    ...(password ? {} : { generatedPassword: rawPassword }),
+    user: toAdminUserResponse(user),
   };
 };
 
@@ -380,7 +394,7 @@ export const listUsers = async (query: ListUsersQuery, workspaceId: string) => {
   const totalPages = Math.max(1, Math.ceil(total / limit));
 
   return {
-    users,
+    users: users.map(toAdminUserResponse),
     pagination: {
       page,
       limit,
@@ -412,7 +426,7 @@ export const getUserById = async (id: string, workspaceId: string) => {
     throw err;
   }
 
-  return user;
+  return toAdminUserResponse(user);
 };
 
 /**
@@ -526,7 +540,7 @@ export const updateUser = async (id: string, input: UpdateUserInput, workspaceId
 
   logger.info('Admin updated user', { id, workspaceId, changes: Object.keys(input) });
 
-  return user;
+  return toAdminUserResponse(user);
 };
 
 /**

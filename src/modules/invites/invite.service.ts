@@ -5,7 +5,12 @@ import auditService from '../../services/Audit/auditService';
 import { sendInvitationEmail } from '../../services/Email/emailService';
 import { createInviteTokenPair, hashInviteToken } from '../../utils/inviteToken';
 import { InviteError } from './invite.errors';
-import { getInviteSendBlockReason } from './inviteEligibility';
+import {
+  getInviteSendBlockReason,
+  toInviteEligibilityUser,
+  userHasActivatedAccount,
+  userIsDeactivatedFormerMember,
+} from './inviteEligibility';
 import * as repository from './invite.repository';
 import type { AcceptInviteInput, CreateInviteInput, ValidateInviteQueryInput } from './invite.validation';
 
@@ -120,7 +125,8 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
       throw new InviteError('Invite token is not valid for this workspace.', 409, 'INVITE_WORKSPACE_MISMATCH');
     }
 
-    if (invite.user.isOnboarded || (invite.user.isActive && invite.user.isEmailVerified)) {
+    const invitee = toInviteEligibilityUser(invite.user);
+    if (userHasActivatedAccount(invitee)) {
       throw new InviteError('This invitation has already been accepted.', 409, 'INVITE_ALREADY_USED');
     }
 
@@ -396,18 +402,27 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
       if (!workspaceId) throw new InviteError('Workspace context required.', 403, 'WORKSPACE_REQUIRED');
 
       const workspace = await assertWorkspace(workspaceId);
-      const user = await deps.repository.findInvitableUserById(userId, workspaceId);
+      let user = await deps.repository.findInvitableUserById(userId, workspaceId);
       if (!user) {
         throw new InviteError('User not found in this workspace.', 404, 'USER_NOT_FOUND');
       }
 
-      const inviteBlockReason = getInviteSendBlockReason(user);
+      let eligibilityUser = toInviteEligibilityUser(user);
+      const inviteBlockReason = getInviteSendBlockReason(eligibilityUser);
       if (inviteBlockReason) {
-        const statusCode =
-          inviteBlockReason.includes('Assign a role') ? 400
-          : inviteBlockReason.includes('already has an active') ? 409
-          : 409;
+        const statusCode = inviteBlockReason.includes('Assign a role') ? 400 : 409;
         throw new InviteError(inviteBlockReason, statusCode, 'USER_NOT_INVITE_ELIGIBLE');
+      }
+
+      if (userHasActivatedAccount(eligibilityUser)) {
+        user = await deps.repository.reprovisionUserForInvite(user.id);
+        eligibilityUser = toInviteEligibilityUser(user);
+      } else if (
+        !eligibilityUser.hasPassword &&
+        (user.isActive || user.isEmailVerified || user.isOnboarded)
+      ) {
+        user = await deps.repository.reprovisionUserForInvite(user.id);
+        eligibilityUser = toInviteEligibilityUser(user);
       }
 
       if (!user.workspaceId || user.workspaceId !== workspaceId) {

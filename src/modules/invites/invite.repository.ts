@@ -5,6 +5,7 @@ const INVITE_USER_SELECT = {
   name: true,
   username: true,
   email: true,
+  password: true,
   isActive: true,
   isEmailVerified: true,
   isOnboarded: true,
@@ -315,6 +316,23 @@ export const findLatestInviteForUser = (userId: string, workspaceId: string) =>
       usedAt: true,
       createdAt: true,
     },
+  });
+
+/** Reset a user into invite-pending state before issuing a new invitation. */
+export const reprovisionUserForInvite = (userId: string) =>
+  (prisma as any).user.update({
+    where: { id: userId },
+    data: {
+      password: null,
+      isActive: false,
+      isEmailVerified: false,
+      isOnboarded: false,
+      invitationToken: null,
+      invitationExpires: null,
+      verificationToken: null,
+      verificationTokenExpires: null,
+    },
+    select: INVITE_USER_SELECT,
   });
 
 export const createInviteForUser = (input: {

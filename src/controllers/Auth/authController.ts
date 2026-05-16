@@ -164,7 +164,7 @@ const serializeAuthenticatedUser = (user: any, resolvedWorkspaceId?: string | nu
 };
 
 const repairWorkspaceMemberOnboarding = async (user: any, workspaceId?: string | null): Promise<void> => {
-  if (!user?.id || !workspaceId || user.isOnboarded) return;
+  if (!user?.id || !workspaceId || user.isOnboarded || !user.password) return;
 
   try {
     await prisma.user.update({
