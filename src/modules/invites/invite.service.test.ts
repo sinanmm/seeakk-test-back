@@ -128,7 +128,7 @@ test('createInvite creates an inactive invited user and sends the raw token by e
   assert.equal(sentEmails[0][1].inviteToken, 'raw-token-123');
   assert.equal(result.user.email, 'invitee@example.com');
   assert.equal(result.delivery, 'EMAIL');
-  assert.match(result.inviteLink || '', /\/invite\/accept\?token=raw-token-123$/);
+  assert.match(result.inviteLink || '', /\/activate-account\?token=raw-token-123$/);
   assert.equal(auditLogs.length, 1);
   assert.equal(auditLogs[0].action, 'USER_INVITE_CREATED');
 });
@@ -155,7 +155,7 @@ test('createInvite falls back to manual delivery without exposing SMTP failure a
     result.message,
     'Invite created, but email delivery is unavailable. Share the invite link manually.',
   );
-  assert.match(result.inviteLink || '', /\/invite\/accept\?token=manual-token-123$/);
+  assert.match(result.inviteLink || '', /\/activate-account\?token=manual-token-123$/);
   assert.match(result.deliveryErrorMessage || '', /Email delivery failed/);
   assert.doesNotMatch(result.message, /SMTP|provider|secret subject/i);
 });

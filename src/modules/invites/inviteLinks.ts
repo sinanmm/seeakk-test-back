@@ -7,7 +7,7 @@ const trimTrailingSlashes = (value: string): string => value.trim().replace(/\/+
 const isHttpOrigin = (value: string): boolean => /^https?:\/\//i.test(value);
 
 /**
- * Absolute URL for password setup / invite acceptance (`/invite/accept?token=…`).
+ * Absolute URL for first-time account activation (`/activate-account?token=…`).
  * Uses server FRONTEND_URL, or the admin UI origin when provided.
  */
 export const buildInviteAcceptUrl = (rawToken: string, preferredBase?: string | null): string => {
@@ -25,7 +25,7 @@ export const buildInviteAcceptUrl = (rawToken: string, preferredBase?: string | 
     );
   }
 
-  return `${base}/invite/accept?token=${encodeURIComponent(token)}`;
+  return `${base}/activate-account?token=${encodeURIComponent(token)}`;
 };
 
 /** Prefer the browser Origin/Referer so copied links match the admin UI the user is on. */

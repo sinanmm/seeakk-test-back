@@ -8,12 +8,12 @@ const { buildInviteAcceptUrl, resolveAdminFrontendOrigin } = require('./inviteLi
 
 test('buildInviteAcceptUrl uses FRONTEND_URL and encodes token', () => {
   const url = buildInviteAcceptUrl('raw token+1');
-  assert.equal(url, 'https://app.example.com/invite/accept?token=raw%20token%2B1');
+  assert.equal(url, 'https://app.example.com/activate-account?token=raw%20token%2B1');
 });
 
 test('buildInviteAcceptUrl prefers admin UI origin when provided', () => {
   const url = buildInviteAcceptUrl('abc', 'https://admin.vercel.app');
-  assert.equal(url, 'https://admin.vercel.app/invite/accept?token=abc');
+  assert.equal(url, 'https://admin.vercel.app/activate-account?token=abc');
 });
 
 test('resolveAdminFrontendOrigin reads Origin header', () => {

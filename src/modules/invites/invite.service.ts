@@ -45,8 +45,6 @@ const INVITE_RESENT_MANUAL_MESSAGE =
 const EXISTING_INVITE_MANUAL_MESSAGE =
   'An active invite already existed. We refreshed it, but email delivery is unavailable. Share the invite link manually.';
 
-const ACCESS_LINK_CLIPBOARD_MESSAGE = 'Access link generated.';
-
 const toResponseUser = (user: any) => ({
   id: user.id,
   name: user.name,
