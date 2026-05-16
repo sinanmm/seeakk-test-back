@@ -5,12 +5,7 @@ import { buildInviteAcceptUrl } from './inviteLinks';
 import { sendInvitationEmail } from '../../services/Email/emailService';
 import { createInviteTokenPair, hashInviteToken } from '../../utils/inviteToken';
 import { InviteError } from './invite.errors';
-import {
-  getInviteSendBlockReason,
-  toInviteEligibilityUser,
-  userHasActivatedAccount,
-  userIsDeactivatedFormerMember,
-} from './inviteEligibility';
+import { toInviteEligibilityUser, userHasActivatedAccount } from './inviteEligibility';
 import * as repository from './invite.repository';
 import type { AcceptInviteInput, CreateInviteInput, ValidateInviteQueryInput } from './invite.validation';
 
@@ -49,6 +44,8 @@ const INVITE_RESENT_MANUAL_MESSAGE =
   'Invite refreshed, but email delivery is unavailable. Share the invite link manually.';
 const EXISTING_INVITE_MANUAL_MESSAGE =
   'An active invite already existed. We refreshed it, but email delivery is unavailable. Share the invite link manually.';
+
+const ACCESS_LINK_CLIPBOARD_MESSAGE = 'Access link generated.';
 
 const toResponseUser = (user: any) => ({
   id: user.id,
@@ -330,7 +327,7 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
     async resendInvite(inviteId: string, actor: Actor, context?: InviteActionContext) {
       const workspaceId = actor.workspaceId?.trim();
       if (!workspaceId) throw new InviteError('Workspace context required.', 403, 'WORKSPACE_REQUIRED');
-      const workspace = await assertWorkspace(workspaceId);
+      await assertWorkspace(workspaceId);
 
       const invite = await deps.repository.findInviteById(inviteId, workspaceId);
       if (!invite || invite.workspaceId !== workspaceId) {
@@ -345,31 +342,21 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
 
       await deps.repository.updateInviteForResend(inviteId, tokenHash, expiresAt);
 
-      const { emailDelivered, deliveryErrorMessage } = await sendInvitationBestEffort(invite.user.email, {
-        recipientName: invite.user.name || invite.user.email,
-        workspaceName: workspace.companyName,
-        inviterName: actor.name || actor.id,
-        inviteToken: rawToken,
-        expiresAt,
-      });
-
       await deps.audit.log({
         userId: actor.id,
         workspaceId,
-        action: 'USER_INVITE_RESENT',
+        action: 'USER_INVITE_LINK_REFRESHED',
         entityType: 'Invite',
         entityId: inviteId,
-        details: { expiresAt: expiresAt.toISOString() },
+        details: { expiresAt: expiresAt.toISOString(), delivery: 'CLIPBOARD' },
         ipAddress: context?.ipAddress,
         userAgent: context?.userAgent,
       });
 
       return {
-        message: emailDelivered
-          ? 'Invite resent successfully.'
-          : INVITE_RESENT_MANUAL_MESSAGE,
-        delivery: emailDelivered ? 'EMAIL' : 'MANUAL',
-        deliveryErrorMessage,
+        message: ACCESS_LINK_CLIPBOARD_MESSAGE,
+        delivery: 'CLIPBOARD',
+        deliveryErrorMessage: null,
         inviteLink: buildInviteLink(rawToken, context),
       };
     },
@@ -405,70 +392,48 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
       const workspaceId = actor.workspaceId?.trim();
       if (!workspaceId) throw new InviteError('Workspace context required.', 403, 'WORKSPACE_REQUIRED');
 
-      const workspace = await assertWorkspace(workspaceId);
+      await assertWorkspace(workspaceId);
+
       let user = await deps.repository.findInvitableUserById(userId, workspaceId);
       if (!user) {
         throw new InviteError('User not found in this workspace.', 404, 'USER_NOT_FOUND');
-      }
-
-      let eligibilityUser = toInviteEligibilityUser(user);
-      const inviteBlockReason = getInviteSendBlockReason(eligibilityUser);
-      if (inviteBlockReason) {
-        const statusCode = inviteBlockReason.includes('Assign a role') ? 400 : 409;
-        throw new InviteError(inviteBlockReason, statusCode, 'USER_NOT_INVITE_ELIGIBLE');
-      }
-
-      if (userHasActivatedAccount(eligibilityUser)) {
-        user = await deps.repository.reprovisionUserForInvite(user.id);
-        eligibilityUser = toInviteEligibilityUser(user);
-      } else if (
-        !eligibilityUser.hasPassword &&
-        (user.isActive || user.isEmailVerified || user.isOnboarded)
-      ) {
-        user = await deps.repository.reprovisionUserForInvite(user.id);
-        eligibilityUser = toInviteEligibilityUser(user);
       }
 
       if (!user.workspaceId || user.workspaceId !== workspaceId) {
         throw new InviteError('User workspace mismatch. Cannot send invite.', 409, 'USER_WORKSPACE_MISMATCH');
       }
 
+      // Ensure the generated link opens the password-setup page (no active-account gate for admins).
+      user = await deps.repository.reprovisionUserForInvite(user.id);
+
       const now = deps.now();
       const latestInvite = await deps.repository.findLatestInviteForUser(user.id, workspaceId);
       const latestStatus = latestInvite ? computeInviteStatus(latestInvite, now) : null;
+
+      const { rawToken, tokenHash } = deps.tokenFactory();
+      const expiresAt = buildExpiryDate(now);
+
       if (latestStatus === 'PENDING' && latestInvite?.id) {
-        const { rawToken, tokenHash } = deps.tokenFactory();
-        const expiresAt = buildExpiryDate(now);
-
         await deps.repository.updateInviteForResend(latestInvite.id, tokenHash, expiresAt);
-
-        const { emailDelivered, deliveryErrorMessage } = await sendInvitationBestEffort(user.email, {
-          recipientName: user.name || user.email,
-          workspaceName: workspace.companyName,
-          inviterName: actor.name || actor.id,
-          inviteToken: rawToken,
-          expiresAt,
-        });
 
         await deps.audit.log({
           userId: actor.id,
           workspaceId,
-          action: 'USER_INVITE_RESENT',
+          action: 'USER_INVITE_LINK_REFRESHED',
           entityType: 'Invite',
           entityId: latestInvite.id,
           details: {
             inviteeUserId: user.id,
             inviteeEmail: user.email,
             expiresAt: expiresAt.toISOString(),
+            delivery: 'CLIPBOARD',
           },
           ipAddress: context?.ipAddress,
           userAgent: context?.userAgent,
         });
 
         return {
-          message: emailDelivered
-            ? 'An active invite already existed, so we resent a fresh invite email.'
-            : EXISTING_INVITE_MANUAL_MESSAGE,
+          message: ACCESS_LINK_CLIPBOARD_MESSAGE,
           invite: {
             id: latestInvite.id,
             status: 'PENDING',
@@ -476,14 +441,12 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
             createdAt: latestInvite.createdAt.toISOString(),
           },
           user: toResponseUser(user),
-          delivery: emailDelivered ? 'EMAIL' : 'MANUAL',
-          deliveryErrorMessage,
+          delivery: 'CLIPBOARD',
+          deliveryErrorMessage: null,
           inviteLink: buildInviteLink(rawToken, context),
         };
       }
 
-      const { rawToken, tokenHash } = deps.tokenFactory();
-      const expiresAt = buildExpiryDate(now);
       const invite = await deps.repository.createInviteForUser({
         userId: user.id,
         workspaceId,
@@ -492,33 +455,24 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
         createdBy: actor.id,
       });
 
-      const { emailDelivered, deliveryErrorMessage } = await sendInvitationBestEffort(user.email, {
-        recipientName: user.name || user.email,
-        workspaceName: workspace.companyName,
-        inviterName: actor.name || actor.id,
-        inviteToken: rawToken,
-        expiresAt,
-      });
-
       await deps.audit.log({
         userId: actor.id,
         workspaceId,
-        action: 'USER_INVITE_SENT',
+        action: 'USER_INVITE_LINK_CREATED',
         entityType: 'Invite',
         entityId: invite.id,
         details: {
           inviteeUserId: user.id,
           inviteeEmail: user.email,
           expiresAt: expiresAt.toISOString(),
+          delivery: 'CLIPBOARD',
         },
         ipAddress: context?.ipAddress,
         userAgent: context?.userAgent,
       });
 
       return {
-        message: emailDelivered
-          ? 'Invite email sent successfully.'
-          : INVITE_CREATED_MANUAL_MESSAGE,
+        message: ACCESS_LINK_CLIPBOARD_MESSAGE,
         invite: {
           id: invite.id,
           status: computeInviteStatus(invite, now),
@@ -526,8 +480,8 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
           createdAt: invite.createdAt.toISOString(),
         },
         user: toResponseUser(user),
-        delivery: emailDelivered ? 'EMAIL' : 'MANUAL',
-        deliveryErrorMessage,
+        delivery: 'CLIPBOARD',
+        deliveryErrorMessage: null,
         inviteLink: buildInviteLink(rawToken, context),
       };
     },
