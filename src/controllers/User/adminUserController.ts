@@ -19,6 +19,7 @@ import {
 import logger from '../../utils/logger';
 import auditService from '../../services/Audit/auditService';
 import { inviteService } from '../../modules/invites/invite.service';
+import { resolveAdminFrontendOrigin } from '../../modules/invites/inviteLinks';
 import { emitUserEvent, emitWorkspaceEvent } from '../../realtime/socket';
 import { hasPermission } from '../../middlewares/authMiddleware';
 
@@ -38,6 +39,12 @@ const requireWorkspace = (req: Request, res: Response): string | null => {
   }
   return workspaceId;
 };
+
+const inviteRequestContext = (req: Request) => ({
+  ipAddress: req.ip,
+  userAgent: req.headers['user-agent'],
+  preferredFrontendOrigin: resolveAdminFrontendOrigin(req),
+});
 
 /**
  * Zod parse helper with typed schema.
@@ -140,10 +147,7 @@ export const inviteUser = async (req: Request, res: Response, next: NextFunction
         workspaceId,
         name: req.user?.name || null,
       },
-      {
-        ipAddress: req.ip,
-        userAgent: req.headers['user-agent'],
-      },
+      inviteRequestContext(req),
     );
 
     return res.status(201).json({
@@ -169,7 +173,7 @@ export const resendInvite = async (req: Request, res: Response, next: NextFuncti
     const result = await inviteService.resendInvite(
       inviteId,
       { id: req.user!.id, workspaceId, name: req.user?.name || null },
-      { ipAddress: req.ip, userAgent: req.headers['user-agent'] },
+      inviteRequestContext(req),
     );
 
     return res.status(200).json({
@@ -195,7 +199,7 @@ export const revokeInvite = async (req: Request, res: Response, next: NextFuncti
     const result = await inviteService.revokeInvite(
       inviteId,
       { id: req.user!.id, workspaceId },
-      { ipAddress: req.ip, userAgent: req.headers['user-agent'] },
+      inviteRequestContext(req),
     );
 
     return res.status(200).json({
@@ -428,7 +432,7 @@ export const sendInviteToUser = async (req: Request, res: Response, next: NextFu
     const result = await inviteService.sendInviteToUser(
       userId,
       { id: req.user!.id, workspaceId, name: req.user?.name || null },
-      { ipAddress: req.ip, userAgent: req.headers['user-agent'] },
+      inviteRequestContext(req),
     );
 
     return res.status(200).json({

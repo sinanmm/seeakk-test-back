@@ -2,6 +2,7 @@ import dns from 'dns';
 import nodemailer, { Transporter } from 'nodemailer';
 import { getSmtpConfig, isEmailConfigured } from '../../config/email.config';
 import { getPublicBackendUrl, getPublicFrontendUrl } from '../../config/publicUrls';
+import { buildInviteAcceptUrl } from '../../modules/invites/inviteLinks';
 import logger from '../../utils/logger';
 import { sendEmailViaResend, verifyResendApiKey } from './resendTransport';
 
@@ -342,12 +343,7 @@ export const sendInvitationEmail = async (
     expiresAt: Date;
   },
 ): Promise<boolean> => {
-  const appUrl = getPublicFrontendUrl();
-  if (!appUrl) {
-    throw new Error('FRONTEND_URL or ALLOWED_ORIGINS is required to build invite links.');
-  }
-
-  const inviteLink = `${appUrl}/invite/accept?token=${encodeURIComponent(input.inviteToken)}`;
+  const inviteLink = buildInviteAcceptUrl(input.inviteToken);
   await sendRequiredEmail(
     email,
     `You're invited to join ${input.workspaceName} on Seeakk`,

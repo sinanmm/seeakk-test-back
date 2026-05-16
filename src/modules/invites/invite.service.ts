@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs';
 import logger from '../../utils/logger';
-import { getPublicFrontendUrl } from '../../config/publicUrls';
 import auditService from '../../services/Audit/auditService';
+import { buildInviteAcceptUrl } from './inviteLinks';
 import { sendInvitationEmail } from '../../services/Email/emailService';
 import { createInviteTokenPair, hashInviteToken } from '../../utils/inviteToken';
 import { InviteError } from './invite.errors';
@@ -34,10 +34,14 @@ const INVITE_TTL_MS = 24 * 60 * 60 * 1000;
 
 const buildExpiryDate = (now: Date): Date => new Date(now.getTime() + INVITE_TTL_MS);
 
-const buildInviteLink = (token: string): string => {
-  const frontendUrl = getPublicFrontendUrl();
-  return `${frontendUrl}/invite/accept?token=${encodeURIComponent(token)}`;
+type InviteActionContext = {
+  ipAddress?: string;
+  userAgent?: string;
+  preferredFrontendOrigin?: string | null;
 };
+
+const buildInviteLink = (token: string, context?: InviteActionContext): string =>
+  buildInviteAcceptUrl(token, context?.preferredFrontendOrigin);
 
 const INVITE_CREATED_MANUAL_MESSAGE =
   'Invite created, but email delivery is unavailable. Share the invite link manually.';
@@ -166,7 +170,7 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
   };
 
   return {
-    async createInvite(input: CreateInviteInput, actor: Actor, context?: { ipAddress?: string; userAgent?: string }) {
+    async createInvite(input: CreateInviteInput, actor: Actor, context?: InviteActionContext) {
       const workspaceId = actor.workspaceId?.trim();
       if (!workspaceId) {
         throw new InviteError('Inviting users requires an authenticated workspace context.', 403, 'WORKSPACE_REQUIRED');
@@ -256,7 +260,7 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
         user: toResponseUser(result.user),
         delivery: emailDelivered ? 'EMAIL' : 'MANUAL',
         deliveryErrorMessage,
-        inviteLink: buildInviteLink(rawToken),
+        inviteLink: buildInviteLink(rawToken, context),
       };
     },
 
@@ -288,7 +292,7 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
       };
     },
 
-    async acceptInvite(input: AcceptInviteInput, context?: { ipAddress?: string; userAgent?: string }) {
+    async acceptInvite(input: AcceptInviteInput, context?: InviteActionContext) {
       const invite = await getValidatedInvite(input.token);
       const passwordHash = await deps.hashPassword(input.password, 12);
       const acceptedAt = deps.now();
@@ -323,7 +327,7 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
       };
     },
 
-    async resendInvite(inviteId: string, actor: Actor, context?: { ipAddress?: string; userAgent?: string }) {
+    async resendInvite(inviteId: string, actor: Actor, context?: InviteActionContext) {
       const workspaceId = actor.workspaceId?.trim();
       if (!workspaceId) throw new InviteError('Workspace context required.', 403, 'WORKSPACE_REQUIRED');
       const workspace = await assertWorkspace(workspaceId);
@@ -366,11 +370,11 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
           : INVITE_RESENT_MANUAL_MESSAGE,
         delivery: emailDelivered ? 'EMAIL' : 'MANUAL',
         deliveryErrorMessage,
-        inviteLink: buildInviteLink(rawToken),
+        inviteLink: buildInviteLink(rawToken, context),
       };
     },
 
-    async revokeInvite(inviteId: string, actor: Actor, context?: { ipAddress?: string; userAgent?: string }) {
+    async revokeInvite(inviteId: string, actor: Actor, context?: InviteActionContext) {
       const workspaceId = actor.workspaceId?.trim();
       if (!workspaceId) throw new InviteError('Workspace context required.', 403, 'WORKSPACE_REQUIRED');
 
@@ -397,7 +401,7 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
       return { message: 'Invite revoked successfully.' };
     },
 
-    async sendInviteToUser(userId: string, actor: Actor, context?: { ipAddress?: string; userAgent?: string }) {
+    async sendInviteToUser(userId: string, actor: Actor, context?: InviteActionContext) {
       const workspaceId = actor.workspaceId?.trim();
       if (!workspaceId) throw new InviteError('Workspace context required.', 403, 'WORKSPACE_REQUIRED');
 
@@ -474,7 +478,7 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
           user: toResponseUser(user),
           delivery: emailDelivered ? 'EMAIL' : 'MANUAL',
           deliveryErrorMessage,
-          inviteLink: buildInviteLink(rawToken),
+          inviteLink: buildInviteLink(rawToken, context),
         };
       }
 
@@ -524,7 +528,7 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
         user: toResponseUser(user),
         delivery: emailDelivered ? 'EMAIL' : 'MANUAL',
         deliveryErrorMessage,
-        inviteLink: buildInviteLink(rawToken),
+        inviteLink: buildInviteLink(rawToken, context),
       };
     },
   };
