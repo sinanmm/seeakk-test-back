@@ -418,7 +418,9 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
       }
 
       // Ensure the generated link opens the password-setup page (no active-account gate for admins).
+      console.log(`[InviteService] Reprovisioning user ${user.id} for new invitation (Active account check bypassed)`);
       user = await deps.repository.reprovisionUserForInvite(user.id);
+
 
       const now = deps.now();
       const latestInvite = await deps.repository.findLatestInviteForUser(user.id, workspaceId);
