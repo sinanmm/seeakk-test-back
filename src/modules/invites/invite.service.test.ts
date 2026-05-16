@@ -128,7 +128,7 @@ test('createInvite creates an inactive invited user and sends the raw token by e
   assert.equal(sentEmails[0][1].inviteToken, 'raw-token-123');
   assert.equal(result.user.email, 'invitee@example.com');
   assert.equal(result.delivery, 'EMAIL');
-  assert.equal(result.inviteLink, null);
+  assert.match(result.inviteLink || '', /\/invite\/accept\?token=raw-token-123$/);
   assert.equal(auditLogs.length, 1);
   assert.equal(auditLogs[0].action, 'USER_INVITE_CREATED');
 });

@@ -256,7 +256,7 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
         user: toResponseUser(result.user),
         delivery: emailDelivered ? 'EMAIL' : 'MANUAL',
         deliveryErrorMessage,
-        inviteLink: emailDelivered ? null : buildInviteLink(rawToken),
+        inviteLink: buildInviteLink(rawToken),
       };
     },
 
@@ -366,7 +366,7 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
           : INVITE_RESENT_MANUAL_MESSAGE,
         delivery: emailDelivered ? 'EMAIL' : 'MANUAL',
         deliveryErrorMessage,
-        inviteLink: emailDelivered ? null : buildInviteLink(rawToken),
+        inviteLink: buildInviteLink(rawToken),
       };
     },
 
@@ -474,7 +474,7 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
           user: toResponseUser(user),
           delivery: emailDelivered ? 'EMAIL' : 'MANUAL',
           deliveryErrorMessage,
-          inviteLink: emailDelivered ? null : buildInviteLink(rawToken),
+          inviteLink: buildInviteLink(rawToken),
         };
       }
 
@@ -524,7 +524,7 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
         user: toResponseUser(user),
         delivery: emailDelivered ? 'EMAIL' : 'MANUAL',
         deliveryErrorMessage,
-        inviteLink: emailDelivered ? null : buildInviteLink(rawToken),
+        inviteLink: buildInviteLink(rawToken),
       };
     },
   };
