@@ -116,17 +116,45 @@ const buildLeadFilterWhere = async (workspaceId: string, actor: Actor, filters: 
   if (filters.sourceId) where.sourceId = filters.sourceId;
 
   if (filters.followupDateFrom || filters.followupDateTo) {
-    where.nextFollowUpAt = {
-      ...(filters.followupDateFrom ? { gte: filters.followupDateFrom } : {}),
-      ...(filters.followupDateTo ? { lte: filters.followupDateTo } : {}),
-    };
+    const nextFollowUpAtCond: any = {};
+    if (filters.followupDateFrom) {
+      const fromDate = new Date(filters.followupDateFrom);
+      if (!isNaN(fromDate.getTime())) {
+        fromDate.setUTCHours(0, 0, 0, 0);
+        nextFollowUpAtCond.gte = fromDate;
+      }
+    }
+    if (filters.followupDateTo) {
+      const toDate = new Date(filters.followupDateTo);
+      if (!isNaN(toDate.getTime())) {
+        toDate.setUTCHours(23, 59, 59, 999);
+        nextFollowUpAtCond.lte = toDate;
+      }
+    }
+    if (Object.keys(nextFollowUpAtCond).length > 0) {
+      where.nextFollowUpAt = nextFollowUpAtCond;
+    }
   }
 
   if (filters.createdDateFrom || filters.createdDateTo) {
-    where.createdAt = {
-      ...(filters.createdDateFrom ? { gte: filters.createdDateFrom } : {}),
-      ...(filters.createdDateTo ? { lte: filters.createdDateTo } : {}),
-    };
+    const createdAtCond: any = {};
+    if (filters.createdDateFrom) {
+      const fromDate = new Date(filters.createdDateFrom);
+      if (!isNaN(fromDate.getTime())) {
+        fromDate.setUTCHours(0, 0, 0, 0);
+        createdAtCond.gte = fromDate;
+      }
+    }
+    if (filters.createdDateTo) {
+      const toDate = new Date(filters.createdDateTo);
+      if (!isNaN(toDate.getTime())) {
+        toDate.setUTCHours(23, 59, 59, 999);
+        createdAtCond.lte = toDate;
+      }
+    }
+    if (Object.keys(createdAtCond).length > 0) {
+      where.createdAt = createdAtCond;
+    }
   }
 
   return where;
