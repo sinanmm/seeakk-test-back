@@ -93,6 +93,7 @@ const handleServiceError = (error: any, res: Response, next: NextFunction, actio
 
 const getActor = (req: Request) => ({
   id: req.user!.id,
+  roleId: req.user?.roleId,
   role: req.user?.role,
 });
 
@@ -141,7 +142,7 @@ export const listLeads = async (req: Request, res: Response, next: NextFunction)
   if (!query) return;
 
   try {
-    const result = await leadService.getLeads(workspaceId, query);
+    const result = await leadService.getLeads(workspaceId, query, getActor(req));
     return res.status(200).json({
       success: true,
       message: 'Leads fetched successfully',
@@ -161,7 +162,7 @@ export const getLeadById = async (req: Request, res: Response, next: NextFunctio
   if (!params) return;
 
   try {
-    const lead = await leadService.getLeadById(workspaceId, params.id);
+    const lead = await leadService.getLeadById(workspaceId, params.id, getActor(req));
     return res.status(200).json({
       success: true,
       message: 'Lead fetched successfully',
@@ -458,7 +459,7 @@ export const exportLeads = async (req: Request, res: Response, next: NextFunctio
   if (!query) return;
 
   try {
-    const exported = await leadService.exportLeads(workspaceId, query);
+    const exported = await leadService.exportLeads(workspaceId, query, getActor(req));
     res.setHeader('Content-Type', exported.contentType);
     res.setHeader('Content-Disposition', `attachment; filename="${exported.filename}"`);
     return res.status(200).send(exported.content);

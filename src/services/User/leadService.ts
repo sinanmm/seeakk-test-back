@@ -2,7 +2,7 @@ import prisma from '../../config/prisma';
 import { redisClient } from '../../config/redis';
 import logger from '../../utils/logger';
 import { normalizeFollowUpType } from '../../constants/followUpType';
-import { buildClosureUpdateData, isClosureStage } from '../../modules/leads/leads.service';
+import { buildAccessWhere, buildClosureUpdateData, isClosureStage } from '../../modules/leads/leads.service';
 import * as leadApprovalService from '../../modules/leads/leadApprovals.service';
 import { validateLeadStageTransition } from '../../modules/master/lead-stages/leadStage.service';
 import { getActiveStageRulesForExecution } from '../../modules/master/stage-rules/stageRule.service';
@@ -352,8 +352,8 @@ const escapeCsv = (value: unknown): string => {
   return text;
 };
 
-const buildLeadCacheKey = (workspaceId: string, query: ListLeadsQueryInput | ExportLeadsQueryInput): string =>
-  `leads:${workspaceId}:${JSON.stringify(query)}`;
+const buildLeadCacheKey = (workspaceId: string, query: ListLeadsQueryInput | ExportLeadsQueryInput, actor?: Actor): string =>
+  `leads:${workspaceId}:${actor ? `${actor.id}:${actor.roleId ?? 'no-role'}:` : ''}${JSON.stringify(query)}`;
 
 export const clearLeadCache = async (workspaceId: string): Promise<void> => {
   if (!redisClient.isOpen) return;
@@ -895,14 +895,22 @@ const findDuplicateLead = async (
   }
 };
 
-const buildListWhere = (
+const buildListWhere = async (
   workspaceId: string,
   query: ListLeadsQueryInput | ExportLeadsQueryInput,
+  actor?: Actor,
   options?: { includeArchived?: boolean },
 ) => {
   const where: any = {
     workspaceId,
   };
+
+  if (actor) {
+    const accessWhere = await buildAccessWhere(workspaceId, actor);
+    if (accessWhere && Object.keys(accessWhere).length > 0) {
+      where.AND = [accessWhere];
+    }
+  }
 
   const includeArchived = Boolean(options?.includeArchived);
 
@@ -917,11 +925,18 @@ const buildListWhere = (
   }
 
   if (query.search) {
-    where.OR = [
-      { name: { contains: query.search, mode: 'insensitive' } },
-      { email: { contains: query.search, mode: 'insensitive' } },
-      { phone: { contains: query.search, mode: 'insensitive' } },
-    ];
+    const searchCond = {
+      OR: [
+        { name: { contains: query.search, mode: 'insensitive' as const } },
+        { email: { contains: query.search, mode: 'insensitive' as const } },
+        { phone: { contains: query.search, mode: 'insensitive' as const } },
+      ],
+    };
+    if (where.AND) {
+      where.AND.push(searchCond);
+    } else {
+      where.AND = [searchCond];
+    }
   }
 
   if (query.assignedTo) where.assignedToId = query.assignedTo;
@@ -942,13 +957,22 @@ const buildListWhere = (
   return where;
 };
 
-const getLeadScoped = async (workspaceId: string, id: string) => {
+const getLeadScoped = async (workspaceId: string, id: string, actor?: Actor) => {
+  const where: any = {
+    id,
+    workspaceId,
+    deletedAt: null,
+  };
+
+  if (actor) {
+    const accessWhere = await buildAccessWhere(workspaceId, actor);
+    if (accessWhere && Object.keys(accessWhere).length > 0) {
+      where.AND = [accessWhere];
+    }
+  }
+
   const lead = await (prisma as any).lead.findFirst({
-    where: {
-      id,
-      workspaceId,
-      deletedAt: null,
-    },
+    where,
     include: leadInclude,
   });
 
@@ -1104,13 +1128,14 @@ export const createLead = async (
   if (input.nextFollowUpAt) {
     await touchFollowUpTodayCachesAfterLeadMutation(workspaceId, assignedToId || actor.id, input.nextFollowUpAt);
   }
-  const created = await getLeadScoped(workspaceId, createdLeadId);
+  const created = await getLeadScoped(workspaceId, createdLeadId, actor);
   return mapLeadRecord(created);
 };
 
 export const getLeads = async (
   workspaceId: string,
   query: ListLeadsQueryInput,
+  actor?: Actor,
 ): Promise<{
   leads: Array<ReturnType<typeof mapLeadRecord>>;
   pagination: {
@@ -1125,7 +1150,7 @@ export const getLeads = async (
   await assertModuleReady();
   await maybeRunLeadSlaSweep(workspaceId);
 
-  const cacheKey = buildLeadCacheKey(workspaceId, query);
+  const cacheKey = buildLeadCacheKey(workspaceId, query, actor);
   if (redisClient.isOpen) {
     const cached = await redisClient.get(cacheKey);
     if (cached) {
@@ -1134,7 +1159,7 @@ export const getLeads = async (
   }
 
   const skip = (query.page - 1) * query.limit;
-  const where = buildListWhere(workspaceId, query);
+  const where = await buildListWhere(workspaceId, query, actor);
 
   const [total, rows] = await prisma.$transaction([
     (prisma as any).lead.count({ where }),
@@ -1170,10 +1195,11 @@ export const getLeads = async (
 export const getLeadById = async (
   workspaceId: string,
   id: string,
+  actor?: Actor,
 ): Promise<ReturnType<typeof mapLeadRecord>> => {
   await assertModuleReady();
   await maybeRunLeadSlaSweep(workspaceId);
-  const lead = await getLeadScoped(workspaceId, id);
+  const lead = await getLeadScoped(workspaceId, id, actor);
   return mapLeadRecord(lead);
 };
 
@@ -1185,7 +1211,7 @@ export const updateLead = async (
 ): Promise<ReturnType<typeof mapLeadRecord>> => {
   await assertModuleReady();
 
-  const existing = await getLeadScoped(workspaceId, id);
+  const existing = await getLeadScoped(workspaceId, id, actor);
   if (
     existing.approvalState === 'PENDING' &&
     input.stageId !== undefined &&
@@ -1399,7 +1425,7 @@ export const updateLead = async (
   ) {
     await touchFollowUpTodayCachesAfterLeadMutation(workspaceId, assignedToId || actor.id, nextFollowUpAt);
   }
-  const updated = await getLeadScoped(workspaceId, updatedLeadId);
+  const updated = await getLeadScoped(workspaceId, updatedLeadId, actor);
   return mapLeadRecord(updated);
 };
 
@@ -1414,7 +1440,7 @@ export const changeStage = async (
 > => {
   await assertModuleReady();
 
-  const existing = await getLeadScoped(workspaceId, id);
+  const existing = await getLeadScoped(workspaceId, id, actor);
   const targetStage = await resolveStage(workspaceId, input.stageId);
 
   if (!targetStage) {
@@ -1721,10 +1747,11 @@ const buildLeadExportCsvRow = (lead: LeadIncludeRecord): unknown[] => [
 export const exportLeads = async (
   workspaceId: string,
   query: ExportLeadsQueryInput,
+  actor?: Actor,
 ): Promise<{ filename: string; content: string; contentType: string }> => {
   await assertModuleReady();
 
-  const where = buildListWhere(workspaceId, query, { includeArchived: query.includeArchived });
+  const where = await buildListWhere(workspaceId, query, actor, { includeArchived: query.includeArchived });
 
   const headers = [
     'Lead ID',
