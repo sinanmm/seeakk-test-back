@@ -5,6 +5,8 @@ import { resolveWorkspaceIdForUser } from '../../utils/workspaceContext';
 import {
   dashboardSummaryQuerySchema,
   type DashboardSummaryQueryInput,
+  revenueAnalyticsQuerySchema,
+  type RevenueAnalyticsQueryInput,
 } from './dashboard.validation';
 
 const requireWorkspace = async (req: Request, res: Response): Promise<string | null> => {
@@ -83,5 +85,29 @@ export const getDashboardSummary = async (req: Request, res: Response, next: Nex
       userId: req.user?.id
     });
     handleServiceError(error, res, next, 'getDashboardSummary');
+  }
+ };
+
+export const getRevenueAnalytics = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = await requireWorkspace(req, res);
+  if (!workspaceId) return;
+
+  const query = validate<RevenueAnalyticsQueryInput>(revenueAnalyticsQuerySchema, req.query, res);
+  if (!query) return;
+
+  try {
+    const data = await dashboardService.getRevenueAnalytics(workspaceId, getActor(req), query);
+    return res.status(200).json({
+      success: true,
+      data,
+    });
+  } catch (error: any) {
+    logger.error('Revenue Analytics Error:', {
+      message: error.message,
+      stack: error.stack,
+      workspaceId,
+      userId: req.user?.id,
+    });
+    handleServiceError(error, res, next, 'getRevenueAnalytics');
   }
 };

@@ -157,6 +157,14 @@ export const handleLeadApproval = async (req: Request, res: Response, next: Next
         leadId,
         action: input.action === 'APPROVE' ? 'approval_approved' : 'approval_denied',
       });
+
+      if (input.action === 'APPROVE' && result.approval?.toStage?.isClosed) {
+        emitWorkspaceEvent(workspaceId, 'revenue_updated', {
+          leadId,
+          earnedRevenue: (input as any).earnedRevenue,
+          userId: result.lead?.assignedToId || result.approval?.requestedById,
+        });
+      }
     }
 
     return res.status(200).json({

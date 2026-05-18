@@ -118,6 +118,7 @@ model Workspace {
   importJobs         ImportJob[]
   invites            Invite[]
   stageHistory       LeadStageHistory[]
+  revenueTransactions RevenueTransaction[]
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
@@ -277,6 +278,7 @@ model LeadStage {
   leads              Lead[]
   approvalsFrom      LeadStageApproval[] @relation("LeadStageApprovalFromStage")
   approvalsTo        LeadStageApproval[] @relation("LeadStageApprovalToStage")
+  revenueTransactions RevenueTransaction[]
 
   @@unique([workspaceId, name])
   @@index([workspaceId])
@@ -558,6 +560,9 @@ model Lead {
   closedAt        DateTime?
   closedById      String?
   closureType     LeadClosureType?
+  earnedRevenue      Float?
+  revenueApprovedById String?
+  revenueApprovedAt   DateTime?
   workspaceId     String
   createdById     String
   deletedAt       DateTime?
@@ -570,12 +575,14 @@ model Lead {
   source          LeadSource?   @relation(fields: [sourceId], references: [id], onDelete: SetNull)
   createdBy       User          @relation("LeadCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
   closedBy        User?         @relation("LeadClosedBy", fields: [closedById], references: [id], onDelete: SetNull)
+  revenueApprovedBy User?         @relation("LeadRevenueApprovedBy", fields: [revenueApprovedById], references: [id], onDelete: SetNull)
   workspace       Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   followUps       FollowUp[]
   lobLogs         LeadLOBLog[]
   activities      LeadActivity[]
   stageApprovals  LeadStageApproval[]
   stageHistory    LeadStageHistory[]
+  revenueTransactions RevenueTransaction[]
 
   @@index([workspaceId, assignedToId, stageId])
   @@index([workspaceId, sourceId, createdAt])
@@ -904,6 +911,9 @@ model User {
   createdLeads             Lead[]       @relation("LeadCreatedBy")
   assignedLeads            Lead[]       @relation("LeadAssignedTo")
   closedLeads              Lead[]       @relation("LeadClosedBy")
+  approvedLeadsRevenue     Lead[]       @relation("LeadRevenueApprovedBy")
+  revenueTransactions      RevenueTransaction[] @relation("RevenueTransactionUser")
+  approvedRevenueTransactions RevenueTransaction[] @relation("RevenueTransactionApprovedBy")
 
   createdHolidays          Holiday[]    @relation("HolidayCreatedBy")
   updatedHolidays          Holiday[]    @relation("HolidayUpdatedBy")
@@ -1252,4 +1262,29 @@ model ImportJob {
   @@index([status])
   @@index([workspaceId, status])
   @@map("import_jobs")
+}
+
+model RevenueTransaction {
+  id            String    @id @default(cuid())
+  workspaceId   String
+  leadId        String
+  userId        String
+  approvedById  String
+  amount        Float
+  closedStageId String
+  createdAt     DateTime  @default(now())
+
+  workspace     Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  lead          Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  user          User      @relation("RevenueTransactionUser", fields: [userId], references: [id], onDelete: Cascade)
+  approvedBy    User      @relation("RevenueTransactionApprovedBy", fields: [approvedById], references: [id], onDelete: Cascade)
+  closedStage   LeadStage @relation(fields: [closedStageId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@index([leadId])
+  @@index([userId])
+  @@index([approvedById])
+  @@index([closedStageId])
+  @@index([createdAt])
+  @@map("revenue_transactions")
 }

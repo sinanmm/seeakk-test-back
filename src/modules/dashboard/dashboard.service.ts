@@ -1,9 +1,10 @@
 import { LeadApprovalState } from '@prisma/client';
 import type { Prisma } from '@prisma/client';
+import prisma from '../../config/prisma';
 import * as dashboardRepository from './dashboard.repository';
 import { getStageBreakdown as getLOBStageBreakdown } from '../leads/lobAnalysis.service';
 import { buildAccessWhere, buildActiveUsersScopedWhere } from '../leads/leads.service';
-import type { DashboardSummaryQueryInput } from './dashboard.validation';
+import type { DashboardSummaryQueryInput, RevenueAnalyticsQueryInput } from './dashboard.validation';
 import logger from '../../utils/logger';
 
 type Actor = {
@@ -423,6 +424,229 @@ export const getDashboardSummary = async (
       closedLeads: formatNumber(totalClosedLeadCount),
       activeUsers: formatNumber(activeUserCount),
       todaysLeads: formatNumber(todayLeadCount),
+    },
+  };
+};
+
+export const getRevenueAnalytics = async (
+  workspaceId: string,
+  actor: Actor,
+  query: RevenueAnalyticsQueryInput,
+) => {
+  await ensureModuleReady();
+
+  let userIds: string[] | undefined = undefined;
+
+  if (query.userId) {
+    userIds = [query.userId];
+  }
+
+  if (query.supervisorId) {
+    const subordinates = await prisma.user.findMany({
+      where: { workspaceId, supervisorId: query.supervisorId, deletedAt: null },
+      select: { id: true },
+    });
+    const subordinateIds = subordinates.map((s) => s.id);
+    if (userIds) {
+      userIds = userIds.filter((id) => subordinateIds.includes(id));
+    } else {
+      userIds = subordinateIds;
+    }
+  }
+
+  const baseWhere: any = {
+    workspaceId,
+  };
+
+  if (userIds) {
+    baseWhere.userId = { in: userIds };
+  }
+
+  if (query.stageId) {
+    baseWhere.closedStageId = query.stageId;
+  }
+
+  if (query.dateFrom || query.dateTo) {
+    baseWhere.createdAt = {
+      ...(query.dateFrom ? { gte: new Date(query.dateFrom) } : {}),
+      ...(query.dateTo ? { lte: new Date(query.dateTo) } : {}),
+    };
+  }
+
+  const transactions = await (prisma as any).revenueTransaction.findMany({
+    where: baseWhere,
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+      closedStage: {
+        select: {
+          id: true,
+          name: true,
+          color: true,
+        },
+      },
+    },
+    orderBy: { createdAt: 'asc' },
+  });
+
+  const now = new Date();
+  const todayStart = startOfDay(now);
+  const todayEnd = endOfDay(now);
+  const monthStart = startOfMonth(now);
+  const yearStart = new Date(now.getFullYear(), 0, 1, 0, 0, 0, 0);
+
+  let totalRevenue = 0;
+  let todayRevenue = 0;
+  let thisMonthRevenue = 0;
+  let thisYearRevenue = 0;
+
+  transactions.forEach((tx: any) => {
+    totalRevenue += tx.amount;
+    const time = tx.createdAt.getTime();
+    if (time >= todayStart.getTime() && time <= todayEnd.getTime()) {
+      todayRevenue += tx.amount;
+    }
+    if (time >= monthStart.getTime()) {
+      thisMonthRevenue += tx.amount;
+    }
+    if (time >= yearStart.getTime()) {
+      thisYearRevenue += tx.amount;
+    }
+  });
+
+  // Daily series (last 30 days)
+  const dailySeriesMap = new Map<string, number>();
+  const dailyLabels: string[] = [];
+  for (let i = 29; i >= 0; i--) {
+    const dayDate = startOfDay(addDays(now, -i));
+    const label = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }).format(dayDate);
+    const key = dayDate.toISOString().slice(0, 10);
+    dailyLabels.push(label);
+    dailySeriesMap.set(key, 0);
+  }
+
+  transactions.forEach((tx: any) => {
+    const key = tx.createdAt.toISOString().slice(0, 10);
+    if (dailySeriesMap.has(key)) {
+      dailySeriesMap.set(key, dailySeriesMap.get(key)! + tx.amount);
+    }
+  });
+
+  const dailyRevenue = Array.from(dailySeriesMap.entries()).map(([key, amount], index) => ({
+    name: dailyLabels[index] || key,
+    revenue: amount,
+  }));
+
+  // Monthly series (last 12 months)
+  const monthlySeriesMap = new Map<string, number>();
+  const monthlyLabels: string[] = [];
+  for (let i = 11; i >= 0; i--) {
+    const monthDate = startOfMonth(addMonths(now, -i));
+    const label = new Intl.DateTimeFormat('en-US', { month: 'short', year: '2-digit' }).format(monthDate);
+    const key = `${monthDate.getFullYear()}-${String(monthDate.getMonth() + 1).padStart(2, '0')}`;
+    monthlyLabels.push(label);
+    monthlySeriesMap.set(key, 0);
+  }
+
+  transactions.forEach((tx: any) => {
+    const key = `${tx.createdAt.getFullYear()}-${String(tx.createdAt.getMonth() + 1).padStart(2, '0')}`;
+    if (monthlySeriesMap.has(key)) {
+      monthlySeriesMap.set(key, monthlySeriesMap.get(key)! + tx.amount);
+    }
+  });
+
+  const monthlyRevenue = Array.from(monthlySeriesMap.entries()).map(([key, amount], index) => ({
+    name: monthlyLabels[index] || key,
+    revenue: amount,
+  }));
+
+  // Yearly series (last 5 years)
+  const yearlySeriesMap = new Map<number, number>();
+  const currentYear = now.getFullYear();
+  for (let i = 4; i >= 0; i--) {
+    yearlySeriesMap.set(currentYear - i, 0);
+  }
+
+  transactions.forEach((tx: any) => {
+    const year = tx.createdAt.getFullYear();
+    if (yearlySeriesMap.has(year)) {
+      yearlySeriesMap.set(year, yearlySeriesMap.get(year)! + tx.amount);
+    }
+  });
+
+  const yearlyRevenue = Array.from(yearlySeriesMap.entries()).map(([year, amount]) => ({
+    name: String(year),
+    revenue: amount,
+  }));
+
+  // Revenue by User
+  const userMap = new Map<string, { id: string; name: string; email: string; amount: number }>();
+  transactions.forEach((tx: any) => {
+    const uId = tx.userId;
+    const name = resolveDisplayName(tx.user);
+    if (!userMap.has(uId)) {
+      userMap.set(uId, { id: uId, name, email: tx.user.email || '', amount: 0 });
+    }
+    userMap.get(uId)!.amount += tx.amount;
+  });
+  const revenueByUser = Array.from(userMap.values()).sort((a, b) => b.amount - a.amount);
+
+  // Revenue by Lead Stage
+  const stageMap = new Map<string, { id: string; name: string; color: string; amount: number }>();
+  transactions.forEach((tx: any) => {
+    const sId = tx.closedStageId;
+    const name = tx.closedStage?.name || 'Closed Stage';
+    const color = tx.closedStage?.color || '#10b981';
+    if (!stageMap.has(sId)) {
+      stageMap.set(sId, { id: sId, name, color, amount: 0 });
+    }
+    stageMap.get(sId)!.amount += tx.amount;
+  });
+  const revenueByStage = Array.from(stageMap.values()).sort((a, b) => b.amount - a.amount);
+
+  // Revenue Conversion Trends (monthly breakdown)
+  const trendsMap = new Map<string, { month: string; revenue: number; count: number }>();
+  for (let i = 11; i >= 0; i--) {
+    const monthDate = startOfMonth(addMonths(now, -i));
+    const label = new Intl.DateTimeFormat('en-US', { month: 'short', year: '2-digit' }).format(monthDate);
+    const key = `${monthDate.getFullYear()}-${String(monthDate.getMonth() + 1).padStart(2, '0')}`;
+    trendsMap.set(key, { month: label, revenue: 0, count: 0 });
+  }
+
+  transactions.forEach((tx: any) => {
+    const key = `${tx.createdAt.getFullYear()}-${String(tx.createdAt.getMonth() + 1).padStart(2, '0')}`;
+    if (trendsMap.has(key)) {
+      const entry = trendsMap.get(key)!;
+      entry.revenue += tx.amount;
+      entry.count += 1;
+    }
+  });
+  const revenueConversionTrends = Array.from(trendsMap.values());
+
+  const topPerformers = revenueByUser.slice(0, 5);
+
+  return {
+    kpis: {
+      totalRevenue,
+      todayRevenue,
+      thisMonthRevenue,
+      thisYearRevenue,
+    },
+    graphs: {
+      dailyRevenue,
+      monthlyRevenue,
+      yearlyRevenue,
+    },
+    metrics: {
+      revenueByUser,
+      revenueByStage,
+      revenueConversionTrends,
+      topPerformers,
     },
   };
 };

@@ -5,3 +5,13 @@ export const dashboardSummaryQuerySchema = z.object({
 });
 
 export type DashboardSummaryQueryInput = z.infer<typeof dashboardSummaryQuerySchema>;
+
+export const revenueAnalyticsQuerySchema = z.object({
+  dateFrom: z.string().optional(),
+  dateTo: z.string().optional(),
+  userId: z.string().optional(),
+  stageId: z.string().optional(),
+  supervisorId: z.string().optional(),
+});
+
+export type RevenueAnalyticsQueryInput = z.infer<typeof revenueAnalyticsQuerySchema>;

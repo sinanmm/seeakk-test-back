@@ -63,7 +63,18 @@ export const leadApprovalIdParamSchema = z.object({
 
 export const handleLeadApprovalSchema = z.object({
   action: z.enum(['APPROVE', 'DENY']),
-  comment: z.string().trim().min(1, 'comment is required').max(2000, 'comment is too long'),
+  comment: z
+    .preprocess(
+      (value) => {
+        if (typeof value !== 'string') return value;
+        const trimmed = value.trim();
+        return trimmed === '' ? 'Approved' : trimmed;
+      },
+      z.string().trim().min(1, 'comment is required').max(2000, 'comment is too long'),
+    )
+    .optional()
+    .default('Approved'),
+  earnedRevenue: z.number().positive('Earned revenue must be a positive number').optional(),
 });
 
 export type CreateLeadApprovalInput = z.infer<typeof createLeadApprovalSchema>;

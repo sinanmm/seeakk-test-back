@@ -442,12 +442,23 @@ export const processLeadApproval = async (
     }
   }
 
+  if (input.action === 'APPROVE' && approval.toStage?.isClosed) {
+    const earnedRevenue = (input as any).earnedRevenue;
+    if (earnedRevenue === undefined || earnedRevenue === null) {
+      throw createServiceError('Earned revenue is required when approving a closed lead stage.', 422);
+    }
+    if (typeof earnedRevenue !== 'number' || Number.isNaN(earnedRevenue) || earnedRevenue <= 0) {
+      throw createServiceError('Earned revenue must be a positive number.', 422);
+    }
+  }
+
   const result = await repository.processApproval({
     workspaceId,
     approvalId,
     action: input.action,
     comment: input.comment,
     approvedById: actor.id,
+    earnedRevenue: (input as any).earnedRevenue,
     leadUpdateData:
       input.action === 'APPROVE'
         ? {

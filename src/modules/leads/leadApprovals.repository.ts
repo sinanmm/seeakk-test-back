@@ -316,6 +316,7 @@ export const processApproval = async (input: {
   requestData?: Record<string, any>;
   ipAddress?: string;
   userAgent?: string;
+  earnedRevenue?: number;
 }) =>
   prisma.$transaction(async (tx: any) => {
     const approval = await (tx as any).leadStageApproval.findUnique({
@@ -333,6 +334,7 @@ export const processApproval = async (input: {
           select: {
             id: true,
             isLOB: true,
+            isClosed: true,
           },
         },
       },
@@ -347,10 +349,39 @@ export const processApproval = async (input: {
     }
 
     if (input.action === 'APPROVE' && input.leadUpdateData) {
+      const isClosedStage = Boolean(approval.toStage?.isClosed);
+      const earnedRevenue = isClosedStage && typeof input.earnedRevenue === 'number' ? input.earnedRevenue : undefined;
+
+      const finalLeadUpdateData = {
+        ...input.leadUpdateData,
+        ...(earnedRevenue !== undefined
+          ? {
+              earnedRevenue,
+              revenueApprovedById: input.approvedById,
+              revenueApprovedAt: new Date(),
+              generatedRevenue: earnedRevenue,
+            }
+          : {}),
+      };
+
       await (tx as any).lead.update({
         where: { id: approval.leadId },
-        data: input.leadUpdateData,
+        data: finalLeadUpdateData,
       });
+
+      if (isClosedStage && earnedRevenue !== undefined) {
+        const closingUserId = approval.lead.assignedToId || approval.requestedById;
+        await (tx as any).revenueTransaction.create({
+          data: {
+            workspaceId: input.workspaceId,
+            leadId: approval.leadId,
+            userId: closingUserId,
+            approvedById: input.approvedById,
+            amount: earnedRevenue,
+            closedStageId: approval.toStageId,
+          },
+        });
+      }
 
       const requestData = input.requestData ?? {};
       const nextFollowUpAt =
