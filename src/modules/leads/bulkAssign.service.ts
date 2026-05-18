@@ -1,6 +1,39 @@
 import * as repository from './bulkAssign.repository';
 import type { BulkAssignFiltersInput, BulkAssignInput, BulkAssignPreviewInput } from './bulkAssign.validation';
 import { buildAccessWhere } from './leads.service';
+import { clearLeadCache } from '../../services/User/leadService';
+import { redisClient } from '../../config/redis';
+
+export const clearFollowUpCache = async (workspaceId: string): Promise<void> => {
+  if (!redisClient.isOpen) return;
+
+  try {
+    const keysToDelete: string[] = [];
+    const pattern = `followups:today:${workspaceId}:*`;
+
+    for await (const key of (redisClient as any).scanIterator({ MATCH: pattern, COUNT: 250 })) {
+      if (typeof key === 'string' && key.length > 0) {
+        keysToDelete.push(key);
+      }
+    }
+
+    if (keysToDelete.length === 0) {
+      const keys = await (redisClient as any).keys(pattern);
+      if (Array.isArray(keys)) {
+        keys.forEach((k) => {
+          if (typeof k === 'string' && k.length > 0) keysToDelete.push(k);
+        });
+      }
+    }
+
+    if (keysToDelete.length > 0) {
+      await redisClient.del(keysToDelete);
+    }
+  } catch (error) {
+    // Fail-safe cache invalidation
+  }
+};
+
 
 type Actor = {
   id: string;
@@ -200,6 +233,11 @@ export const bulkAssignLeads = async (
   if (result.updatedCount === 0) {
     throw createServiceError('No active leads were available to assign. Please refresh and try again.', 409);
   }
+
+  // Clear lead and follow-up caches to trigger real-time UI/Calendar refreshes and prevent stale metrics
+  await clearLeadCache(workspaceId);
+  await clearFollowUpCache(workspaceId);
+
 
   return {
     message:

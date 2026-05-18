@@ -183,7 +183,7 @@ export const bulkAssignLeads = async (input: {
     }
 
     const assignmentValues = join(
-      validAssignments.map((assignment: { leadId: string; assignTo: string }) => sql`(${assignment.leadId}, ${assignment.assignTo})`),
+      validAssignments.map((assignment: { leadId: string; assignTo: string }) => sql`(${assignment.leadId}::text, ${assignment.assignTo}::text)`),
     );
 
     const updatedRows = (await (tx as any).$queryRaw(sql`
@@ -198,6 +198,20 @@ export const bulkAssignLeads = async (input: {
         AND l."isLOB" = false
       RETURNING l."id", l."assignedToId"
     `)) as Array<{ id: string; assignedToId: string }>;
+
+    // Reassign pending follow-ups of these leads to their new owners within the transaction
+    for (const assignment of validAssignments) {
+      await (tx as any).followUp.updateMany({
+        where: {
+          leadId: assignment.leadId,
+          workspaceId,
+          status: 'PENDING',
+        },
+        data: {
+          userId: assignment.assignTo,
+        },
+      });
+    }
 
     await (tx as any).leadActivity.createMany({
       data: updatedRows.map((row: any) => ({
