@@ -85,7 +85,7 @@ const resolveLifecycleTransition = (
 ) => {
   const transitions = lifecycle?.transitions || [];
   if (transitions.length === 0 || !stageId) return null;
-  const transition = transitions.find((item) => item.fromStageId === stageId) || transitions[0];
+  const transition = transitions.find((item) => item.fromStageId === stageId);
   if (!transition || transition.numberOfDays <= 0) return null;
 
   return {
