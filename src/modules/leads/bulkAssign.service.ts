@@ -189,6 +189,9 @@ export const bulkAssignLeads = async (
   await ensureModuleReady();
 
   const where = await buildLeadFilterWhere(workspaceId, actor, input.filters);
+  if (input.leadIds && input.leadIds.length > 0) {
+    where.id = { in: input.leadIds };
+  }
   const previewCount = await repository.countMatchingLeads(where);
 
   if (previewCount === 0) {

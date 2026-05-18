@@ -79,8 +79,8 @@ const bulkAssignFiltersBaseSchema = bulkAssignFiltersRawSchema
   });
 
 export const bulkAssignPreviewSchema = bulkAssignFiltersRawSchema.extend({
-  sample_limit: z.coerce.number().int().min(1).max(10).optional(),
-  sampleLimit: z.coerce.number().int().min(1).max(10).optional(),
+  sample_limit: z.coerce.number().int().min(1).max(5000).optional(),
+  sampleLimit: z.coerce.number().int().min(1).max(5000).optional(),
 }).transform((value) => ({
   stageId: value.stageId ?? value.stage_id,
   assignedTo: value.assignedTo ?? value.assigned_to,
@@ -90,7 +90,7 @@ export const bulkAssignPreviewSchema = bulkAssignFiltersRawSchema.extend({
   followupDateTo: value.followupDateTo ?? value.followup_date_to,
   createdDateFrom: value.createdDateFrom ?? value.created_date_from,
   createdDateTo: value.createdDateTo ?? value.created_date_to,
-  sampleLimit: value.sampleLimit ?? value.sample_limit ?? 5,
+  sampleLimit: value.sampleLimit ?? value.sample_limit ?? 5000,
 })).superRefine((value, ctx) => {
   if (value.followupDateFrom && value.followupDateTo && value.followupDateFrom > value.followupDateTo) {
     ctx.addIssue({
@@ -117,11 +117,14 @@ export const bulkAssignSchema = z.object({
   assignTo: optionalId,
   assign_to_ids: optionalStringArray,
   assignToIds: optionalStringArray,
+  lead_ids: optionalStringArray,
+  leadIds: optionalStringArray,
 }).transform((value) => ({
   filters: value.filters,
   assignmentType: value.assignmentType ?? value.assignment_type ?? 'SINGLE',
   assignTo: value.assignTo ?? value.assign_to,
   assignToIds: Array.from(new Set([...(value.assignToIds ?? []), ...(value.assign_to_ids ?? [])])),
+  leadIds: Array.from(new Set([...(value.leadIds ?? []), ...(value.lead_ids ?? [])])),
 })).superRefine((value, ctx) => {
   if (value.assignmentType === 'SINGLE' && !value.assignTo) {
     ctx.addIssue({
