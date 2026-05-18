@@ -8,7 +8,7 @@ router.get('/summary', protect, dashboardController.getDashboardSummary);
 router.get(
   '/revenue',
   protect,
-  checkAnyPermission(['LEAD_APPROVAL_VIEW', 'LEAD_APPROVAL_APPROVE', 'LOB_ANALYSIS_VIEW']),
+  checkAnyPermission(['LEAD_APPROVAL_VIEW', 'LEAD_APPROVAL_APPROVE', 'LOB_ANALYSIS_VIEW', 'VIEW_TOTAL_REVENUE', 'VIEW_OWN_REVENUE']),
   dashboardController.getRevenueAnalytics,
 );
 

@@ -435,22 +435,43 @@ export const getRevenueAnalytics = async (
 ) => {
   await ensureModuleReady();
 
-  let userIds: string[] | undefined = undefined;
-
-  if (query.userId) {
-    userIds = [query.userId];
+  const isPrivileged = actor.role?.name === 'superadmin' || actor.role?.name === 'admin';
+  let permissions: string[] = [];
+  if (actor.roleId) {
+    const rp = await prisma.rolePermission.findMany({
+      where: { roleId: actor.roleId },
+      include: { permission: { select: { key: true } } },
+    });
+    permissions = rp.map((item: any) => item.permission.key);
   }
 
-  if (query.supervisorId) {
-    const subordinates = await prisma.user.findMany({
-      where: { workspaceId, supervisorId: query.supervisorId, deletedAt: null },
-      select: { id: true },
-    });
-    const subordinateIds = subordinates.map((s) => s.id);
-    if (userIds) {
-      userIds = userIds.filter((id) => subordinateIds.includes(id));
-    } else {
-      userIds = subordinateIds;
+  const hasTotalRevenue = isPrivileged || permissions.includes('VIEW_TOTAL_REVENUE');
+  const hasOwnRevenue = isPrivileged || permissions.includes('VIEW_OWN_REVENUE');
+
+  if (!hasTotalRevenue && !hasOwnRevenue) {
+    throw createServiceError('You do not have permission to view revenue analytics.', 403);
+  }
+
+  let userIds: string[] | undefined = undefined;
+
+  if (hasOwnRevenue && !hasTotalRevenue) {
+    userIds = [actor.id];
+  } else {
+    if (query.userId) {
+      userIds = [query.userId];
+    }
+
+    if (query.supervisorId) {
+      const subordinates = await prisma.user.findMany({
+        where: { workspaceId, supervisorId: query.supervisorId, deletedAt: null },
+        select: { id: true },
+      });
+      const subordinateIds = subordinates.map((s) => s.id);
+      if (userIds) {
+        userIds = userIds.filter((id) => subordinateIds.includes(id));
+      } else {
+        userIds = subordinateIds;
+      }
     }
   }
 
