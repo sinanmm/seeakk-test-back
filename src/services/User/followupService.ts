@@ -693,7 +693,7 @@ export const getAdvancedCalendarDetails = async (
   const timeZone = await getWorkspaceTimeZone(workspaceId);
   const skip = (query.page - 1) * query.limit;
 
-  const targetDateStr = moment(query.date).format('YYYY-MM-DD');
+  const targetDateStr = moment.utc(query.date).format('YYYY-MM-DD');
   const startOfDay = moment.tz(targetDateStr, timeZone).startOf('day').toDate();
   const endOfDay = moment.tz(targetDateStr, timeZone).endOf('day').toDate();
 
