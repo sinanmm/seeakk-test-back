@@ -13,6 +13,8 @@ import type {
   ReminderAlertsQueryInput,
   SnoozeFollowUpInput,
   TodayFollowUpsQueryInput,
+  AdvancedCalendarSummaryInput,
+  AdvancedCalendarDetailsInput,
 } from '../../validations/followupValidation';
 
 const FOLLOWUP_PENDING = 'PENDING';
@@ -549,6 +551,220 @@ export const getCalendarData = async (
   return {
     timeZone,
     ...groupCalendarItems(query.view, mapped, timeZone),
+  };
+};
+
+export const getAdvancedCalendarSummary = async (
+  workspaceId: string,
+  actor: { id: string; role?: { name?: string | null } | null },
+  query: AdvancedCalendarSummaryInput,
+) => {
+  await assertModuleReady();
+
+  const targetUserId = await resolveTargetUserId(workspaceId, actor, query.userId);
+  const timeZone = await getWorkspaceTimeZone(workspaceId);
+
+  const groupDate = (date: Date) => moment.tz(date, timeZone).format('YYYY-MM-DD');
+
+  const [stages, leadsCreated, stageHistory, followUps] = await Promise.all([
+    (prisma as any).leadStage.findMany({
+      where: { workspaceId },
+      select: { id: true, color: true },
+    }),
+    (prisma as any).lead.findMany({
+      where: {
+        workspaceId,
+        createdById: targetUserId,
+        createdAt: { gte: query.startDate, lte: query.endDate },
+        deletedAt: null,
+      },
+      select: { createdAt: true },
+    }),
+    (prisma as any).leadStageHistory.findMany({
+      where: {
+        workspaceId,
+        changedById: targetUserId,
+        changedAt: { gte: query.startDate, lte: query.endDate },
+      },
+      select: { changedAt: true, toStageId: true, toStageName: true },
+    }),
+    (prisma as any).followUp.findMany({
+      where: buildFollowUpWhere({
+        workspaceId,
+        userId: targetUserId,
+        startDate: query.startDate,
+        endDate: query.endDate,
+      }),
+      select: {
+        scheduledAt: true,
+        lead: { select: { stageId: true, stage: { select: { name: true, color: true } } } },
+      },
+    }),
+  ]);
+
+  const stageColorMap = Object.fromEntries(stages.map((s: any) => [s.id, s.color]));
+
+  const summaryByDate: Record<string, {
+    leadsCreated: number;
+    totalFollowUps: number;
+    stageTransitions: Record<string, { count: number; name: string; color: string }>;
+    stageFollowUps: Record<string, { count: number; name: string; color: string }>;
+  }> = {};
+
+  const ensureDate = (d: string) => {
+    if (!summaryByDate[d]) {
+      summaryByDate[d] = {
+        leadsCreated: 0,
+        totalFollowUps: 0,
+        stageTransitions: {},
+        stageFollowUps: {},
+      };
+    }
+  };
+
+  leadsCreated.forEach((l: any) => {
+    const d = groupDate(l.createdAt);
+    ensureDate(d);
+    summaryByDate[d].leadsCreated += 1;
+  });
+
+  followUps.forEach((f: any) => {
+    const d = groupDate(f.scheduledAt);
+    ensureDate(d);
+    summaryByDate[d].totalFollowUps += 1;
+
+    const stageId = f.lead?.stageId;
+    if (stageId) {
+      if (!summaryByDate[d].stageFollowUps[stageId]) {
+        summaryByDate[d].stageFollowUps[stageId] = {
+          count: 0,
+          name: f.lead.stage?.name || 'Unknown Stage',
+          color: f.lead.stage?.color || '#cbd5e1',
+        };
+      }
+      summaryByDate[d].stageFollowUps[stageId].count += 1;
+    }
+  });
+
+  stageHistory.forEach((h: any) => {
+    const stageId = h.toStageId;
+    if (stageId) {
+      const d = groupDate(h.changedAt);
+      ensureDate(d);
+      if (!summaryByDate[d].stageTransitions[stageId]) {
+        summaryByDate[d].stageTransitions[stageId] = {
+          count: 0,
+          name: h.toStageName || 'Unknown Stage',
+          color: stageColorMap[stageId] || '#cbd5e1',
+        };
+      }
+      summaryByDate[d].stageTransitions[stageId].count += 1;
+    }
+  });
+
+  const formattedSummary = Object.entries(summaryByDate).map(([date, data]) => ({
+    date,
+    leadsCreated: data.leadsCreated,
+    totalFollowUps: data.totalFollowUps,
+    stageTransitions: Object.entries(data.stageTransitions).map(([id, info]) => ({
+      stageId: id,
+      ...info,
+    })),
+    stageFollowUps: Object.entries(data.stageFollowUps).map(([id, info]) => ({
+      stageId: id,
+      ...info,
+    })),
+  }));
+
+  return {
+    timeZone,
+    summary: formattedSummary,
+  };
+};
+
+export const getAdvancedCalendarDetails = async (
+  workspaceId: string,
+  actor: { id: string; role?: { name?: string | null } | null },
+  query: AdvancedCalendarDetailsInput,
+) => {
+  await assertModuleReady();
+
+  const targetUserId = await resolveTargetUserId(workspaceId, actor, query.userId);
+  const timeZone = await getWorkspaceTimeZone(workspaceId);
+  const skip = (query.page - 1) * query.limit;
+
+  const targetDateStr = moment(query.date).format('YYYY-MM-DD');
+  const startOfDay = moment.tz(targetDateStr, timeZone).startOf('day').toDate();
+  const endOfDay = moment.tz(targetDateStr, timeZone).endOf('day').toDate();
+
+  let items = [];
+  let total = 0;
+
+  if (query.type === 'LEADS_CREATED') {
+    const where = {
+      workspaceId,
+      createdById: targetUserId,
+      createdAt: { gte: startOfDay, lte: endOfDay },
+      deletedAt: null,
+    };
+    [total, items] = await Promise.all([
+      (prisma as any).lead.count({ where }),
+      (prisma as any).lead.findMany({
+        where,
+        skip,
+        take: query.limit,
+        orderBy: { createdAt: 'desc' },
+        include: { stage: { select: { name: true, color: true } }, assignedTo: { select: { name: true } } },
+      }),
+    ]);
+  } else if (query.type === 'STAGE_CREATED') {
+    const where = {
+      workspaceId,
+      changedById: targetUserId,
+      changedAt: { gte: startOfDay, lte: endOfDay },
+      toStageId: query.stageId,
+    };
+    [total, items] = await Promise.all([
+      (prisma as any).leadStageHistory.count({ where }),
+      (prisma as any).leadStageHistory.findMany({
+        where,
+        skip,
+        take: query.limit,
+        orderBy: { changedAt: 'desc' },
+        include: { lead: { include: { stage: { select: { name: true, color: true } }, assignedTo: { select: { name: true } } } } },
+      }),
+    ]);
+    items = items.map((i: any) => i.lead);
+  } else if (query.type === 'TOTAL_FOLLOWUPS' || query.type === 'STAGE_FOLLOWUPS') {
+    const where: any = {
+      workspaceId,
+      userId: targetUserId,
+      scheduledAt: { gte: startOfDay, lte: endOfDay },
+    };
+    if (query.type === 'STAGE_FOLLOWUPS') {
+      where.lead = { stageId: query.stageId };
+    }
+    [total, items] = await Promise.all([
+      (prisma as any).followUp.count({ where }),
+      (prisma as any).followUp.findMany({
+        where,
+        skip,
+        take: query.limit,
+        orderBy: { scheduledAt: 'asc' },
+        include: buildFollowUpInclude,
+      }),
+    ]);
+    items = items.map((i: any) => mapFollowUpRecord(i));
+  }
+
+  return {
+    items,
+    pagination: {
+      page: query.page,
+      limit: query.limit,
+      total,
+      totalPages: Math.max(1, Math.ceil(total / query.limit)),
+    },
   };
 };
 

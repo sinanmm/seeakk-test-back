@@ -82,6 +82,7 @@ const buildService = (overrides: Partial<any> = {}) => {
     audit: overrides.audit || {
       log: async (payload: any) => void auditLogs.push(payload),
     },
+    generateTokens: overrides.generateTokens || (() => ({ accessToken: 'access', refreshToken: 'refresh', tokenId: 'token_1' })),
     now: overrides.now || (() => new Date('2026-04-15T10:00:00.000Z')),
   });
 

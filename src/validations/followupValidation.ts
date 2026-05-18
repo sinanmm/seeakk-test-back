@@ -139,6 +139,28 @@ export const historyQuerySchema = z
 
 export type HistoryQueryInput = z.infer<typeof historyQuerySchema>;
 
+export const advancedCalendarSummarySchema = z.object({
+  startDate: parseDateField('startDate'),
+  endDate: parseDateField('endDate'),
+  userId: z.preprocess(emptyStringToUndefined, z.string().trim().optional()).optional(),
+}).refine((value) => value.endDate >= value.startDate, {
+  message: 'endDate must be greater than or equal to startDate',
+  path: ['endDate'],
+});
+
+export type AdvancedCalendarSummaryInput = z.infer<typeof advancedCalendarSummarySchema>;
+
+export const advancedCalendarDetailsSchema = z.object({
+  date: parseDateField('date'),
+  type: z.enum(['LEADS_CREATED', 'STAGE_CREATED', 'TOTAL_FOLLOWUPS', 'STAGE_FOLLOWUPS']),
+  stageId: z.preprocess(emptyStringToUndefined, z.string().trim().optional()).optional(),
+  userId: z.preprocess(emptyStringToUndefined, z.string().trim().optional()).optional(),
+  page: positiveIntString('page', 1),
+  limit: positiveIntString('limit', 20),
+});
+
+export type AdvancedCalendarDetailsInput = z.infer<typeof advancedCalendarDetailsSchema>;
+
 export type FollowUpStatus = z.infer<typeof followUpStatusSchema>;
 export type FollowUpType = z.infer<typeof followUpTypeSchema>;
 export type CalendarView = z.infer<typeof calendarViewSchema>;

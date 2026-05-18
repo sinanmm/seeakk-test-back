@@ -4,6 +4,8 @@ import * as followupController from '../../controllers/User/followupController';
 
 const router = Router();
 
+router.get('/calendar/advanced/summary', protect, followupController.getAdvancedCalendarSummary);
+router.get('/calendar/advanced/details', protect, followupController.getAdvancedCalendarDetails);
 router.get('/calendar', protect, followupController.getCalendarData);
 router.get('/today', protect, followupController.getTodayFollowUps);
 router.get('/alerts', protect, followupController.getReminderAlerts);

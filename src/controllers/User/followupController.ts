@@ -19,6 +19,10 @@ import {
   snoozeFollowUpSchema,
   TodayFollowUpsQueryInput,
   todayFollowUpsQuerySchema,
+  advancedCalendarSummarySchema,
+  AdvancedCalendarSummaryInput,
+  advancedCalendarDetailsSchema,
+  AdvancedCalendarDetailsInput,
 } from '../../validations/followupValidation';
 
 const requireWorkspace = (req: Request, res: Response): string | null => {
@@ -135,6 +139,44 @@ export const getCalendarData = async (req: Request, res: Response, next: NextFun
     });
   } catch (error) {
     handleServiceError(error, res, next, 'getCalendarData');
+  }
+};
+
+export const getAdvancedCalendarSummary = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = requireWorkspace(req, res);
+  if (!workspaceId) return;
+
+  const query = validate<AdvancedCalendarSummaryInput>(advancedCalendarSummarySchema, req.query, res);
+  if (!query) return;
+
+  try {
+    const data = await followupService.getAdvancedCalendarSummary(workspaceId, getActor(req), query);
+    return res.status(200).json({
+      success: true,
+      message: 'Advanced calendar summary fetched successfully',
+      data,
+    });
+  } catch (error) {
+    handleServiceError(error, res, next, 'getAdvancedCalendarSummary');
+  }
+};
+
+export const getAdvancedCalendarDetails = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = requireWorkspace(req, res);
+  if (!workspaceId) return;
+
+  const query = validate<AdvancedCalendarDetailsInput>(advancedCalendarDetailsSchema, req.query, res);
+  if (!query) return;
+
+  try {
+    const data = await followupService.getAdvancedCalendarDetails(workspaceId, getActor(req), query);
+    return res.status(200).json({
+      success: true,
+      message: 'Advanced calendar details fetched successfully',
+      ...data, // contains items and pagination
+    });
+  } catch (error) {
+    handleServiceError(error, res, next, 'getAdvancedCalendarDetails');
   }
 };
 

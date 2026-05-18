@@ -117,6 +117,7 @@ model Workspace {
   reportLogs         ReportLog[]
   importJobs         ImportJob[]
   invites            Invite[]
+  stageHistory       LeadStageHistory[]
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
@@ -574,6 +575,7 @@ model Lead {
   lobLogs         LeadLOBLog[]
   activities      LeadActivity[]
   stageApprovals  LeadStageApproval[]
+  stageHistory    LeadStageHistory[]
 
   @@index([workspaceId, assignedToId, stageId])
   @@index([workspaceId, sourceId, createdAt])
@@ -617,6 +619,26 @@ model LeadLOBLog {
   @@index([previousStageId])
   @@index([workspaceId, previousStageId])
   @@map("lead_lob_logs")
+}
+
+model LeadStageHistory {
+  id            String   @id @default(cuid())
+  leadId        String
+  fromStageId   String?
+  fromStageName String?
+  toStageId     String?
+  toStageName   String?
+  changedById   String
+  changedAt     DateTime @default(now())
+  workspaceId   String
+
+  lead          Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  workspace     Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([leadId, changedAt])
+  @@index([workspaceId, changedAt])
+  @@index([toStageId, changedAt])
+  @@map("lead_stage_history")
 }
 
 model LOBReason {

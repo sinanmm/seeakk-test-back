@@ -1066,6 +1066,20 @@ export const createLead = async (
       });
     }
 
+    if (stage) {
+      await (tx as any).leadStageHistory.create({
+        data: {
+          leadId: lead.id,
+          fromStageId: null,
+          fromStageName: null,
+          toStageId: stage.id,
+          toStageName: stage.name?.trim() || null,
+          changedById: actor.id,
+          workspaceId,
+        },
+      });
+    }
+
     return lead.id;
   });
 
@@ -1338,6 +1352,20 @@ export const updateLead = async (
           remarks: remarks?.trim() || null,
           previousStageId: existing.stageId,
           previousStageName: existing.stage?.name?.trim() || null,
+          changedById: actor.id,
+          workspaceId,
+        },
+      });
+    }
+
+    if (stage && existing.stageId !== stage.id) {
+      await (tx as any).leadStageHistory.create({
+        data: {
+          leadId: id,
+          fromStageId: existing.stageId,
+          fromStageName: existing.stage?.name?.trim() || null,
+          toStageId: stage.id,
+          toStageName: stage.name?.trim() || null,
           changedById: actor.id,
           workspaceId,
         },
