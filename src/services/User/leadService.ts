@@ -968,17 +968,34 @@ const createAutomaticFollowUp = async (
   description?: string,
   followUpType: 'CALL' | 'VISIT' | 'MEETING' = 'CALL',
 ): Promise<void> => {
-  await (tx as any).followUp.create({
-    data: {
-      leadId,
-      userId,
-      workspaceId,
-      type: followUpType,
-      description: description?.trim() || 'Auto-created from lead workflow',
-      status: 'PENDING',
-      scheduledAt,
-    },
+  const existingPending = await (tx as any).followUp.findFirst({
+    where: { leadId, workspaceId, status: 'PENDING' },
+    orderBy: { createdAt: 'desc' },
   });
+
+  if (existingPending) {
+    await (tx as any).followUp.update({
+      where: { id: existingPending.id },
+      data: {
+        userId,
+        type: followUpType,
+        description: description?.trim() || existingPending.description,
+        scheduledAt,
+      },
+    });
+  } else {
+    await (tx as any).followUp.create({
+      data: {
+        leadId,
+        userId,
+        workspaceId,
+        type: followUpType,
+        description: description?.trim() || 'Auto-created from lead workflow',
+        status: 'PENDING',
+        scheduledAt,
+      },
+    });
+  }
 };
 
 export const createLead = async (

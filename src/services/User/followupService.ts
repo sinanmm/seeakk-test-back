@@ -720,21 +720,25 @@ export const getAdvancedCalendarDetails = async (
   } else if (query.type === 'STAGE_CREATED') {
     const where = {
       workspaceId,
-      changedById: targetUserId,
-      changedAt: { gte: startOfDay, lte: endOfDay },
-      toStageId: query.stageId,
+      stageHistory: {
+        some: {
+          changedById: targetUserId,
+          changedAt: { gte: startOfDay, lte: endOfDay },
+          toStageId: query.stageId,
+        },
+      },
+      deletedAt: null,
     };
     [total, items] = await Promise.all([
-      (prisma as any).leadStageHistory.count({ where }),
-      (prisma as any).leadStageHistory.findMany({
+      (prisma as any).lead.count({ where }),
+      (prisma as any).lead.findMany({
         where,
         skip,
         take: query.limit,
-        orderBy: { changedAt: 'desc' },
-        include: { lead: { include: { stage: { select: { name: true, color: true } }, assignedTo: { select: { name: true } } } } },
+        orderBy: { updatedAt: 'desc' },
+        include: { stage: { select: { name: true, color: true } }, assignedTo: { select: { name: true } } },
       }),
     ]);
-    items = items.map((i: any) => i.lead);
   } else if (query.type === 'TOTAL_FOLLOWUPS' || query.type === 'STAGE_FOLLOWUPS') {
     const where: any = {
       workspaceId,
