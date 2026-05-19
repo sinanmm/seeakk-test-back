@@ -208,7 +208,7 @@ export const createCountry = async (
 
 export const listCountries = async (workspaceId: string, actor: Actor, query: ListCountriesQueryInput) => {
   await ensureModuleReady();
-  // Allow all authenticated workspace members to view active countries so dropdown lists work properly.
+  await assertViewLocations(actor);
 
   const where: any = {
     workspaceId,
@@ -441,7 +441,7 @@ export const configureLocationLevels = async (
 
 export const listLocationLevels = async (workspaceId: string, actor: Actor, query: ListLocationLevelsQueryInput) => {
   await ensureModuleReady();
-  // Allow all authenticated workspace members to view active location levels so dropdown lists work properly.
+  await assertViewLocations(actor);
 
   if (query.countryId) {
     const country = await repository.findCountryById(workspaceId, query.countryId);
@@ -653,7 +653,7 @@ export const deleteLocation = async (
 
 export const listLocations = async (workspaceId: string, actor: Actor, query: ListLocationsQueryInput) => {
   await ensureModuleReady();
-  // Allow all authenticated workspace members to view active locations so dropdown lists work properly.
+  await assertViewLocations(actor);
 
   const where: any = {
     workspaceId,
@@ -693,7 +693,7 @@ export const listLocations = async (workspaceId: string, actor: Actor, query: Li
 
 export const getLocationTree = async (workspaceId: string, actor: Actor, query: LocationTreeQueryInput) => {
   await ensureModuleReady();
-  // Allow all authenticated workspace members to view location trees so dropdown lists work properly.
+  await assertViewLocations(actor);
 
   const country = await repository.findCountryById(workspaceId, query.countryId);
   if (!country) {
