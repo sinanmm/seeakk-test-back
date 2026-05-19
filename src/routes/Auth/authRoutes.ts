@@ -25,6 +25,7 @@ router.post('/logout', authController.logout);
 
 // Example of a strictly PROTECTED route requiring any valid logged-in user
 router.get('/me', protect, authController.getMe);
+router.put('/me', protect, authController.updateMe);
 router.get('/users', protect, authorize('admin', 'manager'), authController.listUsers);
 
 export default router;

@@ -1006,3 +1006,74 @@ export const listUsers = async (req: Request, res: Response): Promise<any> => {
     return res.status(500).json({ message: 'Failed to fetch users' });
   }
 };
+
+export const updateMe = async (req: Request, res: Response): Promise<any> => {
+  try {
+    const currentUser = req.user;
+    if (!currentUser) {
+      return res.status(401).json({ message: 'Not authorized' });
+    }
+
+    const { name, username, phone, password } = req.body;
+
+    // Validate username uniqueness if provided
+    if (username) {
+      const existingUser = await prisma.user.findFirst({
+        where: {
+          username: { equals: username, mode: 'insensitive' },
+          id: { not: currentUser.id },
+        },
+      });
+      if (existingUser) {
+        return res.status(400).json({ message: 'Username is already taken' });
+      }
+    }
+
+    // Build update payload
+    const updateData: any = {};
+    if (typeof name === 'string') updateData.name = name.trim();
+    if (typeof username === 'string') updateData.username = username.trim() || null;
+    if (typeof phone === 'string') updateData.phone = phone.trim() || null;
+    if (typeof password === 'string' && password.trim().length >= 8) {
+      updateData.password = await bcrypt.hash(password.trim(), 12);
+    }
+
+    // Perform update
+    let user = await prisma.user.update({
+      where: { id: currentUser.id },
+      data: updateData,
+      select: authenticatedUserBaseSelect,
+    });
+
+    user = await hydrateAuthenticatedUser(user);
+    if (!user) {
+      return res.status(401).json({ message: 'Not authorized' });
+    }
+
+    const resolvedWorkspaceId = await resolveWorkspaceForAuthPayload(user);
+
+    // Log audit trail
+    await auditService.log({
+      userId: user.id,
+      workspaceId: user.workspaceId || undefined,
+      action: 'USER_PROFILE_UPDATED',
+      entityType: 'User',
+      entityId: user.id,
+      details: { fieldsUpdated: Object.keys(updateData) },
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
+
+    return res.status(200).json({
+      message: 'Profile updated successfully',
+      user: serializeAuthenticatedUser(user, resolvedWorkspaceId),
+    });
+  } catch (error: any) {
+    logger.error('Error updating user profile', {
+      error: error.message,
+      action: 'update_profile_failed',
+    });
+    return res.status(500).json({ message: 'Failed to update profile' });
+  }
+};
+
