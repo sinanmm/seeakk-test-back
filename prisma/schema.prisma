@@ -1150,6 +1150,15 @@ model ReportType {
   updatedAt      DateTime           @updatedAt
   deletedAt      DateTime?
 
+  category           String?            @default("Leads Report")
+  trackModules       Json?              @default("[]")
+  enableUserFilter   Boolean            @default(false)
+  enableDateFilter   Boolean            @default(false)
+  trackActivityTypes Json?              @default("[]")
+  allowExport        Boolean            @default(false)
+  showSummary        Boolean            @default(false)
+  showDetailedLogs   Boolean            @default(false)
+
   workspace      Workspace          @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   createdBy      User?              @relation("ReportTypeCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
   updatedBy      User?              @relation("ReportTypeUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)

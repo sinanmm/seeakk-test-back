@@ -15,6 +15,14 @@ export const reportTypeSelect = {
   createdAt: true,
   updatedAt: true,
   deletedAt: true,
+  category: true,
+  trackModules: true,
+  enableUserFilter: true,
+  enableDateFilter: true,
+  trackActivityTypes: true,
+  allowExport: true,
+  showSummary: true,
+  showDetailedLogs: true,
   createdBy: {
     select: {
       id: true,

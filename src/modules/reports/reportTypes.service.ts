@@ -148,6 +148,14 @@ export const createReportType = async (
     allowedFilters: allowedFilters as unknown as Prisma.InputJsonValue,
     status: input.status,
     createdById: actor.id,
+    category: input.category,
+    trackModules: input.trackModules as unknown as Prisma.InputJsonValue,
+    enableUserFilter: input.enableUserFilter,
+    enableDateFilter: input.enableDateFilter,
+    trackActivityTypes: input.trackActivityTypes as unknown as Prisma.InputJsonValue,
+    allowExport: input.allowExport,
+    showSummary: input.showSummary,
+    showDetailedLogs: input.showDetailedLogs,
   });
 
   await clearCache(workspaceId);
@@ -262,6 +270,14 @@ export const updateReportType = async (
     allowedFilters: nextAllowedFilters as unknown as Prisma.InputJsonValue,
     status: input.status ?? existing.status,
     updatedById: actor.id,
+    category: input.category === undefined ? existing.category : input.category,
+    trackModules: input.trackModules === undefined ? (existing.trackModules as any) : input.trackModules,
+    enableUserFilter: input.enableUserFilter === undefined ? existing.enableUserFilter : input.enableUserFilter,
+    enableDateFilter: input.enableDateFilter === undefined ? existing.enableDateFilter : input.enableDateFilter,
+    trackActivityTypes: input.trackActivityTypes === undefined ? (existing.trackActivityTypes as any) : input.trackActivityTypes,
+    allowExport: input.allowExport === undefined ? existing.allowExport : input.allowExport,
+    showSummary: input.showSummary === undefined ? existing.showSummary : input.showSummary,
+    showDetailedLogs: input.showDetailedLogs === undefined ? existing.showDetailedLogs : input.showDetailedLogs,
   });
 
   await clearCache(workspaceId);

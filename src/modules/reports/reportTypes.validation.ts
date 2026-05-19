@@ -74,6 +74,14 @@ export const createReportTypeSchema = z.object({
   allowed_filters: allowedFiltersSchema.optional(),
   allowedFilters: allowedFiltersSchema.optional(),
   status: reportTypeStatusSchema.default(ReportTypeStatus.ACTIVE),
+  category: z.string().trim().optional(),
+  trackModules: z.array(z.string()).optional(),
+  enableUserFilter: z.boolean().optional(),
+  enableDateFilter: z.boolean().optional(),
+  trackActivityTypes: z.array(z.string()).optional(),
+  allowExport: z.boolean().optional(),
+  showSummary: z.boolean().optional(),
+  showDetailedLogs: z.boolean().optional(),
 })
   .superRefine((value, ctx) => {
     if (!value.baseDataSource && !value.base_data_source) {
@@ -99,6 +107,14 @@ export const createReportTypeSchema = z.object({
     description: value.description,
     allowedFilters: value.allowedFilters ?? value.allowed_filters!,
     status: value.status ?? ReportTypeStatus.ACTIVE,
+    category: value.category ?? "Leads Report",
+    trackModules: value.trackModules ?? [],
+    enableUserFilter: value.enableUserFilter ?? false,
+    enableDateFilter: value.enableDateFilter ?? false,
+    trackActivityTypes: value.trackActivityTypes ?? [],
+    allowExport: value.allowExport ?? false,
+    showSummary: value.showSummary ?? false,
+    showDetailedLogs: value.showDetailedLogs ?? false,
   }));
 
 export const updateReportTypeSchema = z
@@ -111,6 +127,14 @@ export const updateReportTypeSchema = z
     allowed_filters: allowedFiltersSchema.optional(),
     allowedFilters: allowedFiltersSchema.optional(),
     status: reportTypeStatusSchema,
+    category: z.string().trim().optional(),
+    trackModules: z.array(z.string()).optional(),
+    enableUserFilter: z.boolean().optional(),
+    enableDateFilter: z.boolean().optional(),
+    trackActivityTypes: z.array(z.string()).optional(),
+    allowExport: z.boolean().optional(),
+    showSummary: z.boolean().optional(),
+    showDetailedLogs: z.boolean().optional(),
   })
   .transform((value) => ({
     name: value.name,
@@ -119,6 +143,14 @@ export const updateReportTypeSchema = z
     description: value.description,
     allowedFilters: value.allowedFilters ?? value.allowed_filters,
     status: value.status,
+    category: value.category,
+    trackModules: value.trackModules,
+    enableUserFilter: value.enableUserFilter,
+    enableDateFilter: value.enableDateFilter,
+    trackActivityTypes: value.trackActivityTypes,
+    allowExport: value.allowExport,
+    showSummary: value.showSummary,
+    showDetailedLogs: value.showDetailedLogs,
   }))
   .refine(
     (value) =>
@@ -127,7 +159,15 @@ export const updateReportTypeSchema = z
       value.baseDataSource !== undefined ||
       value.description !== undefined ||
       value.allowedFilters !== undefined ||
-      value.status !== undefined,
+      value.status !== undefined ||
+      value.category !== undefined ||
+      value.trackModules !== undefined ||
+      value.enableUserFilter !== undefined ||
+      value.enableDateFilter !== undefined ||
+      value.trackActivityTypes !== undefined ||
+      value.allowExport !== undefined ||
+      value.showSummary !== undefined ||
+      value.showDetailedLogs !== undefined,
     {
       message: 'At least one field is required for update.',
     },
