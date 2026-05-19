@@ -27,6 +27,9 @@ const allowedFilterKeySchema = z
         'department',
         'office',
         'status',
+        'user',
+        'module',
+        'action',
       ].includes(value),
     {
       message: 'Unsupported filter key',

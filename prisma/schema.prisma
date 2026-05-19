@@ -176,6 +176,7 @@ enum ReportBaseDataSource {
   LEADS
   USERS
   FOLLOWUPS
+  ACTIVITY
 }
 
 enum ReportModule {
@@ -184,6 +185,7 @@ enum ReportModule {
   REPORTS
   TARGETS
   FOLLOWUPS
+  ACTIVITY
 }
 
 enum InputType {

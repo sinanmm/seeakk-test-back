@@ -1,4 +1,6 @@
 import { Prisma, ReportBaseDataSource, ReportTypeStatus } from '@prisma/client';
+import prisma from '../../config/prisma';
+import { redisClient } from '../../config/redis';
 import auditService from '../../services/Audit/auditService';
 import * as reportTypesRepository from './reportTypes.repository';
 import * as reportsRepository from './reports.repository';
@@ -23,7 +25,7 @@ type DateRange = {
 };
 
 type RangeFilterKey = 'created_date' | 'follow_up_date';
-type ScalarFilterKey = 'stage' | 'assignee' | 'lead_source' | 'role' | 'department' | 'office' | 'status';
+type ScalarFilterKey = 'stage' | 'assignee' | 'lead_source' | 'role' | 'department' | 'office' | 'status' | 'user' | 'module' | 'action';
 
 type ScalarFilter = {
   key: ScalarFilterKey;
@@ -100,6 +102,7 @@ const FILTERS_BY_SOURCE: Record<ReportBaseDataSource, string[]> = {
   LEADS: ['stage', 'assignee', 'lead_source', 'created_date', 'follow_up_date'],
   USERS: ['created_date', 'role', 'department', 'office', 'status'],
   FOLLOWUPS: ['stage', 'assignee', 'lead_source', 'created_date', 'follow_up_date', 'status'],
+  ACTIVITY: ['created_date', 'user', 'module', 'action'],
 };
 
 const normalizeFilters = (filters: ReportFilterInput[]): NormalizedFilter[] =>
@@ -426,18 +429,136 @@ const buildFollowUpReportQueries = (
   };
 };
 
+const getActorPermissions = async (roleId?: string | null): Promise<string[]> => {
+  if (!roleId) return [];
+  const cacheKey = `role_permissions:${roleId}`;
+  if (redisClient.isOpen) {
+    const cached = await redisClient.get(cacheKey);
+    if (cached) return JSON.parse(cached);
+  }
+  const rolePermissions = await prisma.rolePermission.findMany({
+    where: { roleId },
+    include: { permission: { select: { key: true } } },
+  });
+  return rolePermissions.map((rp: any) => rp.permission.key);
+};
+
+const getActivityReportUserScope = async (workspaceId: string, actor: Actor): Promise<string[] | 'ALL'> => {
+  if (actor.role?.name?.toLowerCase() === 'superadmin') {
+    return 'ALL';
+  }
+
+  const permissions = await getActorPermissions(actor.roleId);
+  if (permissions.includes('SYSTEM_CONFIG') || permissions.includes('USERS_VIEW')) {
+    return 'ALL';
+  }
+
+  const supervisedUsers = await prisma.user.findMany({
+    where: { workspaceId, supervisorId: actor.id, deletedAt: null },
+    select: { id: true },
+  });
+
+  if (supervisedUsers.length > 0) {
+    return [actor.id, ...supervisedUsers.map((u: any) => u.id)];
+  }
+
+  return [actor.id];
+};
+
+const buildActivityWhereClauses = (workspaceId: string, filters: NormalizedFilter[], userScope: string[] | 'ALL'): Prisma.Sql[] => {
+  const clauses: Prisma.Sql[] = [
+    Prisma.sql`a."workspaceId" = ${workspaceId}`,
+  ];
+
+  if (userScope !== 'ALL') {
+    clauses.push(buildInClause('a."userId"', userScope));
+  }
+
+  for (const filter of filters) {
+    switch (filter.key) {
+      case 'user':
+        // If userScope is not ALL, only allow filtering by users they are allowed to see
+        if (userScope !== 'ALL') {
+           const allowedFilteredUsers = filter.value.filter(userId => userScope.includes(userId));
+           if (allowedFilteredUsers.length > 0) {
+             clauses.push(buildInClause('a."userId"', allowedFilteredUsers));
+           } else {
+             // Force no results if they try to filter by a user they can't see
+             clauses.push(Prisma.sql`1 = 0`);
+           }
+        } else {
+          clauses.push(buildInClause('a."userId"', filter.value));
+        }
+        break;
+      case 'module':
+        clauses.push(buildInClause('a."entityType"', filter.value));
+        break;
+      case 'action':
+        clauses.push(buildInClause('a."action"', filter.value));
+        break;
+      case 'created_date':
+        clauses.push(buildDateClause('a."createdAt"', filter.value));
+        break;
+      default:
+        break;
+    }
+  }
+
+  return clauses;
+};
+
+const buildActivityReportQueries = (
+  workspaceId: string,
+  filters: NormalizedFilter[],
+  page: number,
+  limit: number,
+  userScope: string[] | 'ALL',
+): { dataQuery: Prisma.Sql; countQuery: Prisma.Sql } => {
+  const whereClauses = buildActivityWhereClauses(workspaceId, filters, userScope);
+  const offset = (page - 1) * limit;
+
+  return {
+    dataQuery: Prisma.sql`
+      SELECT
+        a."id",
+        a."action",
+        a."entityType",
+        a."entityId",
+        a."details",
+        a."ipAddress",
+        a."userAgent",
+        a."createdAt",
+        COALESCE(u."name", u."username", u."email") AS "performedByName"
+      FROM "audit_logs" a
+      LEFT JOIN "users" u ON u."id" = a."userId"
+      WHERE ${Prisma.join(whereClauses, ' AND ')}
+      ORDER BY a."createdAt" DESC
+      LIMIT ${limit}
+      OFFSET ${offset}
+    `,
+    countQuery: Prisma.sql`
+      SELECT COUNT(*)::int AS total
+      FROM "audit_logs" a
+      WHERE ${Prisma.join(whereClauses, ' AND ')}
+    `,
+  };
+};
+
 const buildQueriesByDataSource = (
   dataSource: ReportBaseDataSource,
   workspaceId: string,
   filters: NormalizedFilter[],
   page: number,
   limit: number,
+  userScope: string[] | 'ALL' = 'ALL',
 ): { dataQuery: Prisma.Sql; countQuery: Prisma.Sql } => {
   switch (dataSource) {
     case ReportBaseDataSource.USERS:
       return buildUserReportQueries(workspaceId, filters, page, limit);
     case ReportBaseDataSource.FOLLOWUPS:
       return buildFollowUpReportQueries(workspaceId, filters, page, limit);
+    case ReportBaseDataSource.ACTIVITY:
+      return buildActivityReportQueries(workspaceId, filters, page, limit, userScope);
     case ReportBaseDataSource.LEADS:
     default:
       return buildLeadReportQueries(workspaceId, filters, page, limit);
@@ -544,7 +665,16 @@ const runReportType = async (
 
   assertReportExecutionFilters(reportType.baseDataSource, allowedFilters, filters);
 
-  const { dataQuery, countQuery } = buildQueriesByDataSource(reportType.baseDataSource, workspaceId, filters, page, limit);
+  let userScope: string[] | 'ALL' = 'ALL';
+  if (reportType.baseDataSource === ReportBaseDataSource.ACTIVITY) {
+    const permissions = await getActorPermissions(actor.roleId);
+    if (!permissions.includes('VIEW_ACTIVITY_REPORTS') && !permissions.includes('SYSTEM_CONFIG') && actor.role?.name?.toLowerCase() !== 'superadmin') {
+      throw createServiceError('Access denied. You need the VIEW_ACTIVITY_REPORTS permission to run Activity reports.', 403);
+    }
+    userScope = await getActivityReportUserScope(workspaceId, actor);
+  }
+
+  const { dataQuery, countQuery } = buildQueriesByDataSource(reportType.baseDataSource, workspaceId, filters, page, limit, userScope);
 
   const [rows, countRows] = await Promise.all([
     reportsRepository.executeDynamicQuery<Record<string, unknown>>(dataQuery),
@@ -892,6 +1022,13 @@ export const downloadReport = async (
   const report = await reportsRepository.findReportById(workspaceId, reportId);
   if (!report) {
     throw createServiceError('Report not found in this workspace.', 404);
+  }
+
+  if (report.reportType?.baseDataSource === ReportBaseDataSource.ACTIVITY) {
+    const permissions = await getActorPermissions(actor.roleId);
+    if (!permissions.includes('EXPORT_ACTIVITY_REPORTS') && !permissions.includes('SYSTEM_CONFIG') && actor.role?.name?.toLowerCase() !== 'superadmin') {
+      throw createServiceError('Access denied. You need the EXPORT_ACTIVITY_REPORTS permission to download Activity reports.', 403);
+    }
   }
 
   if (!report.generatedFileUrl) {

@@ -89,6 +89,8 @@ const permissions = [
   { key: 'REPORTS_VIEW', group: 'REPORTS_ANALYTICS', description: 'View reports' },
   { key: 'REPORTS_GENERATE', group: 'REPORTS_ANALYTICS', description: 'Generate dynamic reports' },
   { key: 'REPORT_LOGS_VIEW', group: 'REPORTS_ANALYTICS', description: 'View report execution logs' },
+  { key: 'VIEW_ACTIVITY_REPORTS', group: 'REPORTS_ANALYTICS', description: 'View user activity reports' },
+  { key: 'EXPORT_ACTIVITY_REPORTS', group: 'REPORTS_ANALYTICS', description: 'Export user activity reports' },
   { key: 'LOB_ANALYSIS_VIEW', group: 'REPORTS_ANALYTICS', description: 'View LOB analysis dashboards and audit breakdowns' },
   { key: 'VIEW_TOTAL_REVENUE', group: 'REPORTS_ANALYTICS', description: 'View total workspace revenue totals and analytics' },
   { key: 'VIEW_OWN_REVENUE', group: 'REPORTS_ANALYTICS', description: 'View only own generated revenue and analytics' },

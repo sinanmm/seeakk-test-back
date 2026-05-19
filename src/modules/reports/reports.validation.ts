@@ -38,6 +38,9 @@ const reportFilterSchema = z
       'department',
       'office',
       'status',
+      'user',
+      'module',
+      'action',
     ]);
 
     if (!supportedKeys.has(key)) {
