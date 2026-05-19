@@ -122,12 +122,12 @@ const parseStoredFilters = (filters: Array<{ filterKey: string; filterValue: str
       if (filter.filterKey === 'created_date' || filter.filterKey === 'follow_up_date') {
         const value = parsed && typeof parsed === 'object' ? (parsed as Record<string, unknown>) : {};
         acc.push({
-          key: filter.filterKey,
+          key: filter.filterKey as RangeFilterKey,
           value: {
             from: value.from ? new Date(String(value.from)) : undefined,
             to: value.to ? new Date(String(value.to)) : undefined,
           },
-        } as RangeFilter);
+        });
         return acc;
       }
 
@@ -141,12 +141,12 @@ const parseStoredFilters = (filters: Array<{ filterKey: string; filterValue: str
     } catch {
       if (filter.filterKey === 'created_date' || filter.filterKey === 'follow_up_date') {
         acc.push({
-          key: filter.filterKey,
+          key: filter.filterKey as RangeFilterKey,
           value: {
             from: new Date(filter.filterValue),
             to: new Date(filter.filterValue),
           },
-        } as RangeFilter);
+        });
       } else if (filter.filterValue.trim()) {
         acc.push({
           key: filter.filterKey as ScalarFilterKey,
