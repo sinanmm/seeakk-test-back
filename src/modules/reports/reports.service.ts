@@ -98,7 +98,7 @@ const ensureReportInstanceReady = async (): Promise<void> => {
   }
 };
 
-const FILTERS_BY_SOURCE: Record<ReportBaseDataSource, string[]> = {
+const FILTERS_BY_SOURCE: Record<string, string[]> = {
   LEADS: ['stage', 'assignee', 'lead_source', 'created_date', 'follow_up_date'],
   USERS: ['created_date', 'role', 'department', 'office', 'status'],
   FOLLOWUPS: ['stage', 'assignee', 'lead_source', 'created_date', 'follow_up_date', 'status'],
@@ -552,14 +552,14 @@ const buildQueriesByDataSource = (
   limit: number,
   userScope: string[] | 'ALL' = 'ALL',
 ): { dataQuery: Prisma.Sql; countQuery: Prisma.Sql } => {
-  switch (dataSource) {
-    case ReportBaseDataSource.USERS:
+  switch (dataSource as string) {
+    case 'USERS':
       return buildUserReportQueries(workspaceId, filters, page, limit);
-    case ReportBaseDataSource.FOLLOWUPS:
+    case 'FOLLOWUPS':
       return buildFollowUpReportQueries(workspaceId, filters, page, limit);
-    case ReportBaseDataSource.ACTIVITY:
+    case 'ACTIVITY':
       return buildActivityReportQueries(workspaceId, filters, page, limit, userScope);
-    case ReportBaseDataSource.LEADS:
+    case 'LEADS':
     default:
       return buildLeadReportQueries(workspaceId, filters, page, limit);
   }
@@ -666,7 +666,7 @@ const runReportType = async (
   assertReportExecutionFilters(reportType.baseDataSource, allowedFilters, filters);
 
   let userScope: string[] | 'ALL' = 'ALL';
-  if (reportType.baseDataSource === ReportBaseDataSource.ACTIVITY) {
+  if ((reportType.baseDataSource as string) === 'ACTIVITY') {
     const permissions = await getActorPermissions(actor.roleId);
     if (!permissions.includes('VIEW_ACTIVITY_REPORTS') && !permissions.includes('SYSTEM_CONFIG') && actor.role?.name?.toLowerCase() !== 'superadmin') {
       throw createServiceError('Access denied. You need the VIEW_ACTIVITY_REPORTS permission to run Activity reports.', 403);
@@ -1024,7 +1024,7 @@ export const downloadReport = async (
     throw createServiceError('Report not found in this workspace.', 404);
   }
 
-  if (report.reportType?.baseDataSource === ReportBaseDataSource.ACTIVITY) {
+  if ((report.reportType?.baseDataSource as string) === 'ACTIVITY') {
     const permissions = await getActorPermissions(actor.roleId);
     if (!permissions.includes('EXPORT_ACTIVITY_REPORTS') && !permissions.includes('SYSTEM_CONFIG') && actor.role?.name?.toLowerCase() !== 'superadmin') {
       throw createServiceError('Access denied. You need the EXPORT_ACTIVITY_REPORTS permission to download Activity reports.', 403);

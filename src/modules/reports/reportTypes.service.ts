@@ -35,7 +35,7 @@ const resolveDisplayName = (user?: { name?: string | null; username?: string | n
   return user.email || null;
 };
 
-const FILTERS_BY_SOURCE: Record<ReportBaseDataSource, AllowedReportFilterKey[]> = {
+const FILTERS_BY_SOURCE: Record<string, AllowedReportFilterKey[]> = {
   LEADS: ['stage', 'assignee', 'lead_source', 'created_date', 'follow_up_date'],
   USERS: ['created_date', 'role', 'department', 'office', 'status'],
   FOLLOWUPS: ['stage', 'assignee', 'lead_source', 'created_date', 'follow_up_date', 'status'],
