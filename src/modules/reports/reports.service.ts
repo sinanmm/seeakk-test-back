@@ -105,6 +105,31 @@ const FILTERS_BY_SOURCE: Record<string, string[]> = {
   ACTIVITY: ['created_date', 'user', 'module', 'action'],
 };
 
+const parseJsonStringArray = (value: unknown, fallback: string[]): string[] => {
+  if (Array.isArray(value)) {
+    return value.filter((item): item is string => typeof item === 'string' && item.trim().length > 0);
+  }
+  return fallback;
+};
+
+const resolveBaseDataSources = (reportType: { baseDataSource: ReportBaseDataSource; baseDataSources?: unknown }): ReportBaseDataSource[] => {
+  const fromJson = parseJsonStringArray(reportType.baseDataSources, []);
+  if (fromJson.length > 0) {
+    return fromJson as ReportBaseDataSource[];
+  }
+  return [reportType.baseDataSource];
+};
+
+const unionSupportedFilterKeys = (dataSources: ReportBaseDataSource[]): Set<string> => {
+  const keys = new Set<string>();
+  for (const ds of dataSources) {
+    for (const key of FILTERS_BY_SOURCE[ds] || []) {
+      keys.add(key);
+    }
+  }
+  return keys;
+};
+
 const normalizeFilters = (filters: ReportFilterInput[]): NormalizedFilter[] =>
   filters.map((filter) => filter as NormalizedFilter);
 
@@ -158,17 +183,27 @@ const parseStoredFilters = (filters: Array<{ filterKey: string; filterValue: str
     return acc;
   }, []);
 
+/**
+ * Validates saved-report or execution filters.
+ * For create/update saved reports, pass all report type base data sources (union), because
+ * `baseDataSource` is only the legacy primary column while `baseDataSources` may list LEADS + USERS etc.
+ * For a single execution pass (runReportType with override), pass a one-element array.
+ */
 const assertReportExecutionFilters = (
-  dataSource: ReportBaseDataSource,
+  evaluationDataSources: ReportBaseDataSource[],
   allowedFilters: string[],
   filters: NormalizedFilter[],
 ): void => {
-  const supportedFilters = new Set(FILTERS_BY_SOURCE[dataSource]);
+  const supportedFilters = unionSupportedFilterKeys(evaluationDataSources);
   const allowedFilterSet = new Set(allowedFilters);
+  const sourcesLabel = evaluationDataSources.map((d) => String(d).toLowerCase()).join(', ');
 
   for (const filter of filters) {
     if (!supportedFilters.has(filter.key)) {
-      throw createServiceError(`Filter '${filter.key}' is not supported for ${dataSource.toLowerCase()} reports.`, 422);
+      throw createServiceError(
+        `Filter '${filter.key}' is not supported for this report type's data sources (${sourcesLabel}).`,
+        422,
+      );
     }
 
     if (!allowedFilterSet.has(filter.key)) {
@@ -565,21 +600,6 @@ const buildQueriesByDataSource = (
   }
 };
 
-const parseJsonStringArray = (value: unknown, fallback: string[]): string[] => {
-  if (Array.isArray(value)) {
-    return value.filter((item): item is string => typeof item === 'string' && item.trim().length > 0);
-  }
-  return fallback;
-};
-
-const resolveBaseDataSources = (reportType: { baseDataSource: ReportBaseDataSource; baseDataSources?: unknown }): ReportBaseDataSource[] => {
-  const fromJson = parseJsonStringArray(reportType.baseDataSources, []);
-  if (fromJson.length > 0) {
-    return fromJson as ReportBaseDataSource[];
-  }
-  return [reportType.baseDataSource];
-};
-
 const filtersForDataSource = (dataSource: ReportBaseDataSource, filters: NormalizedFilter[]): NormalizedFilter[] => {
   const supported = new Set(FILTERS_BY_SOURCE[dataSource]);
   return filters.filter((filter) => supported.has(filter.key));
@@ -713,7 +733,7 @@ const runReportType = async (
   const executionDataSource = options?.dataSourceOverride ?? reportType.baseDataSource;
   const scopedFilters = filtersForDataSource(executionDataSource, filters);
 
-  assertReportExecutionFilters(executionDataSource, allowedFilters, scopedFilters);
+  assertReportExecutionFilters([executionDataSource], allowedFilters, scopedFilters);
 
   let userScope: string[] | 'ALL' = 'ALL';
   if ((executionDataSource as string) === 'ACTIVITY') {
@@ -814,7 +834,7 @@ export const createReport = async (
     ? reportType.allowedFilters.filter((value): value is string => typeof value === 'string')
     : [];
 
-  assertReportExecutionFilters(reportType.baseDataSource, allowedFilters, normalizedFilters);
+  assertReportExecutionFilters(resolveBaseDataSources(reportType), allowedFilters, normalizedFilters);
 
   const created = await reportsRepository.createReport(
     {
@@ -895,7 +915,7 @@ export const updateReport = async (
     ? reportType.allowedFilters.filter((value): value is string => typeof value === 'string')
     : [];
 
-  assertReportExecutionFilters(reportType.baseDataSource, allowedFilters, normalizedFilters);
+  assertReportExecutionFilters(resolveBaseDataSources(reportType), allowedFilters, normalizedFilters);
 
   const reportName = input.reportName ?? existing.reportName;
   const reportDate = input.reportDate ?? existing.reportDate;
@@ -1131,7 +1151,10 @@ export const downloadReport = async (
     throw createServiceError('Report not found in this workspace.', 404);
   }
 
-  if ((report.reportType?.baseDataSource as string) === 'ACTIVITY') {
+  const activitySources = report.reportType
+    ? resolveBaseDataSources(report.reportType as { baseDataSource: ReportBaseDataSource; baseDataSources?: unknown })
+    : [];
+  if (activitySources.some((s) => String(s) === 'ACTIVITY')) {
     const permissions = await getActorPermissions(actor.roleId);
     if (!permissions.includes('EXPORT_ACTIVITY_REPORTS') && !permissions.includes('SYSTEM_CONFIG') && actor.role?.name?.toLowerCase() !== 'superadmin') {
       throw createServiceError('Access denied. You need the EXPORT_ACTIVITY_REPORTS permission to download Activity reports.', 403);
