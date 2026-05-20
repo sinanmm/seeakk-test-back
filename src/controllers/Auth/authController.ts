@@ -25,8 +25,36 @@ import {
   isPrismaSchemaMismatchError, 
   isTransientDatabaseError 
 } from '../../utils/databaseErrors';
+import { getMandatoryFollowUpSessionState } from '../../services/User/mandatoryFollowupContinuation.service';
 
 const getFrontendUrl = (): string => getPublicFrontendUrl();
+
+const resolveAuthSession = async (user: { id: string }, workspaceId?: string | null) => {
+  if (!workspaceId) {
+    return {
+      mandatoryFollowupRequired: false,
+      mandatoryFollowupCount: 0,
+    };
+  }
+
+  try {
+    const state = await getMandatoryFollowUpSessionState(workspaceId, { id: user.id });
+    return {
+      mandatoryFollowupRequired: state.mandatoryFollowupRequired,
+      mandatoryFollowupCount: state.mandatoryFollowupCount,
+    };
+  } catch (error: any) {
+    logger.warn('Failed to resolve mandatory follow-up session state', {
+      userId: user.id,
+      workspaceId,
+      message: error?.message,
+    });
+    return {
+      mandatoryFollowupRequired: false,
+      mandatoryFollowupCount: 0,
+    };
+  }
+};
 
 // Hydration and base selection moved to userHydration utility.
 
@@ -515,9 +543,11 @@ export const login = async (req: Request, res: Response): Promise<any> => {
 
     const resolvedWorkspaceId = await resolveWorkspaceForAuthPayload(user);
     await repairWorkspaceMemberOnboarding(user, resolvedWorkspaceId);
+    const session = await resolveAuthSession(user, resolvedWorkspaceId);
 
     return res.status(200).json({
       user: serializeAuthenticatedUser(user, resolvedWorkspaceId),
+      session,
       ...tokens,
     });
   } catch (error: any) {
@@ -715,9 +745,11 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
 
     const resolvedWorkspaceId = await resolveWorkspaceForAuthPayload(user);
     await repairWorkspaceMemberOnboarding(user, resolvedWorkspaceId);
+    const session = await resolveAuthSession(user, resolvedWorkspaceId);
 
     return res.status(200).json({
       user: serializeAuthenticatedUser(user, resolvedWorkspaceId),
+      session,
       ...tokens,
     });
   } catch (error: any) {
@@ -921,9 +953,11 @@ export const getMe = async (req: Request, res: Response): Promise<any> => {
     }
 
     const resolvedWorkspaceId = await resolveWorkspaceForAuthPayload(user);
+    const session = await resolveAuthSession(user, resolvedWorkspaceId);
 
     return res.status(200).json({
       user: serializeAuthenticatedUser(user, resolvedWorkspaceId),
+      session,
     });
   } catch (error) {
     return res.status(500).json({ message: 'Failed to fetch user profile' });

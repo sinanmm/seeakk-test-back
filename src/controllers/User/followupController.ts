@@ -2,6 +2,8 @@ import { NextFunction, Request, Response } from 'express';
 import auditService from '../../services/Audit/auditService';
 import logger from '../../utils/logger';
 import * as followupService from '../../services/User/followupService';
+import * as mandatoryFollowupService from '../../services/User/mandatoryFollowupContinuation.service';
+import { emitWorkspaceEvent } from '../../realtime/socket';
 import {
   CalendarQueryInput,
   calendarQuerySchema,
@@ -24,6 +26,10 @@ import {
   advancedCalendarDetailsSchema,
   AdvancedCalendarDetailsInput,
 } from '../../validations/followupValidation';
+import {
+  SaveMandatoryFollowUpContinuationInput,
+  saveMandatoryFollowUpContinuationSchema,
+} from '../../validations/mandatoryFollowupValidation';
 
 const requireWorkspace = (req: Request, res: Response): string | null => {
   const workspaceId = req.user?.workspaceId ?? null;
@@ -289,6 +295,69 @@ export const snoozeFollowUp = async (req: Request, res: Response, next: NextFunc
     });
   } catch (error) {
     handleServiceError(error, res, next, 'snoozeFollowUp');
+  }
+};
+
+export const getMandatoryFollowUpContinuation = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<any> => {
+  const workspaceId = requireWorkspace(req, res);
+  if (!workspaceId) return;
+
+  try {
+    const data = await mandatoryFollowupService.getMandatoryFollowUpSessionState(workspaceId, getActor(req));
+    return res.status(200).json({
+      success: true,
+      message: 'Mandatory follow-up continuation status fetched successfully',
+      data,
+    });
+  } catch (error) {
+    handleServiceError(error, res, next, 'getMandatoryFollowUpContinuation');
+  }
+};
+
+export const saveMandatoryFollowUpContinuation = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<any> => {
+  const workspaceId = requireWorkspace(req, res);
+  if (!workspaceId) return;
+
+  const input = validate<SaveMandatoryFollowUpContinuationInput>(
+    saveMandatoryFollowUpContinuationSchema,
+    req.body,
+    res,
+  );
+  if (!input) return;
+
+  try {
+    const data = await mandatoryFollowupService.saveMandatoryFollowUpContinuation(
+      workspaceId,
+      getActor(req),
+      input,
+      { ipAddress: req.ip, userAgent: req.headers['user-agent'] },
+    );
+
+    emitWorkspaceEvent(workspaceId, 'lead_updated', {
+      leadId: data.leadId,
+      action: 'mandatory_followup_continuation_saved',
+    });
+
+    const session = await mandatoryFollowupService.getMandatoryFollowUpSessionState(workspaceId, getActor(req));
+
+    return res.status(200).json({
+      success: true,
+      message: 'Next follow-up scheduled successfully',
+      data: {
+        ...data,
+        session,
+      },
+    });
+  } catch (error) {
+    handleServiceError(error, res, next, 'saveMandatoryFollowUpContinuation');
   }
 };
 

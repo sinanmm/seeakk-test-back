@@ -353,6 +353,25 @@ const resolveTargetUserId = async (
   return targetUser.id;
 };
 
+export const syncLeadNextFollowUpPointer = async (leadId: string, workspaceId: string): Promise<void> => {
+  const nextPending = await (prisma as any).followUp.findFirst({
+    where: {
+      leadId,
+      workspaceId,
+      status: FOLLOWUP_PENDING,
+    },
+    orderBy: [{ scheduledAt: 'asc' }, { createdAt: 'asc' }],
+    select: { scheduledAt: true },
+  });
+
+  await (prisma as any).lead.update({
+    where: { id: leadId },
+    data: {
+      nextFollowUpAt: nextPending?.scheduledAt ?? null,
+    },
+  });
+};
+
 const getLeadTableColumns = async (): Promise<{
   leadTableExists: boolean;
   idColumn: string | null;
@@ -492,6 +511,22 @@ export const createFollowUp = async (
 
   await ensureLeadExistsInWorkspace(input.leadId, workspaceId);
 
+  const leadForSchedule = await prisma.lead.findFirst({
+    where: { id: input.leadId.trim(), workspaceId, deletedAt: null },
+    select: {
+      lifecycleId: true,
+      isClosed: true,
+      isLOB: true,
+      stageExpiresAt: true,
+      stage: { select: { isClosed: true, isLOB: true } },
+    },
+  });
+
+  if (leadForSchedule?.lifecycleId) {
+    const { validateMandatoryFollowUpSchedule } = await import('./mandatoryFollowupContinuation.service');
+    validateMandatoryFollowUpSchedule(leadForSchedule, input.scheduledAt);
+  }
+
   const userId = await resolveTargetUserId(workspaceId, actor);
 
   const created = await (prisma as any).followUp.create({
@@ -510,6 +545,7 @@ export const createFollowUp = async (
   const scheduleDateKey = moment(input.scheduledAt).utc().format('YYYY-MM-DD');
   const todayRange = await getDayRangeForWorkspace(workspaceId);
   await invalidateTodayCache(workspaceId, userId, [scheduleDateKey, todayRange.cacheDateKey]);
+  await syncLeadNextFollowUpPointer(input.leadId.trim(), workspaceId);
 
   logger.info('Follow-up created', {
     module: 'follow-up',
@@ -930,6 +966,8 @@ export const completeFollowUp = async (
   const scheduledDateKey = moment(existing.scheduledAt).utc().format('YYYY-MM-DD');
   await invalidateTodayCache(workspaceId, existing.userId, [scheduledDateKey, todayRange.cacheDateKey]);
 
+  await syncLeadNextFollowUpPointer(existing.leadId, workspaceId);
+
   logger.info('Follow-up completed', {
     module: 'follow-up',
     followUpId: existing.id,
@@ -1006,6 +1044,22 @@ export const snoozeFollowUp = async (
     throw createServiceError('Snooze time must be in the future.', 422);
   }
 
+  const leadForSchedule = await prisma.lead.findFirst({
+    where: { id: existing.leadId, workspaceId, deletedAt: null },
+    select: {
+      lifecycleId: true,
+      isClosed: true,
+      isLOB: true,
+      stageExpiresAt: true,
+      stage: { select: { isClosed: true, isLOB: true } },
+    },
+  });
+
+  if (leadForSchedule?.lifecycleId) {
+    const { validateMandatoryFollowUpSchedule } = await import('./mandatoryFollowupContinuation.service');
+    validateMandatoryFollowUpSchedule(leadForSchedule, input.scheduledAt);
+  }
+
   const updated = await (prisma as any).followUp.update({
     where: { id: existing.id },
     data: {
@@ -1019,11 +1073,11 @@ export const snoozeFollowUp = async (
   const previousDateKey = moment(existing.scheduledAt).utc().format('YYYY-MM-DD');
   const nextDateKey = moment(input.scheduledAt).utc().format('YYYY-MM-DD');
   await invalidateTodayCache(workspaceId, existing.userId, [previousDateKey, nextDateKey, todayRange.cacheDateKey]);
+  await syncLeadNextFollowUpPointer(existing.leadId, workspaceId);
 
   return mapFollowUpRecord(updated as FollowUpRecord);
 };
 
-/** Invalidate cached "today" follow-up lists after lead-driven follow-up create/update. */
 export const touchFollowUpTodayCachesAfterLeadMutation = async (
   workspaceId: string,
   userId: string,
