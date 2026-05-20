@@ -1,5 +1,9 @@
 import { Prisma, ReportTypeStatus } from '@prisma/client';
 import prisma from '../../config/prisma';
+import {
+  ensureReportTypeSchemaColumns,
+  getMissingReportTypeColumns,
+} from './reportTypeSchemaGuard';
 
 export const reportTypeSelect = {
   id: true,
@@ -54,7 +58,14 @@ export const ensureReportSchemaReady = async (): Promise<boolean> => {
       AND table_name IN ('report_types', 'report_logs')
   `;
 
-  return Boolean(rows[0]?.ready);
+  if (!rows[0]?.ready) {
+    return false;
+  }
+
+  await ensureReportTypeSchemaColumns();
+
+  const missingColumns = await getMissingReportTypeColumns();
+  return missingColumns.length === 0;
 };
 
 export const getRolePermissionKeys = async (roleId: string): Promise<string[]> => {

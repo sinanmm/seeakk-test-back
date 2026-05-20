@@ -65,7 +65,7 @@ const ensureModuleReady = async (): Promise<void> => {
   const ready = await repository.ensureReportSchemaReady();
   if (!ready) {
     throw createServiceError(
-      'Report type module is not ready. Required database schema is missing. Run Prisma migration/db push.',
+      'Report type module is not ready. Required database tables or columns are missing. On production run `npx prisma migrate deploy` (or redeploy so `npm start` runs migrations), then restart the API.',
       503,
     );
   }

@@ -131,8 +131,15 @@ const startServer = async () => {
 
     // Connect Prisma in background so API process can still boot and avoid ERR_CONNECTION_REFUSED.
     connectPrismaWithRetry(prisma)
-      .then(() => {
+      .then(async () => {
         console.log('PostgreSQL connected via Prisma');
+        try {
+          const { ensureReportTypeSchemaColumns } = await import('./modules/reports/reportTypeSchemaGuard');
+          await ensureReportTypeSchemaColumns();
+          console.log('[Reports] report_types schema columns verified');
+        } catch (schemaError) {
+          console.error('[Reports] Failed to ensure report_types columns:', schemaError);
+        }
         // Start background jobs
         scheduleDailySync().catch(err => console.error('Failed to schedule holiday jobs:', err));
         startFollowUpReminders();
