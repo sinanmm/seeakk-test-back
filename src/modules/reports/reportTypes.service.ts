@@ -1,4 +1,4 @@
-import { Prisma, ReportBaseDataSource, ReportTypeStatus } from '@prisma/client';
+import { Prisma, ReportBaseDataSource, ReportModule, ReportTypeStatus } from '@prisma/client';
 import { redisClient } from '../../config/redis';
 import auditService from '../../services/Audit/auditService';
 import * as repository from './reportTypes.repository';
@@ -87,15 +87,28 @@ const assertManageAccess = async (actor: Actor): Promise<void> => {
   throw createServiceError('Access denied. You need the REPORT_TYPE_MANAGE permission.', 403);
 };
 
+const parseJsonStringArray = (value: unknown, fallback: string[]): string[] => {
+  if (Array.isArray(value)) {
+    return value.filter((item): item is string => typeof item === 'string' && item.trim().length > 0);
+  }
+  return fallback;
+};
+
 const validateAllowedFilters = (
-  baseDataSource: ReportBaseDataSource,
+  baseDataSources: ReportBaseDataSource[],
   allowedFilters: AllowedReportFilterKey[],
 ): AllowedReportFilterKey[] => {
-  const supported = new Set(FILTERS_BY_SOURCE[baseDataSource]);
+  const supported = new Set<AllowedReportFilterKey>();
+  for (const source of baseDataSources) {
+    for (const filterKey of FILTERS_BY_SOURCE[source] || []) {
+      supported.add(filterKey);
+    }
+  }
+
   const unsupported = allowedFilters.filter((filterKey) => !supported.has(filterKey));
   if (unsupported.length > 0) {
     throw createServiceError(
-      `Unsupported filters for ${baseDataSource.toLowerCase()}: ${unsupported.join(', ')}`,
+      `Unsupported filters for selected data sources: ${unsupported.join(', ')}`,
       422,
     );
   }
@@ -103,8 +116,14 @@ const validateAllowedFilters = (
   return Array.from(new Set(allowedFilters));
 };
 
-const mapReportType = (row: any) => ({
+const mapReportType = (row: any) => {
+  const modules = parseJsonStringArray(row.modules, row.module ? [row.module] : []);
+  const baseDataSources = parseJsonStringArray(row.baseDataSources, row.baseDataSource ? [row.baseDataSource] : []);
+
+  return {
   ...row,
+  modules,
+  baseDataSources,
   allowedFilters: Array.isArray(row.allowedFilters) ? row.allowedFilters : [],
   createdAt: row.createdAt.toISOString(),
   updatedAt: row.updatedAt.toISOString(),
@@ -121,7 +140,8 @@ const mapReportType = (row: any) => ({
         displayName: resolveDisplayName(row.updatedBy),
       }
     : null,
-});
+};
+};
 
 export const createReportType = async (
   workspaceId: string,
@@ -137,19 +157,25 @@ export const createReportType = async (
     throw createServiceError(`Report name '${input.name}' already exists.`, 409);
   }
 
-  const allowedFilters = validateAllowedFilters(input.baseDataSource, input.allowedFilters);
+  const baseDataSources = input.baseDataSources?.length
+    ? input.baseDataSources
+    : [input.baseDataSource];
+  const modules = input.modules?.length ? input.modules : [input.module];
+  const allowedFilters = validateAllowedFilters(baseDataSources, input.allowedFilters);
 
   const created = await repository.createReportType({
     workspaceId,
     name: input.name,
-    module: input.module,
-    baseDataSource: input.baseDataSource,
+    module: modules[0],
+    modules: modules as unknown as Prisma.InputJsonValue,
+    baseDataSource: baseDataSources[0],
+    baseDataSources: baseDataSources as unknown as Prisma.InputJsonValue,
     description: input.description ?? null,
     allowedFilters: allowedFilters as unknown as Prisma.InputJsonValue,
     status: input.status,
     createdById: actor.id,
     category: input.category,
-    trackModules: input.trackModules as unknown as Prisma.InputJsonValue,
+    trackModules: (input.trackModules?.length ? input.trackModules : modules) as unknown as Prisma.InputJsonValue,
     enableUserFilter: input.enableUserFilter,
     enableDateFilter: input.enableDateFilter,
     trackActivityTypes: input.trackActivityTypes as unknown as Prisma.InputJsonValue,
@@ -257,21 +283,44 @@ export const updateReportType = async (
     }
   }
 
-  const nextDataSource = input.baseDataSource ?? existing.baseDataSource;
+  const existingBaseDataSources = parseJsonStringArray(
+    existing.baseDataSources,
+    existing.baseDataSource ? [existing.baseDataSource] : [],
+  ) as ReportBaseDataSource[];
+  const existingModules = parseJsonStringArray(existing.modules, existing.module ? [existing.module] : []) as ReportModule[];
+
+  const nextBaseDataSources = input.baseDataSources?.length
+    ? input.baseDataSources
+    : input.baseDataSource
+      ? [input.baseDataSource]
+      : existingBaseDataSources;
+  const nextModules = input.modules?.length
+    ? input.modules
+    : input.module
+      ? [input.module]
+      : existingModules;
+
   const nextAllowedFilters = input.allowedFilters
-    ? validateAllowedFilters(nextDataSource, input.allowedFilters)
+    ? validateAllowedFilters(nextBaseDataSources, input.allowedFilters)
     : ((Array.isArray(existing.allowedFilters) ? existing.allowedFilters : []) as AllowedReportFilterKey[]);
 
   const updated = await repository.updateReportType(id, {
     name: nextName,
-    module: input.module ?? existing.module,
-    baseDataSource: nextDataSource,
+    module: nextModules[0],
+    modules: nextModules as unknown as Prisma.InputJsonValue,
+    baseDataSource: nextBaseDataSources[0],
+    baseDataSources: nextBaseDataSources as unknown as Prisma.InputJsonValue,
     description: input.description === undefined ? existing.description : input.description ?? null,
     allowedFilters: nextAllowedFilters as unknown as Prisma.InputJsonValue,
     status: input.status ?? existing.status,
     updatedById: actor.id,
     category: input.category === undefined ? existing.category : input.category,
-    trackModules: input.trackModules === undefined ? (existing.trackModules as any) : input.trackModules,
+    trackModules:
+      input.trackModules === undefined
+        ? (existing.trackModules as any)
+        : input.trackModules.length
+          ? input.trackModules
+          : nextModules,
     enableUserFilter: input.enableUserFilter === undefined ? existing.enableUserFilter : input.enableUserFilter,
     enableDateFilter: input.enableDateFilter === undefined ? existing.enableDateFilter : input.enableDateFilter,
     trackActivityTypes: input.trackActivityTypes === undefined ? (existing.trackActivityTypes as any) : input.trackActivityTypes,

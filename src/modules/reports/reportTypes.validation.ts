@@ -41,20 +41,31 @@ const reportTypeStatusSchema = z.preprocess(
   z.nativeEnum(ReportTypeStatus).optional(),
 );
 
-const reportModuleSchema = z.preprocess(
-  (value) => (typeof value === 'string' ? value.trim().toUpperCase() : value),
-  z.nativeEnum(ReportModule),
-);
+const normalizeModuleValue = (value: unknown): ReportModule => {
+  if (typeof value !== 'string') return value as ReportModule;
+  return value.trim().toUpperCase() as ReportModule;
+};
 
-const reportBaseDataSourceSchema = z.preprocess(
-  (value) => {
-    if (typeof value !== 'string') return value;
-    const normalized = value.trim().toUpperCase();
-    if (normalized === 'ACTIVITIES') return 'FOLLOWUPS';
-    return normalized;
-  },
-  z.nativeEnum(ReportBaseDataSource),
-);
+const normalizeBaseDataSourceValue = (value: unknown): ReportBaseDataSource => {
+  if (typeof value !== 'string') return value as ReportBaseDataSource;
+  const normalized = value.trim().toUpperCase();
+  if (normalized === 'ACTIVITIES') return ReportBaseDataSource.FOLLOWUPS;
+  return normalized as ReportBaseDataSource;
+};
+
+const reportModuleSchema = z.preprocess(normalizeModuleValue, z.nativeEnum(ReportModule));
+
+const reportModulesSchema = z
+  .array(z.preprocess(normalizeModuleValue, z.nativeEnum(ReportModule)))
+  .min(1, 'Select at least one module')
+  .transform((values) => Array.from(new Set(values)));
+
+const reportBaseDataSourceSchema = z.preprocess(normalizeBaseDataSourceValue, z.nativeEnum(ReportBaseDataSource));
+
+const reportBaseDataSourcesSchema = z
+  .array(z.preprocess(normalizeBaseDataSourceValue, z.nativeEnum(ReportBaseDataSource)))
+  .min(1, 'Select at least one base data source')
+  .transform((values) => Array.from(new Set(values)));
 
 const allowedFiltersSchema = z
   .array(allowedFilterKeySchema)
@@ -67,9 +78,12 @@ export const reportTypeIdParamSchema = z.object({
 
 export const createReportTypeSchema = z.object({
   name: z.string().trim().min(1, 'Name is required').max(255, 'Name must not exceed 255 characters'),
-  module: reportModuleSchema,
+  module: reportModuleSchema.optional(),
+  modules: reportModulesSchema.optional(),
   base_data_source: reportBaseDataSourceSchema.optional(),
   baseDataSource: reportBaseDataSourceSchema.optional(),
+  base_data_sources: reportBaseDataSourcesSchema.optional(),
+  baseDataSources: reportBaseDataSourcesSchema.optional(),
   description: z.preprocess(emptyStringToUndefined, z.string().trim().max(5000).optional()),
   allowed_filters: allowedFiltersSchema.optional(),
   allowedFilters: allowedFiltersSchema.optional(),
@@ -84,7 +98,15 @@ export const createReportTypeSchema = z.object({
   showDetailedLogs: z.boolean().optional(),
 })
   .superRefine((value, ctx) => {
-    if (!value.baseDataSource && !value.base_data_source) {
+    if (!value.module && !value.modules?.length) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['modules'],
+        message: 'At least one module is required',
+      });
+    }
+
+    if (!value.baseDataSource && !value.base_data_source && !value.baseDataSources?.length && !value.base_data_sources?.length) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['baseDataSource'],
@@ -100,29 +122,55 @@ export const createReportTypeSchema = z.object({
       });
     }
   })
-  .transform((value) => ({
+  .transform((value) => {
+    const resolvedModules = (
+      value.modules?.length
+        ? value.modules
+        : value.module
+          ? [value.module]
+          : []
+    ) as ReportModule[];
+    const baseDataSources = (
+      value.baseDataSources?.length
+        ? value.baseDataSources
+        : value.base_data_sources?.length
+          ? value.base_data_sources
+          : value.baseDataSource
+            ? [value.baseDataSource]
+            : value.base_data_source
+              ? [value.base_data_source]
+              : []
+    ) as ReportBaseDataSource[];
+
+    return {
     name: value.name,
-    module: value.module,
-    baseDataSource: value.baseDataSource ?? value.base_data_source!,
+    module: resolvedModules[0],
+    modules: resolvedModules,
+    baseDataSource: baseDataSources[0],
+    baseDataSources,
     description: value.description,
     allowedFilters: value.allowedFilters ?? value.allowed_filters!,
     status: value.status ?? ReportTypeStatus.ACTIVE,
     category: value.category ?? "Leads Report",
-    trackModules: value.trackModules ?? [],
+    trackModules: value.trackModules ?? resolvedModules,
     enableUserFilter: value.enableUserFilter ?? false,
     enableDateFilter: value.enableDateFilter ?? false,
     trackActivityTypes: value.trackActivityTypes ?? [],
     allowExport: value.allowExport ?? false,
     showSummary: value.showSummary ?? false,
     showDetailedLogs: value.showDetailedLogs ?? false,
-  }));
+  };
+  });
 
 export const updateReportTypeSchema = z
   .object({
     name: z.string().trim().min(1, 'Name is required').max(255, 'Name must not exceed 255 characters').optional(),
     module: reportModuleSchema.optional(),
+    modules: reportModulesSchema.optional(),
     base_data_source: reportBaseDataSourceSchema.optional(),
     baseDataSource: reportBaseDataSourceSchema.optional(),
+    base_data_sources: reportBaseDataSourcesSchema.optional(),
+    baseDataSources: reportBaseDataSourcesSchema.optional(),
     description: z.preprocess(emptyStringToUndefined, z.string().trim().max(5000).optional()).optional(),
     allowed_filters: allowedFiltersSchema.optional(),
     allowedFilters: allowedFiltersSchema.optional(),
@@ -138,8 +186,10 @@ export const updateReportTypeSchema = z
   })
   .transform((value) => ({
     name: value.name,
-    module: value.module,
-    baseDataSource: value.baseDataSource ?? value.base_data_source,
+    module: value.module ?? value.modules?.[0],
+    modules: value.modules,
+    baseDataSource: value.baseDataSource ?? value.base_data_source ?? value.baseDataSources?.[0],
+    baseDataSources: value.baseDataSources ?? value.base_data_sources,
     description: value.description,
     allowedFilters: value.allowedFilters ?? value.allowed_filters,
     status: value.status,
@@ -156,7 +206,9 @@ export const updateReportTypeSchema = z
     (value) =>
       value.name !== undefined ||
       value.module !== undefined ||
+      value.modules !== undefined ||
       value.baseDataSource !== undefined ||
+      value.baseDataSources !== undefined ||
       value.description !== undefined ||
       value.allowedFilters !== undefined ||
       value.status !== undefined ||

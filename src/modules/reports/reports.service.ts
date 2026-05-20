@@ -565,13 +565,40 @@ const buildQueriesByDataSource = (
   }
 };
 
-const mapReportType = (row: any) => ({
-  ...row,
-  allowedFilters: Array.isArray(row.allowedFilters) ? row.allowedFilters : [],
-  createdAt: toIsoOrNull(row.createdAt),
-  updatedAt: toIsoOrNull(row.updatedAt),
-  deletedAt: toIsoOrNull(row.deletedAt),
-});
+const parseJsonStringArray = (value: unknown, fallback: string[]): string[] => {
+  if (Array.isArray(value)) {
+    return value.filter((item): item is string => typeof item === 'string' && item.trim().length > 0);
+  }
+  return fallback;
+};
+
+const resolveBaseDataSources = (reportType: { baseDataSource: ReportBaseDataSource; baseDataSources?: unknown }): ReportBaseDataSource[] => {
+  const fromJson = parseJsonStringArray(reportType.baseDataSources, []);
+  if (fromJson.length > 0) {
+    return fromJson as ReportBaseDataSource[];
+  }
+  return [reportType.baseDataSource];
+};
+
+const filtersForDataSource = (dataSource: ReportBaseDataSource, filters: NormalizedFilter[]): NormalizedFilter[] => {
+  const supported = new Set(FILTERS_BY_SOURCE[dataSource]);
+  return filters.filter((filter) => supported.has(filter.key));
+};
+
+const mapReportType = (row: any) => {
+  const modules = parseJsonStringArray(row.modules, row.module ? [row.module] : []);
+  const baseDataSources = parseJsonStringArray(row.baseDataSources, row.baseDataSource ? [row.baseDataSource] : []);
+
+  return {
+    ...row,
+    modules,
+    baseDataSources,
+    allowedFilters: Array.isArray(row.allowedFilters) ? row.allowedFilters : [],
+    createdAt: toIsoOrNull(row.createdAt),
+    updatedAt: toIsoOrNull(row.updatedAt),
+    deletedAt: toIsoOrNull(row.deletedAt),
+  };
+};
 
 const mapStoredFilter = (filter: { id: string; filterKey: string; filterValue: string; createdAt: Date }) => {
   let parsed: unknown = filter.filterValue;
@@ -635,6 +662,22 @@ const buildCsv = (rows: Record<string, unknown>[]): string => {
   return lines.join('\n');
 };
 
+const buildConsolidatedCsv = (
+  sections: Array<{ title: string; rows: Record<string, unknown>[] }>,
+): string => {
+  if (sections.every((section) => section.rows.length === 0)) {
+    return 'message\nNo data available';
+  }
+
+  return sections
+    .map((section) => {
+      const header = `=== ${section.title} ===`;
+      const body = section.rows.length > 0 ? buildCsv(section.rows) : 'message\nNo data available';
+      return `${header}\n${body}`;
+    })
+    .join('\n\n');
+};
+
 const toCsvDataUrl = (csvContent: string): string =>
   `data:text/csv;charset=utf-8;base64,${Buffer.from(csvContent, 'utf8').toString('base64')}`;
 
@@ -647,6 +690,7 @@ const runReportType = async (
   limit: number,
   logTarget?: { reportId?: string; action?: string },
   context?: { ipAddress?: string; userAgent?: string },
+  options?: { dataSourceOverride?: ReportBaseDataSource; skipAuditLog?: boolean },
 ): Promise<ReportExecutionResult> => {
   await ensureModuleReady();
 
@@ -663,10 +707,13 @@ const runReportType = async (
     ? reportType.allowedFilters.filter((value): value is string => typeof value === 'string')
     : [];
 
-  assertReportExecutionFilters(reportType.baseDataSource, allowedFilters, filters);
+  const executionDataSource = options?.dataSourceOverride ?? reportType.baseDataSource;
+  const scopedFilters = filtersForDataSource(executionDataSource, filters);
+
+  assertReportExecutionFilters(executionDataSource, allowedFilters, scopedFilters);
 
   let userScope: string[] | 'ALL' = 'ALL';
-  if ((reportType.baseDataSource as string) === 'ACTIVITY') {
+  if ((executionDataSource as string) === 'ACTIVITY') {
     const permissions = await getActorPermissions(actor.roleId);
     if (!permissions.includes('VIEW_ACTIVITY_REPORTS') && !permissions.includes('SYSTEM_CONFIG') && actor.role?.name?.toLowerCase() !== 'superadmin') {
       throw createServiceError('Access denied. You need the VIEW_ACTIVITY_REPORTS permission to run Activity reports.', 403);
@@ -674,7 +721,14 @@ const runReportType = async (
     userScope = await getActivityReportUserScope(workspaceId, actor);
   }
 
-  const { dataQuery, countQuery } = buildQueriesByDataSource(reportType.baseDataSource, workspaceId, filters, page, limit, userScope);
+  const { dataQuery, countQuery } = buildQueriesByDataSource(
+    executionDataSource,
+    workspaceId,
+    scopedFilters,
+    page,
+    limit,
+    userScope,
+  );
 
   const [rows, countRows] = await Promise.all([
     reportsRepository.executeDynamicQuery<Record<string, unknown>>(dataQuery),
@@ -683,42 +737,44 @@ const runReportType = async (
 
   const total = Number(countRows[0]?.total ?? 0);
 
-  await reportsRepository.createReportLog({
-    workspaceId,
-    reportTypeId: reportType.id,
-    reportId: logTarget?.reportId ?? null,
-    generatedById: actor.id,
-    action: logTarget?.action ?? 'GENERATE',
-    filters: filters as unknown as Prisma.InputJsonValue,
-    resultCount: total,
-    meta: {
-      reportTypeName: reportType.name,
-      baseDataSource: reportType.baseDataSource,
-      page,
-      limit,
-      executionMode: logTarget?.reportId ? 'saved_report' : 'adhoc',
-    } as Prisma.InputJsonValue,
-  });
-
-  await auditService.log({
-    userId: actor.id,
-    workspaceId,
-    action: logTarget?.reportId ? 'REPORT_INSTANCE_GENERATED' : 'REPORT_GENERATED',
-    entityType: logTarget?.reportId ? 'Report' : 'ReportType',
-    entityId: logTarget?.reportId ?? reportType.id,
-    details: {
-      reportId: logTarget?.reportId ?? null,
+  if (!options?.skipAuditLog) {
+    await reportsRepository.createReportLog({
+      workspaceId,
       reportTypeId: reportType.id,
-      reportTypeName: reportType.name,
-      baseDataSource: reportType.baseDataSource,
-      filters,
+      reportId: logTarget?.reportId ?? null,
+      generatedById: actor.id,
+      action: logTarget?.action ?? 'GENERATE',
+      filters: filters as unknown as Prisma.InputJsonValue,
       resultCount: total,
-      page,
-      limit,
-    },
-    ipAddress: context?.ipAddress,
-    userAgent: context?.userAgent,
-  });
+      meta: {
+        reportTypeName: reportType.name,
+        baseDataSource: executionDataSource,
+        page,
+        limit,
+        executionMode: logTarget?.reportId ? 'saved_report' : 'adhoc',
+      } as Prisma.InputJsonValue,
+    });
+
+    await auditService.log({
+      userId: actor.id,
+      workspaceId,
+      action: logTarget?.reportId ? 'REPORT_INSTANCE_GENERATED' : 'REPORT_GENERATED',
+      entityType: logTarget?.reportId ? 'Report' : 'ReportType',
+      entityId: logTarget?.reportId ?? reportType.id,
+      details: {
+        reportId: logTarget?.reportId ?? null,
+        reportTypeId: reportType.id,
+        reportTypeName: reportType.name,
+        baseDataSource: executionDataSource,
+        filters,
+        resultCount: total,
+        page,
+        limit,
+      },
+      ipAddress: context?.ipAddress,
+      userAgent: context?.userAgent,
+    });
+  }
 
   return {
     reportType: mapReportType(reportType),
@@ -982,18 +1038,61 @@ export const generateSavedReport = async (
   }
 
   const normalizedFilters = parseStoredFilters(report.filters);
-  const execution = await runReportType(
-    workspaceId,
-    actor,
-    report.reportTypeId,
-    normalizedFilters,
-    1,
-    500,
-    { reportId: report.id, action: 'GENERATE' },
-    context,
-  );
+  const reportType = report.reportType!;
+  const dataSources = resolveBaseDataSources(reportType);
 
-  const csv = buildCsv(execution.rows);
+  const sections: Array<{ title: string; rows: Record<string, unknown>[] }> = [];
+  let totalRows = 0;
+
+  for (const source of dataSources) {
+    const execution = await runReportType(
+      workspaceId,
+      actor,
+      report.reportTypeId,
+      normalizedFilters,
+      1,
+      500,
+      { reportId: report.id, action: 'GENERATE' },
+      context,
+      { dataSourceOverride: source, skipAuditLog: dataSources.length > 1 },
+    );
+    sections.push({ title: source, rows: execution.rows });
+    totalRows += execution.rows.length;
+  }
+
+  if (dataSources.length === 1) {
+    await reportsRepository.createReportLog({
+      workspaceId,
+      reportTypeId: report.reportTypeId,
+      reportId: report.id,
+      generatedById: actor.id,
+      action: 'GENERATE',
+      filters: normalizedFilters as unknown as Prisma.InputJsonValue,
+      resultCount: totalRows,
+      meta: {
+        reportName: report.reportName,
+        baseDataSource: dataSources[0],
+        consolidated: false,
+      } as Prisma.InputJsonValue,
+    });
+  } else {
+    await reportsRepository.createReportLog({
+      workspaceId,
+      reportTypeId: report.reportTypeId,
+      reportId: report.id,
+      generatedById: actor.id,
+      action: 'GENERATE',
+      filters: normalizedFilters as unknown as Prisma.InputJsonValue,
+      resultCount: totalRows,
+      meta: {
+        reportName: report.reportName,
+        baseDataSources: dataSources,
+        consolidated: true,
+      } as Prisma.InputJsonValue,
+    });
+  }
+
+  const csv = dataSources.length > 1 ? buildConsolidatedCsv(sections) : buildCsv(sections[0]?.rows || []);
   const fileUrl = toCsvDataUrl(csv);
 
   const updated = await reportsRepository.updateReport(report.id, {
@@ -1006,7 +1105,12 @@ export const generateSavedReport = async (
     message: 'Report generated successfully.',
     fileUrl,
     report: mapReport(updated),
-    execution,
+    execution: {
+      dataSources,
+      sections,
+      totalRows,
+      rows: sections.flatMap((section) => section.rows),
+    },
   };
 };
 

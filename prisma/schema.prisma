@@ -1140,7 +1140,9 @@ model ReportType {
   workspaceId    String
   name           String
   module         ReportModule
+  modules        Json?              @default("[]")
   baseDataSource ReportBaseDataSource
+  baseDataSources Json?             @default("[]")
   description    String?
   allowedFilters Json               @default("[]")
   status         ReportTypeStatus   @default(ACTIVE)
