@@ -588,11 +588,14 @@ const filtersForDataSource = (dataSource: ReportBaseDataSource, filters: Normali
 const mapReportType = (row: any) => {
   const modules = parseJsonStringArray(row.modules, row.module ? [row.module] : []);
   const baseDataSources = parseJsonStringArray(row.baseDataSources, row.baseDataSource ? [row.baseDataSource] : []);
+  const categories = parseJsonStringArray(row.categories, row.category ? [row.category] : ['Leads Report']);
 
   return {
     ...row,
     modules,
     baseDataSources,
+    categories,
+    category: categories[0] ?? row.category ?? 'Leads Report',
     allowedFilters: Array.isArray(row.allowedFilters) ? row.allowedFilters : [],
     createdAt: toIsoOrNull(row.createdAt),
     updatedAt: toIsoOrNull(row.updatedAt),

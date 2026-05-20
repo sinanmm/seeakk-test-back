@@ -18,6 +18,7 @@ export const reportTypeSelect = {
   updatedAt: true,
   deletedAt: true,
   category: true,
+  categories: true,
   trackModules: true,
   enableUserFilter: true,
   enableDateFilter: true,

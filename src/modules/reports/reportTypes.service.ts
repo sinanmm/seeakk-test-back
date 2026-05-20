@@ -119,11 +119,14 @@ const validateAllowedFilters = (
 const mapReportType = (row: any) => {
   const modules = parseJsonStringArray(row.modules, row.module ? [row.module] : []);
   const baseDataSources = parseJsonStringArray(row.baseDataSources, row.baseDataSource ? [row.baseDataSource] : []);
+  const categories = parseJsonStringArray(row.categories, row.category ? [row.category] : ['Leads Report']);
 
   return {
   ...row,
   modules,
   baseDataSources,
+  categories,
+  category: categories[0] ?? row.category ?? 'Leads Report',
   allowedFilters: Array.isArray(row.allowedFilters) ? row.allowedFilters : [],
   createdAt: row.createdAt.toISOString(),
   updatedAt: row.updatedAt.toISOString(),
@@ -174,7 +177,8 @@ export const createReportType = async (
     allowedFilters: allowedFilters as unknown as Prisma.InputJsonValue,
     status: input.status,
     createdById: actor.id,
-    category: input.category,
+    category: (input.categories?.length ? input.categories[0] : input.category) ?? 'Leads Report',
+    categories: (input.categories?.length ? input.categories : [input.category ?? 'Leads Report']) as unknown as Prisma.InputJsonValue,
     trackModules: (input.trackModules?.length ? input.trackModules : modules) as unknown as Prisma.InputJsonValue,
     enableUserFilter: input.enableUserFilter,
     enableDateFilter: input.enableDateFilter,
@@ -300,6 +304,17 @@ export const updateReportType = async (
       ? [input.module]
       : existingModules;
 
+  const existingCategories = parseJsonStringArray(
+    existing.categories,
+    existing.category ? [existing.category] : ['Leads Report'],
+  );
+
+  const nextCategories = input.categories?.length
+    ? input.categories
+    : input.category
+      ? [input.category]
+      : existingCategories;
+
   const nextAllowedFilters = input.allowedFilters
     ? validateAllowedFilters(nextBaseDataSources, input.allowedFilters)
     : ((Array.isArray(existing.allowedFilters) ? existing.allowedFilters : []) as AllowedReportFilterKey[]);
@@ -314,7 +329,8 @@ export const updateReportType = async (
     allowedFilters: nextAllowedFilters as unknown as Prisma.InputJsonValue,
     status: input.status ?? existing.status,
     updatedById: actor.id,
-    category: input.category === undefined ? existing.category : input.category,
+    category: nextCategories[0] ?? existing.category ?? 'Leads Report',
+    categories: nextCategories as unknown as Prisma.InputJsonValue,
     trackModules:
       input.trackModules === undefined
         ? (existing.trackModules as any)

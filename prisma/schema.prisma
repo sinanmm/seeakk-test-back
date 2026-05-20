@@ -1153,6 +1153,7 @@ model ReportType {
   deletedAt      DateTime?
 
   category           String?            @default("Leads Report")
+  categories         Json?              @default("[]")
   trackModules       Json?              @default("[]")
   enableUserFilter   Boolean            @default(false)
   enableDateFilter   Boolean            @default(false)

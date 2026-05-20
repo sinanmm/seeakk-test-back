@@ -72,6 +72,11 @@ const allowedFiltersSchema = z
   .min(1, 'At least one filter is required')
   .transform((values) => Array.from(new Set(values)));
 
+const reportCategoriesSchema = z
+  .array(z.string().trim().min(1, 'Category label is required'))
+  .min(1, 'Select at least one report category')
+  .transform((values) => Array.from(new Set(values)));
+
 export const reportTypeIdParamSchema = z.object({
   id: z.string().trim().min(1, 'id is required').max(191, 'Invalid id'),
 });
@@ -89,6 +94,7 @@ export const createReportTypeSchema = z.object({
   allowedFilters: allowedFiltersSchema.optional(),
   status: reportTypeStatusSchema.default(ReportTypeStatus.ACTIVE),
   category: z.string().trim().optional(),
+  categories: reportCategoriesSchema.optional(),
   trackModules: z.array(z.string()).optional(),
   enableUserFilter: z.boolean().optional(),
   enableDateFilter: z.boolean().optional(),
@@ -141,6 +147,13 @@ export const createReportTypeSchema = z.object({
               ? [value.base_data_source]
               : []
     ) as ReportBaseDataSource[];
+    const categories = (
+      value.categories?.length
+        ? value.categories
+        : value.category
+          ? [value.category]
+          : ['Leads Report']
+    ) as string[];
 
     return {
     name: value.name,
@@ -151,7 +164,8 @@ export const createReportTypeSchema = z.object({
     description: value.description,
     allowedFilters: value.allowedFilters ?? value.allowed_filters!,
     status: value.status ?? ReportTypeStatus.ACTIVE,
-    category: value.category ?? "Leads Report",
+    category: categories[0],
+    categories,
     trackModules: value.trackModules ?? resolvedModules,
     enableUserFilter: value.enableUserFilter ?? false,
     enableDateFilter: value.enableDateFilter ?? false,
@@ -176,6 +190,7 @@ export const updateReportTypeSchema = z
     allowedFilters: allowedFiltersSchema.optional(),
     status: reportTypeStatusSchema,
     category: z.string().trim().optional(),
+    categories: reportCategoriesSchema.optional(),
     trackModules: z.array(z.string()).optional(),
     enableUserFilter: z.boolean().optional(),
     enableDateFilter: z.boolean().optional(),
@@ -193,7 +208,8 @@ export const updateReportTypeSchema = z
     description: value.description,
     allowedFilters: value.allowedFilters ?? value.allowed_filters,
     status: value.status,
-    category: value.category,
+    category: value.category ?? value.categories?.[0],
+    categories: value.categories,
     trackModules: value.trackModules,
     enableUserFilter: value.enableUserFilter,
     enableDateFilter: value.enableDateFilter,
@@ -213,6 +229,7 @@ export const updateReportTypeSchema = z
       value.allowedFilters !== undefined ||
       value.status !== undefined ||
       value.category !== undefined ||
+      value.categories !== undefined ||
       value.trackModules !== undefined ||
       value.enableUserFilter !== undefined ||
       value.enableDateFilter !== undefined ||
