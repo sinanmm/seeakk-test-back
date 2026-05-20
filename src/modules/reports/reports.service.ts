@@ -215,6 +215,122 @@ const assertReportExecutionFilters = (
 const buildInClause = (column: string, values: string[]): Prisma.Sql =>
   Prisma.sql`${Prisma.raw(column)} IN (${Prisma.join(values)})`;
 
+/** User ids from USER and/or ASSIGNEE filters (before per-data-source stripping). */
+const extractSelectedUserIds = (filters: NormalizedFilter[]): string[] => {
+  const ids = new Set<string>();
+  for (const filter of filters) {
+    if (filter.key !== 'user' && filter.key !== 'assignee') continue;
+    for (const id of filter.value) {
+      const trimmed = id.trim();
+      if (trimmed) ids.add(trimmed);
+    }
+  }
+  return Array.from(ids);
+};
+
+const intersectUserScopes = (a: string[] | 'ALL', b: string[] | 'ALL'): string[] | 'ALL' => {
+  if (a === 'ALL') return b;
+  if (b === 'ALL') return a;
+  const allowed = new Set(b);
+  return a.filter((id) => allowed.has(id));
+};
+
+const getActorPermissions = async (roleId?: string | null): Promise<string[]> => {
+  if (!roleId) return [];
+  const cacheKey = `role_permissions:${roleId}`;
+  if (redisClient.isOpen) {
+    const cached = await redisClient.get(cacheKey);
+    if (cached) return JSON.parse(cached);
+  }
+  const rolePermissions = await prisma.rolePermission.findMany({
+    where: { roleId },
+    include: { permission: { select: { key: true } } },
+  });
+  return rolePermissions.map((rp: any) => rp.permission.key);
+};
+
+const getActivityReportUserScope = async (workspaceId: string, actor: Actor): Promise<string[] | 'ALL'> => {
+  if (actor.role?.name?.toLowerCase() === 'superadmin') {
+    return 'ALL';
+  }
+
+  const permissions = await getActorPermissions(actor.roleId);
+  if (permissions.includes('SYSTEM_CONFIG') || permissions.includes('USERS_VIEW')) {
+    return 'ALL';
+  }
+
+  const supervisedUsers = await prisma.user.findMany({
+    where: { workspaceId, supervisorId: actor.id, deletedAt: null },
+    select: { id: true },
+  });
+
+  if (supervisedUsers.length > 0) {
+    return [actor.id, ...supervisedUsers.map((u: any) => u.id)];
+  }
+
+  return [actor.id];
+};
+
+/** RBAC ceiling for report exports when no explicit user filter is set. */
+const getReportExportUserScope = async (workspaceId: string, actor: Actor): Promise<string[] | 'ALL'> => {
+  if (actor.role?.name?.toLowerCase() === 'superadmin') {
+    return 'ALL';
+  }
+
+  const permissions = await getActorPermissions(actor.roleId);
+  if (
+    permissions.includes('SYSTEM_CONFIG') ||
+    permissions.includes('REPORTS_VIEW') ||
+    permissions.includes('USERS_VIEW')
+  ) {
+    return 'ALL';
+  }
+
+  const supervisedUsers = await prisma.user.findMany({
+    where: { workspaceId, supervisorId: actor.id, deletedAt: null },
+    select: { id: true },
+  });
+
+  if (supervisedUsers.length > 0) {
+    return [actor.id, ...supervisedUsers.map((u) => u.id)];
+  }
+
+  return [actor.id];
+};
+
+/**
+ * Resolves user ids to apply on every report section (leads, users, followups, activity).
+ * - Explicit USER/ASSIGNEE selection → only those users (intersected with RBAC).
+ * - No selection → null when RBAC allows all, otherwise RBAC scope only.
+ */
+const resolveEffectiveUserIds = (
+  allFilters: NormalizedFilter[],
+  rbacScope: string[] | 'ALL',
+): string[] | null => {
+  const selected = extractSelectedUserIds(allFilters);
+
+  if (selected.length > 0) {
+    if (rbacScope === 'ALL') return selected;
+    return selected.filter((id) => rbacScope.includes(id));
+  }
+
+  if (rbacScope === 'ALL') return null;
+  return rbacScope;
+};
+
+const appendEffectiveUserScope = (
+  clauses: Prisma.Sql[],
+  effectiveUserIds: string[] | null,
+  buildScope: (ids: string[]) => Prisma.Sql,
+): void => {
+  if (effectiveUserIds === null) return;
+  if (effectiveUserIds.length === 0) {
+    clauses.push(Prisma.sql`1 = 0`);
+    return;
+  }
+  clauses.push(buildScope(effectiveUserIds));
+};
+
 const buildDateClause = (column: string, range: DateRange): Prisma.Sql => {
   if (range.from && range.to) {
     return Prisma.sql`${Prisma.raw(column)} BETWEEN ${range.from} AND ${range.to}`;
@@ -225,7 +341,11 @@ const buildDateClause = (column: string, range: DateRange): Prisma.Sql => {
   return Prisma.sql`${Prisma.raw(column)} <= ${range.to!}`;
 };
 
-const buildLeadWhereClauses = (workspaceId: string, filters: NormalizedFilter[]): Prisma.Sql[] => {
+const buildLeadWhereClauses = (
+  workspaceId: string,
+  filters: NormalizedFilter[],
+  effectiveUserIds: string[] | null = null,
+): Prisma.Sql[] => {
   const clauses: Prisma.Sql[] = [
     Prisma.sql`l."workspaceId" = ${workspaceId}`,
     Prisma.sql`l."deletedAt" IS NULL`,
@@ -265,10 +385,21 @@ const buildLeadWhereClauses = (workspaceId: string, filters: NormalizedFilter[])
     }
   }
 
+  appendEffectiveUserScope(clauses, effectiveUserIds, (ids) =>
+    Prisma.sql`(
+      l."assignedToId" IN (${Prisma.join(ids)})
+      OR l."createdById" IN (${Prisma.join(ids)})
+    )`,
+  );
+
   return clauses;
 };
 
-const buildUserWhereClauses = (workspaceId: string, filters: NormalizedFilter[]): Prisma.Sql[] => {
+const buildUserWhereClauses = (
+  workspaceId: string,
+  filters: NormalizedFilter[],
+  effectiveUserIds: string[] | null = null,
+): Prisma.Sql[] => {
   const clauses: Prisma.Sql[] = [
     Prisma.sql`u."workspaceId" = ${workspaceId}`,
     Prisma.sql`u."deletedAt" IS NULL`,
@@ -295,18 +426,21 @@ const buildUserWhereClauses = (workspaceId: string, filters: NormalizedFilter[])
           )})`,
         );
         break;
-      case 'user':
-        clauses.push(buildInClause('u."id"', filter.value));
-        break;
       default:
         break;
     }
   }
 
+  appendEffectiveUserScope(clauses, effectiveUserIds, (ids) => buildInClause('u."id"', ids));
+
   return clauses;
 };
 
-const buildFollowUpWhereClauses = (workspaceId: string, filters: NormalizedFilter[]): Prisma.Sql[] => {
+const buildFollowUpWhereClauses = (
+  workspaceId: string,
+  filters: NormalizedFilter[],
+  effectiveUserIds: string[] | null = null,
+): Prisma.Sql[] => {
   const clauses: Prisma.Sql[] = [
     Prisma.sql`f."workspaceId" = ${workspaceId}`,
     Prisma.sql`l."deletedAt" IS NULL`,
@@ -339,6 +473,14 @@ const buildFollowUpWhereClauses = (workspaceId: string, filters: NormalizedFilte
     }
   }
 
+  appendEffectiveUserScope(clauses, effectiveUserIds, (ids) =>
+    Prisma.sql`(
+      f."userId" IN (${Prisma.join(ids)})
+      OR l."assignedToId" IN (${Prisma.join(ids)})
+      OR l."createdById" IN (${Prisma.join(ids)})
+    )`,
+  );
+
   return clauses;
 };
 
@@ -347,8 +489,9 @@ const buildLeadReportQueries = (
   filters: NormalizedFilter[],
   page: number,
   limit: number,
+  effectiveUserIds: string[] | null = null,
 ): { dataQuery: Prisma.Sql; countQuery: Prisma.Sql } => {
-  const whereClauses = buildLeadWhereClauses(workspaceId, filters);
+  const whereClauses = buildLeadWhereClauses(workspaceId, filters, effectiveUserIds);
   const offset = (page - 1) * limit;
 
   return {
@@ -390,8 +533,9 @@ const buildUserReportQueries = (
   filters: NormalizedFilter[],
   page: number,
   limit: number,
+  effectiveUserIds: string[] | null = null,
 ): { dataQuery: Prisma.Sql; countQuery: Prisma.Sql } => {
-  const whereClauses = buildUserWhereClauses(workspaceId, filters);
+  const whereClauses = buildUserWhereClauses(workspaceId, filters, effectiveUserIds);
   const offset = (page - 1) * limit;
 
   return {
@@ -429,8 +573,9 @@ const buildFollowUpReportQueries = (
   filters: NormalizedFilter[],
   page: number,
   limit: number,
+  effectiveUserIds: string[] | null = null,
 ): { dataQuery: Prisma.Sql; countQuery: Prisma.Sql } => {
-  const whereClauses = buildFollowUpWhereClauses(workspaceId, filters);
+  const whereClauses = buildFollowUpWhereClauses(workspaceId, filters, effectiveUserIds);
   const offset = (page - 1) * limit;
 
   return {
@@ -467,67 +612,15 @@ const buildFollowUpReportQueries = (
   };
 };
 
-const getActorPermissions = async (roleId?: string | null): Promise<string[]> => {
-  if (!roleId) return [];
-  const cacheKey = `role_permissions:${roleId}`;
-  if (redisClient.isOpen) {
-    const cached = await redisClient.get(cacheKey);
-    if (cached) return JSON.parse(cached);
-  }
-  const rolePermissions = await prisma.rolePermission.findMany({
-    where: { roleId },
-    include: { permission: { select: { key: true } } },
-  });
-  return rolePermissions.map((rp: any) => rp.permission.key);
-};
-
-const getActivityReportUserScope = async (workspaceId: string, actor: Actor): Promise<string[] | 'ALL'> => {
-  if (actor.role?.name?.toLowerCase() === 'superadmin') {
-    return 'ALL';
-  }
-
-  const permissions = await getActorPermissions(actor.roleId);
-  if (permissions.includes('SYSTEM_CONFIG') || permissions.includes('USERS_VIEW')) {
-    return 'ALL';
-  }
-
-  const supervisedUsers = await prisma.user.findMany({
-    where: { workspaceId, supervisorId: actor.id, deletedAt: null },
-    select: { id: true },
-  });
-
-  if (supervisedUsers.length > 0) {
-    return [actor.id, ...supervisedUsers.map((u: any) => u.id)];
-  }
-
-  return [actor.id];
-};
-
-const buildActivityWhereClauses = (workspaceId: string, filters: NormalizedFilter[], userScope: string[] | 'ALL'): Prisma.Sql[] => {
-  const clauses: Prisma.Sql[] = [
-    Prisma.sql`a."workspaceId" = ${workspaceId}`,
-  ];
-
-  if (userScope !== 'ALL') {
-    clauses.push(buildInClause('a."userId"', userScope));
-  }
+const buildActivityWhereClauses = (
+  workspaceId: string,
+  filters: NormalizedFilter[],
+  effectiveUserIds: string[] | null = null,
+): Prisma.Sql[] => {
+  const clauses: Prisma.Sql[] = [Prisma.sql`a."workspaceId" = ${workspaceId}`];
 
   for (const filter of filters) {
     switch (filter.key) {
-      case 'user':
-        // If userScope is not ALL, only allow filtering by users they are allowed to see
-        if (userScope !== 'ALL') {
-           const allowedFilteredUsers = filter.value.filter(userId => userScope.includes(userId));
-           if (allowedFilteredUsers.length > 0) {
-             clauses.push(buildInClause('a."userId"', allowedFilteredUsers));
-           } else {
-             // Force no results if they try to filter by a user they can't see
-             clauses.push(Prisma.sql`1 = 0`);
-           }
-        } else {
-          clauses.push(buildInClause('a."userId"', filter.value));
-        }
-        break;
       case 'module':
         clauses.push(buildInClause('a."entityType"', filter.value));
         break;
@@ -542,6 +635,8 @@ const buildActivityWhereClauses = (workspaceId: string, filters: NormalizedFilte
     }
   }
 
+  appendEffectiveUserScope(clauses, effectiveUserIds, (ids) => buildInClause('a."userId"', ids));
+
   return clauses;
 };
 
@@ -550,9 +645,9 @@ const buildActivityReportQueries = (
   filters: NormalizedFilter[],
   page: number,
   limit: number,
-  userScope: string[] | 'ALL',
+  effectiveUserIds: string[] | null = null,
 ): { dataQuery: Prisma.Sql; countQuery: Prisma.Sql } => {
-  const whereClauses = buildActivityWhereClauses(workspaceId, filters, userScope);
+  const whereClauses = buildActivityWhereClauses(workspaceId, filters, effectiveUserIds);
   const offset = (page - 1) * limit;
 
   return {
@@ -562,7 +657,7 @@ const buildActivityReportQueries = (
         a."action",
         a."entityType",
         a."entityId",
-        a."details",
+        COALESCE(a."details"::text, '') AS "details",
         a."ipAddress",
         a."userAgent",
         a."createdAt",
@@ -588,59 +683,24 @@ const buildQueriesByDataSource = (
   filters: NormalizedFilter[],
   page: number,
   limit: number,
-  userScope: string[] | 'ALL' = 'ALL',
+  effectiveUserIds: string[] | null = null,
 ): { dataQuery: Prisma.Sql; countQuery: Prisma.Sql } => {
   switch (dataSource as string) {
     case 'USERS':
-      return buildUserReportQueries(workspaceId, filters, page, limit);
+      return buildUserReportQueries(workspaceId, filters, page, limit, effectiveUserIds);
     case 'FOLLOWUPS':
-      return buildFollowUpReportQueries(workspaceId, filters, page, limit);
+      return buildFollowUpReportQueries(workspaceId, filters, page, limit, effectiveUserIds);
     case 'ACTIVITY':
-      return buildActivityReportQueries(workspaceId, filters, page, limit, userScope);
+      return buildActivityReportQueries(workspaceId, filters, page, limit, effectiveUserIds);
     case 'LEADS':
     default:
-      return buildLeadReportQueries(workspaceId, filters, page, limit);
+      return buildLeadReportQueries(workspaceId, filters, page, limit, effectiveUserIds);
   }
 };
 
-/**
- * Applies saved-report filters per data source. The UI "User" filter is stored as `user`
- * but only ACTIVITY natively supports that key; for consolidated multi-source reports we map:
- * - USERS → filter by user id on users table
- * - LEADS / FOLLOWUPS → filter by assignee (assignedToId)
- * - ACTIVITY → filter by audit userId (unchanged)
- */
-const scopeFiltersForDataSource = (dataSource: ReportBaseDataSource, filters: NormalizedFilter[]): NormalizedFilter[] => {
+const filtersForDataSource = (dataSource: ReportBaseDataSource, filters: NormalizedFilter[]): NormalizedFilter[] => {
   const supported = new Set(FILTERS_BY_SOURCE[dataSource]);
-  const scoped: NormalizedFilter[] = [];
-
-  for (const filter of filters) {
-    if (supported.has(filter.key)) {
-      scoped.push(filter);
-      continue;
-    }
-
-    if (filter.key !== 'user') {
-      continue;
-    }
-
-    const userIds =
-      'value' in filter && Array.isArray((filter as ScalarFilter).value)
-        ? (filter as ScalarFilter).value.filter((id) => id.trim().length > 0)
-        : [];
-
-    if (userIds.length === 0) {
-      continue;
-    }
-
-    if (dataSource === 'USERS') {
-      scoped.push({ key: 'user', value: userIds });
-    } else if (dataSource === 'LEADS' || dataSource === 'FOLLOWUPS') {
-      scoped.push({ key: 'assignee', value: userIds });
-    }
-  }
-
-  return scoped;
+  return filters.filter((filter) => supported.has(filter.key));
 };
 
 const mapReportType = (row: any) => {
@@ -769,18 +829,24 @@ const runReportType = async (
     : [];
 
   const executionDataSource = options?.dataSourceOverride ?? reportType.baseDataSource;
-  const scopedFilters = scopeFiltersForDataSource(executionDataSource, filters);
+  const scopedFilters = filtersForDataSource(executionDataSource, filters);
 
   assertReportExecutionFilters([executionDataSource], allowedFilters, scopedFilters);
 
-  let userScope: string[] | 'ALL' = 'ALL';
+  let rbacScope = await getReportExportUserScope(workspaceId, actor);
   if ((executionDataSource as string) === 'ACTIVITY') {
     const permissions = await getActorPermissions(actor.roleId);
-    if (!permissions.includes('VIEW_ACTIVITY_REPORTS') && !permissions.includes('SYSTEM_CONFIG') && actor.role?.name?.toLowerCase() !== 'superadmin') {
+    if (
+      !permissions.includes('VIEW_ACTIVITY_REPORTS') &&
+      !permissions.includes('SYSTEM_CONFIG') &&
+      actor.role?.name?.toLowerCase() !== 'superadmin'
+    ) {
       throw createServiceError('Access denied. You need the VIEW_ACTIVITY_REPORTS permission to run Activity reports.', 403);
     }
-    userScope = await getActivityReportUserScope(workspaceId, actor);
+    rbacScope = intersectUserScopes(rbacScope, await getActivityReportUserScope(workspaceId, actor));
   }
+
+  const effectiveUserIds = resolveEffectiveUserIds(filters, rbacScope);
 
   const { dataQuery, countQuery } = buildQueriesByDataSource(
     executionDataSource,
@@ -788,7 +854,7 @@ const runReportType = async (
     scopedFilters,
     page,
     limit,
-    userScope,
+    effectiveUserIds,
   );
 
   const [rows, countRows] = await Promise.all([
