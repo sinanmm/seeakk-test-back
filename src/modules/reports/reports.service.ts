@@ -295,6 +295,9 @@ const buildUserWhereClauses = (workspaceId: string, filters: NormalizedFilter[])
           )})`,
         );
         break;
+      case 'user':
+        clauses.push(buildInClause('u."id"', filter.value));
+        break;
       default:
         break;
     }
@@ -600,9 +603,44 @@ const buildQueriesByDataSource = (
   }
 };
 
-const filtersForDataSource = (dataSource: ReportBaseDataSource, filters: NormalizedFilter[]): NormalizedFilter[] => {
+/**
+ * Applies saved-report filters per data source. The UI "User" filter is stored as `user`
+ * but only ACTIVITY natively supports that key; for consolidated multi-source reports we map:
+ * - USERS → filter by user id on users table
+ * - LEADS / FOLLOWUPS → filter by assignee (assignedToId)
+ * - ACTIVITY → filter by audit userId (unchanged)
+ */
+const scopeFiltersForDataSource = (dataSource: ReportBaseDataSource, filters: NormalizedFilter[]): NormalizedFilter[] => {
   const supported = new Set(FILTERS_BY_SOURCE[dataSource]);
-  return filters.filter((filter) => supported.has(filter.key));
+  const scoped: NormalizedFilter[] = [];
+
+  for (const filter of filters) {
+    if (supported.has(filter.key)) {
+      scoped.push(filter);
+      continue;
+    }
+
+    if (filter.key !== 'user') {
+      continue;
+    }
+
+    const userIds =
+      'value' in filter && Array.isArray((filter as ScalarFilter).value)
+        ? (filter as ScalarFilter).value.filter((id) => id.trim().length > 0)
+        : [];
+
+    if (userIds.length === 0) {
+      continue;
+    }
+
+    if (dataSource === 'USERS') {
+      scoped.push({ key: 'user', value: userIds });
+    } else if (dataSource === 'LEADS' || dataSource === 'FOLLOWUPS') {
+      scoped.push({ key: 'assignee', value: userIds });
+    }
+  }
+
+  return scoped;
 };
 
 const mapReportType = (row: any) => {
@@ -731,7 +769,7 @@ const runReportType = async (
     : [];
 
   const executionDataSource = options?.dataSourceOverride ?? reportType.baseDataSource;
-  const scopedFilters = filtersForDataSource(executionDataSource, filters);
+  const scopedFilters = scopeFiltersForDataSource(executionDataSource, filters);
 
   assertReportExecutionFilters([executionDataSource], allowedFilters, scopedFilters);
 
