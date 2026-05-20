@@ -4,6 +4,7 @@ import auditService from '../../services/Audit/auditService';
 import { normalizeFollowUpType } from '../../constants/followUpType';
 import { touchFollowUpTodayCachesAfterLeadMutation } from './followupService';
 import type { SaveMandatoryFollowUpContinuationInput } from '../../validations/mandatoryFollowupValidation';
+import { invalidateMandatoryFollowUpCache } from '../../middlewares/mandatoryFollowupMiddleware';
 
 const PENDING = 'PENDING';
 
@@ -312,6 +313,8 @@ export const saveMandatoryFollowUpContinuation = async (
   });
 
   await touchFollowUpTodayCachesAfterLeadMutation(workspaceId, actor.id, input.scheduledAt);
+
+  invalidateMandatoryFollowUpCache(actor.id);
 
   await auditService.log({
     userId: actor.id,

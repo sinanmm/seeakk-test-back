@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import prisma from '../config/prisma';
 import logger from '../utils/logger';
 import { redisClient } from '../config/redis';
+import { enforceMandatoryFollowUpContinuation } from './mandatoryFollowupMiddleware';
 
 interface JwtPayload {
   userId: string;
@@ -198,7 +199,7 @@ export const protect = async (req: Request, res: Response, next: NextFunction): 
     }
 
     req.user = hydratedUser;
-    next();
+    return enforceMandatoryFollowUpContinuation(req, res, next);
   } catch (error: any) {
     logger.error('Authentication Error', { error: error.message, action: 'auth_failed' });
     return res.status(401).json({
