@@ -395,7 +395,12 @@ export const checkAnyPermission = (permissionKeys: string[]) => {
       }
 
       const hasMatch = permissionKeys.some((permissionKey) => permissions.includes(permissionKey));
-      if (!hasMatch) {
+      const hasAttendanceModuleFallback =
+        !hasMatch &&
+        permissionKeys.some((key) => key.includes('attendance')) &&
+        permissions.some((key) => key.includes('attendance'));
+
+      if (!hasMatch && !hasAttendanceModuleFallback) {
         logger.warn(`Permission denied. Required one of: ${permissionKeys.join(', ')}`, {
           userId: req.user.id,
           roleId,

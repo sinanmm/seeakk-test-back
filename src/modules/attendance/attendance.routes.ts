@@ -1,18 +1,15 @@
 import { Router } from 'express';
 import { protect, checkPermission, checkAnyPermission } from '../../middlewares/authMiddleware';
+import { resolveAttendanceWorkspace } from './attendance.middleware';
 import * as controller from './attendance.controller';
 
 const router = Router();
 
 router.use(protect);
 
-// Standard Employee Routes
-router.get('/today', checkAnyPermission(['view_attendance', 'mark_attendance']), controller.getTodayStatusController);
-router.post(
-  '/check-in',
-  checkAnyPermission(['mark_attendance', 'view_attendance', 'view_own_attendance', 'manage_attendance']),
-  controller.markAttendanceController,
-);
+// Employee check-in: authenticated + workspace only (every onboarded employee must mark attendance)
+router.get('/today', resolveAttendanceWorkspace, controller.getTodayStatusController);
+router.post('/check-in', resolveAttendanceWorkspace, controller.markAttendanceController);
 router.get('/history', checkPermission('view_attendance'), controller.getHistoryController);
 router.get('/stats', checkPermission('view_attendance'), controller.getStatsController);
 router.get('/notifications', checkAnyPermission(['view_attendance', 'mark_attendance']), controller.getNotificationsController);

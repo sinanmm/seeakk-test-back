@@ -9,7 +9,12 @@ import {
   requiresMandatoryAttendancePopup,
   resolveAttendanceSubmissionState,
 } from './attendanceState.util';
-import { requiresOfficeNetworkValidation, validateOfficeNetwork } from './attendanceNetwork.util';
+import {
+  requiresOfficeNetworkValidation,
+  toOfficeNetworkProfile,
+  validateOfficeNetwork,
+} from './attendanceNetwork.util';
+import { resolveWorkspaceIdForUser } from '../../utils/workspaceContext';
 
 const createAttendanceServiceError = (message: string, statusCode = 400): Error & { statusCode: number } => {
   const error = new Error(message) as Error & { statusCode: number };
@@ -79,14 +84,50 @@ export const updateSettings = async (workspaceId: string, data: any) => {
   });
 };
 
-export const getTodayStatus = async (userId: string, workspaceId: string) => {
+const assertUserInWorkspace = async (userId: string, workspaceId: string) => {
   const user = await prisma.user.findFirst({
-    where: { id: userId, workspaceId, deletedAt: null },
+    where: { id: userId, deletedAt: null, isActive: true },
   });
 
   if (!user) {
     throw createAttendanceServiceError('User not found.', 404);
   }
+
+  const resolvedWorkspaceId = await resolveWorkspaceIdForUser(userId, user.workspaceId ?? null);
+  if (!resolvedWorkspaceId || resolvedWorkspaceId !== workspaceId) {
+    throw createAttendanceServiceError('You do not belong to this workspace.', 403);
+  }
+
+  return user;
+};
+
+const listEnabledOfficeNetworks = async (workspaceId: string) => {
+  let networks = await prisma.attendanceNetwork.findMany({
+    where: { workspaceId, isEnabled: true },
+  });
+
+  if (networks.length === 0) {
+    await prisma.attendanceNetwork.create({
+      data: {
+        workspaceId,
+        officeName: 'MISSION 2050 Office',
+        branch: 'HQ',
+        wifiSsid: 'MISSION 2050-2G',
+        routerIp: '192.168.220.1',
+        subnet: '255.255.255.0',
+        allowedIpRanges: '192.168.220.*',
+      },
+    });
+    networks = await prisma.attendanceNetwork.findMany({
+      where: { workspaceId, isEnabled: true },
+    });
+  }
+
+  return networks;
+};
+
+export const getTodayStatus = async (userId: string, workspaceId: string) => {
+  const user = await assertUserInWorkspace(userId, workspaceId);
 
   const todayStr = getLocalDateString();
   const applicableHolidays = await getApplicableHolidays(workspaceId, user);
@@ -107,6 +148,11 @@ export const getTodayStatus = async (userId: string, workspaceId: string) => {
   );
   const isMarked = hasUserSubmittedToday(submissionState);
 
+  const officeNetworks =
+    user.attendanceApplyType === 'FROM_OFFICE'
+      ? (await listEnabledOfficeNetworks(workspaceId)).map(toOfficeNetworkProfile)
+      : [];
+
   return {
     date: todayStr,
     isHoliday: holidayCheck.isHoliday,
@@ -117,17 +163,12 @@ export const getTodayStatus = async (userId: string, workspaceId: string) => {
     requiresMandatoryPopup: requiresMandatoryAttendancePopup(submissionState, user.isLocked),
     record: existingRecord,
     attendanceApplyType: user.attendanceApplyType,
+    officeNetworks,
   };
 };
 
 export const markAttendance = async (userId: string, workspaceId: string, payload: any) => {
-  const user = await prisma.user.findFirst({
-    where: { id: userId, workspaceId, deletedAt: null },
-  });
-
-  if (!user) {
-    throw createAttendanceServiceError('User not found.', 404);
-  }
+  const user = await assertUserInWorkspace(userId, workspaceId);
 
   if (user.isLocked) {
     throw createAttendanceServiceError('Your account is temporarily locked due to incomplete targets.', 423);
@@ -162,26 +203,7 @@ export const markAttendance = async (userId: string, workspaceId: string, payloa
 
   let isOfficeNetwork = false;
   if (requiresOfficeNetworkValidation(user.attendanceApplyType, attendanceType)) {
-    let networks = await prisma.attendanceNetwork.findMany({
-      where: { workspaceId, isEnabled: true },
-    });
-
-    if (networks.length === 0) {
-      await prisma.attendanceNetwork.create({
-        data: {
-          workspaceId,
-          officeName: 'MISSION 2050 Office',
-          branch: 'HQ',
-          wifiSsid: 'MISSION 2050-2G',
-          routerIp: '192.168.220.1',
-          subnet: '255.255.255.0',
-          allowedIpRanges: '192.168.220.*',
-        },
-      });
-      networks = await prisma.attendanceNetwork.findMany({
-        where: { workspaceId, isEnabled: true },
-      });
-    }
+    const networks = await listEnabledOfficeNetworks(workspaceId);
 
     const networkCheck = validateOfficeNetwork(networks, {
       ipAddress: payload.ipAddress,

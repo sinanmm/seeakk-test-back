@@ -46,6 +46,25 @@ export const requiresOfficeNetworkValidation = (
   return true;
 };
 
+const networkMatchesPayload = (network: OfficeNetworkRecord, payload: NetworkCheckPayload): boolean => {
+  const clientIp = (payload.ipAddress || '').trim();
+  const clientSsid = normalize(payload.networkName);
+  const clientRouter = (payload.routerIp || '').trim();
+  const clientSubnet = (payload.subnet || '').trim();
+
+  const expectedSsid = normalize(network.wifiSsid);
+  const expectedRouter = network.routerIp.trim();
+  const expectedSubnet = (network.subnet || '').trim();
+
+  if (!clientSsid || !expectedSsid || clientSsid !== expectedSsid) return false;
+  if (!clientRouter || !expectedRouter || clientRouter !== expectedRouter) return false;
+
+  const subnetOk = !expectedSubnet || !clientSubnet || clientSubnet === expectedSubnet;
+  if (!subnetOk) return false;
+
+  return matchIpRange(clientIp, network.allowedIpRanges);
+};
+
 export const validateOfficeNetwork = (
   networks: OfficeNetworkRecord[],
   payload: NetworkCheckPayload,
@@ -62,32 +81,25 @@ export const validateOfficeNetwork = (
   }
 
   const clientIp = (payload.ipAddress || '').trim();
-  const clientSsid = normalize(payload.networkName);
+  const clientSsid = (payload.networkName || '').trim();
   const clientRouter = (payload.routerIp || '').trim();
-  const clientSubnet = (payload.subnet || '').trim();
 
-  if (!clientIp && !clientSsid && !clientRouter) {
+  if (!clientSsid || !clientRouter || !clientIp) {
     return {
       ok: false,
       errorCode: 'OFFICE_NETWORK_METADATA_REQUIRED',
       message: 'Office check-in requires WiFi SSID, router IP, and device IP.',
-      details: { hasIp: false, hasSsid: false, hasRouter: false },
+      details: {
+        hasIp: Boolean(clientIp),
+        hasSsid: Boolean(clientSsid),
+        hasRouter: Boolean(clientRouter),
+      },
     };
   }
 
-  for (const network of enabledNetworks) {
-    const expectedSsid = normalize(network.wifiSsid);
-    const expectedRouter = network.routerIp.trim();
-    const expectedSubnet = (network.subnet || '').trim();
-
-    const ssidOk = !clientSsid || !expectedSsid || clientSsid === expectedSsid;
-    const routerOk = !clientRouter || !expectedRouter || clientRouter === expectedRouter;
-    const subnetOk = !clientSubnet || !expectedSubnet || clientSubnet === expectedSubnet;
-    const ipOk = matchIpRange(clientIp, network.allowedIpRanges);
-
-    if (ssidOk && routerOk && subnetOk && ipOk) {
-      return { ok: true, networkId: network.id };
-    }
+  const matched = enabledNetworks.find((network) => networkMatchesPayload(network, payload));
+  if (matched) {
+    return { ok: true, networkId: matched.id };
   }
 
   const reference = enabledNetworks[0];
@@ -95,16 +107,36 @@ export const validateOfficeNetwork = (
     ok: false,
     errorCode: 'OFFICE_NETWORK_VALIDATION_FAILED',
     message:
-      'You can only mark attendance using an approved office network. Verify WiFi SSID, router IP, subnet, and device IP match your office settings.',
+      'Office network validation failed. Use the exact WiFi SSID, router IP, and device IP range configured for your workspace.',
     details: {
-      providedSsid: payload.networkName || '',
-      providedRouterIp: payload.routerIp || '',
+      providedSsid: clientSsid,
+      providedRouterIp: clientRouter,
       providedIp: clientIp,
       providedSubnet: payload.subnet || '',
       expectedSsid: reference.wifiSsid,
       expectedRouterIp: reference.routerIp,
       expectedSubnet: reference.subnet || '',
       expectedIpRange: reference.allowedIpRanges || 'any',
+      configuredNetworkCount: String(enabledNetworks.length),
     },
   };
+};
+
+export const toOfficeNetworkProfile = (network: OfficeNetworkRecord) => ({
+  id: network.id,
+  wifiSsid: network.wifiSsid,
+  routerIp: network.routerIp,
+  subnet: network.subnet || '255.255.255.0',
+  allowedIpRanges: network.allowedIpRanges || '',
+  sampleDeviceIp: deriveSampleDeviceIp(network.allowedIpRanges),
+});
+
+const deriveSampleDeviceIp = (allowedRange?: string | null): string => {
+  const range = (allowedRange || '').trim();
+  if (!range) return '192.168.1.100';
+  const first = range.split(',')[0]?.trim() || range;
+  if (first.includes('*') || first.includes('x')) {
+    return first.replace(/\*/gi, '100').replace(/x/gi, '100');
+  }
+  return first;
 };
