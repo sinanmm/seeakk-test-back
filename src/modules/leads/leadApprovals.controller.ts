@@ -14,6 +14,7 @@ import {
   leadApprovalIdParamSchema,
   listLeadApprovalsQuerySchema,
 } from './leadApprovals.validation';
+import { hasPermission } from '../../middlewares/authMiddleware';
 
 const requireWorkspace = (req: Request, res: Response): string | null => {
   const workspaceId = req.user?.workspaceId ?? null;
@@ -139,6 +140,15 @@ export const handleLeadApproval = async (req: Request, res: Response, next: Next
   if (!input) return;
 
   try {
+    const requiredPermission = input.action === 'APPROVE' ? 'LEAD_APPROVAL_APPROVE' : 'LEAD_APPROVAL_DENY';
+    const hasRequiredPerm = await hasPermission(req.user, requiredPermission);
+    if (!hasRequiredPerm) {
+      return res.status(403).json({
+        success: false,
+        message: `Forbidden: You do not have permission to ${input.action.toLowerCase()} lead stage requests.`,
+      });
+    }
+
     const result = await leadApprovalService.processLeadApproval(workspaceId, getActor(req), params.id, input, {
       ipAddress: req.ip,
       userAgent: req.headers['user-agent'],
