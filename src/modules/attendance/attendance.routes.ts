@@ -20,16 +20,42 @@ router.post('/review/:recordId', checkPermission('approve_attendance'), controll
 
 // User list management routes
 router.put('/apply-type/:userId', checkPermission('edit_attendance_apply_type'), controller.updateUserApplyTypeController);
+router.put(
+  '/office-branch/:userId',
+  checkAnyPermission(['assign_office_branch', 'edit_attendance_apply_type', 'manage_attendance_locations']),
+  controller.updateUserOfficeBranchController,
+);
 router.post('/unlock/:userId', checkPermission('unlock_attendance_locked_users'), controller.unlockUserController);
 
 // Settings and network policies configuration
 router.get('/settings', checkPermission('manage_attendance_settings'), controller.getSettingsController);
 router.put('/settings', checkPermission('manage_attendance_settings'), controller.updateSettingsController);
 
-router.get('/networks', checkPermission('manage_attendance_network'), controller.getNetworksController);
-router.post('/networks', checkPermission('manage_attendance_network'), controller.createNetworkController);
-router.put('/networks/:id', checkPermission('manage_attendance_network'), controller.updateNetworkController);
-router.delete('/networks/:id', checkPermission('manage_attendance_network'), controller.deleteNetworkController);
+router.get(
+  '/locations',
+  checkAnyPermission(['manage_attendance_locations', 'manage_attendance_network']),
+  controller.getOfficeLocationsController,
+);
+router.post(
+  '/locations',
+  checkAnyPermission(['manage_attendance_locations', 'manage_attendance_network']),
+  controller.createOfficeLocationController,
+);
+router.put(
+  '/locations/:id',
+  checkAnyPermission(['manage_attendance_locations', 'manage_attendance_network']),
+  controller.updateOfficeLocationController,
+);
+router.delete(
+  '/locations/:id',
+  checkAnyPermission(['manage_attendance_locations', 'manage_attendance_network']),
+  controller.deleteOfficeLocationController,
+);
+
+router.get('/networks', checkAnyPermission(['manage_attendance_locations', 'manage_attendance_network']), controller.getNetworksController);
+router.post('/networks', checkAnyPermission(['manage_attendance_locations', 'manage_attendance_network']), controller.createNetworkController);
+router.put('/networks/:id', checkAnyPermission(['manage_attendance_locations', 'manage_attendance_network']), controller.updateNetworkController);
+router.delete('/networks/:id', checkAnyPermission(['manage_attendance_locations', 'manage_attendance_network']), controller.deleteNetworkController);
 
 // General logs & exports
 router.get('/admin-overview', checkPermission('view_all_attendance'), controller.getAdminOverviewController);

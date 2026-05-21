@@ -6,7 +6,8 @@ import {
   markAttendanceSchema,
   updateSettingsSchema,
   attendanceQuerySchema,
-  attendanceNetworkSchema,
+  attendanceOfficeLocationSchema,
+  assignOfficeBranchSchema,
 } from './attendance.validation';
 
 const getAttendanceWorkspaceId = (req: AttendanceRequest, res: Response): string | null => {
@@ -211,26 +212,23 @@ export const unlockUserController = async (req: Request, res: Response, next: Ne
   }
 };
 
-export const getNetworksController = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+export const getOfficeLocationsController = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
   const workspaceId = getAttendanceWorkspaceId(req as AttendanceRequest, res);
   if (!workspaceId) return;
 
   try {
-    const networks = await attendanceService.getNetworks(workspaceId);
-    return res.status(200).json({
-      success: true,
-      data: networks,
-    });
+    const locations = await attendanceService.getOfficeLocations(workspaceId);
+    return res.status(200).json({ success: true, data: locations });
   } catch (error) {
     next(error);
   }
 };
 
-export const createNetworkController = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+export const createOfficeLocationController = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
   const workspaceId = getAttendanceWorkspaceId(req as AttendanceRequest, res);
   if (!workspaceId) return;
 
-  const parsed = attendanceNetworkSchema.safeParse(req.body);
+  const parsed = attendanceOfficeLocationSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(422).json({
       success: false,
@@ -240,22 +238,22 @@ export const createNetworkController = async (req: Request, res: Response, next:
   }
 
   try {
-    const network = await attendanceService.createNetwork(workspaceId, parsed.data);
+    const location = await attendanceService.createOfficeLocation(workspaceId, parsed.data);
     return res.status(201).json({
       success: true,
-      message: 'Network created successfully',
-      data: network,
+      message: 'Office location created successfully',
+      data: location,
     });
   } catch (error) {
     next(error);
   }
 };
 
-export const updateNetworkController = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+export const updateOfficeLocationController = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
   const workspaceId = getAttendanceWorkspaceId(req as AttendanceRequest, res);
   if (!workspaceId) return;
 
-  const parsed = attendanceNetworkSchema.safeParse(req.body);
+  const parsed = attendanceOfficeLocationSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(422).json({
       success: false,
@@ -265,28 +263,69 @@ export const updateNetworkController = async (req: Request, res: Response, next:
   }
 
   try {
-    const network = await attendanceService.updateNetwork(workspaceId, req.params.id as string, parsed.data);
+    const location = await attendanceService.updateOfficeLocation(
+      workspaceId,
+      req.params.id as string,
+      parsed.data,
+    );
     return res.status(200).json({
       success: true,
-      message: 'Network updated successfully',
-      data: network,
+      message: 'Office location updated successfully',
+      data: location,
     });
   } catch (error) {
     next(error);
   }
 };
 
-export const deleteNetworkController = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+export const deleteOfficeLocationController = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
   const workspaceId = getAttendanceWorkspaceId(req as AttendanceRequest, res);
   if (!workspaceId) return;
 
   try {
-    await attendanceService.deleteNetwork(workspaceId, req.params.id as string);
+    await attendanceService.deleteOfficeLocation(workspaceId, req.params.id as string);
     return res.status(200).json({
       success: true,
-      message: 'Network deleted successfully',
+      message: 'Office location deleted successfully',
     });
   } catch (error) {
+    next(error);
+  }
+};
+
+export const getNetworksController = getOfficeLocationsController;
+export const createNetworkController = createOfficeLocationController;
+export const updateNetworkController = updateOfficeLocationController;
+export const deleteNetworkController = deleteOfficeLocationController;
+
+export const updateUserOfficeBranchController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<any> => {
+  const workspaceId = getAttendanceWorkspaceId(req as AttendanceRequest, res);
+  if (!workspaceId) return;
+
+  const parsed = assignOfficeBranchSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(422).json({
+      success: false,
+      message: 'Validation failed.',
+      errors: parsed.error.flatten().fieldErrors,
+    });
+  }
+
+  try {
+    const user = await attendanceService.updateUserOfficeBranch(
+      workspaceId,
+      req.params.userId as string,
+      parsed.data.attendanceOfficeLocationId,
+    );
+    return res.status(200).json({ success: true, message: 'Office branch updated', data: user });
+  } catch (error: any) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({ success: false, message: error.message });
+    }
     next(error);
   }
 };

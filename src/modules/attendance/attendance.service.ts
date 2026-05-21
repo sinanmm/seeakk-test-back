@@ -10,10 +10,10 @@ import {
   resolveAttendanceSubmissionState,
 } from './attendanceState.util';
 import {
-  requiresOfficeNetworkValidation,
-  toOfficeNetworkProfile,
-  validateOfficeNetwork,
-} from './attendanceNetwork.util';
+  requiresOfficeLocationValidation,
+  toOfficeLocationProfile,
+  validateOfficeLocation,
+} from './attendanceLocation.util';
 import { resolveWorkspaceIdForUser } from '../../utils/workspaceContext';
 
 const createAttendanceServiceError = (message: string, statusCode = 400): Error & { statusCode: number } => {
@@ -101,33 +101,89 @@ const assertUserInWorkspace = async (userId: string, workspaceId: string) => {
   return user;
 };
 
-const listEnabledOfficeNetworks = async (workspaceId: string) => {
-  let networks = await prisma.attendanceNetwork.findMany({
+const listEnabledOfficeLocations = async (workspaceId: string) => {
+  let locations = await (prisma as any).attendanceOfficeLocation.findMany({
     where: { workspaceId, isEnabled: true },
+    orderBy: { officeName: 'asc' },
   });
 
-  if (networks.length === 0) {
-    await prisma.attendanceNetwork.create({
+  if (locations.length === 0) {
+    await (prisma as any).attendanceOfficeLocation.create({
       data: {
         workspaceId,
-        officeName: 'MISSION 2050 Office',
+        officeName: 'Main Office',
         branch: 'HQ',
-        wifiSsid: 'MISSION 2050-2G',
-        routerIp: '192.168.220.1',
-        subnet: '255.255.255.0',
-        allowedIpRanges: '192.168.220.*',
+        latitude: 28.6139,
+        longitude: 77.209,
+        radiusMeters: 50,
+        isEnabled: true,
       },
     });
-    networks = await prisma.attendanceNetwork.findMany({
+    locations = await (prisma as any).attendanceOfficeLocation.findMany({
       where: { workspaceId, isEnabled: true },
+      orderBy: { officeName: 'asc' },
     });
   }
 
-  return networks;
+  return locations;
 };
 
+const resolveUserOfficeLocation = async (
+  user: { attendanceOfficeLocationId?: string | null; workspaceId?: string | null },
+  workspaceId: string,
+) => {
+  if (user.attendanceOfficeLocationId) {
+    const assigned = await (prisma as any).attendanceOfficeLocation.findFirst({
+      where: {
+        id: user.attendanceOfficeLocationId,
+        workspaceId,
+        isEnabled: true,
+      },
+    });
+    if (assigned) return assigned;
+  }
+
+  const locations = await listEnabledOfficeLocations(workspaceId);
+  return locations[0] ?? null;
+};
+
+type SuccessfulLocationCheck = Extract<
+  ReturnType<typeof validateOfficeLocation>,
+  { ok: true }
+>;
+
+const buildLocationRecordFields = (
+  payload: any,
+  locationResult: SuccessfulLocationCheck | null,
+  isInsideOfficeRadius: boolean,
+) => ({
+  latitude: payload.latitude ?? null,
+  longitude: payload.longitude ?? null,
+  gpsAccuracy: payload.gpsAccuracy ?? null,
+  calculatedDistanceMeters: locationResult?.distanceMeters ?? null,
+  officeLocationId: locationResult?.officeLocationId ?? null,
+  isInsideOfficeRadius,
+  isOfficeNetwork: isInsideOfficeRadius,
+  geoLocation:
+    payload.latitude != null && payload.longitude != null
+      ? `${payload.latitude},${payload.longitude}`
+      : payload.geoLocation ?? null,
+});
+
 export const getTodayStatus = async (userId: string, workspaceId: string) => {
-  const user = await assertUserInWorkspace(userId, workspaceId);
+  const user = await prisma.user.findFirst({
+    where: { id: userId, deletedAt: null, isActive: true },
+    include: {
+      attendanceOfficeLocation: true,
+    },
+  });
+  if (!user) {
+    throw createAttendanceServiceError('User not found.', 404);
+  }
+  const resolvedWorkspaceId = await resolveWorkspaceIdForUser(userId, user.workspaceId ?? null);
+  if (!resolvedWorkspaceId || resolvedWorkspaceId !== workspaceId) {
+    throw createAttendanceServiceError('You do not belong to this workspace.', 403);
+  }
 
   const todayStr = getLocalDateString();
   const applicableHolidays = await getApplicableHolidays(workspaceId, user);
@@ -148,9 +204,14 @@ export const getTodayStatus = async (userId: string, workspaceId: string) => {
   );
   const isMarked = hasUserSubmittedToday(submissionState);
 
-  const officeNetworks =
+  const assignedOfficeLocation =
     user.attendanceApplyType === 'FROM_OFFICE'
-      ? (await listEnabledOfficeNetworks(workspaceId)).map(toOfficeNetworkProfile)
+      ? await resolveUserOfficeLocation(user, workspaceId)
+      : null;
+
+  const officeLocations =
+    user.attendanceApplyType === 'FROM_OFFICE'
+      ? (await listEnabledOfficeLocations(workspaceId)).map(toOfficeLocationProfile)
       : [];
 
   return {
@@ -163,7 +224,10 @@ export const getTodayStatus = async (userId: string, workspaceId: string) => {
     requiresMandatoryPopup: requiresMandatoryAttendancePopup(submissionState, user.isLocked),
     record: existingRecord,
     attendanceApplyType: user.attendanceApplyType,
-    officeNetworks,
+    assignedOfficeLocation: assignedOfficeLocation
+      ? toOfficeLocationProfile(assignedOfficeLocation)
+      : null,
+    officeLocations,
   };
 };
 
@@ -201,31 +265,47 @@ export const markAttendance = async (userId: string, workspaceId: string, payloa
 
   const settings = await getSettings(workspaceId);
 
-  let isOfficeNetwork = false;
-  if (requiresOfficeNetworkValidation(user.attendanceApplyType, attendanceType)) {
-    const networks = await listEnabledOfficeNetworks(workspaceId);
+  let isInsideOfficeRadius = false;
+  let locationValidationResult: ReturnType<typeof validateOfficeLocation> | null = null;
 
-    const networkCheck = validateOfficeNetwork(networks, {
-      ipAddress: payload.ipAddress,
-      networkName: payload.networkName,
-      routerIp: payload.routerIp,
-      subnet: payload.subnet,
-      clientChannel: payload.clientChannel || 'web',
+  if (requiresOfficeLocationValidation(user.attendanceApplyType, attendanceType)) {
+    const office = await resolveUserOfficeLocation(user, workspaceId);
+    if (!office) {
+      const branchError = createAttendanceServiceError(
+        'No office branch is assigned to your account. Contact your administrator.',
+        403,
+      ) as Error & { errorCode?: string; details?: Record<string, unknown> };
+      branchError.errorCode = 'OFFICE_BRANCH_NOT_ASSIGNED';
+      throw branchError;
+    }
+
+    const locationCheck = validateOfficeLocation(office, {
+      latitude: payload.latitude,
+      longitude: payload.longitude,
+      gpsAccuracy: payload.gpsAccuracy,
+      locationCapturedAt: payload.locationCapturedAt,
     });
 
-    if (!networkCheck.ok) {
-      const error = createAttendanceServiceError(networkCheck.message, 403) as Error & {
+    if (!locationCheck.ok) {
+      const error = createAttendanceServiceError(locationCheck.message, 403) as Error & {
         statusCode: number;
         errorCode?: string;
         details?: Record<string, unknown>;
       };
-      error.errorCode = networkCheck.errorCode;
-      error.details = networkCheck.details;
+      error.errorCode = locationCheck.errorCode;
+      error.details = locationCheck.details;
       throw error;
     }
 
-    isOfficeNetwork = true;
+    locationValidationResult = locationCheck;
+    isInsideOfficeRadius = true;
   }
+
+  const locationFields = buildLocationRecordFields(
+    payload,
+    locationValidationResult,
+    isInsideOfficeRadius,
+  );
 
   let warningCount = 0;
   let checkInTime = payload.checkInTime ? new Date(payload.checkInTime) : new Date();
@@ -280,20 +360,15 @@ export const markAttendance = async (userId: string, workspaceId: string, payloa
         holidayName,
         isLocked: user.isLocked,
         createdBy: userId,
-        ipAddress: payload.ipAddress,
-        networkName: payload.networkName,
-        routerIp: payload.routerIp,
-        subnet: payload.subnet,
         attendanceApplyType: user.attendanceApplyType,
-        isOfficeNetwork,
         deviceInfo: payload.deviceInfo,
-        geoLocation: payload.geoLocation,
         approvalStatus,
         supervisorId: user.supervisorId,
         notes: payload.notes,
         attachmentUrl: payload.attachmentUrl,
         submittedAt: new Date(),
         rejectedReason: null,
+        ...locationFields,
       },
     });
   } else {
@@ -310,18 +385,13 @@ export const markAttendance = async (userId: string, workspaceId: string, payloa
         holidayName,
         isLocked: user.isLocked,
         createdBy: userId,
-        ipAddress: payload.ipAddress,
-        networkName: payload.networkName,
-        routerIp: payload.routerIp,
-        subnet: payload.subnet,
         attendanceApplyType: user.attendanceApplyType,
-        isOfficeNetwork,
         deviceInfo: payload.deviceInfo,
-        geoLocation: payload.geoLocation,
         approvalStatus,
         supervisorId: user.supervisorId,
         notes: payload.notes,
         attachmentUrl: payload.attachmentUrl,
+        ...locationFields,
       },
     });
   }
@@ -331,8 +401,18 @@ export const markAttendance = async (userId: string, workspaceId: string, payloa
       workspaceId,
       userId,
       action: 'SUBMIT',
-      details: `Submitted attendance as ${attendanceType} (${approvalStatus})`,
-      ipAddress: payload.ipAddress,
+      details: JSON.stringify({
+        module: 'attendance',
+        attendanceType,
+        approvalStatus,
+        selfApproved: false,
+        isInsideOfficeRadius,
+        calculatedDistanceMeters: locationFields.calculatedDistanceMeters,
+        officeLocationId: locationFields.officeLocationId,
+        latitude: locationFields.latitude,
+        longitude: locationFields.longitude,
+        gpsAccuracy: locationFields.gpsAccuracy,
+      }),
     },
   });
 
@@ -451,6 +531,10 @@ export const getAdminOverview = async (workspaceId: string, filters: any) => {
               email: true,
               isLocked: true,
               attendanceApplyType: true,
+              attendanceOfficeLocationId: true,
+              attendanceOfficeLocation: {
+                select: { id: true, officeName: true, branch: true },
+              },
               role: { select: { name: true } },
               department: { select: { name: true } },
               supervisor: { select: { id: true, name: true } },
@@ -497,6 +581,9 @@ export const getAdminOverview = async (workspaceId: string, filters: any) => {
       role: { select: { name: true } },
       department: { select: { name: true } },
       supervisor: { select: { id: true, name: true } },
+      attendanceOfficeLocation: {
+        select: { id: true, officeName: true, branch: true, radiusMeters: true },
+      },
     },
     orderBy: { name: 'asc' },
   });
@@ -528,14 +615,22 @@ export const getAdminOverview = async (workspaceId: string, filters: any) => {
         isHoliday: record.isHoliday,
         holidayName: record.holidayName,
         isLocked: user.isLocked,
-        ipAddress: record.ipAddress,
-        networkName: record.networkName,
-        routerIp: record.routerIp,
-        subnet: record.subnet,
+        latitude: record.latitude,
+        longitude: record.longitude,
+        calculatedDistanceMeters: record.calculatedDistanceMeters,
+        officeLocationId: record.officeLocationId,
+        isInsideOfficeRadius: record.isInsideOfficeRadius,
+        gpsAccuracy: record.gpsAccuracy,
         attendanceApplyType: user.attendanceApplyType,
-        isOfficeNetwork: record.isOfficeNetwork,
+        isOfficeNetwork: record.isInsideOfficeRadius ?? record.isOfficeNetwork,
         deviceInfo: record.deviceInfo,
         geoLocation: record.geoLocation,
+        complianceStatus:
+          record.isInsideOfficeRadius || record.approvalStatus === 'APPROVED'
+            ? 'COMPLIANT'
+            : record.approvalStatus === 'PENDING'
+              ? 'PENDING'
+              : 'NON_COMPLIANT',
         approvalStatus: record.approvalStatus,
         approvedBy: record.approvedBy,
         approvedAt: record.approvedAt,
@@ -556,14 +651,17 @@ export const getAdminOverview = async (workspaceId: string, filters: any) => {
         isHoliday: false,
         holidayName: null,
         isLocked: user.isLocked,
-        ipAddress: null,
-        networkName: null,
-        routerIp: null,
-        subnet: null,
+        latitude: null,
+        longitude: null,
+        calculatedDistanceMeters: null,
+        officeLocationId: null,
+        isInsideOfficeRadius: false,
+        gpsAccuracy: null,
         attendanceApplyType: user.attendanceApplyType,
         isOfficeNetwork: false,
         deviceInfo: null,
         geoLocation: null,
+        complianceStatus: 'NOT_SUBMITTED',
         approvalStatus: 'NOT_SUBMITTED',
         approvedBy: null,
         approvedAt: null,
@@ -758,6 +856,31 @@ export const updateUserApplyType = async (workspaceId: string, userId: string, a
   });
 };
 
+export const updateUserOfficeBranch = async (
+  workspaceId: string,
+  userId: string,
+  attendanceOfficeLocationId: string | null,
+) => {
+  if (attendanceOfficeLocationId) {
+    const location = await (prisma as any).attendanceOfficeLocation.findFirst({
+      where: { id: attendanceOfficeLocationId, workspaceId, isEnabled: true },
+    });
+    if (!location) {
+      throw createAttendanceServiceError('Invalid or inactive office branch.', 404);
+    }
+  }
+
+  return prisma.user.update({
+    where: { id: userId, workspaceId },
+    data: { attendanceOfficeLocationId },
+    include: {
+      attendanceOfficeLocation: {
+        select: { id: true, officeName: true, branch: true },
+      },
+    },
+  });
+};
+
 export const getStats = async (userId: string, workspaceId: string) => {
   const records = await prisma.attendanceRecord.findMany({
     where: { userId, workspaceId, approvalStatus: 'APPROVED' },
@@ -861,38 +984,67 @@ export const unlockUserAdmin = async (userId: string, workspaceId: string, actor
   return user;
 };
 
-// Network settings CRUD
-export const getNetworks = async (workspaceId: string) => {
-  return prisma.attendanceNetwork.findMany({ where: { workspaceId } });
+// Office location settings CRUD
+export const getOfficeLocations = async (workspaceId: string) => {
+  return (prisma as any).attendanceOfficeLocation.findMany({
+    where: { workspaceId },
+    orderBy: [{ officeName: 'asc' }, { branch: 'asc' }],
+  });
 };
 
-export const createNetwork = async (workspaceId: string, data: any) => {
-  return prisma.attendanceNetwork.create({
+export const createOfficeLocation = async (workspaceId: string, data: any) => {
+  return (prisma as any).attendanceOfficeLocation.create({
     data: {
       workspaceId,
       officeName: data.officeName,
       branch: data.branch,
-      wifiSsid: data.wifiSsid,
-      routerIp: data.routerIp,
-      gateway: data.gateway,
-      allowedIpRanges: data.allowedIpRanges,
-      subnet: data.subnet,
-      macValidation: data.macValidation,
+      latitude: data.latitude,
+      longitude: data.longitude,
+      radiusMeters: data.radiusMeters ?? 50,
       isEnabled: data.isEnabled ?? true,
     },
   });
 };
 
-export const updateNetwork = async (workspaceId: string, id: string, data: any) => {
-  return prisma.attendanceNetwork.update({
+export const updateOfficeLocation = async (workspaceId: string, id: string, data: any) => {
+  const existing = await (prisma as any).attendanceOfficeLocation.findFirst({
+    where: { id, workspaceId },
+  });
+  if (!existing) {
+    throw createAttendanceServiceError('Office location not found.', 404);
+  }
+  return (prisma as any).attendanceOfficeLocation.update({
     where: { id },
-    data,
+    data: {
+      officeName: data.officeName,
+      branch: data.branch,
+      latitude: data.latitude,
+      longitude: data.longitude,
+      radiusMeters: data.radiusMeters,
+      isEnabled: data.isEnabled,
+    },
   });
 };
 
-export const deleteNetwork = async (workspaceId: string, id: string) => {
-  return prisma.attendanceNetwork.delete({ where: { id } });
+export const deleteOfficeLocation = async (workspaceId: string, id: string) => {
+  const existing = await (prisma as any).attendanceOfficeLocation.findFirst({
+    where: { id, workspaceId },
+  });
+  if (!existing) {
+    throw createAttendanceServiceError('Office location not found.', 404);
+  }
+  await prisma.user.updateMany({
+    where: { attendanceOfficeLocationId: id, workspaceId },
+    data: { attendanceOfficeLocationId: null },
+  });
+  return (prisma as any).attendanceOfficeLocation.delete({ where: { id } });
 };
+
+/** @deprecated Alias for getOfficeLocations — /networks route backward compatibility */
+export const getNetworks = getOfficeLocations;
+export const createNetwork = createOfficeLocation;
+export const updateNetwork = updateOfficeLocation;
+export const deleteNetwork = deleteOfficeLocation;
 
 // Notifications list
 export const getNotifications = async (userId: string, workspaceId: string) => {

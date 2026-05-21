@@ -911,6 +911,8 @@ model User {
   rosterEntries            RosterEntry[]
   attendanceRecords        AttendanceRecord[]
   attendanceApplyType      String                 @default("FROM_OFFICE") // FROM_OFFICE, FROM_ANYWHERE
+  attendanceOfficeLocationId String?
+  attendanceOfficeLocation AttendanceOfficeLocation? @relation(fields: [attendanceOfficeLocationId], references: [id], onDelete: SetNull)
   followUps                FollowUp[]
   createdLeads             Lead[]       @relation("LeadCreatedBy")
   assignedLeads            Lead[]       @relation("LeadAssignedTo")
@@ -1338,15 +1340,21 @@ model AttendanceRecord {
   createdAt           DateTime         @default(now())
   updatedAt           DateTime         @updatedAt
 
-  // Network & Approval Meta
-  ipAddress           String?
-  networkName         String?
-  routerIp            String?
-  subnet              String?
-  attendanceApplyType String?          @default("FROM_OFFICE")
-  isOfficeNetwork     Boolean          @default(false)
-  deviceInfo          String?
-  geoLocation         String?
+  // Location & legacy network meta
+  latitude                Float?
+  longitude               Float?
+  calculatedDistanceMeters Float?
+  officeLocationId        String?
+  isInsideOfficeRadius    Boolean          @default(false)
+  gpsAccuracy             Float?
+  ipAddress               String?
+  networkName             String?
+  routerIp                String?
+  subnet                  String?
+  attendanceApplyType     String?          @default("FROM_OFFICE")
+  isOfficeNetwork         Boolean          @default(false)
+  deviceInfo              String?
+  geoLocation             String?
   approvalStatus      String           @default("PENDING") // PENDING, APPROVED, REJECTED
   approvedBy          String?
   approvedAt          DateTime?
@@ -1426,6 +1434,25 @@ model AttendanceNetwork {
 
   @@index([workspaceId])
   @@map("attendance_networks")
+}
+
+model AttendanceOfficeLocation {
+  id            String   @id @default(uuid())
+  workspaceId   String
+  officeName    String
+  branch        String?
+  latitude      Float
+  longitude     Float
+  radiusMeters  Int      @default(50)
+  isEnabled     Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  assignedUsers User[]
+
+  @@index([workspaceId])
+  @@index([workspaceId, isEnabled])
+  @@map("attendance_office_locations")
 }
 
 model AttendanceApprovalLog {

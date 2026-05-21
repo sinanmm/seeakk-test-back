@@ -108,7 +108,10 @@ const permissions = [
   { key: 'view_pending_attendance', group: 'ATTENDANCE_MANAGEMENT', description: 'View pending attendance queue' },
   { key: 'view_own_attendance', group: 'ATTENDANCE_MANAGEMENT', description: 'View own attendance details' },
   { key: 'manage_attendance_settings', group: 'ATTENDANCE_MANAGEMENT', description: 'Modify workspace attendance time policies' },
-  { key: 'manage_attendance_network', group: 'ATTENDANCE_MANAGEMENT', description: 'Manage approved office networks and IPs' },
+  { key: 'manage_attendance_network', group: 'ATTENDANCE_MANAGEMENT', description: 'Manage approved office networks and IPs (legacy)' },
+  { key: 'manage_attendance_locations', group: 'ATTENDANCE_MANAGEMENT', description: 'Manage office GPS locations and radius' },
+  { key: 'assign_office_branch', group: 'ATTENDANCE_MANAGEMENT', description: 'Assign users to office branch locations' },
+  { key: 'view_attendance_location_logs', group: 'ATTENDANCE_MANAGEMENT', description: 'View attendance GPS location audit logs' },
   { key: 'edit_attendance_apply_type', group: 'ATTENDANCE_MANAGEMENT', description: 'Edit employee attendance apply type settings' },
   { key: 'view_attendance_network_logs', group: 'ATTENDANCE_MANAGEMENT', description: 'View attendance network audit logs' },
 ];
