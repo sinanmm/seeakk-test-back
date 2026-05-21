@@ -68,6 +68,8 @@ export const markAttendanceController = async (req: Request, res: Response, next
       return res.status(error.statusCode).json({
         success: false,
         message: error.message,
+        errorCode: error.errorCode,
+        details: error.details,
       });
     }
     next(error);

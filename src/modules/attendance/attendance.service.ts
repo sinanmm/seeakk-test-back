@@ -9,6 +9,7 @@ import {
   requiresMandatoryAttendancePopup,
   resolveAttendanceSubmissionState,
 } from './attendanceState.util';
+import { requiresOfficeNetworkValidation, validateOfficeNetwork } from './attendanceNetwork.util';
 
 const createAttendanceServiceError = (message: string, statusCode = 400): Error & { statusCode: number } => {
   const error = new Error(message) as Error & { statusCode: number };
@@ -34,14 +35,6 @@ const checkIsHoliday = (applicableHolidays: any[], dateStr: string) => {
     return dateStr === hdStr;
   });
   return found ? { isHoliday: true, name: found.name } : { isHoliday: false };
-};
-
-const matchIpRange = (userIp: string | null, allowedRange: string | null): boolean => {
-  if (!allowedRange) return true;
-  if (!userIp) return false;
-  // Replace 'x' or '*' with wildcard matchers
-  const regexStr = '^' + allowedRange.trim().replace(/\./g, '\\.').replace(/x|\*/g, '.*') + '$';
-  return new RegExp(regexStr).test(userIp);
 };
 
 export const getSettings = async (workspaceId: string) => {
@@ -167,15 +160,13 @@ export const markAttendance = async (userId: string, workspaceId: string, payloa
 
   const settings = await getSettings(workspaceId);
 
-  // Network Validation for office restricted users
   let isOfficeNetwork = false;
-  if (!isHoliday && user.attendanceApplyType === 'FROM_OFFICE') {
+  if (requiresOfficeNetworkValidation(user.attendanceApplyType, attendanceType)) {
     let networks = await prisma.attendanceNetwork.findMany({
       where: { workspaceId, isEnabled: true },
     });
 
     if (networks.length === 0) {
-      // Seed default network if empty
       await prisma.attendanceNetwork.create({
         data: {
           workspaceId,
@@ -192,17 +183,24 @@ export const markAttendance = async (userId: string, workspaceId: string, payloa
       });
     }
 
-    // Match SSID & Router IP & Subnet
-    const match = networks.find(n => {
-      const matchSsid = n.wifiSsid.trim() === payload.networkName?.trim();
-      const matchRouter = n.routerIp.trim() === payload.routerIp?.trim();
-      const matchIp = matchIpRange(payload.ipAddress, n.allowedIpRanges);
-      return matchSsid && matchRouter && matchIp;
+    const networkCheck = validateOfficeNetwork(networks, {
+      ipAddress: payload.ipAddress,
+      networkName: payload.networkName,
+      routerIp: payload.routerIp,
+      subnet: payload.subnet,
     });
 
-    if (!match) {
-      throw createAttendanceServiceError('You can only mark attendance using approved office network.', 403);
+    if (!networkCheck.ok) {
+      const error = createAttendanceServiceError(networkCheck.message, 403) as Error & {
+        statusCode: number;
+        errorCode?: string;
+        details?: Record<string, unknown>;
+      };
+      error.errorCode = networkCheck.errorCode;
+      error.details = networkCheck.details;
+      throw error;
     }
+
     isOfficeNetwork = true;
   }
 

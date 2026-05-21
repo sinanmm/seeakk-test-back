@@ -8,7 +8,11 @@ router.use(protect);
 
 // Standard Employee Routes
 router.get('/today', checkAnyPermission(['view_attendance', 'mark_attendance']), controller.getTodayStatusController);
-router.post('/check-in', checkPermission('mark_attendance'), controller.markAttendanceController);
+router.post(
+  '/check-in',
+  checkAnyPermission(['mark_attendance', 'view_attendance', 'view_own_attendance', 'manage_attendance']),
+  controller.markAttendanceController,
+);
 router.get('/history', checkPermission('view_attendance'), controller.getHistoryController);
 router.get('/stats', checkPermission('view_attendance'), controller.getStatsController);
 router.get('/notifications', checkAnyPermission(['view_attendance', 'mark_attendance']), controller.getNotificationsController);
