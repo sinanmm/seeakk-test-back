@@ -199,19 +199,16 @@ export const bulkAssignLeads = async (input: {
       RETURNING l."id", l."assignedToId"
     `)) as Array<{ id: string; assignedToId: string }>;
 
-    // Reassign pending follow-ups of these leads to their new owners within the transaction
-    for (const assignment of validAssignments) {
-      await (tx as any).followUp.updateMany({
-        where: {
-          leadId: assignment.leadId,
-          workspaceId,
-          status: 'PENDING',
-        },
-        data: {
-          userId: assignment.assignTo,
-        },
-      });
-    }
+    // Single bulk UPDATE — per-lead updateMany() caused transaction timeout (P2028) on ~200+ leads.
+    await (tx as any).$queryRaw(sql`
+      UPDATE "follow_ups" AS f
+      SET "userId" = v.assign_to_id,
+          "updatedAt" = NOW()
+      FROM (VALUES ${assignmentValues}) AS v(lead_id, assign_to_id)
+      WHERE f."leadId" = v.lead_id
+        AND f."workspaceId" = ${workspaceId}
+        AND f."status" = 'PENDING'
+    `);
 
     await (tx as any).leadActivity.createMany({
       data: updatedRows.map((row: any) => ({
@@ -252,6 +249,9 @@ export const bulkAssignLeads = async (input: {
       updatedCount: updatedRows.length,
       failedLeadIds,
     };
+  }, {
+    maxWait: 15_000,
+    timeout: 60_000,
   });
 
   return result;
