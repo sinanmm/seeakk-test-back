@@ -619,7 +619,8 @@ export const getPendingApprovals = async (workspaceId: string, supervisorId: str
   };
 
   if (!isWorkspaceAdmin) {
-    whereClause.supervisorId = supervisorId;
+    // Approvers see supervisee requests and their own pending submissions (attendance allows self-approval).
+    whereClause.OR = [{ supervisorId }, { userId: supervisorId }];
   }
 
   return prisma.attendanceRecord.findMany({
@@ -662,9 +663,7 @@ export const reviewAttendance = async (
     throw createAttendanceServiceError('Cannot review attendance that was not submitted.', 400);
   }
 
-  if (record.userId === actorId) {
-    throw createAttendanceServiceError('Self-approval or self-rejection is forbidden.', 403);
-  }
+  const isSelfReview = record.userId === actorId;
 
   if (record.approvalStatus !== 'PENDING') {
     throw createAttendanceServiceError(
@@ -685,7 +684,14 @@ export const reviewAttendance = async (
   const roleName = (actor?.role?.name || '').toLowerCase();
   const isWorkspaceAdmin = roleName === 'superadmin' || roleName === 'admin';
 
-  if (!isWorkspaceAdmin && record.supervisorId !== actorId && record.user?.supervisorId !== actorId) {
+  // Attendance module: self-approve/reject allowed when actor has approve_attendance (route-level RBAC).
+  // Lead/stage approvals use separate services and still forbid self-approval.
+  if (
+    !isSelfReview &&
+    !isWorkspaceAdmin &&
+    record.supervisorId !== actorId &&
+    record.user?.supervisorId !== actorId
+  ) {
     throw createAttendanceServiceError('You are not authorized to review this attendance request.', 403);
   }
 
@@ -704,12 +710,32 @@ export const reviewAttendance = async (
     },
   });
 
+  const reviewedAt = new Date();
+
   await prisma.attendanceApprovalLog.create({
     data: {
       attendanceRecordId: recordId,
       action,
       actorId,
       reason,
+    },
+  });
+
+  await prisma.attendanceAuditLog.create({
+    data: {
+      workspaceId,
+      userId: actorId,
+      action: action === 'APPROVE' ? 'APPROVE' : 'REJECT',
+      details: JSON.stringify({
+        module: 'attendance',
+        selfApproved: isSelfReview,
+        approvedBy: actorId,
+        approvedAt: reviewedAt.toISOString(),
+        attendanceRecordId: recordId,
+        targetUserId: record.userId,
+        action,
+        ...(reason ? { reason } : {}),
+      }),
     },
   });
 
