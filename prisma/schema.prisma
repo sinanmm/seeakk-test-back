@@ -909,6 +909,7 @@ model User {
   assignedLeadStageApprovals LeadStageApproval[] @relation("LeadStageApprovalAssignedTo")
   approvedLeadStageApprovals LeadStageApproval[] @relation("LeadStageApprovalApprovedBy")
   rosterEntries            RosterEntry[]
+  attendanceRecords        AttendanceRecord[]
   followUps                FollowUp[]
   createdLeads             Lead[]       @relation("LeadCreatedBy")
   assignedLeads            Lead[]       @relation("LeadAssignedTo")
@@ -1301,4 +1302,86 @@ model RevenueTransaction {
   @@index([closedStageId])
   @@index([createdAt])
   @@map("revenue_transactions")
+}
+
+enum AttendanceType {
+  PRESENT
+  HALF_DAY
+  LEAVE
+  WORK_FROM_HOME
+  HOLIDAY
+  ABSENT
+}
+
+enum AttendanceStatus {
+  MARKED
+  AUTO_GENERATED
+  APPROVED
+  PENDING
+}
+
+model AttendanceRecord {
+  id             String           @id @default(uuid())
+  userId         String
+  workspaceId    String
+  date           DateTime         @db.Date
+  checkInTime    DateTime?
+  attendanceType AttendanceType   @default(PRESENT)
+  status         AttendanceStatus @default(MARKED)
+  warningCount   Int              @default(0)
+  isHoliday      Boolean          @default(false)
+  holidayName    String?
+  isLocked       Boolean          @default(false)
+  lockReason     String?
+  createdBy      String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@index([workspaceId])
+  @@index([date])
+  @@index([userId, date])
+  @@map("attendance_records")
+}
+
+model AttendanceWarning {
+  id           String   @id @default(uuid())
+  userId       String
+  workspaceId  String
+  date         DateTime @db.Date
+  reason       String
+  warningType  String   // e.g. "ABSENT", "LATE_CHECKIN"
+  createdAt    DateTime @default(now())
+
+  @@index([userId])
+  @@index([workspaceId])
+  @@map("attendance_warnings")
+}
+
+model AttendanceSetting {
+  id                String   @id @default(uuid())
+  workspaceId       String   @unique
+  cutoffTime        String   @default("09:30") // HH:MM format
+  enableWarning     Boolean  @default(true)
+  warningThreshold  Int      @default(3) // lock account after N warnings
+  enableAutoLock    Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("attendance_settings")
+}
+
+model AttendanceLog {
+  id          String   @id @default(uuid())
+  userId      String
+  workspaceId String
+  action      String   // e.g. "CHECK_IN", "AUTO_ABSENT", "WARNING_GENERATED"
+  details     String?
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([workspaceId])
+  @@map("attendance_logs")
 }

@@ -1,10 +1,12 @@
 import { Router } from 'express';
 import { protect } from '../../middlewares/authMiddleware';
+import { checkUserLock } from '../../middlewares/lockMiddleware';
 import * as leadController from '../../controllers/User/leadController';
 
 const router = Router();
 
 router.use(protect);
+router.use(checkUserLock);
 
 router.get('/meta/assignees', leadController.listLeadAssignees);
 router.get('/meta/stage-rules', leadController.listLeadTransitionStageRules);

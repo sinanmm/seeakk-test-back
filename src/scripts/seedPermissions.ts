@@ -95,6 +95,14 @@ const permissions = [
   { key: 'VIEW_TOTAL_REVENUE', group: 'REPORTS_ANALYTICS', description: 'View total workspace revenue totals and analytics' },
   { key: 'VIEW_OWN_REVENUE', group: 'REPORTS_ANALYTICS', description: 'View only own generated revenue and analytics' },
   { key: 'SYSTEM_CONFIG', group: 'SYSTEM_SETTINGS', description: 'Manage system settings' },
+
+  // ATTENDANCE MANAGEMENT
+  { key: 'view_attendance', group: 'ATTENDANCE_MANAGEMENT', description: 'View own attendance' },
+  { key: 'mark_attendance', group: 'ATTENDANCE_MANAGEMENT', description: 'Mark daily attendance' },
+  { key: 'manage_attendance', group: 'ATTENDANCE_MANAGEMENT', description: 'Manage employee attendance' },
+  { key: 'view_all_attendance', group: 'ATTENDANCE_MANAGEMENT', description: 'View all employee attendance' },
+  { key: 'export_attendance', group: 'ATTENDANCE_MANAGEMENT', description: 'Export attendance reports' },
+  { key: 'unlock_attendance_locked_users', group: 'ATTENDANCE_MANAGEMENT', description: 'Unlock users locked by attendance/target systems' },
 ];
 
 async function syncWorkspaceSuperAdminRoles() {
