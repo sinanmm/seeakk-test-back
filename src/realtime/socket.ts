@@ -4,6 +4,7 @@ import { Server as SocketIOServer } from 'socket.io';
 import prisma from '../config/prisma';
 import { SOCKET_IO_PATH } from '../config/socketConstants';
 import { getAllowedOrigins, isAllowedOrigin } from '../config/cors';
+import { resolveWorkspaceIdForUser } from '../utils/workspaceContext';
 import logger from '../utils/logger';
 
 type RealtimeEvent =
@@ -104,14 +105,19 @@ export const initRealtimeServer = (httpServer: HttpServer): SocketIOServer => {
         select: { id: true, workspaceId: true, isActive: true },
       });
 
-      if (!user || !user.isActive || !user.workspaceId) {
+      if (!user || !user.isActive) {
+        return next(new Error('Unauthorized socket connection'));
+      }
+
+      const workspaceId = await resolveWorkspaceIdForUser(user.id, user.workspaceId ?? null);
+      if (!workspaceId) {
         return next(new Error('Unauthorized socket connection'));
       }
 
       (socket.data as any).userId = user.id;
-      (socket.data as any).workspaceId = user.workspaceId;
+      (socket.data as any).workspaceId = workspaceId;
       socket.join(toUserRoom(user.id));
-      socket.join(toWorkspaceRoom(user.workspaceId));
+      socket.join(toWorkspaceRoom(workspaceId));
       next();
     } catch (error: any) {
       next(new Error(error?.message || 'Socket authentication failed'));

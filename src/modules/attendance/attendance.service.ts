@@ -210,6 +210,7 @@ export const markAttendance = async (userId: string, workspaceId: string, payloa
       networkName: payload.networkName,
       routerIp: payload.routerIp,
       subnet: payload.subnet,
+      clientChannel: payload.clientChannel || 'web',
     });
 
     if (!networkCheck.ok) {

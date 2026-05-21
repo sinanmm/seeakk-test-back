@@ -12,6 +12,8 @@ export type NetworkCheckPayload = {
   networkName?: string | null;
   routerIp?: string | null;
   subnet?: string | null;
+  /** Web browsers cannot read real WiFi SSID/IP — relax IP rules for `web`. */
+  clientChannel?: 'web' | 'mobile' | string | null;
 };
 
 export type OfficeNetworkValidationResult =
@@ -46,11 +48,15 @@ export const requiresOfficeNetworkValidation = (
   return true;
 };
 
+const isWebClientChannel = (payload: NetworkCheckPayload): boolean =>
+  normalize(payload.clientChannel) === 'web';
+
 const networkMatchesPayload = (network: OfficeNetworkRecord, payload: NetworkCheckPayload): boolean => {
   const clientIp = (payload.ipAddress || '').trim();
   const clientSsid = normalize(payload.networkName);
   const clientRouter = (payload.routerIp || '').trim();
   const clientSubnet = (payload.subnet || '').trim();
+  const webClient = isWebClientChannel(payload);
 
   const expectedSsid = normalize(network.wifiSsid);
   const expectedRouter = network.routerIp.trim();
@@ -61,6 +67,9 @@ const networkMatchesPayload = (network: OfficeNetworkRecord, payload: NetworkChe
 
   const subnetOk = !expectedSubnet || !clientSubnet || clientSubnet === expectedSubnet;
   if (!subnetOk) return false;
+
+  // Web CRM: user confirms admin-configured SSID/router from the UI; device IP is not observable in-browser.
+  if (webClient) return true;
 
   return matchIpRange(clientIp, network.allowedIpRanges);
 };
@@ -84,15 +93,20 @@ export const validateOfficeNetwork = (
   const clientSsid = (payload.networkName || '').trim();
   const clientRouter = (payload.routerIp || '').trim();
 
-  if (!clientSsid || !clientRouter || !clientIp) {
+  const webClient = isWebClientChannel(payload);
+
+  if (!clientSsid || !clientRouter || (!webClient && !clientIp)) {
     return {
       ok: false,
       errorCode: 'OFFICE_NETWORK_METADATA_REQUIRED',
-      message: 'Office check-in requires WiFi SSID, router IP, and device IP.',
+      message: webClient
+        ? 'Office check-in requires WiFi SSID and router IP from your workspace network settings.'
+        : 'Office check-in requires WiFi SSID, router IP, and device IP.',
       details: {
         hasIp: Boolean(clientIp),
         hasSsid: Boolean(clientSsid),
         hasRouter: Boolean(clientRouter),
+        clientChannel: payload.clientChannel || 'unknown',
       },
     };
   }

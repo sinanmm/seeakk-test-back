@@ -22,19 +22,20 @@ export const resolveAttendanceWorkspace = async (
     });
   }
 
-  if (!req.user.isOnboarded) {
-    return res.status(403).json({
-      success: false,
-      errorCode: 'ONBOARDING_REQUIRED',
-      message: 'Complete workspace onboarding before marking attendance.',
-    });
-  }
-
   try {
     const workspaceId = await resolveWorkspaceIdForUser(
       req.user.id,
       (req.user as { workspaceId?: string | null }).workspaceId ?? null,
     );
+
+    const effectiveOnboarded = Boolean(req.user.isOnboarded) || Boolean(workspaceId);
+    if (!effectiveOnboarded) {
+      return res.status(403).json({
+        success: false,
+        errorCode: 'ONBOARDING_REQUIRED',
+        message: 'Complete workspace onboarding before marking attendance.',
+      });
+    }
 
     if (!workspaceId) {
       return res.status(403).json({

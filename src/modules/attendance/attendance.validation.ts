@@ -14,6 +14,7 @@ export const markAttendanceSchema = z.object({
   geoLocation: z.string().optional().nullable(),
   notes: z.string().optional().nullable(),
   attachmentUrl: z.string().optional().nullable(),
+  clientChannel: z.enum(['web', 'mobile']).optional(),
 });
 
 export const updateSettingsSchema = z.object({
