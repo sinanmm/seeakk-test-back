@@ -142,6 +142,12 @@ const startServer = async () => {
         } catch (schemaError) {
           console.error('[Reports] Failed to ensure report_types columns:', schemaError);
         }
+        try {
+          const { ensureAttendancePermissionsSeeded } = await import('./modules/attendance/attendancePermissionsGuard');
+          await ensureAttendancePermissionsSeeded();
+        } catch (guardError) {
+          console.error('[Guard] Failed to run attendance permissions guard:', guardError);
+        }
         // Start background jobs
         scheduleDailySync().catch(err => console.error('Failed to schedule holiday jobs:', err));
         startFollowUpReminders();
