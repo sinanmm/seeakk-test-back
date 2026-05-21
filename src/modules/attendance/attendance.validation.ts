@@ -52,11 +52,11 @@ export const attendanceQuerySchema = z.object({
   ),
   approvalStatus: z.preprocess(
     emptyStringToUndefined,
-    z.enum(['PENDING', 'APPROVED', 'REJECTED']).optional()
+    z.enum(['PENDING', 'APPROVED', 'REJECTED', 'NOT_SUBMITTED']).optional()
   ),
   isLocked: z.preprocess((val) => val === 'true', z.boolean()).optional(),
   page: z.preprocess((val) => parseInt(val as string, 10) || 1, z.number().int().min(1)).default(1),
-  limit: z.preprocess((val) => parseInt(val as string, 10) || 10, z.number().int().min(1)).default(10),
+  limit: z.preprocess((val) => parseInt(val as string, 10) || 50, z.number().int().min(1).max(200)).default(50),
 });
 
 export const attendanceNetworkSchema = z.object({

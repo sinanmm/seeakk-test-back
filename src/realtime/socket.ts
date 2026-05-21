@@ -13,7 +13,8 @@ type RealtimeEvent =
   | 'lead_updated'
   | 'approval_updated'
   | 'report_updated'
-  | 'revenue_updated';
+  | 'revenue_updated'
+  | 'attendance_updated';
 
 type RealtimePayload = Record<string, unknown> & {
   workspaceId?: string;

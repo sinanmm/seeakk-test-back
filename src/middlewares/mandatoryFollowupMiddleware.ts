@@ -34,6 +34,10 @@ export const isMandatoryFollowUpExemptPath = (req: Request): boolean => {
     '/api/auth/logout',
     '/api/auth/refresh',
     '/api/followups/mandatory-continuation',
+    '/api/attendance/today',
+    '/api/attendance/check-in',
+    '/api/attendance/settings',
+    '/api/attendance/networks',
   ];
 
   return exemptPrefixes.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));

@@ -3,6 +3,12 @@ import logger from '../../utils/logger';
 import { getApplicableHolidays } from '../holidays/holidays.service';
 import { lockUser } from '../../services/User/accountLockService';
 import { startOfDay, endOfDay } from 'date-fns';
+import {
+  hasUserSubmittedToday,
+  isSystemGeneratedRecord,
+  requiresMandatoryAttendancePopup,
+  resolveAttendanceSubmissionState,
+} from './attendanceState.util';
 
 const createAttendanceServiceError = (message: string, statusCode = 400): Error & { statusCode: number } => {
   const error = new Error(message) as Error & { statusCode: number };
@@ -102,12 +108,20 @@ export const getTodayStatus = async (userId: string, workspaceId: string) => {
     },
   });
 
+  const submissionState = resolveAttendanceSubmissionState(
+    existingRecord,
+    holidayCheck.isHoliday,
+  );
+  const isMarked = hasUserSubmittedToday(submissionState);
+
   return {
     date: todayStr,
     isHoliday: holidayCheck.isHoliday,
     holidayName: holidayCheck.isHoliday ? holidayCheck.name : null,
     isLocked: user.isLocked,
-    isMarked: !!existingRecord,
+    isMarked,
+    submissionState,
+    requiresMandatoryPopup: requiresMandatoryAttendancePopup(submissionState, user.isLocked),
     record: existingRecord,
     attendanceApplyType: user.attendanceApplyType,
   };
@@ -138,8 +152,10 @@ export const markAttendance = async (userId: string, workspaceId: string, payloa
     },
   });
 
-  if (existingRecord) {
-    throw createAttendanceServiceError('Attendance already marked for today.', 409);
+  if (existingRecord && !isSystemGeneratedRecord(existingRecord)) {
+    if (existingRecord.approvalStatus !== 'REJECTED') {
+      throw createAttendanceServiceError('Attendance already marked for today.', 409);
+    }
   }
 
   const applicableHolidays = await getApplicableHolidays(workspaceId, user);
@@ -230,35 +246,64 @@ export const markAttendance = async (userId: string, workspaceId: string, payloa
 
   const approvalStatus = settings.approvalRequired ? 'PENDING' : 'APPROVED';
 
-  const record = await prisma.attendanceRecord.create({
-    data: {
-      userId,
-      workspaceId,
-      date: dateObj,
-      checkInTime: isHoliday ? null : checkInTime,
-      attendanceType,
-      status: approvalStatus === 'APPROVED' ? 'APPROVED' : 'PENDING',
-      warningCount,
-      isHoliday,
-      holidayName,
-      isLocked: user.isLocked,
-      createdBy: userId,
-      
-      // Network & Meta
-      ipAddress: payload.ipAddress,
-      networkName: payload.networkName,
-      routerIp: payload.routerIp,
-      subnet: payload.subnet,
-      attendanceApplyType: user.attendanceApplyType,
-      isOfficeNetwork,
-      deviceInfo: payload.deviceInfo,
-      geoLocation: payload.geoLocation,
-      approvalStatus,
-      supervisorId: user.supervisorId,
-      notes: payload.notes,
-      attachmentUrl: payload.attachmentUrl,
-    },
-  });
+  let record;
+  if (existingRecord) {
+    record = await prisma.attendanceRecord.update({
+      where: { id: existingRecord.id },
+      data: {
+        checkInTime: isHoliday ? null : checkInTime,
+        attendanceType,
+        status: approvalStatus === 'APPROVED' ? 'APPROVED' : 'PENDING',
+        warningCount,
+        isHoliday,
+        holidayName,
+        isLocked: user.isLocked,
+        createdBy: userId,
+        ipAddress: payload.ipAddress,
+        networkName: payload.networkName,
+        routerIp: payload.routerIp,
+        subnet: payload.subnet,
+        attendanceApplyType: user.attendanceApplyType,
+        isOfficeNetwork,
+        deviceInfo: payload.deviceInfo,
+        geoLocation: payload.geoLocation,
+        approvalStatus,
+        supervisorId: user.supervisorId,
+        notes: payload.notes,
+        attachmentUrl: payload.attachmentUrl,
+        submittedAt: new Date(),
+        rejectedReason: null,
+      },
+    });
+  } else {
+    record = await prisma.attendanceRecord.create({
+      data: {
+        userId,
+        workspaceId,
+        date: dateObj,
+        checkInTime: isHoliday ? null : checkInTime,
+        attendanceType,
+        status: approvalStatus === 'APPROVED' ? 'APPROVED' : 'PENDING',
+        warningCount,
+        isHoliday,
+        holidayName,
+        isLocked: user.isLocked,
+        createdBy: userId,
+        ipAddress: payload.ipAddress,
+        networkName: payload.networkName,
+        routerIp: payload.routerIp,
+        subnet: payload.subnet,
+        attendanceApplyType: user.attendanceApplyType,
+        isOfficeNetwork,
+        deviceInfo: payload.deviceInfo,
+        geoLocation: payload.geoLocation,
+        approvalStatus,
+        supervisorId: user.supervisorId,
+        notes: payload.notes,
+        attachmentUrl: payload.attachmentUrl,
+      },
+    });
+  }
 
   await prisma.attendanceAuditLog.create({
     data: {
@@ -292,17 +337,45 @@ export const getHistory = async (userId: string, workspaceId: string, filters: a
   const start = filters.startDate ? new Date(filters.startDate) : startOfDay(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
   const end = filters.endDate ? new Date(filters.endDate) : endOfDay(new Date());
 
+  const whereClause: any = {
+    userId,
+    workspaceId,
+    date: {
+      gte: start,
+      lte: end,
+    },
+  };
+
+  if (filters.approvalStatus && filters.approvalStatus !== 'ALL') {
+    whereClause.approvalStatus = filters.approvalStatus;
+  } else if (!filters.approvalStatus) {
+    whereClause.approvalStatus = 'APPROVED';
+  }
+
   const records = await prisma.attendanceRecord.findMany({
-    where: {
-      userId,
-      workspaceId,
-      date: {
-        gte: start,
-        lte: end,
+    where: whereClause,
+    include: {
+      user: {
+        select: {
+          name: true,
+        },
       },
     },
     orderBy: { date: 'desc' },
   });
+
+  // Fetch approver names in memory to avoid schema changes
+  const approverIds = Array.from(new Set(records.map(r => r.approvedBy).filter(Boolean))) as string[];
+  const approvers = await prisma.user.findMany({
+    where: { id: { in: approverIds } },
+    select: { id: true, name: true },
+  });
+  const approverMap = new Map(approvers.map(a => [a.id, a.name]));
+
+  const recordsWithApprover = records.map(r => ({
+    ...r,
+    approvedByName: r.approvedBy ? approverMap.get(r.approvedBy) || 'Unknown' : null,
+  }));
 
   const warnings = await prisma.attendanceWarning.findMany({
     where: {
@@ -318,7 +391,7 @@ export const getHistory = async (userId: string, workspaceId: string, filters: a
   const holidays = await getApplicableHolidays(workspaceId, user);
 
   return {
-    records,
+    records: recordsWithApprover,
     warnings,
     holidays,
   };
@@ -326,55 +399,180 @@ export const getHistory = async (userId: string, workspaceId: string, filters: a
 
 export const getAdminOverview = async (workspaceId: string, filters: any) => {
   const page = filters.page || 1;
-  const limit = filters.limit || 10;
+  const limit = filters.limit || 50;
   const skip = (page - 1) * limit;
 
-  const whereClause: any = {
-    workspaceId,
-  };
-
-  if (filters.userId) whereClause.userId = filters.userId;
-  if (filters.attendanceType) whereClause.attendanceType = filters.attendanceType;
-  if (filters.approvalStatus) whereClause.approvalStatus = filters.approvalStatus;
-
+  // If date filters are provided, query records directly
   if (filters.startDate || filters.endDate) {
+    const whereClause: any = { workspaceId };
+    if (filters.userId) whereClause.userId = filters.userId;
+    if (filters.attendanceType) whereClause.attendanceType = filters.attendanceType;
+    if (filters.approvalStatus) whereClause.approvalStatus = filters.approvalStatus;
+
     whereClause.date = {};
     if (filters.startDate) whereClause.date.gte = new Date(filters.startDate);
     if (filters.endDate) whereClause.date.lte = new Date(filters.endDate);
-  }
 
-  if (filters.roleId || filters.departmentId) {
-    whereClause.user = {};
-    if (filters.roleId) whereClause.user.roleId = filters.roleId;
-    if (filters.departmentId) whereClause.user.departmentId = filters.departmentId;
-  }
+    if (filters.roleId || filters.departmentId) {
+      whereClause.user = {};
+      if (filters.roleId) whereClause.user.roleId = filters.roleId;
+      if (filters.departmentId) whereClause.user.departmentId = filters.departmentId;
+    }
 
-  const [records, total] = await Promise.all([
-    prisma.attendanceRecord.findMany({
-      where: whereClause,
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            isLocked: true,
-            attendanceApplyType: true,
-            role: { select: { name: true } },
-            department: { select: { name: true } },
-            supervisor: { select: { id: true, name: true } },
+    const [records, total] = await Promise.all([
+      prisma.attendanceRecord.findMany({
+        where: whereClause,
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              isLocked: true,
+              attendanceApplyType: true,
+              role: { select: { name: true } },
+              department: { select: { name: true } },
+              supervisor: { select: { id: true, name: true } },
+            },
           },
         },
+        orderBy: { date: 'desc' },
+        skip,
+        take: limit,
+      }),
+      prisma.attendanceRecord.count({ where: whereClause }),
+    ]);
+
+    // Map records to have correct user relationships
+    return {
+      records,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
       },
-      orderBy: { date: 'desc' },
-      skip,
-      take: limit,
-    }),
-    prisma.attendanceRecord.count({ where: whereClause }),
-  ]);
+    };
+  }
+
+  // Otherwise, default to "Today's Users List" (show all active users merged with today's status)
+  const todayStr = getLocalDateString();
+  const todayDateObj = new Date(todayStr);
+
+  const userWhere: any = {
+    workspaceId,
+    deletedAt: null,
+    isActive: true,
+  };
+
+  if (filters.userId) userWhere.id = filters.userId;
+  if (filters.roleId) userWhere.roleId = filters.roleId;
+  if (filters.departmentId) userWhere.departmentId = filters.departmentId;
+
+  // Fetch all active users matching filter
+  const users = await prisma.user.findMany({
+    where: userWhere,
+    include: {
+      role: { select: { name: true } },
+      department: { select: { name: true } },
+      supervisor: { select: { id: true, name: true } },
+    },
+    orderBy: { name: 'asc' },
+  });
+
+  // Fetch today's records for these users
+  const attendanceRecords = await prisma.attendanceRecord.findMany({
+    where: {
+      workspaceId,
+      date: todayDateObj,
+      userId: { in: users.map(u => u.id) },
+    },
+  });
+
+  const attendanceMap = new Map(attendanceRecords.map(r => [r.userId, r]));
+
+  // Merge
+  const mappedRecords = users.map(user => {
+    const record = attendanceMap.get(user.id);
+    if (record) {
+      return {
+        id: record.id,
+        userId: user.id,
+        workspaceId,
+        date: todayDateObj,
+        checkInTime: record.checkInTime,
+        attendanceType: record.attendanceType,
+        status: record.status,
+        warningCount: record.warningCount,
+        isHoliday: record.isHoliday,
+        holidayName: record.holidayName,
+        isLocked: user.isLocked,
+        ipAddress: record.ipAddress,
+        networkName: record.networkName,
+        routerIp: record.routerIp,
+        subnet: record.subnet,
+        attendanceApplyType: user.attendanceApplyType,
+        isOfficeNetwork: record.isOfficeNetwork,
+        deviceInfo: record.deviceInfo,
+        geoLocation: record.geoLocation,
+        approvalStatus: record.approvalStatus,
+        approvedBy: record.approvedBy,
+        approvedAt: record.approvedAt,
+        rejectedReason: record.rejectedReason,
+        notes: record.notes,
+        user,
+      };
+    } else {
+      return {
+        id: `virtual-${user.id}`,
+        userId: user.id,
+        workspaceId,
+        date: todayDateObj,
+        checkInTime: null,
+        attendanceType: 'ABSENT',
+        status: 'MARKED',
+        warningCount: 0,
+        isHoliday: false,
+        holidayName: null,
+        isLocked: user.isLocked,
+        ipAddress: null,
+        networkName: null,
+        routerIp: null,
+        subnet: null,
+        attendanceApplyType: user.attendanceApplyType,
+        isOfficeNetwork: false,
+        deviceInfo: null,
+        geoLocation: null,
+        approvalStatus: 'NOT_SUBMITTED',
+        approvedBy: null,
+        approvedAt: null,
+        rejectedReason: null,
+        notes: null,
+        user,
+      };
+    }
+  });
+
+  // Filter in-memory by attendanceType or approvalStatus if specified
+  let filteredRecords = mappedRecords;
+  if (filters.attendanceType) {
+    filteredRecords = filteredRecords.filter(r => r.attendanceType === filters.attendanceType);
+  }
+  if (filters.approvalStatus) {
+    filteredRecords = filteredRecords.filter((r) => {
+      if (String(r.id).startsWith('virtual-')) {
+        return filters.approvalStatus === 'NOT_SUBMITTED' && r.approvalStatus === 'NOT_SUBMITTED';
+      }
+      return r.approvalStatus === filters.approvalStatus;
+    });
+  }
+
+  // Paginate in-memory
+  const total = filteredRecords.length;
+  const paginatedRecords = filteredRecords.slice(skip, skip + limit);
 
   return {
-    records,
+    records: paginatedRecords,
     pagination: {
       total,
       page,
@@ -430,14 +628,44 @@ export const reviewAttendance = async (
 ) => {
   const record = await prisma.attendanceRecord.findFirst({
     where: { id: recordId, workspaceId },
+    include: {
+      user: { select: { supervisorId: true } },
+    },
   });
 
   if (!record) {
     throw createAttendanceServiceError('Attendance record not found', 404);
   }
 
+  if (String(recordId).startsWith('virtual-')) {
+    throw createAttendanceServiceError('Cannot review attendance that was not submitted.', 400);
+  }
+
   if (record.userId === actorId) {
     throw createAttendanceServiceError('Self-approval or self-rejection is forbidden.', 403);
+  }
+
+  if (record.approvalStatus !== 'PENDING') {
+    throw createAttendanceServiceError(
+      `Attendance is already ${record.approvalStatus.toLowerCase()}.`,
+      409,
+    );
+  }
+
+  if (isSystemGeneratedRecord(record)) {
+    throw createAttendanceServiceError('System-generated attendance cannot be reviewed.', 400);
+  }
+
+  const actor = await prisma.user.findUnique({
+    where: { id: actorId },
+    include: { role: { select: { name: true } } },
+  });
+
+  const roleName = (actor?.role?.name || '').toLowerCase();
+  const isWorkspaceAdmin = roleName === 'superadmin' || roleName === 'admin';
+
+  if (!isWorkspaceAdmin && record.supervisorId !== actorId && record.user?.supervisorId !== actorId) {
+    throw createAttendanceServiceError('You are not authorized to review this attendance request.', 403);
   }
 
   if (action === 'REJECT' && !reason) {
@@ -449,7 +677,7 @@ export const reviewAttendance = async (
     data: {
       approvalStatus: action === 'APPROVE' ? 'APPROVED' : 'REJECTED',
       status: action === 'APPROVE' ? 'APPROVED' : 'MARKED',
-      approvedBy: actorId,
+      approvedBy: action === 'APPROVE' ? actorId : null,
       approvedAt: action === 'APPROVE' ? new Date() : null,
       rejectedReason: action === 'REJECT' ? reason : null,
     },
@@ -512,30 +740,55 @@ export const getStats = async (userId: string, workspaceId: string) => {
 };
 
 export const getAdminStats = async (workspaceId: string) => {
-  const records = await prisma.attendanceRecord.findMany({
-    where: { workspaceId },
-    include: { user: { select: { departmentId: true } } },
-  });
+  const todayStr = getLocalDateString();
+  const todayDate = new Date(todayStr);
 
-  const totalPresent = records.filter(r => ['PRESENT', 'WORK_FROM_HOME'].includes(r.attendanceType) && r.approvalStatus === 'APPROVED').length;
-  const totalAbsent = records.filter(r => r.attendanceType === 'ABSENT').length;
-  const totalHolidays = records.filter(r => r.isHoliday).length;
-  const totalWarnings = await prisma.attendanceWarning.count({ where: { workspaceId } });
-  const totalLocked = await prisma.user.count({ where: { workspaceId, isLocked: true, deletedAt: null } });
+  const [records, totalWarnings, totalLocked, activeUserCount] = await Promise.all([
+    prisma.attendanceRecord.findMany({
+      where: { workspaceId, date: todayDate },
+      include: { user: { select: { departmentId: true } } },
+    }),
+    prisma.attendanceWarning.count({ where: { workspaceId } }),
+    prisma.user.count({ where: { workspaceId, isLocked: true, deletedAt: null } }),
+    prisma.user.count({ where: { workspaceId, deletedAt: null, isActive: true } }),
+  ]);
+
+  const userSubmittedRecords = records.filter((r) => !isSystemGeneratedRecord(r));
+
+  const totalPresent = userSubmittedRecords.filter(
+    (r) => ['PRESENT', 'WORK_FROM_HOME', 'HALF_DAY'].includes(r.attendanceType) && r.approvalStatus === 'APPROVED',
+  ).length;
+  const totalPending = userSubmittedRecords.filter((r) => r.approvalStatus === 'PENDING').length;
+  const totalRejected = userSubmittedRecords.filter((r) => r.approvalStatus === 'REJECTED').length;
+  const totalApproved = userSubmittedRecords.filter((r) => r.approvalStatus === 'APPROVED').length;
+  const totalLate = userSubmittedRecords.filter((r) => r.warningCount > 0).length;
+  const totalAbsent = Math.max(
+    0,
+    activeUserCount -
+      userSubmittedRecords.filter((r) => r.approvalStatus === 'APPROVED' || r.approvalStatus === 'PENDING').length,
+  );
+  const totalHolidays = records.filter((r) => r.isHoliday).length;
 
   const deptStats: Record<string, number> = {};
-  for (const r of records) {
+  for (const r of userSubmittedRecords) {
     const deptId = r.user?.departmentId || 'Unassigned';
-    deptStats[deptId] = (deptStats[deptId] || 0) + (['PRESENT', 'WORK_FROM_HOME'].includes(r.attendanceType) && r.approvalStatus === 'APPROVED' ? 1 : 0);
+    if (['PRESENT', 'WORK_FROM_HOME'].includes(r.attendanceType) && r.approvalStatus === 'APPROVED') {
+      deptStats[deptId] = (deptStats[deptId] || 0) + 1;
+    }
   }
 
   return {
     totalPresent,
     totalAbsent,
+    totalPending,
+    totalRejected,
+    totalApproved,
+    totalLate,
     totalHolidays,
     totalWarnings,
     totalLocked,
-    departmentStats: Object.keys(deptStats).map(key => ({ departmentId: key, presentCount: deptStats[key] })),
+    activeUserCount,
+    departmentStats: Object.keys(deptStats).map((key) => ({ departmentId: key, presentCount: deptStats[key] })),
   };
 };
 

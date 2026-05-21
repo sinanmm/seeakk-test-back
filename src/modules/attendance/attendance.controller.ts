@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import * as attendanceService from './attendance.service';
+import { emitWorkspaceEvent } from '../../realtime/socket';
 import {
   markAttendanceSchema,
   updateSettingsSchema,
@@ -49,6 +50,14 @@ export const markAttendanceController = async (req: Request, res: Response, next
 
   try {
     const record = await attendanceService.markAttendance(req.user!.id, workspaceId, parsed.data);
+
+    emitWorkspaceEvent(workspaceId, 'attendance_updated', {
+      recordId: record.id,
+      userId: record.userId,
+      action: 'submitted',
+      approvalStatus: record.approvalStatus,
+    });
+
     return res.status(201).json({
       success: true,
       message: 'Attendance marked successfully',
@@ -313,6 +322,14 @@ export const reviewAttendanceController = async (req: Request, res: Response, ne
 
   try {
     const record = await attendanceService.reviewAttendance(workspaceId, recordId as string, req.user!.id, action, reason);
+
+    emitWorkspaceEvent(workspaceId, 'attendance_updated', {
+      recordId: record.id,
+      userId: record.userId,
+      action: action.toLowerCase(),
+      approvalStatus: record.approvalStatus,
+    });
+
     return res.status(200).json({ success: true, message: `Attendance request ${action.toLowerCase()}d successfully`, data: record });
   } catch (error: any) {
     if (error.statusCode) {
