@@ -910,6 +910,7 @@ model User {
   approvedLeadStageApprovals LeadStageApproval[] @relation("LeadStageApprovalApprovedBy")
   rosterEntries            RosterEntry[]
   attendanceRecords        AttendanceRecord[]
+  attendanceApplyType      String                 @default("FROM_OFFICE") // FROM_OFFICE, FROM_ANYWHERE
   followUps                FollowUp[]
   createdLeads             Lead[]       @relation("LeadCreatedBy")
   assignedLeads            Lead[]       @relation("LeadAssignedTo")
@@ -1321,23 +1322,41 @@ enum AttendanceStatus {
 }
 
 model AttendanceRecord {
-  id             String           @id @default(uuid())
-  userId         String
-  workspaceId    String
-  date           DateTime         @db.Date
-  checkInTime    DateTime?
-  attendanceType AttendanceType   @default(PRESENT)
-  status         AttendanceStatus @default(MARKED)
-  warningCount   Int              @default(0)
-  isHoliday      Boolean          @default(false)
-  holidayName    String?
-  isLocked       Boolean          @default(false)
-  lockReason     String?
-  createdBy      String?
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
+  id                  String           @id @default(uuid())
+  userId              String
+  workspaceId         String
+  date                DateTime         @db.Date
+  checkInTime         DateTime?
+  attendanceType      AttendanceType   @default(PRESENT)
+  status              AttendanceStatus @default(MARKED)
+  warningCount        Int              @default(0)
+  isHoliday           Boolean          @default(false)
+  holidayName         String?
+  isLocked            Boolean          @default(false)
+  lockReason          String?
+  createdBy           String?
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
 
-  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Network & Approval Meta
+  ipAddress           String?
+  networkName         String?
+  routerIp            String?
+  subnet              String?
+  attendanceApplyType String?          @default("FROM_OFFICE")
+  isOfficeNetwork     Boolean          @default(false)
+  deviceInfo          String?
+  geoLocation         String?
+  approvalStatus      String           @default("PENDING") // PENDING, APPROVED, REJECTED
+  approvedBy          String?
+  approvedAt          DateTime?
+  rejectedReason      String?
+  supervisorId        String?
+  submittedAt         DateTime?        @default(now())
+  notes               String?
+  attachmentUrl       String?
+
+  user                User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, date])
   @@index([workspaceId])
@@ -1361,14 +1380,18 @@ model AttendanceWarning {
 }
 
 model AttendanceSetting {
-  id                String   @id @default(uuid())
-  workspaceId       String   @unique
-  cutoffTime        String   @default("09:30") // HH:MM format
-  enableWarning     Boolean  @default(true)
-  warningThreshold  Int      @default(3) // lock account after N warnings
-  enableAutoLock    Boolean  @default(false)
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  id                  String   @id @default(uuid())
+  workspaceId         String   @unique
+  cutoffTime          String   @default("09:30") // HH:MM format
+  enableWarning       Boolean  @default(true)
+  warningThreshold    Int      @default(3) // lock account after N warnings
+  enableAutoLock      Boolean  @default(false)
+  attendanceStartTime String   @default("08:00")
+  lateMarkTime        String   @default("09:45")
+  autoAbsentTime      String   @default("12:00")
+  approvalRequired    Boolean  @default(true)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 
   @@map("attendance_settings")
 }
@@ -1384,4 +1407,63 @@ model AttendanceLog {
   @@index([userId])
   @@index([workspaceId])
   @@map("attendance_logs")
+}
+
+model AttendanceNetwork {
+  id             String   @id @default(uuid())
+  workspaceId    String
+  officeName     String
+  branch         String?
+  wifiSsid       String
+  routerIp       String
+  gateway        String?
+  allowedIpRanges String?
+  subnet         String?
+  macValidation  String?
+  isEnabled      Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([workspaceId])
+  @@map("attendance_networks")
+}
+
+model AttendanceApprovalLog {
+  id                 String   @id @default(uuid())
+  attendanceRecordId String
+  action             String   // e.g. "APPROVE", "REJECT"
+  actorId            String
+  reason             String?
+  createdAt          DateTime @default(now())
+
+  @@index([attendanceRecordId])
+  @@map("attendance_approval_logs")
+}
+
+model AttendanceNotification {
+  id          String   @id @default(uuid())
+  workspaceId String
+  userId      String
+  title       String
+  message     String
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([workspaceId])
+  @@map("attendance_notifications")
+}
+
+model AttendanceAuditLog {
+  id          String   @id @default(uuid())
+  workspaceId String
+  userId      String
+  action      String
+  details     String?
+  ipAddress   String?
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([workspaceId])
+  @@map("attendance_audit_logs")
 }

@@ -103,6 +103,14 @@ const permissions = [
   { key: 'view_all_attendance', group: 'ATTENDANCE_MANAGEMENT', description: 'View all employee attendance' },
   { key: 'export_attendance', group: 'ATTENDANCE_MANAGEMENT', description: 'Export attendance reports' },
   { key: 'unlock_attendance_locked_users', group: 'ATTENDANCE_MANAGEMENT', description: 'Unlock users locked by attendance/target systems' },
+  { key: 'approve_attendance', group: 'ATTENDANCE_MANAGEMENT', description: 'Approve supervised staff attendance requests' },
+  { key: 'reject_attendance', group: 'ATTENDANCE_MANAGEMENT', description: 'Reject supervised staff attendance requests' },
+  { key: 'view_pending_attendance', group: 'ATTENDANCE_MANAGEMENT', description: 'View pending attendance queue' },
+  { key: 'view_own_attendance', group: 'ATTENDANCE_MANAGEMENT', description: 'View own attendance details' },
+  { key: 'manage_attendance_settings', group: 'ATTENDANCE_MANAGEMENT', description: 'Modify workspace attendance time policies' },
+  { key: 'manage_attendance_network', group: 'ATTENDANCE_MANAGEMENT', description: 'Manage approved office networks and IPs' },
+  { key: 'edit_attendance_apply_type', group: 'ATTENDANCE_MANAGEMENT', description: 'Edit employee attendance apply type settings' },
+  { key: 'view_attendance_network_logs', group: 'ATTENDANCE_MANAGEMENT', description: 'View attendance network audit logs' },
 ];
 
 async function syncWorkspaceSuperAdminRoles() {

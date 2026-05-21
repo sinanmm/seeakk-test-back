@@ -2,7 +2,7 @@ import prisma from '../../config/prisma';
 import logger from '../../utils/logger';
 import { getApplicableHolidays } from '../holidays/holidays.service';
 import { lockUser } from '../../services/User/accountLockService';
-import { startOfDay, endOfDay, format } from 'date-fns';
+import { startOfDay, endOfDay } from 'date-fns';
 
 const createAttendanceServiceError = (message: string, statusCode = 400): Error & { statusCode: number } => {
   const error = new Error(message) as Error & { statusCode: number };
@@ -30,6 +30,14 @@ const checkIsHoliday = (applicableHolidays: any[], dateStr: string) => {
   return found ? { isHoliday: true, name: found.name } : { isHoliday: false };
 };
 
+const matchIpRange = (userIp: string | null, allowedRange: string | null): boolean => {
+  if (!allowedRange) return true;
+  if (!userIp) return false;
+  // Replace 'x' or '*' with wildcard matchers
+  const regexStr = '^' + allowedRange.trim().replace(/\./g, '\\.').replace(/x|\*/g, '.*') + '$';
+  return new RegExp(regexStr).test(userIp);
+};
+
 export const getSettings = async (workspaceId: string) => {
   let settings = await prisma.attendanceSetting.findUnique({
     where: { workspaceId },
@@ -43,6 +51,10 @@ export const getSettings = async (workspaceId: string) => {
         enableWarning: true,
         warningThreshold: 3,
         enableAutoLock: false,
+        attendanceStartTime: '08:00',
+        lateMarkTime: '09:45',
+        autoAbsentTime: '12:00',
+        approvalRequired: true,
       },
     });
   }
@@ -60,6 +72,10 @@ export const updateSettings = async (workspaceId: string, data: any) => {
       enableWarning: data.enableWarning ?? true,
       warningThreshold: data.warningThreshold ?? 3,
       enableAutoLock: data.enableAutoLock ?? false,
+      attendanceStartTime: data.attendanceStartTime || '08:00',
+      lateMarkTime: data.lateMarkTime || '09:45',
+      autoAbsentTime: data.autoAbsentTime || '12:00',
+      approvalRequired: data.approvalRequired ?? true,
     },
   });
 };
@@ -93,6 +109,7 @@ export const getTodayStatus = async (userId: string, workspaceId: string) => {
     isLocked: user.isLocked,
     isMarked: !!existingRecord,
     record: existingRecord,
+    attendanceApplyType: user.attendanceApplyType,
   };
 };
 
@@ -128,16 +145,56 @@ export const markAttendance = async (userId: string, workspaceId: string, payloa
   const applicableHolidays = await getApplicableHolidays(workspaceId, user);
   const holidayCheck = checkIsHoliday(applicableHolidays, dateStr);
 
-  const attendanceType = holidayCheck.isHoliday ? 'HOLIDAY' : payload.attendanceType;
   const isHoliday = holidayCheck.isHoliday;
   const holidayName = holidayCheck.isHoliday ? holidayCheck.name : null;
+  const attendanceType = isHoliday ? 'HOLIDAY' : payload.attendanceType;
+
+  const settings = await getSettings(workspaceId);
+
+  // Network Validation for office restricted users
+  let isOfficeNetwork = false;
+  if (!isHoliday && user.attendanceApplyType === 'FROM_OFFICE') {
+    let networks = await prisma.attendanceNetwork.findMany({
+      where: { workspaceId, isEnabled: true },
+    });
+
+    if (networks.length === 0) {
+      // Seed default network if empty
+      await prisma.attendanceNetwork.create({
+        data: {
+          workspaceId,
+          officeName: 'MISSION 2050 Office',
+          branch: 'HQ',
+          wifiSsid: 'MISSION 2050-2G',
+          routerIp: '192.168.220.1',
+          subnet: '255.255.255.0',
+          allowedIpRanges: '192.168.220.*',
+        },
+      });
+      networks = await prisma.attendanceNetwork.findMany({
+        where: { workspaceId, isEnabled: true },
+      });
+    }
+
+    // Match SSID & Router IP & Subnet
+    const match = networks.find(n => {
+      const matchSsid = n.wifiSsid.trim() === payload.networkName?.trim();
+      const matchRouter = n.routerIp.trim() === payload.routerIp?.trim();
+      const matchIp = matchIpRange(payload.ipAddress, n.allowedIpRanges);
+      return matchSsid && matchRouter && matchIp;
+    });
+
+    if (!match) {
+      throw createAttendanceServiceError('You can only mark attendance using approved office network.', 403);
+    }
+    isOfficeNetwork = true;
+  }
 
   let warningCount = 0;
   let checkInTime = payload.checkInTime ? new Date(payload.checkInTime) : new Date();
 
-  // Settings for late check-in
+  // Settings warnings
   if (!isHoliday && ['PRESENT', 'HALF_DAY', 'WORK_FROM_HOME'].includes(attendanceType)) {
-    const settings = await getSettings(workspaceId);
     if (settings.enableWarning) {
       const checkInHHMM = `${String(checkInTime.getHours()).padStart(2, '0')}:${String(checkInTime.getMinutes()).padStart(2, '0')}`;
       if (checkInHHMM > settings.cutoffTime) {
@@ -152,25 +209,26 @@ export const markAttendance = async (userId: string, workspaceId: string, payloa
           },
         });
 
-        // Check if warning threshold exceeded
         const totalWarnings = await prisma.attendanceWarning.count({
           where: { userId, workspaceId },
         });
 
         if (settings.enableAutoLock && totalWarnings >= settings.warningThreshold) {
           await lockUser(userId, workspaceId, `Exceeded late attendance warnings limit (${totalWarnings}/${settings.warningThreshold})`);
-          await prisma.attendanceLog.create({
+          await prisma.attendanceNotification.create({
             data: {
-              userId,
               workspaceId,
-              action: 'AUTO_LOCK',
-              details: `User locked due to exceeding late check-in threshold (${totalWarnings})`,
+              userId,
+              title: 'Account Locked',
+              message: `Your account was locked due to exceeding late check-in warnings (${totalWarnings})`,
             },
           });
         }
       }
     }
   }
+
+  const approvalStatus = settings.approvalRequired ? 'PENDING' : 'APPROVED';
 
   const record = await prisma.attendanceRecord.create({
     data: {
@@ -179,23 +237,50 @@ export const markAttendance = async (userId: string, workspaceId: string, payloa
       date: dateObj,
       checkInTime: isHoliday ? null : checkInTime,
       attendanceType,
-      status: 'MARKED',
+      status: approvalStatus === 'APPROVED' ? 'APPROVED' : 'PENDING',
       warningCount,
       isHoliday,
       holidayName,
       isLocked: user.isLocked,
       createdBy: userId,
+      
+      // Network & Meta
+      ipAddress: payload.ipAddress,
+      networkName: payload.networkName,
+      routerIp: payload.routerIp,
+      subnet: payload.subnet,
+      attendanceApplyType: user.attendanceApplyType,
+      isOfficeNetwork,
+      deviceInfo: payload.deviceInfo,
+      geoLocation: payload.geoLocation,
+      approvalStatus,
+      supervisorId: user.supervisorId,
+      notes: payload.notes,
+      attachmentUrl: payload.attachmentUrl,
     },
   });
 
-  await prisma.attendanceLog.create({
+  await prisma.attendanceAuditLog.create({
     data: {
-      userId,
       workspaceId,
-      action: 'CHECK_IN',
-      details: `Checked in as ${attendanceType}`,
+      userId,
+      action: 'SUBMIT',
+      details: `Submitted attendance as ${attendanceType} (${approvalStatus})`,
+      ipAddress: payload.ipAddress,
     },
   });
+
+  // Notify Supervisor
+  if (user.supervisorId) {
+    await prisma.attendanceNotification.create({
+      data: {
+        workspaceId,
+        userId: user.supervisorId,
+        title: 'New Attendance Request',
+        message: `${user.name || 'An employee'} submitted a new attendance request for approval.`,
+      },
+    });
+  }
 
   return record;
 };
@@ -250,6 +335,7 @@ export const getAdminOverview = async (workspaceId: string, filters: any) => {
 
   if (filters.userId) whereClause.userId = filters.userId;
   if (filters.attendanceType) whereClause.attendanceType = filters.attendanceType;
+  if (filters.approvalStatus) whereClause.approvalStatus = filters.approvalStatus;
 
   if (filters.startDate || filters.endDate) {
     whereClause.date = {};
@@ -257,7 +343,6 @@ export const getAdminOverview = async (workspaceId: string, filters: any) => {
     if (filters.endDate) whereClause.date.lte = new Date(filters.endDate);
   }
 
-  // Filter by user role/dept if specified
   if (filters.roleId || filters.departmentId) {
     whereClause.user = {};
     if (filters.roleId) whereClause.user.roleId = filters.roleId;
@@ -274,8 +359,10 @@ export const getAdminOverview = async (workspaceId: string, filters: any) => {
             name: true,
             email: true,
             isLocked: true,
+            attendanceApplyType: true,
             role: { select: { name: true } },
             department: { select: { name: true } },
+            supervisor: { select: { id: true, name: true } },
           },
         },
       },
@@ -286,28 +373,6 @@ export const getAdminOverview = async (workspaceId: string, filters: any) => {
     prisma.attendanceRecord.count({ where: whereClause }),
   ]);
 
-  // Daily statistics for widgets
-  const todayStart = startOfDay(new Date());
-  const todayEnd = endOfDay(new Date());
-
-  const todayRecords = await prisma.attendanceRecord.findMany({
-    where: {
-      workspaceId,
-      date: {
-        gte: todayStart,
-        lte: todayEnd,
-      },
-    },
-  });
-
-  const totalPresent = todayRecords.filter(r => ['PRESENT', 'WORK_FROM_HOME'].includes(r.attendanceType)).length;
-  const totalAbsent = todayRecords.filter(r => r.attendanceType === 'ABSENT').length;
-  const totalHolidays = todayRecords.filter(r => r.isHoliday).length;
-
-  const lockedUsersCount = await prisma.user.count({
-    where: { workspaceId, isLocked: true, deletedAt: null },
-  });
-
   return {
     records,
     pagination: {
@@ -316,19 +381,111 @@ export const getAdminOverview = async (workspaceId: string, filters: any) => {
       limit,
       totalPages: Math.ceil(total / limit),
     },
-    summary: {
-      totalPresent,
-      totalAbsent,
-      totalHolidays,
-      lockedUsersCount,
-      attendancePercentage: todayRecords.length > 0 ? Math.round((totalPresent / todayRecords.length) * 100) : 0,
-    },
   };
+};
+
+export const getPendingApprovals = async (workspaceId: string, supervisorId: string) => {
+  // If supervisor has permissions, filter records where user.supervisorId == supervisorId AND status == PENDING
+  // If no supervisor configuration / superadmin, show all PENDING in workspace
+  const user = await prisma.user.findUnique({
+    where: { id: supervisorId },
+    include: { role: true },
+  });
+
+  const isWorkspaceAdmin = user?.role?.name === 'superadmin' || user?.role?.name === 'admin';
+
+  const whereClause: any = {
+    workspaceId,
+    approvalStatus: 'PENDING',
+  };
+
+  if (!isWorkspaceAdmin) {
+    whereClause.supervisorId = supervisorId;
+  }
+
+  return prisma.attendanceRecord.findMany({
+    where: whereClause,
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          isLocked: true,
+          role: { select: { name: true } },
+          department: { select: { name: true } },
+        },
+      },
+    },
+    orderBy: { date: 'desc' },
+  });
+};
+
+export const reviewAttendance = async (
+  workspaceId: string,
+  recordId: string,
+  actorId: string,
+  action: 'APPROVE' | 'REJECT',
+  reason?: string
+) => {
+  const record = await prisma.attendanceRecord.findFirst({
+    where: { id: recordId, workspaceId },
+  });
+
+  if (!record) {
+    throw createAttendanceServiceError('Attendance record not found', 404);
+  }
+
+  if (record.userId === actorId) {
+    throw createAttendanceServiceError('Self-approval or self-rejection is forbidden.', 403);
+  }
+
+  if (action === 'REJECT' && !reason) {
+    throw createAttendanceServiceError('Rejection reason is mandatory.', 400);
+  }
+
+  const updatedRecord = await prisma.attendanceRecord.update({
+    where: { id: recordId },
+    data: {
+      approvalStatus: action === 'APPROVE' ? 'APPROVED' : 'REJECTED',
+      status: action === 'APPROVE' ? 'APPROVED' : 'MARKED',
+      approvedBy: actorId,
+      approvedAt: action === 'APPROVE' ? new Date() : null,
+      rejectedReason: action === 'REJECT' ? reason : null,
+    },
+  });
+
+  await prisma.attendanceApprovalLog.create({
+    data: {
+      attendanceRecordId: recordId,
+      action,
+      actorId,
+      reason,
+    },
+  });
+
+  await prisma.attendanceNotification.create({
+    data: {
+      workspaceId,
+      userId: record.userId,
+      title: `Attendance ${action === 'APPROVE' ? 'Approved' : 'Rejected'}`,
+      message: `Your attendance for ${new Date(record.date).toLocaleDateString()} was ${action.toLowerCase()}d.`,
+    },
+  });
+
+  return updatedRecord;
+};
+
+export const updateUserApplyType = async (workspaceId: string, userId: string, applyType: string) => {
+  return prisma.user.update({
+    where: { id: userId, workspaceId },
+    data: { attendanceApplyType: applyType },
+  });
 };
 
 export const getStats = async (userId: string, workspaceId: string) => {
   const records = await prisma.attendanceRecord.findMany({
-    where: { userId, workspaceId },
+    where: { userId, workspaceId, approvalStatus: 'APPROVED' },
   });
 
   const presentCount = records.filter(r => r.attendanceType === 'PRESENT').length;
@@ -355,23 +512,21 @@ export const getStats = async (userId: string, workspaceId: string) => {
 };
 
 export const getAdminStats = async (workspaceId: string) => {
-  // Aggregate stats across all departments and generate daily/monthly trends
   const records = await prisma.attendanceRecord.findMany({
     where: { workspaceId },
     include: { user: { select: { departmentId: true } } },
   });
 
-  const totalPresent = records.filter(r => ['PRESENT', 'WORK_FROM_HOME'].includes(r.attendanceType)).length;
+  const totalPresent = records.filter(r => ['PRESENT', 'WORK_FROM_HOME'].includes(r.attendanceType) && r.approvalStatus === 'APPROVED').length;
   const totalAbsent = records.filter(r => r.attendanceType === 'ABSENT').length;
   const totalHolidays = records.filter(r => r.isHoliday).length;
   const totalWarnings = await prisma.attendanceWarning.count({ where: { workspaceId } });
   const totalLocked = await prisma.user.count({ where: { workspaceId, isLocked: true, deletedAt: null } });
 
-  // Group by department
   const deptStats: Record<string, number> = {};
   for (const r of records) {
     const deptId = r.user?.departmentId || 'Unassigned';
-    deptStats[deptId] = (deptStats[deptId] || 0) + (['PRESENT', 'WORK_FROM_HOME'].includes(r.attendanceType) ? 1 : 0);
+    deptStats[deptId] = (deptStats[deptId] || 0) + (['PRESENT', 'WORK_FROM_HOME'].includes(r.attendanceType) && r.approvalStatus === 'APPROVED' ? 1 : 0);
   }
 
   return {
@@ -385,27 +540,67 @@ export const getAdminStats = async (workspaceId: string) => {
 };
 
 export const unlockUserAdmin = async (userId: string, workspaceId: string, actorId: string) => {
-  // Enforces supervisor / admin unlock bypass target locking
   const user = await prisma.user.update({
     where: { id: userId, workspaceId },
     data: { isLocked: false },
   });
 
-  await prisma.attendanceLog.create({
+  await prisma.attendanceAuditLog.create({
     data: {
-      userId,
       workspaceId,
+      userId,
       action: 'UNLOCK',
       details: `User unlocked manually by supervisor/admin (${actorId})`,
     },
   });
 
-  // Also remove warning entries so user doesn't get immediately locked again
   await prisma.attendanceWarning.deleteMany({
     where: { userId, workspaceId },
   });
 
   return user;
+};
+
+// Network settings CRUD
+export const getNetworks = async (workspaceId: string) => {
+  return prisma.attendanceNetwork.findMany({ where: { workspaceId } });
+};
+
+export const createNetwork = async (workspaceId: string, data: any) => {
+  return prisma.attendanceNetwork.create({
+    data: {
+      workspaceId,
+      officeName: data.officeName,
+      branch: data.branch,
+      wifiSsid: data.wifiSsid,
+      routerIp: data.routerIp,
+      gateway: data.gateway,
+      allowedIpRanges: data.allowedIpRanges,
+      subnet: data.subnet,
+      macValidation: data.macValidation,
+      isEnabled: data.isEnabled ?? true,
+    },
+  });
+};
+
+export const updateNetwork = async (workspaceId: string, id: string, data: any) => {
+  return prisma.attendanceNetwork.update({
+    where: { id },
+    data,
+  });
+};
+
+export const deleteNetwork = async (workspaceId: string, id: string) => {
+  return prisma.attendanceNetwork.delete({ where: { id } });
+};
+
+// Notifications list
+export const getNotifications = async (userId: string, workspaceId: string) => {
+  return prisma.attendanceNotification.findMany({
+    where: { userId, workspaceId },
+    orderBy: { createdAt: 'desc' },
+    take: 20,
+  });
 };
 
 // Automation / Cron Tasks
@@ -422,15 +617,12 @@ export const autoAbsentMarking = async (workspaceId: string) => {
   const now = new Date();
   const currentHHMM = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
-  // If cutoff has passed, run absent generator for active staff who haven't checked in
   if (currentHHMM > cutoffTime) {
     for (const user of users) {
-      // Check if today is holiday for this user
       const applicableHolidays = await getApplicableHolidays(workspaceId, user);
       const holidayCheck = checkIsHoliday(applicableHolidays, todayStr);
 
       if (holidayCheck.isHoliday) {
-        // Automatically write HOLIDAY record if not exists
         await prisma.attendanceRecord.upsert({
           where: {
             userId_date: { userId: user.id, date: dateObj },
@@ -441,7 +633,8 @@ export const autoAbsentMarking = async (workspaceId: string) => {
             workspaceId,
             date: dateObj,
             attendanceType: 'HOLIDAY',
-            status: 'AUTO_GENERATED',
+            status: 'APPROVED',
+            approvalStatus: 'APPROVED',
             isHoliday: true,
             holidayName: holidayCheck.name,
             createdBy: 'SYSTEM_CRON',
@@ -450,7 +643,6 @@ export const autoAbsentMarking = async (workspaceId: string) => {
         continue;
       }
 
-      // Check if user has already marked attendance
       const existing = await prisma.attendanceRecord.findUnique({
         where: {
           userId_date: { userId: user.id, date: dateObj },
@@ -458,19 +650,18 @@ export const autoAbsentMarking = async (workspaceId: string) => {
       });
 
       if (!existing) {
-        // Create ABSENT record
         await prisma.attendanceRecord.create({
           data: {
             userId: user.id,
             workspaceId,
             date: dateObj,
             attendanceType: 'ABSENT',
-            status: 'AUTO_GENERATED',
+            status: 'APPROVED',
+            approvalStatus: 'APPROVED',
             createdBy: 'SYSTEM_CRON',
           },
         });
 
-        // Add warning for missing check-in
         if (settings.enableWarning) {
           await prisma.attendanceWarning.create({
             data: {
@@ -482,7 +673,6 @@ export const autoAbsentMarking = async (workspaceId: string) => {
             },
           });
 
-          // Check for auto lock
           const totalWarnings = await prisma.attendanceWarning.count({
             where: { userId: user.id, workspaceId },
           });
@@ -491,15 +681,6 @@ export const autoAbsentMarking = async (workspaceId: string) => {
             await lockUser(user.id, workspaceId, `Automatically locked due to consecutive absent records (${totalWarnings})`);
           }
         }
-
-        await prisma.attendanceLog.create({
-          data: {
-            userId: user.id,
-            workspaceId,
-            action: 'AUTO_ABSENT',
-            details: 'Automatically marked absent and warned',
-          },
-        });
       }
     }
   }

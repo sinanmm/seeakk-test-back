@@ -4,6 +4,7 @@ import {
   markAttendanceSchema,
   updateSettingsSchema,
   attendanceQuerySchema,
+  attendanceNetworkSchema,
 } from './attendance.validation';
 
 const requireWorkspace = (req: Request, res: Response): string | null => {
@@ -213,17 +214,142 @@ export const exportController = async (req: Request, res: Response, next: NextFu
   try {
     const data = await attendanceService.getAdminOverview(workspaceId, { ...parsed.data, limit: 1000 });
     
-    // For CSV formatting
     res.setHeader('Content-Type', 'text/csv');
     res.setHeader('Content-Disposition', `attachment; filename=attendance-export-${Date.now()}.csv`);
     
-    let csv = 'User Name,Email,Date,Check-In Time,Attendance Type,Status,Warnings,Holiday,Locked\n';
+    let csv = 'User Name,Email,Date,Check-In Time,Attendance Type,Status,Warnings,Holiday,Locked,IP,SSID\n';
     for (const r of data.records) {
       const checkInStr = r.checkInTime ? new Date(r.checkInTime).toLocaleTimeString() : '-';
-      csv += `"${r.user?.name || ''}","${r.user?.email || ''}","${r.date.toISOString().split('T')[0]}","${checkInStr}","${r.attendanceType}","${r.status}",${r.warningCount},${r.isHoliday},${r.isLocked}\n`;
+      csv += `"${r.user?.name || ''}","${r.user?.email || ''}","${r.date.toISOString().split('T')[0]}","${checkInStr}","${r.attendanceType}","${r.status}",${r.warningCount},${r.isHoliday},${r.isLocked},"${r.ipAddress || ''}","${r.networkName || ''}"\n`;
     }
     
     return res.status(200).send(csv);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Networks settings controllers
+export const getNetworksController = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = requireWorkspace(req, res);
+  if (!workspaceId) return;
+
+  try {
+    const list = await attendanceService.getNetworks(workspaceId);
+    return res.status(200).json({ success: true, data: list });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const createNetworkController = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = requireWorkspace(req, res);
+  if (!workspaceId) return;
+
+  const parsed = attendanceNetworkSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(422).json({
+      success: false,
+      message: 'Validation failed',
+      errors: parsed.error.flatten().fieldErrors,
+    });
+  }
+
+  try {
+    const network = await attendanceService.createNetwork(workspaceId, parsed.data);
+    return res.status(201).json({ success: true, data: network });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateNetworkController = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = requireWorkspace(req, res);
+  if (!workspaceId) return;
+
+  try {
+    const network = await attendanceService.updateNetwork(workspaceId, req.params.id as string, req.body);
+    return res.status(200).json({ success: true, data: network });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteNetworkController = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = requireWorkspace(req, res);
+  if (!workspaceId) return;
+
+  try {
+    await attendanceService.deleteNetwork(workspaceId, req.params.id as string);
+    return res.status(200).json({ success: true, message: 'Network deleted successfully' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Pending approvals controllers
+export const getPendingApprovalsController = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = requireWorkspace(req, res);
+  if (!workspaceId) return;
+
+  try {
+    const list = await attendanceService.getPendingApprovals(workspaceId, req.user!.id);
+    return res.status(200).json({ success: true, data: list });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const reviewAttendanceController = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = requireWorkspace(req, res);
+  if (!workspaceId) return;
+
+  const { recordId } = req.params;
+  const { action, reason } = req.body;
+
+  if (!action || !['APPROVE', 'REJECT'].includes(action)) {
+    return res.status(400).json({ success: false, message: 'Valid action (APPROVE/REJECT) is required.' });
+  }
+
+  try {
+    const record = await attendanceService.reviewAttendance(workspaceId, recordId as string, req.user!.id, action, reason);
+    return res.status(200).json({ success: true, message: `Attendance request ${action.toLowerCase()}d successfully`, data: record });
+  } catch (error: any) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({ success: false, message: error.message });
+    }
+    next(error);
+  }
+};
+
+// User inline edits
+export const updateUserApplyTypeController = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = requireWorkspace(req, res);
+  if (!workspaceId) return;
+
+  const { userId } = req.params;
+  const { attendanceApplyType } = req.body;
+
+  if (!attendanceApplyType || !['FROM_OFFICE', 'FROM_ANYWHERE'].includes(attendanceApplyType)) {
+    return res.status(400).json({ success: false, message: 'Valid attendanceApplyType is required' });
+  }
+
+  try {
+    const user = await attendanceService.updateUserApplyType(workspaceId, userId as string, attendanceApplyType);
+    return res.status(200).json({ success: true, message: 'Apply type updated successfully', data: user });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Notifications list
+export const getNotificationsController = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = requireWorkspace(req, res);
+  if (!workspaceId) return;
+
+  try {
+    const list = await attendanceService.getNotifications(req.user!.id, workspaceId);
+    return res.status(200).json({ success: true, data: list });
   } catch (error) {
     next(error);
   }
