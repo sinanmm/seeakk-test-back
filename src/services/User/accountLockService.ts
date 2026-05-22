@@ -44,7 +44,7 @@ export const lockUser = async (userId: string, workspaceId: string, reason?: str
 export const unlockUser = async (
   userId: string,
   workspaceId: string,
-  actor: { id: string; roleName?: string | null },
+  actor: { id: string; roleName?: string | null; permissions?: string[] },
 ) => {
   const targetUser = await (prisma as any).user.findFirst({
     where: { id: userId, workspaceId, deletedAt: null },
@@ -69,9 +69,17 @@ export const unlockUser = async (
   }
 
   const actorIsSupervisor = Boolean(targetUser.supervisorId && targetUser.supervisorId === actor.id);
-  if (!actorIsSupervisor) {
-    const error: any = new Error('Only the selected supervisor can unlock this staff account.');
+  const actorPermissions = actor.permissions || [];
+  const actorCanUnlockAsAdmin = actorPermissions.some((key) =>
+    ['USERS_UNLOCK', 'unlock_target_locked_users', 'SYSTEM_CONFIG', 'manage_target_cycles'].includes(key),
+  );
+
+  if (!actorIsSupervisor && !actorCanUnlockAsAdmin) {
+    const error: any = new Error(
+      'Only the assigned supervisor or an authorized admin can unlock this staff account.',
+    );
     error.statusCode = 403;
+    error.errorCode = 'TARGET_UNLOCK_FORBIDDEN';
     throw error;
   }
 

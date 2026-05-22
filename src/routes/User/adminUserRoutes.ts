@@ -69,14 +69,15 @@ import * as targetController from '../../controllers/User/targetController';
 // GET    /api/admin/users/meta/target-types — Get available types
 router.get('/meta/target-types', targetController.getTargetTypes);
 
-// POST   /api/admin/users/:id/targets       — Create/Assign target
-router.post('/:id/targets', targetController.createTarget);
+// PUT    /api/admin/users/:id/target-cycle  — Assign performance target cycle
+router.put(
+  '/:id/target-cycle',
+  checkAnyPermission(['assign_target_cycles', 'USERS_EDIT', 'SYSTEM_CONFIG']),
+  targetController.assignTargetCycle,
+);
 
-// GET    /api/admin/users/:id/targets       — List user targets
+// GET    /api/admin/users/:id/targets       — Legacy target settings (deprecated)
 router.get('/:id/targets', targetController.getUserTargets);
-
-// PUT    /api/admin/users/:userId/targets/:targetId — Update target
-router.put('/:userId/targets/:targetId', targetController.updateTarget);
 
 // POST   /api/admin/users/:id/unlock        — Unlock staff account
 router.post('/:id/unlock', checkAnyPermission(['USERS_UNLOCK', 'USERS_EDIT', 'SYSTEM_CONFIG']), targetController.unlockUser);

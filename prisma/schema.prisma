@@ -23,6 +23,18 @@ enum ViolationType {
   MONTHLY
 }
 
+enum TargetCycleType {
+  WEEKLY
+  MONTHLY
+  SEMI_ANNUAL
+  MANUAL
+}
+
+enum TargetMetricType {
+  LEADS
+  REVENUE
+}
+
 enum LocationType {
   COUNTRY
   STATE
@@ -278,6 +290,7 @@ model LeadStage {
   workspace          Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   rules              StageRule[]
   leads              Lead[]
+  targetCycles       TargetCycle[]
   approvalsFrom      LeadStageApproval[] @relation("LeadStageApprovalFromStage")
   approvalsTo        LeadStageApproval[] @relation("LeadStageApprovalToStage")
   revenueTransactions RevenueTransaction[]
@@ -482,9 +495,18 @@ model TargetCycle {
   id          String             @id @default(cuid())
   name        String
   workspaceId String
+  description String?
 
-  totalDays   Int
+  totalDays   Int                @default(30)
   status      String             @default("ACTIVE")
+
+  targetType     TargetCycleType   @default(MONTHLY)
+  targetMetric   TargetMetricType  @default(LEADS)
+  leadStageId    String?
+  startDate      DateTime          @default(now())
+  endDate        DateTime?
+  numberOfMonths Int?
+  lockingEnabled Boolean           @default(true)
 
   createdBy   String?
   createdAt   DateTime           @default(now())
@@ -492,12 +514,120 @@ model TargetCycle {
   deletedAt   DateTime?
 
   workspace   Workspace          @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  leadStage   LeadStage?         @relation(fields: [leadStageId], references: [id], onDelete: SetNull)
   ranges      TargetCycleRange[]
+  periods     TargetCyclePeriod[]
   targets     TargetSetting[]
+  assignments TargetAssignment[]
+  assignedUsers User[]           @relation("UserAssignedTargetCycle")
 
   @@unique([name, workspaceId])
   @@index([workspaceId])
+  @@index([workspaceId, status])
+  @@index([leadStageId])
   @@map("target_cycles")
+}
+
+model TargetCyclePeriod {
+  id            String      @id @default(cuid())
+  targetCycleId String
+  label         String
+  periodIndex   Int
+  targetCount   Int         @default(0)
+  startDate     DateTime
+  endDate       DateTime
+  lockingDate   DateTime
+
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  targetCycle   TargetCycle @relation(fields: [targetCycleId], references: [id], onDelete: Cascade)
+  performances  TargetPerformanceLog[]
+
+  @@index([targetCycleId])
+  @@index([lockingDate])
+  @@map("target_cycle_periods")
+}
+
+model TargetAssignment {
+  id            String      @id @default(cuid())
+  userId        String
+  targetCycleId String
+  workspaceId   String
+  supervisorId  String?
+  isActive      Boolean     @default(true)
+  assignedById  String?
+  graceUntil    DateTime?
+  assignedAt    DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  targetCycle   TargetCycle @relation(fields: [targetCycleId], references: [id], onDelete: Cascade)
+  performances  TargetPerformanceLog[]
+  lockLogs      TargetLockLog[]
+  unlockLogs    TargetUnlockLog[]
+
+  @@unique([userId, targetCycleId])
+  @@index([workspaceId, isActive])
+  @@index([targetCycleId])
+  @@map("target_assignments")
+}
+
+model TargetPerformanceLog {
+  id                   String            @id @default(cuid())
+  assignmentId         String
+  periodId             String
+  targetCount          Int
+  achievedCount        Int               @default(0)
+  achievedRevenue      Float             @default(0)
+  completionPercentage Float             @default(0)
+  status               String            @default("PENDING")
+  evaluatedAt          DateTime?
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+
+  assignment           TargetAssignment  @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  period               TargetCyclePeriod @relation(fields: [periodId], references: [id], onDelete: Cascade)
+
+  @@unique([assignmentId, periodId])
+  @@index([periodId])
+  @@map("target_performance_logs")
+}
+
+model TargetLockLog {
+  id             String           @id @default(cuid())
+  userId         String
+  workspaceId    String
+  assignmentId   String?
+  periodId       String?
+  reason         String
+  lockedAt       DateTime         @default(now())
+  lockedBySystem Boolean          @default(true)
+
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assignment     TargetAssignment? @relation(fields: [assignmentId], references: [id], onDelete: SetNull)
+
+  @@index([userId, lockedAt])
+  @@index([workspaceId])
+  @@map("target_lock_logs")
+}
+
+model TargetUnlockLog {
+  id             String           @id @default(cuid())
+  userId         String
+  workspaceId    String
+  assignmentId   String?
+  unlockedById   String
+  reason         String?
+  unlockedAt     DateTime         @default(now())
+
+  user           User             @relation("TargetUnlockUser", fields: [userId], references: [id], onDelete: Cascade)
+  unlockedBy     User             @relation("TargetUnlockActor", fields: [unlockedById], references: [id], onDelete: Cascade)
+  assignment     TargetAssignment? @relation(fields: [assignmentId], references: [id], onDelete: SetNull)
+
+  @@index([userId, unlockedAt])
+  @@index([workspaceId])
+  @@map("target_unlock_logs")
 }
 
 model TargetCycleRange {
@@ -896,7 +1026,15 @@ model User {
   subordinates             User[]      @relation("UserSupervisor")
 
   // Target relations
+  assignedTargetCycleId    String?
+  assignedTargetCycle      TargetCycle?      @relation("UserAssignedTargetCycle", fields: [assignedTargetCycleId], references: [id], onDelete: SetNull)
+  targetLockedAt           DateTime?
+  targetLockReason         String?
   targetSettings           TargetSetting[]
+  targetAssignments        TargetAssignment[]
+  targetLockLogs           TargetLockLog[]
+  targetUnlockLogs         TargetUnlockLog[] @relation("TargetUnlockUser")
+  targetUnlockActions      TargetUnlockLog[] @relation("TargetUnlockActor")
   violations               TargetViolation[]
 
   // Devices

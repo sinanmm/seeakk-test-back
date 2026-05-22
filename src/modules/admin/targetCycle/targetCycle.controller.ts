@@ -2,6 +2,8 @@ import { NextFunction, Request, Response } from 'express';
 import auditService from '../../../services/Audit/auditService';
 import logger from '../../../utils/logger';
 import * as targetCycleService from './targetCycle.service';
+import { persistTargetCycleWithPeriods } from '../../targets/targetAssignment.service';
+import { createPerformanceTargetCycleSchema } from '../../targets/target.validation';
 import {
   CreateTargetCycleInput,
   createTargetCycleSchema,
@@ -66,6 +68,33 @@ const handleServiceError = (error: any, res: Response, next: NextFunction, actio
 export const createTargetCycle = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
   const workspaceId = requireWorkspace(req, res);
   if (!workspaceId) return;
+
+  const isPerformanceCycle = Boolean(req.body?.targetType);
+
+  if (isPerformanceCycle) {
+    const perfResult = createPerformanceTargetCycleSchema.safeParse(req.body);
+    if (!perfResult.success) {
+      return res.status(422).json({
+        success: false,
+        message: 'Validation failed.',
+        errors: perfResult.error.flatten().fieldErrors,
+      });
+    }
+    try {
+      const data = await persistTargetCycleWithPeriods(workspaceId, req.user?.id || '', perfResult.data);
+      await auditService.log({
+        userId: req.user?.id,
+        workspaceId,
+        action: 'MASTER_CREATE_TARGET_CYCLE',
+        entityType: 'TargetCycle',
+        entityId: data?.id,
+        details: { name: data?.name, targetType: data?.targetType },
+      });
+      return res.status(201).json({ success: true, message: 'Target cycle created.', data });
+    } catch (error: any) {
+      return handleServiceError(error, res, next, 'create');
+    }
+  }
 
   const input = validate<CreateTargetCycleInput>(createTargetCycleSchema, req.body, res);
   if (!input) return;
@@ -137,6 +166,24 @@ export const updateTargetCycle = async (req: Request, res: Response, next: NextF
   if (!workspaceId) return;
 
   const id = req.params['id'] as string;
+
+  if (req.body?.targetType) {
+    const perfResult = createPerformanceTargetCycleSchema.safeParse(req.body);
+    if (!perfResult.success) {
+      return res.status(422).json({
+        success: false,
+        message: 'Validation failed.',
+        errors: perfResult.error.flatten().fieldErrors,
+      });
+    }
+    try {
+      const data = await persistTargetCycleWithPeriods(workspaceId, req.user?.id || '', perfResult.data, id);
+      return res.status(200).json({ success: true, message: 'Target cycle updated.', data });
+    } catch (error: any) {
+      return handleServiceError(error, res, next, 'updateTargetCycle');
+    }
+  }
+
   const input = validate<UpdateTargetCycleInput>(updateTargetCycleSchema, req.body, res);
   if (!input) return;
 

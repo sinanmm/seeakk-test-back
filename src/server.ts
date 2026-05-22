@@ -78,6 +78,7 @@ const startServer = async () => {
       { startFollowUpReminders },
       { initRealtimeServer },
       { startAttendanceJobs },
+      { startTargetPerformanceJobs },
     ] = await Promise.all([
       import('./app'),
       import('./config/prisma'),
@@ -87,6 +88,7 @@ const startServer = async () => {
       import('./services/User/followupReminder.jobs'),
       import('./realtime/socket'),
       import('./modules/attendance/attendance.jobs'),
+      import('./modules/targets/targetCron.jobs'),
     ]);
 
     // Connect Redis
@@ -152,6 +154,7 @@ const startServer = async () => {
         scheduleDailySync().catch(err => console.error('Failed to schedule holiday jobs:', err));
         startFollowUpReminders();
         startAttendanceJobs();
+        startTargetPerformanceJobs();
       })
       .catch((error) => {
         console.error('PostgreSQL initial connection failed. API is running in degraded mode:', error);

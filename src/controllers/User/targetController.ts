@@ -92,11 +92,52 @@ export const unlockUser = async (req: Request, res: Response, next: NextFunction
 
   try {
     const userId = req.params['id'] as string;
-    const user = await accountLockService.unlockUser(userId, workspaceId, {
-      id: req.user!.id,
-      roleName: req.user?.role?.name || null,
-    });
+    const { unlockTargetLockedUser } = await import('../../modules/targets/targetUnlock.service');
+    const user = await unlockTargetLockedUser(
+      workspaceId,
+      userId,
+      {
+        id: req.user!.id,
+        roleName: req.user?.role?.name || null,
+        permissions: ['USERS_UNLOCK', 'unlock_target_locked_users', 'SYSTEM_CONFIG'],
+      },
+      (req.body as { reason?: string })?.reason,
+    );
     res.status(200).json({ success: true, message: 'User account unlocked successfully.', data: { user } });
+  } catch (error) {
+    handleServiceError(error, res, next);
+  }
+};
+
+/**
+ * PUT /api/admin/users/:id/target-cycle
+ */
+export const assignTargetCycle = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = requireWorkspace(req, res);
+  if (!workspaceId) return;
+
+  const { assignTargetCycleSchema } = await import('../../modules/targets/target.validation');
+  const result = assignTargetCycleSchema.safeParse(req.body);
+  if (!result.success) {
+    return res.status(422).json({ success: false, errors: result.error.flatten().fieldErrors });
+  }
+
+  try {
+    const userId = req.params['id'] as string;
+    const { assignTargetCycleToUser, clearUserTargetCycle } = await import(
+      '../../modules/targets/targetAssignment.service'
+    );
+    if (!result.data.targetCycleId) {
+      await clearUserTargetCycle(workspaceId, userId);
+      return res.status(200).json({ success: true, message: 'Target cycle removed.' });
+    }
+    const assignment = await assignTargetCycleToUser(
+      workspaceId,
+      userId,
+      result.data.targetCycleId,
+      req.user!.id,
+    );
+    res.status(200).json({ success: true, message: 'Target cycle assigned.', data: { assignment } });
   } catch (error) {
     handleServiceError(error, res, next);
   }

@@ -21,6 +21,7 @@ import departmentsRoutes from './modules/admin/departments/departments.routes';
 import organisationChartRoutes from './modules/admin/organisation-chart/organisationChart.routes';
 import rosterRoutes from './modules/admin/roster/roster.routes';
 import targetCycleRoutes from './modules/admin/targetCycle/targetCycle.routes';
+import targetRoutes from './modules/targets/target.routes';
 import {
   leadDynamicsAdminRoutes,
   leadDynamicsRouter,
@@ -193,6 +194,7 @@ app.use('/api/admin/organisation-chart', organisationChartRoutes);
 app.use('/api/admin/organization-chart', organisationChartRoutes);
 app.use('/api/admin/roster', rosterRoutes);
 app.use('/api/admin/target-cycles', targetCycleRoutes);
+app.use('/api/targets', targetRoutes);
 app.use('/api/admin/lead-dynamics', leadDynamicsAdminRoutes);
 app.use('/api/master/target-cycles', targetCycleRoutes);
 app.use('/api/lead-dynamics', leadDynamicsRouter);

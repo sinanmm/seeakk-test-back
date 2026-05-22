@@ -50,6 +50,12 @@ const permissions = [
   { key: 'TARGET_CYCLES_CREATE', group: 'MASTER_CONFIGURATION', description: 'Create target cycles' },
   { key: 'TARGET_CYCLES_EDIT', group: 'MASTER_CONFIGURATION', description: 'Edit target cycles' },
   { key: 'TARGET_CYCLES_DELETE', group: 'MASTER_CONFIGURATION', description: 'Delete target cycles' },
+  { key: 'manage_target_cycles', group: 'MASTER_CONFIGURATION', description: 'Manage target cycle performance engine' },
+  { key: 'assign_target_cycles', group: 'ADMIN_MANAGEMENT', description: 'Assign target cycles to users' },
+  { key: 'view_target_analytics', group: 'ADMIN_MANAGEMENT', description: 'View target analytics and reports' },
+  { key: 'lock_users_by_target', group: 'ADMIN_MANAGEMENT', description: 'Lock users when targets are incomplete' },
+  { key: 'unlock_target_locked_users', group: 'ADMIN_MANAGEMENT', description: 'Unlock target-locked staff accounts' },
+  { key: 'extend_target_grace_period', group: 'ADMIN_MANAGEMENT', description: 'Extend target grace periods' },
 
   // MASTER LEAD DYNAMICS
   { key: 'LEAD_DYNAMICS_VIEW', group: 'MASTER_CONFIGURATION', description: 'View lead dynamic fields' },
