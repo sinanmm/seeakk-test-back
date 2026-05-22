@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import logger from '../../../utils/logger';
+import { resolveWorkspaceIdForUser } from '../../../utils/workspaceContext';
 import * as lobReasonsService from './lobReasons.service';
 import type {
   CreateLOBReasonInput,
@@ -16,12 +17,21 @@ import {
   updateLOBReasonSchema,
 } from './lobReasons.validation';
 
-const requireWorkspace = (req: Request, res: Response): string | null => {
-  const workspaceId = req.user?.workspaceId ?? null;
+const getWorkspaceId = async (req: Request, res: Response): Promise<string | null> => {
+  if (!req.user?.id) {
+    res.status(403).json({
+      success: false,
+      message: 'Authentication required.',
+    });
+    return null;
+  }
+
+  const workspaceId = await resolveWorkspaceIdForUser(req.user.id, req.user.workspaceId);
+
   if (!workspaceId) {
     res.status(403).json({
       success: false,
-      message: 'Forbidden: No workspace linked to your account.',
+      message: 'Workspace context is required. Please complete workspace setup or refresh your session.',
     });
     return null;
   }
@@ -67,7 +77,7 @@ const getActor = (req: Request) => ({
 });
 
 export const createLOBReason = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
-  const workspaceId = requireWorkspace(req, res);
+  const workspaceId = await getWorkspaceId(req, res);
   if (!workspaceId) return;
 
   const input = validate<CreateLOBReasonInput>(createLOBReasonSchema, req.body, res);
@@ -89,7 +99,7 @@ export const createLOBReason = async (req: Request, res: Response, next: NextFun
 };
 
 export const listLOBReasons = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
-  const workspaceId = requireWorkspace(req, res);
+  const workspaceId = await getWorkspaceId(req, res);
   if (!workspaceId) return;
 
   const query = validate<ListLOBReasonsQueryInput>(listLOBReasonsQuerySchema, req.query, res);
@@ -104,7 +114,7 @@ export const listLOBReasons = async (req: Request, res: Response, next: NextFunc
 };
 
 export const listActiveLOBReasons = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
-  const workspaceId = requireWorkspace(req, res);
+  const workspaceId = await getWorkspaceId(req, res);
   if (!workspaceId) return;
 
   try {
@@ -119,7 +129,7 @@ export const listActiveLOBReasons = async (req: Request, res: Response, next: Ne
 };
 
 export const updateLOBReason = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
-  const workspaceId = requireWorkspace(req, res);
+  const workspaceId = await getWorkspaceId(req, res);
   if (!workspaceId) return;
 
   const params = validate<LOBReasonIdParamInput>(lobReasonIdParamSchema, req.params, res);
@@ -145,7 +155,7 @@ export const updateLOBReason = async (req: Request, res: Response, next: NextFun
 };
 
 export const toggleLOBReasonStatus = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
-  const workspaceId = requireWorkspace(req, res);
+  const workspaceId = await getWorkspaceId(req, res);
   if (!workspaceId) return;
 
   const params = validate<LOBReasonIdParamInput>(lobReasonIdParamSchema, req.params, res);
@@ -170,7 +180,7 @@ export const toggleLOBReasonStatus = async (req: Request, res: Response, next: N
 };
 
 export const deleteLOBReason = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
-  const workspaceId = requireWorkspace(req, res);
+  const workspaceId = await getWorkspaceId(req, res);
   if (!workspaceId) return;
 
   const params = validate<LOBReasonIdParamInput>(lobReasonIdParamSchema, req.params, res);
