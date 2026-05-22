@@ -61,11 +61,19 @@ export const OFFICE_LOCATION_NOT_CONFIGURED_MESSAGE =
 export const OFFICE_BRANCH_NOT_ASSIGNED_MESSAGE =
   'No office branch is assigned to your account. Please contact your administrator.';
 
+export type AttendanceApplyType = 'FROM_OFFICE' | 'FROM_ANYWHERE';
+
+/** Treat null/empty/unknown values as From Anywhere (safe default). */
+export const normalizeAttendanceApplyType = (
+  attendanceApplyType: string | null | undefined,
+): AttendanceApplyType =>
+  attendanceApplyType === 'FROM_OFFICE' ? 'FROM_OFFICE' : 'FROM_ANYWHERE';
+
 export const requiresOfficeLocationValidation = (
   attendanceApplyType: string | null | undefined,
   attendanceType: string,
 ): boolean => {
-  if (attendanceApplyType !== 'FROM_OFFICE') return false;
+  if (normalizeAttendanceApplyType(attendanceApplyType) !== 'FROM_OFFICE') return false;
   if (attendanceType === 'HOLIDAY') return false;
   if (['WORK_FROM_HOME', 'LEAVE'].includes(attendanceType)) return false;
   return true;

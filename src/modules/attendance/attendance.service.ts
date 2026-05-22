@@ -10,6 +10,7 @@ import {
   resolveAttendanceSubmissionState,
 } from './attendanceState.util';
 import {
+  normalizeAttendanceApplyType,
   requiresOfficeLocationValidation,
   toOfficeLocationProfile,
   validateOfficeLocation,
@@ -141,7 +142,7 @@ const resolveOfficeLocationSetup = async (
     user.attendanceOfficeLocationId ?? null,
   );
   const officeBranchAssigned = Boolean(assignedOffice);
-  const fromOffice = user.attendanceApplyType === 'FROM_OFFICE';
+  const fromOffice = normalizeAttendanceApplyType(user.attendanceApplyType) === 'FROM_OFFICE';
 
   let setupMessage: string | null = null;
   if (fromOffice) {
@@ -223,7 +224,11 @@ export const getTodayStatus = async (userId: string, workspaceId: string) => {
   );
   const isMarked = hasUserSubmittedToday(submissionState);
 
-  const locationSetup = await resolveOfficeLocationSetup(workspaceId, user);
+  const attendanceApplyType = normalizeAttendanceApplyType(user.attendanceApplyType);
+  const locationSetup = await resolveOfficeLocationSetup(workspaceId, {
+    attendanceApplyType,
+    attendanceOfficeLocationId: user.attendanceOfficeLocationId,
+  });
 
   return {
     date: todayStr,
@@ -234,7 +239,7 @@ export const getTodayStatus = async (userId: string, workspaceId: string) => {
     submissionState,
     requiresMandatoryPopup: requiresMandatoryAttendancePopup(submissionState, user.isLocked),
     record: existingRecord,
-    attendanceApplyType: user.attendanceApplyType,
+    attendanceApplyType,
     officeLocationConfigured: locationSetup.officeLocationConfigured,
     officeBranchAssigned: locationSetup.officeBranchAssigned,
     locationValidationActive: locationSetup.locationValidationActive,
@@ -247,6 +252,7 @@ export const getTodayStatus = async (userId: string, workspaceId: string) => {
 
 export const markAttendance = async (userId: string, workspaceId: string, payload: any) => {
   const user = await assertUserInWorkspace(userId, workspaceId);
+  const attendanceApplyType = normalizeAttendanceApplyType(user.attendanceApplyType);
 
   if (user.isLocked) {
     throw createAttendanceServiceError('Your account is temporarily locked due to incomplete targets.', 423);
@@ -282,8 +288,11 @@ export const markAttendance = async (userId: string, workspaceId: string, payloa
   let isInsideOfficeRadius = false;
   let locationValidationResult: ReturnType<typeof validateOfficeLocation> | null = null;
 
-  if (requiresOfficeLocationValidation(user.attendanceApplyType, attendanceType)) {
-    const locationSetup = await resolveOfficeLocationSetup(workspaceId, user);
+  if (requiresOfficeLocationValidation(attendanceApplyType, attendanceType)) {
+    const locationSetup = await resolveOfficeLocationSetup(workspaceId, {
+      attendanceApplyType,
+      attendanceOfficeLocationId: user.attendanceOfficeLocationId,
+    });
 
     if (!locationSetup.officeLocationConfigured) {
       const configError = createAttendanceServiceError(
@@ -385,7 +394,7 @@ export const markAttendance = async (userId: string, workspaceId: string, payloa
         holidayName,
         isLocked: user.isLocked,
         createdBy: userId,
-        attendanceApplyType: user.attendanceApplyType,
+        attendanceApplyType,
         deviceInfo: payload.deviceInfo,
         approvalStatus,
         supervisorId: user.supervisorId,
@@ -410,7 +419,7 @@ export const markAttendance = async (userId: string, workspaceId: string, payloa
         holidayName,
         isLocked: user.isLocked,
         createdBy: userId,
-        attendanceApplyType: user.attendanceApplyType,
+        attendanceApplyType,
         deviceInfo: payload.deviceInfo,
         approvalStatus,
         supervisorId: user.supervisorId,

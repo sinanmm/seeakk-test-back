@@ -910,7 +910,7 @@ model User {
   approvedLeadStageApprovals LeadStageApproval[] @relation("LeadStageApprovalApprovedBy")
   rosterEntries            RosterEntry[]
   attendanceRecords        AttendanceRecord[]
-  attendanceApplyType      String                 @default("FROM_OFFICE") // FROM_OFFICE, FROM_ANYWHERE
+  attendanceApplyType      String                 @default("FROM_ANYWHERE") // FROM_OFFICE, FROM_ANYWHERE
   attendanceOfficeLocationId String?
   attendanceOfficeLocation AttendanceOfficeLocation? @relation(fields: [attendanceOfficeLocationId], references: [id], onDelete: SetNull)
   followUps                FollowUp[]
@@ -1351,7 +1351,7 @@ model AttendanceRecord {
   networkName             String?
   routerIp                String?
   subnet                  String?
-  attendanceApplyType     String?          @default("FROM_OFFICE")
+  attendanceApplyType     String?          @default("FROM_ANYWHERE")
   isOfficeNetwork         Boolean          @default(false)
   deviceInfo              String?
   geoLocation             String?
