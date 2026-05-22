@@ -32,7 +32,10 @@ export type OfficeLocationValidationResult =
     };
 
 const EARTH_RADIUS_METERS = 6_371_000;
-const MAX_GPS_ACCURACY_METERS = 150;
+const MAX_GPS_ACCURACY_METERS = Number.parseInt(
+  process.env.ATTENDANCE_MAX_GPS_ACCURACY_METERS || '200',
+  10,
+) || 200;
 const MAX_LOCATION_AGE_MS = 5 * 60 * 1000;
 
 /** Haversine distance in meters between two WGS84 coordinates. */

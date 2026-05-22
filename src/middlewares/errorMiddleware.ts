@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { applyCorsHeadersIfAllowed } from '../config/cors';
 import logger from '../utils/logger';
 
 export const notFound = (req: Request, res: Response, next: NextFunction): void => {
@@ -40,8 +41,13 @@ export const errorHandler = (err: any, req: Request, res: Response, next: NextFu
     ip: req.ip,
   });
 
+  applyCorsHeadersIfAllowed(req, res);
+
   res.status(statusCode).json({
+    success: false,
     message: message,
-    stack: process.env.NODE_ENV === 'production' ? '🥞' : err.stack,
+    errorCode: err.errorCode,
+    details: err.details,
+    stack: process.env.NODE_ENV === 'production' ? undefined : err.stack,
   });
 };

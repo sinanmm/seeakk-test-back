@@ -115,7 +115,7 @@ const listEnabledOfficeLocations = async (workspaceId: string) => {
         branch: 'HQ',
         latitude: 28.6139,
         longitude: 77.209,
-        radiusMeters: 50,
+        radiusMeters: Number.parseInt(process.env.ATTENDANCE_DEFAULT_RADIUS_METERS || '100', 10) || 100,
         isEnabled: true,
       },
     });

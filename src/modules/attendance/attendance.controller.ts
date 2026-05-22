@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import * as attendanceService from './attendance.service';
 import { emitWorkspaceEvent } from '../../realtime/socket';
+import { applyCorsHeadersIfAllowed } from '../../config/cors';
 import type { AttendanceRequest } from './attendance.middleware';
 import {
   markAttendanceSchema,
@@ -68,6 +69,7 @@ export const markAttendanceController = async (req: Request, res: Response, next
     });
   } catch (error: any) {
     if (error.statusCode) {
+      applyCorsHeadersIfAllowed(req, res);
       return res.status(error.statusCode).json({
         success: false,
         message: error.message,

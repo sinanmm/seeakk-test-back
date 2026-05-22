@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { applyCorsHeadersIfAllowed } from '../../config/cors';
 import { resolveWorkspaceIdForUser } from '../../utils/workspaceContext';
 import logger from '../../utils/logger';
 
@@ -15,6 +16,7 @@ export const resolveAttendanceWorkspace = async (
   next: NextFunction,
 ): Promise<any> => {
   if (!req.user?.id) {
+    applyCorsHeadersIfAllowed(req, res);
     return res.status(401).json({
       success: false,
       errorCode: 'UNAUTHORIZED',
@@ -30,6 +32,7 @@ export const resolveAttendanceWorkspace = async (
 
     const effectiveOnboarded = Boolean(req.user.isOnboarded) || Boolean(workspaceId);
     if (!effectiveOnboarded) {
+      applyCorsHeadersIfAllowed(req, res);
       return res.status(403).json({
         success: false,
         errorCode: 'ONBOARDING_REQUIRED',
@@ -38,6 +41,7 @@ export const resolveAttendanceWorkspace = async (
     }
 
     if (!workspaceId) {
+      applyCorsHeadersIfAllowed(req, res);
       return res.status(403).json({
         success: false,
         errorCode: 'WORKSPACE_NOT_LINKED',
