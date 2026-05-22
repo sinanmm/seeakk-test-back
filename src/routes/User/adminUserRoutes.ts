@@ -46,6 +46,25 @@ router.post('/invite/:id/revoke', checkPermission('USERS_EDIT'), adminUserContro
 // GET    /api/admin/users           — List users (paginated + filterable)
 router.get('/', checkPermission('USERS_VIEW'), adminUserController.listUsers);
 
+// ─── Target Settings Routes (register before /:id to avoid param collisions) ─
+import * as targetController from '../../controllers/User/targetController';
+
+router.get('/meta/target-types', targetController.getTargetTypes);
+
+router.put(
+  '/:id/target-cycle',
+  checkAnyPermission(['assign_target_cycles', 'USERS_EDIT', 'SYSTEM_CONFIG']),
+  targetController.assignTargetCycle,
+);
+
+router.get('/:id/targets', targetController.getUserTargets);
+
+router.post(
+  '/:id/unlock',
+  checkAnyPermission(['USERS_UNLOCK', 'USERS_EDIT', 'SYSTEM_CONFIG']),
+  targetController.unlockUser,
+);
+
 // GET    /api/admin/users/:id       — Get single user
 router.get('/:id', checkPermission('USERS_VIEW'), adminUserController.getUserById);
 
@@ -62,24 +81,5 @@ router.patch('/:id/status', adminUserController.updateUserStatus);
 router.post('/:id/reset-password', adminUserController.resetUserPassword);
 router.post('/:id/access-link', checkPermission('USERS_EDIT'), adminUserController.sendUserAccessLink);
 router.post('/:id/send-invite', checkPermission('USERS_EDIT'), adminUserController.sendInviteToUser);
-
-// ─── Target Settings Routes ──────────────────────────────────────────────────
-import * as targetController from '../../controllers/User/targetController';
-
-// GET    /api/admin/users/meta/target-types — Get available types
-router.get('/meta/target-types', targetController.getTargetTypes);
-
-// PUT    /api/admin/users/:id/target-cycle  — Assign performance target cycle
-router.put(
-  '/:id/target-cycle',
-  checkAnyPermission(['assign_target_cycles', 'USERS_EDIT', 'SYSTEM_CONFIG']),
-  targetController.assignTargetCycle,
-);
-
-// GET    /api/admin/users/:id/targets       — Legacy target settings (deprecated)
-router.get('/:id/targets', targetController.getUserTargets);
-
-// POST   /api/admin/users/:id/unlock        — Unlock staff account
-router.post('/:id/unlock', checkAnyPermission(['USERS_UNLOCK', 'USERS_EDIT', 'SYSTEM_CONFIG']), targetController.unlockUser);
 
 export default router;

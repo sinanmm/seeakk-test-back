@@ -108,6 +108,10 @@ const USER_SELECT = {
       location: { select: { id: true, name: true, type: true } },
     },
   },
+  assignedTargetCycleId: true,
+  assignedTargetCycle: {
+    select: { id: true, name: true, targetMetric: true, targetType: true, status: true },
+  },
   workspace: { select: { id: true, companyName: true } },
   password: true,
 } as const;

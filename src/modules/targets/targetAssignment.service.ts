@@ -26,7 +26,19 @@ export const assignTargetCycleToUser = async (
   }
 
   if (cycle.targetMetric === 'LEADS' && !cycle.leadStageId) {
-    throw Object.assign(new Error('Lead stage is required for lead-based target cycles.'), { statusCode: 422 });
+    throw Object.assign(
+      new Error(
+        'This target cycle tracks leads but has no lead stage configured. Edit the cycle in Master Configuration and set a lead stage, then assign again.',
+      ),
+      { statusCode: 422 },
+    );
+  }
+
+  if (!cycle.periods?.length) {
+    throw Object.assign(
+      new Error('This target cycle has no performance periods. Edit the cycle and add at least one period before assigning users.'),
+      { statusCode: 422 },
+    );
   }
 
   await db.targetAssignment.updateMany({

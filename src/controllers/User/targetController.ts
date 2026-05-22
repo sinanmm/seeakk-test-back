@@ -16,6 +16,13 @@ const requireWorkspace = (req: Request, res: Response): string | null => {
 };
 
 const handleServiceError = (error: any, res: Response, next: NextFunction) => {
+  if (error?.code === 'P2021' || error?.code === 'P2022') {
+    return res.status(503).json({
+      success: false,
+      message:
+        'Target cycle module is not ready. Deploy the latest database migration (target cycle performance engine).',
+    });
+  }
   if (error?.statusCode) {
     return res.status(error.statusCode).json({ success: false, message: error.message });
   }

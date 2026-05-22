@@ -42,7 +42,10 @@ export const createPerformanceTargetCycleSchema = z
   });
 
 export const assignTargetCycleSchema = z.object({
-  targetCycleId: z.string().uuid().nullable(),
+  targetCycleId: z.preprocess(
+    (value) => (typeof value === 'string' && !value.trim() ? null : value),
+    z.string().uuid().nullable(),
+  ),
 });
 
 export const extendGraceSchema = z.object({
