@@ -2,6 +2,13 @@ import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import prisma from '../../config/prisma';
+import auditService from '../Audit/auditService';
+import {
+  assignTargetCycleToUserWithClient,
+  clearUserTargetCycleWithClient,
+  syncUserTargetCycleAssignment,
+  type AssignmentClient,
+} from '../../modules/targets/targetAssignment.service';
 import { redisClient } from '../../config/redis';
 import logger from '../../utils/logger';
 import { buildPasswordResetUrl, sendPasswordResetEmail, isEmailServiceConfigured } from '../Email/emailService';
@@ -200,7 +207,12 @@ const resolveDepartmentId = async (value: string, workspaceId: string): Promise<
  * Create a new user inside a workspace.
  * Admin-created users are pre-verified and immediately active.
  */
-export const createUser = async (input: CreateUserInput, workspaceId: string) => {
+export const createUser = async (
+  input: CreateUserInput,
+  workspaceId: string,
+  assignedById: string,
+  auditContext?: { ipAddress?: string; userAgent?: string },
+) => {
   const {
     name,
     username,
@@ -215,6 +227,7 @@ export const createUser = async (input: CreateUserInput, workspaceId: string) =>
     stateId,
     districtId,
     assignedLocationIds,
+    assignedTargetCycleId,
   } = input;
   const email = rawEmail.toLowerCase().trim();
 
@@ -320,34 +333,82 @@ export const createUser = async (input: CreateUserInput, workspaceId: string) =>
         : undefined,
   };
 
-  let user: any;
+  const runCreate = async (tx: any) => {
+    if (canRestoreSoftDeletedByEmail && existingEmail) {
+      await (tx as any).userLocationAssignment.deleteMany({
+        where: { userId: existingEmail.id },
+      });
 
-  if (canRestoreSoftDeletedByEmail && existingEmail) {
-    user = await prisma.$transaction(
-      async (tx: any) => {
-        // Clear historical visibility assignments before restoring account.
-        await (tx as any).userLocationAssignment.deleteMany({
-          where: { userId: existingEmail.id },
-        });
-
-        return withInviteStatusFallback((selectShape) => (tx as any).user.update({
+      return withInviteStatusFallback((selectShape) =>
+        (tx as any).user.update({
           where: { id: existingEmail.id },
           data: {
             ...createData,
             deletedAt: null,
           },
           select: selectShape,
-        }));
+        }),
+      );
+    }
+
+    return withInviteStatusFallback((selectShape) =>
+      (tx as any).user.create({
+        data: createData,
+        select: selectShape,
+      }),
+    );
+  };
+
+  const mustAssignTargetCycle =
+    assignedTargetCycleId !== undefined && assignedTargetCycleId !== null && String(assignedTargetCycleId).trim().length > 0;
+
+  let user: any;
+
+  if (mustAssignTargetCycle) {
+    user = await prisma.$transaction(
+      async (tx: any) => {
+        const created = (await runCreate(tx)) as AdminUserRecord;
+        await assignTargetCycleToUserWithClient(
+          tx as unknown as AssignmentClient,
+          workspaceId,
+          created.id,
+          String(assignedTargetCycleId).trim(),
+          assignedById,
+        );
+        return created;
       },
       { maxWait: 10_000, timeout: 20_000 },
     );
+  } else if (canRestoreSoftDeletedByEmail && existingEmail) {
+    user = await prisma.$transaction(
+      async (tx: any) => runCreate(tx),
+      { maxWait: 10_000, timeout: 20_000 },
+    );
   } else {
-    // Avoid interactive transaction for normal creates; a single write is faster and
-    // prevents "Transaction already closed" timeouts under transient latency spikes.
-    user = await withInviteStatusFallback((selectShape) => (prisma as any).user.create({
-      data: createData,
-      select: selectShape,
-    }));
+    user = await runCreate(prisma);
+  }
+
+  if (assignedTargetCycleId !== undefined && !mustAssignTargetCycle) {
+    await syncUserTargetCycleAssignment(
+      workspaceId,
+      user.id,
+      assignedTargetCycleId,
+      assignedById,
+      auditContext,
+    );
+  } else if (mustAssignTargetCycle) {
+    await auditService.log({
+      userId: assignedById,
+      workspaceId,
+      action: 'USER_TARGET_CYCLE_ASSIGNED',
+      entityType: 'User',
+      entityId: user.id,
+      details: {
+        targetCycleId: String(assignedTargetCycleId).trim(),
+      },
+      ipAddress: auditContext?.ipAddress,
+      userAgent: auditContext?.userAgent,
+    });
   }
 
   logger.info('Admin created new user', { newUserId: user.id, email: user.email, workspaceId });
@@ -438,15 +499,24 @@ export const getUserById = async (id: string, workspaceId: string) => {
 /**
  * Update user fields (profile, role, department, supervisor).
  */
-export const updateUser = async (id: string, input: UpdateUserInput, workspaceId: string) => {
+export const updateUser = async (
+  id: string,
+  input: UpdateUserInput,
+  workspaceId: string,
+  assignedById: string,
+  auditContext?: { ipAddress?: string; userAgent?: string },
+) => {
   const existing = await (prisma as any).user.findFirst({
     where: { id, workspaceId, deletedAt: null },
+    select: { id: true, assignedTargetCycleId: true },
   });
   if (!existing) {
     const err: any = new Error('User not found in this workspace.');
     err.statusCode = 404;
     throw err;
   }
+
+  const previousTargetCycleId = existing.assignedTargetCycleId as string | null;
 
   const normalizedRoleId =
     input.roleId !== undefined
@@ -514,35 +584,88 @@ export const updateUser = async (id: string, input: UpdateUserInput, workspaceId
     await invalidateUserSessions(id);
   }
 
-  const user = await withInviteStatusFallback<AdminUserRecord>((selectShape) =>
-    (prisma as any).user.update({
-      where: { id },
-      data: {
-        ...(input.name !== undefined ? { name: input.name } : {}),
-        ...(input.username !== undefined ? { username: input.username } : {}),
-        ...(input.phone !== undefined ? { phone: input.phone } : {}),
-        ...(normalizedRoleId !== undefined ? { roleId: normalizedRoleId } : {}),
-        ...(normalizedDepartmentId !== undefined ? { departmentId: normalizedDepartmentId } : {}),
-        ...(nextSupervisorId !== undefined ? { supervisorId: nextSupervisorId } : {}),
-        ...(input.officeId !== undefined ? { officeId: input.officeId } : {}),
-        ...(input.countryId !== undefined ? { countryId: input.countryId } : {}),
-        ...(input.stateId !== undefined ? { stateId: input.stateId } : {}),
-        ...(input.districtId !== undefined ? { districtId: input.districtId } : {}),
-        ...(input.isEmailVerified !== undefined ? { isEmailVerified: input.isEmailVerified } : {}),
-        ...(input.assignedLocationIds !== undefined && input.assignedLocationIds.length > 0
-          ? {
-              assignedLocations: {
-                create: input.assignedLocationIds.map((locId) => ({
-                  locationId: locId,
-                  workspaceId,
-                })),
-              },
-            }
-          : {}),
+  type TargetCycleAssignmentAudit = {
+    targetCycleId: string | null;
+    targetCycleName?: string | null;
+  };
+
+  const txResult = await prisma.$transaction(async (tx: any) => {
+    let assignmentAudit: TargetCycleAssignmentAudit | null = null;
+
+    const updated = await withInviteStatusFallback<AdminUserRecord>((selectShape) =>
+      (tx as any).user.update({
+        where: { id },
+        data: {
+          ...(input.name !== undefined ? { name: input.name } : {}),
+          ...(input.username !== undefined ? { username: input.username } : {}),
+          ...(input.phone !== undefined ? { phone: input.phone } : {}),
+          ...(normalizedRoleId !== undefined ? { roleId: normalizedRoleId } : {}),
+          ...(normalizedDepartmentId !== undefined ? { departmentId: normalizedDepartmentId } : {}),
+          ...(nextSupervisorId !== undefined ? { supervisorId: nextSupervisorId } : {}),
+          ...(input.officeId !== undefined ? { officeId: input.officeId } : {}),
+          ...(input.countryId !== undefined ? { countryId: input.countryId } : {}),
+          ...(input.stateId !== undefined ? { stateId: input.stateId } : {}),
+          ...(input.districtId !== undefined ? { districtId: input.districtId } : {}),
+          ...(input.isEmailVerified !== undefined ? { isEmailVerified: input.isEmailVerified } : {}),
+          ...(input.assignedLocationIds !== undefined && input.assignedLocationIds.length > 0
+            ? {
+                assignedLocations: {
+                  create: input.assignedLocationIds.map((locId) => ({
+                    locationId: locId,
+                    workspaceId,
+                  })),
+                },
+              }
+            : {}),
+        },
+        select: selectShape,
+      }),
+    );
+
+    if (input.assignedTargetCycleId !== undefined) {
+      const normalized =
+        typeof input.assignedTargetCycleId === 'string' && input.assignedTargetCycleId.trim()
+          ? input.assignedTargetCycleId.trim()
+          : null;
+
+      if (!normalized) {
+        await clearUserTargetCycleWithClient(tx as unknown as AssignmentClient, workspaceId, id);
+        assignmentAudit = { targetCycleId: null };
+      } else {
+        const { cycle } = await assignTargetCycleToUserWithClient(
+          tx as unknown as AssignmentClient,
+          workspaceId,
+          id,
+          normalized,
+          assignedById,
+        );
+        assignmentAudit = { targetCycleId: normalized, targetCycleName: cycle.name };
+      }
+    }
+
+    return { user: updated, assignmentAudit };
+  });
+
+  const user = txResult.user;
+  const assignmentAudit = txResult.assignmentAudit;
+
+  if (input.assignedTargetCycleId !== undefined && assignmentAudit) {
+    const normalized = assignmentAudit.targetCycleId;
+    await auditService.log({
+      userId: assignedById,
+      workspaceId,
+      action: normalized ? 'USER_TARGET_CYCLE_ASSIGNED' : 'USER_TARGET_CYCLE_REMOVED',
+      entityType: 'User',
+      entityId: id,
+      details: {
+        previousTargetCycleId,
+        targetCycleId: normalized,
+        targetCycleName: assignmentAudit.targetCycleName ?? null,
       },
-      select: selectShape,
-    }),
-  );
+      ipAddress: auditContext?.ipAddress,
+      userAgent: auditContext?.userAgent,
+    });
+  }
 
   logger.info('Admin updated user', { id, workspaceId, changes: Object.keys(input) });
 

@@ -104,7 +104,10 @@ export const createUser = async (req: Request, res: Response, next: NextFunction
       }
     }
 
-    const result = await adminUserService.createUser(input, workspaceId);
+    const result = await adminUserService.createUser(input, workspaceId, req.user!.id, {
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
     emitWorkspaceEvent(workspaceId, 'user_updated', { userId: (result as any).user.id, action: 'created' });
 
     await auditService.log({
@@ -279,7 +282,10 @@ export const updateUser = async (req: Request, res: Response, next: NextFunction
       }
     }
 
-    const user = await adminUserService.updateUser(userId, input, workspaceId);
+    const user = await adminUserService.updateUser(userId, input, workspaceId, req.user!.id, {
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
     emitWorkspaceEvent(workspaceId, 'user_updated', { userId });
     emitUserEvent(userId, 'user_updated', { userId });
     if (input.roleId !== undefined) {

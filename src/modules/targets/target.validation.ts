@@ -15,7 +15,13 @@ export const createPerformanceTargetCycleSchema = z
     description: z.string().trim().max(500).optional(),
     targetType: z.enum(['WEEKLY', 'MONTHLY', 'SEMI_ANNUAL', 'MANUAL']),
     targetMetric: z.enum(['LEADS', 'REVENUE']),
-    leadStageId: z.string().uuid().optional().nullable(),
+    leadStageId: z
+      .string()
+      .trim()
+      .min(1)
+      .max(191)
+      .optional()
+      .nullable(),
     startDate: z.string(),
     endDate: z.string().optional().nullable(),
     numberOfMonths: z.number().int().min(1).max(36).optional(),
@@ -41,11 +47,18 @@ export const createPerformanceTargetCycleSchema = z
     }
   });
 
+const optionalResourceId = z.preprocess(
+  (value) => (typeof value === 'string' && !value.trim() ? null : value),
+  z
+    .string()
+    .trim()
+    .min(1, 'Invalid target cycle ID')
+    .max(191, 'Invalid target cycle ID')
+    .nullable(),
+);
+
 export const assignTargetCycleSchema = z.object({
-  targetCycleId: z.preprocess(
-    (value) => (typeof value === 'string' && !value.trim() ? null : value),
-    z.string().uuid().nullable(),
-  ),
+  targetCycleId: optionalResourceId,
 });
 
 export const extendGraceSchema = z.object({

@@ -1,28 +1,43 @@
 import prisma from '../../config/prisma';
+import auditService from '../../services/Audit/auditService';
 import { buildTargetCyclePeriods, type PeriodInput } from './targetPeriod.util';
 
 const db = prisma as any;
 
-export const assignTargetCycleToUser = async (
+export type AssignmentClient = {
+  user: { findFirst: typeof db.user.findFirst; update: typeof db.user.update };
+  targetCycle: { findFirst: typeof db.targetCycle.findFirst };
+  targetAssignment: {
+    updateMany: typeof db.targetAssignment.updateMany;
+    upsert: typeof db.targetAssignment.upsert;
+  };
+  targetPerformanceLog: { upsert: typeof db.targetPerformanceLog.upsert };
+};
+
+export const assignTargetCycleToUserWithClient = async (
+  client: AssignmentClient,
   workspaceId: string,
   userId: string,
   targetCycleId: string,
   assignedById: string,
 ) => {
-  const user = await db.user.findFirst({
+  const user = await client.user.findFirst({
     where: { id: userId, workspaceId, deletedAt: null },
-    select: { id: true, supervisorId: true },
+    select: { id: true, supervisorId: true, assignedTargetCycleId: true },
   });
   if (!user) {
-    throw Object.assign(new Error('User not found.'), { statusCode: 404 });
+    throw Object.assign(new Error('User not found in this workspace.'), { statusCode: 404 });
   }
 
-  const cycle = await db.targetCycle.findFirst({
+  const cycle = await client.targetCycle.findFirst({
     where: { id: targetCycleId, workspaceId, deletedAt: null, status: 'ACTIVE' },
     include: { periods: { orderBy: { periodIndex: 'asc' } } },
   });
   if (!cycle) {
-    throw Object.assign(new Error('Target cycle not found or inactive.'), { statusCode: 404 });
+    throw Object.assign(
+      new Error('Target cycle not found or inactive. Choose an active cycle from Master Configuration.'),
+      { statusCode: 404 },
+    );
   }
 
   if (cycle.targetMetric === 'LEADS' && !cycle.leadStageId) {
@@ -36,17 +51,19 @@ export const assignTargetCycleToUser = async (
 
   if (!cycle.periods?.length) {
     throw Object.assign(
-      new Error('This target cycle has no performance periods. Edit the cycle and add at least one period before assigning users.'),
+      new Error(
+        'This target cycle has no performance periods. Edit the cycle and add at least one period before assigning users.',
+      ),
       { statusCode: 422 },
     );
   }
 
-  await db.targetAssignment.updateMany({
+  await client.targetAssignment.updateMany({
     where: { userId, workspaceId, isActive: true },
     data: { isActive: false },
   });
 
-  const assignment = await db.targetAssignment.upsert({
+  const assignment = await client.targetAssignment.upsert({
     where: { userId_targetCycleId: { userId, targetCycleId } },
     create: {
       userId,
@@ -64,13 +81,13 @@ export const assignTargetCycleToUser = async (
     },
   });
 
-  await db.user.update({
+  await client.user.update({
     where: { id: userId },
     data: { assignedTargetCycleId: targetCycleId },
   });
 
   for (const period of cycle.periods) {
-    await db.targetPerformanceLog.upsert({
+    await client.targetPerformanceLog.upsert({
       where: { assignmentId_periodId: { assignmentId: assignment.id, periodId: period.id } },
       create: {
         assignmentId: assignment.id,
@@ -82,18 +99,109 @@ export const assignTargetCycleToUser = async (
     });
   }
 
-  return assignment;
+  return { assignment, previousTargetCycleId: user.assignedTargetCycleId, cycle };
 };
 
-export const clearUserTargetCycle = async (workspaceId: string, userId: string) => {
-  await db.targetAssignment.updateMany({
+export const clearUserTargetCycleWithClient = async (
+  client: AssignmentClient,
+  workspaceId: string,
+  userId: string,
+) => {
+  const user = await client.user.findFirst({
+    where: { id: userId, workspaceId, deletedAt: null },
+    select: { id: true, assignedTargetCycleId: true },
+  });
+  if (!user) {
+    throw Object.assign(new Error('User not found in this workspace.'), { statusCode: 404 });
+  }
+
+  await client.targetAssignment.updateMany({
     where: { userId, workspaceId, isActive: true },
     data: { isActive: false },
   });
-  await db.user.update({
+  await client.user.update({
     where: { id: userId },
     data: { assignedTargetCycleId: null },
   });
+
+  return user.assignedTargetCycleId;
+};
+
+export const assignTargetCycleToUser = async (
+  workspaceId: string,
+  userId: string,
+  targetCycleId: string,
+  assignedById: string,
+) => assignTargetCycleToUserWithClient(db, workspaceId, userId, targetCycleId, assignedById);
+
+export const clearUserTargetCycle = async (workspaceId: string, userId: string) => {
+  await clearUserTargetCycleWithClient(db, workspaceId, userId);
+};
+
+/** Assign or clear a user's target cycle. Pass `null` to remove. Omit field on update to leave unchanged. */
+export const syncUserTargetCycleAssignment = async (
+  workspaceId: string,
+  userId: string,
+  targetCycleId: string | null | undefined,
+  assignedById: string,
+  auditContext?: { ipAddress?: string; userAgent?: string },
+) => {
+  if (targetCycleId === undefined) return null;
+
+  const normalized = typeof targetCycleId === 'string' && targetCycleId.trim() ? targetCycleId.trim() : null;
+
+  const result = await prisma.$transaction(async (tx) => {
+    const client = tx as unknown as AssignmentClient;
+
+    if (!normalized) {
+      const previousTargetCycleId = await clearUserTargetCycleWithClient(client, workspaceId, userId);
+      return { assignment: null, previousTargetCycleId, targetCycleName: null as string | null };
+    }
+
+    const { assignment, previousTargetCycleId, cycle } = await assignTargetCycleToUserWithClient(
+      client,
+      workspaceId,
+      userId,
+      normalized,
+      assignedById,
+    );
+
+    return { assignment, previousTargetCycleId, targetCycleName: cycle.name };
+  });
+
+  if (!normalized && result.previousTargetCycleId) {
+    await auditService.log({
+      userId: assignedById,
+      workspaceId,
+      action: 'USER_TARGET_CYCLE_REMOVED',
+      entityType: 'User',
+      entityId: userId,
+      details: { previousTargetCycleId: result.previousTargetCycleId },
+      ipAddress: auditContext?.ipAddress,
+      userAgent: auditContext?.userAgent,
+    });
+    return null;
+  }
+
+  if (normalized && result.assignment) {
+    await auditService.log({
+      userId: assignedById,
+      workspaceId,
+      action: 'USER_TARGET_CYCLE_ASSIGNED',
+      entityType: 'User',
+      entityId: userId,
+      details: {
+        previousTargetCycleId: result.previousTargetCycleId,
+        targetCycleId: normalized,
+        targetCycleName: result.targetCycleName,
+        assignmentId: result.assignment.id,
+      },
+      ipAddress: auditContext?.ipAddress,
+      userAgent: auditContext?.userAgent,
+    });
+  }
+
+  return result.assignment;
 };
 
 export const persistTargetCycleWithPeriods = async (
