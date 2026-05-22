@@ -101,50 +101,69 @@ const assertUserInWorkspace = async (userId: string, workspaceId: string) => {
   return user;
 };
 
-const listEnabledOfficeLocations = async (workspaceId: string) => {
-  let locations = await (prisma as any).attendanceOfficeLocation.findMany({
+const countEnabledOfficeLocations = async (workspaceId: string): Promise<number> =>
+  (prisma as any).attendanceOfficeLocation.count({
     where: { workspaceId, isEnabled: true },
-    orderBy: { officeName: 'asc' },
   });
 
-  if (locations.length === 0) {
-    await (prisma as any).attendanceOfficeLocation.create({
-      data: {
-        workspaceId,
-        officeName: 'Main Office',
-        branch: 'HQ',
-        latitude: 28.6139,
-        longitude: 77.209,
-        radiusMeters: Number.parseInt(process.env.ATTENDANCE_DEFAULT_RADIUS_METERS || '100', 10) || 100,
-        isEnabled: true,
-      },
-    });
-    locations = await (prisma as any).attendanceOfficeLocation.findMany({
-      where: { workspaceId, isEnabled: true },
-      orderBy: { officeName: 'asc' },
-    });
-  }
+/** Only the user's explicitly assigned active branch — never the first workspace location. */
+const resolveAssignedOfficeBranch = async (
+  workspaceId: string,
+  attendanceOfficeLocationId?: string | null,
+) => {
+  if (!attendanceOfficeLocationId) return null;
 
-  return locations;
+  return (prisma as any).attendanceOfficeLocation.findFirst({
+    where: {
+      id: attendanceOfficeLocationId,
+      workspaceId,
+      isEnabled: true,
+    },
+  });
 };
 
-const resolveUserOfficeLocation = async (
-  user: { attendanceOfficeLocationId?: string | null; workspaceId?: string | null },
+export type OfficeLocationSetupState = {
+  officeLocationConfigured: boolean;
+  officeBranchAssigned: boolean;
+  locationValidationActive: boolean;
+  setupMessage: string | null;
+  assignedOffice: Awaited<ReturnType<typeof resolveAssignedOfficeBranch>>;
+};
+
+const resolveOfficeLocationSetup = async (
   workspaceId: string,
-) => {
-  if (user.attendanceOfficeLocationId) {
-    const assigned = await (prisma as any).attendanceOfficeLocation.findFirst({
-      where: {
-        id: user.attendanceOfficeLocationId,
-        workspaceId,
-        isEnabled: true,
-      },
-    });
-    if (assigned) return assigned;
+  user: { attendanceApplyType?: string | null; attendanceOfficeLocationId?: string | null },
+): Promise<OfficeLocationSetupState> => {
+  const enabledCount = await countEnabledOfficeLocations(workspaceId);
+  const officeLocationConfigured = enabledCount > 0;
+  const assignedOffice = await resolveAssignedOfficeBranch(
+    workspaceId,
+    user.attendanceOfficeLocationId ?? null,
+  );
+  const officeBranchAssigned = Boolean(assignedOffice);
+  const fromOffice = user.attendanceApplyType === 'FROM_OFFICE';
+
+  let setupMessage: string | null = null;
+  if (fromOffice) {
+    if (!officeLocationConfigured) {
+      setupMessage =
+        'Office location is not configured yet. Please contact administrator.';
+    } else if (!officeBranchAssigned) {
+      setupMessage =
+        'No office branch is assigned to your account. Please contact your administrator.';
+    }
   }
 
-  const locations = await listEnabledOfficeLocations(workspaceId);
-  return locations[0] ?? null;
+  const locationValidationActive =
+    fromOffice && officeLocationConfigured && officeBranchAssigned;
+
+  return {
+    officeLocationConfigured,
+    officeBranchAssigned,
+    locationValidationActive,
+    setupMessage,
+    assignedOffice,
+  };
 };
 
 type SuccessfulLocationCheck = Extract<
@@ -204,15 +223,7 @@ export const getTodayStatus = async (userId: string, workspaceId: string) => {
   );
   const isMarked = hasUserSubmittedToday(submissionState);
 
-  const assignedOfficeLocation =
-    user.attendanceApplyType === 'FROM_OFFICE'
-      ? await resolveUserOfficeLocation(user, workspaceId)
-      : null;
-
-  const officeLocations =
-    user.attendanceApplyType === 'FROM_OFFICE'
-      ? (await listEnabledOfficeLocations(workspaceId)).map(toOfficeLocationProfile)
-      : [];
+  const locationSetup = await resolveOfficeLocationSetup(workspaceId, user);
 
   return {
     date: todayStr,
@@ -224,10 +235,13 @@ export const getTodayStatus = async (userId: string, workspaceId: string) => {
     requiresMandatoryPopup: requiresMandatoryAttendancePopup(submissionState, user.isLocked),
     record: existingRecord,
     attendanceApplyType: user.attendanceApplyType,
-    assignedOfficeLocation: assignedOfficeLocation
-      ? toOfficeLocationProfile(assignedOfficeLocation)
+    officeLocationConfigured: locationSetup.officeLocationConfigured,
+    officeBranchAssigned: locationSetup.officeBranchAssigned,
+    locationValidationActive: locationSetup.locationValidationActive,
+    locationSetupMessage: locationSetup.setupMessage,
+    assignedOfficeLocation: locationSetup.assignedOffice
+      ? toOfficeLocationProfile(locationSetup.assignedOffice)
       : null,
-    officeLocations,
   };
 };
 
@@ -269,17 +283,28 @@ export const markAttendance = async (userId: string, workspaceId: string, payloa
   let locationValidationResult: ReturnType<typeof validateOfficeLocation> | null = null;
 
   if (requiresOfficeLocationValidation(user.attendanceApplyType, attendanceType)) {
-    const office = await resolveUserOfficeLocation(user, workspaceId);
-    if (!office) {
+    const locationSetup = await resolveOfficeLocationSetup(workspaceId, user);
+
+    if (!locationSetup.officeLocationConfigured) {
+      const configError = createAttendanceServiceError(
+        'Office location is not configured yet. Please contact administrator.',
+        403,
+      ) as Error & { errorCode?: string; details?: Record<string, unknown> };
+      configError.errorCode = 'OFFICE_LOCATION_NOT_CONFIGURED';
+      configError.details = { waitingForAdminSetup: true };
+      throw configError;
+    }
+
+    if (!locationSetup.assignedOffice) {
       const branchError = createAttendanceServiceError(
-        'No office branch is assigned to your account. Contact your administrator.',
+        'No office branch is assigned to your account. Please contact your administrator.',
         403,
       ) as Error & { errorCode?: string; details?: Record<string, unknown> };
       branchError.errorCode = 'OFFICE_BRANCH_NOT_ASSIGNED';
       throw branchError;
     }
 
-    const locationCheck = validateOfficeLocation(office, {
+    const locationCheck = validateOfficeLocation(locationSetup.assignedOffice, {
       latitude: payload.latitude,
       longitude: payload.longitude,
       gpsAccuracy: payload.gpsAccuracy,

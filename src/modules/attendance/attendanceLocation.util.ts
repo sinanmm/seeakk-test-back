@@ -55,6 +55,12 @@ export const haversineDistanceMeters = (
   return EARTH_RADIUS_METERS * c;
 };
 
+export const OFFICE_LOCATION_NOT_CONFIGURED_MESSAGE =
+  'Office location is not configured yet. Please contact administrator.';
+
+export const OFFICE_BRANCH_NOT_ASSIGNED_MESSAGE =
+  'No office branch is assigned to your account. Please contact your administrator.';
+
 export const requiresOfficeLocationValidation = (
   attendanceApplyType: string | null | undefined,
   attendanceType: string,
@@ -102,7 +108,7 @@ export const validateOfficeLocation = (
     return {
       ok: false,
       errorCode: 'OFFICE_LOCATION_NOT_CONFIGURED',
-      message: 'No active office location is configured. Contact your administrator.',
+      message: OFFICE_LOCATION_NOT_CONFIGURED_MESSAGE,
       details: { configuredLocation: false },
     };
   }
