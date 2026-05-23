@@ -3,6 +3,7 @@ import { redisClient } from '../../config/redis';
 import logger from '../../utils/logger';
 import { normalizeFollowUpType } from '../../constants/followUpType';
 import { buildAccessWhere, buildClosureUpdateData, isClosureStage } from '../../modules/leads/leads.service';
+import { buildLeadOutcomeFlagsFromStage, isClosedWonStage, isLobStage } from '../../modules/leads/leadVisibility.util';
 import * as leadApprovalService from '../../modules/leads/leadApprovals.service';
 import { validateLeadStageTransition } from '../../modules/master/lead-stages/leadStage.service';
 import { getActiveStageRulesForExecution } from '../../modules/master/stage-rules/stageRule.service';
@@ -688,7 +689,7 @@ const maybeRunLeadSlaSweep = async (workspaceId: string): Promise<void> => {
         data: {
           stageId: lobStage.id,
           isLOB: true,
-          isClosed: true,
+          isClosed: false,
           closedAt: now,
           closureType: 'LOST',
           stageEnteredAt: now,
@@ -947,6 +948,19 @@ const buildListWhere = async (
     where.isClosed = false;
   } else if (query.status === 'CLOSED') {
     where.isClosed = true;
+    where.isLOB = false;
+    where.AND = [
+      ...(Array.isArray(where.AND) ? where.AND : []),
+      {
+        NOT: {
+          stage: {
+            is: {
+              isLOB: true,
+            },
+          },
+        },
+      },
+    ];
   } else if (query.status === 'LOB') {
     where.isLOB = true;
   } else if (query.status === 'ACTIVE') {
@@ -1045,12 +1059,14 @@ export const createLead = async (
   const source = await resolveSource(workspaceId, input.sourceId);
   ensureLOBPayload(stage, input.reasonId, input.remarks ?? null);
   await ensureValidLOBReasonForStage(workspaceId, stage, input.reasonId);
-  const slaSnapshot = stage?.isLOB || stage?.isClosed
+  const slaSnapshot = isLobStage(stage) || isClosedWonStage(stage)
     ? emptySlaSnapshot()
     : await buildLeadSlaSnapshot(lifecycle, stage?.id || null);
 
   const createdLeadId = await prisma.$transaction(async (tx: any) => {
-    const closureData = buildClosureUpdateData(stage, actor.id);
+    const outcomeFlags = stage
+      ? buildLeadOutcomeFlagsFromStage(stage, actor.id)
+      : buildClosureUpdateData(stage, actor.id);
 
     const lead = await (tx as any).lead.create({
       data: {
@@ -1069,12 +1085,12 @@ export const createLead = async (
         stageExpiresAt: slaSnapshot.stageExpiresAt,
         slaAction: slaSnapshot.slaAction,
         slaWarningDays: slaSnapshot.slaWarningDays,
-        isClosed: Boolean(stage?.isLOB) ? true : closureData.isClosed,
-        isLOB: Boolean(stage?.isLOB),
-        closedAt: closureData.closedAt,
-        closedById: closureData.closedById,
-        closureType: closureData.closureType,
-        generatedRevenue: closureData.generatedRevenue,
+        isClosed: outcomeFlags.isClosed,
+        isLOB: outcomeFlags.isLOB,
+        closedAt: outcomeFlags.closedAt,
+        closedById: outcomeFlags.closedById,
+        closureType: outcomeFlags.closureType,
+        generatedRevenue: outcomeFlags.generatedRevenue,
         workspaceId,
         createdById: actor.id,
       },
@@ -1292,7 +1308,7 @@ export const updateLead = async (
       ? { transitions: lifecycleForSla.transitions }
       : null;
   const slaSnapshot = shouldRefreshSla(existing, nextStageId, nextLifecycleId)
-    ? (stage?.isLOB || isClosureStage(stage)
+    ? (isLobStage(stage) || isClosedWonStage(stage)
         ? emptySlaSnapshot()
         : await buildLeadSlaSnapshot(nextLifecycleForSla, nextStageId))
     : {
@@ -1330,16 +1346,25 @@ export const updateLead = async (
             }
           : {}),
         ...(input.isClosed !== undefined ? { isClosed: input.isClosed } : {}),
-        isLOB: Boolean(stage?.isLOB),
         ...(stage
-          ? {
-              isClosed: Boolean(stage.isLOB) ? true : closureData.isClosed,
-              closedAt: closureData.closedAt,
-              closedById: closureData.closedById,
-              closureType: closureData.closureType,
-              generatedRevenue: closureData.generatedRevenue,
-            }
-          : {}),
+          ? (() => {
+              const outcomeFlags = buildLeadOutcomeFlagsFromStage(stage, actor.id, {
+                isClosed: closureData.isClosed,
+                closedAt: closureData.closedAt,
+                closedById: closureData.closedById,
+                closureType: closureData.closureType,
+                generatedRevenue: closureData.generatedRevenue,
+              });
+              return {
+                isLOB: outcomeFlags.isLOB,
+                isClosed: outcomeFlags.isClosed,
+                closedAt: outcomeFlags.closedAt,
+                closedById: outcomeFlags.closedById,
+                closureType: outcomeFlags.closureType,
+                generatedRevenue: outcomeFlags.generatedRevenue,
+              };
+            })()
+          : { isLOB: false }),
       },
     });
 

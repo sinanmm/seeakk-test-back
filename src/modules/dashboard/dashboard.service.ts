@@ -227,11 +227,12 @@ export const getDashboardSummary = async (
     dashboardRepository.countLeads(workspaceId, {}, leadAccess),
     dashboardRepository.countLeads(workspaceId, { createdAt: { gte: currentThirtyDayStart, lte: todayEnd } }, leadAccess),
     dashboardRepository.countLeads(workspaceId, { createdAt: { gte: previousThirtyDayStart, lte: previousThirtyDayEnd } }, leadAccess),
-    dashboardRepository.countLeads(workspaceId, { isClosed: true }, leadAccess),
+    dashboardRepository.countLeads(workspaceId, { isClosed: true, isLOB: false }, leadAccess),
     dashboardRepository.countLeads(
       workspaceId,
       {
         isClosed: true,
+        isLOB: false,
         OR: [
           { closedAt: { gte: currentWeekStart, lte: todayEnd } },
           { closedAt: null, updatedAt: { gte: currentWeekStart, lte: todayEnd } },
@@ -243,6 +244,7 @@ export const getDashboardSummary = async (
       workspaceId,
       {
         isClosed: true,
+        isLOB: false,
         OR: [
           { closedAt: { gte: previousWeekStart, lte: previousWeekEnd } },
           { closedAt: null, updatedAt: { gte: previousWeekStart, lte: previousWeekEnd } },

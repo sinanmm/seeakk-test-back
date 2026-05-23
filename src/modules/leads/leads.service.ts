@@ -3,6 +3,12 @@ import type { Prisma } from '@prisma/client';
 import type { ClosedLeadQueryInput, UpdateClosedLeadInput } from './leads.validation';
 import * as leadsRepository from './leads.repository';
 import prisma from '../../config/prisma';
+import {
+  buildLeadOutcomeFlagsFromStage,
+  closedModuleLeadWhere,
+  isClosedWonStage,
+  isLobStage,
+} from './leadVisibility.util';
 
 type Actor = {
   id: string;
@@ -172,20 +178,7 @@ export const buildAccessWhere = async (workspaceId: string, actor: Actor): Promi
 
 const buildClosedWhere = async (workspaceId: string, actor: Actor, query: ClosedLeadQueryInput) => {
   const accessWhere = await buildAccessWhere(workspaceId, actor);
-  const andConditions: any[] = [
-    {
-      OR: [
-        { isClosed: true },
-        {
-          stage: {
-            is: {
-              isClosed: true,
-            },
-          },
-        },
-      ],
-    },
-  ];
+  const andConditions: any[] = [closedModuleLeadWhere()];
 
   if (Object.keys(accessWhere).length > 0) {
     andConditions.push(accessWhere);
@@ -262,9 +255,11 @@ export const updateClosedLead = async (
     throw createServiceError('Lead not found in this workspace.', 404);
   }
 
-  const isEffectivelyClosed = Boolean(lead.isClosed || lead.stage?.isClosed);
-  if (!isEffectivelyClosed) {
-    throw createServiceError('Lead is not in a closed stage. Move it to closure before recording revenue.', 409);
+  const isEffectivelyClosedWon = Boolean(
+    !lead.isLOB && !lead.stage?.isLOB && (lead.isClosed || isClosedWonStage(lead.stage)),
+  );
+  if (!isEffectivelyClosedWon) {
+    throw createServiceError('Lead is not in a closed won stage. LOB leads belong in LOB Analysis only.', 409);
   }
 
   const now = new Date();
@@ -278,7 +273,7 @@ export const updateClosedLead = async (
   const updated = await prisma.$transaction(async (tx) => {
     const leadUpdateData: Record<string, unknown> = {
       isClosed: true,
-      isLOB: Boolean(lead.stage?.isLOB ?? lead.isLOB),
+      isLOB: false,
       closedAt: lead.closedAt || now,
       closedById: lead.closedById || actor.id,
       generatedRevenue: input.generatedRevenue,
@@ -372,6 +367,7 @@ export const reopenClosedLead = async (workspaceId: string, actor: Actor, id: st
 
   const reopened = await leadsRepository.updateLeadClosure(id, {
     isClosed: false,
+    isLOB: false,
     closedAt: null,
     closedById: null,
     generatedRevenue: 0,
@@ -429,11 +425,11 @@ export const exportClosedLeads = async (workspaceId: string, actor: Actor, query
   };
 };
 
-export const isClosureStage = (stage?: { isClosed?: boolean | null; name?: string | null } | null): boolean =>
-  Boolean(stage?.isClosed);
+export const isClosureStage = (stage?: { isClosed?: boolean | null; isLOB?: boolean | null; name?: string | null } | null): boolean =>
+  isClosedWonStage(stage);
 
 export const buildClosureUpdateData = (
-  stage: { isClosed?: boolean | null; name?: string | null } | null,
+  stage: { isClosed?: boolean | null; isLOB?: boolean | null; name?: string | null } | null,
   actorId: string,
   existing?: {
     isClosed?: boolean;
@@ -443,6 +439,10 @@ export const buildClosureUpdateData = (
     closureType?: LeadClosureType | null;
   },
 ) => {
+  if (isLobStage(stage)) {
+    return buildLeadOutcomeFlagsFromStage(stage, actorId, existing);
+  }
+
   const shouldClose = isClosureStage(stage);
 
   if (!shouldClose) {
@@ -451,6 +451,7 @@ export const buildClosureUpdateData = (
     }
 
     return {
+      isLOB: false,
       isClosed: false,
       closedAt: null,
       closedById: null,
@@ -459,11 +460,5 @@ export const buildClosureUpdateData = (
     };
   }
 
-  return {
-    isClosed: true,
-    closedAt: existing?.closedAt || new Date(),
-    closedById: existing?.closedById || actorId,
-    closureType: existing?.closureType || null,
-    generatedRevenue: existing?.generatedRevenue ?? 0,
-  };
+  return buildLeadOutcomeFlagsFromStage(stage, actorId, existing);
 };

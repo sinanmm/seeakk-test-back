@@ -149,20 +149,30 @@ export const listClosedLeads = async (where: any, skip: number, take: number) =>
 };
 
 export const reconcileClosedLeadFlags = async (workspaceId: string): Promise<number> => {
+  await (prisma as any).lead.updateMany({
+    where: {
+      workspaceId,
+      deletedAt: null,
+      OR: [{ isLOB: true }, { stage: { is: { isLOB: true } } }],
+    },
+    data: {
+      isLOB: true,
+      isClosed: false,
+    },
+  });
+
   const staleClosedLeads = await (prisma as any).lead.findMany({
     where: {
       workspaceId,
       deletedAt: null,
+      isLOB: false,
       isClosed: false,
-      OR: [
-        {
-          stage: {
-            is: {
-              isClosed: true,
-            },
-          },
+      stage: {
+        is: {
+          isClosed: true,
+          isLOB: false,
         },
-      ],
+      },
     },
     select: {
       id: true,
@@ -204,6 +214,7 @@ export const updateLeadClosure = async (
   id: string,
   data: {
     isClosed?: boolean;
+    isLOB?: boolean;
     closedAt?: Date | null;
     closedById?: string | null;
     generatedRevenue?: number;

@@ -7,6 +7,7 @@ import type {
   HandleLeadApprovalInput,
   ListLeadApprovalsQueryInput,
 } from './leadApprovals.validation';
+import { buildLeadOutcomeFlagsFromStage, isClosedWonStage, isLobStage } from './leadVisibility.util';
 
 type Actor = {
   id: string;
@@ -154,18 +155,21 @@ const ensureModuleReady = async (): Promise<void> => {
   }
 };
 
-const isImmediateClosureStage = (stage?: { isClosed?: boolean | null; name?: string | null } | null): boolean =>
-  Boolean(stage?.isClosed);
+const isImmediateClosureStage = (stage?: { isClosed?: boolean | null; isLOB?: boolean | null } | null): boolean =>
+  Boolean(isLobStage(stage) || isClosedWonStage(stage));
 
 const buildApprovalLeadUpdateData = (approval: any) => {
   const now = new Date();
   const targetStage = approval.toStage;
-  const isTerminal = Boolean(targetStage?.isLOB || targetStage?.isClosed);
+  const isTerminal = Boolean(isLobStage(targetStage) || isClosedWonStage(targetStage));
   const slaSnapshot = isTerminal
     ? emptySlaSnapshot()
     : buildLeadSlaSnapshot(approval.lead?.lifecycle, targetStage?.id || null, now);
 
   const requestData = normalizeRequestData(approval.requestData);
+  const outcomeFlags = buildLeadOutcomeFlagsFromStage(targetStage, approval.approvedById || '', {
+    generatedRevenue: isTerminal ? Number(requestData.generatedRevenue) || 0 : undefined,
+  });
 
   return {
     stageId: targetStage?.id || null,
@@ -176,12 +180,8 @@ const buildApprovalLeadUpdateData = (approval: any) => {
     stageExpiresAt: slaSnapshot.stageExpiresAt,
     slaAction: slaSnapshot.slaAction,
     slaWarningDays: slaSnapshot.slaWarningDays,
-    isLOB: Boolean(targetStage?.isLOB),
-    isClosed: Boolean(targetStage?.isLOB || targetStage?.isClosed),
-    closedAt: targetStage?.isLOB || targetStage?.isClosed ? now : null,
-    closedById: targetStage?.isLOB || targetStage?.isClosed ? approval.approvedById || null : null,
-    closureType: targetStage?.isLOB ? 'LOST' : targetStage?.isClosed ? 'WON' : null,
-    generatedRevenue: isTerminal ? Number(requestData.generatedRevenue) || 0 : undefined,
+    ...outcomeFlags,
+    generatedRevenue: isTerminal ? outcomeFlags.generatedRevenue : undefined,
   };
 };
 

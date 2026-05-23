@@ -1,6 +1,7 @@
 import prisma from '../../config/prisma';
 import type { Prisma } from '@prisma/client';
 import { mergeWorkspaceLeadFilters } from './leadQueryScope';
+import { lobModuleLeadWhere } from './leadVisibility.util';
 
 export const ensureLOBAnalysisSchemaReady = async (): Promise<boolean> => {
   const rows = await prisma.$queryRaw<Array<{ ready: boolean }>>`
@@ -50,7 +51,7 @@ export const findLOBEvents = async (
       workspaceId,
       ...(changedAtRange ? { changedAt: changedAtRange } : {}),
       lead: {
-        is: mergeWorkspaceLeadFilters(workspaceId, leadAccess, {}),
+        is: mergeWorkspaceLeadFilters(workspaceId, leadAccess, lobModuleLeadWhere()),
       },
     },
     orderBy: [{ changedAt: 'desc' }],
