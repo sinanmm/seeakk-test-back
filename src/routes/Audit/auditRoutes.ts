@@ -6,5 +6,6 @@ const router = Router();
 
 // Only Admins can view audit logs of their workspace
 router.get('/logs', protect, authorize('admin'), auditController.getAuditLogs);
+router.post('/whatsapp-click', protect, auditController.logWhatsAppClick);
 
 export default router;
