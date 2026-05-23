@@ -12,7 +12,6 @@ router.patch('/:id', checkPermission('HOLIDAY_UPDATE'), holidayController.update
 router.delete('/:id', checkPermission('HOLIDAY_DELETE'), holidayController.deleteHoliday);
 
 router.get('/calendar', checkPermission('HOLIDAY_VIEW'), holidayController.getCalendarView);
-router.post('/sync', checkPermission('HOLIDAY_SYNC'), holidayController.syncGoogleCalendarHolidays);
 router.post('/ai-suggest', checkPermission('HOLIDAY_AI'), holidayController.suggestHolidays);
 
 export default router;

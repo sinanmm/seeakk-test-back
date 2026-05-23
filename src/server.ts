@@ -72,7 +72,6 @@ const startServer = async () => {
     const [
       { default: app },
       { default: prisma },
-      { scheduleDailySync },
       _leadImportJobs,
       { verifyEmailTransport, logEmailConfigSummary },
       { startFollowUpReminders },
@@ -82,7 +81,6 @@ const startServer = async () => {
     ] = await Promise.all([
       import('./app'),
       import('./config/prisma'),
-      import('./modules/holidays/holidays.jobs'),
       import('./modules/leads/leadImport.jobs'),
       import('./services/Email/emailService'),
       import('./services/User/followupReminder.jobs'),
@@ -151,7 +149,6 @@ const startServer = async () => {
           console.error('[Guard] Failed to run attendance permissions guard:', guardError);
         }
         // Start background jobs
-        scheduleDailySync().catch(err => console.error('Failed to schedule holiday jobs:', err));
         startFollowUpReminders();
         startAttendanceJobs();
         startTargetPerformanceJobs();

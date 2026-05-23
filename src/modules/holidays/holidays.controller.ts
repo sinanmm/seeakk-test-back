@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
 import * as holidayService from './holidays.service';
-import * as holidaySyncService from './holidays.sync';
 import * as holidayAiService from './holidays.ai';
 
 const requireWorkspace = (req: Request, res: Response): string | null => {
@@ -68,18 +67,6 @@ export const getCalendarView = async (req: Request, res: Response, next: NextFun
     const month = req.query.month as string;
     const view = await holidayService.getWorkspaceCalendarView(workspaceId, month);
     res.status(200).json({ success: true, data: view });
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const syncGoogleCalendarHolidays = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
-  const workspaceId = requireWorkspace(req, res);
-  if (!workspaceId) return;
-
-  try {
-    const result = await holidaySyncService.syncGoogleHolidays(workspaceId, req.user);
-    res.status(200).json({ success: true, message: 'Sync complete', data: result });
   } catch (error) {
     next(error);
   }
