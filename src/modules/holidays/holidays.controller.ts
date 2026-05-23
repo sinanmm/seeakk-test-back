@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import * as holidayService from './holidays.service';
 import * as holidayAiService from './holidays.ai';
+import { ensureWeeklyOffSchema } from './weeklyOffSchemaGuard';
 
 const requireWorkspace = (req: Request, res: Response): string | null => {
   const workspaceId = req.user?.workspaceId;
@@ -77,6 +78,7 @@ export const getWeeklyOffSettings = async (req: Request, res: Response, next: Ne
   if (!workspaceId) return;
 
   try {
+    await ensureWeeklyOffSchema();
     const settings = await holidayService.getWeeklyOffSettings(workspaceId);
     res.status(200).json({ success: true, data: settings });
   } catch (error) {
@@ -89,6 +91,7 @@ export const updateWeeklyOffSettings = async (req: Request, res: Response, next:
   if (!workspaceId) return;
 
   try {
+    await ensureWeeklyOffSchema();
     const settings = await holidayService.saveWeeklyOffSettings(workspaceId, req.body);
     res.status(200).json({ success: true, message: 'Weekly-off settings saved.', data: settings });
   } catch (error) {

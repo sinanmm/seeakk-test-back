@@ -143,6 +143,12 @@ const startServer = async () => {
           console.error('[Reports] Failed to ensure report_types columns:', schemaError);
         }
         try {
+          const { ensureWeeklyOffSchema } = await import('./modules/holidays/weeklyOffSchemaGuard');
+          await ensureWeeklyOffSchema();
+        } catch (schemaError) {
+          console.error('[Holidays] Failed to ensure weekly-off schema:', schemaError);
+        }
+        try {
           const { ensureAttendancePermissionsSeeded } = await import('./modules/attendance/attendancePermissionsGuard');
           await ensureAttendancePermissionsSeeded();
         } catch (guardError) {

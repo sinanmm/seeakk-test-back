@@ -69,6 +69,13 @@ const permissions = [
   { key: 'LOCATION_VIEW', group: 'MASTER_CONFIGURATION', description: 'View countries, levels, and locations' },
   { key: 'LOCATION_MANAGE', group: 'MASTER_CONFIGURATION', description: 'Create and manage countries, levels, and locations' },
 
+  // HOLIDAY LIST
+  { key: 'HOLIDAY_VIEW', group: 'MASTER_CONFIGURATION', description: 'View holidays and weekly-off settings' },
+  { key: 'HOLIDAY_CREATE', group: 'MASTER_CONFIGURATION', description: 'Create holidays' },
+  { key: 'HOLIDAY_UPDATE', group: 'MASTER_CONFIGURATION', description: 'Update holidays and weekly-off settings' },
+  { key: 'HOLIDAY_DELETE', group: 'MASTER_CONFIGURATION', description: 'Delete holidays' },
+  { key: 'HOLIDAY_AI', group: 'MASTER_CONFIGURATION', description: 'Use AI holiday suggestions' },
+
   // LEADS MANAGEMENT
   { key: 'LEADS_VIEW_ALL', group: 'LEADS_MANAGEMENT', description: 'View all leads' },
   { key: 'LEADS_VIEW_OWN', group: 'LEADS_MANAGEMENT', description: 'View only own leads' },
