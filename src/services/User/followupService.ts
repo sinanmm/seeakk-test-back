@@ -527,6 +527,12 @@ export const createFollowUp = async (
     validateMandatoryFollowUpSchedule(leadForSchedule, input.scheduledAt);
   }
 
+  const { getWorkspaceHolidays } = await import('../../modules/holidays/holidays.service');
+  const { assertSchedulableBusinessDate, getWorkspaceWeeklyOffSettings } = await import('../../modules/holidays/weeklyOff.util');
+  const holidays = await getWorkspaceHolidays(workspaceId, { activeOnly: true });
+  const { weeklyOffDays } = await getWorkspaceWeeklyOffSettings(workspaceId);
+  assertSchedulableBusinessDate(input.scheduledAt, weeklyOffDays, holidays);
+
   const userId = await resolveTargetUserId(workspaceId, actor);
 
   const created = await (prisma as any).followUp.create({

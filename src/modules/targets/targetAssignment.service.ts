@@ -7,6 +7,8 @@ import {
   computeTotalDaysFromPeriods,
   type PeriodInput,
 } from './targetPeriod.util';
+import { getWorkspaceHolidays } from '../holidays/holidays.service';
+import { countWorkingDaysInRange, getWorkspaceWeeklyOffSettings } from '../holidays/weeklyOff.util';
 
 const clearTargetCycleCache = async (workspaceId: string): Promise<void> => {
   if (redisClient.isOpen) {
@@ -297,7 +299,15 @@ export const persistTargetCycleWithPeriods = async (
   }
 
   const bounds = computeCycleDateBounds(builtPeriods);
-  const totalDays = computeTotalDaysFromPeriods(builtPeriods);
+  const holidays = await getWorkspaceHolidays(workspaceId, { activeOnly: true });
+  const { weeklyOffDays } = await getWorkspaceWeeklyOffSettings(workspaceId);
+  let totalDays = 0;
+  for (const period of builtPeriods) {
+    totalDays += countWorkingDaysInRange(period.startDate, period.endDate, holidays, weeklyOffDays);
+  }
+  if (totalDays <= 0) {
+    totalDays = computeTotalDaysFromPeriods(builtPeriods);
+  }
   const trimmedName = payload.name.trim();
 
   const previous =

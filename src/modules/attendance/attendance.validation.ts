@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export const markAttendanceSchema = z.object({
-  attendanceType: z.enum(['PRESENT', 'HALF_DAY', 'LEAVE', 'WORK_FROM_HOME', 'HOLIDAY', 'ABSENT']),
+  attendanceType: z.enum(['PRESENT', 'HALF_DAY', 'LEAVE', 'WORK_FROM_HOME', 'HOLIDAY', 'WEEKLY_OFF', 'ABSENT']),
   checkInTime: z.string().datetime().optional().nullable(),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Must be in YYYY-MM-DD format').optional(),
   latitude: z.coerce.number().min(-90).max(90).optional().nullable(),
@@ -47,7 +47,7 @@ export const attendanceQuerySchema = z.object({
   roleId: z.preprocess(emptyStringToUndefined, z.string().optional()),
   attendanceType: z.preprocess(
     emptyStringToUndefined,
-    z.enum(['PRESENT', 'HALF_DAY', 'LEAVE', 'WORK_FROM_HOME', 'HOLIDAY', 'ABSENT']).optional(),
+    z.enum(['PRESENT', 'HALF_DAY', 'LEAVE', 'WORK_FROM_HOME', 'HOLIDAY', 'WEEKLY_OFF', 'ABSENT']).optional(),
   ),
   approvalStatus: z.preprocess(
     emptyStringToUndefined,

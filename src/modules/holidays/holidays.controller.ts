@@ -72,6 +72,30 @@ export const getCalendarView = async (req: Request, res: Response, next: NextFun
   }
 };
 
+export const getWeeklyOffSettings = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = requireWorkspace(req, res);
+  if (!workspaceId) return;
+
+  try {
+    const settings = await holidayService.getWeeklyOffSettings(workspaceId);
+    res.status(200).json({ success: true, data: settings });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateWeeklyOffSettings = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = requireWorkspace(req, res);
+  if (!workspaceId) return;
+
+  try {
+    const settings = await holidayService.saveWeeklyOffSettings(workspaceId, req.body);
+    res.status(200).json({ success: true, message: 'Weekly-off settings saved.', data: settings });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const suggestHolidays = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
   const workspaceId = requireWorkspace(req, res);
   if (!workspaceId) return;

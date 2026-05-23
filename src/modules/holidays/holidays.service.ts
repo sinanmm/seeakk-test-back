@@ -2,7 +2,16 @@ import { Prisma } from '@prisma/client';
 import crypto from 'crypto';
 import prisma from '../../config/prisma';
 import logger from '../../utils/logger';
-import { eachDayOfInterval, isWeekend, format, parseISO } from 'date-fns';
+import { eachDayOfInterval, format } from 'date-fns';
+import {
+  appendWeeklyOffCalendarItems,
+  getWorkspaceWeeklyOffSettings,
+  isHolidayOnDate,
+  isWeeklyOffDate,
+  normalizeWeeklyOffColor,
+  normalizeWeeklyOffDays,
+  updateWorkspaceWeeklyOffSettings,
+} from './weeklyOff.util';
 import { redisClient } from '../../config/redis';
 
 const createHolidayServiceError = (message: string, statusCode = 400): Error & { statusCode: number } => {
@@ -345,10 +354,18 @@ export const getCalendarView = async (workspaceId: string, user: any, month: str
     };
   });
   
+  const weeklyOffSettings = await getWorkspaceWeeklyOffSettings(workspaceId);
+  const weeklyOffViews = appendWeeklyOffCalendarItems(
+    month,
+    weeklyOffSettings.weeklyOffDays,
+    weeklyOffSettings.weeklyOffColor,
+  );
+  const merged = [...views, ...weeklyOffViews];
+
   if (month) {
-    return views.filter((v: any) => v.date.startsWith(month));
+    return merged.filter((v: any) => v.date.startsWith(month));
   }
-  return views;
+  return merged;
 };
 
 export const getWorkspaceCalendarView = async (workspaceId: string, month: string) => {
@@ -392,31 +409,61 @@ export const getWorkspaceCalendarView = async (workspaceId: string, month: strin
     };
   });
 
+  const weeklyOffSettings = await getWorkspaceWeeklyOffSettings(workspaceId);
+  const weeklyOffViews = appendWeeklyOffCalendarItems(
+    month,
+    weeklyOffSettings.weeklyOffDays,
+    weeklyOffSettings.weeklyOffColor,
+  );
+
+  const merged = [...views, ...weeklyOffViews];
+
   if (month) {
-    return views.filter((v: any) => v.date.startsWith(month));
+    return merged.filter((v: any) => v.date.startsWith(month));
   }
-  return views;
+  return merged;
+};
+
+export const getWeeklyOffSettings = async (workspaceId: string) => getWorkspaceWeeklyOffSettings(workspaceId);
+
+export const saveWeeklyOffSettings = async (
+  workspaceId: string,
+  payload: { weeklyOffDays: unknown; weeklyOffColor: unknown },
+) => {
+  const weeklyOffDays = normalizeWeeklyOffDays(payload.weeklyOffDays);
+  const weeklyOffColor = normalizeWeeklyOffColor(payload.weeklyOffColor);
+
+  const updated = await updateWorkspaceWeeklyOffSettings(workspaceId, { weeklyOffDays, weeklyOffColor });
+
+  if (redisClient.isOpen) {
+    await redisClient.del(`holidays:calendar:${workspaceId}`);
+    await redisClient.del(`holidays:calendar:${workspaceId}:workspace`);
+  }
+
+  await prisma.auditLog.create({
+    data: {
+      action: 'UPDATE_WEEKLY_OFF_SETTINGS',
+      entityType: 'Workspace',
+      entityId: workspaceId,
+      workspaceId,
+      details: { weeklyOffDays, weeklyOffColor },
+    },
+  });
+
+  return {
+    weeklyOffDays: updated.weeklyOffDays,
+    weeklyOffColor: updated.weeklyOffColor,
+  };
 };
 
 // SLA-Aware Engine
 export const getWorkingDays = async (workspaceId: string, user: any, start: Date, end: Date) => {
   const holidays = await getApplicableHolidays(workspaceId, user);
-  
+  const { weeklyOffDays } = await getWorkspaceWeeklyOffSettings(workspaceId);
+
   const allDays = eachDayOfInterval({ start, end });
-  return allDays.filter(day => {
+  return allDays.filter((day) => {
     const formatted = format(day, 'yyyy-MM-dd');
-    const [y, m, d] = formatted.split('-');
-    
-    const isHoliday = holidays.some((h: any) => {
-      const hdStr = typeof h.holidayDate === 'string' ? h.holidayDate.split('T')[0] : (new Date(h.holidayDate)).toISOString().split('T')[0];
-      const [, hm, hd] = hdStr.split('-');
-      
-      if (h.isRecurring) {
-        return hm === m && hd === d;
-      }
-      return formatted === hdStr;
-    });
-    
-    return !isHoliday && !isWeekend(day);
+    return !isHolidayOnDate(holidays, formatted) && !isWeeklyOffDate(day, weeklyOffDays);
   });
 };

@@ -1,6 +1,7 @@
 import prisma from '../../config/prisma';
 import logger from '../../utils/logger';
 import { getApplicableHolidays } from '../holidays/holidays.service';
+import { getWorkspaceWeeklyOffSettings, isWeeklyOffDateString } from '../holidays/weeklyOff.util';
 import { lockUser } from '../../services/User/accountLockService';
 import { startOfDay, endOfDay } from 'date-fns';
 import {
@@ -208,6 +209,8 @@ export const getTodayStatus = async (userId: string, workspaceId: string) => {
   const todayStr = getLocalDateString();
   const applicableHolidays = await getApplicableHolidays(workspaceId, user);
   const holidayCheck = checkIsHoliday(applicableHolidays, todayStr);
+  const { weeklyOffDays } = await getWorkspaceWeeklyOffSettings(workspaceId);
+  const isWeeklyOff = isWeeklyOffDateString(todayStr, weeklyOffDays);
 
   const existingRecord = await prisma.attendanceRecord.findUnique({
     where: {
@@ -221,6 +224,7 @@ export const getTodayStatus = async (userId: string, workspaceId: string) => {
   const submissionState = resolveAttendanceSubmissionState(
     existingRecord,
     holidayCheck.isHoliday,
+    isWeeklyOff,
   );
   const isMarked = hasUserSubmittedToday(submissionState);
 
@@ -234,6 +238,8 @@ export const getTodayStatus = async (userId: string, workspaceId: string) => {
     date: todayStr,
     isHoliday: holidayCheck.isHoliday,
     holidayName: holidayCheck.isHoliday ? holidayCheck.name : null,
+    isWeeklyOff,
+    weeklyOffLabel: isWeeklyOff ? 'Weekly Off' : null,
     isLocked: user.isLocked,
     isMarked,
     submissionState,
@@ -278,10 +284,12 @@ export const markAttendance = async (userId: string, workspaceId: string, payloa
 
   const applicableHolidays = await getApplicableHolidays(workspaceId, user);
   const holidayCheck = checkIsHoliday(applicableHolidays, dateStr);
+  const { weeklyOffDays } = await getWorkspaceWeeklyOffSettings(workspaceId);
+  const isWeeklyOff = isWeeklyOffDateString(dateStr, weeklyOffDays);
 
   const isHoliday = holidayCheck.isHoliday;
   const holidayName = holidayCheck.isHoliday ? holidayCheck.name : null;
-  const attendanceType = isHoliday ? 'HOLIDAY' : payload.attendanceType;
+  const attendanceType = isWeeklyOff ? 'WEEKLY_OFF' : isHoliday ? 'HOLIDAY' : payload.attendanceType;
 
   const settings = await getSettings(workspaceId);
 
@@ -345,7 +353,7 @@ export const markAttendance = async (userId: string, workspaceId: string, payloa
   let checkInTime = payload.checkInTime ? new Date(payload.checkInTime) : new Date();
 
   // Settings warnings
-  if (!isHoliday && ['PRESENT', 'HALF_DAY', 'WORK_FROM_HOME'].includes(attendanceType)) {
+  if (!isHoliday && !isWeeklyOff && ['PRESENT', 'HALF_DAY', 'WORK_FROM_HOME'].includes(attendanceType)) {
     if (settings.enableWarning) {
       const checkInHHMM = `${String(checkInTime.getHours()).padStart(2, '0')}:${String(checkInTime.getMinutes()).padStart(2, '0')}`;
       if (checkInHHMM > settings.cutoffTime) {
@@ -386,12 +394,12 @@ export const markAttendance = async (userId: string, workspaceId: string, payloa
     record = await prisma.attendanceRecord.update({
       where: { id: existingRecord.id },
       data: {
-        checkInTime: isHoliday ? null : checkInTime,
+        checkInTime: isHoliday || isWeeklyOff ? null : checkInTime,
         attendanceType,
         status: approvalStatus === 'APPROVED' ? 'APPROVED' : 'PENDING',
         warningCount,
         isHoliday,
-        holidayName,
+        holidayName: isWeeklyOff ? 'Weekly Off' : holidayName,
         isLocked: user.isLocked,
         createdBy: userId,
         attendanceApplyType,
@@ -411,7 +419,7 @@ export const markAttendance = async (userId: string, workspaceId: string, payloa
         userId,
         workspaceId,
         date: dateObj,
-        checkInTime: isHoliday ? null : checkInTime,
+        checkInTime: isHoliday || isWeeklyOff ? null : checkInTime,
         attendanceType,
         status: approvalStatus === 'APPROVED' ? 'APPROVED' : 'PENDING',
         warningCount,
@@ -926,9 +934,10 @@ export const getStats = async (userId: string, workspaceId: string) => {
   const wfhCount = records.filter(r => r.attendanceType === 'WORK_FROM_HOME').length;
   const absentCount = records.filter(r => r.attendanceType === 'ABSENT').length;
   const holidayCount = records.filter(r => r.isHoliday).length;
+  const weeklyOffCount = records.filter((r) => r.attendanceType === 'WEEKLY_OFF').length;
   const totalWarnings = await prisma.attendanceWarning.count({ where: { userId, workspaceId } });
 
-  const totalWorkingDays = records.length - holidayCount;
+  const totalWorkingDays = records.length - holidayCount - weeklyOffCount;
 
   return {
     presentCount,
@@ -1107,8 +1116,10 @@ export const autoAbsentMarking = async (workspaceId: string) => {
     for (const user of users) {
       const applicableHolidays = await getApplicableHolidays(workspaceId, user);
       const holidayCheck = checkIsHoliday(applicableHolidays, todayStr);
+      const { weeklyOffDays } = await getWorkspaceWeeklyOffSettings(workspaceId);
+      const isWeeklyOff = isWeeklyOffDateString(todayStr, weeklyOffDays);
 
-      if (holidayCheck.isHoliday) {
+      if (holidayCheck.isHoliday || isWeeklyOff) {
         await prisma.attendanceRecord.upsert({
           where: {
             userId_date: { userId: user.id, date: dateObj },
@@ -1118,11 +1129,11 @@ export const autoAbsentMarking = async (workspaceId: string) => {
             userId: user.id,
             workspaceId,
             date: dateObj,
-            attendanceType: 'HOLIDAY',
+            attendanceType: isWeeklyOff ? 'WEEKLY_OFF' : 'HOLIDAY',
             status: 'APPROVED',
             approvalStatus: 'APPROVED',
-            isHoliday: true,
-            holidayName: holidayCheck.name,
+            isHoliday: holidayCheck.isHoliday,
+            holidayName: holidayCheck.isHoliday ? holidayCheck.name : isWeeklyOff ? 'Weekly Off' : null,
             createdBy: 'SYSTEM_CRON',
           },
         });

@@ -310,6 +310,8 @@ export const checkPermission = (permissionKey: string) => {
         permissionKey.startsWith('TARGET_CYCLES_') && permissions.includes('SYSTEM_CONFIG');
       const hasLocationFallbackPermission =
         permissionKey.startsWith('LOCATION_') && permissions.includes('SYSTEM_CONFIG');
+      const hasHolidayFallbackPermission =
+        permissionKey.startsWith('HOLIDAY_') && permissions.includes('SYSTEM_CONFIG');
       const hasAttendanceMarkFallback =
         permissionKey === 'mark_attendance' &&
         (permissions.includes('view_attendance') ||
@@ -323,6 +325,7 @@ export const checkPermission = (permissionKey: string) => {
         !hasStageRuleFallbackPermission &&
         !hasTargetCycleFallbackPermission &&
         !hasLocationFallbackPermission &&
+        !hasHolidayFallbackPermission &&
         !hasAttendanceMarkFallback
       ) {
         logger.warn(`Permission denied. Required: ${permissionKey}. User has: ${permissions.join(', ')}`, {

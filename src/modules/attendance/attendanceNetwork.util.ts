@@ -43,7 +43,7 @@ export const requiresOfficeNetworkValidation = (
   attendanceType: string,
 ): boolean => {
   if (attendanceApplyType !== 'FROM_OFFICE') return false;
-  if (attendanceType === 'HOLIDAY') return false;
+  if (attendanceType === 'HOLIDAY' || attendanceType === 'WEEKLY_OFF') return false;
   if (['WORK_FROM_HOME', 'LEAVE'].includes(attendanceType)) return false;
   return true;
 };

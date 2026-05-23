@@ -105,6 +105,8 @@ model Workspace {
   language       String       @default("en-US")
   currencyLocale String       @default("USD")
   loadSampleData Boolean      @default(false)
+  weeklyOffDays  Int[]        @default([0])
+  weeklyOffColor String       @default("#cbd5e1")
   owner          User         @relation("WorkspaceOwner", fields: [ownerId], references: [id])
   ownerId        String       @unique
   users          User[]       @relation("WorkspaceMembers")
@@ -1451,6 +1453,7 @@ enum AttendanceType {
   LEAVE
   WORK_FROM_HOME
   HOLIDAY
+  WEEKLY_OFF
   ABSENT
 }
 

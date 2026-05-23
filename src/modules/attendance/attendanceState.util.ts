@@ -4,7 +4,8 @@ export type AttendanceSubmissionState =
   | 'APPROVED'
   | 'REJECTED'
   | 'AUTO_ABSENT'
-  | 'HOLIDAY';
+  | 'HOLIDAY'
+  | 'WEEKLY_OFF';
 
 type AttendanceRecordLike = {
   attendanceType: string;
@@ -22,7 +23,9 @@ export const isAutoAbsentRecord = (record: AttendanceRecordLike): boolean =>
 export const resolveAttendanceSubmissionState = (
   record: AttendanceRecordLike,
   isHoliday: boolean,
+  isWeeklyOff = false,
 ): AttendanceSubmissionState => {
+  if (isWeeklyOff) return 'WEEKLY_OFF';
   if (isHoliday) return 'HOLIDAY';
   if (!record) return 'NOT_SUBMITTED';
   if (isAutoAbsentRecord(record)) return 'AUTO_ABSENT';
@@ -40,5 +43,6 @@ export const requiresMandatoryAttendancePopup = (
   isLocked: boolean,
 ): boolean => {
   if (isLocked) return false;
+  if (submissionState === 'HOLIDAY' || submissionState === 'WEEKLY_OFF') return false;
   return ['NOT_SUBMITTED', 'REJECTED', 'AUTO_ABSENT'].includes(submissionState);
 };
