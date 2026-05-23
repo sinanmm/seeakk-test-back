@@ -5,6 +5,8 @@ import * as leadsService from './leads.service';
 import type { ClosedLeadIdInput, ClosedLeadQueryInput, UpdateClosedLeadInput } from './leads.validation';
 import { closedLeadQuerySchema, leadIdSchema, updateClosedLeadSchema } from './leads.validation';
 import { resolveWorkspaceIdForUser } from '../../utils/workspaceContext';
+import { formatZodValidationErrors } from '../../utils/validationResponse';
+import { emitWorkspaceEvent } from '../../realtime/socket';
 
 const requireWorkspace = async (req: Request, res: Response): Promise<string | null> => {
   if (!req.user?.id) {
@@ -31,10 +33,11 @@ function validate<T>(
 ): T | null {
   const result = schema.safeParse(data);
   if (!result.success) {
+    const { message, errors } = formatZodValidationErrors(result.error);
     res.status(422).json({
       success: false,
-      message: 'Validation failed.',
-      errors: result.error.flatten().fieldErrors,
+      message,
+      errors,
     });
     return null;
   }
@@ -92,20 +95,35 @@ export const updateClosure = async (req: Request, res: Response, next: NextFunct
     await auditService.log({
       userId: req.user?.id,
       workspaceId,
-      action: 'LEAD_CLOSED',
+      action: 'LEAD_CLOSURE_REVENUE_UPDATED',
       entityType: 'Lead',
       entityId: updated.id,
       details: {
         closureType: updated.closureType,
         generatedRevenue: updated.generatedRevenue,
+        earnedRevenue: updated.earnedRevenue,
         closedAt: updated.closedAt,
+        approvedById: req.user?.id,
       },
       ipAddress: req.ip,
       userAgent: req.headers['user-agent'],
     });
 
+    if (updated.closureType === 'WON' && (updated.generatedRevenue || 0) > 0) {
+      emitWorkspaceEvent(workspaceId, 'revenue_updated', {
+        leadId: updated.id,
+        earnedRevenue: updated.generatedRevenue,
+        userId: updated.assignedToId,
+      });
+      emitWorkspaceEvent(workspaceId, 'lead_updated', {
+        leadId: updated.id,
+        action: 'closure_revenue_updated',
+      });
+    }
+
     return res.status(200).json({
       success: true,
+      message: 'Closed lead revenue saved successfully.',
       data: updated,
     });
   } catch (error) {

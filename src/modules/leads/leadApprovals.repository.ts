@@ -351,8 +351,9 @@ export const processApproval = async (input: {
     }
 
     if (input.action === 'APPROVE' && input.leadUpdateData) {
-      const isClosedStage = Boolean(approval.toStage?.isClosed);
-      const earnedRevenue = isClosedStage && typeof input.earnedRevenue === 'number' ? input.earnedRevenue : undefined;
+      const isClosedWonStage = Boolean(approval.toStage?.isClosed && !approval.toStage?.isLOB);
+      const earnedRevenue =
+        isClosedWonStage && typeof input.earnedRevenue === 'number' ? input.earnedRevenue : undefined;
 
       const finalLeadUpdateData = {
         ...input.leadUpdateData,
@@ -371,7 +372,7 @@ export const processApproval = async (input: {
         data: finalLeadUpdateData,
       });
 
-      if (isClosedStage && earnedRevenue !== undefined) {
+      if (isClosedWonStage && earnedRevenue !== undefined) {
         const closingUserId = approval.lead.assignedToId || approval.requestedById;
         await (tx as any).revenueTransaction.create({
           data: {

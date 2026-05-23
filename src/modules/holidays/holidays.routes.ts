@@ -8,7 +8,7 @@ router.use(protect);
 
 // Static paths first (must be registered before /:id routes)
 router.get('/calendar', checkPermission('HOLIDAY_VIEW'), holidayController.getCalendarView);
-router.get('/weekly-off', checkPermission('SYSTEM_CONFIG'), holidayController.getWeeklyOffSettings);
+router.get('/weekly-off', holidayController.getWeeklyOffSettings);
 router.put('/weekly-off', checkPermission('SYSTEM_CONFIG'), holidayController.updateWeeklyOffSettings);
 router.post('/ai-suggest', checkPermission('HOLIDAY_AI'), holidayController.suggestHolidays);
 

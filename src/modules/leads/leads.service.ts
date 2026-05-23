@@ -2,6 +2,7 @@ import { LeadClosureType } from '@prisma/client';
 import type { Prisma } from '@prisma/client';
 import type { ClosedLeadQueryInput, UpdateClosedLeadInput } from './leads.validation';
 import * as leadsRepository from './leads.repository';
+import prisma from '../../config/prisma';
 
 type Actor = {
   id: string;
@@ -70,6 +71,7 @@ const resolveDisplayName = (user?: { name?: string | null; username?: string | n
 
 const mapClosedLead = (lead: any) => ({
   ...lead,
+  revenueApprovedAt: lead.revenueApprovedAt ? lead.revenueApprovedAt.toISOString() : null,
   closedAt: lead.closedAt ? lead.closedAt.toISOString() : null,
   deletedAt: lead.deletedAt ? lead.deletedAt.toISOString() : null,
   createdAt: lead.createdAt.toISOString(),
@@ -260,16 +262,96 @@ export const updateClosedLead = async (
     throw createServiceError('Lead not found in this workspace.', 404);
   }
 
-  if (!lead.isClosed) {
-    throw createServiceError('Lead is not closed. Move it to the closure stage first.', 409);
+  const isEffectivelyClosed = Boolean(lead.isClosed || lead.stage?.isClosed);
+  if (!isEffectivelyClosed) {
+    throw createServiceError('Lead is not in a closed stage. Move it to closure before recording revenue.', 409);
   }
 
-  const updated = await leadsRepository.updateLeadClosure(id, {
-    isClosed: true,
-    closedAt: lead.closedAt || new Date(),
-    closedById: lead.closedById || actor.id,
-    generatedRevenue: input.generatedRevenue,
-    closureType: input.closureType,
+  const now = new Date();
+  const closingUserId = lead.assignedToId || actor.id;
+  const stageId = lead.stageId;
+
+  if (input.closureType === 'WON' && input.generatedRevenue > 0 && !stageId) {
+    throw createServiceError('Lead must have a closed stage assigned before saving won revenue.', 422);
+  }
+
+  const updated = await prisma.$transaction(async (tx) => {
+    const leadUpdateData: Record<string, unknown> = {
+      isClosed: true,
+      isLOB: Boolean(lead.stage?.isLOB ?? lead.isLOB),
+      closedAt: lead.closedAt || now,
+      closedById: lead.closedById || actor.id,
+      generatedRevenue: input.generatedRevenue,
+      closureType: input.closureType,
+    };
+
+    if (input.closureType === 'WON' && input.generatedRevenue > 0) {
+      leadUpdateData.earnedRevenue = input.generatedRevenue;
+      leadUpdateData.revenueApprovedById = actor.id;
+      leadUpdateData.revenueApprovedAt = now;
+    } else {
+      leadUpdateData.earnedRevenue = null;
+      leadUpdateData.revenueApprovedById = null;
+      leadUpdateData.revenueApprovedAt = null;
+    }
+
+    const updatedLead = await (tx as any).lead.update({
+      where: { id },
+      data: leadUpdateData,
+      select: leadsRepository.closedLeadSelect,
+    });
+
+    const existingTransaction = await (tx as any).revenueTransaction.findFirst({
+      where: { workspaceId, leadId: id },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (input.closureType === 'WON' && input.generatedRevenue > 0 && stageId) {
+      if (existingTransaction) {
+        await (tx as any).revenueTransaction.update({
+          where: { id: existingTransaction.id },
+          data: {
+            amount: input.generatedRevenue,
+            approvedById: actor.id,
+            userId: closingUserId,
+            closedStageId: stageId,
+          },
+        });
+      } else {
+        await (tx as any).revenueTransaction.create({
+          data: {
+            workspaceId,
+            leadId: id,
+            userId: closingUserId,
+            approvedById: actor.id,
+            amount: input.generatedRevenue,
+            closedStageId: stageId,
+          },
+        });
+      }
+    } else if (existingTransaction) {
+      await (tx as any).revenueTransaction.delete({
+        where: { id: existingTransaction.id },
+      });
+    }
+
+    await (tx as any).leadActivity.create({
+      data: {
+        leadId: id,
+        performedById: actor.id,
+        workspaceId,
+        action: 'LEAD_CLOSURE_REVENUE_UPDATED',
+        metadata: {
+          generatedRevenue: input.generatedRevenue,
+          closureType: input.closureType,
+          previousGeneratedRevenue: lead.generatedRevenue ?? 0,
+          previousClosureType: lead.closureType,
+          stageId,
+        },
+      },
+    });
+
+    return updatedLead;
   });
 
   return mapClosedLead(updated);

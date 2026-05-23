@@ -442,13 +442,15 @@ export const processLeadApproval = async (
     }
   }
 
-  if (input.action === 'APPROVE' && approval.toStage?.isClosed) {
-    const earnedRevenue = (input as any).earnedRevenue;
+  const requiresClosureRevenue = Boolean(approval.toStage?.isClosed && !approval.toStage?.isLOB);
+
+  if (input.action === 'APPROVE' && requiresClosureRevenue) {
+    const earnedRevenue = input.earnedRevenue;
     if (earnedRevenue === undefined || earnedRevenue === null) {
-      throw createServiceError('Earned revenue is required when approving a closed lead stage.', 422);
+      throw createServiceError('Revenue amount is required when approving a closed won stage.', 422);
     }
     if (typeof earnedRevenue !== 'number' || Number.isNaN(earnedRevenue) || earnedRevenue <= 0) {
-      throw createServiceError('Earned revenue must be a positive number.', 422);
+      throw createServiceError('Revenue must be greater than zero.', 422);
     }
   }
 

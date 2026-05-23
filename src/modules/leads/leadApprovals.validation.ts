@@ -74,7 +74,10 @@ export const handleLeadApprovalSchema = z.object({
     )
     .optional()
     .default('Approved'),
-  earnedRevenue: z.number().positive('Earned revenue must be a positive number').optional(),
+  earnedRevenue: z.coerce
+    .number({ message: 'Earned revenue must be a valid number.' })
+    .positive('Earned revenue must be greater than zero.')
+    .optional(),
 });
 
 export type CreateLeadApprovalInput = z.infer<typeof createLeadApprovalSchema>;

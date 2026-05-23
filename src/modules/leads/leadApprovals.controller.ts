@@ -15,6 +15,7 @@ import {
   listLeadApprovalsQuerySchema,
 } from './leadApprovals.validation';
 import { hasPermission } from '../../middlewares/authMiddleware';
+import { formatZodValidationErrors } from '../../utils/validationResponse';
 
 const requireWorkspace = (req: Request, res: Response): string | null => {
   const workspaceId = req.user?.workspaceId ?? null;
@@ -36,10 +37,11 @@ function validate<T>(
 ): T | null {
   const result = schema.safeParse(data);
   if (!result.success) {
+    const { message, errors } = formatZodValidationErrors(result.error);
     res.status(422).json({
       success: false,
-      message: 'Validation failed.',
-      errors: result.error.flatten().fieldErrors,
+      message,
+      errors,
     });
     return null;
   }
@@ -168,7 +170,7 @@ export const handleLeadApproval = async (req: Request, res: Response, next: Next
         action: input.action === 'APPROVE' ? 'approval_approved' : 'approval_denied',
       });
 
-      if (input.action === 'APPROVE' && result.approval?.toStage?.isClosed) {
+      if (input.action === 'APPROVE' && result.approval?.toStage?.isClosed && !result.approval?.toStage?.isLOB) {
         emitWorkspaceEvent(workspaceId, 'revenue_updated', {
           leadId,
           earnedRevenue: (input as any).earnedRevenue,

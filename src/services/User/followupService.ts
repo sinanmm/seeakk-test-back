@@ -528,10 +528,13 @@ export const createFollowUp = async (
   }
 
   const { getWorkspaceHolidays } = await import('../../modules/holidays/holidays.service');
-  const { assertSchedulableBusinessDate, getWorkspaceWeeklyOffSettings } = await import('../../modules/holidays/weeklyOff.util');
+  const { isHolidayOnDate } = await import('../../modules/holidays/weeklyOff.util');
+  const { format } = await import('date-fns');
   const holidays = await getWorkspaceHolidays(workspaceId, { activeOnly: true });
-  const { weeklyOffDays } = await getWorkspaceWeeklyOffSettings(workspaceId);
-  assertSchedulableBusinessDate(input.scheduledAt, weeklyOffDays, holidays);
+  const holidayDateStr = format(new Date(input.scheduledAt), 'yyyy-MM-dd');
+  if (isHolidayOnDate(holidays, holidayDateStr)) {
+    throw createServiceError('Follow-ups cannot be scheduled on a holiday.', 422);
+  }
 
   const userId = await resolveTargetUserId(workspaceId, actor);
 
