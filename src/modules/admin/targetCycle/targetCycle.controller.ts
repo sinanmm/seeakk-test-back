@@ -177,7 +177,13 @@ export const updateTargetCycle = async (req: Request, res: Response, next: NextF
       });
     }
     try {
-      const data = await persistTargetCycleWithPeriods(workspaceId, req.user?.id || '', perfResult.data, id);
+      const data = await persistTargetCycleWithPeriods(
+        workspaceId,
+        req.user?.id || '',
+        perfResult.data,
+        id,
+        { ipAddress: req.ip, userAgent: req.headers['user-agent'] },
+      );
       return res.status(200).json({ success: true, message: 'Target cycle updated.', data });
     } catch (error: any) {
       return handleServiceError(error, res, next, 'updateTargetCycle');

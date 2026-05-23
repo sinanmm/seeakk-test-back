@@ -378,6 +378,10 @@ export const listTargetCycles = async (
           ranges: {
             orderBy: { startDay: 'asc' },
           },
+          periods: {
+            orderBy: { periodIndex: 'asc' },
+          },
+          leadStage: { select: { id: true, name: true, color: true } },
         },
       }),
     ]);
@@ -447,7 +451,11 @@ export const getTargetCycleById = async (id: string, workspaceId: string): Promi
   if (hasGeneratedDelegates()) {
     const cycle = await (prisma as any).targetCycle.findFirst({
       where: { id, workspaceId, deletedAt: null },
-      include: { ranges: { orderBy: { startDay: 'asc' } } },
+      include: {
+        ranges: { orderBy: { startDay: 'asc' } },
+        periods: { orderBy: { periodIndex: 'asc' } },
+        leadStage: { select: { id: true, name: true, color: true } },
+      },
     });
     if (!cycle) {
       const error: any = new Error('Target cycle not found.');

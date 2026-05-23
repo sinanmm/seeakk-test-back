@@ -1,9 +1,13 @@
 import {
   addDays,
   addMonths,
+  differenceInCalendarDays,
   endOfDay,
   endOfMonth,
   format,
+  isBefore,
+  max as maxDate,
+  min as minDate,
   startOfDay,
   startOfMonth,
 } from 'date-fns';
@@ -30,11 +34,40 @@ export type BuildPeriodsInput = {
     endDate: string | Date;
     lockingDate: string | Date;
   }>;
-  /** For WEEKLY/MONTHLY: counts keyed by generated period index */
+  /** Counts keyed by generated period index (same order as buildTargetCyclePeriods output). */
   periodCounts?: number[];
 };
 
 const toEndOfDay = (date: Date) => endOfDay(date);
+
+/** Inclusive calendar days between two dates. */
+export const inclusiveCalendarDays = (start: Date, end: Date): number => {
+  const s = startOfDay(start);
+  const e = startOfDay(end);
+  if (isBefore(e, s)) return 0;
+  return differenceInCalendarDays(e, s) + 1;
+};
+
+/** Total active days across non-overlapping periods (sum of each period span). */
+export const computeTotalDaysFromPeriods = (periods: PeriodInput[]): number => {
+  if (!periods.length) return 0;
+  return periods.reduce((sum, period) => sum + inclusiveCalendarDays(period.startDate, period.endDate), 0);
+};
+
+export const resolveMonthCount = (input: BuildPeriodsInput, start: Date): number => {
+  if (input.numberOfMonths && input.numberOfMonths > 0) {
+    return input.numberOfMonths;
+  }
+  if (input.endDate) {
+    const end = startOfDay(new Date(input.endDate));
+    return Math.max(
+      1,
+      (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth()) + 1,
+    );
+  }
+  if (input.targetType === 'SEMI_ANNUAL') return 6;
+  return 12;
+};
 
 const buildWeeklyPeriodsForMonth = (
   monthStart: Date,
@@ -65,22 +98,78 @@ const buildWeeklyPeriodsForMonth = (
   return periods;
 };
 
+/** Preview how many weekly periods a month produces (4–6 depending on calendar). */
+export const countWeeksInMonth = (monthStart: Date): number =>
+  buildWeeklyPeriodsForMonth(monthStart, [], 0).length;
+
+/** How many target count inputs the UI should render before save. */
+export const countPeriodSlots = (input: {
+  targetType: BuildPeriodsInput['targetType'];
+  startDate: Date;
+  numberOfMonths?: number | null;
+  endDate?: Date | null;
+}): number => {
+  const start = startOfDay(new Date(input.startDate));
+  const months = resolveMonthCount(
+    { targetType: input.targetType, startDate: start, numberOfMonths: input.numberOfMonths, endDate: input.endDate },
+    start,
+  );
+
+  if (input.targetType === 'SEMI_ANNUAL') return 6;
+  if (input.targetType === 'MONTHLY') return months;
+  if (input.targetType === 'WEEKLY') {
+    let slots = 0;
+    for (let i = 0; i < months; i += 1) {
+      slots += countWeeksInMonth(startOfMonth(addMonths(start, i)));
+    }
+    return slots;
+  }
+  return 0;
+};
+
+const validateManualPeriods = (periods: PeriodInput[]): void => {
+  const sorted = [...periods].sort((a, b) => a.startDate.getTime() - b.startDate.getTime());
+  for (let i = 0; i < sorted.length; i += 1) {
+    const period = sorted[i];
+    if (isBefore(period.endDate, period.startDate)) {
+      throw Object.assign(new Error('Manual period end date must be on or after the start date.'), {
+        statusCode: 422,
+      });
+    }
+    if (isBefore(period.lockingDate, period.startDate)) {
+      throw Object.assign(new Error('Manual period locking date must be on or after the start date.'), {
+        statusCode: 422,
+      });
+    }
+    if (i > 0) {
+      const prev = sorted[i - 1];
+      if (!isBefore(prev.endDate, period.startDate) && prev.endDate.getTime() !== period.startDate.getTime()) {
+        throw Object.assign(new Error('Manual periods cannot overlap.'), { statusCode: 422 });
+      }
+    }
+  }
+};
+
 export const buildTargetCyclePeriods = (input: BuildPeriodsInput): PeriodInput[] => {
   if (input.targetType === 'MANUAL') {
     if (!input.periods?.length) {
       throw Object.assign(new Error('At least one manual period is required.'), { statusCode: 422 });
     }
-    return input.periods.map((period, index) => ({
-      ...period,
+    const mapped = input.periods.map((period, index) => ({
+      label: period.label?.trim() || `Period ${index + 1}`,
       periodIndex: index,
+      targetCount: period.targetCount ?? 0,
       startDate: startOfDay(new Date(period.startDate)),
       endDate: toEndOfDay(new Date(period.endDate)),
       lockingDate: toEndOfDay(new Date(period.lockingDate)),
     }));
+    validateManualPeriods(mapped);
+    return mapped;
   }
 
   const start = startOfDay(new Date(input.startDate));
   const counts = input.periodCounts || [];
+  const months = resolveMonthCount(input, start);
 
   if (input.targetType === 'SEMI_ANNUAL') {
     const periods: PeriodInput[] = [];
@@ -99,18 +188,6 @@ export const buildTargetCyclePeriods = (input: BuildPeriodsInput): PeriodInput[]
     return periods;
   }
 
-  const months =
-    input.numberOfMonths && input.numberOfMonths > 0
-      ? input.numberOfMonths
-      : input.endDate
-        ? Math.max(
-            1,
-            (new Date(input.endDate).getFullYear() - start.getFullYear()) * 12 +
-              (new Date(input.endDate).getMonth() - start.getMonth()) +
-              1,
-          )
-        : 12;
-
   if (input.targetType === 'MONTHLY') {
     const periods: PeriodInput[] = [];
     for (let i = 0; i < months; i += 1) {
@@ -128,16 +205,46 @@ export const buildTargetCyclePeriods = (input: BuildPeriodsInput): PeriodInput[]
     return periods;
   }
 
-  // WEEKLY — per month, split into weeks
+  // WEEKLY — calendar weeks per month (4–6 depending on month length / start weekday)
   const periods: PeriodInput[] = [];
   let globalIndex = 0;
+  let countOffset = 0;
+
   for (let i = 0; i < months; i += 1) {
     const monthStart = startOfMonth(addMonths(start, i));
-    const weeksInMonth = 4;
-    const monthCounts = counts.slice(i * weeksInMonth, i * weeksInMonth + weeksInMonth);
+    const weeksInMonth = countWeeksInMonth(monthStart);
+    const monthCounts = counts.slice(countOffset, countOffset + weeksInMonth);
     const monthPeriods = buildWeeklyPeriodsForMonth(monthStart, monthCounts, globalIndex);
     periods.push(...monthPeriods);
     globalIndex += monthPeriods.length;
+    countOffset += weeksInMonth;
   }
+
   return periods;
+};
+
+/** Map stored DB periods back to periodCounts aligned with a rebuild. */
+export const derivePeriodCountsFromPeriods = (
+  targetType: BuildPeriodsInput['targetType'],
+  startDate: Date,
+  numberOfMonths: number | null | undefined,
+  stored: Array<{ periodIndex: number; targetCount: number }>,
+): number[] => {
+  const slots = countPeriodSlots({ targetType, startDate, numberOfMonths });
+  const byIndex = new Map(stored.map((p) => [p.periodIndex, p.targetCount]));
+  return Array.from({ length: slots }, (_, i) => byIndex.get(i) ?? 0);
+};
+
+export const computeCycleDateBounds = (
+  periods: PeriodInput[],
+): { startDate: Date; endDate: Date | null } => {
+  if (!periods.length) {
+    return { startDate: startOfDay(new Date()), endDate: null };
+  }
+  const starts = periods.map((p) => p.startDate);
+  const ends = periods.map((p) => p.endDate);
+  return {
+    startDate: minDate(starts),
+    endDate: maxDate(ends),
+  };
 };

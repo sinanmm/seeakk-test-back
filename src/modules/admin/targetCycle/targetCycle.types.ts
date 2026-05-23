@@ -8,6 +8,17 @@ export interface TargetCycleRangeResponse {
   createdAt: Date;
 }
 
+export interface TargetCyclePeriodResponse {
+  id: string;
+  targetCycleId: string;
+  label: string;
+  periodIndex: number;
+  targetCount: number;
+  startDate: Date | string;
+  endDate: Date | string;
+  lockingDate: Date | string;
+}
+
 export interface TargetCycleResponse {
   id: string;
   name: string;
@@ -19,6 +30,16 @@ export interface TargetCycleResponse {
   updatedAt: Date;
   deletedAt: Date | null;
   ranges: TargetCycleRangeResponse[];
+  description?: string | null;
+  targetType?: string;
+  targetMetric?: string;
+  leadStageId?: string | null;
+  startDate?: Date | string;
+  endDate?: Date | string | null;
+  numberOfMonths?: number | null;
+  lockingEnabled?: boolean;
+  periods?: TargetCyclePeriodResponse[];
+  leadStage?: { id: string; name: string; color?: string | null } | null;
 }
 
 export interface PaginationMeta {

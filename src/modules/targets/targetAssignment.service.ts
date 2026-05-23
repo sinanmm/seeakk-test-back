@@ -1,8 +1,51 @@
 import prisma from '../../config/prisma';
 import auditService from '../../services/Audit/auditService';
-import { buildTargetCyclePeriods, type PeriodInput } from './targetPeriod.util';
+import { redisClient } from '../../config/redis';
+import {
+  buildTargetCyclePeriods,
+  computeCycleDateBounds,
+  computeTotalDaysFromPeriods,
+  type PeriodInput,
+} from './targetPeriod.util';
+
+const clearTargetCycleCache = async (workspaceId: string): Promise<void> => {
+  if (redisClient.isOpen) {
+    await redisClient.del(`target_cycles_${workspaceId}`);
+  }
+};
 
 const db = prisma as any;
+
+const syncAssignmentPerformanceLogs = async (
+  targetCycleId: string,
+  storedPeriods: Array<{ id: string; targetCount: number }>,
+) => {
+  if (!storedPeriods.length) return;
+
+  const assignments = await db.targetAssignment.findMany({
+    where: { targetCycleId, isActive: true },
+    select: { id: true },
+  });
+
+  for (const assignment of assignments) {
+    for (const period of storedPeriods) {
+      await db.targetPerformanceLog.upsert({
+        where: {
+          assignmentId_periodId: { assignmentId: assignment.id, periodId: period.id },
+        },
+        create: {
+          assignmentId: assignment.id,
+          periodId: period.id,
+          targetCount: period.targetCount,
+          status: 'PENDING',
+        },
+        update: {
+          targetCount: period.targetCount,
+        },
+      });
+    }
+  }
+};
 
 export type AssignmentClient = {
   user: { findFirst: typeof db.user.findFirst; update: typeof db.user.update };
@@ -206,7 +249,7 @@ export const syncUserTargetCycleAssignment = async (
 
 export const persistTargetCycleWithPeriods = async (
   workspaceId: string,
-  createdBy: string,
+  actorId: string,
   payload: {
     name: string;
     description?: string;
@@ -229,8 +272,9 @@ export const persistTargetCycleWithPeriods = async (
     }>;
   },
   existingId?: string,
+  auditContext?: { ipAddress?: string; userAgent?: string },
 ) => {
-  const periods = buildTargetCyclePeriods({
+  const builtPeriods = buildTargetCyclePeriods({
     targetType: payload.targetType as any,
     startDate: new Date(payload.startDate),
     endDate: payload.endDate ? new Date(payload.endDate) : null,
@@ -252,50 +296,118 @@ export const persistTargetCycleWithPeriods = async (
     }
   }
 
-  const data = {
-    name: payload.name.trim(),
+  const bounds = computeCycleDateBounds(builtPeriods);
+  const totalDays = computeTotalDaysFromPeriods(builtPeriods);
+  const trimmedName = payload.name.trim();
+
+  const previous =
+    existingId &&
+    (await db.targetCycle.findFirst({
+      where: { id: existingId, workspaceId, deletedAt: null },
+      include: { periods: { orderBy: { periodIndex: 'asc' } } },
+    }));
+
+  if (existingId && !previous) {
+    throw Object.assign(new Error('Target cycle not found.'), { statusCode: 404 });
+  }
+
+  const duplicate = await db.targetCycle.findFirst({
+    where: {
+      workspaceId,
+      name: trimmedName,
+      deletedAt: null,
+      ...(existingId ? { NOT: { id: existingId } } : {}),
+    },
+    select: { id: true },
+  });
+  if (duplicate) {
+    throw Object.assign(new Error('Target cycle name already exists.'), { statusCode: 409 });
+  }
+
+  const cycleData = {
+    name: trimmedName,
     description: payload.description?.trim() || null,
     workspaceId,
     targetType: payload.targetType,
     targetMetric: payload.targetMetric,
     leadStageId: payload.leadStageId || null,
-    startDate: new Date(payload.startDate),
-    endDate: payload.endDate ? new Date(payload.endDate) : null,
-    numberOfMonths: payload.numberOfMonths ?? periods.length,
+    startDate: bounds.startDate,
+    endDate: bounds.endDate,
+    numberOfMonths:
+      payload.numberOfMonths ??
+      (payload.targetType === 'SEMI_ANNUAL' ? 6 : payload.targetType === 'MANUAL' ? null : builtPeriods.length),
     status: payload.status || 'ACTIVE',
     lockingEnabled: payload.lockingEnabled !== false,
-    totalDays: 30,
-    createdBy,
+    totalDays,
   };
 
-  let cycle;
-  if (existingId) {
-    cycle = await db.targetCycle.update({ where: { id: existingId }, data });
-    await db.targetCyclePeriod.deleteMany({ where: { targetCycleId: existingId } });
-  } else {
-    const duplicate = await db.targetCycle.findFirst({
-      where: { workspaceId, name: data.name, deletedAt: null },
-    });
-    if (duplicate) {
-      throw Object.assign(new Error('Target cycle name already exists.'), { statusCode: 409 });
+  const cycle = await db.$transaction(async (tx: any) => {
+    let row;
+    if (existingId) {
+      row = await tx.targetCycle.update({
+        where: { id: existingId },
+        data: cycleData,
+      });
+      await tx.targetCyclePeriod.deleteMany({ where: { targetCycleId: existingId } });
+    } else {
+      row = await tx.targetCycle.create({
+        data: { ...cycleData, createdBy: actorId },
+      });
     }
-    cycle = await db.targetCycle.create({ data });
+
+    if (builtPeriods.length) {
+      await tx.targetCyclePeriod.createMany({
+        data: builtPeriods.map((period) => ({
+          targetCycleId: row.id,
+          label: period.label,
+          periodIndex: period.periodIndex,
+          targetCount: period.targetCount,
+          startDate: period.startDate,
+          endDate: period.endDate,
+          lockingDate: period.lockingDate,
+        })),
+      });
+    }
+
+    return row;
+  });
+
+  const storedPeriods = await db.targetCyclePeriod.findMany({
+    where: { targetCycleId: cycle.id },
+    orderBy: { periodIndex: 'asc' },
+    select: { id: true, targetCount: true },
+  });
+
+  if (existingId) {
+    await syncAssignmentPerformanceLogs(cycle.id, storedPeriods);
   }
 
-  await db.targetCyclePeriod.createMany({
-    data: periods.map((period) => ({
-      targetCycleId: cycle.id,
-      label: period.label,
-      periodIndex: period.periodIndex,
-      targetCount: period.targetCount,
-      startDate: period.startDate,
-      endDate: period.endDate,
-      lockingDate: period.lockingDate,
-    })),
-  });
+  await clearTargetCycleCache(workspaceId);
+
+  if (existingId && previous) {
+    await auditService.log({
+      userId: actorId,
+      workspaceId,
+      action: 'MASTER_UPDATE_TARGET_CYCLE',
+      entityType: 'TargetCycle',
+      entityId: cycle.id,
+      details: {
+        name: { from: previous.name, to: trimmedName },
+        targetType: { from: previous.targetType, to: payload.targetType },
+        targetMetric: { from: previous.targetMetric, to: payload.targetMetric },
+        totalDays: { from: previous.totalDays, to: totalDays },
+        periodCount: { from: previous.periods?.length ?? 0, to: builtPeriods.length },
+      },
+      ipAddress: auditContext?.ipAddress,
+      userAgent: auditContext?.userAgent,
+    });
+  }
 
   return db.targetCycle.findUnique({
     where: { id: cycle.id },
-    include: { periods: { orderBy: { periodIndex: 'asc' } }, leadStage: { select: { id: true, name: true, color: true } } },
+    include: {
+      periods: { orderBy: { periodIndex: 'asc' } },
+      leadStage: { select: { id: true, name: true, color: true } },
+    },
   });
 };
