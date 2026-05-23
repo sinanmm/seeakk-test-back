@@ -60,8 +60,12 @@ export const authLimiter = rateLimit({
       ip: req.ip,
       action: 'rate_limit_auth_block',
     });
+    const retryAfterSeconds = Math.max(1, Math.ceil((options.windowMs || 15 * 60 * 1000) / 1000));
     res.status(options.statusCode).json({
+      success: false,
+      code: 'AUTH_RATE_LIMITED',
       message: 'Too many login attempts from this IP, please try again after 15 minutes.',
+      retryAfterSeconds,
     });
   },
 });

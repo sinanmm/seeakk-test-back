@@ -26,6 +26,8 @@ import {
   isTransientDatabaseError 
 } from '../../utils/databaseErrors';
 import { getMandatoryFollowUpSessionState } from '../../services/User/mandatoryFollowupContinuation.service';
+import { loginSchema } from '../../validations/auth.validation';
+import { AUTH_ERROR_CODES, authErrorPayload } from '../../constants/authErrorCodes';
 
 const getFrontendUrl = (): string => getPublicFrontendUrl();
 
@@ -425,40 +427,79 @@ export const resetPasswordWithToken = async (req: Request, res: Response): Promi
 
 export const login = async (req: Request, res: Response): Promise<any> => {
   try {
-    const { email: rawEmail, password } = req.body;
-
-    if (!rawEmail || !password) {
-      return res.status(400).json({ message: 'Email and password are required' });
+    const parsed = loginSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(422).json(
+        authErrorPayload(
+          AUTH_ERROR_CODES.VALIDATION_FAILED,
+          'Validation failed.',
+          { errors: parsed.error.flatten().fieldErrors },
+        ),
+      );
     }
 
-    const email = rawEmail.toLowerCase().trim();
+    const { email, password } = parsed.data;
 
     let user: any = await prisma.user.findFirst({
-      where: { email: { equals: email, mode: 'insensitive' } },
+      where: {
+        email: { equals: email, mode: 'insensitive' },
+        deletedAt: null,
+      },
       select: authenticatedUserBaseSelect,
     });
 
     if (!user) {
-      logger.warn('Login failed - user not found', { email, action: 'login_failed' });
-      return res.status(401).json({ message: 'Invalid credentials' });
+      logger.warn('Login failed - user not found or deleted', { email, action: 'login_failed' });
+      return res
+        .status(401)
+        .json(authErrorPayload(AUTH_ERROR_CODES.INVALID_CREDENTIALS, 'Incorrect email or password.'));
     }
 
     if (!user.password) {
-      return res.status(400).json({ message: 'Password login is not enabled for this account' });
+      return res.status(400).json(
+        authErrorPayload(
+          AUTH_ERROR_CODES.PASSWORD_NOT_SET,
+          'This account has no password yet. Use the invitation link from your email to set a password.',
+        ),
+      );
     }
 
     if (!user.isActive) {
-      return res.status(403).json({ message: 'Account is inactive' });
+      return res.status(403).json(
+        authErrorPayload(
+          AUTH_ERROR_CODES.ACCOUNT_INACTIVE,
+          'Your account is inactive. Contact your workspace administrator.',
+        ),
+      );
     }
 
     if (!user.isEmailVerified) {
-      return res.status(403).json({ message: 'Please verify your email address to log in.' });
+      return res.status(403).json(
+        authErrorPayload(
+          AUTH_ERROR_CODES.EMAIL_NOT_VERIFIED,
+          'Please verify your email address before signing in.',
+        ),
+      );
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    let isPasswordValid = false;
+    try {
+      isPasswordValid = await bcrypt.compare(password, user.password);
+    } catch (compareError: any) {
+      logger.error('Login password compare failed - stored hash may be invalid', {
+        email,
+        userId: user.id,
+        error: compareError?.message,
+        action: 'login_password_compare_error',
+      });
+      isPasswordValid = false;
+    }
+
     if (!isPasswordValid) {
       logger.warn('Login failed - wrong password', { email, userId: user.id, action: 'login_failed' });
-      return res.status(401).json({ message: 'Invalid credentials' });
+      return res
+        .status(401)
+        .json(authErrorPayload(AUTH_ERROR_CODES.INVALID_CREDENTIALS, 'Incorrect email or password.'));
     }
 
     // Owner-role sync is best-effort. Login must not fail if this maintenance step errors.
@@ -466,7 +507,9 @@ export const login = async (req: Request, res: Response): Promise<any> => {
       user = await ensureWorkspaceOwnerSuperAdmin(user);
     } catch (error: any) {
       if (!user) {
-        return res.status(401).json({ message: 'Invalid credentials' });
+        return res
+          .status(401)
+          .json(authErrorPayload(AUTH_ERROR_CODES.INVALID_CREDENTIALS, 'Incorrect email or password.'));
       }
 
       logger.error('Failed to sync workspace owner superadmin role during password login', {
@@ -486,7 +529,9 @@ export const login = async (req: Request, res: Response): Promise<any> => {
     }
 
     if (!user) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+      return res
+        .status(401)
+        .json(authErrorPayload(AUTH_ERROR_CODES.INVALID_CREDENTIALS, 'Incorrect email or password.'));
     }
     user = await hydrateAuthenticatedUser(user);
 
@@ -497,9 +542,12 @@ export const login = async (req: Request, res: Response): Promise<any> => {
         roleId: user.roleId,
         roleWorkspaceId: user.role?.workspaceId,
       });
-      return res.status(403).json({
-        message: 'Account role is not valid for this workspace. Please contact support or your administrator.',
-      });
+      return res.status(403).json(
+        authErrorPayload(
+          AUTH_ERROR_CODES.ROLE_WORKSPACE_MISMATCH,
+          'Account role is not valid for this workspace. Please contact support or your administrator.',
+        ),
+      );
     }
 
     logger.info('Login successful', { email, userId: user.id, action: 'login_success' });
@@ -515,10 +563,14 @@ export const login = async (req: Request, res: Response): Promise<any> => {
           secretName: error.secretName,
           action: 'login_token_generation_failed',
         });
-        return res.status(error.statusCode).json({
-          message: error.message,
-          code: error.code,
-        });
+        return res.status(error.statusCode).json(
+          authErrorPayload(
+            error.code === 'AUTH_SECRET_MISSING'
+              ? AUTH_ERROR_CODES.SECRET_MISSING
+              : AUTH_ERROR_CODES.SERVICE_UNAVAILABLE,
+            error.message,
+          ),
+        );
       }
       throw error;
     }
