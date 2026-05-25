@@ -6,6 +6,27 @@ import { seedDefaultMasterData } from '../../services/Seeding/seedingService';
 const SUPERADMIN_ROLE_NAME = 'superadmin';
 const MAX_LOGO_DATA_URL_LENGTH = 2_000_000;
 
+const normalizeWorkspaceBrandingInput = (input: { companyName?: unknown; logoUrl?: unknown }) => {
+  const normalizedCompanyName = typeof input.companyName === 'string' ? input.companyName.trim() : '';
+  const normalizedLogoUrl = typeof input.logoUrl === 'string' ? input.logoUrl.trim() : '';
+
+  if (!normalizedCompanyName) {
+    return { error: 'Company name is required.' };
+  }
+
+  if (normalizedLogoUrl) {
+    const isImageDataUrl = /^data:image\/[a-zA-Z0-9.+-]+;base64,/.test(normalizedLogoUrl);
+    if (!isImageDataUrl || normalizedLogoUrl.length > MAX_LOGO_DATA_URL_LENGTH) {
+      return { error: 'Invalid company logo. Please upload a smaller valid image.' };
+    }
+  }
+
+  return {
+    companyName: normalizedCompanyName,
+    logoUrl: normalizedLogoUrl || null,
+  };
+};
+
 const ensureWorkspaceOwnerRole = async (workspaceId: string) => {
   const superAdminRole = await prisma.role.upsert({
     where: {
@@ -62,12 +83,9 @@ export const setupWorkspace = async (req: Request, res: Response, next: NextFunc
       return res.status(400).json({ message: 'Company Name and Employee Count are required.' });
     }
 
-    const normalizedLogoUrl = typeof logoUrl === 'string' ? logoUrl.trim() : '';
-    if (normalizedLogoUrl) {
-      const isImageDataUrl = /^data:image\/[a-zA-Z0-9.+-]+;base64,/.test(normalizedLogoUrl);
-      if (!isImageDataUrl || normalizedLogoUrl.length > MAX_LOGO_DATA_URL_LENGTH) {
-        return res.status(400).json({ message: 'Invalid company logo. Please upload a smaller valid image.' });
-      }
+    const branding = normalizeWorkspaceBrandingInput({ companyName, logoUrl });
+    if ('error' in branding) {
+      return res.status(400).json({ message: branding.error });
     }
 
     // 1. Create the workspace and link to the owner simultaneously
@@ -75,8 +93,8 @@ export const setupWorkspace = async (req: Request, res: Response, next: NextFunc
     try {
       newWorkspace = await prisma.workspace.create({
         data: {
-          companyName,
-          logoUrl: normalizedLogoUrl || null,
+          companyName: branding.companyName,
+          logoUrl: branding.logoUrl,
           employeeCount,
           timeZone: timeZone || 'UTC',
           language: language || 'en-US',
@@ -97,7 +115,7 @@ export const setupWorkspace = async (req: Request, res: Response, next: NextFunc
       if (missingLogoColumn) {
         newWorkspace = await prisma.workspace.create({
           data: {
-            companyName,
+            companyName: branding.companyName,
             employeeCount,
             timeZone: timeZone || 'UTC',
             language: language || 'en-US',
@@ -158,6 +176,46 @@ export const setupWorkspace = async (req: Request, res: Response, next: NextFunc
         isOnboarded: updatedUser.isOnboarded,
         workspaceId: updatedUser.workspaceId,
       },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateWorkspaceProfile = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  try {
+    if (!req.user?.workspaceId) {
+      return res.status(404).json({ message: 'Workspace not found for this user.' });
+    }
+
+    const branding = normalizeWorkspaceBrandingInput(req.body ?? {});
+    if ('error' in branding) {
+      return res.status(400).json({ message: branding.error });
+    }
+
+    const workspace = await prisma.workspace.update({
+      where: { id: req.user.workspaceId },
+      data: {
+        companyName: branding.companyName,
+        logoUrl: branding.logoUrl,
+      },
+      select: {
+        id: true,
+        companyName: true,
+        logoUrl: true,
+      },
+    });
+
+    logger.info('Workspace branding updated', {
+      workspaceId: workspace.id,
+      userId: req.user.id,
+      action: 'workspace_branding_updated',
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Company branding updated successfully.',
+      workspace,
     });
   } catch (error) {
     next(error);

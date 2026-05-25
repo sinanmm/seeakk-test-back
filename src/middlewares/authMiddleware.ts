@@ -92,6 +92,7 @@ const ensureWorkspaceOwnerSuperAdmin = async (user: any): Promise<any> => {
         select: {
           id: true,
           companyName: true,
+          logoUrl: true,
         },
       },
     },
@@ -165,6 +166,7 @@ export const protect = async (req: Request, res: Response, next: NextFunction): 
           select: {
             id: true,
             companyName: true,
+            logoUrl: true,
           },
         },
       },

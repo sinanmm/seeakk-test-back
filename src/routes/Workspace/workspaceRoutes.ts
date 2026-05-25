@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import * as workspaceController from '../../controllers/Workspace/workspaceController';
 import * as workspaceConfigController from '../../controllers/Workspace/workspaceConfigController';
-import { protect } from '../../middlewares/authMiddleware';
+import { checkPermission, protect } from '../../middlewares/authMiddleware';
 import { globalLimiter } from '../../middlewares/rateLimiter';
 
 const router = Router();
@@ -17,5 +17,6 @@ router.get(
 // User must be successfully logged in (JWT) to Configure their Workspace
 // but does NOT need an authorization ("admin") level yet, because they are configuring it for the first time
 router.post('/setup', protect, globalLimiter, workspaceController.setupWorkspace);
+router.patch('/profile', protect, globalLimiter, checkPermission('SYSTEM_CONFIG'), workspaceController.updateWorkspaceProfile);
 
 export default router;
