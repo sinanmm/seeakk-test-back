@@ -64,7 +64,7 @@ export const hydrateAuthenticatedUser = async (user: any): Promise<any> => {
     try {
       hydrated.workspace = await prisma.workspace.findUnique({
         where: { id: hydrated.workspaceId },
-        select: { id: true, companyName: true },
+        select: { id: true, companyName: true, logoUrl: true },
       });
     } catch {
       hydrated.workspace = null;
