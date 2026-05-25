@@ -1244,7 +1244,20 @@ export const updateLead = async (
 
   const email = input.email === null ? null : input.email?.trim() ?? existing.email;
   const phone = input.phone === null ? null : input.phone?.trim() ?? existing.phone;
-  await findDuplicateLead(workspaceId, email, phone, id);
+
+  const normalizeEmailForCompare = (e?: string | null) => e?.trim().toLowerCase() || null;
+  const normalizePhoneForCompare = (p?: string | null) => p?.trim() || null;
+
+  const emailChanged = input.email !== undefined &&
+    normalizeEmailForCompare(input.email) !== normalizeEmailForCompare(existing.email);
+  const phoneChanged = input.phone !== undefined &&
+    normalizePhoneForCompare(input.phone) !== normalizePhoneForCompare(existing.phone);
+
+  if (emailChanged || phoneChanged) {
+    const checkEmail = emailChanged ? (input.email?.trim() || null) : null;
+    const checkPhone = phoneChanged ? (input.phone?.trim() || null) : null;
+    await findDuplicateLead(workspaceId, checkEmail, checkPhone, id);
+  }
 
   const assignedToId = input.assignedToId !== undefined
     ? (ensureAssignmentUpdateAllowed(actor, existing.assignedToId, input.assignedToId), await resolveAssignedUserId(workspaceId, input.assignedToId))

@@ -47,7 +47,7 @@ export const evaluateAssignmentPeriod = async (
     where: { id: assignmentId },
     include: {
       targetCycle: { include: { periods: true } },
-      user: { select: { id: true, workspaceId: true, graceUntil: true } },
+      user: { select: { id: true, workspaceId: true } },
     },
   });
 
@@ -58,7 +58,7 @@ export const evaluateAssignmentPeriod = async (
   const period = assignment.targetCycle.periods.find((p: { id: string }) => p.id === periodId);
   if (!period) return { completed: true, percentage: 100 };
 
-  if (assignment.user.graceUntil && new Date(assignment.user.graceUntil) > new Date()) {
+  if (assignment.graceUntil && new Date(assignment.graceUntil) > new Date()) {
     return { completed: true, percentage: 100 };
   }
 
