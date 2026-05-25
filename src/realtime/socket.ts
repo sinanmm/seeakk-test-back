@@ -49,9 +49,8 @@ const socketCorsOrigin = (
  * Set SOCKET_IO_ALLOW_UPGRADES=true on Render only if you have confirmed WS works for your service.
  */
 const allowSocketTransportUpgrades = (): boolean => {
-  if (process.env.SOCKET_IO_ALLOW_UPGRADES === 'true') return true;
   if (process.env.SOCKET_IO_ALLOW_UPGRADES === 'false') return false;
-  return process.env.RENDER !== 'true';
+  return true;
 };
 
 export const initRealtimeServer = (httpServer: HttpServer): SocketIOServer => {
