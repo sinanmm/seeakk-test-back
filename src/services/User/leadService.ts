@@ -89,7 +89,7 @@ type LeadIncludeRecord = {
       recentDescription: string;
       previousFollowupDate: Date;
       newFollowupDate: Date;
-      snoozedBy: string;
+      snoozedById: string;
       snoozedAt: Date;
       reminderActionType: 'SNOOZE' | 'REMIND_LATER';
       snoozedByUser?: {
@@ -206,7 +206,7 @@ const leadInclude = {
           recentDescription: true,
           previousFollowupDate: true,
           newFollowupDate: true,
-          snoozedBy: true,
+          snoozedById: true,
           snoozedAt: true,
           reminderActionType: true,
           snoozedByUser: {
