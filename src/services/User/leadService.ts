@@ -705,69 +705,85 @@ const getNewStageForWorkspace = async (_workspaceId: string) =>
     },
   });
 
-const maybeRunLeadSlaSweep = async (workspaceId: string): Promise<void> => {
-  if (!shouldRunSweepNow(workspaceId)) return;
-
-  const expiredAutoLobLeads = await prisma.lead.findMany({
-    where: {
-      workspaceId,
-      deletedAt: null,
-      isClosed: false,
-      isLOB: false,
-      stageExpiresAt: { lte: new Date() },
-      slaAction: 'AUTO_LOB',
-    },
-    select: {
-      id: true,
-      stageId: true,
-      stage: {
-        select: {
-          id: true,
-          name: true,
-        },
-      },
-    },
-    take: 100,
-  });
-
-  if (expiredAutoLobLeads.length === 0) return;
-
-  const lobStage = await getLobStageForWorkspace(workspaceId);
-  if (!lobStage) return;
-
-  for (const lead of expiredAutoLobLeads) {
-    const now = new Date();
-    await prisma.$transaction(async (tx: any) => {
-      await (tx as any).lead.update({
-        where: { id: lead.id },
-        data: {
-          stageId: lobStage.id,
-          isLOB: true,
-          isClosed: false,
-          closedAt: now,
-          closureType: 'LOST',
-          stageEnteredAt: now,
-          stageExpiresAt: null,
-          slaAction: null,
-          slaWarningDays: null,
-        },
-      });
-
-      await (tx as any).leadLOBLog.create({
-        data: {
-          leadId: lead.id,
-          reasonId: 'SYSTEM_SLA_EXPIRED',
-          remarks: 'Moved automatically to LOB after stage SLA expired.',
-          previousStageId: lead.stageId,
-          previousStageName: lead.stage?.name?.trim() || null,
-          changedById: 'system',
-          workspaceId,
-        },
-      });
+const maybeRunLeadSlaSweep = async (workspaceId: string | null | undefined): Promise<void> => {
+  if (!workspaceId?.trim()) {
+    logger.warn('Skipping lead SLA sweep because workspaceId is missing.', {
+      action: 'lead_sla_sweep_skipped',
     });
+    return;
   }
 
-  await clearLeadCache(workspaceId);
+  if (!shouldRunSweepNow(workspaceId)) return;
+
+  try {
+    const expiredAutoLobLeads = await prisma.lead.findMany({
+      where: {
+        workspaceId,
+        deletedAt: null,
+        isClosed: false,
+        isLOB: false,
+        stageExpiresAt: { lte: new Date() },
+        slaAction: 'AUTO_LOB',
+      },
+      select: {
+        id: true,
+        stageId: true,
+        stage: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+      take: 100,
+    });
+
+    if (expiredAutoLobLeads.length === 0) return;
+
+    const lobStage = await getLobStageForWorkspace(workspaceId);
+    if (!lobStage) return;
+
+    for (const lead of expiredAutoLobLeads) {
+      const now = new Date();
+      await prisma.$transaction(async (tx: any) => {
+        await (tx as any).lead.update({
+          where: { id: lead.id },
+          data: {
+            stageId: lobStage.id,
+            isLOB: true,
+            isClosed: false,
+            closedAt: now,
+            closureType: 'LOST',
+            stageEnteredAt: now,
+            stageExpiresAt: null,
+            slaAction: null,
+            slaWarningDays: null,
+          },
+        });
+
+        await (tx as any).leadLOBLog.create({
+          data: {
+            leadId: lead.id,
+            reasonId: 'SYSTEM_SLA_EXPIRED',
+            remarks: 'Moved automatically to LOB after stage SLA expired.',
+            previousStageId: lead.stageId,
+            previousStageName: lead.stage?.name?.trim() || null,
+            changedById: 'system',
+            workspaceId,
+          },
+        });
+      });
+    }
+
+    await clearLeadCache(workspaceId);
+  } catch (error: any) {
+    sweepThrottleByWorkspace.delete(workspaceId);
+    logger.error('Lead SLA sweep failed; continuing without blocking lead reads.', {
+      action: 'lead_sla_sweep_failed',
+      workspaceId,
+      error: error?.message,
+    });
+  }
 };
 
 const resolveSource = async (workspaceId: string, sourceId: string | null | undefined) => {
