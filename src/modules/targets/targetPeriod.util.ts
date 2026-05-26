@@ -19,6 +19,11 @@ export type PeriodInput = {
   startDate: Date;
   endDate: Date;
   lockingDate: Date;
+  metrics?: Array<{
+    metricType: 'LEADS' | 'REVENUE' | 'FOLLOW_UP';
+    targetValue: number;
+    stageTargets?: Array<{ leadStageId: string; targetValue: number }> | null;
+  }> | null;
 };
 
 export type BuildPeriodsInput = {
@@ -29,10 +34,15 @@ export type BuildPeriodsInput = {
   periods?: Array<{
     label: string;
     periodIndex: number;
-    targetCount: number;
+    targetCount?: number;
     startDate: string | Date;
     endDate: string | Date;
     lockingDate: string | Date;
+    metrics?: Array<{
+      metricType: 'LEADS' | 'REVENUE' | 'FOLLOW_UP';
+      targetValue: number;
+      stageTargets?: Array<{ leadStageId: string; targetValue: number }> | null;
+    }> | null;
   }>;
   /** Counts keyed by generated period index (same order as buildTargetCyclePeriods output). */
   periodCounts?: number[];
@@ -151,20 +161,25 @@ const validateManualPeriods = (periods: PeriodInput[]): void => {
 };
 
 export const buildTargetCyclePeriods = (input: BuildPeriodsInput): PeriodInput[] => {
-  if (input.targetType === 'MANUAL') {
-    if (!input.periods?.length) {
-      throw Object.assign(new Error('At least one manual period is required.'), { statusCode: 422 });
-    }
+  // If periods are explicitly provided (e.g. from the multi-metric UI configuration), preserve and return them
+  if (input.periods && input.periods.length > 0) {
     const mapped = input.periods.map((period, index) => ({
       label: period.label?.trim() || `Period ${index + 1}`,
-      periodIndex: index,
+      periodIndex: period.periodIndex ?? index,
       targetCount: period.targetCount ?? 0,
       startDate: startOfDay(new Date(period.startDate)),
       endDate: toEndOfDay(new Date(period.endDate)),
       lockingDate: toEndOfDay(new Date(period.lockingDate)),
+      metrics: period.metrics ?? null,
     }));
-    validateManualPeriods(mapped);
+    if (input.targetType === 'MANUAL') {
+      validateManualPeriods(mapped);
+    }
     return mapped;
+  }
+
+  if (input.targetType === 'MANUAL') {
+    throw Object.assign(new Error('At least one manual period is required.'), { statusCode: 422 });
   }
 
   const start = startOfDay(new Date(input.startDate));

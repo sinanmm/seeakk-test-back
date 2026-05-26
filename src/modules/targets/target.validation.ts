@@ -1,12 +1,22 @@
 import { z } from 'zod';
 
+const periodMetricSchema = z.object({
+  metricType: z.enum(['LEADS', 'REVENUE', 'FOLLOW_UP']),
+  targetValue: z.number().min(0),
+  stageTargets: z.array(z.object({
+    leadStageId: z.string().trim().min(1),
+    targetValue: z.number().int().min(0),
+  })).optional().nullable(),
+});
+
 const periodSchema = z.object({
   label: z.string().trim().min(1),
   periodIndex: z.number().int().min(0),
-  targetCount: z.number().int().min(0),
+  targetCount: z.number().int().min(0).optional(),
   startDate: z.union([z.string(), z.date()]),
   endDate: z.union([z.string(), z.date()]),
   lockingDate: z.union([z.string(), z.date()]),
+  metrics: z.array(periodMetricSchema).optional().nullable(),
 });
 
 export const createPerformanceTargetCycleSchema = z
@@ -14,7 +24,7 @@ export const createPerformanceTargetCycleSchema = z
     name: z.string().trim().min(1).max(100),
     description: z.string().trim().max(500).optional(),
     targetType: z.enum(['WEEKLY', 'MONTHLY', 'SEMI_ANNUAL', 'MANUAL']),
-    targetMetric: z.enum(['LEADS', 'REVENUE']),
+    targetMetric: z.enum(['LEADS', 'REVENUE', 'FOLLOW_UP']).optional().nullable(),
     leadStageId: z
       .string()
       .trim()
@@ -31,7 +41,8 @@ export const createPerformanceTargetCycleSchema = z
     lockingEnabled: z.boolean().optional(),
   })
   .superRefine((value, ctx) => {
-    if (value.targetMetric === 'LEADS' && !value.leadStageId) {
+    // If targetMetric is specified without period metrics, validate leadStageId
+    if (value.targetMetric === 'LEADS' && !value.leadStageId && (!value.periods || !value.periods.some(p => p.metrics && p.metrics.length > 0))) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: 'Lead stage is required for lead-based targets.',

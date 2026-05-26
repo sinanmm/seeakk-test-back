@@ -39,6 +39,33 @@ export const measureRevenueAchievement = async (
   return aggregate._sum.amount || 0;
 };
 
+export const measureFollowupAchievement = async (
+  userId: string,
+  workspaceId: string,
+  startDate: Date,
+  endDate: Date,
+): Promise<number> => {
+  const logCount = await db.targetFollowupLog.count({
+    where: {
+      userId,
+      workspaceId,
+      status: 'COMPLETED',
+      completedAt: { gte: startDate, lte: endDate },
+    },
+  });
+  if (logCount > 0) return logCount;
+
+  // Fallback to follow_ups table
+  return db.followUp.count({
+    where: {
+      userId,
+      workspaceId,
+      status: 'COMPLETED',
+      completedAt: { gte: startDate, lte: endDate },
+    },
+  });
+};
+
 export const evaluateAssignmentPeriod = async (
   assignmentId: string,
   periodId: string,
@@ -55,39 +82,180 @@ export const evaluateAssignmentPeriod = async (
     return { completed: true, percentage: 100 };
   }
 
-  const period = assignment.targetCycle.periods.find((p: { id: string }) => p.id === periodId);
+  const period = await db.targetCyclePeriod.findUnique({
+    where: { id: periodId },
+    include: {
+      metrics: {
+        include: {
+          stageTargets: true,
+        },
+      },
+    },
+  });
+
   if (!period) return { completed: true, percentage: 100 };
 
   if (assignment.graceUntil && new Date(assignment.graceUntil) > new Date()) {
     return { completed: true, percentage: 100 };
   }
 
-  const { targetMetric, leadStageId } = assignment.targetCycle;
-  let achievedCount = 0;
-  let achievedRevenue = 0;
+  // If there are no configured metrics on the period, default to legacy single-metric evaluation
+  if (!period.metrics || period.metrics.length === 0) {
+    const { targetMetric, leadStageId } = assignment.targetCycle;
+    let achievedCount = 0;
+    let achievedRevenue = 0;
 
-  if (targetMetric === 'LEADS' && leadStageId) {
-    achievedCount = await measureLeadAchievement(
-      assignment.userId,
-      assignment.workspaceId,
-      leadStageId,
-      period.startDate,
-      period.endDate,
-    );
-  } else if (targetMetric === 'REVENUE') {
-    achievedRevenue = await measureRevenueAchievement(
-      assignment.userId,
-      assignment.workspaceId,
-      period.startDate,
-      period.endDate,
-    );
+    if (targetMetric === 'LEADS' && leadStageId) {
+      achievedCount = await measureLeadAchievement(
+        assignment.userId,
+        assignment.workspaceId,
+        leadStageId,
+        period.startDate,
+        period.endDate,
+      );
+    } else if (targetMetric === 'REVENUE') {
+      achievedRevenue = await measureRevenueAchievement(
+        assignment.userId,
+        assignment.workspaceId,
+        period.startDate,
+        period.endDate,
+      );
+    } else if (targetMetric === 'FOLLOW_UP') {
+      achievedCount = await measureFollowupAchievement(
+        assignment.userId,
+        assignment.workspaceId,
+        period.startDate,
+        period.endDate,
+      );
+    }
+
+    const targetCount = period.targetCount || 0;
+    const achieved = targetMetric === 'REVENUE' ? achievedRevenue : achievedCount;
+    const percentage = targetCount > 0 ? Math.min(100, (achieved / targetCount) * 100) : 100;
+    const completed = targetCount <= 0 || achieved >= targetCount;
+    const status = completed ? 'COMPLETED' : 'FAILED';
+
+    await db.targetPerformanceLog.upsert({
+      where: {
+        assignmentId_periodId: { assignmentId, periodId },
+      },
+      create: {
+        assignmentId,
+        periodId,
+        targetCount,
+        achievedCount,
+        achievedRevenue,
+        followupCount: targetMetric === 'FOLLOW_UP' ? achievedCount : 0,
+        revenueAmount: achievedRevenue,
+        completionPercentage: percentage,
+        status,
+        evaluatedAt: new Date(),
+      },
+      update: {
+        achievedCount,
+        achievedRevenue,
+        followupCount: targetMetric === 'FOLLOW_UP' ? achievedCount : 0,
+        revenueAmount: achievedRevenue,
+        completionPercentage: percentage,
+        status,
+        evaluatedAt: new Date(),
+      },
+    });
+
+    return { completed, percentage };
   }
 
-  const targetCount = period.targetCount || 0;
-  const achieved = targetMetric === 'REVENUE' ? achievedRevenue : achievedCount;
-  const percentage = targetCount > 0 ? Math.min(100, (achieved / targetCount) * 100) : 100;
-  const completed = targetCount <= 0 || achieved >= targetCount;
-  const status = completed ? 'COMPLETED' : 'FAILED';
+  // Multi-metric evaluation
+  let overallCompleted = true;
+  let totalPercentage = 0;
+  let leadsAchieved = 0;
+  let revenueAchieved = 0;
+  let followupsAchieved = 0;
+  let legacyTargetCount = 0;
+
+  for (const metric of period.metrics) {
+    legacyTargetCount += Math.round(metric.targetValue);
+    if (metric.metricType === 'LEADS') {
+      let metricCompleted = true;
+      let metricPercentage = 0;
+
+      if (metric.stageTargets && metric.stageTargets.length > 0) {
+        let stagesCompleted = true;
+        let stagesPctSum = 0;
+        for (const stageTarget of metric.stageTargets) {
+          const achieved = await measureLeadAchievement(
+            assignment.userId,
+            assignment.workspaceId,
+            stageTarget.leadStageId,
+            period.startDate,
+            period.endDate,
+          );
+          const target = stageTarget.targetValue || 0;
+          const pct = target > 0 ? Math.min(100, (achieved / target) * 100) : 100;
+          stagesPctSum += pct;
+          if (target > 0 && achieved < target) {
+            stagesCompleted = false;
+          }
+          leadsAchieved += achieved;
+        }
+        metricCompleted = stagesCompleted;
+        metricPercentage = stagesPctSum / metric.stageTargets.length;
+      } else {
+        const stageId = assignment.targetCycle.leadStageId;
+        const achieved = stageId
+          ? await measureLeadAchievement(
+              assignment.userId,
+              assignment.workspaceId,
+              stageId,
+              period.startDate,
+              period.endDate,
+            )
+          : 0;
+        const target = metric.targetValue || 0;
+        metricCompleted = target <= 0 || achieved >= target;
+        metricPercentage = target > 0 ? Math.min(100, (achieved / target) * 100) : 100;
+        leadsAchieved = achieved;
+      }
+
+      if (!metricCompleted) {
+        overallCompleted = false;
+      }
+      totalPercentage += metricPercentage;
+    } else if (metric.metricType === 'REVENUE') {
+      const achieved = await measureRevenueAchievement(
+        assignment.userId,
+        assignment.workspaceId,
+        period.startDate,
+        period.endDate,
+      );
+      const target = metric.targetValue || 0;
+      const metricCompleted = target <= 0 || achieved >= target;
+      const metricPercentage = target > 0 ? Math.min(100, (achieved / target) * 100) : 100;
+      if (!metricCompleted) {
+        overallCompleted = false;
+      }
+      revenueAchieved = achieved;
+      totalPercentage += metricPercentage;
+    } else if (metric.metricType === 'FOLLOW_UP') {
+      const achieved = await measureFollowupAchievement(
+        assignment.userId,
+        assignment.workspaceId,
+        period.startDate,
+        period.endDate,
+      );
+      const target = metric.targetValue || 0;
+      const metricCompleted = target <= 0 || achieved >= target;
+      const metricPercentage = target > 0 ? Math.min(100, (achieved / target) * 100) : 100;
+      if (!metricCompleted) {
+        overallCompleted = false;
+      }
+      followupsAchieved = achieved;
+      totalPercentage += metricPercentage;
+    }
+  }
+
+  const avgPercentage = period.metrics.length > 0 ? Math.min(100, totalPercentage / period.metrics.length) : 100;
+  const status = overallCompleted ? 'COMPLETED' : 'FAILED';
 
   await db.targetPerformanceLog.upsert({
     where: {
@@ -96,23 +264,27 @@ export const evaluateAssignmentPeriod = async (
     create: {
       assignmentId,
       periodId,
-      targetCount,
-      achievedCount,
-      achievedRevenue,
-      completionPercentage: percentage,
+      targetCount: legacyTargetCount,
+      achievedCount: leadsAchieved,
+      achievedRevenue: revenueAchieved,
+      followupCount: followupsAchieved,
+      revenueAmount: revenueAchieved,
+      completionPercentage: avgPercentage,
       status,
       evaluatedAt: new Date(),
     },
     update: {
-      achievedCount,
-      achievedRevenue,
-      completionPercentage: percentage,
+      achievedCount: leadsAchieved,
+      achievedRevenue: revenueAchieved,
+      followupCount: followupsAchieved,
+      revenueAmount: revenueAchieved,
+      completionPercentage: avgPercentage,
       status,
       evaluatedAt: new Date(),
     },
   });
 
-  return { completed, percentage };
+  return { completed: overallCompleted, percentage: avgPercentage };
 };
 
 export const lockUserForTargetFailure = async (
@@ -175,13 +347,12 @@ export const runTargetLockingEvaluation = async (): Promise<void> => {
     for (const assignment of assignments) {
       const { completed } = await evaluateAssignmentPeriod(assignment.id, period.id);
       if (!completed && assignment.user && !assignment.user.isLocked) {
-        const metricLabel = period.targetCycle.targetMetric === 'REVENUE' ? 'revenue' : 'lead';
         await lockUserForTargetFailure(
           assignment.userId,
           assignment.workspaceId,
           assignment.id,
           period.id,
-          `Target incomplete: ${period.label} ${metricLabel} goal not met.`,
+          `Target incomplete: ${period.label} goals not met.`,
         );
       }
     }

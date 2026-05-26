@@ -256,7 +256,7 @@ export const persistTargetCycleWithPeriods = async (
     name: string;
     description?: string;
     targetType: string;
-    targetMetric: string;
+    targetMetric?: string | null;
     leadStageId?: string | null;
     startDate: string;
     endDate?: string | null;
@@ -267,10 +267,15 @@ export const persistTargetCycleWithPeriods = async (
     periods?: Array<{
       label: string;
       periodIndex: number;
-      targetCount: number;
+      targetCount?: number;
       startDate: string | Date;
       endDate: string | Date;
       lockingDate: string | Date;
+      metrics?: Array<{
+        metricType: 'LEADS' | 'REVENUE' | 'FOLLOW_UP';
+        targetValue: number;
+        stageTargets?: Array<{ leadStageId: string; targetValue: number }> | null;
+      }> | null;
     }>;
   },
   existingId?: string,
@@ -365,9 +370,9 @@ export const persistTargetCycleWithPeriods = async (
       });
     }
 
-    if (builtPeriods.length) {
-      await tx.targetCyclePeriod.createMany({
-        data: builtPeriods.map((period) => ({
+    for (const period of builtPeriods) {
+      const periodRow = await tx.targetCyclePeriod.create({
+        data: {
           targetCycleId: row.id,
           label: period.label,
           periodIndex: period.periodIndex,
@@ -375,8 +380,52 @@ export const persistTargetCycleWithPeriods = async (
           startDate: period.startDate,
           endDate: period.endDate,
           lockingDate: period.lockingDate,
-        })),
+        },
       });
+
+      // Save metrics
+      if (period.metrics && period.metrics.length > 0) {
+        for (const metric of period.metrics) {
+          const pmRow = await tx.targetPeriodMetric.create({
+            data: {
+              periodId: periodRow.id,
+              metricType: metric.metricType,
+              targetValue: metric.targetValue,
+            },
+          });
+
+          if (metric.metricType === 'LEADS' && metric.stageTargets && metric.stageTargets.length > 0) {
+            for (const stageTarget of metric.stageTargets) {
+              await tx.targetStageTarget.create({
+                data: {
+                  periodMetricId: pmRow.id,
+                  leadStageId: stageTarget.leadStageId,
+                  targetValue: stageTarget.targetValue,
+                },
+              });
+            }
+          }
+        }
+      } else if (payload.targetMetric) {
+        // Fallback / backward compatibility for single-metric payloads
+        const pmRow = await tx.targetPeriodMetric.create({
+          data: {
+            periodId: periodRow.id,
+            metricType: payload.targetMetric,
+            targetValue: period.targetCount,
+          },
+        });
+
+        if (payload.targetMetric === 'LEADS' && payload.leadStageId) {
+          await tx.targetStageTarget.create({
+            data: {
+              periodMetricId: pmRow.id,
+              leadStageId: payload.leadStageId,
+              targetValue: period.targetCount,
+            },
+          });
+        }
+      }
     }
 
     return row;
@@ -416,7 +465,20 @@ export const persistTargetCycleWithPeriods = async (
   return db.targetCycle.findUnique({
     where: { id: cycle.id },
     include: {
-      periods: { orderBy: { periodIndex: 'asc' } },
+      periods: {
+        orderBy: { periodIndex: 'asc' },
+        include: {
+          metrics: {
+            include: {
+              stageTargets: {
+                include: {
+                  leadStage: { select: { id: true, name: true, color: true } }
+                }
+              }
+            }
+          }
+        }
+      },
       leadStage: { select: { id: true, name: true, color: true } },
     },
   });

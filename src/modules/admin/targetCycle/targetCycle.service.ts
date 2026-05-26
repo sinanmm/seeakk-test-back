@@ -380,6 +380,17 @@ export const listTargetCycles = async (
           },
           periods: {
             orderBy: { periodIndex: 'asc' },
+            include: {
+              metrics: {
+                include: {
+                  stageTargets: {
+                    include: {
+                      leadStage: { select: { id: true, name: true, color: true } }
+                    }
+                  }
+                }
+              }
+            }
           },
           leadStage: { select: { id: true, name: true, color: true } },
         },
@@ -453,7 +464,20 @@ export const getTargetCycleById = async (id: string, workspaceId: string): Promi
       where: { id, workspaceId, deletedAt: null },
       include: {
         ranges: { orderBy: { startDay: 'asc' } },
-        periods: { orderBy: { periodIndex: 'asc' } },
+        periods: {
+          orderBy: { periodIndex: 'asc' },
+          include: {
+            metrics: {
+              include: {
+                stageTargets: {
+                  include: {
+                    leadStage: { select: { id: true, name: true, color: true } }
+                  }
+                }
+              }
+            }
+          }
+        },
         leadStage: { select: { id: true, name: true, color: true } },
       },
     });

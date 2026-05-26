@@ -33,6 +33,7 @@ enum TargetCycleType {
 enum TargetMetricType {
   LEADS
   REVENUE
+  FOLLOW_UP
 }
 
 enum LocationType {
@@ -296,6 +297,7 @@ model LeadStage {
   approvalsFrom      LeadStageApproval[] @relation("LeadStageApprovalFromStage")
   approvalsTo        LeadStageApproval[] @relation("LeadStageApprovalToStage")
   revenueTransactions RevenueTransaction[]
+  stageTargets       TargetStageTarget[]
 
   @@unique([workspaceId, name])
   @@index([workspaceId])
@@ -545,6 +547,7 @@ model TargetCyclePeriod {
 
   targetCycle   TargetCycle @relation(fields: [targetCycleId], references: [id], onDelete: Cascade)
   performances  TargetPerformanceLog[]
+  metrics       TargetPeriodMetric[]
 
   @@index([targetCycleId])
   @@index([lockingDate])
@@ -588,12 +591,69 @@ model TargetPerformanceLog {
   createdAt            DateTime          @default(now())
   updatedAt            DateTime          @updatedAt
 
+  // Extended fields for multi-metric support
+  metricType           String?
+  leadStageId          String?
+  targetValue          Float?
+  achievedValue        Float?
+  followupCount        Int               @default(0)
+  revenueAmount        Float             @default(0)
+
   assignment           TargetAssignment  @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
   period               TargetCyclePeriod @relation(fields: [periodId], references: [id], onDelete: Cascade)
 
   @@unique([assignmentId, periodId])
   @@index([periodId])
   @@map("target_performance_logs")
+}
+
+model TargetPeriodMetric {
+  id                    String              @id @default(cuid())
+  periodId              String
+  metricType            String              // "LEADS", "REVENUE", "FOLLOW_UP"
+  targetValue           Float               @default(0)
+  achievedValue         Float               @default(0)
+  completionPercentage  Float               @default(0)
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+
+  period                TargetCyclePeriod   @relation(fields: [periodId], references: [id], onDelete: Cascade)
+  stageTargets          TargetStageTarget[]
+
+  @@index([periodId])
+  @@map("target_period_metrics")
+}
+
+model TargetStageTarget {
+  id                    String              @id @default(cuid())
+  periodMetricId        String
+  leadStageId           String
+  targetValue           Int
+  achievedValue         Int                 @default(0)
+  completionPercentage  Float               @default(0)
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+
+  periodMetric          TargetPeriodMetric  @relation(fields: [periodMetricId], references: [id], onDelete: Cascade)
+  leadStage             LeadStage           @relation(fields: [leadStageId], references: [id], onDelete: Cascade)
+
+  @@index([periodMetricId])
+  @@index([leadStageId])
+  @@map("target_stage_targets")
+}
+
+model TargetFollowupLog {
+  id                    String              @id @default(cuid())
+  followUpId            String              @unique
+  userId                String
+  workspaceId           String
+  completedAt           DateTime
+  status                String
+  createdAt             DateTime            @default(now())
+
+  @@index([userId, completedAt])
+  @@index([workspaceId])
+  @@map("target_followup_logs")
 }
 
 model TargetLockLog {
