@@ -78,27 +78,6 @@ type LeadIncludeRecord = {
     description: string | null;
     scheduledAt: Date;
     status: string;
-    recentDescription?: string | null;
-    previousFollowupDate?: Date | null;
-    newFollowupDate?: Date | null;
-    snoozedBy?: string | null;
-    snoozedAt?: Date | null;
-    reminderActionType?: 'SNOOZE' | 'REMIND_LATER' | null;
-    activityLogs?: Array<{
-      id: string;
-      recentDescription: string;
-      previousFollowupDate: Date;
-      newFollowupDate: Date;
-      snoozedById: string;
-      snoozedAt: Date;
-      reminderActionType: 'SNOOZE' | 'REMIND_LATER';
-      snoozedByUser?: {
-        id: string;
-        name: string | null;
-        username: string | null;
-        email: string;
-      } | null;
-    }>;
   }>;
   lobLogs: Array<{
     id: string;
@@ -193,32 +172,6 @@ const leadInclude = {
       description: true,
       scheduledAt: true,
       status: true,
-      recentDescription: true,
-      previousFollowupDate: true,
-      newFollowupDate: true,
-      snoozedBy: true,
-      snoozedAt: true,
-      reminderActionType: true,
-      activityLogs: {
-        orderBy: { snoozedAt: 'desc' as const },
-        select: {
-          id: true,
-          recentDescription: true,
-          previousFollowupDate: true,
-          newFollowupDate: true,
-          snoozedById: true,
-          snoozedAt: true,
-          reminderActionType: true,
-          snoozedByUser: {
-            select: {
-              id: true,
-              name: true,
-              username: true,
-              email: true,
-            },
-          },
-        },
-      },
     },
   },
 } as const;
@@ -355,15 +308,8 @@ const mapLeadRecord = (lead: LeadIncludeRecord) => {
     deletedAt: lead.deletedAt ? lead.deletedAt.toISOString() : null,
     createdAt: lead.createdAt.toISOString(),
     updatedAt: lead.updatedAt.toISOString(),
-    followUpDescription: (() => {
-      const target = followUps.find(
-        (item) =>
-          (typeof item.recentDescription === 'string' && item.recentDescription.trim().length > 0) ||
-          (typeof item.description === 'string' && item.description.trim().length > 0)
-      );
-      if (!target) return null;
-      return target.recentDescription || target.description || null;
-    })(),
+    followUpDescription:
+      followUps.find((item) => typeof item.description === 'string' && item.description.trim().length > 0)?.description || null,
   slaState: (() => {
     if (!lead.stageExpiresAt || !lead.slaAction || lead.isClosed || lead.isLOB) return null;
     const now = Date.now();
@@ -1831,31 +1777,26 @@ export const bulkDeleteLeads = async (workspaceId: string, ids: string[], perman
   await clearLeadCache(workspaceId);
 };
 
-const buildLeadExportCsvRow = (lead: LeadIncludeRecord): unknown[] => {
-  const latestFollowup = lead.followUps?.[0];
-  const followUpDesc = latestFollowup ? (latestFollowup.recentDescription || latestFollowup.description || '') : '';
-  return [
-    lead.id,
-    lead.name,
-    lead.email || '',
-    lead.phone || '',
-    lead.companyName || '',
-    lead.address || '',
-    lead.expectedRevenue ?? '',
-    lead.assignedTo ? resolveDisplayName(lead.assignedTo) : '',
-    lead.stage?.name || '',
-    lead.lifecycle?.name || '',
-    lead.source?.name || '',
-    lead.nextFollowUpAt ? lead.nextFollowUpAt.toISOString() : '',
-    followUpDesc,
-    lead.isClosed ? 'Yes' : 'No',
-    lead.isLOB ? 'Yes' : 'No',
-    lead.deletedAt ? lead.deletedAt.toISOString() : '',
-    resolveDisplayName(lead.createdBy),
-    lead.createdAt.toISOString(),
-    lead.updatedAt.toISOString(),
-  ];
-};
+const buildLeadExportCsvRow = (lead: LeadIncludeRecord): unknown[] => [
+  lead.id,
+  lead.name,
+  lead.email || '',
+  lead.phone || '',
+  lead.companyName || '',
+  lead.address || '',
+  lead.expectedRevenue ?? '',
+  lead.assignedTo ? resolveDisplayName(lead.assignedTo) : '',
+  lead.stage?.name || '',
+  lead.lifecycle?.name || '',
+  lead.source?.name || '',
+  lead.nextFollowUpAt ? lead.nextFollowUpAt.toISOString() : '',
+  lead.isClosed ? 'Yes' : 'No',
+  lead.isLOB ? 'Yes' : 'No',
+  lead.deletedAt ? lead.deletedAt.toISOString() : '',
+  resolveDisplayName(lead.createdBy),
+  lead.createdAt.toISOString(),
+  lead.updatedAt.toISOString(),
+];
 
 export const exportLeads = async (
   workspaceId: string,
@@ -1879,7 +1820,6 @@ export const exportLeads = async (
     'Lifecycle',
     'Source',
     'Next Follow Up At',
-    'Follow-up Description',
     'Is Closed',
     'Is LOB',
     'Archived At',
