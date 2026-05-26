@@ -63,6 +63,8 @@ export type CompleteFollowUpInput = z.infer<typeof completeFollowUpSchema>;
 
 export const snoozeFollowUpSchema = z.object({
   scheduledAt: parseDateField('scheduledAt'),
+  recentDescription: z.string().trim().min(1, 'Recent follow-up description is required').max(3000, 'Description is too long'),
+  reminderActionType: z.enum(['SNOOZE', 'REMIND_LATER']),
 });
 
 export type SnoozeFollowUpInput = z.infer<typeof snoozeFollowUpSchema>;

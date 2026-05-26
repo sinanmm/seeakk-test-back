@@ -36,6 +36,13 @@ type FollowUpRecord = {
   status: string;
   scheduledAt: Date;
   completedAt: Date | null;
+  recentDescription?: string | null;
+  previousFollowupDate?: Date | null;
+  newFollowupDate?: Date | null;
+  snoozedBy?: string | null;
+  snoozedAt?: Date | null;
+  reminderActionType?: string | null;
+  activityLogs?: any[];
   createdAt: Date;
   updatedAt: Date;
   user: {
@@ -224,6 +231,22 @@ const mapFollowUpRecord = (record: FollowUpRecord) => ({
   type: normalizeFollowUpType(record.type),
   scheduledAt: record.scheduledAt.toISOString(),
   completedAt: record.completedAt ? record.completedAt.toISOString() : null,
+  recentDescription: record.recentDescription || null,
+  previousFollowupDate: record.previousFollowupDate ? record.previousFollowupDate.toISOString() : null,
+  newFollowupDate: record.newFollowupDate ? record.newFollowupDate.toISOString() : null,
+  snoozedBy: record.snoozedBy || null,
+  snoozedAt: record.snoozedAt ? record.snoozedAt.toISOString() : null,
+  reminderActionType: record.reminderActionType || null,
+  activityLogs: (record as any).activityLogs?.map((log: any) => ({
+    ...log,
+    snoozedAt: log.snoozedAt.toISOString(),
+    previousFollowupDate: log.previousFollowupDate.toISOString(),
+    newFollowupDate: log.newFollowupDate.toISOString(),
+    snoozedByUser: {
+      ...log.snoozedByUser,
+      displayName: resolveDisplayName(log.snoozedByUser),
+    },
+  })) || [],
   createdAt: record.createdAt.toISOString(),
   updatedAt: record.updatedAt.toISOString(),
   user: {
@@ -277,6 +300,19 @@ const buildFollowUpInclude = {
       id: true,
       url: true,
       createdAt: true,
+    },
+  },
+  activityLogs: {
+    orderBy: { snoozedAt: 'desc' as const },
+    include: {
+      snoozedByUser: {
+        select: {
+          id: true,
+          name: true,
+          username: true,
+          email: true,
+        },
+      },
     },
   },
 } as const;
@@ -1052,6 +1088,9 @@ export const snoozeFollowUp = async (
   if (input.scheduledAt.getTime() <= Date.now()) {
     throw createServiceError('Snooze time must be in the future.', 422);
   }
+  if (input.scheduledAt.getTime() === existing.scheduledAt.getTime()) {
+    throw createServiceError('The new follow-up date must be different from the current scheduled date.', 422);
+  }
 
   const leadForSchedule = await prisma.lead.findFirst({
     where: { id: existing.leadId, workspaceId, deletedAt: null },
@@ -1069,13 +1108,34 @@ export const snoozeFollowUp = async (
     validateMandatoryFollowUpSchedule(leadForSchedule, input.scheduledAt);
   }
 
-  const updated = await (prisma as any).followUp.update({
-    where: { id: existing.id },
-    data: {
-      scheduledAt: input.scheduledAt,
-      status: FOLLOWUP_PENDING,
-    },
-    include: buildFollowUpInclude,
+  const updated = await prisma.$transaction(async (tx) => {
+    await tx.followupActivityLog.create({
+      data: {
+        followUpId: existing.id,
+        workspaceId,
+        previousFollowupDate: existing.scheduledAt,
+        newFollowupDate: input.scheduledAt,
+        snoozedById: actor.id,
+        recentDescription: input.recentDescription,
+        previousDescription: existing.recentDescription || existing.description || null,
+        reminderActionType: input.reminderActionType,
+      },
+    });
+
+    return await (tx as any).followUp.update({
+      where: { id: existing.id },
+      data: {
+        scheduledAt: input.scheduledAt,
+        status: FOLLOWUP_PENDING,
+        recentDescription: input.recentDescription,
+        previousFollowupDate: existing.scheduledAt,
+        newFollowupDate: input.scheduledAt,
+        snoozedBy: actor.id,
+        snoozedAt: new Date(),
+        reminderActionType: input.reminderActionType,
+      },
+      include: buildFollowUpInclude,
+    });
   });
 
   const todayRange = await getDayRangeForWorkspace(workspaceId);
