@@ -2,6 +2,7 @@ import { Prisma, ReportBaseDataSource, ReportTypeStatus } from '@prisma/client';
 import prisma from '../../config/prisma';
 import { redisClient } from '../../config/redis';
 import auditService from '../../services/Audit/auditService';
+import { resolveVisibleLeadUserScope } from '../leads/leads.service';
 import * as reportTypesRepository from './reportTypes.repository';
 import * as reportsRepository from './reports.repository';
 import type {
@@ -833,7 +834,10 @@ const runReportType = async (
 
   assertReportExecutionFilters([executionDataSource], allowedFilters, scopedFilters);
 
-  let rbacScope = await getReportExportUserScope(workspaceId, actor);
+  let rbacScope =
+    executionDataSource === 'LEADS' || executionDataSource === 'FOLLOWUPS'
+      ? await resolveVisibleLeadUserScope(workspaceId, actor)
+      : await getReportExportUserScope(workspaceId, actor);
   if ((executionDataSource as string) === 'ACTIVITY') {
     const permissions = await getActorPermissions(actor.roleId);
     if (

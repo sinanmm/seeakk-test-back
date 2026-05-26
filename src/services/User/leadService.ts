@@ -2,7 +2,7 @@ import prisma from '../../config/prisma';
 import { redisClient } from '../../config/redis';
 import logger from '../../utils/logger';
 import { normalizeFollowUpType } from '../../constants/followUpType';
-import { buildAccessWhere, buildClosureUpdateData, isClosureStage } from '../../modules/leads/leads.service';
+import { buildAccessWhere, buildClosureUpdateData, isClosureStage, resolveLeadVisibilityMode } from '../../modules/leads/leads.service';
 import { buildLeadOutcomeFlagsFromStage, isClosedWonStage, isLobStage } from '../../modules/leads/leadVisibility.util';
 import * as leadApprovalService from '../../modules/leads/leadApprovals.service';
 import { validateLeadStageTransition } from '../../modules/master/lead-stages/leadStage.service';
@@ -355,6 +355,66 @@ const escapeCsv = (value: unknown): string => {
 
 const buildLeadCacheKey = (workspaceId: string, query: ListLeadsQueryInput | ExportLeadsQueryInput, actor?: Actor): string =>
   `leads:${workspaceId}:${actor ? `${actor.id}:${actor.roleId ?? 'no-role'}:` : ''}${JSON.stringify(query)}`;
+
+const isLeadVisibilityDebugEnabled = (): boolean => process.env.LEAD_VISIBILITY_DEBUG === 'true';
+
+const logLeadVisibilityDebug = async ({
+  workspaceId,
+  actor,
+  query,
+  filteredTotal,
+  responseCount,
+}: {
+  workspaceId: string;
+  actor?: Actor;
+  query: ListLeadsQueryInput;
+  filteredTotal: number;
+  responseCount: number;
+}): Promise<void> => {
+  if (!isLeadVisibilityDebugEnabled()) return;
+
+  let scope = 'anonymous';
+  let permissionScopedTotal = 0;
+  const workspaceTotal = await (prisma as any).lead.count({
+    where: {
+      workspaceId,
+      deletedAt: null,
+    },
+  });
+
+  if (actor) {
+    try {
+      scope = await resolveLeadVisibilityMode(workspaceId, actor);
+      const accessWhere = await buildAccessWhere(workspaceId, actor);
+      permissionScopedTotal = await (prisma as any).lead.count({
+        where: {
+          workspaceId,
+          deletedAt: null,
+          ...(Object.keys(accessWhere).length > 0 ? { AND: [accessWhere] } : {}),
+        },
+      });
+    } catch {
+      scope = 'none';
+      permissionScopedTotal = 0;
+    }
+  } else {
+    scope = 'all';
+    permissionScopedTotal = workspaceTotal;
+  }
+
+  logger.info('Lead visibility debug snapshot', {
+    action: 'lead_visibility_debug',
+    workspaceId,
+    actorId: actor?.id,
+    roleId: actor?.roleId,
+    scope,
+    workspaceTotal,
+    permissionScopedTotal,
+    filteredTotal,
+    responseCount,
+    query,
+  });
+};
 
 export const clearLeadCache = async (workspaceId: string): Promise<void> => {
   if (!redisClient.isOpen) return;
@@ -1216,6 +1276,14 @@ export const getLeads = async (
       hasPrev: query.page > 1,
     },
   };
+
+  await logLeadVisibilityDebug({
+    workspaceId,
+    actor,
+    query,
+    filteredTotal: total,
+    responseCount: rows.length,
+  });
 
   if (redisClient.isOpen) {
     await redisClient.setEx(cacheKey, LEADS_CACHE_TTL_SECONDS, JSON.stringify(result));

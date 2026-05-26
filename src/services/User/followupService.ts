@@ -2,6 +2,7 @@ import moment from 'moment-timezone';
 import prisma from '../../config/prisma';
 import { redisClient } from '../../config/redis';
 import { normalizeFollowUpType } from '../../constants/followUpType';
+import { resolveVisibleLeadUserScope } from '../../modules/leads/leads.service';
 import logger from '../../utils/logger';
 import type {
   CalendarQueryInput,
@@ -361,15 +362,17 @@ const getDayRangeForWorkspace = async (workspaceId: string, date = new Date()) =
 
 const resolveTargetUserId = async (
   workspaceId: string,
-  actor: { id: string; role?: { name?: string | null } | null },
+  actor: { id: string; roleId?: string | null; role?: { name?: string | null } | null },
   requestedUserId?: string,
 ): Promise<string> => {
   if (!requestedUserId || requestedUserId === actor.id) {
     return actor.id;
   }
 
-  if (!isManagerialRole(actor.role?.name)) {
-    throw createServiceError('You are not allowed to access follow-ups for another user.', 403);
+  const visibleUserScope = await resolveVisibleLeadUserScope(workspaceId, actor);
+
+  if (visibleUserScope !== 'ALL' && !visibleUserScope.includes(requestedUserId)) {
+    throw createServiceError('You are not allowed to access follow-ups for this user.', 403);
   }
 
   const targetUser = await prisma.user.findFirst({

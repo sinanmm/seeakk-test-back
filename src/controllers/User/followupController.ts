@@ -90,6 +90,7 @@ const handleServiceError = (error: any, res: Response, next: NextFunction, actio
 
 const getActor = (req: Request) => ({
   id: req.user!.id,
+  roleId: req.user?.roleId,
   role: req.user?.role,
 });
 

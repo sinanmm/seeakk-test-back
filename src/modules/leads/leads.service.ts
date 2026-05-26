@@ -38,14 +38,14 @@ export type LeadVisibilityMode = 'all' | 'team' | 'own' | 'none';
 
 /**
  * Resolves effective lead visibility from permission keys alone.
- * If multiple `LEADS_VIEW_*` keys are attached to a role (misconfiguration), the narrowest scope wins
- * so we never expand access beyond what "own" or "team" already implies.
+ * If multiple `LEADS_VIEW_*` keys are attached to a role, the broadest scope wins so
+ * misconfigured roles do not accidentally hide existing leads.
  */
 export const resolveLeadScopeFromPermissionKeys = (permissions: string[]): LeadVisibilityMode => {
   if (permissions.includes('*')) return 'all';
-  if (permissions.includes('LEADS_VIEW_OWN')) return 'own';
-  if (permissions.includes('LEADS_VIEW_TEAM')) return 'team';
   if (permissions.includes('LEADS_VIEW_ALL')) return 'all';
+  if (permissions.includes('LEADS_VIEW_TEAM')) return 'team';
+  if (permissions.includes('LEADS_VIEW_OWN')) return 'own';
   return 'none';
 };
 
@@ -55,17 +55,29 @@ export const resolveLeadVisibilityMode = async (workspaceId: string, actor: Acto
   return resolveLeadScopeFromPermissionKeys(permissions);
 };
 
+export const resolveVisibleLeadUserScope = async (
+  workspaceId: string,
+  actor: Actor,
+): Promise<string[] | 'ALL'> => {
+  const mode = await resolveLeadVisibilityMode(workspaceId, actor);
+
+  if (mode === 'all') return 'ALL';
+  if (mode === 'none') return [];
+  if (mode === 'own') return [actor.id];
+
+  const teamUserIds = await leadsRepository.getTeamUserIds(workspaceId, actor.id);
+  return Array.from(new Set([actor.id, ...teamUserIds]));
+};
+
 /** Restricts workspace user counts (e.g. Active Users KPI) to the same cohort as lead visibility. */
 export const buildActiveUsersScopedWhere = async (
   workspaceId: string,
   actor: Actor,
 ): Promise<Prisma.UserWhereInput> => {
-  const mode = await resolveLeadVisibilityMode(workspaceId, actor);
-  if (mode === 'all') return {};
-  if (mode === 'none') return { id: { in: [] } };
-  if (mode === 'own') return { id: actor.id };
-  const teamUserIds = await leadsRepository.getTeamUserIds(workspaceId, actor.id);
-  return { id: { in: Array.from(new Set([actor.id, ...teamUserIds])) } };
+  const visibleUserScope = await resolveVisibleLeadUserScope(workspaceId, actor);
+  if (visibleUserScope === 'ALL') return {};
+  if (visibleUserScope.length === 0) return { id: { in: [] } };
+  return { id: { in: visibleUserScope } };
 };
 
 const resolveDisplayName = (user?: { name?: string | null; username?: string | null; email?: string | null } | null): string | null => {
@@ -145,35 +157,22 @@ const assertReopenPermission = async (actor: Actor): Promise<void> => {
 
 /** Exported for dashboard / analytics so KPIs match the same lead visibility as list APIs. */
 export const buildAccessWhere = async (workspaceId: string, actor: Actor): Promise<any> => {
-  const permissions = await getPermissionKeys(actor);
-  const scope = resolveLeadScopeFromPermissionKeys(permissions);
+  const visibleUserScope = await resolveVisibleLeadUserScope(workspaceId, actor);
 
-  if (scope === 'all') {
+  if (visibleUserScope === 'ALL') {
     return {};
   }
 
-  if (scope === 'team') {
-    const teamUserIds = await leadsRepository.getTeamUserIds(workspaceId, actor.id);
-    const scopedIds = Array.from(new Set([actor.id, ...teamUserIds]));
-
+  if (visibleUserScope.length > 0) {
     return {
       OR: [
-        { assignedToId: { in: scopedIds } },
-        { createdById: { in: scopedIds } },
+        { assignedToId: { in: visibleUserScope } },
+        { createdById: { in: visibleUserScope } },
       ],
     };
   }
 
-  if (scope === 'own') {
-    return {
-      OR: [
-        { assignedToId: actor.id },
-        { createdById: actor.id },
-      ],
-    };
-  }
-
-  throw createServiceError('Access denied. You need lead view permissions to access closed leads.', 403);
+  throw createServiceError('Access denied. You need lead view permissions to access leads.', 403);
 };
 
 const buildClosedWhere = async (workspaceId: string, actor: Actor, query: ClosedLeadQueryInput) => {
