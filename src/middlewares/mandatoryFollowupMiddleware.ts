@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { getMandatoryFollowUpSessionState } from '../services/User/mandatoryFollowupContinuation.service';
 import { resolveWorkspaceIdForUser } from '../utils/workspaceContext';
+import { normalizeRequestApiPath } from '../utils/requestApiPath';
 import logger from '../utils/logger';
 
 type MandatoryCacheEntry = {
@@ -16,18 +17,11 @@ export const invalidateMandatoryFollowUpCache = (userId: string): void => {
   mandatoryCache.delete(userId);
 };
 
-const normalizeApiPath = (req: Request): string => {
-  const raw = (req.originalUrl || req.url || req.path || '').split('?')[0].toLowerCase();
-  if (raw.startsWith('/api/')) return raw;
-  if (raw.startsWith('/')) return `/api${raw}`;
-  return `/api/${raw}`;
-};
-
 /** Routes that must stay reachable while mandatory continuation is pending. */
 export const isMandatoryFollowUpExemptPath = (req: Request): boolean => {
   if (req.method === 'OPTIONS') return true;
 
-  const path = normalizeApiPath(req);
+  const path = normalizeRequestApiPath(req);
 
   const exemptPrefixes = [
     '/api/auth/me',

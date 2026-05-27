@@ -6,9 +6,12 @@ import * as leadController from '../../controllers/User/leadController';
 const router = Router();
 
 router.use(protect);
+
+// Read-only meta used by assignee pickers — must stay available during target lock.
+router.get('/meta/assignees', leadController.listLeadAssignees);
+
 router.use(checkUserLock);
 
-router.get('/meta/assignees', leadController.listLeadAssignees);
 router.get('/meta/stage-rules', leadController.listLeadTransitionStageRules);
 router.get('/export', leadController.exportLeads);
 router.get('/', leadController.listLeads);
