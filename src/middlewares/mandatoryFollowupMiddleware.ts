@@ -34,6 +34,11 @@ export const isMandatoryFollowUpExemptPath = (req: Request): boolean => {
     '/api/auth/logout',
     '/api/auth/refresh',
     '/api/followups/mandatory-continuation',
+    // Allow UI/meta lookups while mandatory follow-up is pending.
+    // These endpoints are required to render assignee pickers/admin lists,
+    // so blocking them causes broken screens.
+    '/api/leads/meta/assignees',
+    '/api/admin/users',
     '/api/attendance/today',
     '/api/attendance/check-in',
     '/api/attendance/settings',

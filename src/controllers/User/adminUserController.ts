@@ -22,6 +22,7 @@ import { inviteService } from '../../modules/invites/invite.service';
 import { resolveAdminFrontendOrigin } from '../../modules/invites/inviteLinks';
 import { emitUserEvent, emitWorkspaceEvent } from '../../realtime/socket';
 import { hasPermission } from '../../middlewares/authMiddleware';
+import { resolveWorkspaceIdForUser } from '../../utils/workspaceContext';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -219,8 +220,10 @@ export const revokeInvite = async (req: Request, res: Response, next: NextFuncti
  * Paginated, filterable list of workspace users.
  */
 export const listUsers = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
-  const workspaceId = requireWorkspace(req, res);
-  if (!workspaceId) return;
+  // Ensure workspaceId can still be resolved when it isn't set on `req.user`.
+  const workspaceId =
+    req.user?.workspaceId?.trim() || (await resolveWorkspaceIdForUser(req.user!.id, req.user?.workspaceId ?? null));
+  if (!workspaceId) return requireWorkspace(req, res);
 
   const query = validate<ListUsersQuery>(listUsersQuerySchema, req.query, res);
   if (!query) return;

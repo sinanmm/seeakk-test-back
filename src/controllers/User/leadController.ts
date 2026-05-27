@@ -5,6 +5,7 @@ import logger from '../../utils/logger';
 import * as leadService from '../../services/User/leadService';
 import { emitWorkspaceEvent } from '../../realtime/socket';
 import { getActiveStageRulesForExecution } from '../../modules/master/stage-rules/stageRule.service';
+import { resolveWorkspaceIdForUser } from '../../utils/workspaceContext';
 import type {
   AssignLeadInput,
   ChangeStageInput,
@@ -35,6 +36,8 @@ const normalizeStageKey = (value?: string | null): string =>
     .replace(/[\s_-]+/g, '');
 
 const requireWorkspace = (req: Request, res: Response): string | null => {
+  // Use the shared resolver so we don't break meta endpoints when
+  // `req.user.workspaceId` is missing but a workspace can be inferred.
   const workspaceId = req.user?.workspaceId ?? null;
   if (!workspaceId) {
     res.status(403).json({
@@ -469,8 +472,11 @@ export const exportLeads = async (req: Request, res: Response, next: NextFunctio
 };
 
 export const listLeadAssignees = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
-  const workspaceId = requireWorkspace(req, res);
-  if (!workspaceId) return;
+  // Meta endpoints should still work even if `req.user.workspaceId` is not set.
+  const workspaceId =
+    req.user?.workspaceId?.trim() ||
+    (await resolveWorkspaceIdForUser(req.user!.id, req.user?.workspaceId ?? null));
+  if (!workspaceId) return requireWorkspace(req, res);
 
   try {
     const actor = getActor(req);
