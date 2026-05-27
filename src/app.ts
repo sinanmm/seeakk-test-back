@@ -42,7 +42,7 @@ import logger from './utils/logger';
 import prisma from './config/prisma';
 import { redisClient } from './config/redis';
 import { SOCKET_IO_PATH } from './config/socketConstants';
-import { corsOriginHandler } from './config/cors';
+import { corsOriginHandler, handlePreflightRequest } from './config/cors';
 import { globalLimiter } from './middlewares/rateLimiter';
 import { notFound, errorHandler } from './middlewares/errorMiddleware';
 
@@ -93,6 +93,9 @@ const corsOptions: cors.CorsOptions = {
   credentials: true,
   optionsSuccessStatus: 204,
 };
+
+// Preflight must succeed before auth / rate-limit / route handlers (fixes Vercel CORS on meta APIs).
+app.use(handlePreflightRequest);
 
 // Access logs: "tiny" in production reduces log volume unless ACCESS_LOG_VERBOSE=true
 const accessLogFormat =

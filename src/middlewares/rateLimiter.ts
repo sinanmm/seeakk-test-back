@@ -3,6 +3,7 @@ import RedisStore from 'rate-limit-redis';
 import { redisClient } from '../config/redis';
 import logger from '../utils/logger';
 import { Request, Response, NextFunction } from 'express';
+import { applyCorsHeadersIfAllowed } from '../config/cors';
 
 const toRedisArgument = (value: unknown): string | Buffer => {
   if (Buffer.isBuffer(value)) return value;
@@ -41,6 +42,7 @@ export const globalLimiter = rateLimit({
   },
   handler: (req: Request, res: Response, next: NextFunction, options: any) => {
     logger.warn('Global rate limit exceeded', { ip: req.ip, action: 'rate_limit_global' });
+    applyCorsHeadersIfAllowed(req, res);
     const retryAfter = Math.max(1, Math.ceil((options.windowMs || 0) / 1000));
     res.status(options.statusCode).json({
       message: 'Too many requests, please try again later.',

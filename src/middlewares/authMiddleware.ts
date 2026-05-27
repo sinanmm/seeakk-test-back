@@ -4,6 +4,7 @@ import prisma from '../config/prisma';
 import logger from '../utils/logger';
 import { redisClient } from '../config/redis';
 import { enforceMandatoryFollowUpContinuation } from './mandatoryFollowupMiddleware';
+import { applyCorsHeadersIfAllowed } from '../config/cors';
 
 interface JwtPayload {
   userId: string;
@@ -148,6 +149,7 @@ export const protect = async (req: Request, res: Response, next: NextFunction): 
 
     if (!token) {
       logger.warn('Access denied. No token provided.', { action: 'auth_missing_token', ip: req.ip });
+      applyCorsHeadersIfAllowed(req, res);
       return res.status(401).json({
         message: 'Not authorized to access this route. No token provided.',
         diagnostic: "Send an 'Authorization: Bearer <token>' header.",
@@ -177,11 +179,13 @@ export const protect = async (req: Request, res: Response, next: NextFunction): 
         userId: decoded.userId,
         action: 'auth_ghost_user',
       });
+      applyCorsHeadersIfAllowed(req, res);
       return res.status(401).json({ message: 'The user belonging to this token no longer exists.' });
     }
 
     if (!user.isActive) {
       logger.warn('Access denied. User is inactive.', { userId: user.id, action: 'auth_inactive_user' });
+      applyCorsHeadersIfAllowed(req, res);
       return res.status(403).json({ message: 'User account is suspended or inactive.' });
     }
 
@@ -195,6 +199,7 @@ export const protect = async (req: Request, res: Response, next: NextFunction): 
         roleWorkspaceId: hydratedUser.role?.workspaceId,
         action: 'auth_role_workspace_mismatch',
       });
+      applyCorsHeadersIfAllowed(req, res);
       return res.status(403).json({
         message: 'Forbidden: The assigned role does not belong to this workspace.',
       });
@@ -204,6 +209,7 @@ export const protect = async (req: Request, res: Response, next: NextFunction): 
     return enforceMandatoryFollowUpContinuation(req, res, next);
   } catch (error: any) {
     logger.error('Authentication Error', { error: error.message, action: 'auth_failed' });
+    applyCorsHeadersIfAllowed(req, res);
     return res.status(401).json({
       message: 'Not authorized. Token failed or expired.',
       diagnosticReason: error.message,

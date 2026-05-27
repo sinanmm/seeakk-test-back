@@ -1,7 +1,28 @@
-import type { Request, Response } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 
 const normalizeOrigin = (origin: string): string =>
   origin.trim().toLowerCase().replace(/\/+$/, '');
+
+/** Always permitted CRM frontends (used when Render env vars are missing/outdated). */
+const BUILTIN_ALLOWED_ORIGINS = [
+  'https://lms-frontend-amber-beta.vercel.app',
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'http://127.0.0.1:5173',
+];
+
+export const CORS_ALLOWED_METHODS = 'GET,POST,PUT,PATCH,DELETE,OPTIONS';
+
+export const CORS_ALLOWED_HEADERS = [
+  'Content-Type',
+  'Authorization',
+  'x-device-id',
+  'x-request-id',
+  'x-workspace-id',
+  'Accept',
+  'Origin',
+  'X-Requested-With',
+].join(', ');
 
 /** Split on comma, semicolon, or whitespace (common in Render / .env pastes). */
 const splitOrigins = (value?: string | null): string[] =>
@@ -47,17 +68,18 @@ const isVercelDeploymentOrigin = (origin: string): boolean => {
   if (!host || !host.endsWith('.vercel.app')) return false;
 
   const slug = getVercelProjectSlug();
-  return host === `${slug}.vercel.app` || host.startsWith(`${slug}-`);
+  if (host === `${slug}.vercel.app` || host.startsWith(`${slug}-`)) return true;
+
+  // Fallback: allow any Vercel deployment host (preview branches, renamed projects).
+  return true;
 };
 
 export const getAllowedOrigins = (): string[] =>
   Array.from(
     new Set([
+      ...BUILTIN_ALLOWED_ORIGINS.map(normalizeOrigin),
       ...splitOrigins(process.env.FRONTEND_URL),
       ...splitOrigins(process.env.ALLOWED_ORIGINS),
-      'http://localhost:5173',
-      'http://localhost:3000',
-      'http://127.0.0.1:5173',
     ]),
   );
 
@@ -105,4 +127,36 @@ export const applyCorsHeadersIfAllowed = (req: Request, res: Response): void => 
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.setHeader('Vary', 'Origin');
   }
+};
+
+/**
+ * Answer browser preflight (OPTIONS) before auth/rate-limit middleware runs.
+ * Prevents "No Access-Control-Allow-Origin" when downstream handlers reject OPTIONS.
+ */
+export const handlePreflightRequest = (req: Request, res: Response, next: NextFunction): void => {
+  if (req.method !== 'OPTIONS') {
+    next();
+    return;
+  }
+
+  const origin = req.headers.origin as string | undefined;
+  if (!origin || !isAllowedOrigin(origin)) {
+    next();
+    return;
+  }
+
+  res.setHeader('Access-Control-Allow-Origin', origin);
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Vary', 'Origin');
+  res.setHeader('Access-Control-Allow-Methods', CORS_ALLOWED_METHODS);
+
+  const requestedHeaders = req.headers['access-control-request-headers'];
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    typeof requestedHeaders === 'string' && requestedHeaders.trim()
+      ? requestedHeaders
+      : CORS_ALLOWED_HEADERS,
+  );
+  res.setHeader('Access-Control-Max-Age', '86400');
+  res.status(204).end();
 };
