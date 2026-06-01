@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   assertLockSubjectMatchesAssignment,
+  getAssignedUserId,
+  isNonAssigneeStakeholderOnAssignment,
   shouldSkipLockForExemptPeriod,
 } from './targetLockEvaluation.service';
 
@@ -15,6 +17,12 @@ test('assertLockSubjectMatchesAssignment rejects locking non-assigned users', ()
 
   assert.equal(assertLockSubjectMatchesAssignment(assignment, 'david'), true);
   assert.equal(assertLockSubjectMatchesAssignment(assignment, 'john_supervisor'), false);
+  assert.equal(getAssignedUserId(assignment), 'david');
+  assert.equal(
+    isNonAssigneeStakeholderOnAssignment(assignment, 'john_supervisor', 'john_supervisor'),
+    true,
+  );
+  assert.equal(isNonAssigneeStakeholderOnAssignment(assignment, 'david', 'john_supervisor'), false);
 });
 
 test('shouldSkipLockForExemptPeriod skips re-lock during exempted period', () => {

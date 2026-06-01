@@ -1,7 +1,11 @@
 import prisma from '../../config/prisma';
 import logger from '../../utils/logger';
 import { lockUser } from '../../services/User/accountLockService';
-import { canLockUserForTargetFailure, TARGET_LOCK_REASON_CODE } from './targetLockEvaluation.service';
+import {
+  canLockUserForTargetFailure,
+  getAssignedUserId,
+  TARGET_LOCK_REASON_CODE,
+} from './targetLockEvaluation.service';
 
 const db = prisma as any;
 
@@ -288,9 +292,10 @@ export const evaluateAssignmentPeriod = async (
   return { completed: overallCompleted, percentage: avgPercentage };
 };
 
+/**
+ * Lock only `target_assignments.userId` (assigned target owner). Never pass assigner/creator IDs.
+ */
 export const lockUserForTargetFailure = async (
-  userId: string,
-  workspaceId: string,
   assignmentId: string,
   periodId: string,
   reason: string,
@@ -300,18 +305,23 @@ export const lockUserForTargetFailure = async (
     select: {
       id: true,
       userId: true,
+      workspaceId: true,
       assignedById: true,
       targetCycleId: true,
       isLockExempt: true,
       exemptPeriodId: true,
       exemptUntilPeriodEnd: true,
+      targetCycle: { select: { createdBy: true } },
     },
   });
 
   if (!assignment) {
-    logger.warn('Skipped target lock: assignment not found', { assignmentId, userId, periodId });
+    logger.warn('Skipped target lock: assignment not found', { assignmentId, periodId });
     return;
   }
+
+  const assignedUserId = getAssignedUserId(assignment);
+  const workspaceId = assignment.workspaceId;
 
   const period = await db.targetCyclePeriod.findUnique({
     where: { id: periodId },
@@ -319,23 +329,16 @@ export const lockUserForTargetFailure = async (
   });
 
   if (!period) {
-    logger.warn('Skipped target lock: period not found', { assignmentId, userId, periodId });
+    logger.warn('Skipped target lock: period not found', { assignmentId, assignedUserId, periodId });
     return;
   }
 
-  if (userId !== assignment.userId) {
-    logger.warn('Skipped target lock: lock subject must be the assigned target user only', {
-      requestedUserId: userId,
-      assignmentUserId: assignment.userId,
-      assignedById: assignment.assignedById ?? null,
-      assignmentId,
-      periodId,
-      action: 'target_lock_wrong_subject',
-    });
-    return;
-  }
-
-  const mayLock = await canLockUserForTargetFailure(assignment, userId, period);
+  const mayLock = await canLockUserForTargetFailure(
+    assignment,
+    assignedUserId,
+    period,
+    assignment.targetCycle?.createdBy ?? null,
+  );
   if (!mayLock) {
     return;
   }
@@ -343,10 +346,10 @@ export const lockUserForTargetFailure = async (
   const lockReason = reason?.trim() || `Target incomplete: ${period.label} goals not met.`;
   const standardizedReason = `${TARGET_LOCK_REASON_CODE}: ${lockReason}`;
 
-  await lockUser(userId, workspaceId, standardizedReason);
+  await lockUser(assignedUserId, workspaceId, standardizedReason);
 
   await db.user.update({
-    where: { id: userId },
+    where: { id: assignedUserId },
     data: {
       targetLockedAt: new Date(),
       targetLockReason: standardizedReason,
@@ -355,18 +358,19 @@ export const lockUserForTargetFailure = async (
 
   await db.targetLockLog.create({
     data: {
-      userId,
+      userId: assignedUserId,
       workspaceId,
       assignmentId,
       periodId,
       lockPeriodId: periodId,
       reason: standardizedReason,
       lockedBySystem: true,
+      isInvalidLock: false,
     },
   });
 
   logger.warn('User locked for incomplete target', {
-    userId,
+    userId: assignedUserId,
     assignmentId,
     periodId,
     lockReason: standardizedReason,
@@ -401,16 +405,14 @@ export const runTargetLockingEvaluation = async (): Promise<void> => {
     });
 
     for (const assignment of assignments) {
-      const evaluatedUserId = assignment.userId;
-      if (!assignment.user || assignment.user.id !== evaluatedUserId) {
+      const assignedUserId = getAssignedUserId(assignment);
+      if (!assignment.user || assignment.user.id !== assignedUserId) {
         continue;
       }
 
       const { completed } = await evaluateAssignmentPeriod(assignment.id, period.id);
       if (!completed && !assignment.user.isLocked) {
         await lockUserForTargetFailure(
-          evaluatedUserId,
-          assignment.workspaceId,
           assignment.id,
           period.id,
           `Target incomplete: ${period.label} goals not met.`,

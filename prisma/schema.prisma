@@ -672,6 +672,8 @@ model TargetLockLog {
   reason         String
   lockedAt       DateTime         @default(now())
   lockedBySystem Boolean          @default(true)
+  isInvalidLock  Boolean          @default(false)
+  invalidatedAt  DateTime?
 
   user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   assignment     TargetAssignment? @relation(fields: [assignmentId], references: [id], onDelete: SetNull)

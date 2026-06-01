@@ -154,6 +154,12 @@ const startServer = async () => {
         } catch (guardError) {
           console.error('[Guard] Failed to run attendance permissions guard:', guardError);
         }
+        try {
+          const { ensureTargetLockRemediation } = await import('./modules/targets/targetLockRemediation.service');
+          await ensureTargetLockRemediation();
+        } catch (guardError) {
+          console.error('[Guard] Failed to run target lock remediation:', guardError);
+        }
         // Start background jobs
         startFollowUpReminders();
         startAttendanceJobs();

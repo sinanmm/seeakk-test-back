@@ -27,7 +27,13 @@ export const recordDailyViolation = async (userId: string, workspaceId: string, 
     } else if (nextAttempt >= 3) {
       status = 'LOCKED';
       message = 'Account locked due to 3 consecutive daily follow-up failures.';
-      await lockUser(userId, workspaceId, message);
+      const isAssignedTargetOwner = await (prisma as any).targetAssignment.findFirst({
+        where: { userId, workspaceId, isActive: true },
+        select: { id: true },
+      });
+      if (isAssignedTargetOwner) {
+        await lockUser(userId, workspaceId, message);
+      }
     }
   }
 
@@ -65,7 +71,12 @@ export const recordMonthlyViolation = async (userId: string, workspaceId: string
     }
   });
 
-  await lockUser(userId, workspaceId, message);
-  
-  logger.error('Monthly critical KPI violation: Account Locked', { userId });
+  const isAssignedTargetOwner = await (prisma as any).targetAssignment.findFirst({
+    where: { userId, workspaceId, isActive: true },
+    select: { id: true },
+  });
+  if (isAssignedTargetOwner) {
+    await lockUser(userId, workspaceId, message);
+    logger.error('Monthly critical KPI violation: Account Locked', { userId });
+  }
 };

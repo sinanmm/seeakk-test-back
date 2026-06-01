@@ -123,7 +123,7 @@ export const unlockTargetLockedUser = async (
   }
 
   if (assignment?.id && exemptPeriodId) {
-    await applyTargetLockExemptionAfterUnlock(assignment.id, exemptPeriodId, actor.id);
+    await applyTargetLockExemptionAfterUnlock(assignment.id, userId, exemptPeriodId, actor.id);
   }
 
   await db.targetUnlockLog.create({

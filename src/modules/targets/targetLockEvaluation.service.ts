@@ -8,6 +8,11 @@ export const TARGET_LOCK_REASON_CODE = 'TARGET_LOCKED';
 export const TARGET_LOCK_USER_MESSAGE =
   'Your target for the current evaluation period has not been completed. Please contact your supervisor for assistance.';
 
+export const INVALID_TARGET_LOCK_REASON_PREFIX = 'INVALID_LOCK:';
+
+/** `target_assignments.userId` — the only account that may be locked for this assignment. */
+export const getAssignedUserId = (assignment: { userId: string }): string => assignment.userId;
+
 type AssignmentRow = {
   id: string;
   userId: string;
@@ -50,6 +55,27 @@ export const assertLockSubjectMatchesAssignment = (
   }
 
   return true;
+};
+
+/**
+ * True when `candidateUserId` is only a creator/assigner/supervisor on this row, not the assignee.
+ */
+export const isNonAssigneeStakeholderOnAssignment = (
+  assignment: AssignmentRow,
+  candidateUserId: string,
+  cycleCreatedBy?: string | null,
+): boolean => {
+  const assignedUserId = getAssignedUserId(assignment);
+  if (candidateUserId === assignedUserId) {
+    return false;
+  }
+  if (assignment.assignedById && assignment.assignedById === candidateUserId) {
+    return true;
+  }
+  if (cycleCreatedBy && cycleCreatedBy === candidateUserId) {
+    return true;
+  }
+  return false;
 };
 
 export const clearExpiredLockExemption = async (
@@ -127,8 +153,24 @@ export const canLockUserForTargetFailure = async (
   assignment: AssignmentRow,
   evaluatedUserId: string,
   period: PeriodRow,
+  cycleCreatedBy?: string | null,
 ): Promise<boolean> => {
-  if (!assertLockSubjectMatchesAssignment(assignment, evaluatedUserId)) {
+  const assignedUserId = getAssignedUserId(assignment);
+
+  if (evaluatedUserId !== assignedUserId) {
+    assertLockSubjectMatchesAssignment(assignment, evaluatedUserId);
+    return false;
+  }
+
+  if (isNonAssigneeStakeholderOnAssignment(assignment, evaluatedUserId, cycleCreatedBy)) {
+    logger.warn('Skipped target lock: user is assigner/creator, not the assigned target owner', {
+      assignmentId: assignment.id,
+      assignedUserId,
+      evaluatedUserId,
+      assignedById: assignment.assignedById ?? null,
+      cycleCreatedBy: cycleCreatedBy ?? null,
+      action: 'target_lock_stakeholder_protected',
+    });
     return false;
   }
 
@@ -150,6 +192,7 @@ export const canLockUserForTargetFailure = async (
 
 export const applyTargetLockExemptionAfterUnlock = async (
   assignmentId: string,
+  assignedUserId: string,
   periodId: string,
   unlockedById: string,
 ): Promise<void> => {
@@ -160,8 +203,23 @@ export const applyTargetLockExemptionAfterUnlock = async (
 
   if (!period) return;
 
+  const assignment = await db.targetAssignment.findFirst({
+    where: { id: assignmentId, userId: assignedUserId, isActive: true },
+    select: { id: true },
+  });
+
+  if (!assignment) {
+    logger.warn('Skipped target lock exemption: assignment not owned by unlocked user', {
+      assignmentId,
+      assignedUserId,
+      unlockedById,
+      action: 'target_unlock_exemption_skipped',
+    });
+    return;
+  }
+
   await db.targetAssignment.update({
-    where: { id: assignmentId },
+    where: { id: assignmentId, userId: assignedUserId },
     data: {
       isLockExempt: true,
       exemptPeriodId: period.id,
