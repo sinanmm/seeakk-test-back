@@ -18,6 +18,8 @@ export interface StageRuleResponse {
 export interface LeadStageResponse {
   id: string;
   name: string;
+  stageShortForm: string | null;
+  showInCalendar: boolean;
   color: string;
   isApprovalRequired: boolean;
   isClosed: boolean;

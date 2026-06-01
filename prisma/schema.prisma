@@ -284,6 +284,8 @@ model LeadStage {
   id                 String          @id @default(uuid())
   workspaceId        String
   name               String
+  stageShortForm     String?
+  showInCalendar     Boolean         @default(true)
   color              String          @default("#10b981")
   isApprovalRequired Boolean         @default(false)
   isLOB              Boolean         @default(false)
@@ -304,6 +306,7 @@ model LeadStage {
   stageTargets       TargetStageTarget[]
 
   @@unique([workspaceId, name])
+  @@unique([workspaceId, stageShortForm])
   @@index([workspaceId])
   @@index([name])
   @@index([status])

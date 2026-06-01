@@ -8,6 +8,7 @@ import {
   markPendingFollowUpsOverdueForWorkspace,
   resolveCalendarOverdueStatus,
 } from './followupOverduePersistence.service';
+import { buildStageCalendarIndex } from './leadStageCalendar.util';
 
 const db = prisma as any;
 const PENDING = 'PENDING';
@@ -28,7 +29,7 @@ const buildFollowUpIncludeWithStage = {
       email: true,
       phone: true,
       stageId: true,
-      stage: { select: { id: true, name: true, color: true } },
+      stage: { select: { id: true, name: true, color: true, stageShortForm: true, showInCalendar: true } },
     },
   },
   user: {
@@ -136,12 +137,22 @@ export const mapCalendarFollowUpDetail = (record: any, timeZone: string) => {
   const mapped = mapFollowUpRecord(record);
   const customerName = record.lead?.email?.trim() || record.lead?.phone?.trim() || record.lead?.name || '—';
   const overdueStatus = resolveCalendarOverdueStatus(record, timeZone);
+  const stageCalendar = record.lead?.stage
+    ? buildStageCalendarIndex([record.lead.stage])
+    : null;
 
   return {
     ...mapped,
     customerName,
     leadStage: record.lead?.stage
-      ? { id: record.lead.stage.id, name: record.lead.stage.name, color: record.lead.stage.color }
+      ? {
+          id: record.lead.stage.id,
+          name: record.lead.stage.name,
+          stageShortForm: stageCalendar?.shortForm(record.lead.stage.id) || null,
+          calendarLabel: stageCalendar?.label(record.lead.stage.id, record.lead.stage.name) || record.lead.stage.name,
+          color: record.lead.stage.color,
+          showInCalendar: record.lead.stage.showInCalendar !== false,
+        }
       : null,
     overdueStatus,
     isOverdue: Boolean(record.isOverdue),

@@ -10,6 +10,7 @@ import {
   markPendingFollowUpsOverdueForWorkspace,
   shouldShowCalendarOverdueRed,
 } from './followupOverduePersistence.service';
+import { buildStageCalendarIndex } from './leadStageCalendar.util';
 import logger from '../../utils/logger';
 import type {
   CalendarQueryInput,
@@ -309,7 +310,7 @@ const buildFollowUpInclude = {
       email: true,
       phone: true,
       stageId: true,
-      stage: { select: { id: true, name: true, color: true } },
+      stage: { select: { id: true, name: true, color: true, stageShortForm: true, showInCalendar: true } },
     },
   },
   user: {
@@ -738,8 +739,8 @@ export const getAdvancedCalendarSummary = async (
 
   const [stages, leadsCreated, stageHistory, followUps] = await Promise.all([
     (prisma as any).leadStage.findMany({
-      where: { workspaceId },
-      select: { id: true, name: true, color: true },
+      where: { workspaceId, deletedAt: null },
+      select: { id: true, name: true, color: true, stageShortForm: true, showInCalendar: true },
     }),
     (prisma as any).lead.findMany({
       where: {
@@ -751,7 +752,7 @@ export const getAdvancedCalendarSummary = async (
       select: {
         createdAt: true,
         stageId: true,
-        stage: { select: { name: true, color: true } },
+        stage: { select: { name: true, color: true, stageShortForm: true, showInCalendar: true } },
       },
     }),
     (prisma as any).leadStageHistory.findMany({
@@ -782,27 +783,34 @@ export const getAdvancedCalendarSummary = async (
         overdueAt: true,
         completedAfterOverdue: true,
         extendedAfterOverdue: true,
-        lead: { select: { stageId: true, stage: { select: { name: true, color: true } } } },
+        lead: {
+          select: {
+            stageId: true,
+            stage: { select: { name: true, color: true, stageShortForm: true, showInCalendar: true } },
+          },
+        },
       },
     }),
   ]);
 
+  const stageCalendar = buildStageCalendarIndex(stages);
   const stageColorMap = Object.fromEntries(
-    stages.map((s: any) => [s.id, { color: s.color, name: s.name }]),
+    stages.map((s: any) => [s.id, { color: s.color, name: s.name, stageShortForm: s.stageShortForm, showInCalendar: s.showInCalendar }]),
   );
 
   const summaryByDate: Record<
     string,
     {
       leadsCreated: number;
-      leadsCreatedByStage: Record<string, { count: number; name: string; color: string }>;
+      leadsCreatedByStage: Record<string, { count: number; name: string; shortForm: string; color: string }>;
       totalFollowUps: number;
-      stageTransitions: Record<string, { count: number; name: string; color: string }>;
+      stageTransitions: Record<string, { count: number; name: string; shortForm: string; color: string }>;
       stageFollowUps: Record<
         string,
         {
           count: number;
           name: string;
+          shortForm: string;
           color: string;
           overdueExtendedCount: number;
           overdueHistoryCount: number;
@@ -828,11 +836,12 @@ export const getAdvancedCalendarSummary = async (
     ensureDate(d);
     summaryByDate[d].leadsCreated += 1;
     const stageId = l.stageId;
-    if (!stageId) return;
+    if (!stageId || !stageCalendar.isVisible(stageId)) return;
     if (!summaryByDate[d].leadsCreatedByStage[stageId]) {
       summaryByDate[d].leadsCreatedByStage[stageId] = {
         count: 0,
-        name: l.stage?.name || stageColorMap[stageId]?.name || 'Unknown Stage',
+        name: stageCalendar.fullName(stageId, l.stage?.name),
+        shortForm: stageCalendar.label(stageId, l.stage?.name),
         color: l.stage?.color || stageColorMap[stageId]?.color || '#cbd5e1',
       };
     }
@@ -845,11 +854,12 @@ export const getAdvancedCalendarSummary = async (
     summaryByDate[d].totalFollowUps += 1;
 
     const stageId = f.lead?.stageId;
-    if (stageId) {
+    if (stageId && stageCalendar.isVisible(stageId)) {
       if (!summaryByDate[d].stageFollowUps[stageId]) {
         summaryByDate[d].stageFollowUps[stageId] = {
           count: 0,
-          name: f.lead.stage?.name || 'Unknown Stage',
+          name: stageCalendar.fullName(stageId, f.lead.stage?.name),
+          shortForm: stageCalendar.label(stageId, f.lead.stage?.name),
           color: f.lead.stage?.color || '#cbd5e1',
           overdueExtendedCount: 0,
           overdueHistoryCount: 0,
@@ -867,13 +877,14 @@ export const getAdvancedCalendarSummary = async (
 
   stageHistory.forEach((h: any) => {
     const stageId = h.toStageId;
-    if (stageId) {
+    if (stageId && stageCalendar.isVisible(stageId)) {
       const d = groupDate(h.changedAt);
       ensureDate(d);
       if (!summaryByDate[d].stageTransitions[stageId]) {
         summaryByDate[d].stageTransitions[stageId] = {
           count: 0,
-          name: h.toStageName || stageColorMap[stageId]?.name || 'Unknown Stage',
+          name: stageCalendar.fullName(stageId, h.toStageName),
+          shortForm: stageCalendar.label(stageId, h.toStageName),
           color: stageColorMap[stageId]?.color || '#cbd5e1',
         };
       }
@@ -897,6 +908,7 @@ export const getAdvancedCalendarSummary = async (
       stageId: id,
       count: info.count,
       name: info.name,
+      shortForm: info.shortForm,
       color: info.color,
       overdueExtendedCount: info.overdueExtendedCount,
       overdueHistoryCount: info.overdueHistoryCount,
@@ -971,6 +983,22 @@ export const getAdvancedCalendarDetails = async (
 
   const { mapCalendarFollowUpDetail } = await import('./overdueFollowup.service');
 
+  const stages = await (prisma as any).leadStage.findMany({
+    where: { workspaceId, deletedAt: null },
+    select: { id: true, name: true, color: true, stageShortForm: true, showInCalendar: true },
+  });
+  const stageCalendar = buildStageCalendarIndex(stages);
+
+  const enrichStage = (stage: any) =>
+    stage?.id
+      ? {
+          ...stage,
+          name: stageCalendar.fullName(stage.id, stage.name),
+          stageShortForm: stageCalendar.shortForm(stage.id),
+          calendarLabel: stageCalendar.label(stage.id, stage.name),
+        }
+      : null;
+
   if (query.type === 'LEADS_CREATED' || query.type === 'LEAD_STAGE_CREATED') {
     const where: any = {
       workspaceId,
@@ -989,26 +1017,43 @@ export const getAdvancedCalendarDetails = async (
         take: query.limit,
         orderBy: { createdAt: 'desc' },
         include: {
-          stage: { select: { id: true, name: true, color: true } },
+          stage: { select: { id: true, name: true, color: true, stageShortForm: true, showInCalendar: true } },
           assignedTo: { select: { name: true, email: true } },
           createdBy: { select: { name: true, email: true } },
         },
       }),
     ]);
-    items = items.map((lead: any) => ({
-      id: lead.id,
-      name: lead.name,
-      email: lead.email,
-      phone: lead.phone,
-      customerName: lead.email?.trim() || lead.phone?.trim() || lead.name,
-      stage: lead.stage,
-      currentStage: lead.stage,
-      previousStage: null,
-      createdBy: lead.createdBy,
-      changedBy: lead.createdBy,
-      createdAt: lead.createdAt,
-    }));
+    if (query.type === 'LEAD_STAGE_CREATED' && query.stageId && !stageCalendar.isVisible(query.stageId)) {
+      return {
+        items: [],
+        pagination: { page: query.page, limit: query.limit, total: 0, totalPages: 1 },
+      };
+    }
+
+    items = items.map((lead: any) => {
+      const stage = enrichStage(lead.stage);
+      return {
+        id: lead.id,
+        name: lead.name,
+        email: lead.email,
+        phone: lead.phone,
+        customerName: lead.email?.trim() || lead.phone?.trim() || lead.name,
+        stage,
+        currentStage: stage,
+        previousStage: null,
+        createdBy: lead.createdBy,
+        changedBy: lead.createdBy,
+        createdAt: lead.createdAt,
+      };
+    });
   } else if (query.type === 'STAGE_CREATED') {
+    if (query.stageId && !stageCalendar.isVisible(query.stageId)) {
+      return {
+        items: [],
+        pagination: { page: query.page, limit: query.limit, total: 0, totalPages: 1 },
+      };
+    }
+
     const historyWhere = {
       workspaceId,
       changedById: targetUserId,
@@ -1026,7 +1071,7 @@ export const getAdvancedCalendarDetails = async (
         include: {
           lead: {
             include: {
-              stage: { select: { id: true, name: true, color: true } },
+              stage: { select: { id: true, name: true, color: true, stageShortForm: true, showInCalendar: true } },
               assignedTo: { select: { name: true, email: true } },
             },
           },
@@ -1034,22 +1079,48 @@ export const getAdvancedCalendarDetails = async (
       }),
     ]);
     total = historyTotal;
-    items = historyRows.map((row: any) => ({
-      id: row.leadId,
-      name: row.lead?.name,
-      email: row.lead?.email,
-      phone: row.lead?.phone,
-      customerName: row.lead?.email?.trim() || row.lead?.phone?.trim() || row.lead?.name,
-      stage: row.lead?.stage,
-      currentStage: { id: row.toStageId, name: row.toStageName, color: row.lead?.stage?.color },
-      previousStage: row.fromStageName
-        ? { name: row.fromStageName, id: row.fromStageId }
-        : null,
-      changedBy: { name: row.changedById },
-      createdBy: row.lead?.assignedTo,
-      changedAt: row.changedAt,
-    }));
+    items = historyRows.map((row: any) => {
+        const currentStage = enrichStage({
+          id: row.toStageId,
+          name: row.toStageName,
+          color: row.lead?.stage?.color,
+          stageShortForm: stageCalendar.shortForm(row.toStageId),
+          showInCalendar: true,
+        });
+        const previousStage = row.fromStageId
+          ? enrichStage({
+              id: row.fromStageId,
+              name: row.fromStageName,
+              color: row.lead?.stage?.color,
+              stageShortForm: stageCalendar.shortForm(row.fromStageId),
+              showInCalendar: true,
+            })
+          : row.fromStageName
+            ? { name: row.fromStageName, id: row.fromStageId }
+            : null;
+
+        return {
+          id: row.leadId,
+          name: row.lead?.name,
+          email: row.lead?.email,
+          phone: row.lead?.phone,
+          customerName: row.lead?.email?.trim() || row.lead?.phone?.trim() || row.lead?.name,
+          stage: row.lead?.stage ? enrichStage(row.lead.stage) : currentStage,
+          currentStage,
+          previousStage,
+          changedBy: { name: row.changedById },
+          createdBy: row.lead?.assignedTo,
+          changedAt: row.changedAt,
+        };
+      });
   } else if (query.type === 'TOTAL_FOLLOWUPS' || query.type === 'STAGE_FOLLOWUPS') {
+    if (query.type === 'STAGE_FOLLOWUPS' && query.stageId && !stageCalendar.isVisible(query.stageId)) {
+      return {
+        items: [],
+        pagination: { page: query.page, limit: query.limit, total: 0, totalPages: 1 },
+      };
+    }
+
     const where: any = {
       workspaceId,
       userId: targetUserId,

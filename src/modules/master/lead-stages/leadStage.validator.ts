@@ -11,6 +11,23 @@ const stageColorSchema = z
   .trim()
   .regex(/^#([0-9A-Fa-f]{6})$/, 'Color must be a valid hex value');
 
+const normalizeStageShortFormInput = (value?: string | null): string | null => {
+  const normalized = (value || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+  if (!normalized) return null;
+  return normalized.slice(0, 10);
+};
+
+const stageShortFormSchema = z
+  .string()
+  .trim()
+  .max(10, 'Stage short form must not exceed 10 characters')
+  .transform((value) => normalizeStageShortFormInput(value))
+  .refine((value) => value === null || /^[A-Z0-9]{1,10}$/.test(value), {
+    message: 'Stage short form may only contain letters and numbers.',
+  })
+  .optional()
+  .nullable();
+
 export const stageStatusSchema = z.enum(['ACTIVE', 'INACTIVE']);
 
 const stageRuleAssignmentSchema = z.object({
@@ -34,6 +51,8 @@ const normalizeRuleAssignments = (
 
 export const createLeadStageSchema = z.object({
   name: leadStageNameSchema,
+  stageShortForm: stageShortFormSchema,
+  showInCalendar: z.boolean().default(true),
   color: stageColorSchema.default('#10b981'),
   isApprovalRequired: z.boolean().default(false),
   isClosed: z.boolean().default(false),
@@ -45,11 +64,16 @@ export const createLeadStageSchema = z.object({
 })
 .transform((value) => ({
   ...value,
+  stageShortForm: normalizeStageShortFormInput(value.stageShortForm),
   ruleAssignments: normalizeRuleAssignments(value.ruleIds, value.ruleAssignments),
 }))
 .refine((value) => new Set(value.ruleAssignments.map((rule) => rule.ruleId)).size === value.ruleAssignments.length, {
   message: 'Duplicate stage rules are not allowed.',
   path: ['ruleAssignments'],
+})
+.refine((value) => !value.showInCalendar || Boolean(value.stageShortForm), {
+  message: 'Stage short form is required when Show In Calendar is enabled.',
+  path: ['stageShortForm'],
 });
 
 export type CreateLeadStageInput = z.infer<typeof createLeadStageSchema>;
@@ -57,6 +81,8 @@ export type CreateLeadStageInput = z.infer<typeof createLeadStageSchema>;
 export const updateLeadStageSchema = z
   .object({
     name: leadStageNameSchema.optional(),
+    stageShortForm: stageShortFormSchema,
+    showInCalendar: z.boolean().optional(),
     color: stageColorSchema.optional(),
     isApprovalRequired: z.boolean().optional(),
     isClosed: z.boolean().optional(),
@@ -68,6 +94,9 @@ export const updateLeadStageSchema = z
   })
   .transform((value) => ({
     ...value,
+    ...(value.stageShortForm !== undefined
+      ? { stageShortForm: normalizeStageShortFormInput(value.stageShortForm) }
+      : {}),
     ruleAssignments:
       value.ruleAssignments !== undefined || value.ruleIds !== undefined
         ? normalizeRuleAssignments(value.ruleIds, value.ruleAssignments)
@@ -76,6 +105,8 @@ export const updateLeadStageSchema = z
   .refine(
     (value) =>
       value.name !== undefined ||
+      value.stageShortForm !== undefined ||
+      value.showInCalendar !== undefined ||
       value.color !== undefined ||
       value.isApprovalRequired !== undefined ||
       value.isClosed !== undefined ||

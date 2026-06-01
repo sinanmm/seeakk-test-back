@@ -13,6 +13,7 @@ import {
   ReorderLeadStagesInput,
   UpdateLeadStageInput,
 } from './leadStage.validator';
+import { isValidStageShortForm, normalizeStageShortForm } from '../../../services/User/leadStageCalendar.util';
 
 const PIPELINE_CACHE_TTL_SECONDS = 300;
 const getPipelineCacheKey = (workspaceId: string): string => `lead_stages:pipeline:${workspaceId}`;
@@ -94,6 +95,44 @@ const normalizeLeadStageName = (value: string): string =>
     .trim()
     .replace(/\s+/g, ' ');
 
+const assertStageShortFormRules = async (
+  workspaceId: string,
+  params: { stageShortForm: string | null; showInCalendar: boolean },
+  excludeStageId?: string,
+): Promise<void> => {
+  const { stageShortForm, showInCalendar } = params;
+
+  if (showInCalendar && !stageShortForm) {
+    const error: any = new Error('Stage short form is required when Show In Calendar is enabled.');
+    error.statusCode = 422;
+    throw error;
+  }
+
+  if (!stageShortForm) return;
+
+  if (!isValidStageShortForm(stageShortForm)) {
+    const error: any = new Error('Stage short form may only contain letters and numbers (max 10).');
+    error.statusCode = 422;
+    throw error;
+  }
+
+  const duplicate = await leadStageDelegate.findFirst({
+    where: {
+      workspaceId,
+      deletedAt: null,
+      stageShortForm,
+      ...(excludeStageId ? { id: { not: excludeStageId } } : {}),
+    },
+    select: { id: true, name: true },
+  });
+
+  if (duplicate) {
+    const error: any = new Error(`Stage short form "${stageShortForm}" is already used by "${duplicate.name}".`);
+    error.statusCode = 409;
+    throw error;
+  }
+};
+
 const countLeadUsage = async (stageId: string): Promise<number> =>
   (prisma as any).lead.count({
     where: {
@@ -173,7 +212,14 @@ export const createLeadStage = async (
   const normalizedInput = {
     ...input,
     name: normalizeLeadStageName(input.name),
+    stageShortForm: normalizeStageShortForm(input.stageShortForm),
+    showInCalendar: input.showInCalendar ?? true,
   };
+
+  await assertStageShortFormRules(workspaceId, {
+    stageShortForm: normalizedInput.stageShortForm,
+    showInCalendar: normalizedInput.showInCalendar,
+  });
 
   await assertRuleAssignmentsIfProvided(workspaceId, normalizedInput.ruleAssignments);
 
@@ -193,6 +239,8 @@ export const createLeadStage = async (
       const stage = await tx.leadStage.create({
         data: {
           name: normalizedInput.name,
+          stageShortForm: normalizedInput.stageShortForm,
+          showInCalendar: normalizedInput.showInCalendar,
           workspaceId,
           color: normalizedInput.color,
           isApprovalRequired: normalizedInput.isApprovalRequired,
@@ -316,9 +364,27 @@ export const updateLeadStage = async (
     await assertRuleAssignmentsIfProvided(workspaceId, input.ruleAssignments);
   }
 
+  const nextShowInCalendar =
+    input.showInCalendar !== undefined ? input.showInCalendar : existing.showInCalendar ?? true;
+  const nextStageShortForm =
+    input.stageShortForm !== undefined
+      ? normalizeStageShortForm(input.stageShortForm)
+      : normalizeStageShortForm(existing.stageShortForm);
+
+  await assertStageShortFormRules(
+    workspaceId,
+    {
+      stageShortForm: nextStageShortForm,
+      showInCalendar: nextShowInCalendar,
+    },
+    id,
+  );
+
   const normalizedInput = {
     ...input,
     ...(nextName !== undefined ? { name: nextName } : {}),
+    ...(input.stageShortForm !== undefined ? { stageShortForm: nextStageShortForm } : {}),
+    ...(input.showInCalendar !== undefined ? { showInCalendar: input.showInCalendar } : {}),
   };
 
   const updated = await prisma.$transaction(
@@ -355,6 +421,8 @@ export const updateLeadStage = async (
         where: { id },
         data: {
           ...(normalizedInput.name !== undefined ? { name: normalizedInput.name } : {}),
+          ...(normalizedInput.stageShortForm !== undefined ? { stageShortForm: normalizedInput.stageShortForm } : {}),
+          ...(normalizedInput.showInCalendar !== undefined ? { showInCalendar: normalizedInput.showInCalendar } : {}),
           ...(normalizedInput.color !== undefined ? { color: normalizedInput.color } : {}),
           ...(normalizedInput.isApprovalRequired !== undefined ? { isApprovalRequired: normalizedInput.isApprovalRequired } : {}),
           ...(normalizedInput.isClosed !== undefined ? { isClosed: normalizedInput.isClosed } : {}),
