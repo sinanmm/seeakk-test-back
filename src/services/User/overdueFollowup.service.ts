@@ -1,14 +1,24 @@
 import prisma from '../../config/prisma';
 import { buildAccessWhere } from '../../modules/leads/leads.service';
 import { normalizeFollowUpType } from '../../constants/followUpType';
-import { isFollowUpPastDueDay, wasExtendedAfterOverdue } from './followupCalendar.util';
+import { isFollowUpPastDueDay } from './followupCalendar.util';
 import { getWorkspaceTimeZone, mapFollowUpRecord } from './followupService';
+import {
+  hasOverdueHistory,
+  markPendingFollowUpsOverdueForWorkspace,
+  resolveCalendarOverdueStatus,
+} from './followupOverduePersistence.service';
 
 const db = prisma as any;
 const PENDING = 'PENDING';
 const MISSED = 'MISSED';
 
 export { isFollowUpPastDueDay, wasExtendedAfterOverdue } from './followupCalendar.util';
+export {
+  hasOverdueHistory,
+  resolveCalendarOverdueStatus,
+  shouldShowCalendarOverdueRed,
+} from './followupOverduePersistence.service';
 
 const buildFollowUpIncludeWithStage = {
   lead: {
@@ -63,6 +73,7 @@ export const getOverdueMandatoryFollowUps = async (
   actor: { id: string; roleId?: string | null; role?: { name?: string | null } | null },
 ): Promise<OverdueMandatoryFollowUpItem[]> => {
   const timeZone = await getWorkspaceTimeZone(workspaceId);
+  await markPendingFollowUpsOverdueForWorkspace(workspaceId);
   const leadAccess = await buildAccessWhere(workspaceId, actor);
 
   const records = await db.followUp.findMany({
@@ -84,7 +95,9 @@ export const getOverdueMandatoryFollowUps = async (
   return records
     .filter(
       (record: any) =>
-        record.status === MISSED || (record.status === PENDING && isFollowUpPastDueDay(record.scheduledAt, timeZone, now)),
+        record.status === MISSED ||
+        (record.status === PENDING &&
+          (record.isOverdue || isFollowUpPastDueDay(record.scheduledAt, timeZone, now))),
     )
     .map((record: any) => {
       const customerName = record.lead?.email?.trim() || record.lead?.phone?.trim() || record.lead?.name || '—';
@@ -122,10 +135,7 @@ export const getOverdueMandatorySessionState = async (
 export const mapCalendarFollowUpDetail = (record: any, timeZone: string) => {
   const mapped = mapFollowUpRecord(record);
   const customerName = record.lead?.email?.trim() || record.lead?.phone?.trim() || record.lead?.name || '—';
-  const overduePastDay =
-    record.status === MISSED ||
-    (record.status === PENDING && isFollowUpPastDueDay(record.scheduledAt, timeZone));
-  const overdueExtended = wasExtendedAfterOverdue(record, timeZone);
+  const overdueStatus = resolveCalendarOverdueStatus(record, timeZone);
 
   return {
     ...mapped,
@@ -133,7 +143,11 @@ export const mapCalendarFollowUpDetail = (record: any, timeZone: string) => {
     leadStage: record.lead?.stage
       ? { id: record.lead.stage.id, name: record.lead.stage.name, color: record.lead.stage.color }
       : null,
-    overdueStatus: overduePastDay ? 'OVERDUE' : overdueExtended ? 'OVERDUE_EXTENDED' : 'ON_TIME',
+    overdueStatus,
+    isOverdue: Boolean(record.isOverdue),
+    overdueAt: record.overdueAt ? record.overdueAt.toISOString() : null,
+    completedAfterOverdue: Boolean(record.completedAfterOverdue),
+    extendedAfterOverdue: Boolean(record.extendedAfterOverdue),
     followUpNotes: record.description || record.completionDescription || null,
     assignedUserName: mapped.user?.displayName || mapped.user?.name || '—',
   };

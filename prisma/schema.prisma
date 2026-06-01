@@ -1206,6 +1206,11 @@ model FollowUp {
   scheduledAt DateTime
   completedAt DateTime?
 
+  isOverdue              Boolean   @default(false)
+  overdueAt              DateTime?
+  completedAfterOverdue  Boolean   @default(false)
+  extendedAfterOverdue   Boolean   @default(false)
+
   // Snooze fields
   recentDescription    String?
   previousFollowupDate DateTime?

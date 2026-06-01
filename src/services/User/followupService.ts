@@ -3,7 +3,13 @@ import prisma from '../../config/prisma';
 import { redisClient } from '../../config/redis';
 import { normalizeFollowUpType } from '../../constants/followUpType';
 import { buildAccessWhere, resolveVisibleLeadUserScope } from '../../modules/leads/leads.service';
-import { wasExtendedAfterOverdue } from './followupCalendar.util';
+import {
+  buildCompletionOverdueUpdate,
+  buildExtensionOverdueUpdate,
+  ensureFollowUpOverdueFlagsBeforeAction,
+  markPendingFollowUpsOverdueForWorkspace,
+  shouldShowCalendarOverdueRed,
+} from './followupOverduePersistence.service';
 import logger from '../../utils/logger';
 import type {
   CalendarQueryInput,
@@ -47,6 +53,10 @@ type FollowUpRecord = {
   extensionReasonId?: string | null;
   extensionReasonName?: string | null;
   activityLogs?: any[];
+  isOverdue?: boolean;
+  overdueAt?: Date | null;
+  completedAfterOverdue?: boolean;
+  extendedAfterOverdue?: boolean;
   createdAt: Date;
   updatedAt: Date;
   user: {
@@ -153,6 +163,10 @@ const assertModuleReady = async (): Promise<void> => {
     'status',
     'scheduledAt',
     'completedAt',
+    'isOverdue',
+    'overdueAt',
+    'completedAfterOverdue',
+    'extendedAfterOverdue',
     'createdAt',
     'updatedAt',
   ] as const;
@@ -243,6 +257,10 @@ export const mapFollowUpRecord = (record: FollowUpRecord) => ({
   reminderActionType: record.reminderActionType || null,
   extensionReasonId: record.extensionReasonId || null,
   extensionReasonName: record.extensionReasonName || null,
+  isOverdue: Boolean(record.isOverdue),
+  overdueAt: record.overdueAt ? record.overdueAt.toISOString() : null,
+  completedAfterOverdue: Boolean(record.completedAfterOverdue),
+  extendedAfterOverdue: Boolean(record.extendedAfterOverdue),
   activityLogs: (record as any).activityLogs?.map((log: any) => ({
     ...log,
     snoozedAt: log.snoozedAt.toISOString(),
@@ -708,6 +726,8 @@ export const getAdvancedCalendarSummary = async (
 ) => {
   await assertModuleReady();
 
+  await markPendingFollowUpsOverdueForWorkspace(workspaceId);
+
   const targetUserId = await resolveTargetUserId(workspaceId, actor, query.userId);
   const timeZone = await getWorkspaceTimeZone(workspaceId);
   const leadAccess = await buildAccessWhere(workspaceId, actor);
@@ -758,6 +778,10 @@ export const getAdvancedCalendarSummary = async (
         previousFollowupDate: true,
         snoozedAt: true,
         status: true,
+        isOverdue: true,
+        overdueAt: true,
+        completedAfterOverdue: true,
+        extendedAfterOverdue: true,
         lead: { select: { stageId: true, stage: { select: { name: true, color: true } } } },
       },
     }),
@@ -776,7 +800,13 @@ export const getAdvancedCalendarSummary = async (
       stageTransitions: Record<string, { count: number; name: string; color: string }>;
       stageFollowUps: Record<
         string,
-        { count: number; name: string; color: string; overdueExtendedCount: number }
+        {
+          count: number;
+          name: string;
+          color: string;
+          overdueExtendedCount: number;
+          overdueHistoryCount: number;
+        }
       >;
     }
   > = {};
@@ -822,11 +852,15 @@ export const getAdvancedCalendarSummary = async (
           name: f.lead.stage?.name || 'Unknown Stage',
           color: f.lead.stage?.color || '#cbd5e1',
           overdueExtendedCount: 0,
+          overdueHistoryCount: 0,
         };
       }
       summaryByDate[d].stageFollowUps[stageId].count += 1;
-      if (wasExtendedAfterOverdue(f, timeZone)) {
-        summaryByDate[d].stageFollowUps[stageId].overdueExtendedCount += 1;
+      if (shouldShowCalendarOverdueRed(f, timeZone)) {
+        summaryByDate[d].stageFollowUps[stageId].overdueHistoryCount += 1;
+        if (f.extendedAfterOverdue) {
+          summaryByDate[d].stageFollowUps[stageId].overdueExtendedCount += 1;
+        }
       }
     }
   });
@@ -865,6 +899,7 @@ export const getAdvancedCalendarSummary = async (
       name: info.name,
       color: info.color,
       overdueExtendedCount: info.overdueExtendedCount,
+      overdueHistoryCount: info.overdueHistoryCount,
     })),
   }));
 
@@ -875,7 +910,7 @@ export const getAdvancedCalendarSummary = async (
   formattedSummary.forEach((day) => {
     day.stageFollowUps.forEach((row) => {
       stageFollowUpTotals[row.stageId] = (stageFollowUpTotals[row.stageId] || 0) + row.count;
-      overdueFollowUpTotal += row.overdueExtendedCount || 0;
+      overdueFollowUpTotal += row.overdueHistoryCount || 0;
     });
     day.leadsCreatedByStage.forEach((row) => {
       stageLeadCreationTotals[row.stageId] = (stageLeadCreationTotals[row.stageId] || 0) + row.count;
@@ -916,6 +951,8 @@ export const getAdvancedCalendarDetails = async (
   query: AdvancedCalendarDetailsInput,
 ) => {
   await assertModuleReady();
+
+  await markPendingFollowUpsOverdueForWorkspace(workspaceId);
 
   const targetUserId = await resolveTargetUserId(workspaceId, actor, query.userId);
   const timeZone = await getWorkspaceTimeZone(workspaceId);
@@ -1029,7 +1066,7 @@ export const getAdvancedCalendarDetails = async (
     });
     const filteredRows =
       query.overdueExtendedOnly === true
-        ? allRows.filter((row: any) => wasExtendedAfterOverdue(row, timeZone))
+        ? allRows.filter((row: any) => shouldShowCalendarOverdueRed(row, timeZone))
         : allRows;
     total = filteredRows.length;
     items = filteredRows.slice(skip, skip + query.limit).map((i: any) => mapCalendarFollowUpDetail(i, timeZone));
@@ -1173,6 +1210,12 @@ export const completeFollowUp = async (
   }
 
   const completedAt = new Date();
+  const timeZone = await getWorkspaceTimeZone(workspaceId);
+  const refreshed = await ensureFollowUpOverdueFlagsBeforeAction({
+    ...existing,
+    workspaceId,
+  });
+  const overdueUpdate = buildCompletionOverdueUpdate(refreshed, completedAt, timeZone);
 
   const completed = await prisma.$transaction(async (tx: any) => {
     const updated = await (tx as any).followUp.update({
@@ -1181,6 +1224,7 @@ export const completeFollowUp = async (
         status: FOLLOWUP_COMPLETED,
         completedAt,
         completionDescription: input.description.trim(),
+        ...overdueUpdate,
       },
       include: buildFollowUpInclude,
     });
@@ -1323,6 +1367,19 @@ export const snoozeFollowUp = async (
     }
   }
 
+  const timeZone = await getWorkspaceTimeZone(workspaceId);
+  const snoozedAt = new Date();
+  const refreshed = await ensureFollowUpOverdueFlagsBeforeAction({
+    ...existing,
+    workspaceId,
+  });
+  const overdueUpdate = buildExtensionOverdueUpdate(
+    refreshed,
+    existing.scheduledAt,
+    snoozedAt,
+    timeZone,
+  );
+
   const updated = await prisma.$transaction(async (tx) => {
     await tx.followupActivityLog.create({
       data: {
@@ -1348,10 +1405,11 @@ export const snoozeFollowUp = async (
         previousFollowupDate: existing.scheduledAt,
         newFollowupDate: input.scheduledAt,
         snoozedBy: actor.id,
-        snoozedAt: new Date(),
+        snoozedAt,
         reminderActionType: input.reminderActionType,
         extensionReasonId: input.extensionReasonId || null,
         extensionReasonName,
+        ...overdueUpdate,
       },
       include: buildFollowUpInclude,
     });
@@ -1411,12 +1469,18 @@ export const bulkExtendFollowUps = async (
       scheduledAt: true,
       recentDescription: true,
       description: true,
+      isOverdue: true,
+      overdueAt: true,
+      completedAfterOverdue: true,
+      extendedAfterOverdue: true,
     },
   });
 
   if (followUps.length === 0) {
     throw createServiceError('No matching pending follow-ups found to extend.', 404);
   }
+
+  await markPendingFollowUpsOverdueForWorkspace(workspaceId);
 
   let extensionReasonName: string | null = null;
   if (input.extensionReasonId) {
@@ -1508,8 +1572,10 @@ export const bulkExtendFollowUps = async (
   }
 
   await prisma.$transaction(async (tx) => {
+    const snoozedAt = new Date();
     for (const alloc of allocations) {
       const orig = followUps.find((f: any) => f.id === alloc.followUpId)!;
+      const overdueUpdate = buildExtensionOverdueUpdate(orig, orig.scheduledAt, snoozedAt, timeZone);
 
       await (tx as any).followUp.update({
         where: { id: alloc.followUpId },
@@ -1520,10 +1586,11 @@ export const bulkExtendFollowUps = async (
           previousFollowupDate: orig.scheduledAt,
           newFollowupDate: alloc.newDate,
           snoozedBy: actor.id,
-          snoozedAt: new Date(),
+          snoozedAt,
           reminderActionType: 'BULK_EXTEND',
           extensionReasonId: input.extensionReasonId || null,
           extensionReasonName,
+          ...overdueUpdate,
         },
       });
 
