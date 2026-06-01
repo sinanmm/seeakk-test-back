@@ -8,13 +8,13 @@ import {
 test('assertLockSubjectMatchesAssignment rejects locking non-assigned users', () => {
   const assignment = {
     id: 'asg_1',
-    userId: 'user_report',
-    assignedById: 'user_supervisor',
+    userId: 'david',
+    assignedById: 'john_supervisor',
     targetCycleId: 'cycle_1',
   };
 
-  assert.equal(assertLockSubjectMatchesAssignment(assignment, 'user_report'), true);
-  assert.equal(assertLockSubjectMatchesAssignment(assignment, 'user_supervisor'), false);
+  assert.equal(assertLockSubjectMatchesAssignment(assignment, 'david'), true);
+  assert.equal(assertLockSubjectMatchesAssignment(assignment, 'john_supervisor'), false);
 });
 
 test('shouldSkipLockForExemptPeriod skips re-lock during exempted period', () => {

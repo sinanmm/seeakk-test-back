@@ -1018,10 +1018,34 @@ export const getAdminStats = async (workspaceId: string) => {
 };
 
 export const unlockUserAdmin = async (userId: string, workspaceId: string, actorId: string) => {
-  const user = await prisma.user.update({
-    where: { id: userId, workspaceId },
-    data: { isLocked: false },
+  const existing = await prisma.user.findFirst({
+    where: { id: userId, workspaceId, deletedAt: null },
+    select: { id: true, isLocked: true, targetLockedAt: true },
   });
+
+  if (!existing) {
+    throw createAttendanceServiceError('User not found.', 404);
+  }
+
+  let user = existing;
+
+  if (existing.isLocked && existing.targetLockedAt) {
+    const { unlockTargetLockedUser } = await import('../targets/targetUnlock.service');
+    user = await unlockTargetLockedUser(
+      workspaceId,
+      userId,
+      {
+        id: actorId,
+        permissions: ['USERS_UNLOCK', 'unlock_target_locked_users', 'unlock_attendance_locked_users', 'SYSTEM_CONFIG'],
+      },
+      'Unlocked from attendance module (target lock)',
+    );
+  } else if (existing.isLocked) {
+    user = await prisma.user.update({
+      where: { id: userId, workspaceId },
+      data: { isLocked: false, isActive: true },
+    });
+  }
 
   await prisma.attendanceAuditLog.create({
     data: {

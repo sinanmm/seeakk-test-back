@@ -323,6 +323,18 @@ export const lockUserForTargetFailure = async (
     return;
   }
 
+  if (userId !== assignment.userId) {
+    logger.warn('Skipped target lock: lock subject must be the assigned target user only', {
+      requestedUserId: userId,
+      assignmentUserId: assignment.userId,
+      assignedById: assignment.assignedById ?? null,
+      assignmentId,
+      periodId,
+      action: 'target_lock_wrong_subject',
+    });
+    return;
+  }
+
   const mayLock = await canLockUserForTargetFailure(assignment, userId, period);
   if (!mayLock) {
     return;

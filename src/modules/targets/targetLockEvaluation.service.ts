@@ -29,6 +29,11 @@ type PeriodRow = {
  * Only the user assigned to the target cycle may be locked for that assignment.
  * Never lock target creators, assigners, or supervisors based on someone else's assignment.
  */
+/**
+ * Example: Supervisor John assigns target to David.
+ * - assignment.userId = David → may be locked if David fails
+ * - assignedById = John → must NEVER be locked from David's assignment row
+ */
 export const assertLockSubjectMatchesAssignment = (
   assignment: AssignmentRow,
   evaluatedUserId: string,
@@ -43,6 +48,7 @@ export const assertLockSubjectMatchesAssignment = (
     });
     return false;
   }
+
   return true;
 };
 
