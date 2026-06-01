@@ -8,6 +8,7 @@ router.get('/calendar/advanced/summary', protect, followupController.getAdvanced
 router.get('/calendar/advanced/details', protect, followupController.getAdvancedCalendarDetails);
 router.get('/calendar', protect, followupController.getCalendarData);
 router.get('/today', protect, followupController.getTodayFollowUps);
+router.get('/lifecycle-extension-limit', protect, followupController.getLifecycleExtensionLimit);
 router.get('/overdue-mandatory', protect, followupController.getOverdueMandatoryFollowUps);
 router.get('/mandatory-continuation', protect, followupController.getMandatoryFollowUpContinuation);
 router.post('/mandatory-continuation', protect, followupController.saveMandatoryFollowUpContinuation);

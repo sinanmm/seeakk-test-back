@@ -70,6 +70,11 @@ const permissions = [
   { key: 'manage_followup_extension_reasons', group: 'MASTER_CONFIGURATION', description: 'Manage follow-up extension reasons' },
   { key: 'manage_followup_settings', group: 'ADMIN_MANAGEMENT', description: 'Manage follow-up settings' },
   { key: 'bulk_extend_followups', group: 'ADMIN_MANAGEMENT', description: 'Bulk extend follow-ups' },
+  {
+    key: 'override_lifecycle_followup_limit',
+    group: 'ADMIN_MANAGEMENT',
+    description: 'Bypass lifecycle limits when extending follow-ups (logged)',
+  },
   { key: 'grant_bulk_extension_access', group: 'ADMIN_MANAGEMENT', description: 'Grant temporary bulk extension access' },
   { key: 'view_followup_capacity', group: 'ADMIN_MANAGEMENT', description: 'View follow-up capacity settings and reports' },
   { key: 'LOCATION_VIEW', group: 'MASTER_CONFIGURATION', description: 'View countries, levels, and locations' },

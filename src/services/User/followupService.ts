@@ -603,7 +603,7 @@ export const checkUserCapacity = async (
 
 export const createFollowUp = async (
   workspaceId: string,
-  actor: { id: string; role?: { name?: string | null } | null },
+  actor: { id: string; roleId?: string | null; role?: { name?: string | null } | null },
   input: CreateFollowUpInput,
 ) => {
   await assertModuleReady();
@@ -621,10 +621,8 @@ export const createFollowUp = async (
     },
   });
 
-  if (leadForSchedule?.lifecycleId) {
-    const { validateMandatoryFollowUpSchedule } = await import('./mandatoryFollowupContinuation.service');
-    validateMandatoryFollowUpSchedule(leadForSchedule, input.scheduledAt);
-  }
+  const { validateFollowUpLifecycleExtension } = await import('./followupLifecycleValidation.service');
+  await validateFollowUpLifecycleExtension(workspaceId, input.leadId.trim(), input.scheduledAt, actor);
 
   const { getWorkspaceHolidays } = await import('../../modules/holidays/holidays.service');
   const { isHolidayOnDate } = await import('../../modules/holidays/weeklyOff.util');
@@ -1263,7 +1261,7 @@ export const getHistory = async (
 
 export const snoozeFollowUp = async (
   workspaceId: string,
-  actor: { id: string; role?: { name?: string | null } | null },
+  actor: { id: string; roleId?: string | null; role?: { name?: string | null } | null },
   id: string,
   input: SnoozeFollowUpInput,
 ) => {
@@ -1301,10 +1299,10 @@ export const snoozeFollowUp = async (
     },
   });
 
-  if (leadForSchedule?.lifecycleId) {
-    const { validateMandatoryFollowUpSchedule } = await import('./mandatoryFollowupContinuation.service');
-    validateMandatoryFollowUpSchedule(leadForSchedule, input.scheduledAt);
-  }
+  const { validateFollowUpLifecycleExtension } = await import('./followupLifecycleValidation.service');
+  await validateFollowUpLifecycleExtension(workspaceId, existing.leadId, input.scheduledAt, actor, {
+    followUpId: existing.id,
+  });
 
   const capacity = await checkUserCapacity(workspaceId, existing.userId, input.scheduledAt, 1, existing.id);
   if (!capacity.hasCapacity) {
@@ -1383,7 +1381,7 @@ export const touchFollowUpTodayCachesAfterLeadMutation = async (
 
 export const bulkExtendFollowUps = async (
   workspaceId: string,
-  actor: { id: string },
+  actor: { id: string; roleId?: string | null; role?: { name?: string | null } | null },
   input: {
     followUpIds: string[];
     newFollowupDate: Date;
@@ -1405,6 +1403,14 @@ export const bulkExtendFollowUps = async (
       id: { in: input.followUpIds },
       workspaceId,
       status: { not: FOLLOWUP_COMPLETED },
+    },
+    select: {
+      id: true,
+      userId: true,
+      leadId: true,
+      scheduledAt: true,
+      recentDescription: true,
+      description: true,
     },
   });
 
@@ -1432,9 +1438,27 @@ export const bulkExtendFollowUps = async (
 
   const successIds: string[] = [];
   const blockedIds: string[] = [];
+  const lifecycleBlockedIds: string[] = [];
   const allocations: { followUpId: string; newDate: Date }[] = [];
 
   const timeZone = await getWorkspaceTimeZone(workspaceId);
+  const { validateFollowUpLifecycleExtension } = await import('./followupLifecycleValidation.service');
+
+  const validateLifecycleForDate = async (followUpRow: { id: string; leadId: string }, targetDate: Date) => {
+    try {
+      await validateFollowUpLifecycleExtension(workspaceId, followUpRow.leadId, targetDate, actor, {
+        followUpId: followUpRow.id,
+        allowPast: false,
+      });
+      return true;
+    } catch (error: any) {
+      if (error?.errorCode?.startsWith('LIFECYCLE_EXTENSION')) {
+        lifecycleBlockedIds.push(followUpRow.id);
+        return false;
+      }
+      throw error;
+    }
+  };
 
   for (const userId of Object.keys(followUpsByUser)) {
     const userFollowUps = followUpsByUser[userId];
@@ -1444,6 +1468,8 @@ export const bulkExtendFollowUps = async (
     while (unassigned.length > 0) {
       if (!settings || !settings.isActive || !settings.dailyLimitEnabled || !settings.capacityValidationEnabled) {
         for (const f of unassigned) {
+          const allowed = await validateLifecycleForDate(f, currentDate);
+          if (!allowed) continue;
           allocations.push({ followUpId: f.id, newDate: currentDate });
           successIds.push(f.id);
         }
@@ -1456,6 +1482,8 @@ export const bulkExtendFollowUps = async (
       if (capacity > 0) {
         const toAllocate = unassigned.slice(0, capacity);
         for (const f of toAllocate) {
+          const allowed = await validateLifecycleForDate(f, currentDate);
+          if (!allowed) continue;
           allocations.push({ followUpId: f.id, newDate: currentDate });
           successIds.push(f.id);
         }
@@ -1546,6 +1574,9 @@ export const bulkExtendFollowUps = async (
   });
 
   let message = `Successfully reassigned ${successIds.length} follow-up(s).`;
+  if (lifecycleBlockedIds.length > 0) {
+    message += ` ${lifecycleBlockedIds.length} follow-up(s) exceeded lifecycle limits for their current stage.`;
+  }
   if (blockedIds.length > 0) {
     const originalTargetCapacity = settings?.dailyLimitCount ?? 10;
     const initialTargetExisting = await getUserFollowUpCountOnDate(workspaceId, followUps[0].userId, input.newFollowupDate);

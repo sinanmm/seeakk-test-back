@@ -155,11 +155,22 @@ export const listMandatoryFollowUpContinuations = async (
       email: true,
       phone: true,
       stageExpiresAt: true,
+      stageEnteredAt: true,
+      stageId: true,
       lifecycleId: true,
       isClosed: true,
       isLOB: true,
-      stage: { select: { name: true, isClosed: true, isLOB: true } },
-      lifecycle: { select: { name: true } },
+      stage: { select: { id: true, name: true, isClosed: true, isLOB: true } },
+      lifecycle: {
+        select: {
+          id: true,
+          name: true,
+          transitions: {
+            select: { fromStageId: true, toStageId: true, numberOfDays: true },
+            orderBy: { sortOrder: 'asc' },
+          },
+        },
+      },
       followUps: {
         where: { userId: actor.id },
         orderBy: [{ scheduledAt: 'desc' }, { createdAt: 'desc' }],
@@ -177,9 +188,23 @@ export const listMandatoryFollowUpContinuations = async (
     take: 50,
   });
 
-  return leads
-    .filter((lead) => isActiveLifecycleLead(lead))
-    .map((lead) => mapContinuationItem(lead, now));
+  const { computeLifecycleExtensionContext } = await import('./followupLifecycleValidation.service');
+
+  const activeLeads = leads.filter((lead) => isActiveLifecycleLead(lead));
+  return Promise.all(
+    activeLeads.map(async (lead) => {
+      const base = mapContinuationItem(lead, now);
+      const lifecycleContext = await computeLifecycleExtensionContext(workspaceId, lead as any);
+      if (!lifecycleContext) {
+        return base;
+      }
+      return {
+        ...base,
+        lifecycleRemainingDays: lifecycleContext.remainingDays,
+        maxFollowUpDate: lifecycleContext.maxExtensionDate.slice(0, 10),
+      };
+    }),
+  );
 };
 
 export const getMandatoryFollowUpSessionState = async (
@@ -194,7 +219,9 @@ export const getMandatoryFollowUpSessionState = async (
   };
 };
 
-export const validateMandatoryFollowUpSchedule = (
+export const validateMandatoryFollowUpSchedule = async (
+  workspaceId: string,
+  leadId: string,
   lead: {
     stageExpiresAt: Date | null;
     lifecycleId: string | null;
@@ -203,28 +230,19 @@ export const validateMandatoryFollowUpSchedule = (
     stage: { isClosed: boolean; isLOB: boolean } | null;
   },
   scheduledAt: Date,
-): void => {
+  actor: { id: string; roleId?: string | null; role?: { name?: string | null } | null },
+): Promise<void> => {
   if (!isActiveLifecycleLead(lead)) {
     throw createServiceError('This lead is no longer subject to mandatory lifecycle follow-up.', 409);
   }
 
-  const now = new Date();
-  if (scheduledAt.getTime() <= now.getTime()) {
-    throw createServiceError('Next follow-up date must be in the future.', 422);
-  }
-
-  if (lead.stageExpiresAt && scheduledAt.getTime() > lead.stageExpiresAt.getTime()) {
-    const maxLabel = moment(lead.stageExpiresAt).format('YYYY-MM-DD');
-    throw createServiceError(
-      `Next follow-up date cannot exceed the lifecycle limit (${maxLabel}).`,
-      422,
-    );
-  }
+  const { validateFollowUpLifecycleExtension } = await import('./followupLifecycleValidation.service');
+  await validateFollowUpLifecycleExtension(workspaceId, leadId, scheduledAt, actor);
 };
 
 export const saveMandatoryFollowUpContinuation = async (
   workspaceId: string,
-  actor: { id: string; role?: { name?: string | null } | null },
+  actor: { id: string; roleId?: string | null; role?: { name?: string | null } | null },
   input: SaveMandatoryFollowUpContinuationInput,
   context?: { ipAddress?: string; userAgent?: string },
 ) => {
@@ -245,7 +263,7 @@ export const saveMandatoryFollowUpContinuation = async (
     throw createServiceError('Lead not found or you are not the assigned owner.', 404);
   }
 
-  validateMandatoryFollowUpSchedule(lead, input.scheduledAt);
+  await validateMandatoryFollowUpSchedule(workspaceId, lead.id, lead, input.scheduledAt, actor);
 
   const now = new Date();
   const stillRequired = await prisma.lead.findFirst({

@@ -307,6 +307,49 @@ export const snoozeFollowUp = async (req: Request, res: Response, next: NextFunc
   }
 };
 
+export const getLifecycleExtensionLimit = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<any> => {
+  const workspaceId = requireWorkspace(req, res);
+  if (!workspaceId) return;
+
+  const leadId = typeof req.query.leadId === 'string' ? req.query.leadId.trim() : '';
+  if (!leadId) {
+    return res.status(422).json({
+      success: false,
+      message: 'leadId query parameter is required.',
+    });
+  }
+
+  try {
+    const {
+      getLifecycleExtensionContextForLead,
+      actorCanOverrideLifecycleFollowUpLimit,
+    } = await import('../../services/User/followupLifecycleValidation.service');
+
+    const context = await getLifecycleExtensionContextForLead(workspaceId, leadId);
+    const canOverride = await actorCanOverrideLifecycleFollowUpLimit(getActor(req));
+
+    return res.status(200).json({
+      success: true,
+      message: 'Lifecycle extension limit fetched successfully',
+      data: context
+        ? {
+            ...context,
+            canOverride,
+          }
+        : {
+            applies: false,
+            canOverride,
+          },
+    });
+  } catch (error) {
+    handleServiceError(error, res, next, 'getLifecycleExtensionLimit');
+  }
+};
+
 export const getOverdueMandatoryFollowUps = async (
   req: Request,
   res: Response,
