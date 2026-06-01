@@ -284,6 +284,11 @@ export const snoozeFollowUp = async (req: Request, res: Response, next: NextFunc
       details: {
         leadId: data.leadId,
         scheduledAt: data.scheduledAt,
+        extensionReasonId: data.extensionReasonId || null,
+        extensionReasonName: data.extensionReasonName || null,
+        recentDescription: data.recentDescription || null,
+        previousFollowupDate: data.previousFollowupDate,
+        newFollowupDate: data.newFollowupDate,
       },
       ipAddress: req.ip,
       userAgent: req.headers['user-agent'],

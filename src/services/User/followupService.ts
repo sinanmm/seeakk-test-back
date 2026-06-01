@@ -43,6 +43,8 @@ type FollowUpRecord = {
   snoozedBy?: string | null;
   snoozedAt?: Date | null;
   reminderActionType?: string | null;
+  extensionReasonId?: string | null;
+  extensionReasonName?: string | null;
   activityLogs?: any[];
   createdAt: Date;
   updatedAt: Date;
@@ -238,6 +240,8 @@ const mapFollowUpRecord = (record: FollowUpRecord) => ({
   snoozedBy: record.snoozedBy || null,
   snoozedAt: record.snoozedAt ? record.snoozedAt.toISOString() : null,
   reminderActionType: record.reminderActionType || null,
+  extensionReasonId: record.extensionReasonId || null,
+  extensionReasonName: record.extensionReasonName || null,
   activityLogs: (record as any).activityLogs?.map((log: any) => ({
     ...log,
     snoozedAt: log.snoozedAt.toISOString(),
@@ -1111,6 +1115,20 @@ export const snoozeFollowUp = async (
     validateMandatoryFollowUpSchedule(leadForSchedule, input.scheduledAt);
   }
 
+  let extensionReasonName: string | null = null;
+  if (input.extensionReasonId) {
+    const reason = await (prisma as any).followUpExtensionReason.findFirst({
+      where: {
+        id: input.extensionReasonId,
+        workspaceId,
+      },
+      select: { reasonName: true },
+    });
+    if (reason) {
+      extensionReasonName = reason.reasonName;
+    }
+  }
+
   const updated = await prisma.$transaction(async (tx) => {
     await tx.followupActivityLog.create({
       data: {
@@ -1119,9 +1137,11 @@ export const snoozeFollowUp = async (
         previousFollowupDate: existing.scheduledAt,
         newFollowupDate: input.scheduledAt,
         snoozedById: actor.id,
-        recentDescription: input.recentDescription,
+        recentDescription: input.recentDescription || '',
         previousDescription: existing.recentDescription || existing.description || null,
         reminderActionType: input.reminderActionType,
+        extensionReasonId: input.extensionReasonId || null,
+        extensionReasonName,
       },
     });
 
@@ -1130,12 +1150,14 @@ export const snoozeFollowUp = async (
       data: {
         scheduledAt: input.scheduledAt,
         status: FOLLOWUP_PENDING,
-        recentDescription: input.recentDescription,
+        recentDescription: input.recentDescription || null,
         previousFollowupDate: existing.scheduledAt,
         newFollowupDate: input.scheduledAt,
         snoozedBy: actor.id,
         snoozedAt: new Date(),
         reminderActionType: input.reminderActionType,
+        extensionReasonId: input.extensionReasonId || null,
+        extensionReasonName,
       },
       include: buildFollowUpInclude,
     });

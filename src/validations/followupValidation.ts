@@ -61,11 +61,24 @@ export const completeFollowUpSchema = z.object({
 
 export type CompleteFollowUpInput = z.infer<typeof completeFollowUpSchema>;
 
-export const snoozeFollowUpSchema = z.object({
-  scheduledAt: parseDateField('scheduledAt'),
-  recentDescription: z.string().trim().min(1, 'Recent follow-up description is required').max(3000, 'Description is too long'),
-  reminderActionType: z.enum(['SNOOZE', 'REMIND_LATER']),
-});
+export const snoozeFollowUpSchema = z
+  .object({
+    scheduledAt: parseDateField('scheduledAt'),
+    recentDescription: z.string().trim().max(3000, 'Description is too long').optional().nullable(),
+    extensionReasonId: z.string().trim().max(191, 'Invalid extension reason id').optional().nullable(),
+    reminderActionType: z.enum(['SNOOZE', 'REMIND_LATER']),
+  })
+  .refine(
+    (data) => {
+      const hasDescription = typeof data.recentDescription === 'string' && data.recentDescription.trim().length > 0;
+      const hasReason = typeof data.extensionReasonId === 'string' && data.extensionReasonId.trim().length > 0;
+      return hasDescription || hasReason;
+    },
+    {
+      message: 'Either a Predefined Reason or a Custom Description is required.',
+      path: ['recentDescription'],
+    }
+  );
 
 export type SnoozeFollowUpInput = z.infer<typeof snoozeFollowUpSchema>;
 

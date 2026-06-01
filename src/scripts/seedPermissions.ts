@@ -66,6 +66,8 @@ const permissions = [
   { key: 'LOB_REASONS_CREATE', group: 'MASTER_CONFIGURATION', description: 'Create LOB reasons' },
   { key: 'LOB_REASONS_EDIT', group: 'MASTER_CONFIGURATION', description: 'Edit LOB reasons' },
   { key: 'LOB_REASONS_DELETE', group: 'MASTER_CONFIGURATION', description: 'Delete LOB reasons' },
+  { key: 'view_followup_extension_reasons', group: 'MASTER_CONFIGURATION', description: 'View follow-up extension reasons' },
+  { key: 'manage_followup_extension_reasons', group: 'MASTER_CONFIGURATION', description: 'Manage follow-up extension reasons' },
   { key: 'LOCATION_VIEW', group: 'MASTER_CONFIGURATION', description: 'View countries, levels, and locations' },
   { key: 'LOCATION_MANAGE', group: 'MASTER_CONFIGURATION', description: 'Create and manage countries, levels, and locations' },
 

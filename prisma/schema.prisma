@@ -134,6 +134,7 @@ model Workspace {
   invites            Invite[]
   stageHistory       LeadStageHistory[]
   revenueTransactions RevenueTransaction[]
+  followUpExtensionReasons FollowUpExtensionReason[]
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
@@ -1206,6 +1207,8 @@ model FollowUp {
   snoozedBy            String?
   snoozedAt            DateTime?
   reminderActionType   String?
+  extensionReasonId    String?
+  extensionReasonName  String?
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -1233,6 +1236,8 @@ model FollowupActivityLog {
   recentDescription    String
   previousDescription  String?
   reminderActionType   String
+  extensionReasonId    String?
+  extensionReasonName  String?
 
   followUp             FollowUp @relation(fields: [followUpId], references: [id], onDelete: Cascade)
   snoozedByUser        User     @relation(fields: [snoozedById], references: [id], onDelete: Cascade)
@@ -1736,4 +1741,20 @@ model AttendanceAuditLog {
   @@index([userId])
   @@index([workspaceId])
   @@map("attendance_audit_logs")
+}
+
+model FollowUpExtensionReason {
+  id          String    @id @default(cuid())
+  reasonName  String
+  description String?
+  isActive    Boolean   @default(true)
+  sortOrder   Int       @default(0)
+  workspaceId String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, isActive, sortOrder, reasonName])
+  @@map("followup_extension_reasons")
 }
