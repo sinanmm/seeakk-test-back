@@ -14,6 +14,7 @@ import {
   UpdateLeadStageInput,
 } from './leadStage.validator';
 import { isValidStageShortForm, normalizeStageShortForm } from '../../../services/User/leadStageCalendar.util';
+import { assertLeadStageModuleReady } from './leadStageModuleReady';
 
 const PIPELINE_CACHE_TTL_SECONDS = 300;
 const getPipelineCacheKey = (workspaceId: string): string => `lead_stages:pipeline:${workspaceId}`;
@@ -214,6 +215,8 @@ export const createLeadStage = async (
   input: CreateLeadStageInput,
   createdBy?: string,
 ): Promise<LeadStageResponse> => {
+  await assertLeadStageModuleReady();
+
   const normalizedInput = {
     ...input,
     name: normalizeLeadStageName(input.name),
@@ -278,6 +281,8 @@ export const listLeadStages = async (
   workspaceId: string,
   query: ListLeadStagesQuery,
 ): Promise<ListLeadStagesResponse> => {
+  await assertLeadStageModuleReady();
+
   const { page, limit, search, status } = query;
   const skip = (page - 1) * limit;
 
@@ -317,6 +322,8 @@ export const listLeadStages = async (
 };
 
 export const getPipelineLeadStages = async (workspaceId: string): Promise<LeadStageResponse[]> => {
+  await assertLeadStageModuleReady();
+
   if (redisClient.isOpen) {
     const cached = await redisClient.get(getPipelineCacheKey(workspaceId));
     if (cached) {
@@ -348,6 +355,8 @@ export const updateLeadStage = async (
   id: string,
   input: UpdateLeadStageInput,
 ): Promise<LeadStageResponse> => {
+  await assertLeadStageModuleReady();
+
   const existing = await leadStageDelegate.findFirst({
     where: { id, workspaceId, deletedAt: null },
     include: {
@@ -385,15 +394,11 @@ export const updateLeadStage = async (
     id,
   );
 
-  const shouldPersistCalendarFields =
-    input.stageShortForm !== undefined || input.showInCalendar !== undefined;
-
   const normalizedInput = {
     ...input,
     ...(nextName !== undefined ? { name: nextName } : {}),
-    ...(shouldPersistCalendarFields
-      ? { stageShortForm: nextStageShortForm, showInCalendar: nextShowInCalendar }
-      : {}),
+    stageShortForm: nextStageShortForm,
+    showInCalendar: nextShowInCalendar,
   };
 
   const updated = await prisma.$transaction(
@@ -430,12 +435,8 @@ export const updateLeadStage = async (
         where: { id },
         data: {
           ...(normalizedInput.name !== undefined ? { name: normalizedInput.name } : {}),
-          ...(shouldPersistCalendarFields
-            ? {
-                stageShortForm: normalizedInput.stageShortForm ?? null,
-                showInCalendar: normalizedInput.showInCalendar ?? true,
-              }
-            : {}),
+          stageShortForm: normalizedInput.stageShortForm ?? null,
+          showInCalendar: normalizedInput.showInCalendar ?? true,
           ...(normalizedInput.color !== undefined ? { color: normalizedInput.color } : {}),
           ...(normalizedInput.isApprovalRequired !== undefined ? { isApprovalRequired: normalizedInput.isApprovalRequired } : {}),
           ...(normalizedInput.isClosed !== undefined ? { isClosed: normalizedInput.isClosed } : {}),
