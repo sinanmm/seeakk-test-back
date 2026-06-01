@@ -44,7 +44,7 @@ test('unlockUser allows only the selected supervisor', async () => {
         }),
       (error: any) => {
         assert.equal(error.statusCode, 403);
-        assert.match(error.message, /only the selected supervisor/i);
+        assert.match(error.message, /only the assigned supervisor/i);
         return true;
       },
     );

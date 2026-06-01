@@ -1,6 +1,7 @@
 import prisma from '../../config/prisma';
 import logger from '../../utils/logger';
 import { lockUser } from './accountLockService';
+import { isUserActingAsSupervisorOrStakeholder } from '../../modules/targets/targetLockEvaluation.service';
 
 /**
  * Record a daily follow-up violation.
@@ -10,6 +11,12 @@ import { lockUser } from './accountLockService';
  * 3rd -> Lock Account
  */
 export const recordDailyViolation = async (userId: string, workspaceId: string, date: Date) => {
+  // Exclude supervisor/stakeholder accounts from daily target evaluations and locks completely.
+  if (await isUserActingAsSupervisorOrStakeholder(userId)) {
+    logger.info('Daily violation skipped: user is a supervisor/stakeholder', { userId });
+    return;
+  }
+
   const existingViolation = await (prisma as any).targetViolation.findFirst({
     where: { userId, type: 'DAILY', status: { in: ['WARNING', 'FINAL_WARNING'] } },
     orderBy: { createdAt: 'desc' }
@@ -57,6 +64,12 @@ export const recordDailyViolation = async (userId: string, workspaceId: string, 
  * Logic: Immediate Lock.
  */
 export const recordMonthlyViolation = async (userId: string, workspaceId: string, date: Date) => {
+  // Exclude supervisor/stakeholder accounts from monthly target evaluations and locks completely.
+  if (await isUserActingAsSupervisorOrStakeholder(userId)) {
+    logger.info('Monthly violation skipped: user is a supervisor/stakeholder', { userId });
+    return;
+  }
+
   const message = 'Account locked: Monthly critical KPI (Leads/Revenue) not met.';
   
   await (prisma as any).targetViolation.create({

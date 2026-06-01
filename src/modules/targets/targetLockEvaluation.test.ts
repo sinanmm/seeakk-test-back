@@ -5,7 +5,10 @@ import {
   getAssignedUserId,
   isNonAssigneeStakeholderOnAssignment,
   shouldSkipLockForExemptPeriod,
+  isUserActingAsSupervisorOrStakeholder,
 } from './targetLockEvaluation.service';
+
+const prisma = require('../../config/prisma').default as any;
 
 test('assertLockSubjectMatchesAssignment rejects locking non-assigned users', () => {
   const assignment = {
@@ -50,4 +53,62 @@ test('shouldSkipLockForExemptPeriod skips re-lock during exempted period', () =>
     }),
     false,
   );
+});
+
+test('isUserActingAsSupervisorOrStakeholder matches supervisor roles and relations', async () => {
+  const originalFindFirst = prisma.user.findFirst;
+  const originalFindFirstAssignment = prisma.targetAssignment.findFirst;
+  const originalFindFirstCycle = prisma.targetCycle.findFirst;
+  const originalFindFirstUnlockLog = prisma.targetUnlockLog.findFirst;
+
+  try {
+    // Case 1: User has subordinates
+    prisma.user.findFirst = async () => ({ id: 'subordinate_1' });
+    prisma.targetAssignment.findFirst = async () => null;
+    prisma.targetCycle.findFirst = async () => null;
+    prisma.targetUnlockLog.findFirst = async () => null;
+
+    let res = await isUserActingAsSupervisorOrStakeholder('supervisor_1');
+    assert.equal(res, true);
+
+    // Case 2: User is target assigner
+    prisma.user.findFirst = async () => null;
+    prisma.targetAssignment.findFirst = async (args: any) => {
+      if (args.where.assignedById) return { id: 'asg_1' };
+      return null;
+    };
+    res = await isUserActingAsSupervisorOrStakeholder('assigner_1');
+    assert.equal(res, true);
+
+    // Case 3: User is supervisor on assignment
+    prisma.targetAssignment.findFirst = async (args: any) => {
+      if (args.where.supervisorId) return { id: 'asg_2' };
+      return null;
+    };
+    res = await isUserActingAsSupervisorOrStakeholder('supervisor_2');
+    assert.equal(res, true);
+
+    // Case 4: User is creator of cycle
+    prisma.targetAssignment.findFirst = async () => null;
+    prisma.targetCycle.findFirst = async () => ({ id: 'cycle_1' });
+    res = await isUserActingAsSupervisorOrStakeholder('creator_1');
+    assert.equal(res, true);
+
+    // Case 5: User unlocked someone
+    prisma.targetCycle.findFirst = async () => null;
+    prisma.targetUnlockLog.findFirst = async () => ({ id: 'log_1' });
+    res = await isUserActingAsSupervisorOrStakeholder('unlocker_1');
+    assert.equal(res, true);
+
+    // Case 6: Plain user
+    prisma.targetUnlockLog.findFirst = async () => null;
+    res = await isUserActingAsSupervisorOrStakeholder('plain_user');
+    assert.equal(res, false);
+
+  } finally {
+    prisma.user.findFirst = originalFindFirst;
+    prisma.targetAssignment.findFirst = originalFindFirstAssignment;
+    prisma.targetCycle.findFirst = originalFindFirstCycle;
+    prisma.targetUnlockLog.findFirst = originalFindFirstUnlockLog;
+  }
 });

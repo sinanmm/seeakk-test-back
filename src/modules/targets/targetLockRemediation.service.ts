@@ -4,6 +4,7 @@ import {
   getAssignedUserId,
   INVALID_TARGET_LOCK_REASON_PREFIX,
   isNonAssigneeStakeholderOnAssignment,
+  isUserActingAsSupervisorOrStakeholder,
 } from './targetLockEvaluation.service';
 
 const db = prisma as any;
@@ -145,6 +146,62 @@ export const remediateInvalidTargetLocks = async (): Promise<TargetLockRemediati
     });
 
     await unlockUserIfNoValidTargetLock(log.userId, log.workspaceId, result);
+  }
+
+  // Database Cleanup Rule: Unlock any supervisor incorrectly locked and remove invalid target dependencies.
+  const allLockedUsers = await db.user.findMany({
+    where: {
+      deletedAt: null,
+      isLocked: true,
+    },
+    select: { id: true, workspaceId: true, targetLockReason: true },
+  });
+
+  for (const user of allLockedUsers) {
+    if (await isUserActingAsSupervisorOrStakeholder(user.id)) {
+      logger.warn('Cleanup: unlocking supervisor account found locked', { userId: user.id });
+
+      // Mark all lock logs for this supervisor as invalid
+      const logs = await db.targetLockLog.findMany({
+        where: { userId: user.id, isInvalidLock: false },
+        select: { id: true, reason: true },
+      });
+      for (const log of logs) {
+        await markLockLogInvalid(log.id, log.reason);
+        result.invalidLogsMarked += 1;
+      }
+
+      // Remove lock status & restore account access
+      await clearTargetLockStateForUser(user.id, user.workspaceId);
+
+      // Deactivate all active target assignments for the supervisor to prevent target balances
+      await db.targetAssignment.updateMany({
+        where: { userId: user.id, isActive: true },
+        data: { isActive: false },
+      });
+
+      // Find and delete all target performance logs for this supervisor
+      const assignments = await db.targetAssignment.findMany({
+        where: { userId: user.id },
+        select: { id: true },
+      });
+      const assignmentIds = assignments.map((a: any) => a.id);
+      if (assignmentIds.length > 0) {
+        await db.targetPerformanceLog.deleteMany({
+          where: { assignmentId: { in: assignmentIds } },
+        });
+      }
+
+      // Delete target settings to prevent cron-based locking
+      await db.targetSetting.deleteMany({
+        where: { userId: user.id },
+      });
+
+      if (!result.userIdsUnlocked.includes(user.id)) {
+        result.usersUnlocked += 1;
+        result.userIdsUnlocked.push(user.id);
+      }
+    }
   }
 
   const targetLockedUsers = await db.user.findMany({

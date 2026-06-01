@@ -5,6 +5,7 @@ import {
   canLockUserForTargetFailure,
   getAssignedUserId,
   TARGET_LOCK_REASON_CODE,
+  isUserActingAsSupervisorOrStakeholder,
 } from './targetLockEvaluation.service';
 
 const db = prisma as any;
@@ -407,6 +408,12 @@ export const runTargetLockingEvaluation = async (): Promise<void> => {
     for (const assignment of assignments) {
       const assignedUserId = getAssignedUserId(assignment);
       if (!assignment.user || assignment.user.id !== assignedUserId) {
+        continue;
+      }
+
+      // Supervisor Exclusion Rule: Skip target evaluations for supervisors/stakeholders.
+      if (await isUserActingAsSupervisorOrStakeholder(assignedUserId)) {
+        logger.info('Skipping target evaluation for supervisor user', { userId: assignedUserId });
         continue;
       }
 

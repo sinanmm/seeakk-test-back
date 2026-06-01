@@ -78,6 +78,58 @@ export const isNonAssigneeStakeholderOnAssignment = (
   return false;
 };
 
+/**
+ * Checks if a user is acting as a supervisor, reporting manager, target creator,
+ * target assigner, or unlocking authority for anyone else in the system.
+ */
+export const isUserActingAsSupervisorOrStakeholder = async (
+  userId: string,
+): Promise<boolean> => {
+  // 1. Check if user is a supervisor/reporting manager to anyone in the workspace or globally
+  const hasSubordinates = await db.user.findFirst({
+    where: { supervisorId: userId, deletedAt: null },
+    select: { id: true },
+  });
+  if (hasSubordinates) return true;
+
+  // 2. Check if user has assigned target to someone else
+  const hasAssignedTargets = await db.targetAssignment.findFirst({
+    where: { assignedById: userId, NOT: { userId } },
+    select: { id: true },
+  });
+  if (hasAssignedTargets) return true;
+
+  // 3. Check if user is a supervisor on any target assignment for someone else
+  const isSupervisorOnAssignment = await db.targetAssignment.findFirst({
+    where: { supervisorId: userId, NOT: { userId } },
+    select: { id: true },
+  });
+  if (isSupervisorOnAssignment) return true;
+
+  // 4. Check if user is a target creator
+  const hasCreatedCycle = await db.targetCycle.findFirst({
+    where: { createdBy: userId },
+    select: { id: true },
+  });
+  if (hasCreatedCycle) return true;
+
+  // 5. Check if user has unlocked any user
+  const hasUnlockedUser = await db.targetUnlockLog.findFirst({
+    where: { unlockedById: userId },
+    select: { id: true },
+  });
+  if (hasUnlockedUser) return true;
+
+  // 6. Check if user is referenced in TargetAssignment's lastUnlockedBy
+  const isLastUnlocker = await db.targetAssignment.findFirst({
+    where: { lastUnlockedBy: userId },
+    select: { id: true },
+  });
+  if (isLastUnlocker) return true;
+
+  return false;
+};
+
 export const clearExpiredLockExemption = async (
   assignment: AssignmentRow,
   currentPeriod: PeriodRow,
@@ -162,6 +214,16 @@ export const canLockUserForTargetFailure = async (
     return false;
   }
 
+  // Supervisor Exclusion Rule: Supervisors must never be locked.
+  if (await isUserActingAsSupervisorOrStakeholder(evaluatedUserId)) {
+    logger.warn('Skipped target lock: user is supervisor or stakeholder on target cycle/assignments', {
+      evaluatedUserId,
+      assignmentId: assignment.id,
+      action: 'target_lock_supervisor_protected',
+    });
+    return false;
+  }
+
   if (isNonAssigneeStakeholderOnAssignment(assignment, evaluatedUserId, cycleCreatedBy)) {
     logger.warn('Skipped target lock: user is assigner/creator, not the assigned target owner', {
       assignmentId: assignment.id,
@@ -231,6 +293,11 @@ export const applyTargetLockExemptionAfterUnlock = async (
 };
 
 export const getTargetLockDisplayForUser = async (userId: string, workspaceId: string) => {
+  // Exclude supervisor/stakeholder accounts from target lock displays completely
+  if (await isUserActingAsSupervisorOrStakeholder(userId)) {
+    return null;
+  }
+
   const user = await db.user.findFirst({
     where: { id: userId, workspaceId, deletedAt: null },
     select: {
