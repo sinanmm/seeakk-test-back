@@ -1,6 +1,7 @@
 import prisma from '../../config/prisma';
 import logger from '../../utils/logger';
 import { lockUser } from '../../services/User/accountLockService';
+import { canLockUserForTargetFailure, TARGET_LOCK_REASON_CODE } from './targetLockEvaluation.service';
 
 const db = prisma as any;
 
@@ -294,13 +295,49 @@ export const lockUserForTargetFailure = async (
   periodId: string,
   reason: string,
 ) => {
-  await lockUser(userId, workspaceId, reason);
+  const assignment = await db.targetAssignment.findUnique({
+    where: { id: assignmentId },
+    select: {
+      id: true,
+      userId: true,
+      assignedById: true,
+      targetCycleId: true,
+      isLockExempt: true,
+      exemptPeriodId: true,
+      exemptUntilPeriodEnd: true,
+    },
+  });
+
+  if (!assignment) {
+    logger.warn('Skipped target lock: assignment not found', { assignmentId, userId, periodId });
+    return;
+  }
+
+  const period = await db.targetCyclePeriod.findUnique({
+    where: { id: periodId },
+    select: { id: true, periodIndex: true, endDate: true, label: true },
+  });
+
+  if (!period) {
+    logger.warn('Skipped target lock: period not found', { assignmentId, userId, periodId });
+    return;
+  }
+
+  const mayLock = await canLockUserForTargetFailure(assignment, userId, period);
+  if (!mayLock) {
+    return;
+  }
+
+  const lockReason = reason?.trim() || `Target incomplete: ${period.label} goals not met.`;
+  const standardizedReason = `${TARGET_LOCK_REASON_CODE}: ${lockReason}`;
+
+  await lockUser(userId, workspaceId, standardizedReason);
 
   await db.user.update({
     where: { id: userId },
     data: {
       targetLockedAt: new Date(),
-      targetLockReason: reason,
+      targetLockReason: standardizedReason,
     },
   });
 
@@ -310,12 +347,19 @@ export const lockUserForTargetFailure = async (
       workspaceId,
       assignmentId,
       periodId,
-      reason,
+      lockPeriodId: periodId,
+      reason: standardizedReason,
       lockedBySystem: true,
     },
   });
 
-  logger.warn('User locked for incomplete target', { userId, assignmentId, periodId });
+  logger.warn('User locked for incomplete target', {
+    userId,
+    assignmentId,
+    periodId,
+    lockReason: standardizedReason,
+    action: 'target_locked',
+  });
 };
 
 export const runTargetLockingEvaluation = async (): Promise<void> => {
@@ -345,10 +389,15 @@ export const runTargetLockingEvaluation = async (): Promise<void> => {
     });
 
     for (const assignment of assignments) {
+      const evaluatedUserId = assignment.userId;
+      if (!assignment.user || assignment.user.id !== evaluatedUserId) {
+        continue;
+      }
+
       const { completed } = await evaluateAssignmentPeriod(assignment.id, period.id);
-      if (!completed && assignment.user && !assignment.user.isLocked) {
+      if (!completed && !assignment.user.isLocked) {
         await lockUserForTargetFailure(
-          assignment.userId,
+          evaluatedUserId,
           assignment.workspaceId,
           assignment.id,
           period.id,

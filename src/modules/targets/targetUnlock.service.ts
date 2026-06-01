@@ -1,5 +1,6 @@
 import prisma from '../../config/prisma';
 import { unlockUser } from '../../services/User/accountLockService';
+import { applyTargetLockExemptionAfterUnlock } from './targetLockEvaluation.service';
 
 const db = prisma as any;
 
@@ -92,16 +93,38 @@ export const unlockTargetLockedUser = async (
     );
   }
 
+  const assignment = await db.targetAssignment.findFirst({
+    where: { userId, workspaceId, isActive: true },
+    select: { id: true },
+  });
+
+  const latestLock = await db.targetLockLog.findFirst({
+    where: { userId, workspaceId },
+    orderBy: { lockedAt: 'desc' },
+    select: { periodId: true, lockPeriodId: true },
+  });
+
+  const exemptPeriodId = latestLock?.lockPeriodId || latestLock?.periodId || null;
+
   await unlockUser(userId, workspaceId, actor);
 
   await db.user.update({
     where: { id: userId },
-    data: { targetLockedAt: null, targetLockReason: null },
+    data: { targetLockedAt: null, targetLockReason: null, isActive: true },
   });
 
-  const assignment = await db.targetAssignment.findFirst({
-    where: { userId, workspaceId, isActive: true },
-  });
+  let exemptUntilPeriodEnd: Date | null = null;
+  if (exemptPeriodId) {
+    const exemptPeriod = await db.targetCyclePeriod.findUnique({
+      where: { id: exemptPeriodId },
+      select: { endDate: true },
+    });
+    exemptUntilPeriodEnd = exemptPeriod?.endDate ?? null;
+  }
+
+  if (assignment?.id && exemptPeriodId) {
+    await applyTargetLockExemptionAfterUnlock(assignment.id, exemptPeriodId, actor.id);
+  }
 
   await db.targetUnlockLog.create({
     data: {
@@ -110,6 +133,8 @@ export const unlockTargetLockedUser = async (
       assignmentId: assignment?.id,
       unlockedById: actor.id,
       reason: reason || 'Manual unlock by supervisor/admin',
+      exemptPeriodId,
+      exemptUntilPeriodEnd,
     },
   });
 

@@ -234,6 +234,16 @@ export const getTodayStatus = async (userId: string, workspaceId: string) => {
     attendanceOfficeLocationId: user.attendanceOfficeLocationId,
   });
 
+  let targetLock: Awaited<ReturnType<typeof import('../targets/targetLockEvaluation.service').getTargetLockDisplayForUser>> = null;
+  if (user.isLocked && user.targetLockedAt) {
+    try {
+      const { getTargetLockDisplayForUser } = await import('../targets/targetLockEvaluation.service');
+      targetLock = await getTargetLockDisplayForUser(userId, workspaceId);
+    } catch {
+      targetLock = null;
+    }
+  }
+
   return {
     date: todayStr,
     isHoliday: holidayCheck.isHoliday,
@@ -241,6 +251,8 @@ export const getTodayStatus = async (userId: string, workspaceId: string) => {
     isWeeklyOff,
     weeklyOffLabel: isWeeklyOff ? 'Weekly Off' : null,
     isLocked: user.isLocked,
+    isTargetLocked: Boolean(user.targetLockedAt),
+    targetLock,
     isMarked,
     submissionState,
     requiresMandatoryPopup: requiresMandatoryAttendancePopup(submissionState, user.isLocked),

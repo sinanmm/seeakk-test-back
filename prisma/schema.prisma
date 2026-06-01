@@ -563,6 +563,11 @@ model TargetAssignment {
   isActive      Boolean     @default(true)
   assignedById  String?
   graceUntil    DateTime?
+  isLockExempt  Boolean     @default(false)
+  exemptUntilPeriodEnd DateTime?
+  exemptPeriodId       String?
+  lastUnlockDate       DateTime?
+  lastUnlockedBy       String?
   assignedAt    DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
 
@@ -575,6 +580,7 @@ model TargetAssignment {
   @@unique([userId, targetCycleId])
   @@index([workspaceId, isActive])
   @@index([targetCycleId])
+  @@index([exemptPeriodId])
   @@map("target_assignments")
 }
 
@@ -662,6 +668,7 @@ model TargetLockLog {
   workspaceId    String
   assignmentId   String?
   periodId       String?
+  lockPeriodId   String?
   reason         String
   lockedAt       DateTime         @default(now())
   lockedBySystem Boolean          @default(true)
@@ -671,6 +678,7 @@ model TargetLockLog {
 
   @@index([userId, lockedAt])
   @@index([workspaceId])
+  @@index([lockPeriodId])
   @@map("target_lock_logs")
 }
 
@@ -681,6 +689,8 @@ model TargetUnlockLog {
   assignmentId   String?
   unlockedById   String
   reason         String?
+  exemptPeriodId       String?
+  exemptUntilPeriodEnd DateTime?
   unlockedAt     DateTime         @default(now())
 
   user           User             @relation("TargetUnlockUser", fields: [userId], references: [id], onDelete: Cascade)
