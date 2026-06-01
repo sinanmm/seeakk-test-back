@@ -135,6 +135,9 @@ model Workspace {
   stageHistory       LeadStageHistory[]
   revenueTransactions RevenueTransaction[]
   followUpExtensionReasons FollowUpExtensionReason[]
+  followUpSettings         FollowUpSettings?
+  temporaryBulkExtensionAccesses TemporaryBulkExtensionAccess[]
+  bulkFollowUpExtensions   BulkFollowUpExtension[]
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
@@ -1150,6 +1153,9 @@ model User {
   createdImportJobs        ImportJob[]  @relation("ImportJobCreatedBy")
   receivedInvites          Invite[]     @relation("InviteUser")
   createdInvites           Invite[]     @relation("InviteCreatedBy")
+  temporaryBulkExtensionAccesses TemporaryBulkExtensionAccess[] @relation("BulkExtensionUser")
+  grantedBulkExtensionAccesses TemporaryBulkExtensionAccess[] @relation("BulkExtensionGrantedBy")
+  bulkFollowUpExtensions   BulkFollowUpExtension[]
 
   createdAt                DateTime    @default(now())
   updatedAt                DateTime    @updatedAt
@@ -1757,4 +1763,64 @@ model FollowUpExtensionReason {
 
   @@index([workspaceId, isActive, sortOrder, reasonName])
   @@map("followup_extension_reasons")
+}
+
+model FollowUpSettings {
+  id                            String    @id @default(cuid())
+  workspaceId                   String    @unique
+  dailyLimitEnabled             Boolean   @default(false)
+  dailyLimitCount               Int       @default(10)
+  isActive                      Boolean   @default(true)
+  capacityValidationEnabled     Boolean   @default(false)
+  bulkExtensionEnabled          Boolean   @default(false)
+  autoDistributionEnabled       Boolean   @default(false)
+  defaultBulkExtensionDuration  String    @default("1 Day")
+  maxBulkExtensionCount         Int       @default(100)
+  createdAt                     DateTime  @default(now())
+  updatedAt                     DateTime  @updatedAt
+
+  workspace                     Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@map("followup_settings")
+}
+
+model TemporaryBulkExtensionAccess {
+  id            String    @id @default(cuid())
+  userId        String
+  workspaceId   String
+  grantedById   String
+  duration      String    // "1 Day", "3 Days", "7 Days", "Custom"
+  startsAt      DateTime  @default(now())
+  expiresAt     DateTime
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  user          User      @relation("BulkExtensionUser", fields: [userId], references: [id], onDelete: Cascade)
+  workspace     Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  grantedBy     User      @relation("BulkExtensionGrantedBy", fields: [grantedById], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@index([userId])
+  @@map("temporary_bulk_extension_access")
+}
+
+model BulkFollowUpExtension {
+  id                    String    @id @default(cuid())
+  workspaceId           String
+  userId                String    // User who extended
+  targetDate            DateTime
+  extensionReasonId     String?
+  extensionReasonName   String?
+  customReason          String?
+  followupCount         Int
+  autoDistributed       Boolean   @default(false)
+  createdAt             DateTime  @default(now())
+
+  workspace             Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@index([userId])
+  @@map("bulk_followup_extensions")
 }

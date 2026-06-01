@@ -12,6 +12,15 @@ router.get('/mandatory-continuation', protect, followupController.getMandatoryFo
 router.post('/mandatory-continuation', protect, followupController.saveMandatoryFollowUpContinuation);
 router.get('/alerts', protect, followupController.getReminderAlerts);
 router.get('/history', protect, followupController.getHistory);
+
+router.get('/today-utilization', protect, followupController.getTodayUtilization);
+router.post('/bulk-extend', protect, followupController.bulkExtendFollowUps);
+router.get('/reports/bulk-extensions', protect, followupController.getBulkExtensionReport);
+router.get('/reports/capacity', protect, followupController.getFollowUpCapacityReport);
+router.get('/reports/utilization', protect, followupController.getDailyFollowUpUtilization);
+router.get('/reports/user-limits', protect, followupController.getUserFollowUpLimitReport);
+router.get('/reports/export', protect, followupController.exportReport);
+
 router.post('/', protect, followupController.createFollowUp);
 router.post('/:id/complete', protect, followupController.completeFollowUp);
 router.patch('/:id/snooze', protect, followupController.snoozeFollowUp);

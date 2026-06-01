@@ -25,6 +25,8 @@ import {
   AdvancedCalendarSummaryInput,
   advancedCalendarDetailsSchema,
   AdvancedCalendarDetailsInput,
+  bulkExtendFollowUpSchema,
+  BulkExtendFollowUpInput,
 } from '../../validations/followupValidation';
 import {
   SaveMandatoryFollowUpContinuationInput,
@@ -384,5 +386,165 @@ export const getHistory = async (req: Request, res: Response, next: NextFunction
     });
   } catch (error) {
     handleServiceError(error, res, next, 'getHistory');
+  }
+};
+
+export const bulkExtendFollowUps = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = requireWorkspace(req, res);
+  if (!workspaceId) return;
+
+  const input = validate<BulkExtendFollowUpInput>(bulkExtendFollowUpSchema, req.body, res);
+  if (!input) return;
+
+  try {
+    const result = await followupService.bulkExtendFollowUps(workspaceId, getActor(req), input);
+    return res.status(200).json(result);
+  } catch (error) {
+    handleServiceError(error, res, next, 'bulkExtendFollowUps');
+  }
+};
+
+export const getTodayUtilization = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = requireWorkspace(req, res);
+  if (!workspaceId) return;
+
+  const actor = getActor(req);
+
+  try {
+    const data = await followupService.getTodayUtilization(workspaceId, actor.id);
+    return res.status(200).json({ success: true, data });
+  } catch (error) {
+    handleServiceError(error, res, next, 'getTodayUtilization');
+  }
+};
+
+export const getBulkExtensionReport = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = requireWorkspace(req, res);
+  if (!workspaceId) return;
+
+  const { startDate, endDate } = req.query as { startDate?: string; endDate?: string };
+
+  try {
+    const data = await followupService.getBulkExtensionReport(workspaceId, { startDate, endDate });
+    return res.status(200).json({ success: true, data });
+  } catch (error) {
+    handleServiceError(error, res, next, 'getBulkExtensionReport');
+  }
+};
+
+export const getFollowUpCapacityReport = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = requireWorkspace(req, res);
+  if (!workspaceId) return;
+
+  const { startDate, endDate, userId } = req.query as { startDate?: string; endDate?: string; userId?: string };
+
+  try {
+    const data = await followupService.getFollowUpCapacityReport(workspaceId, { startDate, endDate, userId });
+    return res.status(200).json({ success: true, data });
+  } catch (error) {
+    handleServiceError(error, res, next, 'getFollowUpCapacityReport');
+  }
+};
+
+export const getDailyFollowUpUtilization = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = requireWorkspace(req, res);
+  if (!workspaceId) return;
+
+  const { startDate, endDate, userId } = req.query as { startDate?: string; endDate?: string; userId?: string };
+
+  try {
+    const data = await followupService.getDailyFollowUpUtilization(workspaceId, { startDate, endDate, userId });
+    return res.status(200).json({ success: true, data });
+  } catch (error) {
+    handleServiceError(error, res, next, 'getDailyFollowUpUtilization');
+  }
+};
+
+export const getUserFollowUpLimitReport = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = requireWorkspace(req, res);
+  if (!workspaceId) return;
+
+  try {
+    const data = await followupService.getUserFollowUpLimitReport(workspaceId);
+    return res.status(200).json({ success: true, data });
+  } catch (error) {
+    handleServiceError(error, res, next, 'getUserFollowUpLimitReport');
+  }
+};
+
+export const exportReport = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = requireWorkspace(req, res);
+  if (!workspaceId) return;
+
+  const type = req.query.type as string;
+  const startDate = req.query.startDate as string;
+  const endDate = req.query.endDate as string;
+  const userId = req.query.userId as string;
+
+  try {
+    let data: any[] = [];
+    let headers: string[] = [];
+    let filename = 'report.csv';
+
+    if (type === 'bulk-extensions') {
+      const moment = (await import('moment-timezone')).default;
+      data = await followupService.getBulkExtensionReport(workspaceId, { startDate, endDate });
+      headers = ['Date', 'Extended By', 'Target Date', 'Reason', 'Count', 'Auto Distributed'];
+      data = data.map((item: any) => ({
+        Date: moment(item.createdAt).format('YYYY-MM-DD HH:mm:ss'),
+        'Extended By': item.user?.name || item.user?.email || 'Unknown',
+        'Target Date': moment(item.targetDate).format('YYYY-MM-DD'),
+        Reason: item.extensionReasonName || item.customReason || 'N/A',
+        Count: item.followupCount,
+        'Auto Distributed': item.autoDistributed ? 'Yes' : 'No',
+      }));
+      filename = 'bulk_extensions_report.csv';
+    } else if (type === 'capacity' || type === 'utilization') {
+      data = await followupService.getFollowUpCapacityReport(workspaceId, { startDate, endDate, userId });
+      headers = ['Date', 'User Name', 'Follow-up Count', 'Daily Limit', 'Remaining Capacity', 'Utilization %'];
+      data = data.map((item: any) => ({
+        Date: item.date,
+        'User Name': item.userName,
+        'Follow-up Count': item.count,
+        'Daily Limit': item.limit,
+        'Remaining Capacity': item.remaining,
+        'Utilization %': `${item.utilizationPercent}%`,
+      }));
+      filename = `${type}_report.csv`;
+    } else if (type === 'user-limits') {
+      data = await followupService.getUserFollowUpLimitReport(workspaceId);
+      headers = ['User Name', 'Email', 'Role', 'Daily Limit', 'Limit Enabled', 'Avg Daily Count (7d)', 'Avg Utilization %'];
+      data = data.map((item: any) => ({
+        'User Name': item.userName,
+        Email: item.userEmail,
+        Role: item.roleName,
+        'Daily Limit': item.limit,
+        'Limit Enabled': item.limitEnabled ? 'Yes' : 'No',
+        'Avg Daily Count (7d)': item.avgDailyCount,
+        'Avg Utilization %': `${item.utilizationPercent}%`,
+      }));
+      filename = 'user_limits_report.csv';
+    } else {
+      return res.status(400).json({ success: false, message: 'Invalid report type for export.' });
+    }
+
+    const csvRows = [headers.join(',')];
+    for (const row of data) {
+      const values = headers.map((h) => {
+        const val = row[h];
+        const stringVal = val === null || val === undefined ? '' : String(val);
+        if (/[",\n\r]/.test(stringVal)) {
+          return `"${stringVal.replace(/"/g, '""')}"`;
+        }
+        return stringVal;
+      });
+      csvRows.push(values.join(','));
+    }
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
+    return res.status(200).send(csvRows.join('\n'));
+  } catch (error) {
+    handleServiceError(error, res, next, 'exportReport');
   }
 };

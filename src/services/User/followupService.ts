@@ -545,6 +545,59 @@ const groupCalendarItems = (
   };
 };
 
+export const getFollowUpSettings = async (workspaceId: string) => {
+  const { getSettings: fetchFollowUpSettings } = await import('../../modules/followup-settings/followupSettings.service');
+  return await fetchFollowUpSettings(workspaceId);
+};
+
+export const getUserFollowUpCountOnDate = async (
+  workspaceId: string,
+  userId: string,
+  date: Date,
+  excludeFollowUpId?: string,
+): Promise<number> => {
+  const range = await getDayRangeForWorkspace(workspaceId, date);
+  const where: any = {
+    workspaceId,
+    userId,
+    scheduledAt: {
+      gte: range.start,
+      lte: range.end,
+    },
+  };
+
+  if (excludeFollowUpId) {
+    where.id = { not: excludeFollowUpId };
+  }
+
+  return await (prisma as any).followUp.count({ where });
+};
+
+export const checkUserCapacity = async (
+  workspaceId: string,
+  userId: string,
+  date: Date,
+  additionalCount = 1,
+  excludeFollowUpId?: string,
+) => {
+  const settings = await getFollowUpSettings(workspaceId);
+  if (!settings || !settings.isActive || !settings.dailyLimitEnabled) {
+    return { hasCapacity: true, remaining: 999999, limit: 999999, existingCount: 0 };
+  }
+
+  const existingCount = await getUserFollowUpCountOnDate(workspaceId, userId, date, excludeFollowUpId);
+  const remaining = settings.dailyLimitCount - existingCount;
+
+  const hasCapacity = !settings.capacityValidationEnabled || (remaining >= additionalCount);
+
+  return {
+    hasCapacity,
+    remaining,
+    limit: settings.dailyLimitCount,
+    existingCount,
+  };
+};
+
 export const createFollowUp = async (
   workspaceId: string,
   actor: { id: string; role?: { name?: string | null } | null },
@@ -580,6 +633,11 @@ export const createFollowUp = async (
   }
 
   const userId = await resolveTargetUserId(workspaceId, actor);
+
+  const capacity = await checkUserCapacity(workspaceId, userId, input.scheduledAt);
+  if (!capacity.hasCapacity) {
+    throw createServiceError('You have reached your daily follow-up limit for today.', 422);
+  }
 
   const created = await (prisma as any).followUp.create({
     data: {
@@ -1115,6 +1173,11 @@ export const snoozeFollowUp = async (
     validateMandatoryFollowUpSchedule(leadForSchedule, input.scheduledAt);
   }
 
+  const capacity = await checkUserCapacity(workspaceId, existing.userId, input.scheduledAt, 1, existing.id);
+  if (!capacity.hasCapacity) {
+    throw createServiceError('You have reached your daily follow-up limit for today.', 422);
+  }
+
   let extensionReasonName: string | null = null;
   if (input.extensionReasonId) {
     const reason = await (prisma as any).followUpExtensionReason.findFirst({
@@ -1180,4 +1243,347 @@ export const touchFollowUpTodayCachesAfterLeadMutation = async (
   const todayRange = await getDayRangeForWorkspace(workspaceId);
   const scheduleDateKey = moment(scheduledAt).utc().format('YYYY-MM-DD');
   await invalidateTodayCache(workspaceId, userId, [scheduleDateKey, todayRange.cacheDateKey]);
+};
+
+export const bulkExtendFollowUps = async (
+  workspaceId: string,
+  actor: { id: string },
+  input: {
+    followUpIds: string[];
+    newFollowupDate: Date;
+    extensionReasonId?: string | null;
+    recentDescription?: string | null;
+    autoDistribute?: boolean;
+  },
+) => {
+  await assertModuleReady();
+
+  const settings = await getFollowUpSettings(workspaceId);
+  const maxLimit = settings?.maxBulkExtensionCount ?? 100;
+  if (input.followUpIds.length > maxLimit) {
+    throw createServiceError(`Cannot extend more than ${maxLimit} follow-ups in a single bulk operation.`, 422);
+  }
+
+  const followUps = await (prisma as any).followUp.findMany({
+    where: {
+      id: { in: input.followUpIds },
+      workspaceId,
+      status: { not: FOLLOWUP_COMPLETED },
+    },
+  });
+
+  if (followUps.length === 0) {
+    throw createServiceError('No matching pending follow-ups found to extend.', 404);
+  }
+
+  let extensionReasonName: string | null = null;
+  if (input.extensionReasonId) {
+    const reason = await (prisma as any).followUpExtensionReason.findFirst({
+      where: { id: input.extensionReasonId, workspaceId },
+    });
+    if (reason) {
+      extensionReasonName = reason.reasonName;
+    }
+  }
+
+  const followUpsByUser: Record<string, typeof followUps> = {};
+  for (const f of followUps) {
+    if (!followUpsByUser[f.userId]) {
+      followUpsByUser[f.userId] = [];
+    }
+    followUpsByUser[f.userId].push(f);
+  }
+
+  const successIds: string[] = [];
+  const blockedIds: string[] = [];
+  const allocations: { followUpId: string; newDate: Date }[] = [];
+
+  const timeZone = await getWorkspaceTimeZone(workspaceId);
+
+  for (const userId of Object.keys(followUpsByUser)) {
+    const userFollowUps = followUpsByUser[userId];
+    let currentDate = moment.tz(input.newFollowupDate, timeZone).startOf('day').toDate();
+    let unassigned = [...userFollowUps];
+
+    while (unassigned.length > 0) {
+      if (!settings || !settings.isActive || !settings.dailyLimitEnabled || !settings.capacityValidationEnabled) {
+        for (const f of unassigned) {
+          allocations.push({ followUpId: f.id, newDate: currentDate });
+          successIds.push(f.id);
+        }
+        break;
+      }
+
+      const existingCount = await getUserFollowUpCountOnDate(workspaceId, userId, currentDate, undefined);
+      const capacity = Math.max(0, settings.dailyLimitCount - existingCount);
+
+      if (capacity > 0) {
+        const toAllocate = unassigned.slice(0, capacity);
+        for (const f of toAllocate) {
+          allocations.push({ followUpId: f.id, newDate: currentDate });
+          successIds.push(f.id);
+        }
+        unassigned = unassigned.slice(capacity);
+      }
+
+      if (unassigned.length > 0) {
+        if (input.autoDistribute) {
+          currentDate = moment(currentDate).add(1, 'day').toDate();
+        } else {
+          for (const f of unassigned) {
+            blockedIds.push(f.id);
+          }
+          break;
+        }
+      }
+    }
+  }
+
+  if (allocations.length === 0) {
+    throw createServiceError('Selected date has capacity for only 0 additional follow-ups. All selected follow-ups could not be reassigned.', 422);
+  }
+
+  await prisma.$transaction(async (tx) => {
+    for (const alloc of allocations) {
+      const orig = followUps.find((f: any) => f.id === alloc.followUpId)!;
+
+      await (tx as any).followUp.update({
+        where: { id: alloc.followUpId },
+        data: {
+          scheduledAt: alloc.newDate,
+          status: FOLLOWUP_PENDING,
+          recentDescription: input.recentDescription || null,
+          previousFollowupDate: orig.scheduledAt,
+          newFollowupDate: alloc.newDate,
+          snoozedBy: actor.id,
+          snoozedAt: new Date(),
+          reminderActionType: 'BULK_EXTEND',
+          extensionReasonId: input.extensionReasonId || null,
+          extensionReasonName,
+        },
+      });
+
+      await tx.followupActivityLog.create({
+        data: {
+          followUpId: alloc.followUpId,
+          workspaceId,
+          previousFollowupDate: orig.scheduledAt,
+          newFollowupDate: alloc.newDate,
+          snoozedById: actor.id,
+          recentDescription: input.recentDescription || 'Bulk Extension',
+          previousDescription: orig.recentDescription || orig.description || null,
+          reminderActionType: 'BULK_EXTEND',
+          extensionReasonId: input.extensionReasonId || null,
+          extensionReasonName,
+        },
+      });
+    }
+
+    await (tx as any).bulkFollowUpExtension.create({
+      data: {
+        workspaceId,
+        userId: actor.id,
+        targetDate: input.newFollowupDate,
+        extensionReasonId: input.extensionReasonId || null,
+        extensionReasonName,
+        customReason: input.recentDescription || null,
+        followupCount: allocations.length,
+        autoDistributed: !!input.autoDistribute,
+      },
+    });
+
+    await (tx as any).auditLog.create({
+      data: {
+        userId: actor.id,
+        workspaceId,
+        action: 'BULK_FOLLOWUP_EXTENDED',
+        entityType: 'BulkFollowUpExtension',
+        details: {
+          followUpIds: input.followUpIds,
+          successCount: successIds.length,
+          blockedCount: blockedIds.length,
+          targetDate: input.newFollowupDate,
+          autoDistributed: !!input.autoDistribute,
+        },
+      },
+    });
+  });
+
+  let message = `Successfully reassigned ${successIds.length} follow-up(s).`;
+  if (blockedIds.length > 0) {
+    const originalTargetCapacity = settings?.dailyLimitCount ?? 10;
+    const initialTargetExisting = await getUserFollowUpCountOnDate(workspaceId, followUps[0].userId, input.newFollowupDate);
+    const targetCapacity = Math.max(0, originalTargetCapacity - initialTargetExisting);
+
+    message = `Selected date has capacity for only ${targetCapacity} additional follow-ups. ${blockedIds.length} follow-ups could not be reassigned.`;
+  }
+
+  return {
+    success: true,
+    message,
+    successCount: successIds.length,
+    blockedCount: blockedIds.length,
+    successIds,
+    blockedIds,
+  };
+};
+
+export const getTodayUtilization = async (workspaceId: string, userId: string) => {
+  const todayRange = await getDayRangeForWorkspace(workspaceId, new Date());
+  const count = await (prisma as any).followUp.count({
+    where: {
+      workspaceId,
+      userId,
+      scheduledAt: {
+        gte: todayRange.start,
+        lte: todayRange.end,
+      },
+    },
+  });
+
+  const settings = await getFollowUpSettings(workspaceId);
+  return {
+    count,
+    limit: settings?.dailyLimitCount ?? 10,
+    limitEnabled: !!settings?.dailyLimitEnabled && !!settings?.isActive,
+  };
+};
+
+export const getBulkExtensionReport = async (workspaceId: string, filters: { startDate?: string; endDate?: string }) => {
+  const where: any = { workspaceId };
+  if (filters.startDate || filters.endDate) {
+    where.createdAt = {};
+    if (filters.startDate) {
+      where.createdAt.gte = new Date(filters.startDate);
+    }
+    if (filters.endDate) {
+      where.createdAt.lte = new Date(filters.endDate);
+    }
+  }
+
+  return await (prisma as any).bulkFollowUpExtension.findMany({
+    where,
+    include: {
+      user: { select: { name: true, email: true } },
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+};
+
+export const getFollowUpCapacityReport = async (
+  workspaceId: string,
+  filters: { startDate?: string; endDate?: string; userId?: string },
+) => {
+  const timeZone = await getWorkspaceTimeZone(workspaceId);
+  const startDate = filters.startDate
+    ? moment.tz(filters.startDate, timeZone).startOf('day')
+    : moment().tz(timeZone).subtract(7, 'days').startOf('day');
+  const endDate = filters.endDate
+    ? moment.tz(filters.endDate, timeZone).endOf('day')
+    : moment().tz(timeZone).endOf('day');
+
+  const settings = await getFollowUpSettings(workspaceId);
+  const limit = settings?.dailyLimitCount ?? 10;
+  const limitEnabled = !!settings?.dailyLimitEnabled && !!settings?.isActive;
+
+  const where: any = {
+    workspaceId,
+    scheduledAt: {
+      gte: startDate.toDate(),
+      lte: endDate.toDate(),
+    },
+  };
+  if (filters.userId) {
+    where.userId = filters.userId;
+  }
+
+  const followUps = await (prisma as any).followUp.findMany({
+    where,
+    select: { scheduledAt: true, userId: true, user: { select: { name: true, email: true } } },
+  });
+
+  const grouped: Record<
+    string,
+    { date: string; userName: string; count: number; limit: number; remaining: number; utilizationPercent: number }
+  > = {};
+
+  for (const f of followUps) {
+    const dateKey = moment(f.scheduledAt).tz(timeZone).format('YYYY-MM-DD');
+    const userName = f.user?.name || f.user?.email || 'Unknown';
+    const groupKey = `${dateKey}_${f.userId}`;
+
+    if (!grouped[groupKey]) {
+      grouped[groupKey] = {
+        date: dateKey,
+        userName,
+        count: 0,
+        limit,
+        remaining: limit,
+        utilizationPercent: 0,
+      };
+    }
+    grouped[groupKey].count++;
+  }
+
+  const result = Object.values(grouped).map((item) => {
+    const remaining = Math.max(0, item.limit - item.count);
+    const utilizationPercent = item.limit > 0 ? Math.round((item.count / item.limit) * 100) : 0;
+    return {
+      ...item,
+      remaining,
+      utilizationPercent,
+      limitEnabled,
+    };
+  });
+
+  result.sort((a, b) => b.date.localeCompare(a.date));
+
+  return result;
+};
+
+export const getDailyFollowUpUtilization = async (
+  workspaceId: string,
+  filters: { startDate?: string; endDate?: string; userId?: string },
+) => {
+  return await getFollowUpCapacityReport(workspaceId, filters);
+};
+
+export const getUserFollowUpLimitReport = async (workspaceId: string) => {
+  const users = await prisma.user.findMany({
+    where: { workspaceId, deletedAt: null },
+    select: { id: true, name: true, email: true, role: { select: { name: true } } },
+  });
+
+  const settings = await getFollowUpSettings(workspaceId);
+  const limit = settings?.dailyLimitCount ?? 10;
+  const limitEnabled = !!settings?.dailyLimitEnabled && !!settings?.isActive;
+
+  const result = [];
+  for (const u of users) {
+    const next7DaysCount = await (prisma as any).followUp.count({
+      where: {
+        workspaceId,
+        userId: u.id,
+        scheduledAt: {
+          gte: moment().startOf('day').toDate(),
+          lte: moment().add(7, 'days').endOf('day').toDate(),
+        },
+      },
+    });
+
+    const avgDailyCount = Math.round((next7DaysCount / 8) * 10) / 10;
+
+    result.push({
+      userId: u.id,
+      userName: u.name || u.email,
+      userEmail: u.email,
+      roleName: u.role?.name || 'Staff',
+      limit,
+      limitEnabled,
+      avgDailyCount,
+      utilizationPercent: limit > 0 ? Math.round((avgDailyCount / limit) * 100) : 0,
+    });
+  }
+
+  return result;
 };

@@ -179,3 +179,23 @@ export type AdvancedCalendarDetailsInput = z.infer<typeof advancedCalendarDetail
 export type FollowUpStatus = z.infer<typeof followUpStatusSchema>;
 export type FollowUpType = z.infer<typeof followUpTypeSchema>;
 export type CalendarView = z.infer<typeof calendarViewSchema>;
+
+export const bulkExtendFollowUpSchema = z.object({
+  followUpIds: z.array(z.string().min(1)),
+  newFollowupDate: parseDateField('newFollowupDate'),
+  extensionReasonId: z.string().trim().max(191).optional().nullable(),
+  recentDescription: z.string().trim().max(3000).optional().nullable(),
+  autoDistribute: z.boolean().optional().default(false),
+}).refine(
+  (data) => {
+    const hasDescription = typeof data.recentDescription === 'string' && data.recentDescription.trim().length > 0;
+    const hasReason = typeof data.extensionReasonId === 'string' && data.extensionReasonId.trim().length > 0;
+    return hasDescription || hasReason;
+  },
+  {
+    message: 'Either a Predefined Reason or a Custom Description is required.',
+    path: ['recentDescription'],
+  }
+);
+
+export type BulkExtendFollowUpInput = z.infer<typeof bulkExtendFollowUpSchema>;

@@ -307,7 +307,20 @@ export const checkPermission = (permissionKey: string) => {
       }
 
       // 4. Check permission
-      const hasRequestedPermission = permissions.includes(permissionKey);
+      let hasRequestedPermission = permissions.includes(permissionKey);
+      if (!hasRequestedPermission && permissionKey === 'bulk_extend_followups') {
+        const tempAccess = await (prisma as any).temporaryBulkExtensionAccess.findFirst({
+          where: {
+            userId: req.user.id,
+            workspaceId: req.user.workspaceId,
+            isActive: true,
+            expiresAt: { gte: new Date() },
+          },
+        });
+        if (tempAccess) {
+          hasRequestedPermission = true;
+        }
+      }
       const hasLeadSourceFallbackPermission =
         permissionKey.startsWith('LEAD_SOURCES_') && permissions.includes('SYSTEM_CONFIG');
       const hasLeadStageFallbackPermission =
@@ -435,6 +448,18 @@ export const checkAnyPermission = (permissionKeys: string[]) => {
 export const hasPermission = async (user: any, permissionKey: string): Promise<boolean> => {
   if (!user || !user.roleId) return false;
   if (isPrivilegedRole(user.role?.name)) return true;
+
+  if (permissionKey === 'bulk_extend_followups') {
+    const tempAccess = await (prisma as any).temporaryBulkExtensionAccess.findFirst({
+      where: {
+        userId: user.id,
+        workspaceId: user.workspaceId,
+        isActive: true,
+        expiresAt: { gte: new Date() },
+      },
+    });
+    if (tempAccess) return true;
+  }
 
   const rolePermissions = await (prisma as any).rolePermission.findMany({
     where: { roleId: user.roleId },

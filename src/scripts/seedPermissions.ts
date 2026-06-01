@@ -68,6 +68,10 @@ const permissions = [
   { key: 'LOB_REASONS_DELETE', group: 'MASTER_CONFIGURATION', description: 'Delete LOB reasons' },
   { key: 'view_followup_extension_reasons', group: 'MASTER_CONFIGURATION', description: 'View follow-up extension reasons' },
   { key: 'manage_followup_extension_reasons', group: 'MASTER_CONFIGURATION', description: 'Manage follow-up extension reasons' },
+  { key: 'manage_followup_settings', group: 'ADMIN_MANAGEMENT', description: 'Manage follow-up settings' },
+  { key: 'bulk_extend_followups', group: 'ADMIN_MANAGEMENT', description: 'Bulk extend follow-ups' },
+  { key: 'grant_bulk_extension_access', group: 'ADMIN_MANAGEMENT', description: 'Grant temporary bulk extension access' },
+  { key: 'view_followup_capacity', group: 'ADMIN_MANAGEMENT', description: 'View follow-up capacity settings and reports' },
   { key: 'LOCATION_VIEW', group: 'MASTER_CONFIGURATION', description: 'View countries, levels, and locations' },
   { key: 'LOCATION_MANAGE', group: 'MASTER_CONFIGURATION', description: 'Create and manage countries, levels, and locations' },
 
