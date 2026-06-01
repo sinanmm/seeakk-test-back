@@ -30,6 +30,18 @@ const invalidateUserSessions = async (userId: string): Promise<void> => {
  * Logically lock a user account.
  */
 export const lockUser = async (userId: string, workspaceId: string, reason?: string) => {
+  const checkUser = await (prisma as any).user.findFirst({
+    where: { id: userId, workspaceId, deletedAt: null },
+    select: {
+      id: true,
+      role: { select: { name: true } },
+    },
+  });
+  if (checkUser?.role?.name?.toLowerCase() === 'superadmin') {
+    logger.warn('Skipped locking user account: user is a superadmin', { userId, workspaceId });
+    return checkUser;
+  }
+
   const user = await (prisma as any).user.update({
     where: { id: userId, workspaceId } as any,
     data: { isLocked: true },

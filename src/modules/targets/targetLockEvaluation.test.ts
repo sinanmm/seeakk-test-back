@@ -62,13 +62,25 @@ test('isUserActingAsSupervisorOrStakeholder matches supervisor roles and relatio
   const originalFindFirstUnlockLog = prisma.targetUnlockLog.findFirst;
 
   try {
+    // Case 0: User is superadmin
+    prisma.user.findFirst = async () => ({
+      id: 'superadmin_id',
+      role: { name: 'superadmin' },
+    });
+    prisma.targetAssignment.findFirst = async () => null;
+    prisma.targetCycle.findFirst = async () => null;
+    prisma.targetUnlockLog.findFirst = async () => null;
+
+    let res = await isUserActingAsSupervisorOrStakeholder('superadmin_user');
+    assert.equal(res, true);
+
     // Case 1: User has subordinates
     prisma.user.findFirst = async () => ({ id: 'subordinate_1' });
     prisma.targetAssignment.findFirst = async () => null;
     prisma.targetCycle.findFirst = async () => null;
     prisma.targetUnlockLog.findFirst = async () => null;
 
-    let res = await isUserActingAsSupervisorOrStakeholder('supervisor_1');
+    res = await isUserActingAsSupervisorOrStakeholder('supervisor_1');
     assert.equal(res, true);
 
     // Case 2: User is target assigner

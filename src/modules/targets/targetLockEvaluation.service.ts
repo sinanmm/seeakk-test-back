@@ -85,6 +85,17 @@ export const isNonAssigneeStakeholderOnAssignment = (
 export const isUserActingAsSupervisorOrStakeholder = async (
   userId: string,
 ): Promise<boolean> => {
+  // 0. Check if user is a superadmin
+  const user = await db.user.findFirst({
+    where: { id: userId, deletedAt: null },
+    select: {
+      role: { select: { name: true } },
+    },
+  });
+  if (user?.role?.name?.toLowerCase() === 'superadmin') {
+    return true;
+  }
+
   // 1. Check if user is a supervisor/reporting manager to anyone in the workspace or globally
   const hasSubordinates = await db.user.findFirst({
     where: { supervisorId: userId, deletedAt: null },
