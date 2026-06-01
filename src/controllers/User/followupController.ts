@@ -3,6 +3,7 @@ import auditService from '../../services/Audit/auditService';
 import logger from '../../utils/logger';
 import * as followupService from '../../services/User/followupService';
 import * as mandatoryFollowupService from '../../services/User/mandatoryFollowupContinuation.service';
+import * as overdueFollowupService from '../../services/User/overdueFollowup.service';
 import { emitWorkspaceEvent } from '../../realtime/socket';
 import {
   CalendarQueryInput,
@@ -303,6 +304,26 @@ export const snoozeFollowUp = async (req: Request, res: Response, next: NextFunc
     });
   } catch (error) {
     handleServiceError(error, res, next, 'snoozeFollowUp');
+  }
+};
+
+export const getOverdueMandatoryFollowUps = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<any> => {
+  const workspaceId = requireWorkspace(req, res);
+  if (!workspaceId) return;
+
+  try {
+    const data = await overdueFollowupService.getOverdueMandatorySessionState(workspaceId, getActor(req));
+    return res.status(200).json({
+      success: true,
+      message: 'Overdue follow-up status fetched successfully',
+      data,
+    });
+  } catch (error) {
+    handleServiceError(error, res, next, 'getOverdueMandatoryFollowUps');
   }
 };
 

@@ -167,9 +167,18 @@ export type AdvancedCalendarSummaryInput = z.infer<typeof advancedCalendarSummar
 
 export const advancedCalendarDetailsSchema = z.object({
   date: parseDateField('date'),
-  type: z.enum(['LEADS_CREATED', 'STAGE_CREATED', 'TOTAL_FOLLOWUPS', 'STAGE_FOLLOWUPS']),
+  type: z.enum([
+    'LEADS_CREATED',
+    'LEAD_STAGE_CREATED',
+    'STAGE_CREATED',
+    'TOTAL_FOLLOWUPS',
+    'STAGE_FOLLOWUPS',
+  ]),
   stageId: z.preprocess(emptyStringToUndefined, z.string().trim().optional()).optional(),
   userId: z.preprocess(emptyStringToUndefined, z.string().trim().optional()).optional(),
+  overdueExtendedOnly: z
+    .preprocess((val) => val === 'true' || val === true, z.boolean())
+    .optional(),
   page: positiveIntString('page', 1),
   limit: positiveIntString('limit', 20),
 });

@@ -4,6 +4,7 @@ import prisma from '../config/prisma';
 import logger from '../utils/logger';
 import { redisClient } from '../config/redis';
 import { enforceMandatoryFollowUpContinuation } from './mandatoryFollowupMiddleware';
+import { enforceOverdueFollowUp } from './overdueFollowupMiddleware';
 import { applyCorsHeadersIfAllowed } from '../config/cors';
 
 interface JwtPayload {
@@ -206,7 +207,9 @@ export const protect = async (req: Request, res: Response, next: NextFunction): 
     }
 
     req.user = hydratedUser;
-    return enforceMandatoryFollowUpContinuation(req, res, next);
+    return enforceOverdueFollowUp(req, res, () =>
+      enforceMandatoryFollowUpContinuation(req, res, next),
+    );
   } catch (error: any) {
     logger.error('Authentication Error', { error: error.message, action: 'auth_failed' });
     applyCorsHeadersIfAllowed(req, res);

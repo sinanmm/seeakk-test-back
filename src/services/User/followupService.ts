@@ -2,7 +2,8 @@ import moment from 'moment-timezone';
 import prisma from '../../config/prisma';
 import { redisClient } from '../../config/redis';
 import { normalizeFollowUpType } from '../../constants/followUpType';
-import { resolveVisibleLeadUserScope } from '../../modules/leads/leads.service';
+import { buildAccessWhere, resolveVisibleLeadUserScope } from '../../modules/leads/leads.service';
+import { wasExtendedAfterOverdue } from './followupCalendar.util';
 import logger from '../../utils/logger';
 import type {
   CalendarQueryInput,
@@ -229,7 +230,7 @@ const resolveDisplayName = (user?: { name?: string | null; username?: string | n
   return user.email || '';
 };
 
-const mapFollowUpRecord = (record: FollowUpRecord) => ({
+export const mapFollowUpRecord = (record: FollowUpRecord) => ({
   ...record,
   type: normalizeFollowUpType(record.type),
   scheduledAt: record.scheduledAt.toISOString(),
@@ -289,6 +290,8 @@ const buildFollowUpInclude = {
       name: true,
       email: true,
       phone: true,
+      stageId: true,
+      stage: { select: { id: true, name: true, color: true } },
     },
   },
   user: {
@@ -340,7 +343,7 @@ const buildReminderInclude = {
   },
 } as const;
 
-const getWorkspaceTimeZone = async (workspaceId: string): Promise<string> => {
+export const getWorkspaceTimeZone = async (workspaceId: string): Promise<string> => {
   const workspace = await prisma.workspace.findUnique({
     where: { id: workspaceId },
     select: { timeZone: true },
@@ -702,65 +705,89 @@ export const getCalendarData = async (
 
 export const getAdvancedCalendarSummary = async (
   workspaceId: string,
-  actor: { id: string; role?: { name?: string | null } | null },
+  actor: { id: string; roleId?: string | null; role?: { name?: string | null } | null },
   query: AdvancedCalendarSummaryInput,
 ) => {
   await assertModuleReady();
 
   const targetUserId = await resolveTargetUserId(workspaceId, actor, query.userId);
   const timeZone = await getWorkspaceTimeZone(workspaceId);
+  const leadAccess = await buildAccessWhere(workspaceId, actor);
+  const leadAccessFilter =
+    Object.keys(leadAccess).length > 0 ? { deletedAt: null, ...leadAccess } : { deletedAt: null };
 
   const groupDate = (date: Date) => moment.tz(date, timeZone).format('YYYY-MM-DD');
 
   const [stages, leadsCreated, stageHistory, followUps] = await Promise.all([
     (prisma as any).leadStage.findMany({
       where: { workspaceId },
-      select: { id: true, color: true },
+      select: { id: true, name: true, color: true },
     }),
     (prisma as any).lead.findMany({
       where: {
         workspaceId,
         createdById: targetUserId,
         createdAt: { gte: query.startDate, lte: query.endDate },
-        deletedAt: null,
+        ...leadAccessFilter,
       },
-      select: { createdAt: true },
+      select: {
+        createdAt: true,
+        stageId: true,
+        stage: { select: { name: true, color: true } },
+      },
     }),
     (prisma as any).leadStageHistory.findMany({
       where: {
         workspaceId,
         changedById: targetUserId,
         changedAt: { gte: query.startDate, lte: query.endDate },
+        lead: leadAccessFilter,
       },
       select: { changedAt: true, toStageId: true, toStageName: true },
     }),
     (prisma as any).followUp.findMany({
-      where: buildFollowUpWhere({
-        workspaceId,
-        userId: targetUserId,
-        startDate: query.startDate,
-        endDate: query.endDate,
-      }),
+      where: {
+        ...buildFollowUpWhere({
+          workspaceId,
+          userId: targetUserId,
+          startDate: query.startDate,
+          endDate: query.endDate,
+        }),
+        lead: leadAccessFilter,
+      },
       select: {
         scheduledAt: true,
+        previousFollowupDate: true,
+        snoozedAt: true,
+        status: true,
         lead: { select: { stageId: true, stage: { select: { name: true, color: true } } } },
       },
     }),
   ]);
 
-  const stageColorMap = Object.fromEntries(stages.map((s: any) => [s.id, s.color]));
+  const stageColorMap = Object.fromEntries(
+    stages.map((s: any) => [s.id, { color: s.color, name: s.name }]),
+  );
 
-  const summaryByDate: Record<string, {
-    leadsCreated: number;
-    totalFollowUps: number;
-    stageTransitions: Record<string, { count: number; name: string; color: string }>;
-    stageFollowUps: Record<string, { count: number; name: string; color: string }>;
-  }> = {};
+  const summaryByDate: Record<
+    string,
+    {
+      leadsCreated: number;
+      leadsCreatedByStage: Record<string, { count: number; name: string; color: string }>;
+      totalFollowUps: number;
+      stageTransitions: Record<string, { count: number; name: string; color: string }>;
+      stageFollowUps: Record<
+        string,
+        { count: number; name: string; color: string; overdueExtendedCount: number }
+      >;
+    }
+  > = {};
 
   const ensureDate = (d: string) => {
     if (!summaryByDate[d]) {
       summaryByDate[d] = {
         leadsCreated: 0,
+        leadsCreatedByStage: {},
         totalFollowUps: 0,
         stageTransitions: {},
         stageFollowUps: {},
@@ -772,6 +799,16 @@ export const getAdvancedCalendarSummary = async (
     const d = groupDate(l.createdAt);
     ensureDate(d);
     summaryByDate[d].leadsCreated += 1;
+    const stageId = l.stageId;
+    if (!stageId) return;
+    if (!summaryByDate[d].leadsCreatedByStage[stageId]) {
+      summaryByDate[d].leadsCreatedByStage[stageId] = {
+        count: 0,
+        name: l.stage?.name || stageColorMap[stageId]?.name || 'Unknown Stage',
+        color: l.stage?.color || stageColorMap[stageId]?.color || '#cbd5e1',
+      };
+    }
+    summaryByDate[d].leadsCreatedByStage[stageId].count += 1;
   });
 
   followUps.forEach((f: any) => {
@@ -786,9 +823,13 @@ export const getAdvancedCalendarSummary = async (
           count: 0,
           name: f.lead.stage?.name || 'Unknown Stage',
           color: f.lead.stage?.color || '#cbd5e1',
+          overdueExtendedCount: 0,
         };
       }
       summaryByDate[d].stageFollowUps[stageId].count += 1;
+      if (wasExtendedAfterOverdue(f, timeZone)) {
+        summaryByDate[d].stageFollowUps[stageId].overdueExtendedCount += 1;
+      }
     }
   });
 
@@ -800,8 +841,8 @@ export const getAdvancedCalendarSummary = async (
       if (!summaryByDate[d].stageTransitions[stageId]) {
         summaryByDate[d].stageTransitions[stageId] = {
           count: 0,
-          name: h.toStageName || 'Unknown Stage',
-          color: stageColorMap[stageId] || '#cbd5e1',
+          name: h.toStageName || stageColorMap[stageId]?.name || 'Unknown Stage',
+          color: stageColorMap[stageId]?.color || '#cbd5e1',
         };
       }
       summaryByDate[d].stageTransitions[stageId].count += 1;
@@ -811,6 +852,10 @@ export const getAdvancedCalendarSummary = async (
   const formattedSummary = Object.entries(summaryByDate).map(([date, data]) => ({
     date,
     leadsCreated: data.leadsCreated,
+    leadsCreatedByStage: Object.entries(data.leadsCreatedByStage).map(([id, info]) => ({
+      stageId: id,
+      ...info,
+    })),
     totalFollowUps: data.totalFollowUps,
     stageTransitions: Object.entries(data.stageTransitions).map(([id, info]) => ({
       stageId: id,
@@ -818,13 +863,52 @@ export const getAdvancedCalendarSummary = async (
     })),
     stageFollowUps: Object.entries(data.stageFollowUps).map(([id, info]) => ({
       stageId: id,
-      ...info,
+      count: info.count,
+      name: info.name,
+      color: info.color,
+      overdueExtendedCount: info.overdueExtendedCount,
     })),
   }));
+
+  const stageFollowUpTotals: Record<string, number> = {};
+  const stageLeadCreationTotals: Record<string, number> = {};
+  let overdueFollowUpTotal = 0;
+
+  formattedSummary.forEach((day) => {
+    day.stageFollowUps.forEach((row) => {
+      stageFollowUpTotals[row.stageId] = (stageFollowUpTotals[row.stageId] || 0) + row.count;
+      overdueFollowUpTotal += row.overdueExtendedCount || 0;
+    });
+    day.leadsCreatedByStage.forEach((row) => {
+      stageLeadCreationTotals[row.stageId] = (stageLeadCreationTotals[row.stageId] || 0) + row.count;
+    });
+    day.stageTransitions.forEach((row) => {
+      stageLeadCreationTotals[row.stageId] =
+        (stageLeadCreationTotals[row.stageId] || 0) + row.count;
+    });
+  });
 
   return {
     timeZone,
     summary: formattedSummary,
+    analytics: {
+      stageFollowUpCounts: Object.entries(stageFollowUpTotals).map(([stageId, count]) => ({
+        stageId,
+        count,
+        name: stageColorMap[stageId]?.name || 'Unknown Stage',
+        color: stageColorMap[stageId]?.color || '#cbd5e1',
+      })),
+      stageLeadCreationCounts: Object.entries(stageLeadCreationTotals).map(([stageId, count]) => ({
+        stageId,
+        count,
+        name: stageColorMap[stageId]?.name || 'Unknown Stage',
+        color: stageColorMap[stageId]?.color || '#cbd5e1',
+      })),
+      overdueFollowUpCounts: overdueFollowUpTotal,
+      followUpDelayAnalytics: {
+        overdueExtendedTotal: overdueFollowUpTotal,
+      },
+    },
   };
 };
 
@@ -846,13 +930,22 @@ export const getAdvancedCalendarDetails = async (
   let items = [];
   let total = 0;
 
-  if (query.type === 'LEADS_CREATED') {
-    const where = {
+  const leadAccess = await buildAccessWhere(workspaceId, actor);
+  const leadAccessFilter =
+    Object.keys(leadAccess).length > 0 ? { deletedAt: null, ...leadAccess } : { deletedAt: null };
+
+  const { mapCalendarFollowUpDetail } = await import('./overdueFollowup.service');
+
+  if (query.type === 'LEADS_CREATED' || query.type === 'LEAD_STAGE_CREATED') {
+    const where: any = {
       workspaceId,
       createdById: targetUserId,
       createdAt: { gte: startOfDay, lte: endOfDay },
-      deletedAt: null,
+      ...leadAccessFilter,
     };
+    if (query.type === 'LEAD_STAGE_CREATED' && query.stageId) {
+      where.stageId = query.stageId;
+    }
     [total, items] = await Promise.all([
       (prisma as any).lead.count({ where }),
       (prisma as any).lead.findMany({
@@ -860,51 +953,88 @@ export const getAdvancedCalendarDetails = async (
         skip,
         take: query.limit,
         orderBy: { createdAt: 'desc' },
-        include: { stage: { select: { name: true, color: true } }, assignedTo: { select: { name: true } } },
+        include: {
+          stage: { select: { id: true, name: true, color: true } },
+          assignedTo: { select: { name: true, email: true } },
+          createdBy: { select: { name: true, email: true } },
+        },
       }),
     ]);
+    items = items.map((lead: any) => ({
+      id: lead.id,
+      name: lead.name,
+      email: lead.email,
+      phone: lead.phone,
+      customerName: lead.email?.trim() || lead.phone?.trim() || lead.name,
+      stage: lead.stage,
+      currentStage: lead.stage,
+      previousStage: null,
+      createdBy: lead.createdBy,
+      changedBy: lead.createdBy,
+      createdAt: lead.createdAt,
+    }));
   } else if (query.type === 'STAGE_CREATED') {
-    const where = {
+    const historyWhere = {
       workspaceId,
-      stageHistory: {
-        some: {
-          changedById: targetUserId,
-          changedAt: { gte: startOfDay, lte: endOfDay },
-          toStageId: query.stageId,
-        },
-      },
-      deletedAt: null,
+      changedById: targetUserId,
+      changedAt: { gte: startOfDay, lte: endOfDay },
+      toStageId: query.stageId,
+      lead: leadAccessFilter,
     };
-    [total, items] = await Promise.all([
-      (prisma as any).lead.count({ where }),
-      (prisma as any).lead.findMany({
-        where,
+    const [historyTotal, historyRows] = await Promise.all([
+      (prisma as any).leadStageHistory.count({ where: historyWhere }),
+      (prisma as any).leadStageHistory.findMany({
+        where: historyWhere,
         skip,
         take: query.limit,
-        orderBy: { updatedAt: 'desc' },
-        include: { stage: { select: { name: true, color: true } }, assignedTo: { select: { name: true } } },
+        orderBy: { changedAt: 'desc' },
+        include: {
+          lead: {
+            include: {
+              stage: { select: { id: true, name: true, color: true } },
+              assignedTo: { select: { name: true, email: true } },
+            },
+          },
+        },
       }),
     ]);
+    total = historyTotal;
+    items = historyRows.map((row: any) => ({
+      id: row.leadId,
+      name: row.lead?.name,
+      email: row.lead?.email,
+      phone: row.lead?.phone,
+      customerName: row.lead?.email?.trim() || row.lead?.phone?.trim() || row.lead?.name,
+      stage: row.lead?.stage,
+      currentStage: { id: row.toStageId, name: row.toStageName, color: row.lead?.stage?.color },
+      previousStage: row.fromStageName
+        ? { name: row.fromStageName, id: row.fromStageId }
+        : null,
+      changedBy: { name: row.changedById },
+      createdBy: row.lead?.assignedTo,
+      changedAt: row.changedAt,
+    }));
   } else if (query.type === 'TOTAL_FOLLOWUPS' || query.type === 'STAGE_FOLLOWUPS') {
     const where: any = {
       workspaceId,
       userId: targetUserId,
       scheduledAt: { gte: startOfDay, lte: endOfDay },
+      lead: leadAccessFilter,
     };
-    if (query.type === 'STAGE_FOLLOWUPS') {
-      where.lead = { stageId: query.stageId };
+    if (query.type === 'STAGE_FOLLOWUPS' && query.stageId) {
+      where.lead = { ...leadAccessFilter, stageId: query.stageId };
     }
-    [total, items] = await Promise.all([
-      (prisma as any).followUp.count({ where }),
-      (prisma as any).followUp.findMany({
-        where,
-        skip,
-        take: query.limit,
-        orderBy: { scheduledAt: 'asc' },
-        include: buildFollowUpInclude,
-      }),
-    ]);
-    items = items.map((i: any) => mapFollowUpRecord(i));
+    const allRows = await (prisma as any).followUp.findMany({
+      where,
+      orderBy: { scheduledAt: 'asc' },
+      include: buildFollowUpInclude,
+    });
+    const filteredRows =
+      query.overdueExtendedOnly === true
+        ? allRows.filter((row: any) => wasExtendedAfterOverdue(row, timeZone))
+        : allRows;
+    total = filteredRows.length;
+    items = filteredRows.slice(skip, skip + query.limit).map((i: any) => mapCalendarFollowUpDetail(i, timeZone));
   }
 
   return {
@@ -1078,6 +1208,9 @@ export const completeFollowUp = async (
 
   await syncLeadNextFollowUpPointer(existing.leadId, workspaceId);
 
+  const { invalidateOverdueFollowUpCache } = await import('../../middlewares/overdueFollowupMiddleware');
+  invalidateOverdueFollowUpCache(existing.userId);
+
   logger.info('Follow-up completed', {
     module: 'follow-up',
     followUpId: existing.id,
@@ -1231,6 +1364,9 @@ export const snoozeFollowUp = async (
   const nextDateKey = moment(input.scheduledAt).utc().format('YYYY-MM-DD');
   await invalidateTodayCache(workspaceId, existing.userId, [previousDateKey, nextDateKey, todayRange.cacheDateKey]);
   await syncLeadNextFollowUpPointer(existing.leadId, workspaceId);
+
+  const { invalidateOverdueFollowUpCache } = await import('../../middlewares/overdueFollowupMiddleware');
+  invalidateOverdueFollowUpCache(existing.userId);
 
   return mapFollowUpRecord(updated as FollowUpRecord);
 };
