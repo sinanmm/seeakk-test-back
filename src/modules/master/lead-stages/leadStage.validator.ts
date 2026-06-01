@@ -17,16 +17,24 @@ const normalizeStageShortFormInput = (value?: string | null): string | null => {
   return normalized.slice(0, 10);
 };
 
-const stageShortFormSchema = z
-  .string()
-  .trim()
-  .max(10, 'Stage short form must not exceed 10 characters')
-  .transform((value) => normalizeStageShortFormInput(value))
-  .refine((value) => value === null || /^[A-Z0-9]{1,10}$/.test(value), {
-    message: 'Stage short form may only contain letters and numbers.',
-  })
-  .optional()
-  .nullable();
+const stageShortFormFieldSchema = z.preprocess(
+  (value) => {
+    if (value === undefined) return undefined;
+    if (value === null) return null;
+    return String(value);
+  },
+  z
+    .union([z.string().max(10, 'Stage short form must not exceed 10 characters'), z.null()])
+    .optional()
+    .transform((value) => (value === undefined ? undefined : normalizeStageShortFormInput(value))),
+);
+
+const showInCalendarFieldSchema = z.preprocess((value) => {
+  if (value === undefined || value === null) return undefined;
+  if (value === true || value === 'true' || value === 1 || value === '1') return true;
+  if (value === false || value === 'false' || value === 0 || value === '0') return false;
+  return Boolean(value);
+}, z.boolean());
 
 export const stageStatusSchema = z.enum(['ACTIVE', 'INACTIVE']);
 
@@ -51,8 +59,8 @@ const normalizeRuleAssignments = (
 
 export const createLeadStageSchema = z.object({
   name: leadStageNameSchema,
-  stageShortForm: stageShortFormSchema,
-  showInCalendar: z.boolean().default(true),
+  stageShortForm: stageShortFormFieldSchema,
+  showInCalendar: showInCalendarFieldSchema.default(true),
   color: stageColorSchema.default('#10b981'),
   isApprovalRequired: z.boolean().default(false),
   isClosed: z.boolean().default(false),
@@ -81,8 +89,8 @@ export type CreateLeadStageInput = z.infer<typeof createLeadStageSchema>;
 export const updateLeadStageSchema = z
   .object({
     name: leadStageNameSchema.optional(),
-    stageShortForm: stageShortFormSchema,
-    showInCalendar: z.boolean().optional(),
+    stageShortForm: stageShortFormFieldSchema,
+    showInCalendar: showInCalendarFieldSchema.optional(),
     color: stageColorSchema.optional(),
     isApprovalRequired: z.boolean().optional(),
     isClosed: z.boolean().optional(),

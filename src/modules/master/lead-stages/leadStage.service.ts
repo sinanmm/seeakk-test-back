@@ -151,10 +151,15 @@ const normalizeStageRuleOptions = (rule: Record<string, unknown>): Record<string
 };
 
 const normalizeLeadStageRecord = (record: any): any => {
-  if (!record?.rules?.length) return record;
-  return {
+  const withCalendarFields = {
     ...record,
-    rules: record.rules.map((rule: Record<string, unknown>) => normalizeStageRuleOptions(rule)),
+    stageShortForm: record?.stageShortForm ?? null,
+    showInCalendar: record?.showInCalendar ?? true,
+  };
+  if (!withCalendarFields?.rules?.length) return withCalendarFields;
+  return {
+    ...withCalendarFields,
+    rules: withCalendarFields.rules.map((rule: Record<string, unknown>) => normalizeStageRuleOptions(rule)),
   };
 };
 
@@ -380,11 +385,15 @@ export const updateLeadStage = async (
     id,
   );
 
+  const shouldPersistCalendarFields =
+    input.stageShortForm !== undefined || input.showInCalendar !== undefined;
+
   const normalizedInput = {
     ...input,
     ...(nextName !== undefined ? { name: nextName } : {}),
-    ...(input.stageShortForm !== undefined ? { stageShortForm: nextStageShortForm } : {}),
-    ...(input.showInCalendar !== undefined ? { showInCalendar: input.showInCalendar } : {}),
+    ...(shouldPersistCalendarFields
+      ? { stageShortForm: nextStageShortForm, showInCalendar: nextShowInCalendar }
+      : {}),
   };
 
   const updated = await prisma.$transaction(
@@ -421,8 +430,12 @@ export const updateLeadStage = async (
         where: { id },
         data: {
           ...(normalizedInput.name !== undefined ? { name: normalizedInput.name } : {}),
-          ...(normalizedInput.stageShortForm !== undefined ? { stageShortForm: normalizedInput.stageShortForm } : {}),
-          ...(normalizedInput.showInCalendar !== undefined ? { showInCalendar: normalizedInput.showInCalendar } : {}),
+          ...(shouldPersistCalendarFields
+            ? {
+                stageShortForm: normalizedInput.stageShortForm ?? null,
+                showInCalendar: normalizedInput.showInCalendar ?? true,
+              }
+            : {}),
           ...(normalizedInput.color !== undefined ? { color: normalizedInput.color } : {}),
           ...(normalizedInput.isApprovalRequired !== undefined ? { isApprovalRequired: normalizedInput.isApprovalRequired } : {}),
           ...(normalizedInput.isClosed !== undefined ? { isClosed: normalizedInput.isClosed } : {}),
