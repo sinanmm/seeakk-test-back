@@ -1,5 +1,7 @@
 import prisma from '../../config/prisma';
 import logger from '../../utils/logger';
+import { emitUserEvent } from '../../realtime/socket';
+import { deactivateExpiredTemporaryBulkAccess } from './temporaryBulkAccess.util';
 import { UpdateFollowUpSettingsInput, GrantTemporaryAccessInput } from './followupSettings.validation';
 
 const createServiceError = (message: string, statusCode: number): Error & { statusCode: number } => {
@@ -63,7 +65,8 @@ export const updateSettings = async (
 };
 
 export const listTemporaryAccess = async (workspaceId: string) => {
-  // Query all temporary accesses
+  await deactivateExpiredTemporaryBulkAccess(workspaceId);
+
   const list = await (prisma as any).temporaryBulkExtensionAccess.findMany({
     where: { workspaceId },
     include: {
@@ -154,6 +157,12 @@ export const grantTemporaryAccess = async (
     },
   });
 
+  emitUserEvent(input.userId, 'permissions_updated', {
+    userId: input.userId,
+    reason: 'bulk_extension_access_granted',
+    expiresAt: entry.expiresAt.toISOString(),
+  });
+
   return entry;
 };
 
@@ -187,6 +196,11 @@ export const revokeTemporaryAccess = async (workspaceId: string, grantedById: st
         userName: updated.user.name || updated.user.email,
       },
     },
+  });
+
+  emitUserEvent(updated.userId, 'permissions_updated', {
+    userId: updated.userId,
+    reason: 'bulk_extension_access_revoked',
   });
 
   return updated;

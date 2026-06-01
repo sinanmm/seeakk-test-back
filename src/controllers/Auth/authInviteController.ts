@@ -3,7 +3,7 @@ import { acceptInviteSchema, type AcceptInviteInput, type ValidateInviteQueryInp
 import { inviteService } from '../../modules/invites/invite.service';
 import generateTokens from '../../utils/RefreshToken';
 import { hydrateAuthenticatedUser } from '../../utils/userHydration';
-import { serializeAuthenticatedUser } from '../../utils/authSerializers';
+import { serializeAuthenticatedUser, resolveEffectivePermissionKeys } from '../../utils/authSerializers';
 import { resolveWorkspaceIdForUser } from '../../utils/workspaceContext';
 import { redisClient } from '../../config/redis';
 
@@ -72,12 +72,13 @@ export const acceptInvite = async (req: Request, res: Response, next: NextFuncti
     }
 
     const resolvedWorkspaceId = await resolveWorkspaceIdForUser(hydratedUser.id, hydratedUser.workspaceId);
+    const permissions = await resolveEffectivePermissionKeys(hydratedUser, resolvedWorkspaceId);
 
     return res.status(200).json({
       success: true,
       message: result.message,
       data: {
-        user: serializeAuthenticatedUser(hydratedUser, resolvedWorkspaceId),
+        user: serializeAuthenticatedUser(hydratedUser, resolvedWorkspaceId, permissions),
         ...tokens,
       }
     });

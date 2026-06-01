@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { protect } from '../../middlewares/authMiddleware';
+import { protect, checkPermission } from '../../middlewares/authMiddleware';
 import * as followupController from '../../controllers/User/followupController';
 
 const router = Router();
@@ -16,7 +16,7 @@ router.get('/alerts', protect, followupController.getReminderAlerts);
 router.get('/history', protect, followupController.getHistory);
 
 router.get('/today-utilization', protect, followupController.getTodayUtilization);
-router.post('/bulk-extend', protect, followupController.bulkExtendFollowUps);
+router.post('/bulk-extend', protect, checkPermission('bulk_extend_followups'), followupController.bulkExtendFollowUps);
 router.get('/reports/bulk-extensions', protect, followupController.getBulkExtensionReport);
 router.get('/reports/capacity', protect, followupController.getFollowUpCapacityReport);
 router.get('/reports/utilization', protect, followupController.getDailyFollowUpUtilization);

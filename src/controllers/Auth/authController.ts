@@ -12,10 +12,11 @@ import { sendVerificationEmail } from '../../services/Email/emailService';
 import { trackUserDevice } from '../../utils/deviceTracker';
 import logger from '../../utils/logger';
 import auditService from '../../services/Audit/auditService';
-import { 
-  serializeAuthenticatedUser, 
-  normalizeRoleKey, 
-  SUPERADMIN_ROLE_NAME 
+import {
+  serializeAuthenticatedUser,
+  resolveEffectivePermissionKeys,
+  normalizeRoleKey,
+  SUPERADMIN_ROLE_NAME,
 } from '../../utils/authSerializers';
 import { 
   hydrateAuthenticatedUser, 
@@ -598,7 +599,7 @@ export const login = async (req: Request, res: Response): Promise<any> => {
     const session = await resolveAuthSession(user, resolvedWorkspaceId);
 
     return res.status(200).json({
-      user: serializeAuthenticatedUser(user, resolvedWorkspaceId),
+      user: await serializeUserForAuthResponse(user, resolvedWorkspaceId),
       session,
       ...tokens,
     });
@@ -800,7 +801,7 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
     const session = await resolveAuthSession(user, resolvedWorkspaceId);
 
     return res.status(200).json({
-      user: serializeAuthenticatedUser(user, resolvedWorkspaceId),
+      user: await serializeUserForAuthResponse(user, resolvedWorkspaceId),
       session,
       ...tokens,
     });
@@ -937,7 +938,7 @@ export const refreshToken = async (req: Request, res: Response): Promise<any> =>
     const resolvedWorkspaceId = await resolveWorkspaceForAuthPayload(user);
 
     return res.status(200).json({
-      user: serializeAuthenticatedUser(user, resolvedWorkspaceId),
+      user: await serializeUserForAuthResponse(user, resolvedWorkspaceId),
       ...tokens,
     });
   } catch (error) {
@@ -992,6 +993,11 @@ export const logout = async (req: Request, res: Response): Promise<any> => {
   }
 };
 
+const serializeUserForAuthResponse = async (user: any, resolvedWorkspaceId: string | null) => {
+  const permissions = await resolveEffectivePermissionKeys(user, resolvedWorkspaceId);
+  return serializeAuthenticatedUser(user, resolvedWorkspaceId, permissions);
+};
+
 export const getMe = async (req: Request, res: Response): Promise<any> => {
   try {
     let user = req.user;
@@ -1008,7 +1014,7 @@ export const getMe = async (req: Request, res: Response): Promise<any> => {
     const session = await resolveAuthSession(user, resolvedWorkspaceId);
 
     return res.status(200).json({
-      user: serializeAuthenticatedUser(user, resolvedWorkspaceId),
+      user: await serializeUserForAuthResponse(user, resolvedWorkspaceId),
       session,
     });
   } catch (error) {
@@ -1152,7 +1158,7 @@ export const updateMe = async (req: Request, res: Response): Promise<any> => {
 
     return res.status(200).json({
       message: 'Profile updated successfully',
-      user: serializeAuthenticatedUser(user, resolvedWorkspaceId),
+      user: await serializeUserForAuthResponse(user, resolvedWorkspaceId),
     });
   } catch (error: any) {
     logger.error('Error updating user profile', {

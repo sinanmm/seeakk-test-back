@@ -5,6 +5,8 @@ import logger from '../utils/logger';
 import { redisClient } from '../config/redis';
 import { enforceMandatoryFollowUpContinuation } from './mandatoryFollowupMiddleware';
 import { enforceOverdueFollowUp } from './overdueFollowupMiddleware';
+import { userHasActiveTemporaryBulkExtensionAccess } from '../modules/followup-settings/temporaryBulkAccess.util';
+import { BULK_EXTEND_FOLLOWUPS_PERMISSION } from '../utils/authSerializers';
 import { applyCorsHeadersIfAllowed } from '../config/cors';
 
 interface JwtPayload {
@@ -315,18 +317,11 @@ export const checkPermission = (permissionKey: string) => {
 
       // 4. Check permission
       let hasRequestedPermission = permissions.includes(permissionKey);
-      if (!hasRequestedPermission && permissionKey === 'bulk_extend_followups') {
-        const tempAccess = await (prisma as any).temporaryBulkExtensionAccess.findFirst({
-          where: {
-            userId: req.user.id,
-            workspaceId: req.user.workspaceId,
-            isActive: true,
-            expiresAt: { gte: new Date() },
-          },
-        });
-        if (tempAccess) {
-          hasRequestedPermission = true;
-        }
+      if (!hasRequestedPermission && permissionKey === BULK_EXTEND_FOLLOWUPS_PERMISSION) {
+        hasRequestedPermission = await userHasActiveTemporaryBulkExtensionAccess(
+          req.user.id,
+          req.user.workspaceId,
+        );
       }
       const hasLeadSourceFallbackPermission =
         permissionKey.startsWith('LEAD_SOURCES_') && permissions.includes('SYSTEM_CONFIG');
@@ -425,7 +420,17 @@ export const checkAnyPermission = (permissionKeys: string[]) => {
         }
       }
 
-      const hasMatch = permissionKeys.some((permissionKey) => permissions.includes(permissionKey));
+      const hasTemporaryBulkExtension = await userHasActiveTemporaryBulkExtensionAccess(
+        req.user.id,
+        req.user.workspaceId,
+      );
+      const hasMatch = permissionKeys.some((permissionKey) => {
+        if (permissions.includes(permissionKey)) return true;
+        if (permissionKey === BULK_EXTEND_FOLLOWUPS_PERMISSION && hasTemporaryBulkExtension) {
+          return true;
+        }
+        return false;
+      });
       const hasAttendanceModuleFallback =
         !hasMatch &&
         permissionKeys.some((key) => key.includes('attendance')) &&
@@ -456,16 +461,10 @@ export const hasPermission = async (user: any, permissionKey: string): Promise<b
   if (!user || !user.roleId) return false;
   if (isPrivilegedRole(user.role?.name)) return true;
 
-  if (permissionKey === 'bulk_extend_followups') {
-    const tempAccess = await (prisma as any).temporaryBulkExtensionAccess.findFirst({
-      where: {
-        userId: user.id,
-        workspaceId: user.workspaceId,
-        isActive: true,
-        expiresAt: { gte: new Date() },
-      },
-    });
-    if (tempAccess) return true;
+  if (permissionKey === BULK_EXTEND_FOLLOWUPS_PERMISSION) {
+    if (await userHasActiveTemporaryBulkExtensionAccess(user.id, user.workspaceId)) {
+      return true;
+    }
   }
 
   const rolePermissions = await (prisma as any).rolePermission.findMany({

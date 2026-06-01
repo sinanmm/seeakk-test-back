@@ -7,7 +7,7 @@ const router = Router();
 router.get(
   '/',
   protect,
-  checkAnyPermission(['manage_followup_settings', 'view_followup_capacity']),
+  checkAnyPermission(['manage_followup_settings', 'view_followup_capacity', 'bulk_extend_followups']),
   controller.getSettings,
 );
 
