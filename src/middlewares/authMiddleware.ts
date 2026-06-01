@@ -236,6 +236,10 @@ export const authorize = (...roles: string[]) => {
     const normalizedUserRole = normalizeRoleKey(userRole);
     const normalizedAllowedRoles = roles.map((role) => normalizeRoleKey(role));
 
+    if (isPrivilegedRole(userRole)) {
+      return next();
+    }
+
     if (!normalizedAllowedRoles.includes(normalizedUserRole)) {
       logger.warn(`Access forbidden. Required: ${roles.join(', ')}, Found: ${userRole}`, {
         userId: req.user.id,
