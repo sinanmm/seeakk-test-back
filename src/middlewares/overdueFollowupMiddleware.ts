@@ -29,6 +29,7 @@ export const isOverdueFollowUpExemptPath = (req: Request): boolean => {
     '/api/followups/overdue-mandatory',
     '/api/followups/mandatory-continuation',
     '/api/followups/lifecycle-extension-limit',
+    '/api/followups/today-utilization',
     '/api/followup-extension-reasons',
     '/api/leads/meta/assignees',
     '/api/admin/users',
@@ -36,6 +37,9 @@ export const isOverdueFollowUpExemptPath = (req: Request): boolean => {
     '/api/attendance/check-in',
     '/api/attendance/settings',
     '/api/attendance/networks',
+    '/api/master',
+    '/api/lob-reasons',
+    '/api/admin/lead-life-cycles',
   ];
 
   if (req.method === 'POST' && /^\/api\/followups\/[^/]+\/complete$/.test(path)) {
