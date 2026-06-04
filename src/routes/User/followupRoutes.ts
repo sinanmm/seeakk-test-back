@@ -7,6 +7,7 @@ const router = Router();
 router.get('/calendar/advanced/summary', protect, followupController.getAdvancedCalendarSummary);
 router.get('/calendar/advanced/details', protect, followupController.getAdvancedCalendarDetails);
 router.get('/calendar', protect, followupController.getCalendarData);
+router.get('/users', protect, followupController.getFollowUpUsers);
 router.get('/today', protect, followupController.getTodayFollowUps);
 router.get('/lifecycle-extension-limit', protect, followupController.getLifecycleExtensionLimit);
 router.get('/overdue-mandatory', protect, followupController.getOverdueMandatoryFollowUps);

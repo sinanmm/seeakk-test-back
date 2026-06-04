@@ -152,6 +152,22 @@ export const getCalendarData = async (req: Request, res: Response, next: NextFun
   }
 };
 
+export const getFollowUpUsers = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = requireWorkspace(req, res);
+  if (!workspaceId) return;
+
+  try {
+    const data = await followupService.getFollowUpUsers(workspaceId, getActor(req));
+    return res.status(200).json({
+      success: true,
+      message: 'Follow-up users fetched successfully',
+      data,
+    });
+  } catch (error) {
+    handleServiceError(error, res, next, 'getFollowUpUsers');
+  }
+};
+
 export const getAdvancedCalendarSummary = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
   const workspaceId = requireWorkspace(req, res);
   if (!workspaceId) return;

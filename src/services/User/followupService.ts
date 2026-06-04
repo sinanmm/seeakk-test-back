@@ -390,7 +390,13 @@ const resolveTargetUserId = async (
   workspaceId: string,
   actor: { id: string; roleId?: string | null; role?: { name?: string | null } | null },
   requestedUserId?: string,
-): Promise<string> => {
+): Promise<string | string[] | 'ALL'> => {
+  const { resolveVisibleLeadUserScope } = await import('../../modules/leads/leads.service');
+
+  if (requestedUserId === 'ALL') {
+    return resolveVisibleLeadUserScope(workspaceId, actor);
+  }
+
   if (!requestedUserId || requestedUserId === actor.id) {
     return actor.id;
   }
@@ -517,13 +523,15 @@ const invalidateTodayCache = async (
 
 const buildFollowUpWhere = (params: {
   workspaceId: string;
-  userId?: string;
+  userId?: string | string[] | 'ALL';
   status?: FollowUpStatus;
   startDate?: Date;
   endDate?: Date;
 }) => ({
   workspaceId: params.workspaceId,
-  ...(params.userId ? { userId: params.userId } : {}),
+  ...(params.userId && params.userId !== 'ALL'
+    ? { userId: Array.isArray(params.userId) ? { in: params.userId } : params.userId }
+    : {}),
   ...(params.status ? { status: params.status } : {}),
   ...(params.startDate || params.endDate
     ? {
@@ -718,6 +726,39 @@ export const getCalendarData = async (
     timeZone,
     ...groupCalendarItems(query.view, mapped, timeZone),
   };
+};
+
+export const getFollowUpUsers = async (
+  workspaceId: string,
+  actor: { id: string; roleId?: string | null; role?: { name?: string | null } | null },
+) => {
+  await assertModuleReady();
+
+  const { resolveVisibleLeadUserScope } = await import('../../modules/leads/leads.service');
+  const visibleUserScope = await resolveVisibleLeadUserScope(workspaceId, actor);
+
+  const where: any = {
+    workspaceId,
+    deletedAt: null,
+    isActive: true,
+  };
+
+  if (visibleUserScope !== 'ALL') {
+    where.id = { in: visibleUserScope };
+  }
+
+  const users = await prisma.user.findMany({
+    where,
+    orderBy: [{ name: 'asc' }, { createdAt: 'asc' }],
+    select: {
+      id: true,
+      name: true,
+      username: true,
+      email: true,
+    },
+  });
+
+  return users;
 };
 
 export const getAdvancedCalendarSummary = async (
