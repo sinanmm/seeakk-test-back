@@ -75,6 +75,13 @@ type FollowUpRecord = {
     name: string;
     email: string | null;
     phone: string | null;
+    assignedToId?: string | null;
+    assignedTo?: {
+      id: string;
+      name: string | null;
+      username: string | null;
+      email: string;
+    } | null;
   };
   images: Array<{
     id: string;
@@ -284,6 +291,12 @@ export const mapFollowUpRecord = (record: FollowUpRecord) => ({
   },
   lead: {
     ...record.lead,
+    assignedTo: record.lead?.assignedTo
+      ? {
+          ...record.lead.assignedTo,
+          displayName: resolveDisplayName(record.lead.assignedTo),
+        }
+      : null,
   },
   images: record.images.map((image) => ({
     ...image,
@@ -313,6 +326,15 @@ const buildFollowUpInclude = {
       name: true,
       email: true,
       phone: true,
+      assignedToId: true,
+      assignedTo: {
+        select: {
+          id: true,
+          name: true,
+          username: true,
+          email: true,
+        },
+      },
       stageId: true,
       stage: { select: { id: true, name: true, color: true, stageShortForm: true, showInCalendar: true } },
     },
@@ -526,6 +548,7 @@ const invalidateTodayCache = async (
 const buildFollowUpWhere = (params: {
   workspaceId: string;
   userId?: string | string[] | 'ALL';
+  leadAssignedToId?: string | { in: string[] };
   status?: FollowUpStatus;
   startDate?: Date;
   endDate?: Date;
@@ -533,6 +556,16 @@ const buildFollowUpWhere = (params: {
   workspaceId: params.workspaceId,
   ...(params.userId && params.userId !== 'ALL'
     ? { userId: Array.isArray(params.userId) ? { in: params.userId } : params.userId }
+    : {}),
+  ...(params.leadAssignedToId
+    ? {
+        lead: {
+          assignedToId:
+            typeof params.leadAssignedToId === 'string'
+              ? params.leadAssignedToId
+              : params.leadAssignedToId,
+        },
+      }
     : {}),
   ...(params.status ? { status: params.status } : {}),
   ...(params.startDate || params.endDate
@@ -544,6 +577,27 @@ const buildFollowUpWhere = (params: {
       }
     : {}),
 });
+
+/** Bulk reschedule: restrict follow-ups to leads owned by assignees in scope. */
+export const resolveLeadAssigneeFilter = (
+  requestedAssignedToId: string | undefined,
+  manageableScope: string[] | 'ALL',
+): { leadAssignedToId?: string | { in: string[] } } => {
+  const normalized = (requestedAssignedToId || '').trim();
+
+  if (!normalized || normalized.toUpperCase() === 'ALL') {
+    if (manageableScope === 'ALL') {
+      return {};
+    }
+    return { leadAssignedToId: { in: manageableScope } };
+  }
+
+  if (manageableScope !== 'ALL' && !manageableScope.includes(normalized)) {
+    throw createServiceError('You are not allowed to view follow-ups for this assignee.', 403);
+  }
+
+  return { leadAssignedToId: normalized };
+};
 
 const groupCalendarItems = (
   view: CalendarView,
@@ -1440,21 +1494,46 @@ export const completeFollowUp = async (
 
 export const getHistory = async (
   workspaceId: string,
-  actor: { id: string; role?: { name?: string | null } | null },
+  actor: { id: string; roleId?: string | null; role?: { name?: string | null } | null },
   query: HistoryQueryInput,
 ) => {
   await assertModuleReady();
 
-  const targetUserId = await resolveTargetUserId(workspaceId, actor, query.userId);
   const skip = (query.page - 1) * query.limit;
+  const useLeadAssigneeFilter = query.assignedToId !== undefined;
 
-  const where = buildFollowUpWhere({
-    workspaceId,
-    userId: targetUserId,
-    status: query.status,
-    startDate: query.startDate,
-    endDate: query.endDate,
-  });
+  let where: ReturnType<typeof buildFollowUpWhere>;
+
+  if (useLeadAssigneeFilter) {
+    const manageableScope = await resolveManageableFollowUpUserScope(workspaceId, actor);
+    const leadAssignee = resolveLeadAssigneeFilter(query.assignedToId, manageableScope);
+
+    console.info('[BulkReschedule] getHistory lead assignee filter', {
+      actorId: actor.id,
+      role: actor.role?.name ?? null,
+      workspaceId,
+      requestedAssignedToId: query.assignedToId || 'ALL',
+      scope: manageableScope === 'ALL' ? 'ALL' : manageableScope.length,
+      leadAssigneeFilter: leadAssignee.leadAssignedToId ?? 'ALL',
+    });
+
+    where = buildFollowUpWhere({
+      workspaceId,
+      status: query.status,
+      startDate: query.startDate,
+      endDate: query.endDate,
+      ...leadAssignee,
+    });
+  } else {
+    const targetUserId = await resolveTargetUserId(workspaceId, actor, query.userId);
+    where = buildFollowUpWhere({
+      workspaceId,
+      userId: targetUserId,
+      status: query.status,
+      startDate: query.startDate,
+      endDate: query.endDate,
+    });
+  }
 
   const [total, records] = await prisma.$transaction([
     (prisma as any).followUp.count({ where }),

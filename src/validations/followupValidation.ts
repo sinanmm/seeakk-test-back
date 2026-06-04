@@ -135,6 +135,8 @@ export type ReminderAlertsQueryInput = z.infer<typeof reminderAlertsQuerySchema>
 export const historyQuerySchema = z
   .object({
     userId: z.preprocess(emptyStringToUndefined, z.string().trim().optional()).optional(),
+    /** Bulk reschedule: filter by lead owner (`Lead.assignedToId`), not follow-up `userId`. */
+    assignedToId: z.preprocess(emptyStringToUndefined, z.string().trim().optional()).optional(),
     startDate: parseOptionalDateField('startDate'),
     endDate: parseOptionalDateField('endDate'),
     status: followUpStatusSchema.optional(),

@@ -113,7 +113,12 @@ export const resolveManageableFollowUpUserScope = async (
     return 'ALL';
   }
 
-  if (roleKey === 'manager' || roleKey === 'supervisor' || permissions.includes('LEADS_VIEW_TEAM')) {
+  if (
+    roleKey === 'manager' ||
+    roleKey === 'supervisor' ||
+    roleKey === 'teamleader' ||
+    permissions.includes('LEADS_VIEW_TEAM')
+  ) {
     const teamUserIds = await leadsRepository.getRecursiveTeamUserIds(workspaceId, actor.id);
     return Array.from(new Set([actor.id, ...teamUserIds]));
   }
