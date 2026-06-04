@@ -172,6 +172,7 @@ export const buildCompletionOverdueUpdate = (
 export const buildExtensionOverdueUpdate = (
   existing: FollowUpOverdueFlags,
   previousScheduledAt: Date,
+  newScheduledAt: Date,
   snoozedAt: Date,
   timeZone: string,
 ) => {
@@ -186,9 +187,12 @@ export const buildExtensionOverdueUpdate = (
     existing.overdueAt ||
     (wasAlreadyOverdue ? computeOverdueAtForScheduledDate(previousScheduledAt, timeZone) : null);
 
+  const newScheduleStillOverdue = isFollowUpPastDueDay(newScheduledAt, timeZone, snoozedAt);
+
   return {
     extendedAfterOverdue: extendedLate || Boolean(existing.extendedAfterOverdue),
-    isOverdue: wasAlreadyOverdue ? true : Boolean(existing.isOverdue),
-    overdueAt: wasAlreadyOverdue ? overdueAt : existing.overdueAt ?? null,
+    // Clear active overdue lock when rescheduled to a future calendar day (history flags remain).
+    isOverdue: newScheduleStillOverdue ? wasAlreadyOverdue || Boolean(existing.isOverdue) : false,
+    overdueAt: newScheduleStillOverdue ? overdueAt : extendedLate ? overdueAt : null,
   };
 };

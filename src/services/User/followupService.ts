@@ -1288,6 +1288,14 @@ export const completeFollowUp = async (
   });
   const overdueUpdate = buildCompletionOverdueUpdate(refreshed, completedAt, timeZone);
 
+  logger.info('[OverdueFollowUp] before complete', {
+    followUpId: existing.id,
+    userId: existing.userId,
+    status: refreshed.status,
+    scheduledAt: refreshed.scheduledAt,
+    isOverdue: refreshed.isOverdue,
+  });
+
   const completed = await prisma.$transaction(async (tx: any) => {
     const updated = await (tx as any).followUp.update({
       where: { id: existing.id },
@@ -1323,6 +1331,14 @@ export const completeFollowUp = async (
 
   const { invalidateOverdueFollowUpCache } = await import('../../middlewares/overdueFollowupMiddleware');
   invalidateOverdueFollowUpCache(existing.userId);
+
+  logger.info('[OverdueFollowUp] after complete', {
+    followUpId: existing.id,
+    userId: existing.userId,
+    status: (completed as FollowUpRecord).status,
+    completedAt: (completed as FollowUpRecord).completedAt,
+    isOverdue: (completed as FollowUpRecord).isOverdue,
+  });
 
   logger.info('Follow-up completed', {
     module: 'follow-up',
@@ -1447,9 +1463,19 @@ export const snoozeFollowUp = async (
   const overdueUpdate = buildExtensionOverdueUpdate(
     refreshed,
     existing.scheduledAt,
+    input.scheduledAt,
     snoozedAt,
     timeZone,
   );
+
+  logger.info('[OverdueFollowUp] before extend', {
+    followUpId: existing.id,
+    userId: existing.userId,
+    status: refreshed.status,
+    scheduledAt: refreshed.scheduledAt,
+    isOverdue: refreshed.isOverdue,
+    newScheduledAt: input.scheduledAt,
+  });
 
   const updated = await prisma.$transaction(async (tx) => {
     await tx.followupActivityLog.create({
@@ -1494,6 +1520,15 @@ export const snoozeFollowUp = async (
 
   const { invalidateOverdueFollowUpCache } = await import('../../middlewares/overdueFollowupMiddleware');
   invalidateOverdueFollowUpCache(existing.userId);
+
+  logger.info('[OverdueFollowUp] after extend', {
+    followUpId: existing.id,
+    userId: existing.userId,
+    status: (updated as FollowUpRecord).status,
+    scheduledAt: (updated as FollowUpRecord).scheduledAt,
+    isOverdue: (updated as FollowUpRecord).isOverdue,
+    extendedAfterOverdue: (updated as FollowUpRecord).extendedAfterOverdue,
+  });
 
   return mapFollowUpRecord(updated as FollowUpRecord);
 };
@@ -1646,7 +1681,13 @@ export const bulkExtendFollowUps = async (
     const snoozedAt = new Date();
     for (const alloc of allocations) {
       const orig = followUps.find((f: any) => f.id === alloc.followUpId)!;
-      const overdueUpdate = buildExtensionOverdueUpdate(orig, orig.scheduledAt, snoozedAt, timeZone);
+      const overdueUpdate = buildExtensionOverdueUpdate(
+        orig,
+        orig.scheduledAt,
+        alloc.newDate,
+        snoozedAt,
+        timeZone,
+      );
 
       await (tx as any).followUp.update({
         where: { id: alloc.followUpId },
@@ -1710,6 +1751,14 @@ export const bulkExtendFollowUps = async (
       },
     });
   });
+
+  const { invalidateOverdueFollowUpCache } = await import('../../middlewares/overdueFollowupMiddleware');
+  const affectedUserIds = new Set<string>(
+    followUps
+      .filter((row: any) => successIds.includes(row.id))
+      .map((row: any) => String(row.userId)),
+  );
+  affectedUserIds.forEach((userId) => invalidateOverdueFollowUpCache(userId));
 
   let message = `Successfully reassigned ${successIds.length} follow-up(s).`;
   if (lifecycleBlockedIds.length > 0) {

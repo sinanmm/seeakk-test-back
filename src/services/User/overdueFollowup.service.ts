@@ -3,6 +3,7 @@ import { buildAccessWhere } from '../../modules/leads/leads.service';
 import { normalizeFollowUpType } from '../../constants/followUpType';
 import { isFollowUpPastDueDay } from './followupCalendar.util';
 import { getWorkspaceTimeZone, mapFollowUpRecord } from './followupService';
+import logger from '../../utils/logger';
 import {
   hasOverdueHistory,
   markPendingFollowUpsOverdueForWorkspace,
@@ -69,6 +70,21 @@ export type OverdueMandatoryFollowUpItem = {
   followUpNotes: string | null;
 };
 
+/** Mandatory gate: only follow-ups that are unresolved and still past-due on the calendar day. */
+export const isActivelyMandatoryOverdue = (
+  record: { status: string; scheduledAt: Date },
+  timeZone: string,
+  now = new Date(),
+): boolean => {
+  if (record.status === MISSED) {
+    return true;
+  }
+  if (record.status === PENDING) {
+    return isFollowUpPastDueDay(record.scheduledAt, timeZone, now);
+  }
+  return false;
+};
+
 export const getOverdueMandatoryFollowUps = async (
   workspaceId: string,
   actor: { id: string; roleId?: string | null; role?: { name?: string | null } | null },
@@ -93,13 +109,19 @@ export const getOverdueMandatoryFollowUps = async (
 
   const now = new Date();
 
-  return records
-    .filter(
-      (record: any) =>
-        record.status === MISSED ||
-        (record.status === PENDING &&
-          (record.isOverdue || isFollowUpPastDueDay(record.scheduledAt, timeZone, now))),
-    )
+  const activeOverdue = records.filter((record: any) =>
+    isActivelyMandatoryOverdue(record, timeZone, now),
+  );
+
+  logger.info('[OverdueFollowUp] mandatory overdue query', {
+    userId: actor.id,
+    workspaceId,
+    candidateCount: records.length,
+    activeOverdueCount: activeOverdue.length,
+    activeOverdueIds: activeOverdue.map((row: any) => row.id),
+  });
+
+  return activeOverdue
     .map((record: any) => {
       const customerName = record.lead?.email?.trim() || record.lead?.phone?.trim() || record.lead?.name || '—';
       return {
