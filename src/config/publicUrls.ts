@@ -1,3 +1,5 @@
+import { PRODUCTION_FRONTEND_URL } from './appDomains';
+
 /**
  * Public URLs used in transactional emails and redirects.
  * Prefer explicit env; fallbacks reduce "manual invite only" when FRONTEND_URL is omitted but ALLOWED_ORIGINS is set.
@@ -23,7 +25,8 @@ export const getPublicFrontendUrl = (): string => {
   if (process.env.NODE_ENV !== 'production') {
     return trimTrailingSlashes(process.env.VITE_DEV_FRONTEND_URL || 'http://localhost:5173');
   }
-  return '';
+
+  return PRODUCTION_FRONTEND_URL;
 };
 
 /**

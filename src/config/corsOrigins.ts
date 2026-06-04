@@ -1,3 +1,5 @@
+import { PRODUCTION_FRONTEND_ORIGINS } from './appDomains';
+
 const normalizeOrigin = (origin: string): string => origin.trim().replace(/\/+$/, '');
 
 const splitOriginList = (raw?: string | null): string[] =>
@@ -8,6 +10,7 @@ const splitOriginList = (raw?: string | null): string[] =>
 
 export const allowedOrigins = Array.from(
   new Set([
+    ...PRODUCTION_FRONTEND_ORIGINS,
     ...splitOriginList(process.env.FRONTEND_URL),
     ...splitOriginList(process.env.ALLOWED_ORIGINS),
     'http://localhost:5173',

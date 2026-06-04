@@ -11,6 +11,11 @@ test('isAllowedOrigin permits Vercel preview hosts', () => {
   assert.equal(isAllowedOrigin('https://lms-frontend-git-main-seeakk.vercel.app'), true);
 });
 
+test('isAllowedOrigin permits production Seeakk domain (www and apex)', () => {
+  assert.equal(isAllowedOrigin('https://www.seeakk.com'), true);
+  assert.equal(isAllowedOrigin('https://seeakk.com'), true);
+});
+
 test('handlePreflightRequest responds with CORS headers for allowed origin', () => {
   const headers: Record<string, string | number> = {};
   const req = {

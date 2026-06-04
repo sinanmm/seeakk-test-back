@@ -1,10 +1,12 @@
 import type { NextFunction, Request, Response } from 'express';
+import { PRODUCTION_FRONTEND_ORIGINS } from './appDomains';
 
 const normalizeOrigin = (origin: string): string =>
   origin.trim().toLowerCase().replace(/\/+$/, '');
 
 /** Always permitted CRM frontends (used when Render env vars are missing/outdated). */
 const BUILTIN_ALLOWED_ORIGINS = [
+  ...PRODUCTION_FRONTEND_ORIGINS,
   'https://lms-frontend-amber-beta.vercel.app',
   'http://localhost:5173',
   'http://localhost:3000',
