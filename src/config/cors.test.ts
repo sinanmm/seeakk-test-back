@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import type { Request, Response } from 'express';
 import { isAllowedOrigin, handlePreflightRequest } from './cors';
 
-test('isAllowedOrigin permits production Vercel frontend', () => {
-  assert.equal(isAllowedOrigin('https://lms-frontend-amber-beta.vercel.app'), true);
+test('isAllowedOrigin permits production Seeakk frontend', () => {
+  assert.equal(isAllowedOrigin('https://www.seeakk.com'), true);
 });
 
 test('isAllowedOrigin permits Vercel preview hosts', () => {
@@ -21,7 +21,7 @@ test('handlePreflightRequest responds with CORS headers for allowed origin', () 
   const req = {
     method: 'OPTIONS',
     headers: {
-      origin: 'https://lms-frontend-amber-beta.vercel.app',
+      origin: 'https://www.seeakk.com',
       'access-control-request-headers': 'authorization,x-device-id',
     },
   } as Request;
@@ -47,6 +47,6 @@ test('handlePreflightRequest responds with CORS headers for allowed origin', () 
 
   assert.equal(ended, true);
   assert.equal(nextCalled, false);
-  assert.equal(headers['access-control-allow-origin'], 'https://lms-frontend-amber-beta.vercel.app');
+  assert.equal(headers['access-control-allow-origin'], 'https://www.seeakk.com');
   assert.equal(headers[':status'], 204);
 });

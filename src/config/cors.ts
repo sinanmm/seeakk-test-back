@@ -7,7 +7,6 @@ const normalizeOrigin = (origin: string): string =>
 /** Always permitted CRM frontends (used when Render env vars are missing/outdated). */
 const BUILTIN_ALLOWED_ORIGINS = [
   ...PRODUCTION_FRONTEND_ORIGINS,
-  'https://lms-frontend-amber-beta.vercel.app',
   'http://localhost:5173',
   'http://localhost:3000',
   'http://127.0.0.1:5173',
