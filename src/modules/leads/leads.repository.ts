@@ -124,6 +124,37 @@ export const getTeamUserIds = async (workspaceId: string, supervisorId: string):
   return rows.map((row) => row.id);
 };
 
+/** All users in the reporting tree under `rootSupervisorId` (direct and indirect reports). */
+export const getRecursiveTeamUserIds = async (
+  workspaceId: string,
+  rootSupervisorId: string,
+): Promise<string[]> => {
+  const collected = new Set<string>();
+  let frontier = [rootSupervisorId];
+
+  while (frontier.length > 0) {
+    const rows = await prisma.user.findMany({
+      where: {
+        workspaceId,
+        deletedAt: null,
+        supervisorId: { in: frontier },
+      },
+      select: { id: true },
+    });
+
+    const next: string[] = [];
+    for (const row of rows) {
+      if (!collected.has(row.id)) {
+        collected.add(row.id);
+        next.push(row.id);
+      }
+    }
+    frontier = next;
+  }
+
+  return Array.from(collected);
+};
+
 export const findLeadById = async (workspaceId: string, id: string) =>
   (prisma as any).lead.findFirst({
     where: {

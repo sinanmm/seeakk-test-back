@@ -2,7 +2,11 @@ import moment from 'moment-timezone';
 import prisma from '../../config/prisma';
 import { redisClient } from '../../config/redis';
 import { normalizeFollowUpType } from '../../constants/followUpType';
-import { buildAccessWhere, resolveVisibleLeadUserScope } from '../../modules/leads/leads.service';
+import {
+  buildAccessWhere,
+  resolveManageableFollowUpUserScope,
+  resolveVisibleLeadUserScope,
+} from '../../modules/leads/leads.service';
 import {
   buildCompletionOverdueUpdate,
   buildExtensionOverdueUpdate,
@@ -391,19 +395,17 @@ const resolveTargetUserId = async (
   actor: { id: string; roleId?: string | null; role?: { name?: string | null } | null },
   requestedUserId?: string,
 ): Promise<string | string[] | 'ALL'> => {
-  const { resolveVisibleLeadUserScope } = await import('../../modules/leads/leads.service');
+  const manageableScope = await resolveManageableFollowUpUserScope(workspaceId, actor);
 
   if (requestedUserId === 'ALL') {
-    return resolveVisibleLeadUserScope(workspaceId, actor);
+    return manageableScope;
   }
 
   if (!requestedUserId || requestedUserId === actor.id) {
     return actor.id;
   }
 
-  const visibleUserScope = await resolveVisibleLeadUserScope(workspaceId, actor);
-
-  if (visibleUserScope !== 'ALL' && !visibleUserScope.includes(requestedUserId)) {
+  if (manageableScope !== 'ALL' && !manageableScope.includes(requestedUserId)) {
     throw createServiceError('You are not allowed to access follow-ups for this user.', 403);
   }
 
@@ -728,14 +730,48 @@ export const getCalendarData = async (
   };
 };
 
+const formatFollowUpUserDisplayName = (user: {
+  name?: string | null;
+  username?: string | null;
+  email?: string | null;
+}): string => {
+  const fullName = user.name?.trim() || '';
+  const username = user.username?.trim() || '';
+  const email = user.email?.trim() || '';
+  const primary = fullName || username || email;
+  const extras: string[] = [];
+
+  if (username && username !== primary) {
+    extras.push(username);
+  }
+  if (email && email !== primary && email !== username) {
+    extras.push(email);
+  }
+
+  return extras.length > 0 ? `${primary} (${extras.join(' · ')})` : primary;
+};
+
 export const getFollowUpUsers = async (
   workspaceId: string,
   actor: { id: string; roleId?: string | null; role?: { name?: string | null } | null },
 ) => {
   await assertModuleReady();
 
-  const { resolveVisibleLeadUserScope } = await import('../../modules/leads/leads.service');
-  const visibleUserScope = await resolveVisibleLeadUserScope(workspaceId, actor);
+  const manageableScope = await resolveManageableFollowUpUserScope(workspaceId, actor);
+
+  const actorProfile = await prisma.user.findFirst({
+    where: { id: actor.id, workspaceId },
+    select: { supervisorId: true },
+  });
+
+  console.info('[BulkReschedule] getFollowUpUsers', {
+    actorId: actor.id,
+    role: actor.role?.name ?? null,
+    workspaceId,
+    supervisorId: actorProfile?.supervisorId ?? null,
+    scope: manageableScope === 'ALL' ? 'ALL' : manageableScope.length,
+    userIds: manageableScope === 'ALL' ? 'ALL' : manageableScope,
+  });
 
   const where: any = {
     workspaceId,
@@ -743,8 +779,8 @@ export const getFollowUpUsers = async (
     isActive: true,
   };
 
-  if (visibleUserScope !== 'ALL') {
-    where.id = { in: visibleUserScope };
+  if (manageableScope !== 'ALL') {
+    where.id = { in: manageableScope };
   }
 
   const users = await prisma.user.findMany({
@@ -758,7 +794,18 @@ export const getFollowUpUsers = async (
     },
   });
 
-  return users;
+  const mapped = users.map((user) => ({
+    ...user,
+    displayName: formatFollowUpUserDisplayName(user),
+  }));
+
+  console.info('[BulkReschedule] getFollowUpUsers result', {
+    actorId: actor.id,
+    returnedCount: mapped.length,
+    returnedUserIds: mapped.map((user) => user.id),
+  });
+
+  return mapped;
 };
 
 export const getAdvancedCalendarSummary = async (

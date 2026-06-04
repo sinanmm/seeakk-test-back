@@ -28,10 +28,16 @@ const normalizeRoleKey = (role?: string | null): string =>
     .trim()
     .replace(/[\s_-]+/g, '');
 
-/** DB role names that bypass permission resolution (full access). Keep explicit — avoid substring heuristics. */
+/** DB role names that bypass permission resolution (full access). */
 const isPrivilegedRoleName = (role?: string | null): boolean => {
   const normalized = normalizeRoleKey(role);
-  return normalized === 'superadmin' || normalized === 'admin' || normalized === 'administrator';
+  return (
+    normalized === 'superadmin' ||
+    normalized === 'admin' ||
+    normalized === 'administrator' ||
+    normalized === 'workspaceadmin' ||
+    normalized.endsWith('admin')
+  );
 };
 
 export type LeadVisibilityMode = 'all' | 'team' | 'own' | 'none';
@@ -67,6 +73,62 @@ export const resolveVisibleLeadUserScope = async (
 
   const teamUserIds = await leadsRepository.getTeamUserIds(workspaceId, actor.id);
   return Array.from(new Set([actor.id, ...teamUserIds]));
+};
+
+/**
+ * Users an actor may view or bulk-manage follow-ups for (role hierarchy + follow-up admin permissions).
+ * Used by follow-up assignee pickers and history filters — broader than LEADS_VIEW_OWN when admin/supervisor.
+ */
+export const resolveManageableFollowUpUserScope = async (
+  workspaceId: string,
+  actor: Actor,
+): Promise<string[] | 'ALL'> => {
+  if (await isWorkspaceOwner(workspaceId, actor.id)) {
+    return 'ALL';
+  }
+
+  const permissions = await getPermissionKeys(actor);
+
+  if (
+    permissions.includes('*') ||
+    permissions.includes('SUPERADMIN') ||
+    permissions.includes('LEADS_VIEW_ALL')
+  ) {
+    return 'ALL';
+  }
+
+  if (
+    permissions.includes('manage_followup_settings') ||
+    permissions.includes('bulk_extend_followups') ||
+    permissions.includes('grant_bulk_extension_access') ||
+    permissions.includes('view_followup_capacity') ||
+    permissions.includes('USERS_VIEW') ||
+    permissions.includes('SYSTEM_CONFIG')
+  ) {
+    return 'ALL';
+  }
+
+  const roleKey = normalizeRoleKey(actor.role?.name);
+  if (roleKey === 'superadmin' || roleKey === 'admin' || roleKey === 'administrator') {
+    return 'ALL';
+  }
+
+  if (roleKey === 'manager' || roleKey === 'supervisor' || permissions.includes('LEADS_VIEW_TEAM')) {
+    const teamUserIds = await leadsRepository.getRecursiveTeamUserIds(workspaceId, actor.id);
+    return Array.from(new Set([actor.id, ...teamUserIds]));
+  }
+
+  const directReports = await leadsRepository.getTeamUserIds(workspaceId, actor.id);
+  if (directReports.length > 0) {
+    const teamUserIds = await leadsRepository.getRecursiveTeamUserIds(workspaceId, actor.id);
+    return Array.from(new Set([actor.id, ...teamUserIds]));
+  }
+
+  if (permissions.includes('LEADS_VIEW_OWN')) {
+    return [actor.id];
+  }
+
+  return [actor.id];
 };
 
 /** Restricts workspace user counts (e.g. Active Users KPI) to the same cohort as lead visibility. */
@@ -136,7 +198,17 @@ const ensureModuleReady = async (): Promise<void> => {
 const getPermissionKeys = async (actor: Actor): Promise<string[]> => {
   if (isPrivilegedRoleName(actor.role?.name)) return ['*'];
   if (!actor.roleId) return [];
-  return leadsRepository.getRolePermissionKeys(actor.roleId);
+  const keys = await leadsRepository.getRolePermissionKeys(actor.roleId);
+  if (keys.includes('SUPERADMIN')) return ['*'];
+  return keys;
+};
+
+const isWorkspaceOwner = async (workspaceId: string, userId: string): Promise<boolean> => {
+  const workspace = await prisma.workspace.findFirst({
+    where: { id: workspaceId, ownerId: userId },
+    select: { id: true },
+  });
+  return Boolean(workspace);
 };
 
 const assertEditPermission = async (actor: Actor): Promise<void> => {
