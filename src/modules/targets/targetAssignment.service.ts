@@ -330,13 +330,12 @@ export const persistTargetCycleWithPeriods = async (
     where: {
       workspaceId,
       name: trimmedName,
-      deletedAt: null,
       ...(existingId ? { NOT: { id: existingId } } : {}),
     },
     select: { id: true },
   });
   if (duplicate) {
-    throw Object.assign(new Error('Target cycle name already exists.'), { statusCode: 409 });
+    throw Object.assign(new Error('A Target Cycle with this name already exists in this workspace.'), { statusCode: 409, code: 'TARGET_CYCLE_ALREADY_EXISTS' });
   }
 
   const cycleData = {

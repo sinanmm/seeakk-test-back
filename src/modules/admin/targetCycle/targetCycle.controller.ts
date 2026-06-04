@@ -44,6 +44,15 @@ function validate<T>(
 }
 
 const handleServiceError = (error: any, res: Response, next: NextFunction, action: string): void => {
+  if (error?.code === 'P2002') {
+    res.status(409).json({
+      success: false,
+      code: 'TARGET_CYCLE_ALREADY_EXISTS',
+      message: 'A Target Cycle with this name already exists in this workspace.',
+    });
+    return;
+  }
+
   if (error?.code === 'P2021' || error?.code === 'P2022') {
     res.status(503).json({
       success: false,
@@ -56,6 +65,7 @@ const handleServiceError = (error: any, res: Response, next: NextFunction, actio
   if (error?.statusCode) {
     res.status(error.statusCode).json({
       success: false,
+      ...(error.code ? { code: error.code } : {}),
       message: error.message,
     });
     return;
