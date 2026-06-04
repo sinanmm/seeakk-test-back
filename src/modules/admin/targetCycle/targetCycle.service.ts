@@ -679,11 +679,40 @@ export const deleteTargetCycle = async (id: string, workspaceId: string): Promis
       where: { id },
       data: { deletedAt: new Date() },
     });
+
+    await (prisma as any).targetAssignment.updateMany({
+      where: { targetCycleId: id, isActive: true },
+      data: { isActive: false },
+    });
+
+    await (prisma as any).user.updateMany({
+      where: { assignedTargetCycleId: id },
+      data: {
+        assignedTargetCycleId: null,
+        isLocked: false,
+        targetLockedAt: null,
+        targetLockReason: null,
+      },
+    });
   } else {
     await (prisma as any).$queryRawUnsafe(
       `UPDATE "target_cycles"
        SET "deletedAt" = NOW(), "updatedAt" = NOW()
        WHERE "id" = $1`,
+      id,
+    );
+
+    await (prisma as any).$queryRawUnsafe(
+      `UPDATE "target_assignments"
+       SET "isActive" = false, "updatedAt" = NOW()
+       WHERE "targetCycleId" = $1 AND "isActive" = true`,
+      id,
+    );
+
+    await (prisma as any).$queryRawUnsafe(
+      `UPDATE "users"
+       SET "assignedTargetCycleId" = NULL, "isLocked" = false, "targetLockedAt" = NULL, "targetLockReason" = NULL, "updatedAt" = NOW()
+       WHERE "assignedTargetCycleId" = $1`,
       id,
     );
   }

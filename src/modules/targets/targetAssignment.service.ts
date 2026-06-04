@@ -166,7 +166,12 @@ export const clearUserTargetCycleWithClient = async (
   });
   await client.user.update({
     where: { id: userId },
-    data: { assignedTargetCycleId: null },
+    data: {
+      assignedTargetCycleId: null,
+      isLocked: false,
+      targetLockedAt: null,
+      targetLockReason: null,
+    },
   });
 
   return user.assignedTargetCycleId;

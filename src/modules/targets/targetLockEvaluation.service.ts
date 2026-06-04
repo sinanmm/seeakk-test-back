@@ -292,7 +292,7 @@ export const applyTargetLockExemptionAfterUnlock = async (
   }
 
   await db.targetAssignment.update({
-    where: { id: assignmentId, userId: assignedUserId },
+    where: { id: assignmentId },
     data: {
       isLockExempt: true,
       exemptPeriodId: period.id,
@@ -336,6 +336,10 @@ export const getTargetLockDisplayForUser = async (userId: string, workspaceId: s
       },
     },
   });
+
+  if (!user?.assignedTargetCycle || user.targetAssignments.length === 0) {
+    return null;
+  }
 
   if (!user?.targetLockedAt && !user?.isLocked) {
     return null;
