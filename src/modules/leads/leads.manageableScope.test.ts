@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import prisma from '../../config/prisma';
-import { resolveManageableFollowUpUserScope } from './leads.service';
+import { resolveBulkRescheduleAssigneeScope, resolveManageableFollowUpUserScope } from './leads.service';
 import * as leadsRepository from './leads.repository';
 
 const originalWorkspaceFindFirst = prisma.workspace.findFirst;
@@ -34,6 +34,22 @@ test('resolveManageableFollowUpUserScope returns ALL for bulk extend permission'
 
 test.after(() => {
   prisma.workspace.findFirst = originalWorkspaceFindFirst;
+});
+
+test('resolveBulkRescheduleAssigneeScope returns ALL for privileged admin role name', async () => {
+  const originalWorkspaceFindFirst = prisma.workspace.findFirst;
+  prisma.workspace.findFirst = async () => null;
+
+  try {
+    const scope = await resolveBulkRescheduleAssigneeScope('ws_1', {
+      id: 'actor_1',
+      roleId: 'role_1',
+      role: { name: 'Workspace Admin' },
+    });
+    assert.equal(scope, 'ALL');
+  } finally {
+    prisma.workspace.findFirst = originalWorkspaceFindFirst;
+  }
 });
 
 test('resolveManageableFollowUpUserScope returns recursive team for supervisor role', async () => {

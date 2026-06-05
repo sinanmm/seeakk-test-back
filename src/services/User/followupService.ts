@@ -4,6 +4,7 @@ import { redisClient } from '../../config/redis';
 import { normalizeFollowUpType } from '../../constants/followUpType';
 import {
   buildAccessWhere,
+  resolveBulkRescheduleAssigneeScope,
   resolveManageableFollowUpUserScope,
   resolveVisibleLeadUserScope,
 } from '../../modules/leads/leads.service';
@@ -578,25 +579,25 @@ const buildFollowUpWhere = (params: {
     : {}),
 });
 
-/** Bulk reschedule: restrict follow-ups to leads owned by assignees in scope. */
-export const resolveLeadAssigneeFilter = (
-  requestedAssignedToId: string | undefined,
-  manageableScope: string[] | 'ALL',
-): { leadAssignedToId?: string | { in: string[] } } => {
-  const normalized = (requestedAssignedToId || '').trim();
+/** Bulk reschedule: filter follow-ups by assignee (`FollowUp.userId`), not logged-in user. */
+export const resolveBulkRescheduleUserFilter = (
+  requestedAssigneeId: string | undefined,
+  assigneeScope: string[] | 'ALL',
+): { userId?: string | { in: string[] } } => {
+  const normalized = (requestedAssigneeId || '').trim();
 
   if (!normalized || normalized.toUpperCase() === 'ALL') {
-    if (manageableScope === 'ALL') {
+    if (assigneeScope === 'ALL') {
       return {};
     }
-    return { leadAssignedToId: { in: manageableScope } };
+    return { userId: { in: assigneeScope } };
   }
 
-  if (manageableScope !== 'ALL' && !manageableScope.includes(normalized)) {
+  if (assigneeScope !== 'ALL' && !assigneeScope.includes(normalized)) {
     throw createServiceError('You are not allowed to view follow-ups for this assignee.', 403);
   }
 
-  return { leadAssignedToId: normalized };
+  return { userId: normalized };
 };
 
 const groupCalendarItems = (
@@ -811,7 +812,7 @@ export const getFollowUpUsers = async (
 ) => {
   await assertModuleReady();
 
-  const manageableScope = await resolveManageableFollowUpUserScope(workspaceId, actor);
+  const assigneeScope = await resolveBulkRescheduleAssigneeScope(workspaceId, actor);
 
   const actorProfile = await prisma.user.findFirst({
     where: { id: actor.id, workspaceId },
@@ -823,8 +824,8 @@ export const getFollowUpUsers = async (
     role: actor.role?.name ?? null,
     workspaceId,
     supervisorId: actorProfile?.supervisorId ?? null,
-    scope: manageableScope === 'ALL' ? 'ALL' : manageableScope.length,
-    userIds: manageableScope === 'ALL' ? 'ALL' : manageableScope,
+    scope: assigneeScope === 'ALL' ? 'ALL' : assigneeScope.length,
+    userIds: assigneeScope === 'ALL' ? 'ALL' : assigneeScope,
   });
 
   const where: any = {
@@ -833,8 +834,8 @@ export const getFollowUpUsers = async (
     isActive: true,
   };
 
-  if (manageableScope !== 'ALL') {
-    where.id = { in: manageableScope };
+  if (assigneeScope !== 'ALL') {
+    where.id = { in: assigneeScope };
   }
 
   const users = await prisma.user.findMany({
@@ -1505,16 +1506,16 @@ export const getHistory = async (
   let where: ReturnType<typeof buildFollowUpWhere>;
 
   if (useLeadAssigneeFilter) {
-    const manageableScope = await resolveManageableFollowUpUserScope(workspaceId, actor);
-    const leadAssignee = resolveLeadAssigneeFilter(query.assignedToId, manageableScope);
+    const assigneeScope = await resolveBulkRescheduleAssigneeScope(workspaceId, actor);
+    const assigneeFilter = resolveBulkRescheduleUserFilter(query.assignedToId, assigneeScope);
 
-    console.info('[BulkReschedule] getHistory lead assignee filter', {
+    console.info('[BulkReschedule] getHistory assignee filter', {
       actorId: actor.id,
       role: actor.role?.name ?? null,
       workspaceId,
       requestedAssignedToId: query.assignedToId || 'ALL',
-      scope: manageableScope === 'ALL' ? 'ALL' : manageableScope.length,
-      leadAssigneeFilter: leadAssignee.leadAssignedToId ?? 'ALL',
+      scope: assigneeScope === 'ALL' ? 'ALL' : assigneeScope.length,
+      followUpUserFilter: assigneeFilter.userId ?? 'ALL',
     });
 
     where = buildFollowUpWhere({
@@ -1522,7 +1523,7 @@ export const getHistory = async (
       status: query.status,
       startDate: query.startDate,
       endDate: query.endDate,
-      ...leadAssignee,
+      ...assigneeFilter,
     });
   } else {
     const targetUserId = await resolveTargetUserId(workspaceId, actor, query.userId);

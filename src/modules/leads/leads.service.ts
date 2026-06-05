@@ -76,6 +76,52 @@ export const resolveVisibleLeadUserScope = async (
 };
 
 /**
+ * Assignee dropdown scope for Bulk Reschedule (Follow-up Settings).
+ * Super Admin / Admin → all workspace users; Supervisor → self + reporting tree; others → self only.
+ */
+export const resolveBulkRescheduleAssigneeScope = async (
+  workspaceId: string,
+  actor: Actor,
+): Promise<string[] | 'ALL'> => {
+  if (await isWorkspaceOwner(workspaceId, actor.id)) {
+    return 'ALL';
+  }
+
+  if (isPrivilegedRoleName(actor.role?.name)) {
+    return 'ALL';
+  }
+
+  const permissions = await getPermissionKeys(actor);
+  if (
+    permissions.includes('*') ||
+    permissions.includes('SUPERADMIN') ||
+    permissions.includes('LEADS_VIEW_ALL') ||
+    permissions.includes('manage_followup_settings') ||
+    permissions.includes('bulk_extend_followups') ||
+    permissions.includes('grant_bulk_extension_access') ||
+    permissions.includes('view_followup_capacity') ||
+    permissions.includes('USERS_VIEW') ||
+    permissions.includes('SYSTEM_CONFIG')
+  ) {
+    return 'ALL';
+  }
+
+  const roleKey = normalizeRoleKey(actor.role?.name);
+  if (roleKey === 'supervisor' || roleKey === 'teamleader') {
+    const teamUserIds = await leadsRepository.getRecursiveTeamUserIds(workspaceId, actor.id);
+    return Array.from(new Set([actor.id, ...teamUserIds]));
+  }
+
+  const directReports = await leadsRepository.getTeamUserIds(workspaceId, actor.id);
+  if (directReports.length > 0) {
+    const teamUserIds = await leadsRepository.getRecursiveTeamUserIds(workspaceId, actor.id);
+    return Array.from(new Set([actor.id, ...teamUserIds]));
+  }
+
+  return [actor.id];
+};
+
+/**
  * Users an actor may view or bulk-manage follow-ups for (role hierarchy + follow-up admin permissions).
  * Used by follow-up assignee pickers and history filters — broader than LEADS_VIEW_OWN when admin/supervisor.
  */
@@ -108,11 +154,11 @@ export const resolveManageableFollowUpUserScope = async (
     return 'ALL';
   }
 
-  const roleKey = normalizeRoleKey(actor.role?.name);
-  if (roleKey === 'superadmin' || roleKey === 'admin' || roleKey === 'administrator') {
+  if (isPrivilegedRoleName(actor.role?.name)) {
     return 'ALL';
   }
 
+  const roleKey = normalizeRoleKey(actor.role?.name);
   if (
     roleKey === 'manager' ||
     roleKey === 'supervisor' ||
