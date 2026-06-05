@@ -33,9 +33,23 @@ import {
   SaveMandatoryFollowUpContinuationInput,
   saveMandatoryFollowUpContinuationSchema,
 } from '../../validations/mandatoryFollowupValidation';
+import { resolveWorkspaceIdForUser } from '../../utils/workspaceContext';
 
 const requireWorkspace = (req: Request, res: Response): string | null => {
   const workspaceId = req.user?.workspaceId ?? null;
+  if (!workspaceId) {
+    res.status(403).json({
+      success: false,
+      message: 'Forbidden: No workspace linked to your account.',
+    });
+    return null;
+  }
+  return workspaceId;
+};
+
+/** Resolves workspace for follow-up APIs (membership row or owned workspace). */
+const requireResolvedWorkspace = async (req: Request, res: Response): Promise<string | null> => {
+  const workspaceId = await resolveWorkspaceIdForUser(req.user!.id, req.user?.workspaceId ?? null);
   if (!workspaceId) {
     res.status(403).json({
       success: false,
@@ -153,7 +167,7 @@ export const getCalendarData = async (req: Request, res: Response, next: NextFun
 };
 
 export const getFollowUpUsers = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
-  const workspaceId = requireWorkspace(req, res);
+  const workspaceId = await requireResolvedWorkspace(req, res);
   if (!workspaceId) return;
 
   try {
@@ -450,7 +464,7 @@ export const saveMandatoryFollowUpContinuation = async (
 };
 
 export const getHistory = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
-  const workspaceId = requireWorkspace(req, res);
+  const workspaceId = await requireResolvedWorkspace(req, res);
   if (!workspaceId) return;
 
   const query = validate<HistoryQueryInput>(historyQuerySchema, req.query, res);

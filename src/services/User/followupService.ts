@@ -838,7 +838,7 @@ export const getFollowUpUsers = async (
     where.id = { in: assigneeScope };
   }
 
-  const users = await prisma.user.findMany({
+  let users = await prisma.user.findMany({
     where,
     orderBy: [{ name: 'asc' }, { createdAt: 'asc' }],
     select: {
@@ -848,6 +848,25 @@ export const getFollowUpUsers = async (
       email: true,
     },
   });
+
+  // Superadmin/admin scope should match Admin → Users list (all active workspace members).
+  if (assigneeScope === 'ALL' && users.length <= 1) {
+    const workspaceTotal = await prisma.user.count({
+      where: { workspaceId, deletedAt: null, isActive: true },
+    });
+    if (workspaceTotal > users.length) {
+      users = await prisma.user.findMany({
+        where: { workspaceId, deletedAt: null, isActive: true },
+        orderBy: [{ name: 'asc' }, { createdAt: 'asc' }],
+        select: { id: true, name: true, username: true, email: true },
+      });
+      console.warn('[BulkReschedule] getFollowUpUsers expanded workspace list', {
+        workspaceId,
+        workspaceTotal,
+        returnedCount: users.length,
+      });
+    }
+  }
 
   const mapped = users.map((user) => ({
     ...user,

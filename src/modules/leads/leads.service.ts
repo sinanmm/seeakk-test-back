@@ -79,19 +79,45 @@ export const resolveVisibleLeadUserScope = async (
  * Assignee dropdown scope for Bulk Reschedule (Follow-up Settings).
  * Super Admin / Admin → all workspace users; Supervisor → self + reporting tree; others → self only.
  */
+const resolveActorRoleName = async (actor: Actor): Promise<string | null> => {
+  if (actor.role?.name?.trim()) {
+    return actor.role.name.trim();
+  }
+  if (!actor.roleId) {
+    return null;
+  }
+  const role = await prisma.role.findFirst({
+    where: { id: actor.roleId },
+    select: { name: true },
+  });
+  return role?.name?.trim() || null;
+};
+
 export const resolveBulkRescheduleAssigneeScope = async (
   workspaceId: string,
   actor: Actor,
 ): Promise<string[] | 'ALL'> => {
+  const ownedWorkspace = await prisma.workspace.findFirst({
+    where: { ownerId: actor.id },
+    select: { id: true },
+  });
+  if (ownedWorkspace?.id === workspaceId) {
+    return 'ALL';
+  }
+
   if (await isWorkspaceOwner(workspaceId, actor.id)) {
     return 'ALL';
   }
 
-  if (isPrivilegedRoleName(actor.role?.name)) {
+  const roleName = await resolveActorRoleName(actor);
+  if (isPrivilegedRoleName(roleName)) {
+    return 'ALL';
+  }
+  if (normalizeRoleKey(roleName) === 'superadmin') {
     return 'ALL';
   }
 
-  const permissions = await getPermissionKeys(actor);
+  const permissions = await getPermissionKeys({ ...actor, role: { name: roleName } });
   if (
     permissions.includes('*') ||
     permissions.includes('SUPERADMIN') ||
@@ -106,7 +132,7 @@ export const resolveBulkRescheduleAssigneeScope = async (
     return 'ALL';
   }
 
-  const roleKey = normalizeRoleKey(actor.role?.name);
+  const roleKey = normalizeRoleKey(roleName);
   if (roleKey === 'supervisor' || roleKey === 'teamleader') {
     const teamUserIds = await leadsRepository.getRecursiveTeamUserIds(workspaceId, actor.id);
     return Array.from(new Set([actor.id, ...teamUserIds]));
