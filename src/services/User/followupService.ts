@@ -529,8 +529,10 @@ const ensureLeadExistsInWorkspace = async (leadId: string, workspaceId: string):
   }
 };
 
-const buildTodayCacheKey = (workspaceId: string, userId: string, cacheDateKey: string): string =>
-  `followups:today:${workspaceId}:${userId}:${cacheDateKey}`;
+const buildTodayCacheKey = (workspaceId: string, userId: string | string[] | 'ALL', cacheDateKey: string): string => {
+  const userStr = Array.isArray(userId) ? userId.join(',') : userId;
+  return `today_utilization:${workspaceId}:${userStr}:${cacheDateKey}`;
+};
 
 const invalidateTodayCache = async (
   workspaceId: string,
@@ -583,14 +585,14 @@ const buildFollowUpWhere = (params: {
 export const resolveBulkRescheduleUserFilter = (
   requestedAssigneeId: string | undefined,
   assigneeScope: string[] | 'ALL',
-): { userId?: string | { in: string[] } } => {
+): { userId?: string | string[] } => {
   const normalized = (requestedAssigneeId || '').trim();
 
   if (!normalized || normalized.toUpperCase() === 'ALL') {
     if (assigneeScope === 'ALL') {
       return {};
     }
-    return { userId: { in: assigneeScope } };
+    return { userId: assigneeScope };
   }
 
   if (assigneeScope !== 'ALL' && !assigneeScope.includes(normalized)) {
@@ -717,7 +719,7 @@ export const createFollowUp = async (
     throw createServiceError('Follow-ups cannot be scheduled on a holiday.', 422);
   }
 
-  const userId = await resolveTargetUserId(workspaceId, actor);
+  const userId = (await resolveTargetUserId(workspaceId, actor)) as string;
 
   const capacity = await checkUserCapacity(workspaceId, userId, input.scheduledAt);
   if (!capacity.hasCapacity) {
