@@ -34,6 +34,17 @@ test('allows complete, extend, create, and bulk reschedule endpoints', () => {
   assert.equal(isFollowUpLockResolutionPath(mockReq('POST', '/api/followups/bulk-extend')), true);
 });
 
+test('allows mounted-router overdue mandatory path', () => {
+  const req = {
+    method: 'GET',
+    originalUrl: '',
+    baseUrl: '/api/followups',
+    path: '/overdue-mandatory',
+    url: '/overdue-mandatory',
+  } as Request;
+  assert.equal(isFollowUpLockResolutionPath(req), true);
+});
+
 test('blocks unrelated dashboard routes', () => {
   assert.equal(isFollowUpLockResolutionPath(mockReq('GET', '/api/dashboard/summary')), false);
   assert.equal(isFollowUpLockResolutionPath(mockReq('GET', '/api/leads')), false);

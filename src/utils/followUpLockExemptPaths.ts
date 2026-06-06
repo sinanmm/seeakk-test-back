@@ -26,6 +26,20 @@ export const FOLLOWUP_LOCK_RESOLUTION_PREFIXES = [
   '/api/admin/lead-life-cycles',
 ] as const;
 
+/** Stable suffixes used as a fallback when proxy/baseUrl combinations vary. */
+export const FOLLOWUP_LOCK_RESOLUTION_SUFFIXES = [
+  '/followups/overdue-mandatory',
+  '/followups/mandatory-continuation',
+  '/followups/lifecycle-extension-limit',
+  '/followups/today-utilization',
+  '/followups/alerts',
+  '/followups/bulk-extend',
+  '/followups/users',
+  '/followups/history',
+  '/followup-extension-reasons',
+  '/holidays/weekly-off',
+] as const;
+
 type MethodPattern = {
   methods: ReadonlyArray<string>;
   pattern: RegExp;
@@ -35,9 +49,19 @@ type MethodPattern = {
 export const FOLLOWUP_LOCK_RESOLUTION_METHOD_PATTERNS: MethodPattern[] = [
   { methods: ['POST'], pattern: /^\/api\/followups$/ },
   { methods: ['POST'], pattern: /^\/api\/followups\/[^/]+\/complete$/ },
-  { methods: ['PATCH'], pattern: /^\/api\/followups\/[^/]+\/snooze$/ },
+  { methods: ['PATCH', 'POST'], pattern: /^\/api\/followups\/[^/]+\/snooze$/ },
   { methods: ['POST'], pattern: /^\/api\/followups\/bulk-extend$/ },
 ];
+
+const matchesResolutionPrefix = (path: string): boolean =>
+  FOLLOWUP_LOCK_RESOLUTION_PREFIXES.some(
+    (prefix) => path === prefix || path.startsWith(`${prefix}/`),
+  );
+
+const matchesResolutionSuffix = (path: string): boolean =>
+  FOLLOWUP_LOCK_RESOLUTION_SUFFIXES.some(
+    (suffix) => path === `/api${suffix}` || path.endsWith(suffix),
+  );
 
 export const isFollowUpLockResolutionPath = (req: Request): boolean => {
   if (req.method === 'OPTIONS') return true;
@@ -45,11 +69,7 @@ export const isFollowUpLockResolutionPath = (req: Request): boolean => {
   const path = normalizeRequestApiPath(req);
   const method = (req.method || 'GET').toUpperCase();
 
-  if (
-    FOLLOWUP_LOCK_RESOLUTION_PREFIXES.some(
-      (prefix) => path === prefix || path.startsWith(`${prefix}/`),
-    )
-  ) {
+  if (matchesResolutionPrefix(path) || matchesResolutionSuffix(path)) {
     return true;
   }
 

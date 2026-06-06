@@ -499,7 +499,15 @@ export const bulkExtendFollowUps = async (req: Request, res: Response, next: Nex
     });
 
     const result = await followupService.bulkExtendFollowUps(workspaceId, getActor(req), input);
-    return res.status(200).json(result);
+    const overdueSession = await overdueFollowupService.getOverdueMandatorySessionState(
+      workspaceId,
+      getActor(req),
+    );
+
+    return res.status(200).json({
+      ...result,
+      overdueSession,
+    });
   } catch (error) {
     handleServiceError(error, res, next, 'bulkExtendFollowUps');
   }

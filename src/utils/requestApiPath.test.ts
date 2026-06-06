@@ -23,3 +23,12 @@ test('normalizeRequestApiPath strips trailing slash from originalUrl', () => {
   const req = mockReq({ originalUrl: '/api/followups/bulk-extend/' });
   assert.equal(normalizeRequestApiPath(req), '/api/followups/bulk-extend');
 });
+
+test('normalizeRequestApiPath resolves mounted followup routes without full originalUrl', () => {
+  const req = mockReq({
+    baseUrl: '/api/followups',
+    path: '/overdue-mandatory',
+    url: '/overdue-mandatory',
+  });
+  assert.equal(normalizeRequestApiPath(req), '/api/followups/overdue-mandatory');
+});

@@ -12,18 +12,27 @@ const stripTrailingSlash = (path: string): string => {
   return path;
 };
 
+const normalizeSinglePath = (raw: string): string => {
+  let path = stripTrailingSlash(raw.trim().toLowerCase().replace(/\/{2,}/g, '/'));
+  if (!path.startsWith('/')) path = `/${path}`;
+  if (!path.startsWith('/api/')) path = `/api${path}`;
+  return path;
+};
+
 export const normalizeRequestApiPath = (req: Request): string => {
-  const fromOriginal = stripTrailingSlash((req.originalUrl || '').split('?')[0].trim().toLowerCase());
-  if (fromOriginal) {
-    if (fromOriginal.startsWith('/api/')) return fromOriginal;
+  const candidates = [
+    req.originalUrl?.split('?')[0],
+    `${req.baseUrl || ''}${req.path || ''}`,
+    req.url?.split('?')[0],
+    req.path,
+  ].filter((value): value is string => Boolean(value && value.trim()));
+
+  for (const candidate of candidates) {
+    const normalized = normalizeSinglePath(candidate);
+    if (normalized.startsWith('/api/')) {
+      return normalized;
+    }
   }
 
-  const base = (req.baseUrl || '').split('?')[0].toLowerCase();
-  const pathPart = (req.path || req.url || '').split('?')[0].toLowerCase();
-  let combined = stripTrailingSlash(`${base}${pathPart}`.replace(/\/{2,}/g, '/'));
-  if (!combined.startsWith('/')) combined = `/${combined}`;
-
-  if (combined.startsWith('/api/')) return combined;
-  if (combined.startsWith('/')) return `/api${combined}`;
-  return `/api/${combined}`;
+  return '/api';
 };
