@@ -47,6 +47,7 @@ import { SOCKET_IO_PATH } from './config/socketConstants';
 import { corsOriginHandler, handlePreflightRequest } from './config/cors';
 import { globalLimiter } from './middlewares/rateLimiter';
 import { notFound, errorHandler } from './middlewares/errorMiddleware';
+import { FOLLOWUP_LOCK_BYPASS_VERSION } from './utils/followUpLockExemptPaths';
 
 const app = express();
 // Render / Vercel / proxies: trust X-Forwarded-* for correct req.ip and secure cookies if used later
@@ -143,6 +144,8 @@ app.get('/healthz', (_req, res) => {
     ok: true,
     uptime: process.uptime(),
     timestamp: Date.now(),
+    followUpLockBypassVersion: FOLLOWUP_LOCK_BYPASS_VERSION,
+    buildCommit: process.env.RENDER_GIT_COMMIT || process.env.GIT_COMMIT || null,
   });
 });
 

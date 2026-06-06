@@ -1,7 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import type { Request } from 'express';
-import { isFollowUpLockResolutionPath } from './followUpLockExemptPaths';
+import {
+  diagnoseFollowUpLockPath,
+  isFollowUpLockResolutionPath,
+} from './followUpLockExemptPaths';
 
 const mockReq = (method: string, originalUrl: string): Request =>
   ({
@@ -112,4 +115,23 @@ test('blocks unrelated dashboard routes', () => {
   assert.equal(isFollowUpLockResolutionPath(mockReq('GET', '/api/dashboard/revenue')), false);
   assert.equal(isFollowUpLockResolutionPath(mockReq('GET', '/api/leads')), false);
   assert.equal(isFollowUpLockResolutionPath(mockReq('GET', '/api/lead-dynamics/active')), false);
+});
+
+test('diagnoseFollowUpLockPath explains why weekly-off is allowed on mount-relative url', () => {
+  const req = {
+    method: 'GET',
+    originalUrl: '',
+    baseUrl: '',
+    path: '',
+    url: '/weekly-off',
+  } as Request;
+  const diagnostics = diagnoseFollowUpLockPath(req);
+  assert.equal(diagnostics.checks.hardcodedHaystack, true);
+  assert.equal(diagnostics.checks.finalAllowed, true);
+});
+
+test('diagnoseFollowUpLockPath explains why dashboard is blocked', () => {
+  const diagnostics = diagnoseFollowUpLockPath(mockReq('GET', '/api/dashboard/summary'));
+  assert.equal(diagnostics.checks.finalAllowed, false);
+  assert.equal(diagnostics.checks.hardcodedHaystack, false);
 });

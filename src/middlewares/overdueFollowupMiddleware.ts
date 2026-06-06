@@ -4,6 +4,9 @@ import { resolveWorkspaceIdForUser } from '../utils/workspaceContext';
 import { normalizeRequestApiPath } from '../utils/requestApiPath';
 import {
   describeFollowUpUnlockCondition,
+  diagnoseFollowUpLockPath,
+  isFollowUpLockDebugEnabled,
+  isHardcodedFollowUpLockResolutionRequest,
   isOverdueFollowUpResolutionPath,
 } from '../utils/followUpLockExemptPaths';
 import logger from '../utils/logger';
@@ -25,28 +28,7 @@ export const invalidateOverdueFollowUpCache = (userId: string): void => {
 
 export const isOverdueFollowUpExemptPath = (req: Request): boolean => isOverdueFollowUpResolutionPath(req);
 
-const isBulkExtendResolutionRequest = (req: Request): boolean => {
-  if ((req.method || 'GET').toUpperCase() !== 'POST') {
-    return false;
-  }
-
-  const haystack = [
-    req.originalUrl,
-    req.url,
-    req.path,
-    req.baseUrl,
-    req.route?.path,
-    `${req.baseUrl || ''}${req.path || ''}`,
-    `${req.baseUrl || ''}${req.route?.path || ''}`,
-  ]
-    .filter((value): value is string => typeof value === 'string' && value.length > 0)
-    .join('|')
-    .toLowerCase();
-
-  return haystack.includes('bulk-extend') || haystack.includes('bulk_extend');
-};
-
-const logResolutionPathAllowed = (req: Request, endpoint: string): void => {
+const logResolutionPathAllowed = (req: Request, endpoint: string, bypassReason: string): void => {
   logger.info('Follow-up lock: overdue resolution path allowed', {
     middlewareName: 'enforceOverdueFollowUp',
     lockReason: LOCK_REASON,
@@ -54,8 +36,28 @@ const logResolutionPathAllowed = (req: Request, endpoint: string): void => {
     endpoint,
     requestMethod: (req.method || 'GET').toUpperCase(),
     whitelisted: true,
-    triggerReason: 'Endpoint is whitelisted for overdue follow-up resolution',
+    triggerReason: bypassReason,
+    pathDiagnostics: diagnoseFollowUpLockPath(req),
   });
+};
+
+const buildOverdueLockDeniedPayload = (
+  req: Request,
+  overdueFollowupCount: number,
+) => {
+  const pathDiagnostics = diagnoseFollowUpLockPath(req);
+  const payload: Record<string, unknown> = {
+    success: false,
+    errorCode: LOCK_REASON,
+    message: 'You have overdue follow-ups. Complete or extend them before continuing.',
+    overdueFollowupCount,
+  };
+
+  if (isFollowUpLockDebugEnabled()) {
+    payload.debug = pathDiagnostics;
+  }
+
+  return { payload, pathDiagnostics };
 };
 
 export const enforceOverdueFollowUp = async (
@@ -68,8 +70,13 @@ export const enforceOverdueFollowUp = async (
 
   if (!req.user?.id) return next();
 
-  if (isBulkExtendResolutionRequest(req) || isOverdueFollowUpExemptPath(req)) {
-    logResolutionPathAllowed(req, endpoint);
+  if (isHardcodedFollowUpLockResolutionRequest(req)) {
+    logResolutionPathAllowed(req, endpoint, 'Hardcoded haystack matched a resolution endpoint');
+    return next();
+  }
+
+  if (isOverdueFollowUpExemptPath(req)) {
+    logResolutionPathAllowed(req, endpoint, 'Resolution path allowlist matched');
     return next();
   }
 
@@ -84,6 +91,7 @@ export const enforceOverdueFollowUp = async (
     if (cached && cached.expiresAt > Date.now()) {
       if (!cached.required) return next();
 
+      const denied = buildOverdueLockDeniedPayload(req, cached.count);
       logger.warn('Follow-up lock: access denied', {
         middlewareName: 'enforceOverdueFollowUp',
         lockReason: LOCK_REASON,
@@ -97,14 +105,10 @@ export const enforceOverdueFollowUp = async (
         overdueFollowupCount: cached.count,
         overdueFollowUpIds: cached.followUpIds,
         unlockCondition: describeFollowUpUnlockCondition(LOCK_REASON),
+        pathDiagnostics: denied.pathDiagnostics,
       });
 
-      return res.status(423).json({
-        success: false,
-        errorCode: LOCK_REASON,
-        message: 'You have overdue follow-ups. Complete or extend them before continuing.',
-        overdueFollowupCount: cached.count,
-      });
+      return res.status(423).json(denied.payload);
     }
 
     const state = await getOverdueMandatorySessionState(workspaceId, user);
@@ -119,6 +123,7 @@ export const enforceOverdueFollowUp = async (
       return next();
     }
 
+    const denied = buildOverdueLockDeniedPayload(req, state.overdueFollowupCount);
     logger.warn('Follow-up lock: access denied', {
       middlewareName: 'enforceOverdueFollowUp',
       lockReason: LOCK_REASON,
@@ -132,14 +137,10 @@ export const enforceOverdueFollowUp = async (
       overdueFollowupCount: state.overdueFollowupCount,
       overdueFollowUpIds: state.items.map((item) => item.id),
       unlockCondition: describeFollowUpUnlockCondition(LOCK_REASON),
+      pathDiagnostics: denied.pathDiagnostics,
     });
 
-    return res.status(423).json({
-      success: false,
-      errorCode: LOCK_REASON,
-      message: 'You have overdue follow-ups. Complete or extend them before continuing.',
-      overdueFollowupCount: state.overdueFollowupCount,
-    });
+    return res.status(423).json(denied.payload);
   } catch (error) {
     logger.error('Overdue follow-up enforcement failed', {
       error,

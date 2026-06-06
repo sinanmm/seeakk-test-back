@@ -1,6 +1,94 @@
 import { Request } from 'express';
 import { collectNormalizedApiPathCandidates, normalizeRequestApiPath } from './requestApiPath';
 
+/** Bump when bypass logic changes — visible on /healthz to confirm Render deploy. */
+export const FOLLOWUP_LOCK_BYPASS_VERSION = '2026-06-06-haystack-v2';
+
+export type FollowUpLockPathDiagnostics = {
+  method: string;
+  haystack: string;
+  originalUrl?: string;
+  url?: string;
+  path?: string;
+  baseUrl?: string;
+  routePath?: string;
+  normalizedCandidates: string[];
+  primaryPath: string;
+  checks: {
+    hardcodedHaystack: boolean;
+    expressRoute: boolean;
+    rawMarker: boolean;
+    normalizedAny: boolean;
+    normalizedPrimary: boolean;
+    finalAllowed: boolean;
+  };
+  followUpLockBypassVersion: string;
+};
+
+export const buildRequestPathHaystack = (req: Request): string =>
+  [
+    req.originalUrl,
+    req.url,
+    req.path,
+    req.baseUrl,
+    req.route?.path,
+    `${req.baseUrl || ''}${req.path || ''}`,
+    `${req.baseUrl || ''}${req.route?.path || ''}`,
+  ]
+    .filter((value): value is string => typeof value === 'string' && value.length > 0)
+    .join('|')
+    .toLowerCase();
+
+/**
+ * Proxy-safe haystack matcher — runs before prefix/suffix normalization.
+ * Covers Render mount-relative paths like `/bulk-extend` and `/weekly-off`.
+ */
+export const isHardcodedFollowUpLockResolutionRequest = (req: Request): boolean => {
+  const method = (req.method || 'GET').toUpperCase();
+  const haystack = buildRequestPathHaystack(req);
+  if (!haystack) return false;
+
+  const alwaysAllowMarkers = [
+    'overdue-mandatory',
+    'mandatory-continuation',
+    'lifecycle-extension-limit',
+    'today-utilization',
+    'followup-extension-reasons',
+    'weekly-off',
+    'weekly_off',
+  ];
+
+  if (alwaysAllowMarkers.some((marker) => haystack.includes(marker))) {
+    return true;
+  }
+
+  if (haystack.includes('bulk-extend') || haystack.includes('bulk_extend')) {
+    return method === 'POST';
+  }
+
+  if (haystack.includes('/alerts') || haystack.endsWith('|alerts') || haystack === 'alerts') {
+    return true;
+  }
+
+  if (method === 'POST' && haystack.includes('/complete') && haystack.includes('followup')) {
+    return true;
+  }
+
+  if (['PATCH', 'POST'].includes(method) && haystack.includes('followup')) {
+    if (haystack.includes('/snooze') || haystack.includes('/extend')) {
+      return true;
+    }
+  }
+
+  if (method === 'POST' && haystack.includes('followup') && !haystack.includes('bulk-extend')) {
+    return haystack
+      .split('|')
+      .some((part) => /\/followups\/?$/.test(part) || part.endsWith('/followups'));
+  }
+
+  return false;
+};
+
 /** Prefix routes that must stay reachable while follow-up locks are active. */
 export const FOLLOWUP_LOCK_RESOLUTION_PREFIXES = [
   '/api/auth/me',
@@ -178,10 +266,53 @@ const matchesRawResolutionMarker = (req: Request, method: string): boolean => {
   return false;
 };
 
+export const diagnoseFollowUpLockPath = (req: Request): FollowUpLockPathDiagnostics => {
+  const method = (req.method || 'GET').toUpperCase();
+  const paths = collectNormalizedApiPathCandidates(req);
+  const primaryPath = normalizeRequestApiPath(req);
+  const hardcodedHaystack = isHardcodedFollowUpLockResolutionRequest(req);
+  const expressRoute = matchesExpressResolvedRoute(req, method);
+  const rawMarker = matchesRawResolutionMarker(req, method);
+  const normalizedAny = paths.some((path) => pathMatchesResolution(path, method));
+  const normalizedPrimary = pathMatchesResolution(primaryPath, method);
+  const finalAllowed =
+    req.method === 'OPTIONS' ||
+    hardcodedHaystack ||
+    expressRoute ||
+    rawMarker ||
+    normalizedAny ||
+    normalizedPrimary;
+
+  return {
+    method,
+    haystack: buildRequestPathHaystack(req),
+    originalUrl: req.originalUrl,
+    url: req.url,
+    path: req.path,
+    baseUrl: req.baseUrl,
+    routePath: req.route?.path,
+    normalizedCandidates: paths,
+    primaryPath,
+    checks: {
+      hardcodedHaystack,
+      expressRoute,
+      rawMarker,
+      normalizedAny,
+      normalizedPrimary,
+      finalAllowed,
+    },
+    followUpLockBypassVersion: FOLLOWUP_LOCK_BYPASS_VERSION,
+  };
+};
+
 export const isFollowUpLockResolutionPath = (req: Request): boolean => {
   if (req.method === 'OPTIONS') return true;
 
   const method = (req.method || 'GET').toUpperCase();
+
+  if (isHardcodedFollowUpLockResolutionRequest(req)) {
+    return true;
+  }
 
   if (matchesExpressResolvedRoute(req, method)) {
     return true;
@@ -202,6 +333,9 @@ export const isFollowUpLockResolutionPath = (req: Request): boolean => {
 
 /** Overdue mandatory popup resolution paths (subset used by overdue lock bypass). */
 export const isOverdueFollowUpResolutionPath = (req: Request): boolean => isFollowUpLockResolutionPath(req);
+
+export const isFollowUpLockDebugEnabled = (): boolean =>
+  String(process.env.FOLLOWUP_LOCK_DEBUG || '').trim().toLowerCase() === 'true';
 
 export const describeFollowUpUnlockCondition = (lockReason: string): string => {
   switch (lockReason) {
