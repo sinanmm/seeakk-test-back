@@ -491,6 +491,13 @@ export const bulkExtendFollowUps = async (req: Request, res: Response, next: Nex
   if (!input) return;
 
   try {
+    logger.info('[FollowUpLock] bulk extend resolution request accepted', {
+      userId: req.user?.id,
+      workspaceId,
+      followUpIds: input.followUpIds,
+      targetDate: input.newFollowupDate,
+    });
+
     const result = await followupService.bulkExtendFollowUps(workspaceId, getActor(req), input);
     return res.status(200).json(result);
   } catch (error) {

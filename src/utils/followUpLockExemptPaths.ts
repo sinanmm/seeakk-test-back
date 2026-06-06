@@ -10,6 +10,7 @@ export const FOLLOWUP_LOCK_RESOLUTION_PREFIXES = [
   '/api/followups/mandatory-continuation',
   '/api/followups/lifecycle-extension-limit',
   '/api/followups/today-utilization',
+  '/api/followups/alerts',
   '/api/followups/users',
   '/api/followups/history',
   '/api/followup-extension-reasons',

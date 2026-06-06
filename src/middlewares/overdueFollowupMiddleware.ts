@@ -47,9 +47,12 @@ export const enforceOverdueFollowUp = async (
 
       const lockReason = 'OVERDUE_FOLLOWUP_REQUIRED';
       logger.warn('Follow-up lock: access denied', {
+        middlewareName: 'enforceOverdueFollowUp',
         lockReason,
+        triggerReason: 'Cached overdue mandatory follow-ups require resolution',
         userId: user.id,
         blockedEndpoint,
+        followUpIds: cached.followUpIds,
         overdueFollowupCount: cached.count,
         overdueFollowUpIds: cached.followUpIds,
         unlockCondition: describeFollowUpUnlockCondition(lockReason),
@@ -77,9 +80,12 @@ export const enforceOverdueFollowUp = async (
 
     const lockReason = 'OVERDUE_FOLLOWUP_REQUIRED';
     logger.warn('Follow-up lock: access denied', {
+      middlewareName: 'enforceOverdueFollowUp',
       lockReason,
+      triggerReason: 'Active overdue mandatory follow-ups require resolution',
       userId: user.id,
       blockedEndpoint,
+      followUpIds: state.items.map((item) => item.id),
       overdueFollowupCount: state.overdueFollowupCount,
       overdueFollowUpIds: state.items.map((item) => item.id),
       unlockCondition: describeFollowUpUnlockCondition(lockReason),

@@ -91,9 +91,12 @@ export const enforceMandatoryFollowUpContinuation = async (
 
     const lockReason = 'MANDATORY_FOLLOWUP_REQUIRED';
     logger.warn('Follow-up lock: access denied', {
+      middlewareName: 'enforceMandatoryFollowUpContinuation',
       lockReason,
+      triggerReason: 'Active lifecycle leads require a future follow-up schedule',
       userId: user.id,
       blockedEndpoint,
+      followUpIds: leadIds,
       mandatoryFollowupCount: count,
       mandatoryFollowUpLeadIds: leadIds,
       unlockCondition: describeFollowUpUnlockCondition(lockReason),

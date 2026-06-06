@@ -19,11 +19,7 @@ test('normalizeRequestApiPath combines baseUrl and path for mounted routers', ()
   assert.equal(normalizeRequestApiPath(req), '/api/leads/meta/assignees');
 });
 
-test('normalizeRequestApiPath resolves admin user list root', () => {
-  const req = mockReq({
-    baseUrl: '/api/admin/users',
-    path: '/',
-    url: '/?page=1&limit=200',
-  });
-  assert.equal(normalizeRequestApiPath(req), '/api/admin/users');
+test('normalizeRequestApiPath strips trailing slash from originalUrl', () => {
+  const req = mockReq({ originalUrl: '/api/followups/bulk-extend/' });
+  assert.equal(normalizeRequestApiPath(req), '/api/followups/bulk-extend');
 });

@@ -95,9 +95,11 @@ export const checkUserLock = async (req: Request, res: Response, next: NextFunct
       }
 
       logger.warn('Access denied. User account is locked.', { 
+        middlewareName: 'checkUserLock',
+        lockReason,
+        triggerReason: 'User account is locked until target or workflow requirements are resolved',
         userId: req.user.id,
         isLocked: true,
-        lockReason,
         blockedEndpoint: normalizeRequestApiPath(req),
         activeTargetAssignment: assignment?.id || null,
         activeTargetCycle: activeTargetCycle?.id || null,

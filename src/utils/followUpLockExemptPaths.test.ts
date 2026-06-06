@@ -17,9 +17,14 @@ test('allows mandatory continuation read/write', () => {
   assert.equal(isFollowUpLockResolutionPath(mockReq('POST', '/api/followups/mandatory-continuation')), true);
 });
 
-test('allows overdue mandatory status and weekly-off lookup', () => {
+test('allows overdue mandatory status, weekly-off lookup, and reminder alerts', () => {
   assert.equal(isFollowUpLockResolutionPath(mockReq('GET', '/api/followups/overdue-mandatory')), true);
   assert.equal(isFollowUpLockResolutionPath(mockReq('GET', '/api/holidays/weekly-off')), true);
+  assert.equal(isFollowUpLockResolutionPath(mockReq('GET', '/api/followups/alerts?minutesAhead=15')), true);
+});
+
+test('allows bulk extend even when originalUrl has a trailing slash', () => {
+  assert.equal(isFollowUpLockResolutionPath(mockReq('POST', '/api/followups/bulk-extend/')), true);
 });
 
 test('allows complete, extend, create, and bulk reschedule endpoints', () => {
