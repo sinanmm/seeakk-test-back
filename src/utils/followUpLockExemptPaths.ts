@@ -30,16 +30,25 @@ export const FOLLOWUP_LOCK_RESOLUTION_PREFIXES = [
 /** Stable suffixes used as a fallback when proxy/baseUrl combinations vary. */
 export const FOLLOWUP_LOCK_RESOLUTION_SUFFIXES = [
   '/followups/overdue-mandatory',
+  '/overdue-mandatory',
   '/followups/mandatory-continuation',
+  '/mandatory-continuation',
   '/followups/lifecycle-extension-limit',
+  '/lifecycle-extension-limit',
   '/followups/today-utilization',
+  '/today-utilization',
   '/followups/alerts',
+  '/alerts',
   '/followups/bulk-extend',
+  '/bulk-extend',
   '/followups/users',
+  '/users',
   '/followups/history',
+  '/history',
   '/followup-extension-reasons/active',
   '/followup-extension-reasons',
   '/holidays/weekly-off',
+  '/weekly-off',
 ] as const;
 
 type MethodPattern = {
@@ -52,15 +61,12 @@ type MethodPattern = {
  * Covers actual API routes and legacy alias shapes used by clients/proxies.
  */
 export const FOLLOWUP_LOCK_RESOLUTION_METHOD_PATTERNS: MethodPattern[] = [
-  { methods: ['POST'], pattern: /^\/api\/followups$/ },
-  { methods: ['POST'], pattern: /^\/api\/followups\/[^/]+\/complete$/ },
-  { methods: ['PATCH', 'POST'], pattern: /^\/api\/followups\/[^/]+\/snooze$/ },
-  { methods: ['PATCH', 'POST'], pattern: /^\/api\/followups\/[^/]+\/extend$/ },
-  { methods: ['POST'], pattern: /^\/api\/followups\/[^/]+\/schedule$/ },
-  { methods: ['POST'], pattern: /^\/api\/followups\/bulk-extend$/ },
-  { methods: ['POST'], pattern: /^\/api\/followups\/complete$/ },
-  { methods: ['POST'], pattern: /^\/api\/followups\/extend$/ },
-  { methods: ['POST'], pattern: /^\/api\/followups\/schedule$/ },
+  { methods: ['POST'], pattern: /^\/api\/(?:followups\/)?$/ },
+  { methods: ['POST'], pattern: /^\/api\/(?:followups\/)?[^/]+\/complete$/ },
+  { methods: ['PATCH', 'POST'], pattern: /^\/api\/(?:followups\/)?[^/]+\/snooze$/ },
+  { methods: ['PATCH', 'POST'], pattern: /^\/api\/(?:followups\/)?[^/]+\/extend$/ },
+  { methods: ['POST'], pattern: /^\/api\/(?:followups\/)?[^/]+\/schedule$/ },
+  { methods: ['POST'], pattern: /^\/api\/(?:followups\/)?bulk-extend$/ },
 ];
 
 const matchesResolutionPrefix = (path: string): boolean =>
