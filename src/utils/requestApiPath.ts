@@ -1,4 +1,5 @@
 import { Request } from 'express';
+import logger from './logger';
 
 /**
  * Builds a stable `/api/...` path for mounted Express routers.
@@ -43,11 +44,43 @@ export const collectNormalizedApiPathCandidates = (req: Request): string[] => {
 };
 
 export const normalizeRequestApiPath = (req: Request): string => {
-  const normalized = collectNormalizedApiPathCandidates(req);
+  const candidatesRaw = [
+    req.originalUrl?.split('?')[0],
+    `${req.baseUrl || ''}${req.path || ''}`,
+    req.url?.split('?')[0],
+    req.path,
+  ];
+  
+  const candidates = candidatesRaw.filter((value): value is string => Boolean(value && value.trim()));
+
+  const normalized = candidates
+    .map(normalizeSinglePath)
+    .filter((path) => path.startsWith('/api/'));
 
   if (normalized.length === 0) {
+    logger.warn('[PathNormalization] No valid API path candidates found', {
+      originalUrl: req.originalUrl,
+      baseUrl: req.baseUrl,
+      path: req.path,
+      url: req.url,
+      candidatesRaw
+    });
     return '/api';
   }
 
-  return normalized.sort((left, right) => pathSpecificityScore(right) - pathSpecificityScore(left))[0];
+  const sorted = normalized.sort((left, right) => pathSpecificityScore(right) - pathSpecificityScore(left));
+  
+  if (sorted[0]?.includes('bulk-extend') || sorted[0]?.includes('alerts')) {
+    logger.info('[PathNormalization] Path resolved', {
+      originalUrl: req.originalUrl,
+      baseUrl: req.baseUrl,
+      path: req.path,
+      url: req.url,
+      candidatesRaw,
+      normalizedCandidates: normalized,
+      finalPath: sorted[0]
+    });
+  }
+
+  return sorted[0];
 };

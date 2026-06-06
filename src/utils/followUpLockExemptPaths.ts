@@ -1,4 +1,5 @@
 import { Request } from 'express';
+import logger from './logger';
 import { collectNormalizedApiPathCandidates, normalizeRequestApiPath } from './requestApiPath';
 
 /** Bump when bypass logic changes — visible on /healthz to confirm Render deploy. */
@@ -308,7 +309,32 @@ export const diagnoseFollowUpLockPath = (req: Request): FollowUpLockPathDiagnost
 export const isFollowUpLockResolutionPath = (req: Request): boolean => {
   if (req.method === 'OPTIONS') return true;
 
+  const path = normalizeRequestApiPath(req);
   const method = (req.method || 'GET').toUpperCase();
+
+  const isPrefixMatch = matchesResolutionPrefix(path);
+  const isSuffixMatch = matchesResolutionSuffix(path);
+  const isMethodMatch = matchesResolutionMethodPattern(path, method);
+
+  if (path.includes('bulk-extend') || path.includes('alerts')) {
+    logger.info('[FollowUpLockExempt] Checking exemption', {
+      originalPath: req.originalUrl,
+      normalizedPath: path,
+      method,
+      isPrefixMatch,
+      isSuffixMatch,
+      isMethodMatch,
+      isExempt: isPrefixMatch || isSuffixMatch || isMethodMatch
+    });
+  }
+
+  if (isPrefixMatch || isSuffixMatch) {
+    return true;
+  }
+
+  if (isMethodMatch) {
+    return true;
+  }
 
   if (isHardcodedFollowUpLockResolutionRequest(req)) {
     return true;
