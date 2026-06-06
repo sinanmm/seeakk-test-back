@@ -2,8 +2,8 @@ import { Request } from 'express';
 
 /**
  * Builds a stable `/api/...` path for mounted Express routers.
- * `req.url` alone is mount-relative (e.g. `/meta/assignees`) and must be
- * combined with `req.baseUrl` (e.g. `/api/leads`) for correct matching.
+ * `req.url` alone is mount-relative (e.g. `/bulk-extend`) and must be
+ * combined with `req.baseUrl` (e.g. `/api/followups`) for correct matching.
  */
 const stripTrailingSlash = (path: string): string => {
   if (path.length > 1 && path.endsWith('/')) {
@@ -19,6 +19,14 @@ const normalizeSinglePath = (raw: string): string => {
   return path;
 };
 
+const pathSpecificityScore = (path: string): number => {
+  const segments = path.split('/').filter(Boolean);
+  let score = segments.length * 10;
+  if (path.includes('/followups/')) score += 5;
+  if (path.includes('/holidays/')) score += 3;
+  return score;
+};
+
 export const normalizeRequestApiPath = (req: Request): string => {
   const candidates = [
     req.originalUrl?.split('?')[0],
@@ -27,12 +35,13 @@ export const normalizeRequestApiPath = (req: Request): string => {
     req.path,
   ].filter((value): value is string => Boolean(value && value.trim()));
 
-  for (const candidate of candidates) {
-    const normalized = normalizeSinglePath(candidate);
-    if (normalized.startsWith('/api/')) {
-      return normalized;
-    }
+  const normalized = candidates
+    .map(normalizeSinglePath)
+    .filter((path) => path.startsWith('/api/'));
+
+  if (normalized.length === 0) {
+    return '/api';
   }
 
-  return '/api';
+  return normalized.sort((left, right) => pathSpecificityScore(right) - pathSpecificityScore(left))[0];
 };

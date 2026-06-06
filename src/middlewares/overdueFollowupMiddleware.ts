@@ -4,7 +4,7 @@ import { resolveWorkspaceIdForUser } from '../utils/workspaceContext';
 import { normalizeRequestApiPath } from '../utils/requestApiPath';
 import {
   describeFollowUpUnlockCondition,
-  isFollowUpLockResolutionPath,
+  isOverdueFollowUpResolutionPath,
 } from '../utils/followUpLockExemptPaths';
 import logger from '../utils/logger';
 
@@ -17,25 +17,43 @@ type OverdueCacheEntry = {
 
 const CACHE_TTL_MS = 12_000;
 const overdueCache = new Map<string, OverdueCacheEntry>();
+const LOCK_REASON = 'OVERDUE_FOLLOWUP_REQUIRED';
 
 export const invalidateOverdueFollowUpCache = (userId: string): void => {
   overdueCache.delete(userId);
 };
 
-export const isOverdueFollowUpExemptPath = (req: Request): boolean => isFollowUpLockResolutionPath(req);
+export const isOverdueFollowUpExemptPath = (req: Request): boolean => isOverdueFollowUpResolutionPath(req);
+
+const logResolutionPathAllowed = (req: Request, endpoint: string): void => {
+  logger.info('Follow-up lock: overdue resolution path allowed', {
+    middlewareName: 'enforceOverdueFollowUp',
+    lockReason: LOCK_REASON,
+    userId: req.user?.id,
+    endpoint,
+    requestMethod: (req.method || 'GET').toUpperCase(),
+    whitelisted: true,
+    triggerReason: 'Endpoint is whitelisted for overdue follow-up resolution',
+  });
+};
 
 export const enforceOverdueFollowUp = async (
   req: Request,
   res: Response,
   next: NextFunction,
 ): Promise<any> => {
+  const endpoint = normalizeRequestApiPath(req);
+  const requestMethod = (req.method || 'GET').toUpperCase();
+
   if (!req.user?.id) return next();
-  if (isOverdueFollowUpExemptPath(req)) return next();
+
+  if (isOverdueFollowUpExemptPath(req)) {
+    logResolutionPathAllowed(req, endpoint);
+    return next();
+  }
 
   const user = req.user as { id: string; isOnboarded?: boolean; workspaceId?: string | null };
   if (!user.isOnboarded) return next();
-
-  const blockedEndpoint = normalizeRequestApiPath(req);
 
   try {
     const workspaceId = await resolveWorkspaceIdForUser(user.id, user.workspaceId ?? null);
@@ -45,22 +63,24 @@ export const enforceOverdueFollowUp = async (
     if (cached && cached.expiresAt > Date.now()) {
       if (!cached.required) return next();
 
-      const lockReason = 'OVERDUE_FOLLOWUP_REQUIRED';
       logger.warn('Follow-up lock: access denied', {
         middlewareName: 'enforceOverdueFollowUp',
-        lockReason,
+        lockReason: LOCK_REASON,
         triggerReason: 'Cached overdue mandatory follow-ups require resolution',
         userId: user.id,
-        blockedEndpoint,
+        endpoint,
+        requestMethod,
+        whitelisted: false,
+        blockedEndpoint: endpoint,
         followUpIds: cached.followUpIds,
         overdueFollowupCount: cached.count,
         overdueFollowUpIds: cached.followUpIds,
-        unlockCondition: describeFollowUpUnlockCondition(lockReason),
+        unlockCondition: describeFollowUpUnlockCondition(LOCK_REASON),
       });
 
       return res.status(423).json({
         success: false,
-        errorCode: lockReason,
+        errorCode: LOCK_REASON,
         message: 'You have overdue follow-ups. Complete or extend them before continuing.',
         overdueFollowupCount: cached.count,
       });
@@ -78,22 +98,24 @@ export const enforceOverdueFollowUp = async (
       return next();
     }
 
-    const lockReason = 'OVERDUE_FOLLOWUP_REQUIRED';
     logger.warn('Follow-up lock: access denied', {
       middlewareName: 'enforceOverdueFollowUp',
-      lockReason,
+      lockReason: LOCK_REASON,
       triggerReason: 'Active overdue mandatory follow-ups require resolution',
       userId: user.id,
-      blockedEndpoint,
+      endpoint,
+      requestMethod,
+      whitelisted: false,
+      blockedEndpoint: endpoint,
       followUpIds: state.items.map((item) => item.id),
       overdueFollowupCount: state.overdueFollowupCount,
       overdueFollowUpIds: state.items.map((item) => item.id),
-      unlockCondition: describeFollowUpUnlockCondition(lockReason),
+      unlockCondition: describeFollowUpUnlockCondition(LOCK_REASON),
     });
 
     return res.status(423).json({
       success: false,
-      errorCode: lockReason,
+      errorCode: LOCK_REASON,
       message: 'You have overdue follow-ups. Complete or extend them before continuing.',
       overdueFollowupCount: state.overdueFollowupCount,
     });
@@ -101,7 +123,10 @@ export const enforceOverdueFollowUp = async (
     logger.error('Overdue follow-up enforcement failed', {
       error,
       userId: user.id,
-      blockedEndpoint,
+      endpoint,
+      requestMethod,
+      lockReason: LOCK_REASON,
+      whitelisted: false,
     });
     return next();
   }

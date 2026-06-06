@@ -30,6 +30,8 @@ test('allows bulk extend even when originalUrl has a trailing slash', () => {
 test('allows complete, extend, create, and bulk reschedule endpoints', () => {
   assert.equal(isFollowUpLockResolutionPath(mockReq('POST', '/api/followups/fu-1/complete')), true);
   assert.equal(isFollowUpLockResolutionPath(mockReq('PATCH', '/api/followups/fu-1/snooze')), true);
+  assert.equal(isFollowUpLockResolutionPath(mockReq('POST', '/api/followups/fu-1/extend')), true);
+  assert.equal(isFollowUpLockResolutionPath(mockReq('POST', '/api/followups/fu-1/schedule')), true);
   assert.equal(isFollowUpLockResolutionPath(mockReq('POST', '/api/followups')), true);
   assert.equal(isFollowUpLockResolutionPath(mockReq('POST', '/api/followups/bulk-extend')), true);
 });
@@ -43,6 +45,21 @@ test('allows mounted-router overdue mandatory path', () => {
     url: '/overdue-mandatory',
   } as Request;
   assert.equal(isFollowUpLockResolutionPath(req), true);
+});
+
+test('allows mounted-router bulk extend path without originalUrl', () => {
+  const req = {
+    method: 'POST',
+    originalUrl: '/bulk-extend',
+    baseUrl: '/api/followups',
+    path: '/bulk-extend',
+    url: '/bulk-extend',
+  } as Request;
+  assert.equal(isFollowUpLockResolutionPath(req), true);
+});
+
+test('allows active extension reasons lookup during overdue resolution', () => {
+  assert.equal(isFollowUpLockResolutionPath(mockReq('GET', '/api/followup-extension-reasons/active')), true);
 });
 
 test('blocks unrelated dashboard routes', () => {

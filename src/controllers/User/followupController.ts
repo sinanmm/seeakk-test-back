@@ -504,11 +504,29 @@ export const bulkExtendFollowUps = async (req: Request, res: Response, next: Nex
       getActor(req),
     );
 
+    logger.info('[FollowUpLock] bulk extend resolution request succeeded', {
+      userId: req.user?.id,
+      workspaceId,
+      followUpIds: input.followUpIds,
+      successCount: result.successCount,
+      blockedCount: result.blockedCount,
+      overdueFollowupCount: overdueSession.overdueFollowupCount,
+      overdueFollowupRequired: overdueSession.overdueFollowupRequired,
+    });
+
     return res.status(200).json({
       ...result,
       overdueSession,
     });
-  } catch (error) {
+  } catch (error: any) {
+    logger.warn('[FollowUpLock] bulk extend resolution request failed', {
+      userId: req.user?.id,
+      workspaceId,
+      followUpIds: input.followUpIds,
+      targetDate: input.newFollowupDate,
+      statusCode: error?.statusCode || error?.status || 500,
+      message: error?.message,
+    });
     handleServiceError(error, res, next, 'bulkExtendFollowUps');
   }
 };

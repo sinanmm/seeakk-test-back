@@ -32,3 +32,13 @@ test('normalizeRequestApiPath resolves mounted followup routes without full orig
   });
   assert.equal(normalizeRequestApiPath(req), '/api/followups/overdue-mandatory');
 });
+
+test('normalizeRequestApiPath prefers mounted followup path over mount-relative originalUrl', () => {
+  const req = mockReq({
+    originalUrl: '/bulk-extend',
+    baseUrl: '/api/followups',
+    path: '/bulk-extend',
+    url: '/bulk-extend',
+  });
+  assert.equal(normalizeRequestApiPath(req), '/api/followups/bulk-extend');
+});

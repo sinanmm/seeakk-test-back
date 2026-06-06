@@ -5,7 +5,6 @@ import logger from '../utils/logger';
 import { redisClient } from '../config/redis';
 import { enforceMandatoryFollowUpContinuation } from './mandatoryFollowupMiddleware';
 import { enforceOverdueFollowUp } from './overdueFollowupMiddleware';
-import { isFollowUpLockResolutionPath } from '../utils/followUpLockExemptPaths';
 import { userHasActiveTemporaryBulkExtensionAccess } from '../modules/followup-settings/temporaryBulkAccess.util';
 import { BULK_EXTEND_FOLLOWUPS_PERMISSION } from '../utils/authSerializers';
 import { applyCorsHeadersIfAllowed } from '../config/cors';
@@ -210,10 +209,6 @@ export const protect = async (req: Request, res: Response, next: NextFunction): 
     }
 
     req.user = hydratedUser;
-
-    if (isFollowUpLockResolutionPath(req)) {
-      return next();
-    }
 
     return enforceOverdueFollowUp(req, res, () =>
       enforceMandatoryFollowUpContinuation(req, res, next),

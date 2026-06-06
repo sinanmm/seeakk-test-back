@@ -13,6 +13,7 @@ export const FOLLOWUP_LOCK_RESOLUTION_PREFIXES = [
   '/api/followups/alerts',
   '/api/followups/users',
   '/api/followups/history',
+  '/api/followups/bulk-extend',
   '/api/followup-extension-reasons',
   '/api/holidays/weekly-off',
   '/api/leads/meta/assignees',
@@ -36,6 +37,7 @@ export const FOLLOWUP_LOCK_RESOLUTION_SUFFIXES = [
   '/followups/bulk-extend',
   '/followups/users',
   '/followups/history',
+  '/followup-extension-reasons/active',
   '/followup-extension-reasons',
   '/holidays/weekly-off',
 ] as const;
@@ -45,12 +47,20 @@ type MethodPattern = {
   pattern: RegExp;
 };
 
-/** Method-specific follow-up resolution routes (complete, extend, schedule, bulk). */
+/**
+ * Method-specific follow-up resolution routes (complete, extend/snooze, schedule, bulk).
+ * Covers actual API routes and legacy alias shapes used by clients/proxies.
+ */
 export const FOLLOWUP_LOCK_RESOLUTION_METHOD_PATTERNS: MethodPattern[] = [
   { methods: ['POST'], pattern: /^\/api\/followups$/ },
   { methods: ['POST'], pattern: /^\/api\/followups\/[^/]+\/complete$/ },
   { methods: ['PATCH', 'POST'], pattern: /^\/api\/followups\/[^/]+\/snooze$/ },
+  { methods: ['PATCH', 'POST'], pattern: /^\/api\/followups\/[^/]+\/extend$/ },
+  { methods: ['POST'], pattern: /^\/api\/followups\/[^/]+\/schedule$/ },
   { methods: ['POST'], pattern: /^\/api\/followups\/bulk-extend$/ },
+  { methods: ['POST'], pattern: /^\/api\/followups\/complete$/ },
+  { methods: ['POST'], pattern: /^\/api\/followups\/extend$/ },
+  { methods: ['POST'], pattern: /^\/api\/followups\/schedule$/ },
 ];
 
 const matchesResolutionPrefix = (path: string): boolean =>
@@ -63,6 +73,11 @@ const matchesResolutionSuffix = (path: string): boolean =>
     (suffix) => path === `/api${suffix}` || path.endsWith(suffix),
   );
 
+const matchesResolutionMethodPattern = (path: string, method: string): boolean =>
+  FOLLOWUP_LOCK_RESOLUTION_METHOD_PATTERNS.some(
+    ({ methods, pattern }) => methods.includes(method) && pattern.test(path),
+  );
+
 export const isFollowUpLockResolutionPath = (req: Request): boolean => {
   if (req.method === 'OPTIONS') return true;
 
@@ -73,10 +88,11 @@ export const isFollowUpLockResolutionPath = (req: Request): boolean => {
     return true;
   }
 
-  return FOLLOWUP_LOCK_RESOLUTION_METHOD_PATTERNS.some(
-    ({ methods, pattern }) => methods.includes(method) && pattern.test(path),
-  );
+  return matchesResolutionMethodPattern(path, method);
 };
+
+/** Overdue mandatory popup resolution paths (subset used by overdue lock bypass). */
+export const isOverdueFollowUpResolutionPath = (req: Request): boolean => isFollowUpLockResolutionPath(req);
 
 export const describeFollowUpUnlockCondition = (lockReason: string): string => {
   switch (lockReason) {
