@@ -61,7 +61,7 @@ type MethodPattern = {
  * Covers actual API routes and legacy alias shapes used by clients/proxies.
  */
 export const FOLLOWUP_LOCK_RESOLUTION_METHOD_PATTERNS: MethodPattern[] = [
-  { methods: ['POST'], pattern: /^\/api\/(?:followups\/)?$/ },
+  { methods: ['POST'], pattern: /^\/api\/followups\/?$/ },
   { methods: ['POST'], pattern: /^\/api\/(?:followups\/)?[^/]+\/complete$/ },
   { methods: ['PATCH', 'POST'], pattern: /^\/api\/(?:followups\/)?[^/]+\/snooze$/ },
   { methods: ['PATCH', 'POST'], pattern: /^\/api\/(?:followups\/)?[^/]+\/extend$/ },
