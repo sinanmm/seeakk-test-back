@@ -104,11 +104,59 @@ const pathMatchesResolution = (path: string, method: string): boolean =>
 const getRawRequestPath = (req: Request): string =>
   `${req.originalUrl || ''}${req.url || ''}`.toLowerCase().split('?')[0];
 
+const FOLLOWUPS_RESOLUTION_ROUTE_PATHS = new Set([
+  '/overdue-mandatory',
+  '/mandatory-continuation',
+  '/lifecycle-extension-limit',
+  '/today-utilization',
+  '/alerts',
+  '/users',
+  '/history',
+  '/bulk-extend',
+  '/:id/complete',
+  '/:id/snooze',
+  '/',
+]);
+
+/** Uses Express route match — most reliable once the router has bound the request. */
+const matchesExpressResolvedRoute = (req: Request, method: string): boolean => {
+  const routePath = req.route?.path;
+  if (!routePath || typeof routePath !== 'string') {
+    return false;
+  }
+
+  const base = (req.baseUrl || '').toLowerCase();
+  const isFollowupsMount = base === '/api/followups' || base.endsWith('/followups');
+  const isHolidaysMount = base === '/api/holidays' || base.endsWith('/holidays');
+
+  if (isFollowupsMount) {
+    if (routePath === '/bulk-extend') {
+      return method === 'POST';
+    }
+    if (routePath === '/') {
+      return method === 'POST';
+    }
+    if (routePath === '/:id/complete') {
+      return method === 'POST';
+    }
+    if (routePath === '/:id/snooze') {
+      return method === 'PATCH' || method === 'POST';
+    }
+    return FOLLOWUPS_RESOLUTION_ROUTE_PATHS.has(routePath);
+  }
+
+  if (isHolidaysMount && routePath === '/weekly-off') {
+    return true;
+  }
+
+  return false;
+};
+
 const matchesRawResolutionMarker = (req: Request, method: string): boolean => {
   const raw = getRawRequestPath(req);
 
-  if (raw.includes('/followups/bulk-extend')) {
-    return method === 'POST';
+  if (method === 'POST' && (raw.includes('bulk-extend') || raw.includes('bulk_extend'))) {
+    return true;
   }
 
   if (RAW_RESOLUTION_MARKERS.some((marker) => raw.includes(marker))) {
@@ -134,6 +182,10 @@ export const isFollowUpLockResolutionPath = (req: Request): boolean => {
   if (req.method === 'OPTIONS') return true;
 
   const method = (req.method || 'GET').toUpperCase();
+
+  if (matchesExpressResolvedRoute(req, method)) {
+    return true;
+  }
 
   if (matchesRawResolutionMarker(req, method)) {
     return true;

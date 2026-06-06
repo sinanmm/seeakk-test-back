@@ -25,6 +25,27 @@ export const invalidateOverdueFollowUpCache = (userId: string): void => {
 
 export const isOverdueFollowUpExemptPath = (req: Request): boolean => isOverdueFollowUpResolutionPath(req);
 
+const isBulkExtendResolutionRequest = (req: Request): boolean => {
+  if ((req.method || 'GET').toUpperCase() !== 'POST') {
+    return false;
+  }
+
+  const haystack = [
+    req.originalUrl,
+    req.url,
+    req.path,
+    req.baseUrl,
+    req.route?.path,
+    `${req.baseUrl || ''}${req.path || ''}`,
+    `${req.baseUrl || ''}${req.route?.path || ''}`,
+  ]
+    .filter((value): value is string => typeof value === 'string' && value.length > 0)
+    .join('|')
+    .toLowerCase();
+
+  return haystack.includes('bulk-extend') || haystack.includes('bulk_extend');
+};
+
 const logResolutionPathAllowed = (req: Request, endpoint: string): void => {
   logger.info('Follow-up lock: overdue resolution path allowed', {
     middlewareName: 'enforceOverdueFollowUp',
@@ -47,7 +68,7 @@ export const enforceOverdueFollowUp = async (
 
   if (!req.user?.id) return next();
 
-  if (isOverdueFollowUpExemptPath(req)) {
+  if (isBulkExtendResolutionRequest(req) || isOverdueFollowUpExemptPath(req)) {
     logResolutionPathAllowed(req, endpoint);
     return next();
   }

@@ -58,6 +58,29 @@ test('allows mounted-router bulk extend path without full originalUrl', () => {
   assert.equal(isFollowUpLockResolutionPath(req), true);
 });
 
+test('allows bulk extend via express route binding on Render', () => {
+  const req = {
+    method: 'POST',
+    originalUrl: '/bulk-extend',
+    baseUrl: '/api/followups',
+    path: '/bulk-extend',
+    url: '/bulk-extend',
+    route: { path: '/bulk-extend' },
+  } as Request;
+  assert.equal(isFollowUpLockResolutionPath(req), true);
+});
+
+test('allows bulk extend when only mount-relative bulk-extend path is present', () => {
+  const req = {
+    method: 'POST',
+    originalUrl: '',
+    baseUrl: '',
+    path: 'bulk-extend',
+    url: 'bulk-extend',
+  } as Request;
+  assert.equal(isFollowUpLockResolutionPath(req), true);
+});
+
 test('allows mounted-router weekly-off path without full originalUrl', () => {
   const req = {
     method: 'GET',
