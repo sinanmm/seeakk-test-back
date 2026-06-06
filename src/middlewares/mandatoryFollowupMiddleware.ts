@@ -2,11 +2,16 @@ import { Request, Response, NextFunction } from 'express';
 import { getMandatoryFollowUpSessionState } from '../services/User/mandatoryFollowupContinuation.service';
 import { resolveWorkspaceIdForUser } from '../utils/workspaceContext';
 import { normalizeRequestApiPath } from '../utils/requestApiPath';
+import {
+  describeFollowUpUnlockCondition,
+  isFollowUpLockResolutionPath,
+} from '../utils/followUpLockExemptPaths';
 import logger from '../utils/logger';
 
 type MandatoryCacheEntry = {
   required: boolean;
   count: number;
+  leadIds: string[];
   expiresAt: number;
 };
 
@@ -18,31 +23,7 @@ export const invalidateMandatoryFollowUpCache = (userId: string): void => {
 };
 
 /** Routes that must stay reachable while mandatory continuation is pending. */
-export const isMandatoryFollowUpExemptPath = (req: Request): boolean => {
-  if (req.method === 'OPTIONS') return true;
-
-  const path = normalizeRequestApiPath(req);
-
-  const exemptPrefixes = [
-    '/api/auth/me',
-    '/api/auth/logout',
-    '/api/auth/refresh',
-    '/api/followups/mandatory-continuation',
-    '/api/followups/users',
-    '/api/followups/history',
-    // Allow UI/meta lookups while mandatory follow-up is pending.
-    // These endpoints are required to render assignee pickers/admin lists,
-    // so blocking them causes broken screens.
-    '/api/leads/meta/assignees',
-    '/api/admin/users',
-    '/api/attendance/today',
-    '/api/attendance/check-in',
-    '/api/attendance/settings',
-    '/api/attendance/networks',
-  ];
-
-  return exemptPrefixes.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
-};
+export const isMandatoryFollowUpExemptPath = (req: Request): boolean => isFollowUpLockResolutionPath(req);
 
 const readCachedMandatoryState = (userId: string): MandatoryCacheEntry | null => {
   const cached = mandatoryCache.get(userId);
@@ -54,10 +35,16 @@ const readCachedMandatoryState = (userId: string): MandatoryCacheEntry | null =>
   return cached;
 };
 
-const writeCachedMandatoryState = (userId: string, required: boolean, count: number): void => {
+const writeCachedMandatoryState = (
+  userId: string,
+  required: boolean,
+  count: number,
+  leadIds: string[],
+): void => {
   mandatoryCache.set(userId, {
     required,
     count,
+    leadIds,
     expiresAt: Date.now() + CACHE_TTL_MS,
   });
 };
@@ -77,29 +64,44 @@ export const enforceMandatoryFollowUpContinuation = async (
   const user = req.user as { id: string; isOnboarded?: boolean; workspaceId?: string | null };
   if (!user.isOnboarded) return next();
 
+  const blockedEndpoint = normalizeRequestApiPath(req);
+
   try {
     const workspaceId = await resolveWorkspaceIdForUser(user.id, user.workspaceId ?? null);
     if (!workspaceId) return next();
 
     let required: boolean;
     let count: number;
+    let leadIds: string[];
 
     const cached = readCachedMandatoryState(user.id);
     if (cached) {
       required = cached.required;
       count = cached.count;
+      leadIds = cached.leadIds;
     } else {
       const state = await getMandatoryFollowUpSessionState(workspaceId, { id: user.id });
       required = state.mandatoryFollowupRequired;
       count = state.mandatoryFollowupCount;
-      writeCachedMandatoryState(user.id, required, count);
+      leadIds = state.items.map((item) => item.leadId);
+      writeCachedMandatoryState(user.id, required, count, leadIds);
     }
 
     if (!required) return next();
 
+    const lockReason = 'MANDATORY_FOLLOWUP_REQUIRED';
+    logger.warn('Follow-up lock: access denied', {
+      lockReason,
+      userId: user.id,
+      blockedEndpoint,
+      mandatoryFollowupCount: count,
+      mandatoryFollowUpLeadIds: leadIds,
+      unlockCondition: describeFollowUpUnlockCondition(lockReason),
+    });
+
     return res.status(423).json({
       success: false,
-      errorCode: 'MANDATORY_FOLLOWUP_REQUIRED',
+      errorCode: lockReason,
       mandatoryFollowupRequired: true,
       mandatoryFollowupCount: count,
       message:
@@ -108,7 +110,7 @@ export const enforceMandatoryFollowUpContinuation = async (
   } catch (error: any) {
     logger.warn('Mandatory follow-up enforcement check failed; allowing request', {
       userId: user.id,
-      path: req.originalUrl,
+      blockedEndpoint,
       message: error?.message,
     });
     return next();

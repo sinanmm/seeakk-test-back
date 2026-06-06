@@ -1,0 +1,35 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import type { Request } from 'express';
+import { isFollowUpLockResolutionPath } from './followUpLockExemptPaths';
+
+const mockReq = (method: string, originalUrl: string): Request =>
+  ({
+    method,
+    originalUrl,
+    baseUrl: '',
+    path: originalUrl.split('?')[0],
+    url: originalUrl.split('?')[0],
+  }) as Request;
+
+test('allows mandatory continuation read/write', () => {
+  assert.equal(isFollowUpLockResolutionPath(mockReq('GET', '/api/followups/mandatory-continuation')), true);
+  assert.equal(isFollowUpLockResolutionPath(mockReq('POST', '/api/followups/mandatory-continuation')), true);
+});
+
+test('allows overdue mandatory status and weekly-off lookup', () => {
+  assert.equal(isFollowUpLockResolutionPath(mockReq('GET', '/api/followups/overdue-mandatory')), true);
+  assert.equal(isFollowUpLockResolutionPath(mockReq('GET', '/api/holidays/weekly-off')), true);
+});
+
+test('allows complete, extend, create, and bulk reschedule endpoints', () => {
+  assert.equal(isFollowUpLockResolutionPath(mockReq('POST', '/api/followups/fu-1/complete')), true);
+  assert.equal(isFollowUpLockResolutionPath(mockReq('PATCH', '/api/followups/fu-1/snooze')), true);
+  assert.equal(isFollowUpLockResolutionPath(mockReq('POST', '/api/followups')), true);
+  assert.equal(isFollowUpLockResolutionPath(mockReq('POST', '/api/followups/bulk-extend')), true);
+});
+
+test('blocks unrelated dashboard routes', () => {
+  assert.equal(isFollowUpLockResolutionPath(mockReq('GET', '/api/dashboard/summary')), false);
+  assert.equal(isFollowUpLockResolutionPath(mockReq('GET', '/api/leads')), false);
+});

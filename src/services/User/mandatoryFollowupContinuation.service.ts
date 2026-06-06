@@ -334,6 +334,9 @@ export const saveMandatoryFollowUpContinuation = async (
 
   invalidateMandatoryFollowUpCache(actor.id);
 
+  const { invalidateOverdueFollowUpCache } = await import('../../middlewares/overdueFollowupMiddleware');
+  invalidateOverdueFollowUpCache(actor.id);
+
   await auditService.log({
     userId: actor.id,
     workspaceId,

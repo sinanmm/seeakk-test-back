@@ -1494,6 +1494,9 @@ export const completeFollowUp = async (
   const { invalidateOverdueFollowUpCache } = await import('../../middlewares/overdueFollowupMiddleware');
   invalidateOverdueFollowUpCache(existing.userId);
 
+  const { invalidateMandatoryFollowUpCache } = await import('../../middlewares/mandatoryFollowupMiddleware');
+  invalidateMandatoryFollowUpCache(existing.userId);
+
   logger.info('[OverdueFollowUp] after complete', {
     followUpId: existing.id,
     userId: existing.userId,
@@ -1707,6 +1710,9 @@ export const snoozeFollowUp = async (
 
   const { invalidateOverdueFollowUpCache } = await import('../../middlewares/overdueFollowupMiddleware');
   invalidateOverdueFollowUpCache(existing.userId);
+
+  const { invalidateMandatoryFollowUpCache } = await import('../../middlewares/mandatoryFollowupMiddleware');
+  invalidateMandatoryFollowUpCache(existing.userId);
 
   logger.info('[OverdueFollowUp] after extend', {
     followUpId: existing.id,
@@ -1940,12 +1946,16 @@ export const bulkExtendFollowUps = async (
   });
 
   const { invalidateOverdueFollowUpCache } = await import('../../middlewares/overdueFollowupMiddleware');
+  const { invalidateMandatoryFollowUpCache } = await import('../../middlewares/mandatoryFollowupMiddleware');
   const affectedUserIds = new Set<string>(
     followUps
       .filter((row: any) => successIds.includes(row.id))
       .map((row: any) => String(row.userId)),
   );
-  affectedUserIds.forEach((userId) => invalidateOverdueFollowUpCache(userId));
+  affectedUserIds.forEach((userId) => {
+    invalidateOverdueFollowUpCache(userId);
+    invalidateMandatoryFollowUpCache(userId);
+  });
 
   let message = `Successfully reassigned ${successIds.length} follow-up(s).`;
   if (lifecycleBlockedIds.length > 0) {

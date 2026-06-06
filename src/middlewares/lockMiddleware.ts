@@ -1,8 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
 import logger from '../utils/logger';
 import { normalizeRequestApiPath } from '../utils/requestApiPath';
+import { describeFollowUpUnlockCondition, isFollowUpLockResolutionPath } from '../utils/followUpLockExemptPaths';
 
 const isAccountLockExemptPath = (req: Request): boolean => {
+  if (isFollowUpLockResolutionPath(req)) return true;
+
   if (req.method === 'OPTIONS') return true;
 
   const path = normalizeRequestApiPath(req);
@@ -95,10 +98,12 @@ export const checkUserLock = async (req: Request, res: Response, next: NextFunct
         userId: req.user.id,
         isLocked: true,
         lockReason,
+        blockedEndpoint: normalizeRequestApiPath(req),
         activeTargetAssignment: assignment?.id || null,
         activeTargetCycle: activeTargetCycle?.id || null,
         manualOverride,
-        lockSource
+        lockSource,
+        unlockCondition: describeFollowUpUnlockCondition('ACCOUNT_LOCKED'),
       });
       return res.status(423).json({
         success: false,
