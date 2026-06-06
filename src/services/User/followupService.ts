@@ -1823,13 +1823,30 @@ export const bulkExtendFollowUps = async (
     }
   };
 
+  const targetDateStart = moment.tz(input.newFollowupDate, timeZone).startOf('day').toDate();
+  const formattedTargetDate = moment.tz(input.newFollowupDate, timeZone).format('DD/MM/YYYY');
+  const capacityLimitEnabled =
+    Boolean(settings?.isActive && settings?.dailyLimitEnabled && settings?.capacityValidationEnabled);
+  const primaryUserId = Object.keys(followUpsByUser)[0];
+  let targetAvailableSlots = 0;
+
+  if (capacityLimitEnabled && primaryUserId) {
+    const existingOnTarget = await getUserFollowUpCountOnDate(
+      workspaceId,
+      primaryUserId,
+      targetDateStart,
+      undefined,
+    );
+    targetAvailableSlots = Math.max(0, (settings?.dailyLimitCount ?? 10) - existingOnTarget);
+  }
+
   for (const userId of Object.keys(followUpsByUser)) {
     const userFollowUps = followUpsByUser[userId];
-    let currentDate = moment.tz(input.newFollowupDate, timeZone).startOf('day').toDate();
+    let currentDate = targetDateStart;
     let unassigned = [...userFollowUps];
 
     while (unassigned.length > 0) {
-      if (!settings || !settings.isActive || !settings.dailyLimitEnabled || !settings.capacityValidationEnabled) {
+      if (!capacityLimitEnabled) {
         for (const f of unassigned) {
           const allowed = await validateLifecycleForDate(f, currentDate);
           if (!allowed) continue;
@@ -1840,18 +1857,37 @@ export const bulkExtendFollowUps = async (
       }
 
       const existingCount = await getUserFollowUpCountOnDate(workspaceId, userId, currentDate, undefined);
-      const capacity = Math.max(0, settings.dailyLimitCount - existingCount);
+      const capacity = Math.max(0, (settings?.dailyLimitCount ?? 10) - existingCount);
 
-      if (capacity > 0) {
-        const toAllocate = unassigned.slice(0, capacity);
-        for (const f of toAllocate) {
-          const allowed = await validateLifecycleForDate(f, currentDate);
-          if (!allowed) continue;
-          allocations.push({ followUpId: f.id, newDate: currentDate });
-          successIds.push(f.id);
+      if (capacity === 0) {
+        if (input.autoDistribute) {
+          currentDate = moment(currentDate).add(1, 'day').toDate();
+          continue;
         }
-        unassigned = unassigned.slice(capacity);
+        for (const f of unassigned) {
+          blockedIds.push(f.id);
+        }
+        break;
       }
+
+      const stillUnassigned: typeof unassigned = [];
+      let allocatedOnDate = 0;
+
+      for (const f of unassigned) {
+        const allowed = await validateLifecycleForDate(f, currentDate);
+        if (!allowed) {
+          continue;
+        }
+        if (allocatedOnDate >= capacity) {
+          stillUnassigned.push(f);
+          continue;
+        }
+        allocations.push({ followUpId: f.id, newDate: currentDate });
+        successIds.push(f.id);
+        allocatedOnDate += 1;
+      }
+
+      unassigned = stillUnassigned;
 
       if (unassigned.length > 0) {
         if (input.autoDistribute) {
@@ -1866,84 +1902,86 @@ export const bulkExtendFollowUps = async (
     }
   }
 
-  if (allocations.length === 0) {
-    throw createServiceError('Selected date has capacity for only 0 additional follow-ups. All selected follow-ups could not be reassigned.', 422);
-  }
+  const selectedCount = input.followUpIds.length;
+  const movedCount = successIds.length;
+  const remainingCount = blockedIds.length;
 
-  await prisma.$transaction(async (tx) => {
-    const snoozedAt = new Date();
-    for (const alloc of allocations) {
-      const orig = followUps.find((f: any) => f.id === alloc.followUpId)!;
-      const overdueUpdate = buildExtensionOverdueUpdate(
-        orig,
-        orig.scheduledAt,
-        alloc.newDate,
-        snoozedAt,
-        timeZone,
-      );
-
-      await (tx as any).followUp.update({
-        where: { id: alloc.followUpId },
-        data: {
-          scheduledAt: alloc.newDate,
-          status: FOLLOWUP_PENDING,
-          recentDescription: input.recentDescription || null,
-          previousFollowupDate: orig.scheduledAt,
-          newFollowupDate: alloc.newDate,
-          snoozedBy: actor.id,
+  if (allocations.length > 0) {
+    await prisma.$transaction(async (tx) => {
+      const snoozedAt = new Date();
+      for (const alloc of allocations) {
+        const orig = followUps.find((f: any) => f.id === alloc.followUpId)!;
+        const overdueUpdate = buildExtensionOverdueUpdate(
+          orig,
+          orig.scheduledAt,
+          alloc.newDate,
           snoozedAt,
-          reminderActionType: 'BULK_EXTEND',
-          extensionReasonId: input.extensionReasonId || null,
-          extensionReasonName,
-          ...overdueUpdate,
-        },
-      });
+          timeZone,
+        );
 
-      await tx.followupActivityLog.create({
+        await (tx as any).followUp.update({
+          where: { id: alloc.followUpId },
+          data: {
+            scheduledAt: alloc.newDate,
+            status: FOLLOWUP_PENDING,
+            recentDescription: input.recentDescription || null,
+            previousFollowupDate: orig.scheduledAt,
+            newFollowupDate: alloc.newDate,
+            snoozedBy: actor.id,
+            snoozedAt,
+            reminderActionType: 'BULK_EXTEND',
+            extensionReasonId: input.extensionReasonId || null,
+            extensionReasonName,
+            ...overdueUpdate,
+          },
+        });
+
+        await tx.followupActivityLog.create({
+          data: {
+            followUpId: alloc.followUpId,
+            workspaceId,
+            previousFollowupDate: orig.scheduledAt,
+            newFollowupDate: alloc.newDate,
+            snoozedById: actor.id,
+            recentDescription: input.recentDescription || 'Bulk Extension',
+            previousDescription: orig.recentDescription || orig.description || null,
+            reminderActionType: 'BULK_EXTEND',
+            extensionReasonId: input.extensionReasonId || null,
+            extensionReasonName,
+          },
+        });
+      }
+
+      await (tx as any).bulkFollowUpExtension.create({
         data: {
-          followUpId: alloc.followUpId,
           workspaceId,
-          previousFollowupDate: orig.scheduledAt,
-          newFollowupDate: alloc.newDate,
-          snoozedById: actor.id,
-          recentDescription: input.recentDescription || 'Bulk Extension',
-          previousDescription: orig.recentDescription || orig.description || null,
-          reminderActionType: 'BULK_EXTEND',
+          userId: actor.id,
+          targetDate: input.newFollowupDate,
           extensionReasonId: input.extensionReasonId || null,
           extensionReasonName,
-        },
-      });
-    }
-
-    await (tx as any).bulkFollowUpExtension.create({
-      data: {
-        workspaceId,
-        userId: actor.id,
-        targetDate: input.newFollowupDate,
-        extensionReasonId: input.extensionReasonId || null,
-        extensionReasonName,
-        customReason: input.recentDescription || null,
-        followupCount: allocations.length,
-        autoDistributed: !!input.autoDistribute,
-      },
-    });
-
-    await (tx as any).auditLog.create({
-      data: {
-        userId: actor.id,
-        workspaceId,
-        action: 'BULK_FOLLOWUP_EXTENDED',
-        entityType: 'BulkFollowUpExtension',
-        details: {
-          followUpIds: input.followUpIds,
-          successCount: successIds.length,
-          blockedCount: blockedIds.length,
-          targetDate: input.newFollowupDate,
+          customReason: input.recentDescription || null,
+          followupCount: allocations.length,
           autoDistributed: !!input.autoDistribute,
         },
-      },
+      });
+
+      await (tx as any).auditLog.create({
+        data: {
+          userId: actor.id,
+          workspaceId,
+          action: 'BULK_FOLLOWUP_EXTENDED',
+          entityType: 'BulkFollowUpExtension',
+          details: {
+            followUpIds: input.followUpIds,
+            successCount: successIds.length,
+            blockedCount: blockedIds.length,
+            targetDate: input.newFollowupDate,
+            autoDistributed: !!input.autoDistribute,
+          },
+        },
+      });
     });
-  });
+  }
 
   const { invalidateOverdueFollowUpCache } = await import('../../middlewares/overdueFollowupMiddleware');
   const { invalidateMandatoryFollowUpCache } = await import('../../middlewares/mandatoryFollowupMiddleware');
@@ -1957,25 +1995,34 @@ export const bulkExtendFollowUps = async (
     invalidateMandatoryFollowUpCache(userId);
   });
 
-  let message = `Successfully reassigned ${successIds.length} follow-up(s).`;
+  let message: string;
+  if (movedCount > 0 && remainingCount > 0) {
+    message = `${movedCount} follow-up(s) were successfully extended to ${formattedTargetDate}. ${remainingCount} follow-up(s) could not be extended because the selected date has reached its maximum capacity.`;
+  } else if (movedCount > 0) {
+    message = `${movedCount} follow-up(s) were successfully extended to ${formattedTargetDate}.`;
+  } else if (remainingCount > 0) {
+    message = `No follow-up(s) could be extended to ${formattedTargetDate} because the selected date has reached its maximum capacity.`;
+  } else {
+    message = 'No follow-up(s) could be extended for the selected date.';
+  }
+
   if (lifecycleBlockedIds.length > 0) {
     message += ` ${lifecycleBlockedIds.length} follow-up(s) exceeded lifecycle limits for their current stage.`;
-  }
-  if (blockedIds.length > 0) {
-    const originalTargetCapacity = settings?.dailyLimitCount ?? 10;
-    const initialTargetExisting = await getUserFollowUpCountOnDate(workspaceId, followUps[0].userId, input.newFollowupDate);
-    const targetCapacity = Math.max(0, originalTargetCapacity - initialTargetExisting);
-
-    message = `Selected date has capacity for only ${targetCapacity} additional follow-ups. ${blockedIds.length} follow-ups could not be reassigned.`;
   }
 
   return {
     success: true,
     message,
-    successCount: successIds.length,
-    blockedCount: blockedIds.length,
+    successCount: movedCount,
+    blockedCount: remainingCount,
     successIds,
     blockedIds,
+    selectedCount,
+    movedCount,
+    remainingCount,
+    availableSlots: targetAvailableSlots,
+    lifecycleBlockedCount: lifecycleBlockedIds.length,
+    targetDate: formattedTargetDate,
   };
 };
 
