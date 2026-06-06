@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import type { Request } from 'express';
-import { normalizeRequestApiPath } from './requestApiPath';
+import { collectNormalizedApiPathCandidates, normalizeRequestApiPath } from './requestApiPath';
 
 const mockReq = (parts: Partial<Request>): Request => parts as Request;
 
@@ -41,4 +41,16 @@ test('normalizeRequestApiPath prefers mounted followup path over mount-relative 
     url: '/bulk-extend',
   });
   assert.equal(normalizeRequestApiPath(req), '/api/followups/bulk-extend');
+});
+
+test('collectNormalizedApiPathCandidates returns all unique normalized paths', () => {
+  const req = mockReq({
+    originalUrl: '/bulk-extend',
+    baseUrl: '/api/followups',
+    path: '/bulk-extend',
+    url: '/bulk-extend',
+  });
+  const candidates = collectNormalizedApiPathCandidates(req);
+  assert.ok(candidates.includes('/api/followups/bulk-extend'));
+  assert.ok(candidates.includes('/api/bulk-extend'));
 });

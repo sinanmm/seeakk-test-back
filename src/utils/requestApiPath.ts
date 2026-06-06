@@ -27,7 +27,7 @@ const pathSpecificityScore = (path: string): number => {
   return score;
 };
 
-export const normalizeRequestApiPath = (req: Request): string => {
+export const collectNormalizedApiPathCandidates = (req: Request): string[] => {
   const candidates = [
     req.originalUrl?.split('?')[0],
     `${req.baseUrl || ''}${req.path || ''}`,
@@ -38,6 +38,12 @@ export const normalizeRequestApiPath = (req: Request): string => {
   const normalized = candidates
     .map(normalizeSinglePath)
     .filter((path) => path.startsWith('/api/'));
+
+  return [...new Set(normalized)];
+};
+
+export const normalizeRequestApiPath = (req: Request): string => {
+  const normalized = collectNormalizedApiPathCandidates(req);
 
   if (normalized.length === 0) {
     return '/api';

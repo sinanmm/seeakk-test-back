@@ -1,5 +1,5 @@
 import { Request } from 'express';
-import { normalizeRequestApiPath } from './requestApiPath';
+import { collectNormalizedApiPathCandidates, normalizeRequestApiPath } from './requestApiPath';
 
 /** Prefix routes that must stay reachable while follow-up locks are active. */
 export const FOLLOWUP_LOCK_RESOLUTION_PREFIXES = [
@@ -42,13 +42,25 @@ export const FOLLOWUP_LOCK_RESOLUTION_SUFFIXES = [
   '/followups/bulk-extend',
   '/bulk-extend',
   '/followups/users',
-  '/users',
   '/followups/history',
-  '/history',
   '/followup-extension-reasons/active',
   '/followup-extension-reasons',
   '/holidays/weekly-off',
   '/weekly-off',
+] as const;
+
+/** Raw URL markers for reverse-proxy / Render mount-relative paths. */
+const RAW_RESOLUTION_MARKERS = [
+  '/followups/overdue-mandatory',
+  '/followups/mandatory-continuation',
+  '/followups/lifecycle-extension-limit',
+  '/followups/today-utilization',
+  '/followups/alerts',
+  '/followups/users',
+  '/followups/history',
+  '/followups/bulk-extend',
+  '/followup-extension-reasons',
+  '/holidays/weekly-off',
 ] as const;
 
 type MethodPattern = {
@@ -84,17 +96,56 @@ const matchesResolutionMethodPattern = (path: string, method: string): boolean =
     ({ methods, pattern }) => methods.includes(method) && pattern.test(path),
   );
 
-export const isFollowUpLockResolutionPath = (req: Request): boolean => {
-  if (req.method === 'OPTIONS') return true;
+const pathMatchesResolution = (path: string, method: string): boolean =>
+  matchesResolutionPrefix(path) ||
+  matchesResolutionSuffix(path) ||
+  matchesResolutionMethodPattern(path, method);
 
-  const path = normalizeRequestApiPath(req);
-  const method = (req.method || 'GET').toUpperCase();
+const getRawRequestPath = (req: Request): string =>
+  `${req.originalUrl || ''}${req.url || ''}`.toLowerCase().split('?')[0];
 
-  if (matchesResolutionPrefix(path) || matchesResolutionSuffix(path)) {
+const matchesRawResolutionMarker = (req: Request, method: string): boolean => {
+  const raw = getRawRequestPath(req);
+
+  if (raw.includes('/followups/bulk-extend')) {
+    return method === 'POST';
+  }
+
+  if (RAW_RESOLUTION_MARKERS.some((marker) => raw.includes(marker))) {
     return true;
   }
 
-  return matchesResolutionMethodPattern(path, method);
+  if (method === 'POST' && /\/followups\/[^/?#]+\/complete(?:\/|$|\?)/.test(raw)) {
+    return true;
+  }
+
+  if (['PATCH', 'POST'].includes(method) && /\/followups\/[^/?#]+\/(?:snooze|extend)(?:\/|$|\?)/.test(raw)) {
+    return true;
+  }
+
+  if (method === 'POST' && /\/followups\/?(?:\?|$)/.test(raw) && !raw.includes('/bulk-extend')) {
+    return true;
+  }
+
+  return false;
+};
+
+export const isFollowUpLockResolutionPath = (req: Request): boolean => {
+  if (req.method === 'OPTIONS') return true;
+
+  const method = (req.method || 'GET').toUpperCase();
+
+  if (matchesRawResolutionMarker(req, method)) {
+    return true;
+  }
+
+  const paths = collectNormalizedApiPathCandidates(req);
+  if (paths.some((path) => pathMatchesResolution(path, method))) {
+    return true;
+  }
+
+  const primaryPath = normalizeRequestApiPath(req);
+  return pathMatchesResolution(primaryPath, method);
 };
 
 /** Overdue mandatory popup resolution paths (subset used by overdue lock bypass). */

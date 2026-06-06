@@ -47,7 +47,7 @@ test('allows mounted-router overdue mandatory path', () => {
   assert.equal(isFollowUpLockResolutionPath(req), true);
 });
 
-test('allows mounted-router bulk extend path without originalUrl', () => {
+test('allows mounted-router bulk extend path without full originalUrl', () => {
   const req = {
     method: 'POST',
     originalUrl: '/bulk-extend',
@@ -58,11 +58,35 @@ test('allows mounted-router bulk extend path without originalUrl', () => {
   assert.equal(isFollowUpLockResolutionPath(req), true);
 });
 
+test('allows mounted-router weekly-off path without full originalUrl', () => {
+  const req = {
+    method: 'GET',
+    originalUrl: '/weekly-off',
+    baseUrl: '/api/holidays',
+    path: '/weekly-off',
+    url: '/weekly-off',
+  } as Request;
+  assert.equal(isFollowUpLockResolutionPath(req), true);
+});
+
+test('allows mounted-router alerts path without full originalUrl', () => {
+  const req = {
+    method: 'GET',
+    originalUrl: '/alerts?minutesAhead=15&includePastMinutes=5',
+    baseUrl: '/api/followups',
+    path: '/alerts',
+    url: '/alerts?minutesAhead=15&includePastMinutes=5',
+  } as Request;
+  assert.equal(isFollowUpLockResolutionPath(req), true);
+});
+
 test('allows active extension reasons lookup during overdue resolution', () => {
   assert.equal(isFollowUpLockResolutionPath(mockReq('GET', '/api/followup-extension-reasons/active')), true);
 });
 
 test('blocks unrelated dashboard routes', () => {
   assert.equal(isFollowUpLockResolutionPath(mockReq('GET', '/api/dashboard/summary')), false);
+  assert.equal(isFollowUpLockResolutionPath(mockReq('GET', '/api/dashboard/revenue')), false);
   assert.equal(isFollowUpLockResolutionPath(mockReq('GET', '/api/leads')), false);
+  assert.equal(isFollowUpLockResolutionPath(mockReq('GET', '/api/lead-dynamics/active')), false);
 });
