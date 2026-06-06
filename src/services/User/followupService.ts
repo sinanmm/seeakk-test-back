@@ -901,6 +901,9 @@ export const getAdvancedCalendarSummary = async (
 
   const groupDate = (date: Date) => moment.tz(date, timeZone).format('YYYY-MM-DD');
 
+  const startOfRange = moment.tz(moment.utc(query.startDate).format('YYYY-MM-DD'), timeZone).startOf('day').toDate();
+  const endOfRange = moment.tz(moment.utc(query.endDate).format('YYYY-MM-DD'), timeZone).endOf('day').toDate();
+
   const [stages, leadsCreated, stageHistory, followUps] = await Promise.all([
     (prisma as any).leadStage.findMany({
       where: { workspaceId, deletedAt: null },
@@ -909,8 +912,10 @@ export const getAdvancedCalendarSummary = async (
     (prisma as any).lead.findMany({
       where: {
         workspaceId,
-        createdById: targetUserId,
-        createdAt: { gte: query.startDate, lte: query.endDate },
+        ...(targetUserId !== 'ALL'
+          ? { assignedToId: Array.isArray(targetUserId) ? { in: targetUserId } : targetUserId }
+          : {}),
+        createdAt: { gte: startOfRange, lte: endOfRange },
         ...leadAccessFilter,
       },
       select: {
@@ -922,9 +927,13 @@ export const getAdvancedCalendarSummary = async (
     (prisma as any).leadStageHistory.findMany({
       where: {
         workspaceId,
-        changedById: targetUserId,
-        changedAt: { gte: query.startDate, lte: query.endDate },
-        lead: leadAccessFilter,
+        lead: {
+          ...(targetUserId !== 'ALL'
+            ? { assignedToId: Array.isArray(targetUserId) ? { in: targetUserId } : targetUserId }
+            : {}),
+          ...leadAccessFilter,
+        },
+        changedAt: { gte: startOfRange, lte: endOfRange },
       },
       select: { changedAt: true, toStageId: true, toStageName: true },
     }),
@@ -1166,7 +1175,9 @@ export const getAdvancedCalendarDetails = async (
   if (query.type === 'LEADS_CREATED' || query.type === 'LEAD_STAGE_CREATED') {
     const where: any = {
       workspaceId,
-      createdById: targetUserId,
+      ...(targetUserId !== 'ALL'
+        ? { assignedToId: Array.isArray(targetUserId) ? { in: targetUserId } : targetUserId }
+        : {}),
       createdAt: { gte: startOfDay, lte: endOfDay },
       ...leadAccessFilter,
     };
@@ -1220,10 +1231,14 @@ export const getAdvancedCalendarDetails = async (
 
     const historyWhere = {
       workspaceId,
-      changedById: targetUserId,
+      lead: {
+        ...(targetUserId !== 'ALL'
+          ? { assignedToId: Array.isArray(targetUserId) ? { in: targetUserId } : targetUserId }
+          : {}),
+        ...leadAccessFilter,
+      },
       changedAt: { gte: startOfDay, lte: endOfDay },
       toStageId: query.stageId,
-      lead: leadAccessFilter,
     };
     const [historyTotal, historyRows] = await Promise.all([
       (prisma as any).leadStageHistory.count({ where: historyWhere }),
@@ -1287,7 +1302,9 @@ export const getAdvancedCalendarDetails = async (
 
     const where: any = {
       workspaceId,
-      userId: targetUserId,
+      ...(targetUserId !== 'ALL'
+        ? { userId: Array.isArray(targetUserId) ? { in: targetUserId } : targetUserId }
+        : {}),
       scheduledAt: { gte: startOfDay, lte: endOfDay },
       lead: leadAccessFilter,
     };
