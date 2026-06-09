@@ -45,8 +45,29 @@ export const listLockedStaff = async (workspaceId: string) => {
     orderBy: { targetLockedAt: 'desc' },
   });
 
-  return users.map((user: any) => {
+  return Promise.all(users.map(async (user: any) => {
     const latestPerf = user.targetAssignments[0]?.performances[0];
+    
+    // Check lock logs and unlock logs for badges
+    const latestLock = await db.targetLockLog.findFirst({
+      where: { userId: user.id, workspaceId },
+      orderBy: { lockedAt: 'desc' },
+    });
+    const latestUnlock = await db.targetUnlockLog.findFirst({
+      where: { userId: user.id, workspaceId },
+      orderBy: { unlockedAt: 'desc' },
+    });
+
+    const isEscalatedLock = latestLock?.reason?.includes('Escalated lock') ?? false;
+    const hasUsedSelfUnlock = await db.targetUnlockLog.findFirst({
+      where: {
+        userId: user.id,
+        unlockedById: user.id,
+        exemptPeriodId: latestLock?.lockPeriodId || latestLock?.periodId,
+      },
+    }).then(Boolean);
+    const unlockedBySystem = latestUnlock?.unlockedById === 'system';
+
     return {
       id: user.id,
       name: user.name,
@@ -61,8 +82,12 @@ export const listLockedStaff = async (workspaceId: string) => {
         ? Math.max(0, (latestPerf.targetCount || 0) - (latestPerf.achievedCount || 0))
         : 0,
       lastPeriodLabel: latestPerf?.period?.label || null,
+      isEscalatedLock,
+      hasUsedSelfUnlock,
+      unlockedBySystem,
+      lastUnlockType: latestUnlock?.reason === 'SELF_UNLOCK' ? 'SELF_UNLOCK' : (latestUnlock ? 'ADMIN' : null),
     };
-  });
+  }));
 };
 
 export const unlockTargetLockedUser = async (
@@ -83,10 +108,42 @@ export const unlockTargetLockedUser = async (
     throw Object.assign(new Error('User account is not locked.'), { statusCode: 409 });
   }
 
+  const latestLock = await db.targetLockLog.findFirst({
+    where: { userId, workspaceId },
+    orderBy: { lockedAt: 'desc' },
+    select: { periodId: true, lockPeriodId: true },
+  });
+
+  const exemptPeriodId = latestLock?.lockPeriodId || latestLock?.periodId || null;
+
   const actorIsSupervisor = Boolean(targetUser.supervisorId && targetUser.supervisorId === actor.id);
   const actorIsAuthorizedAdmin = hasUnlockPermission(actor.permissions);
+  const isSelfUnlockAttempt = actor.id === userId;
 
-  if (!actorIsSupervisor && !actorIsAuthorizedAdmin) {
+  let allowUnlock = actorIsSupervisor || actorIsAuthorizedAdmin;
+
+  if (isSelfUnlockAttempt && !allowUnlock) {
+    // Check if self unlock was already used for this period
+    const hasUsedSelfUnlock = await db.targetUnlockLog.findFirst({
+      where: {
+        userId,
+        unlockedById: userId,
+        exemptPeriodId,
+      },
+    });
+
+    if (!hasUsedSelfUnlock) {
+      allowUnlock = true;
+      reason = 'SELF_UNLOCK';
+    } else {
+      throw Object.assign(
+        new Error('You have already used your self-unlock for this target cycle. Please contact your supervisor.'),
+        { statusCode: 403, errorCode: 'SELF_UNLOCK_ALREADY_USED' }
+      );
+    }
+  }
+
+  if (!allowUnlock) {
     throw Object.assign(
       new Error('Only the assigned supervisor or an authorized admin can unlock this account.'),
       { statusCode: 403, errorCode: 'TARGET_UNLOCK_FORBIDDEN' },
@@ -97,14 +154,6 @@ export const unlockTargetLockedUser = async (
     where: { userId, workspaceId, isActive: true },
     select: { id: true },
   });
-
-  const latestLock = await db.targetLockLog.findFirst({
-    where: { userId, workspaceId },
-    orderBy: { lockedAt: 'desc' },
-    select: { periodId: true, lockPeriodId: true },
-  });
-
-  const exemptPeriodId = latestLock?.lockPeriodId || latestLock?.periodId || null;
 
   await unlockUser(userId, workspaceId, actor);
 

@@ -350,6 +350,20 @@ export const getTargetLockDisplayForUser = async (userId: string, workspaceId: s
   const achievedCount = latestPerf?.achievedCount || 0;
   const pendingTargetBalance = Math.max(0, targetCount - achievedCount);
 
+  // Check if self unlock is available
+  const currentLockPeriodId = user.targetLockLogs[0]?.lockPeriodId || user.targetLockLogs[0]?.periodId;
+  let canSelfUnlock = false;
+  if (currentLockPeriodId) {
+    const hasUsedSelfUnlock = await db.targetUnlockLog.findFirst({
+      where: {
+        userId,
+        unlockedById: userId,
+        exemptPeriodId: currentLockPeriodId,
+      },
+    });
+    canSelfUnlock = !hasUsedSelfUnlock;
+  }
+
   return {
     lockType: 'TARGET' as const,
     title: 'Your Account is Locked',
@@ -360,5 +374,6 @@ export const getTargetLockDisplayForUser = async (userId: string, workspaceId: s
     pendingTargetBalance,
     lockDate: user.targetLockedAt || user.targetLockLogs[0]?.lockedAt || null,
     lastPeriodLabel: latestPerf?.period?.label || null,
+    canSelfUnlock,
   };
 };
