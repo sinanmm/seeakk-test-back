@@ -30,7 +30,8 @@ WORKDIR /app
 # Copy package files and install only production dependencies
 COPY package*.json ./
 COPY prisma ./prisma/
-RUN npm ci --omit=dev
+# dotenv is imported at runtime by server.ts but listed under devDependencies locally
+RUN npm ci --omit=dev && npm install dotenv --no-save
 
 # Copy built artifacts from builder
 COPY --from=builder /app/dist ./dist
