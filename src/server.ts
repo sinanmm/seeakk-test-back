@@ -161,9 +161,18 @@ const startServer = async () => {
           console.error('[Guard] Failed to run target lock remediation:', guardError);
         }
         // Start background jobs
-        startFollowUpReminders();
-        startAttendanceJobs();
-        startTargetPerformanceJobs();
+        if (process.env.WORKER_ONLY === 'true') {
+          console.log('[Server] Running as WORKER ONLY.');
+          startFollowUpReminders();
+          startAttendanceJobs();
+          startTargetPerformanceJobs();
+        } else if (process.env.API_ONLY === 'true') {
+          console.log('[Server] Running as API ONLY (No background jobs).');
+        } else {
+          startFollowUpReminders();
+          startAttendanceJobs();
+          startTargetPerformanceJobs();
+        }
       })
       .catch((error) => {
         console.error('PostgreSQL initial connection failed. API is running in degraded mode:', error);
