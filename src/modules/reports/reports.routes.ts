@@ -1,8 +1,11 @@
 import { Router } from 'express';
 import { checkAnyPermission, protect } from '../../middlewares/authMiddleware';
 import * as reportsController from './reports.controller';
+import summaryReportsRoutes from './summary/summaryReports.routes';
 
 const router = Router();
+
+router.use('/summary', summaryReportsRoutes);
 
 router.post('/', protect, checkAnyPermission(['REPORTS_GENERATE', 'REPORTS_VIEW']), reportsController.createReport);
 router.get('/', protect, checkAnyPermission(['REPORTS_VIEW', 'REPORTS_GENERATE']), reportsController.listReports);
