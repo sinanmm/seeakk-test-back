@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { protect, checkAnyPermission } from '../../../middlewares/authMiddleware';
-import { getOverviewCardController, getTimelineController, getLeadsSummaryController, getFollowupsSummaryController, getExtensionsSummaryController, getStageMovementsSummaryController, getRevenueSummaryController, getAttendanceSummaryController, getTargetsSummaryController, getAuditSummaryController } from './summaryReports.controller';
+import { getOverviewCardController, getTimelineController, getLeadsSummaryController, getFollowupsSummaryController, getExtensionsSummaryController, getStageMovementsSummaryController, getRevenueSummaryController, getAttendanceSummaryController, getTargetsSummaryController, getAuditSummaryController, getLeadUpdatesController, getApprovalsSummaryController, getCompanySummaryController } from './summaryReports.controller';
 
 const router = Router();
 
@@ -17,5 +17,8 @@ router.get('/revenue', getRevenueSummaryController);
 router.get('/attendance', getAttendanceSummaryController);
 router.get('/targets', getTargetsSummaryController);
 router.get('/audit', getAuditSummaryController);
+router.get('/lead-updates', getLeadUpdatesController);
+router.get('/approvals', getApprovalsSummaryController);
+router.get('/company-summary', getCompanySummaryController);
 
 export default router;

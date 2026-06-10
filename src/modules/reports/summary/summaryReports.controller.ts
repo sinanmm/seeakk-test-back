@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { getOverviewCard, getTimeline, getLeadsSummary, getFollowupsSummary, getExtensionsSummary, getStageMovementsSummary, getRevenueSummary, getAttendanceSummary, getTargetsSummary, getAuditSummary } from './summaryReports.service';
+import { getOverviewCard, getTimeline, getLeadsSummary, getFollowupsSummary, getExtensionsSummary, getStageMovementsSummary, getRevenueSummary, getAttendanceSummary, getTargetsSummary, getAuditSummary, getLeadUpdates, getApprovalsSummary, getCompanySummary } from './summaryReports.service';
 
 export const getOverviewCardController = async (req: Request, res: Response) => {
   try {
@@ -90,6 +90,33 @@ export const getAuditSummaryController = async (req: Request, res: Response) => 
   try {
     const filters = { workspaceId: req.user?.workspaceId as string, ...req.query };
     res.json({ success: true, ...(await getAuditSummary(filters)) });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const getLeadUpdatesController = async (req: Request, res: Response) => {
+  try {
+    const filters = { workspaceId: req.user?.workspaceId as string, ...req.query };
+    res.json({ success: true, ...(await getLeadUpdates(filters)) });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const getApprovalsSummaryController = async (req: Request, res: Response) => {
+  try {
+    const filters = { workspaceId: req.user?.workspaceId as string, ...req.query };
+    res.json({ success: true, ...(await getApprovalsSummary(filters)) });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const getCompanySummaryController = async (req: Request, res: Response) => {
+  try {
+    const filters = { workspaceId: req.user?.workspaceId as string, ...req.query };
+    res.json({ success: true, ...(await getCompanySummary(filters)) });
   } catch (error: any) {
     res.status(500).json({ success: false, message: error.message });
   }

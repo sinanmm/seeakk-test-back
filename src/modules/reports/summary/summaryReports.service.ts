@@ -309,3 +309,107 @@ export const getAuditSummary = async (filters: SummaryFilterDto) => {
     pagination: { total, page, limit, totalPages: Math.ceil(total / limit) } 
   };
 };
+
+export const getLeadUpdates = async (filters: SummaryFilterDto) => {
+  const page = Number(filters.page) || 1;
+  const limit = Number(filters.limit) || 20;
+
+  const where: any = { workspaceId: filters.workspaceId, action: 'LEAD_UPDATED' };
+  const dateFilter = getDateFilter(filters.startDate, filters.endDate);
+  if (dateFilter) where.createdAt = dateFilter;
+  const userFilter = getUserFilter(filters.userId);
+  if (userFilter) where.performedById = userFilter;
+
+  const updates = await db.leadActivity.findMany({
+    where,
+    include: {
+      lead: { select: { name: true } },
+      performedBy: { select: { name: true } },
+    },
+    orderBy: { createdAt: 'desc' },
+    skip: (page - 1) * limit,
+    take: limit,
+  });
+  const total = await db.leadActivity.count({ where });
+
+  return { 
+    data: updates.map((act: any) => ({ ...act, activityType: act.action, createdBy: act.performedBy })), 
+    pagination: { total, page, limit, totalPages: Math.ceil(total / limit) } 
+  };
+};
+
+export const getApprovalsSummary = async (filters: SummaryFilterDto) => {
+  const page = Number(filters.page) || 1;
+  const limit = Number(filters.limit) || 20;
+
+  const where: any = { workspaceId: filters.workspaceId };
+  // Only use dateFilter if we can match requestedAt/approvedAt
+  const dateFilter = getDateFilter(filters.startDate, filters.endDate);
+  if (dateFilter) where.createdAt = dateFilter;
+  const userFilter = getUserFilter(filters.userId);
+  if (userFilter) where.requestedById = userFilter;
+
+  // Assume LeadStageApproval is standard
+  const approvals = await db.leadStageApproval.findMany({
+    where,
+    include: {
+      requestedBy: { select: { name: true } },
+      approvedBy: { select: { name: true } },
+      lead: { select: { name: true } },
+    },
+    orderBy: { createdAt: 'desc' },
+    skip: (page - 1) * limit,
+    take: limit,
+  });
+  const total = await db.leadStageApproval.count({ where });
+
+  return { data: approvals, pagination: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+};
+
+export const getCompanySummary = async (filters: SummaryFilterDto) => {
+  const dateFilter = getDateFilter(filters.startDate, filters.endDate);
+  
+  const leadWhere: any = { workspaceId: filters.workspaceId, deletedAt: null };
+  if (dateFilter) leadWhere.createdAt = dateFilter;
+
+  const revenueWhere: any = { workspaceId: filters.workspaceId };
+  if (dateFilter) revenueWhere.createdAt = dateFilter;
+
+  // Group leads by User
+  const leadsByUser = await db.lead.groupBy({
+    by: ['createdById'],
+    where: leadWhere,
+    _count: { id: true },
+  });
+
+  // Group revenue by User
+  const revenueByUser = await db.revenueTransaction.groupBy({
+    by: ['userId'],
+    where: revenueWhere,
+    _sum: { amount: true },
+  });
+
+  // Fetch users details
+  const users = await db.user.findMany({
+    where: { workspaceId: filters.workspaceId },
+    select: { id: true, name: true, role: { select: { name: true } }, department: { select: { name: true } }, office: { select: { name: true } } },
+  });
+
+  const userStats = users.map((u: any) => {
+    const leads = leadsByUser.find((l: any) => l.createdById === u.id)?._count.id || 0;
+    const rev = revenueByUser.find((r: any) => r.userId === u.id)?._sum.amount || 0;
+    return {
+      userId: u.id,
+      name: u.name,
+      role: u.role?.name || '-',
+      department: u.department?.name || '-',
+      branch: u.office?.name || '-',
+      leadsCreated: leads,
+      revenueGenerated: rev,
+    };
+  });
+
+  return {
+    userStats: userStats.sort((a: any, b: any) => b.revenueGenerated - a.revenueGenerated),
+  };
+};
