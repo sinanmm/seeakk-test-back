@@ -51,6 +51,27 @@ export const globalLimiter = rateLimit({
   },
 });
 
+export const passwordResetLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  store: getStore('rl:pwreset:'),
+  handler: (req: Request, res: Response, next: NextFunction, options: any) => {
+    logger.warn('Password reset rate limit exceeded', {
+      ip: req.ip,
+      action: 'rate_limit_password_reset_block',
+    });
+    const retryAfterSeconds = Math.max(1, Math.ceil((options.windowMs || 15 * 60 * 1000) / 1000));
+    res.status(options.statusCode).json({
+      success: false,
+      code: 'PASSWORD_RESET_RATE_LIMITED',
+      message: 'Too many password reset requests from this IP, please try again after 15 minutes.',
+      retryAfterSeconds,
+    });
+  },
+});
+
 export const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 10,

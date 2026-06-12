@@ -340,6 +340,32 @@ export const sendPasswordResetEmail = async (email: string, name: string | null 
   );
 };
 
+/** Link to the React reset page (self-service forgot password), unlike buildPasswordResetUrl which targets the backend HTML page. */
+export const buildForgotPasswordPageUrl = (token: string): string => {
+  const frontendUrl = getPublicFrontendUrl();
+  return `${frontendUrl}/reset-password?token=${encodeURIComponent(token)}`;
+};
+
+export const sendForgotPasswordEmail = async (
+  email: string,
+  name: string | null | undefined,
+  token: string,
+  expiresInMinutes: number,
+): Promise<boolean> => {
+  const resetLink = buildForgotPasswordPageUrl(token);
+  const greeting = name ? `Hi ${name},` : 'Hi,';
+  return sendOrLogEmail(
+    email,
+    'Reset your Seeakk password',
+    `<h2>Reset your password</h2>
+     <p>${greeting}</p>
+     <p>We received a request to reset the password for your Seeakk account. Click the button below to choose a new password.</p>
+     <p><a href="${resetLink}" style="display:inline-block;background:#10b981;color:#ffffff;text-decoration:none;padding:10px 18px;border-radius:8px;">Reset Password</a></p>
+     <p>This link expires in ${expiresInMinutes} minutes and can only be used once.</p>
+     <p>If you did not request a password reset, you can safely ignore this email — your password will not change.</p>`
+  );
+};
+
 export const sendInvitationEmail = async (
   email: string,
   input: {
