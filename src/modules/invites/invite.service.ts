@@ -352,6 +352,14 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
 
       await deps.repository.updateInviteForResend(inviteId, tokenHash, expiresAt);
 
+      const { emailDelivered, deliveryErrorMessage } = await sendInvitationBestEffort(invite.user.email, {
+        recipientName: invite.user.name || invite.user.email,
+        workspaceName: workspace.companyName,
+        inviterName: actor.name || actor.id,
+        inviteToken: rawToken,
+        expiresAt,
+      });
+
       await deps.audit.log({
         userId: actor.id,
         workspaceId,
@@ -367,9 +375,9 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
       });
 
       return {
-        message: ACCESS_LINK_CLIPBOARD_MESSAGE,
-        delivery: 'CLIPBOARD',
-        deliveryErrorMessage: null,
+        message: emailDelivered ? 'Invitation email sent successfully.' : INVITE_RESENT_MANUAL_MESSAGE,
+        delivery: emailDelivered ? 'EMAIL' : 'CLIPBOARD',
+        deliveryErrorMessage,
         inviteLink: buildInviteLink(rawToken, context),
       };
     },
@@ -458,6 +466,14 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
         createdAt = invite.createdAt;
       }
 
+      const { emailDelivered, deliveryErrorMessage } = await sendInvitationBestEffort(user.email, {
+        recipientName: user.name || user.email,
+        workspaceName: workspace.companyName,
+        inviterName: actor.name || actor.id,
+        inviteToken: rawToken,
+        expiresAt,
+      });
+
       await deps.audit.log({
         userId: actor.id,
         workspaceId,
@@ -475,7 +491,7 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
       });
 
       return {
-        message: ACCESS_LINK_CLIPBOARD_MESSAGE,
+        message: emailDelivered ? 'Invitation email sent successfully.' : ACCESS_LINK_CLIPBOARD_MESSAGE,
         invite: {
           id: inviteId,
           status: 'PENDING',
@@ -483,8 +499,8 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
           createdAt: createdAt.toISOString(),
         },
         user: toResponseUser(user),
-        delivery: 'CLIPBOARD',
-        deliveryErrorMessage: null,
+        delivery: emailDelivered ? 'EMAIL' : 'CLIPBOARD',
+        deliveryErrorMessage,
         inviteLink: buildInviteLink(rawToken, context),
       };
     },
