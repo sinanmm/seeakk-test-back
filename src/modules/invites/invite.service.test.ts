@@ -240,50 +240,131 @@ test('acceptInvite hashes password, activates user, and marks invite as used', a
   assert.equal(auditLogs[auditLogs.length - 1].action, 'USER_INVITE_ACCEPTED');
 });
 
-test('sendInviteToUser reprovisions active accounts and returns a clipboard access link', async () => {
+const sendInviteRepository = (onReprovision?: () => void) => ({
+  ...baseRepository,
+  findInvitableUserById: async () => ({
+    id: 'user_1',
+    name: 'Active User',
+    email: 'active@example.com',
+    workspaceId: 'ws_1',
+    password: '$2a$12$hash',
+    isActive: true,
+    isEmailVerified: true,
+    isOnboarded: true,
+    role: { id: 'role_1', name: 'manager' },
+  }),
+  reprovisionUserForInvite: async () => {
+    onReprovision?.();
+    return {
+      id: 'user_1',
+      name: 'Active User',
+      email: 'active@example.com',
+      workspaceId: 'ws_1',
+      password: null,
+      isActive: true,
+      isEmailVerified: true,
+      isOnboarded: false,
+      role: { id: 'role_1', name: 'manager' },
+    };
+  },
+  findLatestInviteForUser: async () => null,
+  createInviteForUser: async () => ({
+    id: 'invite_2',
+    createdAt: new Date('2026-04-15T10:00:00.000Z'),
+    expiresAt: new Date('2026-04-16T10:00:00.000Z'),
+    usedAt: null,
+  }),
+});
+
+test('sendInviteToUser reprovisions active accounts and emails the invite with a clipboard access link', async () => {
   let reprovisioned = false;
-  const { service, sentEmails } = buildService({
-    repository: {
-      ...baseRepository,
-      findInvitableUserById: async () => ({
-        id: 'user_1',
-        name: 'Active User',
-        email: 'active@example.com',
-        workspaceId: 'ws_1',
-        password: '$2a$12$hash',
-        isActive: true,
-        isEmailVerified: true,
-        isOnboarded: true,
-        role: { id: 'role_1', name: 'manager' },
-      }),
-      reprovisionUserForInvite: async () => {
-        reprovisioned = true;
-        return {
-          id: 'user_1',
-          name: 'Active User',
-          email: 'active@example.com',
-          workspaceId: 'ws_1',
-          password: null,
-          isActive: true,
-          isEmailVerified: true,
-          isOnboarded: false,
-          role: { id: 'role_1', name: 'manager' },
-        };
-      },
-      findLatestInviteForUser: async () => null,
-      createInviteForUser: async () => ({
-        id: 'invite_2',
-        createdAt: new Date('2026-04-15T10:00:00.000Z'),
-        expiresAt: new Date('2026-04-16T10:00:00.000Z'),
-        usedAt: null,
-      }),
-    },
+  const { service, sentEmails, auditLogs } = buildService({
+    repository: sendInviteRepository(() => {
+      reprovisioned = true;
+    }),
   });
 
   const result = await service.sendInviteToUser('user_1', { id: 'admin_1', workspaceId: 'ws_1', name: 'Admin User' });
 
   assert.equal(reprovisioned, true);
-  assert.equal(result.delivery, 'CLIPBOARD');
+  assert.equal(result.delivery, 'EMAIL');
   assert.match(result.inviteLink || '', /activate-account\?token=/);
-  assert.equal(sentEmails.length, 0);
+  assert.equal(sentEmails.length, 1);
+  assert.equal(sentEmails[0][0], 'active@example.com');
+  assert.equal(sentEmails[0][1].inviteToken, 'raw-token');
+  assert.equal(auditLogs[auditLogs.length - 1].details.delivery, 'EMAIL');
+});
+
+test('sendInviteToUser keeps the clipboard access link when email delivery fails', async () => {
+  const { service, auditLogs } = buildService({
+    repository: sendInviteRepository(),
+    sendInvitationEmail: async () => {
+      throw new Error('Email delivery failed. Check SMTP configuration.');
+    },
+  });
+
+  const result = await service.sendInviteToUser('user_1', { id: 'admin_1', workspaceId: 'ws_1', name: 'Admin User' });
+
+  assert.equal(result.delivery, 'CLIPBOARD');
+  assert.equal(result.message, 'Access link generated. Copy and share it with the user.');
+  assert.match(result.inviteLink || '', /activate-account\?token=/);
+  assert.match(result.deliveryErrorMessage || '', /Email delivery failed/);
+  assert.equal(auditLogs[auditLogs.length - 1].details.delivery, 'CLIPBOARD');
+});
+
+const resendRepository = {
+  ...baseRepository,
+  findInviteById: async () => ({
+    id: 'invite_1',
+    workspaceId: 'ws_1',
+    expiresAt: new Date('2026-04-16T10:00:00.000Z'),
+    usedAt: null,
+    createdAt: new Date('2026-04-15T10:00:00.000Z'),
+    user: {
+      id: 'user_1',
+      name: 'Invited User',
+      email: 'invitee@example.com',
+      workspaceId: 'ws_1',
+      password: null,
+      isActive: false,
+      isEmailVerified: false,
+      isOnboarded: false,
+      role: { id: 'role_1', name: 'manager' },
+      workspace: { id: 'ws_1', companyName: 'Acme' },
+    },
+  }),
+  updateInviteForResend: async () => undefined,
+};
+
+test('resendInvite refreshes the token and emails the invite with a clipboard access link', async () => {
+  const { service, sentEmails, auditLogs } = buildService({ repository: resendRepository });
+
+  const result = await service.resendInvite('invite_1', { id: 'admin_1', workspaceId: 'ws_1', name: 'Admin User' });
+
+  assert.equal(result.delivery, 'EMAIL');
+  assert.match(result.inviteLink || '', /activate-account\?token=/);
+  assert.equal(sentEmails.length, 1);
+  assert.equal(sentEmails[0][0], 'invitee@example.com');
+  assert.equal(sentEmails[0][1].inviteToken, 'raw-token');
+  assert.equal(auditLogs[auditLogs.length - 1].details.delivery, 'EMAIL');
+});
+
+test('resendInvite keeps the clipboard access link when email delivery fails', async () => {
+  const { service, auditLogs } = buildService({
+    repository: resendRepository,
+    sendInvitationEmail: async () => {
+      throw new Error('Email delivery failed. Check SMTP configuration.');
+    },
+  });
+
+  const result = await service.resendInvite('invite_1', { id: 'admin_1', workspaceId: 'ws_1', name: 'Admin User' });
+
+  assert.equal(result.delivery, 'CLIPBOARD');
+  assert.equal(
+    result.message,
+    'Invite refreshed, but email delivery is unavailable. Share the invite link manually.',
+  );
+  assert.match(result.inviteLink || '', /activate-account\?token=/);
+  assert.match(result.deliveryErrorMessage || '', /Email delivery failed/);
+  assert.equal(auditLogs[auditLogs.length - 1].details.delivery, 'CLIPBOARD');
 });

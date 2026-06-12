@@ -368,7 +368,7 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
         entityId: inviteId,
         details: {
           expiresAt: expiresAt.toISOString(),
-          delivery: 'CLIPBOARD',
+          delivery: emailDelivered ? 'EMAIL' : 'CLIPBOARD',
         },
         ipAddress: context?.ipAddress,
         userAgent: context?.userAgent,
@@ -484,7 +484,7 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
           inviteeUserId: user.id,
           inviteeEmail: user.email,
           expiresAt: expiresAt.toISOString(),
-          delivery: 'CLIPBOARD',
+          delivery: emailDelivered ? 'EMAIL' : 'CLIPBOARD',
         },
         ipAddress: context?.ipAddress,
         userAgent: context?.userAgent,
