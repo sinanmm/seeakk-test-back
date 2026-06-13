@@ -306,22 +306,38 @@ const assertReopenPermission = async (actor: Actor): Promise<void> => {
 
 /** Exported for dashboard / analytics so KPIs match the same lead visibility as list APIs. */
 export const buildAccessWhere = async (workspaceId: string, actor: Actor): Promise<any> => {
+  const mode = await resolveLeadVisibilityMode(workspaceId, actor);
+
+  if (mode === 'all') {
+    return {};
+  }
+
   const visibleUserScope = await resolveVisibleLeadUserScope(workspaceId, actor);
 
   if (visibleUserScope === 'ALL') {
     return {};
   }
 
-  if (visibleUserScope.length > 0) {
+  if (visibleUserScope.length === 0) {
+    throw createServiceError('Access denied. You need lead view permissions to access leads.', 403);
+  }
+
+  // Own scope: primary filter is assignee; include legacy unassigned rows the user created.
+  if (mode === 'own') {
     return {
       OR: [
         { assignedToId: { in: visibleUserScope } },
-        { createdById: { in: visibleUserScope } },
+        { assignedToId: null, createdById: { in: visibleUserScope } },
       ],
     };
   }
 
-  throw createServiceError('Access denied. You need lead view permissions to access leads.', 403);
+  return {
+    OR: [
+      { assignedToId: { in: visibleUserScope } },
+      { createdById: { in: visibleUserScope } },
+    ],
+  };
 };
 
 const buildClosedWhere = async (workspaceId: string, actor: Actor, query: ClosedLeadQueryInput) => {

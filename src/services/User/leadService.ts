@@ -1122,8 +1122,9 @@ export const createLead = async (
 
   await findDuplicateLead(workspaceId, input.email ?? null, input.phone ?? null);
 
-  ensureAssignmentAllowed(actor, input.assignedToId);
-  const assignedToId = await resolveAssignedUserId(workspaceId, input.assignedToId);
+  const requestedAssignee = input.assignedToId !== undefined ? input.assignedToId : actor.id;
+  ensureAssignmentAllowed(actor, requestedAssignee);
+  const assignedToId = await resolveAssignedUserId(workspaceId, requestedAssignee);
   const shouldAutoAssignStage = !input.skipAutoStageAssignment || Boolean(input.stageId);
   const stage = shouldAutoAssignStage
     ? (await resolveStage(workspaceId, input.stageId)) ||
