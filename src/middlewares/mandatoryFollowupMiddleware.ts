@@ -6,6 +6,7 @@ import {
   describeFollowUpUnlockCondition,
   isFollowUpLockResolutionPath,
 } from '../utils/followUpLockExemptPaths';
+import { applyCorsHeadersIfAllowed } from '../config/cors';
 import logger from '../utils/logger';
 
 type MandatoryCacheEntry = {
@@ -102,6 +103,7 @@ export const enforceMandatoryFollowUpContinuation = async (
       unlockCondition: describeFollowUpUnlockCondition(lockReason),
     });
 
+    applyCorsHeadersIfAllowed(req, res);
     return res.status(423).json({
       success: false,
       errorCode: lockReason,

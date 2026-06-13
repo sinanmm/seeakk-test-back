@@ -131,6 +131,46 @@ export const applyCorsHeadersIfAllowed = (req: Request, res: Response): void => 
 };
 
 /**
+ * Apply CORS headers at the start of every browser request so direct res.json()
+ * paths (auth 401/423, validation 422, etc.) always include ACAO before the body is sent.
+ */
+export const ensureCorsHeadersMiddleware = (req: Request, res: Response, next: NextFunction): void => {
+  applyCorsHeadersIfAllowed(req, res);
+  next();
+};
+
+const DEFAULT_REQUEST_TIMEOUT_MS = 25_000;
+
+/**
+ * Return 504 with CORS before Render/proxy closes idle connections (surfaced in browsers as
+ * ERR_CONNECTION_CLOSED + misleading "blocked by CORS policy").
+ */
+export const requestTimeoutMiddleware = (req: Request, res: Response, next: NextFunction): void => {
+  if (req.method === 'OPTIONS') {
+    next();
+    return;
+  }
+
+  const timeoutMs = Number.parseInt(String(process.env.REQUEST_TIMEOUT_MS || DEFAULT_REQUEST_TIMEOUT_MS), 10);
+  const budgetMs = Number.isFinite(timeoutMs) && timeoutMs > 0 ? timeoutMs : DEFAULT_REQUEST_TIMEOUT_MS;
+
+  const timer = setTimeout(() => {
+    if (res.headersSent) return;
+    applyCorsHeadersIfAllowed(req, res);
+    res.status(504).json({
+      success: false,
+      code: 'REQUEST_TIMEOUT',
+      message: 'Request timed out. Please retry.',
+    });
+  }, budgetMs);
+
+  const clear = (): void => clearTimeout(timer);
+  res.on('finish', clear);
+  res.on('close', clear);
+  next();
+};
+
+/**
  * Answer browser preflight (OPTIONS) before auth/rate-limit middleware runs.
  * Prevents "No Access-Control-Allow-Origin" when downstream handlers reject OPTIONS.
  */

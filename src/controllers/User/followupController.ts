@@ -34,10 +34,12 @@ import {
   saveMandatoryFollowUpContinuationSchema,
 } from '../../validations/mandatoryFollowupValidation';
 import { resolveWorkspaceIdForUser } from '../../utils/workspaceContext';
+import { applyCorsHeadersIfAllowed } from '../../config/cors';
 
 const requireWorkspace = (req: Request, res: Response): string | null => {
   const workspaceId = req.user?.workspaceId ?? null;
   if (!workspaceId) {
+    applyCorsHeadersIfAllowed(req, res);
     res.status(403).json({
       success: false,
       message: 'Forbidden: No workspace linked to your account.',
@@ -51,6 +53,7 @@ const requireWorkspace = (req: Request, res: Response): string | null => {
 const requireResolvedWorkspace = async (req: Request, res: Response): Promise<string | null> => {
   const workspaceId = await resolveWorkspaceIdForUser(req.user!.id, req.user?.workspaceId ?? null);
   if (!workspaceId) {
+    applyCorsHeadersIfAllowed(req, res);
     res.status(403).json({
       success: false,
       message: 'Forbidden: No workspace linked to your account.',
@@ -78,7 +81,7 @@ function validate<T>(
   return result.data as T;
 }
 
-const handleServiceError = (error: any, res: Response, next: NextFunction, action: string): void => {
+const handleServiceError = (error: any, req: Request, res: Response, next: NextFunction, action: string): void => {
   if (error?.code === 'P2021' || error?.code === 'P2022') {
     const meta = error?.meta as { column?: string; table?: string; modelName?: string } | undefined;
     const detail =
@@ -86,6 +89,7 @@ const handleServiceError = (error: any, res: Response, next: NextFunction, actio
         ? `Database column out of sync (missing: ${meta?.column ?? 'unknown'}).`
         : `Database table out of sync (missing: ${meta?.table ?? meta?.modelName ?? 'unknown'}).`;
     logger.error(`Follow-up schema mismatch (${error?.code})`, { action, meta: error?.meta, message: error?.message });
+    applyCorsHeadersIfAllowed(req, res);
     res.status(503).json({
       success: false,
       message: `Follow-up module is not ready. ${detail} Run \`npx prisma migrate deploy\` on the production database for this service's DATABASE_URL, then restart the API.`,
@@ -94,6 +98,7 @@ const handleServiceError = (error: any, res: Response, next: NextFunction, actio
   }
 
   if (error?.statusCode) {
+    applyCorsHeadersIfAllowed(req, res);
     res.status(error.statusCode).json({
       success: false,
       message: error.message,
@@ -143,7 +148,7 @@ export const createFollowUp = async (req: Request, res: Response, next: NextFunc
       data,
     });
   } catch (error) {
-    handleServiceError(error, res, next, 'createFollowUp');
+    handleServiceError(error, req, res, next, 'createFollowUp');
   }
 };
 
@@ -162,7 +167,7 @@ export const getCalendarData = async (req: Request, res: Response, next: NextFun
       data,
     });
   } catch (error) {
-    handleServiceError(error, res, next, 'getCalendarData');
+    handleServiceError(error, req, res, next, 'getCalendarData');
   }
 };
 
@@ -178,7 +183,7 @@ export const getFollowUpUsers = async (req: Request, res: Response, next: NextFu
       data,
     });
   } catch (error) {
-    handleServiceError(error, res, next, 'getFollowUpUsers');
+    handleServiceError(error, req, res, next, 'getFollowUpUsers');
   }
 };
 
@@ -197,7 +202,7 @@ export const getAdvancedCalendarSummary = async (req: Request, res: Response, ne
       data,
     });
   } catch (error) {
-    handleServiceError(error, res, next, 'getAdvancedCalendarSummary');
+    handleServiceError(error, req, res, next, 'getAdvancedCalendarSummary');
   }
 };
 
@@ -216,7 +221,7 @@ export const getAdvancedCalendarDetails = async (req: Request, res: Response, ne
       ...data, // contains items and pagination
     });
   } catch (error) {
-    handleServiceError(error, res, next, 'getAdvancedCalendarDetails');
+    handleServiceError(error, req, res, next, 'getAdvancedCalendarDetails');
   }
 };
 
@@ -235,7 +240,7 @@ export const getTodayFollowUps = async (req: Request, res: Response, next: NextF
       data,
     });
   } catch (error) {
-    handleServiceError(error, res, next, 'getTodayFollowUps');
+    handleServiceError(error, req, res, next, 'getTodayFollowUps');
   }
 };
 
@@ -254,7 +259,7 @@ export const getReminderAlerts = async (req: Request, res: Response, next: NextF
       data,
     });
   } catch (error) {
-    handleServiceError(error, res, next, 'getReminderAlerts');
+    handleServiceError(error, req, res, next, 'getReminderAlerts');
   }
 };
 
@@ -292,7 +297,7 @@ export const completeFollowUp = async (req: Request, res: Response, next: NextFu
       data,
     });
   } catch (error) {
-    handleServiceError(error, res, next, 'completeFollowUp');
+    handleServiceError(error, req, res, next, 'completeFollowUp');
   }
 };
 
@@ -333,7 +338,7 @@ export const snoozeFollowUp = async (req: Request, res: Response, next: NextFunc
       data,
     });
   } catch (error) {
-    handleServiceError(error, res, next, 'snoozeFollowUp');
+    handleServiceError(error, req, res, next, 'snoozeFollowUp');
   }
 };
 
@@ -376,7 +381,7 @@ export const getLifecycleExtensionLimit = async (
           },
     });
   } catch (error) {
-    handleServiceError(error, res, next, 'getLifecycleExtensionLimit');
+    handleServiceError(error, req, res, next, 'getLifecycleExtensionLimit');
   }
 };
 
@@ -396,7 +401,7 @@ export const getOverdueMandatoryFollowUps = async (
       data,
     });
   } catch (error) {
-    handleServiceError(error, res, next, 'getOverdueMandatoryFollowUps');
+    handleServiceError(error, req, res, next, 'getOverdueMandatoryFollowUps');
   }
 };
 
@@ -416,7 +421,7 @@ export const getMandatoryFollowUpContinuation = async (
       data,
     });
   } catch (error) {
-    handleServiceError(error, res, next, 'getMandatoryFollowUpContinuation');
+    handleServiceError(error, req, res, next, 'getMandatoryFollowUpContinuation');
   }
 };
 
@@ -459,7 +464,7 @@ export const saveMandatoryFollowUpContinuation = async (
       },
     });
   } catch (error) {
-    handleServiceError(error, res, next, 'saveMandatoryFollowUpContinuation');
+    handleServiceError(error, req, res, next, 'saveMandatoryFollowUpContinuation');
   }
 };
 
@@ -479,7 +484,7 @@ export const getHistory = async (req: Request, res: Response, next: NextFunction
       pagination: result.pagination,
     });
   } catch (error) {
-    handleServiceError(error, res, next, 'getHistory');
+    handleServiceError(error, req, res, next, 'getHistory');
   }
 };
 
@@ -527,7 +532,7 @@ export const bulkExtendFollowUps = async (req: Request, res: Response, next: Nex
       statusCode: error?.statusCode || error?.status || 500,
       message: error?.message,
     });
-    handleServiceError(error, res, next, 'bulkExtendFollowUps');
+    handleServiceError(error, req, res, next, 'bulkExtendFollowUps');
   }
 };
 
@@ -541,7 +546,7 @@ export const getTodayUtilization = async (req: Request, res: Response, next: Nex
     const data = await followupService.getTodayUtilization(workspaceId, actor.id);
     return res.status(200).json({ success: true, data });
   } catch (error) {
-    handleServiceError(error, res, next, 'getTodayUtilization');
+    handleServiceError(error, req, res, next, 'getTodayUtilization');
   }
 };
 
@@ -555,7 +560,7 @@ export const getBulkExtensionReport = async (req: Request, res: Response, next: 
     const data = await followupService.getBulkExtensionReport(workspaceId, { startDate, endDate });
     return res.status(200).json({ success: true, data });
   } catch (error) {
-    handleServiceError(error, res, next, 'getBulkExtensionReport');
+    handleServiceError(error, req, res, next, 'getBulkExtensionReport');
   }
 };
 
@@ -569,7 +574,7 @@ export const getFollowUpCapacityReport = async (req: Request, res: Response, nex
     const data = await followupService.getFollowUpCapacityReport(workspaceId, { startDate, endDate, userId });
     return res.status(200).json({ success: true, data });
   } catch (error) {
-    handleServiceError(error, res, next, 'getFollowUpCapacityReport');
+    handleServiceError(error, req, res, next, 'getFollowUpCapacityReport');
   }
 };
 
@@ -583,7 +588,7 @@ export const getDailyFollowUpUtilization = async (req: Request, res: Response, n
     const data = await followupService.getDailyFollowUpUtilization(workspaceId, { startDate, endDate, userId });
     return res.status(200).json({ success: true, data });
   } catch (error) {
-    handleServiceError(error, res, next, 'getDailyFollowUpUtilization');
+    handleServiceError(error, req, res, next, 'getDailyFollowUpUtilization');
   }
 };
 
@@ -595,7 +600,7 @@ export const getUserFollowUpLimitReport = async (req: Request, res: Response, ne
     const data = await followupService.getUserFollowUpLimitReport(workspaceId);
     return res.status(200).json({ success: true, data });
   } catch (error) {
-    handleServiceError(error, res, next, 'getUserFollowUpLimitReport');
+    handleServiceError(error, req, res, next, 'getUserFollowUpLimitReport');
   }
 };
 
@@ -672,6 +677,6 @@ export const exportReport = async (req: Request, res: Response, next: NextFuncti
     res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
     return res.status(200).send(csvRows.join('\n'));
   } catch (error) {
-    handleServiceError(error, res, next, 'exportReport');
+    handleServiceError(error, req, res, next, 'exportReport');
   }
 };

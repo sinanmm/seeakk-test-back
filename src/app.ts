@@ -44,7 +44,12 @@ import logger from './utils/logger';
 import prisma from './config/prisma';
 import { redisClient } from './config/redis';
 import { SOCKET_IO_PATH } from './config/socketConstants';
-import { corsOriginHandler, handlePreflightRequest } from './config/cors';
+import {
+  corsOriginHandler,
+  ensureCorsHeadersMiddleware,
+  handlePreflightRequest,
+  requestTimeoutMiddleware,
+} from './config/cors';
 import { globalLimiter } from './middlewares/rateLimiter';
 import { notFound, errorHandler } from './middlewares/errorMiddleware';
 import { FOLLOWUP_LOCK_BYPASS_VERSION } from './utils/followUpLockExemptPaths';
@@ -99,6 +104,9 @@ const corsOptions: cors.CorsOptions = {
 
 // Preflight must succeed before auth / rate-limit / route handlers (fixes Vercel CORS on meta APIs).
 app.use(handlePreflightRequest);
+// Stamp ACAO early so every response path (401/423/422/504) includes CORS for allowed origins.
+app.use(ensureCorsHeadersMiddleware);
+app.use(requestTimeoutMiddleware);
 
 // Access logs: "tiny" in production reduces log volume unless ACCESS_LOG_VERBOSE=true
 const accessLogFormat =

@@ -240,6 +240,7 @@ export const authorize = (...roles: string[]) => {
         userId: req.user?.id,
         action: 'rbac_forbidden_no_role',
       });
+      applyCorsHeadersIfAllowed(req, res);
       return res.status(403).json({ message: 'Forbidden: You do not have an assigned role.' });
     }
 
@@ -257,6 +258,7 @@ export const authorize = (...roles: string[]) => {
         role: userRole,
         action: 'rbac_forbidden',
       });
+      applyCorsHeadersIfAllowed(req, res);
       return res.status(403).json({
         message: `Forbidden: The '${userRole}' role is not authorized to access this route.`,
       });
@@ -277,6 +279,7 @@ export const checkPermission = (permissionKey: string) => {
         userId: req.user?.id,
         action: 'permission_denied_no_role',
       });
+      applyCorsHeadersIfAllowed(req, res);
       return res.status(403).json({
         success: false,
         message: 'Forbidden: You do not have an assigned role.',
@@ -362,6 +365,7 @@ export const checkPermission = (permissionKey: string) => {
           roleId,
           action: 'permission_denied',
         });
+        applyCorsHeadersIfAllowed(req, res);
         return res.status(403).json({
           success: false,
           errorCode: 'PERMISSION_DENIED',
@@ -378,6 +382,7 @@ export const checkPermission = (permissionKey: string) => {
     } catch (error: any) {
       logger.error('Error checking permissions', { error: error.message, userId: req.user.id });
       // Fallback to DB if Redis fails (already handled by permissions.length === 0 check above)
+      applyCorsHeadersIfAllowed(req, res);
       return res.status(500).json({ success: false, message: 'Internal server error while checking permissions.' });
     }
   };
@@ -390,6 +395,7 @@ export const checkAnyPermission = (permissionKeys: string[]) => {
         userId: req.user?.id,
         action: 'permission_denied_no_role',
       });
+      applyCorsHeadersIfAllowed(req, res);
       return res.status(403).json({
         success: false,
         message: 'Forbidden: You do not have an assigned role.',
@@ -449,6 +455,7 @@ export const checkAnyPermission = (permissionKeys: string[]) => {
           action: 'permission_denied_any',
         });
 
+        applyCorsHeadersIfAllowed(req, res);
         return res.status(403).json({
           success: false,
           errorCode: 'PERMISSION_DENIED',
@@ -459,6 +466,7 @@ export const checkAnyPermission = (permissionKeys: string[]) => {
       next();
     } catch (error: any) {
       logger.error('Error checking permissions', { error: error.message, userId: req.user.id });
+      applyCorsHeadersIfAllowed(req, res);
       return res.status(500).json({ success: false, message: 'Internal server error while checking permissions.' });
     }
   };

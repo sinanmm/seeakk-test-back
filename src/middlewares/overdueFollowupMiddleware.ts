@@ -9,6 +9,7 @@ import {
   isHardcodedFollowUpLockResolutionRequest,
   isOverdueFollowUpResolutionPath,
 } from '../utils/followUpLockExemptPaths';
+import { applyCorsHeadersIfAllowed } from '../config/cors';
 import logger from '../utils/logger';
 
 type OverdueCacheEntry = {
@@ -108,6 +109,7 @@ export const enforceOverdueFollowUp = async (
         pathDiagnostics: denied.pathDiagnostics,
       });
 
+      applyCorsHeadersIfAllowed(req, res);
       return res.status(423).json(denied.payload);
     }
 
@@ -140,6 +142,7 @@ export const enforceOverdueFollowUp = async (
       pathDiagnostics: denied.pathDiagnostics,
     });
 
+    applyCorsHeadersIfAllowed(req, res);
     return res.status(423).json(denied.payload);
   } catch (error) {
     logger.error('Overdue follow-up enforcement failed', {
