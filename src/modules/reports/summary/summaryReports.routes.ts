@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { protect, checkAnyPermission } from '../../../middlewares/authMiddleware';
-import { getOverviewCardController, getTimelineController, getLeadsSummaryController, getFollowupsSummaryController, getExtensionsSummaryController, getStageMovementsSummaryController, getRevenueSummaryController, getAttendanceSummaryController, getTargetsSummaryController, getAuditSummaryController, getLeadUpdatesController, getApprovalsSummaryController, getCompanySummaryController } from './summaryReports.controller';
+import { getOverviewCardController, getTimelineController, getLeadsSummaryController, getFollowupsSummaryController, getExtensionsSummaryController, getStageMovementsSummaryController, getRevenueSummaryController, getAttendanceSummaryController, getTargetsSummaryController, getAuditSummaryController, getLeadUpdatesController, getApprovalsSummaryController, getCompanySummaryController, getFollowupsDetailReportController, getFollowupsPerformanceReportController, getFollowupsLatestNotesReportController } from './summaryReports.controller';
 
 const router = Router();
 
@@ -11,6 +11,9 @@ router.get('/overview-card', getOverviewCardController);
 router.get('/timeline', getTimelineController);
 router.get('/leads', getLeadsSummaryController);
 router.get('/followups', getFollowupsSummaryController);
+router.get('/followups/detail', getFollowupsDetailReportController);
+router.get('/followups/performance', getFollowupsPerformanceReportController);
+router.get('/followups/latest-notes', getFollowupsLatestNotesReportController);
 router.get('/extensions', getExtensionsSummaryController);
 router.get('/stage-movements', getStageMovementsSummaryController);
 router.get('/revenue', getRevenueSummaryController);
