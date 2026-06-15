@@ -1,6 +1,14 @@
 import { Request, Response } from 'express';
 import verifyGoogleToken from '../../services/Auth/googleAuthService';
 import generateTokens from '../../utils/RefreshToken';
+import {
+  cacheRefreshReplay,
+  getRefreshReplay,
+  getStoredRefreshUserId,
+  revokeRefreshSession,
+  storeRefreshSession,
+  waitForRedisReady,
+} from '../../utils/refreshTokenRedis';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
@@ -576,8 +584,8 @@ export const login = async (req: Request, res: Response): Promise<any> => {
       throw error;
     }
 
-    if (redisClient?.isReady) {
-      await redisClient.set(`refresh:${tokens.tokenId}`, user.id);
+    if (await waitForRedisReady(2000)) {
+      await storeRefreshSession(tokens.tokenId, user.id);
     } else {
       console.warn('Redis not connected. Skipping refresh token storage for login.');
     }
@@ -769,9 +777,9 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
       throw error;
     }
 
-    if (redisClient?.isReady) {
+    if (await waitForRedisReady(2000)) {
       try {
-        await redisClient.set(`refresh:${tokens.tokenId}`, user.id);
+        await storeRefreshSession(tokens.tokenId, user.id);
       } catch (redisError: any) {
         logger.warn('Failed to store refresh token in Redis during Google login', {
           userId: user.id,
@@ -868,19 +876,24 @@ export const refreshToken = async (req: Request, res: Response): Promise<any> =>
 
     const { userId, tokenId } = decoded;
 
-    if (!redisClient?.isReady) {
+    const replayPayload = await getRefreshReplay(tokenId);
+    if (replayPayload) {
+      return res.status(200).json(JSON.parse(replayPayload));
+    }
+
+    if (!(await waitForRedisReady(3000))) {
       logger.warn('Refresh token rejected - Redis session store not ready', { userId, tokenId, action: 'refresh_redis_unready' });
       return res.status(503).json({ message: 'Session service temporarily unavailable. Please try again shortly.' });
     }
 
-    const storedUserId = await redisClient.get(`refresh:${tokenId}`);
+    const storedUserId = await getStoredRefreshUserId(tokenId);
     if (!storedUserId || storedUserId !== userId) {
       logger.warn('Refresh token rejected - stolen or already used', { userId, tokenId, action: 'refresh_token_rejected' });
       return res.status(401).json({ message: 'Invalid refresh token or already consumed' });
     }
 
-    // Rotate - invalidate old token
-    await redisClient.del(`refresh:${tokenId}`);
+    // Rotate - invalidate old token (replay cache handles parallel callers with same token)
+    await revokeRefreshSession(tokenId);
 
     let user: any = await prisma.user.findUnique({
       where: { id: userId },
@@ -932,15 +945,19 @@ export const refreshToken = async (req: Request, res: Response): Promise<any> =>
       throw error;
     }
 
-    await redisClient.set(`refresh:${tokens.tokenId}`, user.id);
+    await storeRefreshSession(tokens.tokenId, user.id);
     trackUserDevice(req, user as any).catch((e) => console.error('Device track err:', e));
 
     const resolvedWorkspaceId = await resolveWorkspaceForAuthPayload(user);
 
-    return res.status(200).json({
+    const responseBody = {
       user: await serializeUserForAuthResponse(user, resolvedWorkspaceId),
       ...tokens,
-    });
+    };
+
+    await cacheRefreshReplay(tokenId, JSON.stringify(responseBody));
+
+    return res.status(200).json(responseBody);
   } catch (error) {
     const err: any = error;
     if (isTransientDatabaseError(err)) {
