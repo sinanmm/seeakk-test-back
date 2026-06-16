@@ -108,7 +108,7 @@ export const createLead = async (req: Request, res: Response, next: NextFunction
   if (!input) return;
 
   try {
-    const lead = await leadService.createLead(workspaceId, getActor(req), input);
+    const { lead, autoSelfAssigned } = await leadService.createLead(workspaceId, getActor(req), input);
     emitWorkspaceEvent(workspaceId, 'lead_updated', { leadId: lead.id, action: 'created' });
 
     await auditService.log({
@@ -120,6 +120,12 @@ export const createLead = async (req: Request, res: Response, next: NextFunction
       details: {
         name: lead.name,
         assignedToId: lead.assignedToId,
+        ...(autoSelfAssigned
+          ? {
+              assignmentType: 'Auto Self Assignment',
+              assignedUser: lead.assignedToId,
+            }
+          : {}),
         stageId: lead.stageId,
         sourceId: lead.sourceId,
       },
@@ -500,7 +506,7 @@ export const listLeadAssignees = async (req: Request, res: Response, next: NextF
       message: 'Lead assignees fetched successfully',
       data: users,
       meta: {
-        canAssignOtherUsers: leadService.canAssignOtherUsers(actor),
+        canAssignOtherUsers: await leadService.canAssignOtherUsers(actor),
       },
     });
   } catch (error) {

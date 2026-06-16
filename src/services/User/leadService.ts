@@ -18,6 +18,8 @@ import type {
 } from '../../validations/leadValidation';
 import { touchFollowUpTodayCachesAfterLeadMutation } from './followupService';
 
+import { hasPermission } from '../../middlewares/authMiddleware';
+
 const LEADS_CACHE_TTL_SECONDS = 60;
 
 type Actor = {
@@ -479,26 +481,55 @@ const ensureUserExistsInWorkspace = async (workspaceId: string, userId: string):
   }
 };
 
-const ensureAssignmentAllowed = (actor: Actor, assignedToId: string | null | undefined): void => {
+const actorCanAssignToOthers = async (actor: Actor): Promise<boolean> =>
+  hasPermission(actor, 'LEADS_ASSIGN');
+
+const ensureAssignmentAllowed = async (
+  actor: Actor,
+  assignedToId: string | null | undefined,
+): Promise<void> => {
   if (!assignedToId || assignedToId === actor.id) return;
-  if (!isManagerialRole(actor.role?.name)) {
+  const canAssign = await actorCanAssignToOthers(actor);
+  if (!canAssign) {
     throw createServiceError('You are not allowed to assign a lead to another user.', 403);
   }
 };
 
-const ensureAssignmentUpdateAllowed = (
+const ensureAssignmentUpdateAllowed = async (
   actor: Actor,
   currentAssignedToId: string | null | undefined,
   nextAssignedToId: string | null | undefined,
-): void => {
+): Promise<void> => {
   const current = currentAssignedToId ?? null;
   const next = nextAssignedToId ?? null;
 
   if (current === next) return;
+  if (next === actor.id) return;
 
-  if (!isManagerialRole(actor.role?.name)) {
+  const canAssign = await actorCanAssignToOthers(actor);
+  if (!canAssign) {
     throw createServiceError('You are not allowed to change the lead owner.', 403);
   }
+};
+
+const resolveCreateAssignedToId = async (
+  workspaceId: string,
+  actor: Actor,
+  inputAssignedToId: string | null | undefined,
+): Promise<{ assignedToId: string | null; autoSelfAssigned: boolean }> => {
+  const canAssignToOthers = await actorCanAssignToOthers(actor);
+
+  if (!canAssignToOthers) {
+    if (inputAssignedToId && inputAssignedToId !== actor.id) {
+      throw createServiceError('You are not allowed to assign a lead to another user.', 403);
+    }
+    await ensureUserExistsInWorkspace(workspaceId, actor.id);
+    return { assignedToId: actor.id, autoSelfAssigned: true };
+  }
+
+  await ensureAssignmentAllowed(actor, inputAssignedToId);
+  const assignedToId = await resolveAssignedUserId(workspaceId, inputAssignedToId);
+  return { assignedToId, autoSelfAssigned: false };
 };
 
 const resolveAssignedUserId = async (
@@ -1116,14 +1147,17 @@ export const createLead = async (
   workspaceId: string,
   actor: Actor,
   input: CreateLeadInput,
-): Promise<ReturnType<typeof mapLeadRecord>> => {
+): Promise<{ lead: ReturnType<typeof mapLeadRecord>; autoSelfAssigned: boolean }> => {
   await assertModuleReady();
   ensureFutureFollowUp(input.nextFollowUpAt);
 
   await findDuplicateLead(workspaceId, input.email ?? null, input.phone ?? null);
 
-  ensureAssignmentAllowed(actor, input.assignedToId);
-  const assignedToId = await resolveAssignedUserId(workspaceId, input.assignedToId);
+  const { assignedToId, autoSelfAssigned } = await resolveCreateAssignedToId(
+    workspaceId,
+    actor,
+    input.assignedToId,
+  );
   const shouldAutoAssignStage = !input.skipAutoStageAssignment || Boolean(input.stageId);
   const stage = shouldAutoAssignStage
     ? (await resolveStage(workspaceId, input.stageId)) ||
@@ -1221,7 +1255,7 @@ export const createLead = async (
     await touchFollowUpTodayCachesAfterLeadMutation(workspaceId, assignedToId || actor.id, input.nextFollowUpAt);
   }
   const created = await getLeadScoped(workspaceId, createdLeadId, actor);
-  return mapLeadRecord(created);
+  return { lead: mapLeadRecord(created), autoSelfAssigned };
 };
 
 export const getLeads = async (
@@ -1343,9 +1377,11 @@ export const updateLead = async (
     await findDuplicateLead(workspaceId, checkEmail, checkPhone, id);
   }
 
-  const assignedToId = input.assignedToId !== undefined
-    ? (ensureAssignmentUpdateAllowed(actor, existing.assignedToId, input.assignedToId), await resolveAssignedUserId(workspaceId, input.assignedToId))
-    : existing.assignedToId;
+  let assignedToId = existing.assignedToId;
+  if (input.assignedToId !== undefined) {
+    await ensureAssignmentUpdateAllowed(actor, existing.assignedToId, input.assignedToId);
+    assignedToId = await resolveAssignedUserId(workspaceId, input.assignedToId);
+  }
   const stage = input.stageId !== undefined ? await resolveStage(workspaceId, input.stageId) : existing.stage;
   const lifecycle = input.lifecycleId !== undefined ? await resolveLifecycle(workspaceId, input.lifecycleId) : existing.lifecycle;
   const source = input.sourceId !== undefined ? await resolveSource(workspaceId, input.sourceId) : existing.source;
@@ -1933,4 +1969,5 @@ export const exportLeads = async (
   };
 };
 
-export const canAssignOtherUsers = (actor: Actor): boolean => isManagerialRole(actor.role?.name);
+export const canAssignOtherUsers = async (actor: Actor): Promise<boolean> =>
+  actorCanAssignToOthers(actor);
