@@ -44,3 +44,14 @@ export const revokeRefreshSession = async (tokenId: string): Promise<void> => {
   if (!redisClient.isReady) return;
   await redisClient.del(`refresh:${tokenId}`);
 };
+
+/** Marks a rotated refresh token as consumed so it cannot be replayed after the short replay window */
+export const markRefreshTokenUsed = async (tokenId: string, userId: string): Promise<void> => {
+  if (!redisClient.isReady) return;
+  await redisClient.setEx(`refresh:used:${tokenId}`, REFRESH_SESSION_TTL_SEC, userId);
+};
+
+export const getUsedRefreshUserId = async (tokenId: string): Promise<string | null> => {
+  if (!redisClient.isReady) return null;
+  return redisClient.get(`refresh:used:${tokenId}`);
+};

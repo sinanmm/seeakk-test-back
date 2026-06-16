@@ -5,6 +5,8 @@ import {
   cacheRefreshReplay,
   getRefreshReplay,
   getStoredRefreshUserId,
+  getUsedRefreshUserId,
+  markRefreshTokenUsed,
   revokeRefreshSession,
   storeRefreshSession,
   waitForRedisReady,
@@ -887,13 +889,33 @@ export const refreshToken = async (req: Request, res: Response): Promise<any> =>
     }
 
     const storedUserId = await getStoredRefreshUserId(tokenId);
-    if (!storedUserId || storedUserId !== userId) {
-      logger.warn('Refresh token rejected - stolen or already used', { userId, tokenId, action: 'refresh_token_rejected' });
+    const usedUserId = await getUsedRefreshUserId(tokenId);
+
+    if (usedUserId) {
+      if (usedUserId !== userId) {
+        logger.warn('Refresh token rejected - used token user mismatch', { userId, tokenId, action: 'refresh_token_rejected' });
+        return res.status(401).json({ message: 'Invalid refresh token or already consumed' });
+      }
+      logger.warn('Refresh token rejected - already rotated', { userId, tokenId, action: 'refresh_token_rejected' });
       return res.status(401).json({ message: 'Invalid refresh token or already consumed' });
     }
 
-    // Rotate - invalidate old token (replay cache handles parallel callers with same token)
-    await revokeRefreshSession(tokenId);
+    if (storedUserId) {
+      if (storedUserId !== userId) {
+        logger.warn('Refresh token rejected - stolen or mismatched session', { userId, tokenId, action: 'refresh_token_rejected' });
+        return res.status(401).json({ message: 'Invalid refresh token or already consumed' });
+      }
+      await revokeRefreshSession(tokenId);
+      await markRefreshTokenUsed(tokenId, userId);
+    } else {
+      logger.warn('Refresh session missing from Redis — re-establishing from valid JWT', {
+        userId,
+        tokenId,
+        action: 'refresh_redis_session_restore',
+      });
+    }
+
+    // Rotate (replay cache above handles parallel callers with the same token)
 
     let user: any = await prisma.user.findUnique({
       where: { id: userId },

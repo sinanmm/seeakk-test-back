@@ -161,7 +161,9 @@ export const protect = async (req: Request, res: Response, next: NextFunction): 
       });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as JwtPayload;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET as string, {
+      clockTolerance: 30,
+    }) as JwtPayload;
 
     // Fetch user from PostgreSQL via Prisma with role included
     const user = await prisma.user.findUnique({
