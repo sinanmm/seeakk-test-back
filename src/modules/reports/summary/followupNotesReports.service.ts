@@ -56,8 +56,23 @@ const followUpReportInclude = {
 
 const buildFollowUpReportWhere = async (filters: SummaryFilterDto) => {
   const where: any = { workspaceId: filters.workspaceId };
-  const scheduledAt = await getScheduledDateFilter(filters.workspaceId, filters.startDate, filters.endDate);
-  if (scheduledAt) where.scheduledAt = scheduledAt;
+  const dateFilter = await getScheduledDateFilter(filters.workspaceId, filters.startDate, filters.endDate);
+  
+  if (dateFilter) {
+    where.OR = [
+      { scheduledAt: dateFilter },
+      { createdAt: dateFilter },
+      { completedAt: dateFilter },
+      { snoozedAt: dateFilter },
+      {
+        activityLogs: {
+          some: {
+            snoozedAt: dateFilter,
+          },
+        },
+      },
+    ];
+  }
 
   const userFilter = getUserFilter(filters.userId);
   if (userFilter) where.userId = userFilter;

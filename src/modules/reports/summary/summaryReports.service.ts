@@ -215,8 +215,12 @@ export const getAttendanceSummary = async (filters: SummaryFilterDto) => {
   const limit = Number(filters.limit) || 20;
 
   const where: any = { workspaceId: filters.workspaceId };
-  const dateFilter = await getDateFilter(filters.workspaceId, filters.startDate, filters.endDate);
-  if (dateFilter) where.date = dateFilter;
+  if (filters.startDate && filters.endDate) {
+    where.date = {
+      gte: moment.utc(filters.startDate).toDate(),
+      lte: moment.utc(filters.endDate).toDate(),
+    };
+  }
   const userFilter = getUserFilter(filters.userId);
   if (userFilter) where.userId = userFilter;
 
