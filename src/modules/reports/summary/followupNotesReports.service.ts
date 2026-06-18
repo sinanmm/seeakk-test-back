@@ -1,5 +1,7 @@
 import prisma from '../../../config/prisma';
 import type { SummaryFilterDto } from './summaryReports.service';
+import { getWorkspaceTimeZone } from '../../../services/User/followupService';
+import moment from 'moment-timezone';
 
 const db = prisma as any;
 
@@ -17,12 +19,15 @@ const getUserFilter = (userId?: string | string[]) => {
   return undefined;
 };
 
-const getScheduledDateFilter = (startDate?: string, endDate?: string) => {
-  if (!startDate && !endDate) return undefined;
-  return {
-    ...(startDate ? { gte: new Date(startDate) } : {}),
-    ...(endDate ? { lte: new Date(endDate) } : {}),
-  };
+const getScheduledDateFilter = async (workspaceId: string, startDate?: string, endDate?: string) => {
+  if (startDate && endDate) {
+    const tz = await getWorkspaceTimeZone(workspaceId);
+    return {
+      gte: moment.tz(startDate, tz).startOf('day').toDate(),
+      lte: moment.tz(endDate, tz).endOf('day').toDate(),
+    };
+  }
+  return undefined;
 };
 
 const followUpReportInclude = {
@@ -49,9 +54,9 @@ const followUpReportInclude = {
   },
 };
 
-const buildFollowUpReportWhere = (filters: SummaryFilterDto) => {
+const buildFollowUpReportWhere = async (filters: SummaryFilterDto) => {
   const where: any = { workspaceId: filters.workspaceId };
-  const scheduledAt = getScheduledDateFilter(filters.startDate, filters.endDate);
+  const scheduledAt = await getScheduledDateFilter(filters.workspaceId, filters.startDate, filters.endDate);
   if (scheduledAt) where.scheduledAt = scheduledAt;
 
   const userFilter = getUserFilter(filters.userId);
@@ -282,7 +287,7 @@ const mapFollowUpDetail = (record: any): FollowupDetailReportItem => {
 export const getFollowupsDetailReport = async (filters: SummaryFilterDto) => {
   const page = Number(filters.page) || 1;
   const limit = Number(filters.limit) || 20;
-  const where = buildFollowUpReportWhere(filters);
+  const where = await buildFollowUpReportWhere(filters);
 
   const [total, records] = await Promise.all([
     db.followUp.count({ where }),
@@ -313,7 +318,7 @@ export type FollowupPerformanceItem = {
 };
 
 export const getFollowupsPerformanceReport = async (filters: SummaryFilterDto): Promise<FollowupPerformanceItem[]> => {
-  const where = buildFollowUpReportWhere(filters);
+  const where = await buildFollowUpReportWhere(filters);
 
   const records = await db.followUp.findMany({
     where,
@@ -373,7 +378,7 @@ export type FollowupLatestNoteItem = {
 };
 
 export const getFollowupsLatestNotesReport = async (filters: SummaryFilterDto): Promise<FollowupLatestNoteItem[]> => {
-  const where = buildFollowUpReportWhere(filters);
+  const where = await buildFollowUpReportWhere(filters);
 
   const records = await db.followUp.findMany({
     where,
