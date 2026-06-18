@@ -1,5 +1,7 @@
 import prisma from '../../../config/prisma';
 import { Prisma } from '@prisma/client';
+import moment from 'moment-timezone';
+import { getWorkspaceTimeZone } from '../../../services/User/followupService';
 
 const db = prisma as any;
 
@@ -24,11 +26,12 @@ const getUserFilter = (userId?: string | string[]) => {
   return undefined;
 };
 
-const getDateFilter = (startDate?: string, endDate?: string) => {
+const getDateFilter = async (workspaceId: string, startDate?: string, endDate?: string) => {
   if (startDate && endDate) {
+    const tz = await getWorkspaceTimeZone(workspaceId);
     return {
-      gte: new Date(startDate),
-      lte: new Date(endDate),
+      gte: moment.tz(startDate, tz).startOf('day').toDate(),
+      lte: moment.tz(endDate, tz).endOf('day').toDate(),
     };
   }
   return undefined;
@@ -40,7 +43,7 @@ export const getTimeline = async (filters: SummaryFilterDto) => {
   const limit = Number(filters.limit) || 20;
 
   const where: any = { workspaceId: filters.workspaceId };
-  const dateFilter = getDateFilter(filters.startDate, filters.endDate);
+  const dateFilter = await getDateFilter(filters.workspaceId, filters.startDate, filters.endDate);
   if (dateFilter) where.createdAt = dateFilter;
   
   const userFilter = getUserFilter(filters.userId);
@@ -66,7 +69,7 @@ export const getTimeline = async (filters: SummaryFilterDto) => {
 };
 
 export const getOverviewCard = async (filters: SummaryFilterDto) => {
-  const dateFilter = getDateFilter(filters.startDate, filters.endDate);
+  const dateFilter = await getDateFilter(filters.workspaceId, filters.startDate, filters.endDate);
   const userFilter = getUserFilter(filters.userId);
 
   const leadWhere: any = { workspaceId: filters.workspaceId, deletedAt: null };
@@ -103,7 +106,7 @@ export const getLeadsSummary = async (filters: SummaryFilterDto) => {
   const limit = Number(filters.limit) || 20;
 
   const where: any = { workspaceId: filters.workspaceId, deletedAt: null };
-  const dateFilter = getDateFilter(filters.startDate, filters.endDate);
+  const dateFilter = await getDateFilter(filters.workspaceId, filters.startDate, filters.endDate);
   if (dateFilter) where.createdAt = dateFilter;
   const userFilter = getUserFilter(filters.userId);
   if (userFilter) where.createdById = userFilter;
@@ -129,7 +132,7 @@ export const getFollowupsSummary = async (filters: SummaryFilterDto) => {
   const limit = Number(filters.limit) || 20;
 
   const where: any = { workspaceId: filters.workspaceId, action: { contains: 'FOLLOWUP' } };
-  const dateFilter = getDateFilter(filters.startDate, filters.endDate);
+  const dateFilter = await getDateFilter(filters.workspaceId, filters.startDate, filters.endDate);
   if (dateFilter) where.createdAt = dateFilter;
   const userFilter = getUserFilter(filters.userId);
   if (userFilter) where.performedById = userFilter;
@@ -157,7 +160,7 @@ export const getRevenueSummary = async (filters: SummaryFilterDto) => {
   const limit = Number(filters.limit) || 20;
 
   const where: any = { workspaceId: filters.workspaceId };
-  const dateFilter = getDateFilter(filters.startDate, filters.endDate);
+  const dateFilter = await getDateFilter(filters.workspaceId, filters.startDate, filters.endDate);
   if (dateFilter) where.createdAt = dateFilter;
   const userFilter = getUserFilter(filters.userId);
   if (userFilter) where.userId = userFilter;
@@ -185,7 +188,7 @@ export const getStageMovementsSummary = async (filters: SummaryFilterDto) => {
   const limit = Number(filters.limit) || 20;
 
   const where: any = { workspaceId: filters.workspaceId };
-  const dateFilter = getDateFilter(filters.startDate, filters.endDate);
+  const dateFilter = await getDateFilter(filters.workspaceId, filters.startDate, filters.endDate);
   if (dateFilter) where.changedAt = dateFilter;
   const userFilter = getUserFilter(filters.userId);
   if (userFilter) where.changedById = userFilter;
@@ -212,7 +215,7 @@ export const getAttendanceSummary = async (filters: SummaryFilterDto) => {
   const limit = Number(filters.limit) || 20;
 
   const where: any = { workspaceId: filters.workspaceId };
-  const dateFilter = getDateFilter(filters.startDate, filters.endDate);
+  const dateFilter = await getDateFilter(filters.workspaceId, filters.startDate, filters.endDate);
   if (dateFilter) where.date = dateFilter;
   const userFilter = getUserFilter(filters.userId);
   if (userFilter) where.userId = userFilter;
@@ -236,7 +239,7 @@ export const getExtensionsSummary = async (filters: SummaryFilterDto) => {
   const limit = Number(filters.limit) || 20;
 
   const where: any = { workspaceId: filters.workspaceId, action: 'FOLLOWUP_EXTENDED' };
-  const dateFilter = getDateFilter(filters.startDate, filters.endDate);
+  const dateFilter = await getDateFilter(filters.workspaceId, filters.startDate, filters.endDate);
   if (dateFilter) where.createdAt = dateFilter;
   const userFilter = getUserFilter(filters.userId);
   if (userFilter) where.performedById = userFilter;
@@ -287,7 +290,7 @@ export const getAuditSummary = async (filters: SummaryFilterDto) => {
   const limit = Number(filters.limit) || 20;
 
   const where: any = { workspaceId: filters.workspaceId };
-  const dateFilter = getDateFilter(filters.startDate, filters.endDate);
+  const dateFilter = await getDateFilter(filters.workspaceId, filters.startDate, filters.endDate);
   if (dateFilter) where.createdAt = dateFilter;
   const userFilter = getUserFilter(filters.userId);
   if (userFilter) where.performedById = userFilter;
@@ -315,7 +318,7 @@ export const getLeadUpdates = async (filters: SummaryFilterDto) => {
   const limit = Number(filters.limit) || 20;
 
   const where: any = { workspaceId: filters.workspaceId, action: 'LEAD_UPDATED' };
-  const dateFilter = getDateFilter(filters.startDate, filters.endDate);
+  const dateFilter = await getDateFilter(filters.workspaceId, filters.startDate, filters.endDate);
   if (dateFilter) where.createdAt = dateFilter;
   const userFilter = getUserFilter(filters.userId);
   if (userFilter) where.performedById = userFilter;
@@ -344,7 +347,7 @@ export const getApprovalsSummary = async (filters: SummaryFilterDto) => {
 
   const where: any = { workspaceId: filters.workspaceId };
   // Only use dateFilter if we can match requestedAt/approvedAt
-  const dateFilter = getDateFilter(filters.startDate, filters.endDate);
+  const dateFilter = await getDateFilter(filters.workspaceId, filters.startDate, filters.endDate);
   if (dateFilter) where.createdAt = dateFilter;
   const userFilter = getUserFilter(filters.userId);
   if (userFilter) where.requestedById = userFilter;
@@ -367,7 +370,7 @@ export const getApprovalsSummary = async (filters: SummaryFilterDto) => {
 };
 
 export const getCompanySummary = async (filters: SummaryFilterDto) => {
-  const dateFilter = getDateFilter(filters.startDate, filters.endDate);
+  const dateFilter = await getDateFilter(filters.workspaceId, filters.startDate, filters.endDate);
   
   const leadWhere: any = { workspaceId: filters.workspaceId, deletedAt: null };
   if (dateFilter) leadWhere.createdAt = dateFilter;
