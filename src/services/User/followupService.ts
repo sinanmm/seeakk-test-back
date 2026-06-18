@@ -934,6 +934,7 @@ export const getAdvancedCalendarSummary = async (
           ...leadAccessFilter,
         },
         changedAt: { gte: startOfRange, lte: endOfRange },
+        fromStageId: { not: null },
       },
       select: { changedAt: true, toStageId: true, toStageName: true },
     }),
@@ -1239,6 +1240,7 @@ export const getAdvancedCalendarDetails = async (
       },
       changedAt: { gte: startOfDay, lte: endOfDay },
       toStageId: query.stageId,
+      fromStageId: { not: null },
     };
     const [historyTotal, historyRows] = await Promise.all([
       (prisma as any).leadStageHistory.count({ where: historyWhere }),
