@@ -30,7 +30,7 @@ export const resolveAttendanceSubmissionState = (
   if (!record) return 'NOT_SUBMITTED';
   if (isAutoAbsentRecord(record)) return 'AUTO_ABSENT';
   if (record.approvalStatus === 'REJECTED') return 'REJECTED';
-  if (record.approvalStatus === 'PENDING') return 'PENDING';
+  if (record.approvalStatus === 'PENDING' || record.approvalStatus === 'PENDING_APPROVAL' || record.approvalStatus === 'CLARIFICATION_REQUESTED') return 'PENDING';
   if (record.approvalStatus === 'APPROVED') return 'APPROVED';
   return 'NOT_SUBMITTED';
 };

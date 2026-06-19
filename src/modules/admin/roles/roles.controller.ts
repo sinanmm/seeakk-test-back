@@ -63,6 +63,18 @@ export const createRole = async (req: Request, res: Response, next: NextFunction
     const result = await rolesService.createRole(input, req.user!.id, workspaceId);
     emitWorkspaceEvent(workspaceId, 'role_updated', { roleId: result.id });
 
+    if (input.permissions && input.permissions.includes('ATTENDANCE_APPROVE')) {
+      await prisma.attendanceAuditLog.create({
+        data: {
+          workspaceId,
+          userId: req.user!.id,
+          action: 'Approval Permission Granted',
+          details: `Approval permission granted to role: ${input.name}`,
+          ipAddress: req.ip || null,
+        },
+      });
+    }
+
     await auditService.log({
       userId: req.user!.id,
       workspaceId: req.user?.workspaceId || undefined,
@@ -143,6 +155,17 @@ export const updateRole = async (req: Request, res: Response, next: NextFunction
     if (!workspaceId) {
       return res.status(403).json({ success: false, message: 'Forbidden: No workspace linked.' });
     }
+    const existingRole = await prisma.role.findFirst({
+      where: { id, workspaceId },
+      include: {
+        permissions: {
+          include: { permission: { select: { key: true } } },
+        },
+      },
+    });
+    const hadPerm = existingRole?.permissions.some(p => p.permission.key === 'ATTENDANCE_APPROVE') || false;
+    const willHavePerm = input.permissions !== undefined && input.permissions.includes('ATTENDANCE_APPROVE');
+
     const result = await rolesService.updateRole(id, input, workspaceId);
     const impactedUsers = await prisma.user.findMany({
       where: { workspaceId, roleId: id, deletedAt: null },
@@ -151,6 +174,20 @@ export const updateRole = async (req: Request, res: Response, next: NextFunction
     const impactedUserIds = impactedUsers.map((user) => user.id);
     emitWorkspaceEvent(workspaceId, 'role_updated', { roleId: id, userIds: impactedUserIds });
     emitUsersEvent(impactedUserIds, 'permissions_updated', { roleId: id });
+
+    if (input.permissions !== undefined && hadPerm !== willHavePerm) {
+      await prisma.attendanceAuditLog.create({
+        data: {
+          workspaceId,
+          userId: req.user!.id,
+          action: willHavePerm ? 'Approval Permission Granted' : 'Approval Permission Removed',
+          details: willHavePerm
+            ? `Approval permission granted to role: ${existingRole?.name}`
+            : `Approval permission removed from role: ${existingRole?.name}`,
+          ipAddress: req.ip || null,
+        },
+      });
+    }
 
     await auditService.log({
       userId: req.user!.id,

@@ -86,3 +86,20 @@ export const attendanceNetworkSchema = attendanceOfficeLocationSchema;
 export const assignOfficeBranchSchema = z.object({
   attendanceOfficeLocationId: z.string().uuid().nullable(),
 });
+
+export const checkOutSchema = z.object({
+  workSummary: z.string().min(1, 'Work summary is required'),
+  achievements: z.string().optional().nullable(),
+  pendingTasks: z.string().optional().nullable(),
+  challenges: z.string().optional().nullable(),
+  additionalNotes: z.string().optional().nullable(),
+});
+
+export const attendanceScheduleSchema = z.object({
+  checkInTime: z.string().regex(/^\d{2}:\d{2}$/, 'Must be in HH:MM format'),
+  checkOutTime: z.string().regex(/^\d{2}:\d{2}$/, 'Must be in HH:MM format'),
+  gracePeriod: z.coerce.number().int().min(0),
+  lateMarkThreshold: z.string().regex(/^\d{2}:\d{2}$/, 'Must be in HH:MM format'),
+  halfDayThreshold: z.coerce.number().min(0).max(24),
+  workingHoursRequirement: z.coerce.number().min(0).max(24),
+});
