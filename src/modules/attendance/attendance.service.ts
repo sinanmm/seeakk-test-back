@@ -314,7 +314,7 @@ export const getTodayStatus = async (userId: string, workspaceId: string) => {
     requiresMandatoryPopup: requiresMandatoryAttendancePopup(submissionState, user.isLocked),
     requiresMandatoryCheckoutPopup,
     canCheckOut: shouldRequireCheckout(existingRecord),
-    checkoutCompleted: Boolean(existingRecord?.checkOutTime || existingRecord?.checkoutCompleted),
+    checkoutCompleted: Boolean((existingRecord as any)?.checkOutTime || (existingRecord as any)?.checkoutCompleted),
     expectedCheckInTime: expectedTiming.expectedCheckInTime,
     expectedCheckOutTime: expectedTiming.expectedCheckOutTime,
     userAttendanceSetting: expectedTiming.userSetting,
