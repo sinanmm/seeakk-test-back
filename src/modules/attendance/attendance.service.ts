@@ -1,4 +1,6 @@
 import prisma from '../../config/prisma';
+import moment from 'moment-timezone';
+import { getWorkspaceTimeZone } from '../../services/User/followupService';
 import logger from '../../utils/logger';
 import { getApplicableHolidays } from '../holidays/holidays.service';
 import { getWorkspaceWeeklyOffSettings, isWeeklyOffDateString } from '../holidays/weeklyOff.util';
@@ -24,9 +26,12 @@ const createAttendanceServiceError = (message: string, statusCode = 400): Error 
   return error;
 };
 
-const getLocalDateString = (date?: Date | string): string => {
+const getLocalDateString = (timeZone = 'UTC', date?: Date | string): string => {
+  if (typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    return date;
+  }
   const d = date ? new Date(date) : new Date();
-  return d.toISOString().split('T')[0];
+  return moment.tz(d, timeZone).format('YYYY-MM-DD');
 };
 
 const addMinutesToTime = (timeStr: string, minutes: number): string => {
@@ -214,7 +219,8 @@ export const getTodayStatus = async (userId: string, workspaceId: string) => {
     throw createAttendanceServiceError('You do not belong to this workspace.', 403);
   }
 
-  const todayStr = getLocalDateString();
+  const timeZone = await getWorkspaceTimeZone(workspaceId);
+  const todayStr = getLocalDateString(timeZone);
   const applicableHolidays = await getApplicableHolidays(workspaceId, user);
   const holidayCheck = checkIsHoliday(applicableHolidays, todayStr);
   const { weeklyOffDays } = await getWorkspaceWeeklyOffSettings(workspaceId);
@@ -284,7 +290,8 @@ export const markAttendance = async (userId: string, workspaceId: string, payloa
     throw createAttendanceServiceError('Your account is temporarily locked due to incomplete targets.', 423);
   }
 
-  const dateStr = payload.date || getLocalDateString();
+  const timeZone = await getWorkspaceTimeZone(workspaceId);
+  const dateStr = payload.date || getLocalDateString(timeZone);
   const dateObj = new Date(dateStr);
 
   const existingRecord = await prisma.attendanceRecord.findUnique({
@@ -298,6 +305,16 @@ export const markAttendance = async (userId: string, workspaceId: string, payloa
 
   if (existingRecord && !isSystemGeneratedRecord(existingRecord)) {
     if (existingRecord.approvalStatus !== 'REJECTED') {
+      logger.warn('Attendance check-in conflict error (409):', {
+        userId,
+        attendanceDate: dateStr,
+        workspaceTimezone: timeZone,
+        attendanceRecordFound: JSON.stringify(existingRecord),
+        attendanceStatus: existingRecord.status,
+        approvalStatus: existingRecord.approvalStatus,
+        validationRuleTriggered: 'Duplicate check-in attempt for non-rejected record',
+        actualErrorMessage: 'Attendance already marked for today.',
+      });
       throw createAttendanceServiceError('Attendance already marked for today.', 409);
     }
   }
@@ -419,52 +436,69 @@ export const markAttendance = async (userId: string, workspaceId: string, payloa
   const approvalStatus = settings.approvalRequired ? 'PENDING' : 'APPROVED';
 
   let record;
-  if (existingRecord) {
-    record = await prisma.attendanceRecord.update({
-      where: { id: existingRecord.id },
-      data: {
-        checkInTime: isHoliday || isWeeklyOff ? null : checkInTime,
-        attendanceType,
-        status: approvalStatus === 'APPROVED' ? 'APPROVED' : 'PENDING',
-        warningCount,
-        isHoliday,
-        holidayName: isWeeklyOff ? 'Weekly Off' : holidayName,
-        isLocked: user.isLocked,
-        createdBy: userId,
-        attendanceApplyType,
-        deviceInfo: payload.deviceInfo,
-        approvalStatus,
-        supervisorId: user.supervisorId,
-        notes: payload.notes,
-        attachmentUrl: payload.attachmentUrl,
-        submittedAt: new Date(),
-        rejectedReason: null,
-        ...locationFields,
-      },
-    });
-  } else {
-    record = await prisma.attendanceRecord.create({
-      data: {
+  try {
+    if (existingRecord) {
+      record = await prisma.attendanceRecord.update({
+        where: { id: existingRecord.id },
+        data: {
+          checkInTime: isHoliday || isWeeklyOff ? null : checkInTime,
+          attendanceType,
+          status: approvalStatus === 'APPROVED' ? 'APPROVED' : 'PENDING',
+          warningCount,
+          isHoliday,
+          holidayName: isWeeklyOff ? 'Weekly Off' : holidayName,
+          isLocked: user.isLocked,
+          createdBy: userId,
+          attendanceApplyType,
+          deviceInfo: payload.deviceInfo,
+          approvalStatus,
+          supervisorId: user.supervisorId,
+          notes: payload.notes,
+          attachmentUrl: payload.attachmentUrl,
+          submittedAt: new Date(),
+          rejectedReason: null,
+          ...locationFields,
+        },
+      });
+    } else {
+      record = await prisma.attendanceRecord.create({
+        data: {
+          userId,
+          workspaceId,
+          date: dateObj,
+          checkInTime: isHoliday || isWeeklyOff ? null : checkInTime,
+          attendanceType,
+          status: approvalStatus === 'APPROVED' ? 'APPROVED' : 'PENDING',
+          warningCount,
+          isHoliday,
+          holidayName,
+          isLocked: user.isLocked,
+          createdBy: userId,
+          attendanceApplyType,
+          deviceInfo: payload.deviceInfo,
+          approvalStatus,
+          supervisorId: user.supervisorId,
+          notes: payload.notes,
+          attachmentUrl: payload.attachmentUrl,
+          ...locationFields,
+        },
+      });
+    }
+  } catch (error: any) {
+    if (error.code === 'P2002') {
+      logger.warn('Attendance check-in db unique constraint violation (409):', {
         userId,
-        workspaceId,
-        date: dateObj,
-        checkInTime: isHoliday || isWeeklyOff ? null : checkInTime,
-        attendanceType,
-        status: approvalStatus === 'APPROVED' ? 'APPROVED' : 'PENDING',
-        warningCount,
-        isHoliday,
-        holidayName,
-        isLocked: user.isLocked,
-        createdBy: userId,
-        attendanceApplyType,
-        deviceInfo: payload.deviceInfo,
-        approvalStatus,
-        supervisorId: user.supervisorId,
-        notes: payload.notes,
-        attachmentUrl: payload.attachmentUrl,
-        ...locationFields,
-      },
-    });
+        attendanceDate: dateStr,
+        workspaceTimezone: timeZone,
+        attendanceRecordFound: 'Database unique constraint violation',
+        attendanceStatus: 'N/A',
+        approvalStatus: 'N/A',
+        validationRuleTriggered: 'Unique database constraints (userId, date)',
+        actualErrorMessage: error.message,
+      });
+      throw createAttendanceServiceError('Attendance already marked for today.', 409);
+    }
+    throw error;
   }
 
   await prisma.attendanceAuditLog.create({
@@ -667,7 +701,8 @@ export const getAdminOverview = async (workspaceId: string, filters: any) => {
   }
 
   // Otherwise, default to "Today's Users List" (show all active users merged with today's status)
-  const todayStr = getLocalDateString();
+  const timeZone = await getWorkspaceTimeZone(workspaceId);
+  const todayStr = getLocalDateString(timeZone);
   const todayDateObj = new Date(todayStr);
 
   const userWhere: any = {
@@ -1046,7 +1081,8 @@ export const getStats = async (userId: string, workspaceId: string) => {
 };
 
 export const getAdminStats = async (workspaceId: string) => {
-  const todayStr = getLocalDateString();
+  const timeZone = await getWorkspaceTimeZone(workspaceId);
+  const todayStr = getLocalDateString(timeZone);
   const todayDate = new Date(todayStr);
 
   const [records, totalWarnings, totalLocked, activeUserCount] = await Promise.all([
@@ -1221,12 +1257,13 @@ export const autoAbsentMarking = async (workspaceId: string) => {
     where: { workspaceId, isActive: true, deletedAt: null },
   });
 
-  const todayStr = getLocalDateString();
+  const timeZone = await getWorkspaceTimeZone(workspaceId);
+  const todayStr = getLocalDateString(timeZone);
   const dateObj = new Date(todayStr);
 
   const settings = await getSettings(workspaceId);
-  const now = new Date();
-  const currentHHMM = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  const now = moment().tz(timeZone);
+  const currentHHMM = `${String(now.hours()).padStart(2, '0')}:${String(now.minutes()).padStart(2, '0')}`;
 
   const schedules = await prisma.attendanceSchedule.findMany({
     where: { workspaceId },
@@ -1318,7 +1355,8 @@ export const checkOut = async (userId: string, workspaceId: string, data: any) =
     throw createAttendanceServiceError('User not found.', 404);
   }
 
-  const todayStr = getLocalDateString();
+  const timeZone = await getWorkspaceTimeZone(workspaceId);
+  const todayStr = getLocalDateString(timeZone);
   const dateObj = new Date(todayStr);
 
   const record = await prisma.attendanceRecord.findUnique({
