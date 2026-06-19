@@ -321,7 +321,7 @@ model StageRule {
   workspaceId String
   name      String     @default("Untitled Rule")
   inputType InputType  @default(TEXT)
-  /// JSON string[] — choices for RADIO / SELECT
+  /// JSON string[] â€” choices for RADIO / SELECT
   options   Json?
   sortOrder Int        @default(1)
   required  Boolean    @default(false)
@@ -1608,64 +1608,60 @@ enum AttendanceStatus {
 }
 
 model AttendanceRecord {
-  id                  String           @id @default(uuid())
-  userId              String
-  workspaceId         String
-  date                DateTime         @db.Date
-  checkInTime         DateTime?
-  checkOutTime        DateTime?
-  workingHours        Float?
-  dailySummary        String?
-  checkoutCompleted   Boolean          @default(false)
-  expectedCheckInTime String?
+  id                   String           @id @default(uuid())
+  userId               String
+  workspaceId          String
+  date                 DateTime         @db.Date
+  checkInTime          DateTime?
+  checkOutTime         DateTime?
+  workingHours         Float?
+  checkoutCompleted    Boolean          @default(false)
+  expectedCheckInTime  String?
   expectedCheckOutTime String?
-  lateMinutes         Int              @default(0)
-  attendanceType      AttendanceType   @default(PRESENT)
-  status              AttendanceStatus @default(MARKED)
-  warningCount        Int              @default(0)
-  isHoliday           Boolean          @default(false)
-  holidayName         String?
-  isLocked            Boolean          @default(false)
-  lockReason          String?
-  createdBy           String?
-  createdAt           DateTime         @default(now())
-  updatedAt           DateTime         @updatedAt
+  lateMinutes          Int              @default(0)
+  attendanceType       AttendanceType   @default(PRESENT)
+  status               AttendanceStatus @default(MARKED)
+  warningCount         Int              @default(0)
+  isHoliday            Boolean          @default(false)
+  holidayName          String?
+  isLocked             Boolean          @default(false)
+  lockReason           String?
+  createdBy            String?
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
 
   // Location & legacy network meta
-  latitude                Float?
-  longitude               Float?
+  latitude                 Float?
+  longitude                Float?
   calculatedDistanceMeters Float?
-  officeLocationId        String?
-  isInsideOfficeRadius    Boolean          @default(false)
-  gpsAccuracy             Float?
-  ipAddress               String?
-  networkName             String?
-  routerIp                String?
-  subnet                  String?
-  attendanceApplyType     String?          @default("FROM_ANYWHERE")
-  isOfficeNetwork         Boolean          @default(false)
-  deviceInfo              String?
-  geoLocation             String?
-  approvalStatus      String           @default("PENDING") // PENDING, APPROVED, REJECTED
-  approvedBy          String?
-  approvedAt          DateTime?
-  rejectedReason      String?
-  supervisorId        String?
-  submittedAt         DateTime?        @default(now())
-  notes               String?
-  attachmentUrl       String?
+  officeLocationId         String?
+  isInsideOfficeRadius     Boolean          @default(false)
+  gpsAccuracy              Float?
+  ipAddress                String?
+  networkName              String?
+  routerIp                 String?
+  subnet                   String?
+  attendanceApplyType      String?          @default("FROM_ANYWHERE")
+  isOfficeNetwork          Boolean          @default(false)
+  deviceInfo               String?
+  geoLocation              String?
+  approvalStatus           String           @default("PENDING") // PENDING, PENDING_APPROVAL, CLARIFICATION_REQUESTED, APPROVED, REJECTED
+  approvedBy               String?
+  approvedAt               DateTime?
+  rejectedReason           String?
+  supervisorId             String?
+  submittedAt              DateTime?        @default(now())
+  notes                    String?
+  attachmentUrl            String?
+  workSummary              String?          @db.Text
+  achievements             String?          @db.Text
+  pendingTasks             String?          @db.Text
+  challenges               String?          @db.Text
+  additionalNotes          String?          @db.Text
+  rejectedBy               String?
+  rejectedAt               DateTime?
 
-  checkOutTime            DateTime?
-  workingHours            Float?
-  workSummary             String?          @db.Text
-  achievements            String?          @db.Text
-  pendingTasks            String?          @db.Text
-  challenges              String?          @db.Text
-  additionalNotes         String?          @db.Text
-  rejectedBy              String?
-  rejectedAt              DateTime?
-
-  user                User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user                     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, date])
   @@index([workspaceId])
@@ -1674,7 +1670,6 @@ model AttendanceRecord {
   @@index([workspaceId, approvalStatus, date])
   @@map("attendance_records")
 }
-
 model AttendanceWarning {
   id           String   @id @default(uuid())
   userId       String
@@ -1908,3 +1903,4 @@ model AttendanceSchedule {
   @@index([workspaceId])
   @@map("attendance_schedules")
 }
+

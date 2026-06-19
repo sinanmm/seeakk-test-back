@@ -1,4 +1,4 @@
-import prisma from '../../config/prisma';
+﻿import prisma from '../../config/prisma';
 import logger from '../../utils/logger';
 import { getApplicableHolidays } from '../holidays/holidays.service';
 import { getWorkspaceWeeklyOffSettings, isWeeklyOffDateString } from '../holidays/weeklyOff.util';
@@ -108,7 +108,7 @@ const countEnabledOfficeLocations = async (workspaceId: string): Promise<number>
     where: { workspaceId, isEnabled: true },
   });
 
-/** Only the user's explicitly assigned active branch — never the first workspace location. */
+/** Only the user's explicitly assigned active branch â€” never the first workspace location. */
 const resolveAssignedOfficeBranch = async (
   workspaceId: string,
   attendanceOfficeLocationId?: string | null,
@@ -476,7 +476,11 @@ export const markAttendance = async (userId: string, workspaceId: string, payloa
   const commonRecordData = {
     checkInTime: isHoliday || isWeeklyOff ? null : checkInTime,
     checkOutTime: null,
-    dailySummary: null,
+    workSummary: null,
+    achievements: null,
+    pendingTasks: null,
+    challenges: null,
+    additionalNotes: null,
     checkoutCompleted: false,
     workingHours: null,
     expectedCheckInTime: expectedTiming.expectedCheckInTime,
@@ -751,7 +755,7 @@ export const getAdminOverview = async (workspaceId: string, filters: any) => {
         complianceStatus:
           record.isInsideOfficeRadius || record.approvalStatus === 'APPROVED'
             ? 'COMPLIANT'
-            : record.approvalStatus === 'PENDING'
+            : ['PENDING', 'PENDING_APPROVAL', 'CLARIFICATION_REQUESTED'].includes(record.approvalStatus)
               ? 'PENDING'
               : 'NON_COMPLIANT',
         approvalStatus: record.approvalStatus,
@@ -824,23 +828,23 @@ export const getAdminOverview = async (workspaceId: string, filters: any) => {
   };
 };
 
+const PENDING_APPROVAL_STATUSES = ['PENDING', 'PENDING_APPROVAL', 'CLARIFICATION_REQUESTED'];
+
 export const getPendingApprovals = async (workspaceId: string, supervisorId: string) => {
-  // If supervisor has permissions, filter records where user.supervisorId == supervisorId AND status == PENDING
-  // If no supervisor configuration / superadmin, show all PENDING in workspace
   const user = await prisma.user.findUnique({
     where: { id: supervisorId },
     include: { role: true },
   });
 
-  const isWorkspaceAdmin = user?.role?.name === 'superadmin' || user?.role?.name === 'admin';
+  const roleName = (user?.role?.name || '').toLowerCase();
+  const isWorkspaceAdmin = roleName === 'superadmin' || roleName === 'admin';
 
   const whereClause: any = {
     workspaceId,
-    approvalStatus: 'PENDING',
+    approvalStatus: { in: PENDING_APPROVAL_STATUSES },
   };
 
   if (!isWorkspaceAdmin) {
-    // Approvers see supervisee requests and their own pending submissions (attendance allows self-approval).
     whereClause.OR = [{ supervisorId }, { userId: supervisorId }];
   }
 
@@ -858,7 +862,7 @@ export const getPendingApprovals = async (workspaceId: string, supervisorId: str
         },
       },
     },
-    orderBy: { date: 'desc' },
+    orderBy: [{ date: 'desc' }, { createdAt: 'desc' }],
   });
 };
 
@@ -867,12 +871,12 @@ export const reviewAttendance = async (
   recordId: string,
   actorId: string,
   action: 'APPROVE' | 'REJECT',
-  reason?: string
+  reason?: string,
 ) => {
   const record = await prisma.attendanceRecord.findFirst({
     where: { id: recordId, workspaceId },
     include: {
-      user: { select: { supervisorId: true } },
+      user: { select: { supervisorId: true, name: true } },
     },
   });
 
@@ -886,7 +890,7 @@ export const reviewAttendance = async (
 
   const isSelfReview = record.userId === actorId;
 
-  if (record.approvalStatus !== 'PENDING') {
+  if (!PENDING_APPROVAL_STATUSES.includes(record.approvalStatus)) {
     throw createAttendanceServiceError(
       `Attendance is already ${record.approvalStatus.toLowerCase()}.`,
       409,
@@ -902,11 +906,9 @@ export const reviewAttendance = async (
     include: { role: { select: { name: true } } },
   });
 
-  const roleName = (actor?.role?.name || '').toLowerCase();
-  const isWorkspaceAdmin = roleName === 'superadmin' || roleName === 'admin';
+  const actorRoleName = (actor?.role?.name || '').toLowerCase();
+  const isWorkspaceAdmin = actorRoleName === 'superadmin' || actorRoleName === 'admin';
 
-  // Attendance module: self-approve/reject allowed when actor has approve_attendance (route-level RBAC).
-  // Lead/stage approvals use separate services and still forbid self-approval.
   if (
     !isSelfReview &&
     !isWorkspaceAdmin &&
@@ -916,29 +918,31 @@ export const reviewAttendance = async (
     throw createAttendanceServiceError('You are not authorized to review this attendance request.', 403);
   }
 
-  if (action === 'REJECT' && !reason) {
+  const trimmedReason = typeof reason === 'string' ? reason.trim() : '';
+  if (action === 'REJECT' && !trimmedReason) {
     throw createAttendanceServiceError('Rejection reason is mandatory.', 400);
   }
 
+  const reviewedAt = new Date();
   const updatedRecord = await prisma.attendanceRecord.update({
     where: { id: recordId },
     data: {
       approvalStatus: action === 'APPROVE' ? 'APPROVED' : 'REJECTED',
       status: action === 'APPROVE' ? 'APPROVED' : 'MARKED',
       approvedBy: action === 'APPROVE' ? actorId : null,
-      approvedAt: action === 'APPROVE' ? new Date() : null,
-      rejectedReason: action === 'REJECT' ? reason : null,
+      approvedAt: action === 'APPROVE' ? reviewedAt : null,
+      rejectedReason: action === 'REJECT' ? trimmedReason : null,
+      rejectedBy: action === 'REJECT' ? actorId : null,
+      rejectedAt: action === 'REJECT' ? reviewedAt : null,
     },
   });
-
-  const reviewedAt = new Date();
 
   await prisma.attendanceApprovalLog.create({
     data: {
       attendanceRecordId: recordId,
       action,
       actorId,
-      reason,
+      reason: trimmedReason || undefined,
     },
   });
 
@@ -950,12 +954,14 @@ export const reviewAttendance = async (
       details: JSON.stringify({
         module: 'attendance',
         selfApproved: isSelfReview,
-        approvedBy: actorId,
-        approvedAt: reviewedAt.toISOString(),
+        approvedBy: action === 'APPROVE' ? actorId : null,
+        approvedAt: action === 'APPROVE' ? reviewedAt.toISOString() : null,
+        rejectedBy: action === 'REJECT' ? actorId : null,
+        rejectedAt: action === 'REJECT' ? reviewedAt.toISOString() : null,
         attendanceRecordId: recordId,
         targetUserId: record.userId,
         action,
-        ...(reason ? { reason } : {}),
+        ...(trimmedReason ? { reason: trimmedReason } : {}),
       }),
     },
   });
@@ -965,7 +971,10 @@ export const reviewAttendance = async (
       workspaceId,
       userId: record.userId,
       title: `Attendance ${action === 'APPROVE' ? 'Approved' : 'Rejected'}`,
-      message: `Your attendance for ${new Date(record.date).toLocaleDateString()} was ${action.toLowerCase()}d.`,
+      message:
+        action === 'APPROVE'
+          ? `Your attendance for ${new Date(record.date).toLocaleDateString()} was approved.`
+          : `Your attendance for ${new Date(record.date).toLocaleDateString()} was rejected.`,
     },
   });
 
@@ -1047,29 +1056,38 @@ export const checkOutAttendance = async (userId: string, workspaceId: string, pa
     throw createAttendanceServiceError('Check-in is required before checkout.', 409);
   }
 
-  if (!shouldRequireCheckout(existingRecord)) {
+  const isClarificationResubmission = existingRecord.approvalStatus === 'CLARIFICATION_REQUESTED';
+  if (!isClarificationResubmission && !shouldRequireCheckout(existingRecord)) {
     throw createAttendanceServiceError('Checkout is not available for this attendance record.', 409);
   }
 
-  const dailySummary = payload.dailySummary?.trim();
-  if (!dailySummary) {
+  const workSummary = (payload.workSummary ?? payload.dailySummary ?? '').trim();
+  if (!workSummary) {
     throw createAttendanceServiceError('Daily work summary is mandatory for checkout.', 400);
   }
 
-  const checkOutTime = payload.checkOutTime ? new Date(payload.checkOutTime) : new Date();
+  const checkOutTime = payload.checkOutTime
+    ? new Date(payload.checkOutTime)
+    : existingRecord.checkOutTime
+      ? new Date(existingRecord.checkOutTime)
+      : new Date();
   if (checkOutTime.getTime() < new Date(existingRecord.checkInTime).getTime()) {
     throw createAttendanceServiceError('Checkout time cannot be earlier than check-in time.', 400);
   }
 
   const expectedTiming = await resolveExpectedAttendanceTimes(workspaceId, userId);
-  const approvalStatus = expectedTiming.settings.approvalRequired ? 'PENDING' : 'APPROVED';
+  const approvalStatus = expectedTiming.settings.approvalRequired ? 'PENDING_APPROVAL' : 'APPROVED';
   const recordStatus = approvalStatus === 'APPROVED' ? 'APPROVED' as const : 'PENDING' as const;
 
   const updatedRecord = await prisma.attendanceRecord.update({
     where: { id: existingRecord.id },
     data: {
       checkOutTime,
-      dailySummary,
+      workSummary,
+      achievements: payload.achievements ?? existingRecord.achievements,
+      pendingTasks: payload.pendingTasks ?? existingRecord.pendingTasks,
+      challenges: payload.challenges ?? existingRecord.challenges,
+      additionalNotes: payload.additionalNotes ?? existingRecord.additionalNotes,
       checkoutCompleted: true,
       workingHours: roundWorkingHours(existingRecord.checkInTime, checkOutTime),
       expectedCheckInTime: existingRecord.expectedCheckInTime || expectedTiming.expectedCheckInTime,
@@ -1079,6 +1097,8 @@ export const checkOutAttendance = async (userId: string, workspaceId: string, pa
       approvedBy: approvalStatus === 'APPROVED' ? userId : null,
       approvedAt: approvalStatus === 'APPROVED' ? new Date() : null,
       rejectedReason: null,
+      rejectedBy: null,
+      rejectedAt: null,
       submittedAt: new Date(),
       notes: payload.notes ?? existingRecord.notes,
       attachmentUrl: payload.attachmentUrl ?? existingRecord.attachmentUrl,
@@ -1089,7 +1109,7 @@ export const checkOutAttendance = async (userId: string, workspaceId: string, pa
     data: {
       workspaceId,
       userId,
-      action: 'CHECK_OUT',
+      action: isClarificationResubmission ? 'RESUBMIT_SUMMARY' : 'CHECK_OUT',
       details: JSON.stringify({
         module: 'attendance',
         attendanceRecordId: existingRecord.id,
@@ -1104,13 +1124,196 @@ export const checkOutAttendance = async (userId: string, workspaceId: string, pa
       data: {
         workspaceId,
         userId: user.supervisorId,
-        title: 'Attendance Checkout Submitted',
-        message: `${user.name || 'An employee'} completed checkout for ${dateStr}.`,
+        title: isClarificationResubmission ? 'Attendance Summary Resubmitted' : 'Attendance Checkout Submitted',
+        message: `${user.name || 'An employee'} ${isClarificationResubmission ? 'resubmitted attendance summary' : 'completed checkout'} for ${dateStr}.`,
       },
     });
   }
 
   return updatedRecord;
+};
+
+export const getSchedules = async (workspaceId: string) => {
+  return prisma.user.findMany({
+    where: { workspaceId, deletedAt: null, isActive: true },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      department: { select: { name: true } },
+      role: { select: { name: true } },
+      attendanceSchedule: true,
+    },
+    orderBy: { name: 'asc' },
+  });
+};
+
+export const getSchedule = async (userId: string, workspaceId: string) => {
+  await assertUserInWorkspace(userId, workspaceId);
+
+  const user = await prisma.user.findFirst({
+    where: { id: userId, workspaceId, deletedAt: null },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      department: { select: { name: true } },
+      role: { select: { name: true } },
+      attendanceSchedule: true,
+    },
+  });
+
+  if (!user) {
+    throw createAttendanceServiceError('User not found.', 404);
+  }
+
+  return user;
+};
+
+export const updateSchedule = async (userId: string, workspaceId: string, data: any, actorId: string) => {
+  await assertUserInWorkspace(userId, workspaceId);
+
+  const schedule = await (prisma as any).attendanceSchedule.upsert({
+    where: { userId },
+    update: {
+      workspaceId,
+      checkInTime: data.checkInTime,
+      checkOutTime: data.checkOutTime,
+      gracePeriod: data.gracePeriod,
+      lateMarkThreshold: data.lateMarkThreshold,
+      halfDayThreshold: data.halfDayThreshold,
+      workingHoursRequirement: data.workingHoursRequirement,
+    },
+    create: {
+      userId,
+      workspaceId,
+      checkInTime: data.checkInTime,
+      checkOutTime: data.checkOutTime,
+      gracePeriod: data.gracePeriod,
+      lateMarkThreshold: data.lateMarkThreshold,
+      halfDayThreshold: data.halfDayThreshold,
+      workingHoursRequirement: data.workingHoursRequirement,
+    },
+  });
+
+  await prisma.attendanceAuditLog.create({
+    data: {
+      workspaceId,
+      userId: actorId,
+      action: 'UPDATE_SCHEDULE',
+      details: JSON.stringify({
+        module: 'attendance',
+        targetUserId: userId,
+        ...data,
+      }),
+    },
+  });
+
+  return schedule;
+};
+
+export const requestClarification = async (workspaceId: string, recordId: string, actorId: string, reason?: string) => {
+  const trimmedReason = typeof reason === 'string' ? reason.trim() : '';
+  if (!trimmedReason) {
+    throw createAttendanceServiceError('Clarification reason is mandatory.', 400);
+  }
+
+  const record = await prisma.attendanceRecord.findFirst({
+    where: { id: recordId, workspaceId },
+    include: { user: { select: { supervisorId: true, name: true } } },
+  });
+
+  if (!record) {
+    throw createAttendanceServiceError('Attendance record not found', 404);
+  }
+
+  if (!PENDING_APPROVAL_STATUSES.includes(record.approvalStatus)) {
+    throw createAttendanceServiceError('Clarification can only be requested for pending attendance.', 409);
+  }
+
+  const updatedRecord = await prisma.attendanceRecord.update({
+    where: { id: recordId },
+    data: {
+      approvalStatus: 'CLARIFICATION_REQUESTED',
+      status: 'PENDING',
+      rejectedReason: trimmedReason,
+      rejectedBy: actorId,
+      rejectedAt: new Date(),
+      approvedBy: null,
+      approvedAt: null,
+    },
+  });
+
+  await prisma.attendanceApprovalLog.create({
+    data: {
+      attendanceRecordId: recordId,
+      action: 'CLARIFICATION_REQUESTED',
+      actorId,
+      reason: trimmedReason,
+    },
+  });
+
+  await prisma.attendanceAuditLog.create({
+    data: {
+      workspaceId,
+      userId: actorId,
+      action: 'REQUEST_CLARIFICATION',
+      details: JSON.stringify({
+        module: 'attendance',
+        attendanceRecordId: recordId,
+        targetUserId: record.userId,
+        reason: trimmedReason,
+      }),
+    },
+  });
+
+  await prisma.attendanceNotification.create({
+    data: {
+      workspaceId,
+      userId: record.userId,
+      title: 'Attendance Clarification Requested',
+      message: `Clarification was requested for your attendance on ${new Date(record.date).toLocaleDateString()}.`,
+    },
+  });
+
+  return updatedRecord;
+};
+
+export const getApprovalHistory = async (workspaceId: string) => {
+  const records = await prisma.attendanceRecord.findMany({
+    where: {
+      workspaceId,
+      approvalStatus: { in: ['APPROVED', 'REJECTED'] },
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+    },
+    orderBy: [{ approvedAt: 'desc' }, { rejectedAt: 'desc' }, { date: 'desc' }],
+    take: 200,
+  });
+
+  const actorIds = Array.from(
+    new Set(records.flatMap((record) => [record.approvedBy, record.rejectedBy].filter(Boolean))),
+  ) as string[];
+  const actors = actorIds.length
+    ? await prisma.user.findMany({
+        where: { id: { in: actorIds } },
+        select: { id: true, name: true },
+      })
+    : [];
+  const actorMap = new Map(actors.map((actor) => [actor.id, actor.name]));
+
+  return records.map((record) => ({
+    ...record,
+    approvedByName: record.approvedBy ? actorMap.get(record.approvedBy) || null : null,
+    rejectedByName: record.rejectedBy ? actorMap.get(record.rejectedBy) || null : null,
+  }));
 };
 
 export const updateUserApplyType = async (workspaceId: string, userId: string, applyType: string) => {
@@ -1193,14 +1396,14 @@ export const getAdminStats = async (workspaceId: string) => {
   const totalPresent = userSubmittedRecords.filter(
     (r) => ['PRESENT', 'WORK_FROM_HOME', 'HALF_DAY'].includes(r.attendanceType) && r.approvalStatus === 'APPROVED',
   ).length;
-  const totalPending = userSubmittedRecords.filter((r) => r.approvalStatus === 'PENDING').length;
+  const totalPending = userSubmittedRecords.filter((r) => ['PENDING', 'PENDING_APPROVAL', 'CLARIFICATION_REQUESTED'].includes(r.approvalStatus)).length;
   const totalRejected = userSubmittedRecords.filter((r) => r.approvalStatus === 'REJECTED').length;
   const totalApproved = userSubmittedRecords.filter((r) => r.approvalStatus === 'APPROVED').length;
   const totalLate = userSubmittedRecords.filter((r) => (r.lateMinutes ?? 0) > 0 || r.warningCount > 0).length;
   const totalAbsent = Math.max(
     0,
     activeUserCount -
-      userSubmittedRecords.filter((r) => r.approvalStatus === 'APPROVED' || r.approvalStatus === 'PENDING').length,
+      userSubmittedRecords.filter((r) => ['APPROVED', 'PENDING', 'PENDING_APPROVAL', 'CLARIFICATION_REQUESTED'].includes(r.approvalStatus)).length,
   );
   const totalHolidays = records.filter((r) => r.isHoliday).length;
 
@@ -1329,7 +1532,7 @@ export const deleteOfficeLocation = async (workspaceId: string, id: string) => {
   return (prisma as any).attendanceOfficeLocation.delete({ where: { id } });
 };
 
-/** @deprecated Alias for getOfficeLocations — /networks route backward compatibility */
+/** @deprecated Alias for getOfficeLocations â€” /networks route backward compatibility */
 export const getNetworks = getOfficeLocations;
 export const createNetwork = createOfficeLocation;
 export const updateNetwork = updateOfficeLocation;
@@ -1428,4 +1631,6 @@ export const autoAbsentMarking = async (workspaceId: string) => {
     }
   }
 };
+
+
 

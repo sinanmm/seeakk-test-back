@@ -18,9 +18,17 @@ export const markAttendanceSchema = z.object({
 export const checkOutAttendanceSchema = z.object({
   checkOutTime: z.string().datetime().optional().nullable(),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Must be in YYYY-MM-DD format').optional(),
-  dailySummary: z.string().min(1, 'Daily summary is required'),
+  dailySummary: z.string().optional().nullable(),
+  workSummary: z.string().optional().nullable(),
+  achievements: z.string().optional().nullable(),
+  pendingTasks: z.string().optional().nullable(),
+  challenges: z.string().optional().nullable(),
+  additionalNotes: z.string().optional().nullable(),
   notes: z.string().optional().nullable(),
   attachmentUrl: z.string().optional().nullable(),
+}).refine((value) => Boolean(value.dailySummary?.trim() || value.workSummary?.trim()), {
+  message: 'Daily summary is required',
+  path: ['dailySummary'],
 });
 
 export const updateSettingsSchema = z.object({
@@ -59,7 +67,7 @@ export const attendanceQuerySchema = z.object({
   ),
   approvalStatus: z.preprocess(
     emptyStringToUndefined,
-    z.enum(['PENDING', 'APPROVED', 'REJECTED', 'NOT_SUBMITTED']).optional(),
+    z.enum(['PENDING', 'PENDING_APPROVAL', 'APPROVED', 'REJECTED', 'CLARIFICATION_REQUESTED', 'NOT_SUBMITTED']).optional(),
   ),
   isLocked: z.preprocess((val) => val === 'true', z.boolean()).optional(),
   page: z.preprocess((val) => parseInt(val as string, 10) || 1, z.number().int().min(1)).default(1),
