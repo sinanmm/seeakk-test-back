@@ -1133,6 +1133,7 @@ model User {
   approvedLeadStageApprovals LeadStageApproval[] @relation("LeadStageApprovalApprovedBy")
   rosterEntries            RosterEntry[]
   attendanceRecords        AttendanceRecord[]
+  attendanceSchedule       AttendanceSchedule?
   attendanceApplyType      String                 @default("FROM_ANYWHERE") // FROM_OFFICE, FROM_ANYWHERE
   attendanceOfficeLocationId String?
   attendanceOfficeLocation AttendanceOfficeLocation? @relation(fields: [attendanceOfficeLocationId], references: [id], onDelete: SetNull)
@@ -1646,6 +1647,16 @@ model AttendanceRecord {
   notes               String?
   attachmentUrl       String?
 
+  checkOutTime            DateTime?
+  workingHours            Float?
+  workSummary             String?          @db.Text
+  achievements            String?          @db.Text
+  pendingTasks            String?          @db.Text
+  challenges              String?          @db.Text
+  additionalNotes         String?          @db.Text
+  rejectedBy              String?
+  rejectedAt              DateTime?
+
   user                User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, date])
@@ -1851,4 +1862,23 @@ model BulkFollowUpExtension {
   @@index([workspaceId])
   @@index([userId])
   @@map("bulk_followup_extensions")
+}
+
+model AttendanceSchedule {
+  id                      String   @id @default(uuid())
+  userId                  String   @unique
+  workspaceId             String
+  checkInTime             String   @default("09:00") // HH:MM
+  checkOutTime            String   @default("18:00") // HH:MM
+  gracePeriod             Int      @default(15) // in minutes
+  lateMarkThreshold       String   @default("09:45") // HH:MM
+  halfDayThreshold        Float    @default(4.0) // in hours
+  workingHoursRequirement Float    @default(8.0) // in hours
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  user                    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@map("attendance_schedules")
 }

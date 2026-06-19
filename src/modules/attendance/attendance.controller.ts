@@ -9,6 +9,8 @@ import {
   attendanceQuerySchema,
   attendanceOfficeLocationSchema,
   assignOfficeBranchSchema,
+  checkOutSchema,
+  attendanceScheduleSchema,
 } from './attendance.validation';
 
 const getAttendanceWorkspaceId = (req: AttendanceRequest, res: Response): string | null => {
@@ -419,8 +421,237 @@ export const exportController = async (req: Request, res: Response, next: NextFu
   }
 
   try {
-    const data = await attendanceService.getAdminOverview(workspaceId, { ...parsed.data, limit: 1000 });
-    return res.status(200).json({ success: true, data });
+    const result = await attendanceService.getAdminOverview(workspaceId, { ...parsed.data, limit: 1000 });
+    const records = result.records || [];
+
+    const headers = [
+      'Employee Name',
+      'Employee Email',
+      'Role',
+      'Timing Schedule',
+      'Date',
+      'Check-In Time',
+      'Check-Out Time',
+      'Working Hours',
+      'Attendance Type',
+      'Compliance Status',
+      'Approval Status',
+      'Reason (Rejected/Clarification)',
+      'Resolved By',
+      'Resolved At'
+    ];
+
+    const csvRows = [headers.join(',')];
+
+    for (const record of records) {
+      const scheduleStr = record.user?.attendanceSchedule
+        ? `${record.user.attendanceSchedule.checkInTime} - ${record.user.attendanceSchedule.checkOutTime}`
+        : '09:00 AM - 06:00 PM (Default)';
+
+      const dateStr = record.date ? new Date(record.date).toLocaleDateString() : '';
+      const checkInStr = record.checkInTime ? new Date(record.checkInTime).toLocaleTimeString() : '';
+      const checkOutStr = record.checkOutTime ? new Date(record.checkOutTime).toLocaleTimeString() : '';
+      const workingHoursStr = record.workingHours != null ? String(record.workingHours) : '';
+      const reasonStr = record.rejectedReason || '';
+      const resolvedBy = record.approvalStatus === 'APPROVED'
+        ? (record.approvedByName || 'System')
+        : record.approvalStatus === 'REJECTED'
+        ? (record.rejectedByName || 'System')
+        : '';
+      const resolvedAtStr = record.approvedAt
+        ? new Date(record.approvedAt).toLocaleString()
+        : record.rejectedAt
+        ? new Date(record.rejectedAt).toLocaleString()
+        : '';
+
+      const row = {
+        'Employee Name': record.user?.name || '',
+        'Employee Email': record.user?.email || '',
+        'Role': record.user?.role?.name || '',
+        'Timing Schedule': scheduleStr,
+        'Date': dateStr,
+        'Check-In Time': checkInStr,
+        'Check-Out Time': checkOutStr,
+        'Working Hours': workingHoursStr,
+        'Attendance Type': record.attendanceType || '',
+        'Compliance Status': record.complianceStatus || '',
+        'Approval Status': record.approvalStatus || '',
+        'Reason (Rejected/Clarification)': reasonStr,
+        'Resolved By': resolvedBy,
+        'Resolved At': resolvedAtStr
+      };
+
+      const values = headers.map((h) => {
+        const val = row[h as keyof typeof row];
+        const stringVal = val === null || val === undefined ? '' : String(val);
+        if (/[",\n\r]/.test(stringVal)) {
+          return `"${stringVal.replace(/"/g, '""')}"`;
+        }
+        return stringVal;
+      });
+      csvRows.push(values.join(','));
+    }
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename=attendance_export_${Date.now()}.csv`);
+    return res.status(200).send(csvRows.join('\n'));
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const checkOutController = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = getAttendanceWorkspaceId(req as AttendanceRequest, res);
+  if (!workspaceId) return;
+
+  const parsed = checkOutSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(422).json({
+      success: false,
+      message: 'Validation failed.',
+      errors: parsed.error.flatten().fieldErrors,
+    });
+  }
+
+  try {
+    const record = await attendanceService.checkOut(req.user!.id, workspaceId, parsed.data);
+
+    emitWorkspaceEvent(workspaceId, 'attendance_updated', {
+      recordId: record.id,
+      userId: record.userId,
+      action: 'check-out',
+      approvalStatus: record.approvalStatus,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Checked out successfully',
+      data: record,
+    });
+  } catch (error: any) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({
+        success: false,
+        message: error.message,
+      });
+    }
+    next(error);
+  }
+};
+
+export const getSchedulesController = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = getAttendanceWorkspaceId(req as AttendanceRequest, res);
+  if (!workspaceId) return;
+
+  try {
+    const schedules = await attendanceService.getSchedules(workspaceId);
+    return res.status(200).json({
+      success: true,
+      data: schedules,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getScheduleController = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = getAttendanceWorkspaceId(req as AttendanceRequest, res);
+  if (!workspaceId) return;
+
+  const { userId } = req.params;
+
+  try {
+    const schedule = await attendanceService.getSchedule(userId as string, workspaceId);
+    return res.status(200).json({
+      success: true,
+      data: schedule,
+    });
+  } catch (error: any) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({
+        success: false,
+        message: error.message,
+      });
+    }
+    next(error);
+  }
+};
+
+export const updateScheduleController = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = getAttendanceWorkspaceId(req as AttendanceRequest, res);
+  if (!workspaceId) return;
+
+  const { userId } = req.params;
+  const parsed = attendanceScheduleSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(422).json({
+      success: false,
+      message: 'Validation failed.',
+      errors: parsed.error.flatten().fieldErrors,
+    });
+  }
+
+  try {
+    const schedule = await attendanceService.updateSchedule(userId as string, workspaceId, parsed.data, req.user!.id);
+    return res.status(200).json({
+      success: true,
+      message: 'Attendance schedule updated successfully',
+      data: schedule,
+    });
+  } catch (error: any) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({
+        success: false,
+        message: error.message,
+      });
+    }
+    next(error);
+  }
+};
+
+export const requestClarificationController = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = getAttendanceWorkspaceId(req as AttendanceRequest, res);
+  if (!workspaceId) return;
+
+  const { recordId } = req.params;
+  const { reason } = req.body;
+
+  try {
+    const record = await attendanceService.requestClarification(workspaceId, recordId as string, req.user!.id, reason);
+
+    emitWorkspaceEvent(workspaceId, 'attendance_updated', {
+      recordId: record.id,
+      userId: record.userId,
+      action: 'clarification',
+      approvalStatus: record.approvalStatus,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Clarification requested successfully',
+      data: record,
+    });
+  } catch (error: any) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({
+        success: false,
+        message: error.message,
+      });
+    }
+    next(error);
+  }
+};
+
+export const getApprovalHistoryController = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = getAttendanceWorkspaceId(req as AttendanceRequest, res);
+  if (!workspaceId) return;
+
+  try {
+    const history = await attendanceService.getApprovalHistory(workspaceId);
+    return res.status(200).json({
+      success: true,
+      data: history,
+    });
   } catch (error) {
     next(error);
   }

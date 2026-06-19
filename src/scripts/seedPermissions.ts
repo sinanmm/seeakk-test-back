@@ -138,6 +138,7 @@ const permissions = [
   { key: 'view_attendance_location_logs', group: 'ATTENDANCE_MANAGEMENT', description: 'View attendance GPS location audit logs' },
   { key: 'edit_attendance_apply_type', group: 'ATTENDANCE_MANAGEMENT', description: 'Edit employee attendance apply type settings' },
   { key: 'view_attendance_network_logs', group: 'ATTENDANCE_MANAGEMENT', description: 'View attendance network audit logs' },
+  { key: 'ATTENDANCE_APPROVE', group: 'ATTENDANCE_MANAGEMENT', description: 'Can view attendance summaries and approve/reject attendance records.' },
 ];
 
 async function syncWorkspaceSuperAdminRoles() {

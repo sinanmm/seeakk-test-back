@@ -227,15 +227,33 @@ export const getAttendanceSummary = async (filters: SummaryFilterDto) => {
   const attendance = await db.attendanceRecord.findMany({
     where,
     include: {
-      user: { select: { name: true } },
+      user: {
+        select: {
+          name: true,
+          attendanceSchedule: true,
+        },
+      },
     },
     orderBy: { date: 'desc' },
     skip: (page - 1) * limit,
     take: limit,
   });
+
+  const approverIds = Array.from(new Set(attendance.map((r: any) => r.approvedBy).filter(Boolean))) as string[];
+  const approvers = await prisma.user.findMany({
+    where: { id: { in: approverIds } },
+    select: { id: true, name: true },
+  });
+  const approverMap = new Map(approvers.map(a => [a.id, a.name]));
+
+  const recordsWithApprover = attendance.map((r: any) => ({
+    ...r,
+    approvedByName: r.approvedBy ? approverMap.get(r.approvedBy) || 'Unknown' : null,
+  }));
+
   const total = await db.attendanceRecord.count({ where });
 
-  return { data: attendance, pagination: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+  return { data: recordsWithApprover, pagination: { total, page, limit, totalPages: Math.ceil(total / limit) } };
 };
 
 export const getExtensionsSummary = async (filters: SummaryFilterDto) => {

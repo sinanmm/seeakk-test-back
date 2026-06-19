@@ -10,13 +10,21 @@ router.use(protect);
 // Employee check-in: authenticated + workspace only (every onboarded employee must mark attendance)
 router.get('/today', resolveAttendanceWorkspace, controller.getTodayStatusController);
 router.post('/check-in', resolveAttendanceWorkspace, controller.markAttendanceController);
+router.post('/check-out', resolveAttendanceWorkspace, controller.checkOutController);
 router.get('/history', checkPermission('view_attendance'), controller.getHistoryController);
 router.get('/stats', checkPermission('view_attendance'), controller.getStatsController);
 router.get('/notifications', checkAnyPermission(['view_attendance', 'mark_attendance']), controller.getNotificationsController);
 
 // Supervisor / Admin Approval Queue
-router.get('/pending', checkAnyPermission(['approve_attendance', 'view_pending_attendance']), controller.getPendingApprovalsController);
-router.post('/review/:recordId', checkPermission('approve_attendance'), controller.reviewAttendanceController);
+router.get('/pending', checkAnyPermission(['approve_attendance', 'view_pending_attendance', 'ATTENDANCE_APPROVE']), controller.getPendingApprovalsController);
+router.post('/review/:recordId', checkAnyPermission(['approve_attendance', 'ATTENDANCE_APPROVE']), controller.reviewAttendanceController);
+router.post('/clarification/:recordId', checkAnyPermission(['approve_attendance', 'ATTENDANCE_APPROVE']), controller.requestClarificationController);
+router.get('/approval-history', checkAnyPermission(['approve_attendance', 'ATTENDANCE_APPROVE']), controller.getApprovalHistoryController);
+
+// Schedules routes
+router.get('/schedules', checkAnyPermission(['manage_attendance_settings', 'ATTENDANCE_APPROVE']), controller.getSchedulesController);
+router.get('/schedules/:userId', checkAnyPermission(['manage_attendance_settings', 'ATTENDANCE_APPROVE']), controller.getScheduleController);
+router.post('/schedules/:userId', checkPermission('manage_attendance_settings'), controller.updateScheduleController);
 
 // User list management routes
 router.put('/apply-type/:userId', checkPermission('edit_attendance_apply_type'), controller.updateUserApplyTypeController);
