@@ -76,6 +76,7 @@ type FollowUpRecord = {
     name: string;
     email: string | null;
     phone: string | null;
+    createdById: string;
     assignedToId?: string | null;
     assignedTo?: {
       id: string;
@@ -305,6 +306,11 @@ export const mapFollowUpRecord = (record: FollowUpRecord) => ({
   })),
 });
 
+export const resolveLeadFollowUpOwnerId = (lead: {
+  assignedToId?: string | null;
+  createdById: string;
+}): string => lead.assignedToId || lead.createdById;
+
 const mapReminderFollowUpRecord = (record: ReminderFollowUpRecord) => ({
   id: record.id,
   leadId: record.leadId,
@@ -327,6 +333,7 @@ const buildFollowUpInclude = {
       name: true,
       email: true,
       phone: true,
+      createdById: true,
       assignedToId: true,
       assignedTo: {
         select: {
@@ -548,40 +555,76 @@ const invalidateTodayCache = async (
   }
 };
 
+export const buildFollowUpLeadOwnerFilter = (userId?: string | string[] | 'ALL') => {
+  if (!userId || userId === 'ALL') {
+    return undefined;
+  }
+
+  const scopedUserId = Array.isArray(userId) ? { in: userId } : userId;
+  return {
+    OR: [
+      { assignedToId: scopedUserId },
+      {
+        assignedToId: null,
+        createdById: scopedUserId,
+      },
+    ],
+  };
+};
+
 const buildFollowUpWhere = (params: {
   workspaceId: string;
   userId?: string | string[] | 'ALL';
   leadAssignedToId?: string | { in: string[] };
+  leadFilter?: Record<string, unknown>;
   status?: FollowUpStatus;
   startDate?: Date;
   endDate?: Date;
-}) => ({
-  workspaceId: params.workspaceId,
-  ...(params.userId && params.userId !== 'ALL'
-    ? { userId: Array.isArray(params.userId) ? { in: params.userId } : params.userId }
-    : {}),
-  ...(params.leadAssignedToId
-    ? {
-        lead: {
-          assignedToId:
-            typeof params.leadAssignedToId === 'string'
-              ? params.leadAssignedToId
-              : params.leadAssignedToId,
-        },
-      }
-    : {}),
-  ...(params.status ? { status: params.status } : {}),
-  ...(params.startDate || params.endDate
-    ? {
-        scheduledAt: {
-          ...(params.startDate ? { gte: params.startDate } : {}),
-          ...(params.endDate ? { lte: params.endDate } : {}),
-        },
-      }
-    : {}),
-});
+}) => {
+  const leadClauses: Record<string, unknown>[] = [];
+  const ownerFilter = buildFollowUpLeadOwnerFilter(params.userId);
 
-/** Bulk reschedule: filter follow-ups by assignee (`FollowUp.userId`), not logged-in user. */
+  if (ownerFilter) {
+    leadClauses.push(ownerFilter);
+  }
+
+  if (params.leadAssignedToId) {
+    leadClauses.push({
+      assignedToId:
+        typeof params.leadAssignedToId === 'string'
+          ? params.leadAssignedToId
+          : params.leadAssignedToId,
+    });
+  }
+
+  if (params.leadFilter) {
+    leadClauses.push(params.leadFilter);
+  }
+
+  return {
+    workspaceId: params.workspaceId,
+    ...(leadClauses.length === 1
+      ? { lead: leadClauses[0] }
+      : leadClauses.length > 1
+        ? {
+            lead: {
+              AND: leadClauses,
+            },
+          }
+        : {}),
+    ...(params.status ? { status: params.status } : {}),
+    ...(params.startDate || params.endDate
+      ? {
+          scheduledAt: {
+            ...(params.startDate ? { gte: params.startDate } : {}),
+            ...(params.endDate ? { lte: params.endDate } : {}),
+          },
+        }
+      : {}),
+  };
+};
+
+/** Bulk reschedule: filter follow-ups by lead owner (`Lead.assignedToId` / fallback creator), not logged-in user. */
 export const resolveBulkRescheduleUserFilter = (
   requestedAssigneeId: string | undefined,
   assigneeScope: string[] | 'ALL',
@@ -702,6 +745,8 @@ export const createFollowUp = async (
       lifecycleId: true,
       isClosed: true,
       isLOB: true,
+      assignedToId: true,
+      createdById: true,
       stageExpiresAt: true,
       stage: { select: { isClosed: true, isLOB: true } },
     },
@@ -719,9 +764,12 @@ export const createFollowUp = async (
     throw createServiceError('Follow-ups cannot be scheduled on a holiday.', 422);
   }
 
-  const userId = (await resolveTargetUserId(workspaceId, actor)) as string;
+  const ownerUserId = resolveLeadFollowUpOwnerId({
+    assignedToId: leadForSchedule?.assignedToId ?? null,
+    createdById: leadForSchedule!.createdById,
+  });
 
-  const capacity = await checkUserCapacity(workspaceId, userId, input.scheduledAt);
+  const capacity = await checkUserCapacity(workspaceId, ownerUserId, input.scheduledAt);
   if (!capacity.hasCapacity) {
     throw createServiceError('You have reached your daily follow-up limit for today.', 422);
   }
@@ -729,7 +777,7 @@ export const createFollowUp = async (
   const created = await (prisma as any).followUp.create({
     data: {
       leadId: input.leadId.trim(),
-      userId,
+      userId: ownerUserId,
       workspaceId,
       type: input.type,
       description: input.description?.trim() || null,
@@ -741,14 +789,14 @@ export const createFollowUp = async (
 
   const scheduleDateKey = moment(input.scheduledAt).utc().format('YYYY-MM-DD');
   const todayRange = await getDayRangeForWorkspace(workspaceId);
-  await invalidateTodayCache(workspaceId, userId, [scheduleDateKey, todayRange.cacheDateKey]);
+  await invalidateTodayCache(workspaceId, ownerUserId, [scheduleDateKey, todayRange.cacheDateKey]);
   await syncLeadNextFollowUpPointer(input.leadId.trim(), workspaceId);
 
   logger.info('Follow-up created', {
     module: 'follow-up',
     followUpId: created.id,
     workspaceId,
-    userId,
+    userId: ownerUserId,
     leadId: input.leadId,
     type: input.type,
   });
@@ -763,7 +811,7 @@ export const getCalendarData = async (
 ) => {
   await assertModuleReady();
 
-  const targetUserId = await resolveTargetUserId(workspaceId, actor, query.userId);
+  const targetUserId = actor.id;
   const timeZone = await getWorkspaceTimeZone(workspaceId);
 
   const where = buildFollowUpWhere({
@@ -893,7 +941,7 @@ export const getAdvancedCalendarSummary = async (
 
   await markPendingFollowUpsOverdueForWorkspace(workspaceId);
 
-  const targetUserId = await resolveTargetUserId(workspaceId, actor, query.userId);
+  const targetUserId = actor.id;
   const timeZone = await getWorkspaceTimeZone(workspaceId);
   const leadAccess = await buildAccessWhere(workspaceId, actor);
   const leadAccessFilter =
@@ -939,15 +987,13 @@ export const getAdvancedCalendarSummary = async (
       select: { changedAt: true, toStageId: true, toStageName: true },
     }),
     (prisma as any).followUp.findMany({
-      where: {
-        ...buildFollowUpWhere({
-          workspaceId,
-          userId: targetUserId,
-          startDate: query.startDate,
-          endDate: query.endDate,
-        }),
-        lead: leadAccessFilter,
-      },
+      where: buildFollowUpWhere({
+        workspaceId,
+        userId: targetUserId,
+        startDate: query.startDate,
+        endDate: query.endDate,
+        leadFilter: leadAccessFilter,
+      }),
       select: {
         scheduledAt: true,
         previousFollowupDate: true,
@@ -1140,7 +1186,7 @@ export const getAdvancedCalendarDetails = async (
 
   await markPendingFollowUpsOverdueForWorkspace(workspaceId);
 
-  const targetUserId = await resolveTargetUserId(workspaceId, actor, query.userId);
+  const targetUserId = actor.id;
   const timeZone = await getWorkspaceTimeZone(workspaceId);
   const skip = (query.page - 1) * query.limit;
 
@@ -1302,17 +1348,15 @@ export const getAdvancedCalendarDetails = async (
       };
     }
 
-    const where: any = {
+    const where: any = buildFollowUpWhere({
       workspaceId,
-      ...(targetUserId !== 'ALL'
-        ? { userId: Array.isArray(targetUserId) ? { in: targetUserId } : targetUserId }
-        : {}),
-      scheduledAt: { gte: startOfDay, lte: endOfDay },
-      lead: leadAccessFilter,
-    };
-    if (query.type === 'STAGE_FOLLOWUPS' && query.stageId) {
-      where.lead = { ...leadAccessFilter, stageId: query.stageId };
-    }
+      userId: targetUserId,
+      startDate: startOfDay,
+      endDate: endOfDay,
+      leadFilter: query.type === 'STAGE_FOLLOWUPS' && query.stageId
+        ? { ...leadAccessFilter, stageId: query.stageId }
+        : leadAccessFilter,
+    });
     const allRows = await (prisma as any).followUp.findMany({
       where,
       orderBy: { scheduledAt: 'asc' },
@@ -1344,7 +1388,7 @@ export const getTodayFollowUps = async (
 ) => {
   await assertModuleReady();
 
-  const targetUserId = await resolveTargetUserId(workspaceId, actor, query.userId);
+  const targetUserId = actor.id;
   const { start, end, cacheDateKey, timeZone } = await getDayRangeForWorkspace(workspaceId);
   const cacheKey = buildTodayCacheKey(workspaceId, targetUserId, cacheDateKey);
 
@@ -1386,17 +1430,17 @@ export const getReminderAlerts = async (
 ) => {
   await assertModuleReady();
 
-  const targetUserId = await resolveTargetUserId(workspaceId, actor, query.userId);
+  const targetUserId = actor.id;
   const timeZone = await getWorkspaceTimeZone(workspaceId);
   if (MISSED_AFTER_MINUTES > 0) {
     const cutoff = new Date(Date.now() - MISSED_AFTER_MINUTES * 60_000);
     await (prisma as any).followUp.updateMany({
-      where: {
+      where: buildFollowUpWhere({
         workspaceId,
         userId: targetUserId,
         status: FOLLOWUP_PENDING,
-        scheduledAt: { lt: cutoff },
-      },
+        endDate: cutoff,
+      }),
       data: {
         status: FOLLOWUP_MISSED,
       },
@@ -1455,7 +1499,7 @@ export const completeFollowUp = async (
     throw createServiceError('Follow-up not found in this workspace.', 404);
   }
 
-  if (existing.userId !== actor.id && !isManagerialRole(actor.role?.name)) {
+  if (resolveLeadFollowUpOwnerId(existing.lead) !== actor.id) {
     throw createServiceError('You are not allowed to complete another user\'s follow-up.', 403);
   }
 
@@ -1617,7 +1661,7 @@ export const snoozeFollowUp = async (
   if (!existing) {
     throw createServiceError('Follow-up not found in this workspace.', 404);
   }
-  if (existing.userId !== actor.id && !isManagerialRole(actor.role?.name)) {
+  if (resolveLeadFollowUpOwnerId(existing.lead) !== actor.id) {
     throw createServiceError('You are not allowed to snooze another user\'s follow-up.', 403);
   }
   if (existing.status === FOLLOWUP_COMPLETED) {

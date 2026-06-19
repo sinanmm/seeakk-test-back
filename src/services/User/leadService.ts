@@ -1158,6 +1158,7 @@ export const createLead = async (
     actor,
     input.assignedToId,
   );
+  const followUpOwnerId = assignedToId || actor.id;
   const shouldAutoAssignStage = !input.skipAutoStageAssignment || Boolean(input.stageId);
   const stage = shouldAutoAssignStage
     ? (await resolveStage(workspaceId, input.stageId)) ||
@@ -1212,7 +1213,7 @@ export const createLead = async (
         tx,
         lead.id,
         workspaceId,
-        assignedToId || actor.id,
+        followUpOwnerId,
         input.nextFollowUpAt,
         input.followUpDescription,
         normalizeFollowUpType(input.nextFollowUpType),
@@ -1252,7 +1253,7 @@ export const createLead = async (
 
   await clearLeadCache(workspaceId);
   if (input.nextFollowUpAt) {
-    await touchFollowUpTodayCachesAfterLeadMutation(workspaceId, assignedToId || actor.id, input.nextFollowUpAt);
+    await touchFollowUpTodayCachesAfterLeadMutation(workspaceId, followUpOwnerId, input.nextFollowUpAt);
   }
   const created = await getLeadScoped(workspaceId, createdLeadId, actor);
   return { lead: mapLeadRecord(created), autoSelfAssigned };
@@ -1501,6 +1502,21 @@ export const updateLead = async (
       },
     });
 
+    const followUpOwnerId = assignedToId || existing.createdById;
+
+    if (input.assignedToId !== undefined && existing.assignedToId !== assignedToId) {
+      await (tx as any).followUp.updateMany({
+        where: {
+          leadId: id,
+          workspaceId,
+          status: 'PENDING',
+        },
+        data: {
+          userId: followUpOwnerId,
+        },
+      });
+    }
+
     const shouldCreateNewAutoFollowUp =
       Boolean(input.nextFollowUpAt) &&
       (!existing.nextFollowUpAt || existing.nextFollowUpAt.getTime() !== input.nextFollowUpAt!.getTime());
@@ -1510,7 +1526,7 @@ export const updateLead = async (
         tx,
         id,
         workspaceId,
-        assignedToId || actor.id,
+        followUpOwnerId,
         input.nextFollowUpAt!,
         input.followUpDescription,
         normalizeFollowUpType(input.nextFollowUpType),
@@ -1581,7 +1597,7 @@ export const updateLead = async (
     nextFollowUpAt &&
     (input.nextFollowUpAt !== undefined || input.nextFollowUpType !== undefined || input.followUpDescription !== undefined)
   ) {
-    await touchFollowUpTodayCachesAfterLeadMutation(workspaceId, assignedToId || actor.id, nextFollowUpAt);
+    await touchFollowUpTodayCachesAfterLeadMutation(workspaceId, assignedToId || existing.createdById, nextFollowUpAt);
   }
   const updated = await getLeadScoped(workspaceId, updatedLeadId, actor);
   return mapLeadRecord(updated);
@@ -1971,3 +1987,4 @@ export const exportLeads = async (
 
 export const canAssignOtherUsers = async (actor: Actor): Promise<boolean> =>
   actorCanAssignToOthers(actor);
+
