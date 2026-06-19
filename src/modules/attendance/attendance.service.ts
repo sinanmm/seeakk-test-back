@@ -1,4 +1,4 @@
-﻿import prisma from '../../config/prisma';
+import prisma from '../../config/prisma';
 import logger from '../../utils/logger';
 import { getApplicableHolidays } from '../holidays/holidays.service';
 import { getWorkspaceWeeklyOffSettings, isWeeklyOffDateString } from '../holidays/weeklyOff.util';
@@ -934,7 +934,7 @@ export const reviewAttendance = async (
       rejectedReason: action === 'REJECT' ? trimmedReason : null,
       rejectedBy: action === 'REJECT' ? actorId : null,
       rejectedAt: action === 'REJECT' ? reviewedAt : null,
-    },
+    } as any,
   });
 
   await prisma.attendanceApprovalLog.create({
@@ -1102,7 +1102,7 @@ export const checkOutAttendance = async (userId: string, workspaceId: string, pa
       submittedAt: new Date(),
       notes: payload.notes ?? existingRecord.notes,
       attachmentUrl: payload.attachmentUrl ?? existingRecord.attachmentUrl,
-    },
+    } as any,
   });
 
   await prisma.attendanceAuditLog.create({
@@ -1241,7 +1241,7 @@ export const requestClarification = async (workspaceId: string, recordId: string
       rejectedAt: new Date(),
       approvedBy: null,
       approvedAt: null,
-    },
+    } as any,
   });
 
   await prisma.attendanceApprovalLog.create({
