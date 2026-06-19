@@ -1655,8 +1655,6 @@ model AttendanceRecord {
   notes               String?
   attachmentUrl       String?
 
-  checkOutTime            DateTime?
-  workingHours            Float?
   workSummary             String?          @db.Text
   achievements            String?          @db.Text
   pendingTasks            String?          @db.Text

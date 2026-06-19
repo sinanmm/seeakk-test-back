@@ -608,13 +608,6 @@ export const login = async (req: Request, res: Response): Promise<any> => {
     await repairWorkspaceMemberOnboarding(user, resolvedWorkspaceId);
     const session = await resolveAuthSession(user, resolvedWorkspaceId);
 
-    res.cookie('refreshToken', tokens.refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    });
-
     return res.status(200).json({
       user: await serializeUserForAuthResponse(user, resolvedWorkspaceId),
       session,
@@ -817,13 +810,6 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
     await repairWorkspaceMemberOnboarding(user, resolvedWorkspaceId);
     const session = await resolveAuthSession(user, resolvedWorkspaceId);
 
-    res.cookie('refreshToken', tokens.refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    });
-
     return res.status(200).json({
       user: await serializeUserForAuthResponse(user, resolvedWorkspaceId),
       session,
@@ -877,7 +863,7 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
 
 export const refreshToken = async (req: Request, res: Response): Promise<any> => {
   try {
-    const refreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
+    const { refreshToken } = req.body;
 
     if (!refreshToken) {
       return res.status(400).json({ message: 'Refresh token is required' });
@@ -993,13 +979,6 @@ export const refreshToken = async (req: Request, res: Response): Promise<any> =>
 
     await cacheRefreshReplay(tokenId, JSON.stringify(responseBody));
 
-    res.cookie('refreshToken', tokens.refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    });
-
     return res.status(200).json(responseBody);
   } catch (error) {
     const err: any = error;
@@ -1021,13 +1000,7 @@ export const refreshToken = async (req: Request, res: Response): Promise<any> =>
 
 export const logout = async (req: Request, res: Response): Promise<any> => {
   try {
-    const refreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
-
-    res.clearCookie('refreshToken', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-    });
+    const { refreshToken } = req.body;
 
     if (!refreshToken) {
       return res.status(200).json({ message: 'Logged out successfully' });

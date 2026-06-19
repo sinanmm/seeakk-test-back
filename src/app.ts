@@ -1,7 +1,6 @@
 import { randomUUID } from 'crypto';
 import express, { Request, Response } from 'express';
 import compression from 'compression';
-import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import cors from 'cors';
 import morgan from 'morgan';
@@ -58,8 +57,6 @@ import { FOLLOWUP_LOCK_BYPASS_VERSION } from './utils/followUpLockExemptPaths';
 const app = express();
 // Render / Vercel / proxies: trust X-Forwarded-* for correct req.ip and secure cookies if used later
 app.set('trust proxy', 1);
-
-app.use(cookieParser());
 
 const shouldCompress = (req: Request): boolean => {
   const p = req.path || '';

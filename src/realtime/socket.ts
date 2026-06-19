@@ -76,8 +76,8 @@ export const initRealtimeServer = (httpServer: HttpServer): SocketIOServer => {
     allowEIO3: true,
     /** Small CRM payloads: disabling permessage deflate reduces CPU on high-frequency emits (Render). */
     perMessageDeflate: false,
-    pingTimeout: 120000,
-    pingInterval: 20000,
+    pingTimeout: 60000,
+    pingInterval: 25000,
     upgradeTimeout: 30000,
     maxHttpBufferSize: 1e8,
   });
@@ -94,41 +94,32 @@ export const initRealtimeServer = (httpServer: HttpServer): SocketIOServer => {
         (socket.handshake.auth?.token as string | undefined) ||
         (socket.handshake.headers.authorization as string | undefined)?.replace(/^Bearer\s+/i, '');
 
-      if (!token) {
-        return next(new Error('AUTH_ERROR: Unauthorized socket connection (no token)'));
+      if (!token) return next(new Error('Unauthorized socket connection'));
+
+      const decoded = jwt.verify(token, process.env.JWT_SECRET as string, {
+        clockTolerance: 30,
+      }) as { userId: string };
+      const user = await prisma.user.findUnique({
+        where: { id: decoded.userId },
+        select: { id: true, workspaceId: true, isActive: true },
+      });
+
+      if (!user || !user.isActive) {
+        return next(new Error('Unauthorized socket connection'));
       }
 
-      try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET as string, {
-          clockTolerance: 30,
-        }) as { userId: string };
-
-        const user = await prisma.user.findUnique({
-          where: { id: decoded.userId },
-          select: { id: true, workspaceId: true, isActive: true },
-        });
-
-        if (!user || !user.isActive) {
-          return next(new Error('AUTH_ERROR: User inactive or not found'));
-        }
-
-        const workspaceId = await resolveWorkspaceIdForUser(user.id, user.workspaceId ?? null);
-        if (!workspaceId) {
-          return next(new Error('AUTH_ERROR: Workspace resolution failed'));
-        }
-
-        (socket.data as any).userId = user.id;
-        (socket.data as any).workspaceId = workspaceId;
-        socket.join(toUserRoom(user.id));
-        socket.join(toWorkspaceRoom(workspaceId));
-        next();
-      } catch (jwtErr: any) {
-        logger.warn('Socket JWT verification failed', { error: jwtErr.message });
-        return next(new Error(`AUTH_ERROR: ${jwtErr.message || 'JWT verification failed'}`));
+      const workspaceId = await resolveWorkspaceIdForUser(user.id, user.workspaceId ?? null);
+      if (!workspaceId) {
+        return next(new Error('Unauthorized socket connection'));
       }
+
+      (socket.data as any).userId = user.id;
+      (socket.data as any).workspaceId = workspaceId;
+      socket.join(toUserRoom(user.id));
+      socket.join(toWorkspaceRoom(workspaceId));
+      next();
     } catch (error: any) {
-      logger.error('Socket middleware unexpected error', { error: error.message });
-      next(new Error(`AUTH_ERROR: ${error?.message || 'Socket authentication failed'}`));
+      next(new Error(error?.message || 'Socket authentication failed'));
     }
   });
 
