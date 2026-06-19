@@ -94,23 +94,34 @@ export const initRealtimeServer = (httpServer: HttpServer): SocketIOServer => {
         (socket.handshake.auth?.token as string | undefined) ||
         (socket.handshake.headers.authorization as string | undefined)?.replace(/^Bearer\s+/i, '');
 
-      if (!token) return next(new Error('Unauthorized socket connection'));
+      if (!token) {
+        return next(new Error('AUTH_ERROR: Token is missing'));
+      }
 
-      const decoded = jwt.verify(token, process.env.JWT_SECRET as string, {
-        clockTolerance: 30,
-      }) as { userId: string };
+      let decoded: any;
+      try {
+        decoded = jwt.verify(token, process.env.JWT_SECRET as string, {
+          clockTolerance: 30,
+        }) as { userId: string };
+      } catch (err: any) {
+        return next(new Error(`AUTH_ERROR: ${err.message || 'JWT verification failed'}`));
+      }
+
       const user = await prisma.user.findUnique({
         where: { id: decoded.userId },
         select: { id: true, workspaceId: true, isActive: true },
       });
 
-      if (!user || !user.isActive) {
-        return next(new Error('Unauthorized socket connection'));
+      if (!user) {
+        return next(new Error('AUTH_ERROR: User not found'));
+      }
+      if (!user.isActive) {
+        return next(new Error('AUTH_ERROR: User is inactive'));
       }
 
       const workspaceId = await resolveWorkspaceIdForUser(user.id, user.workspaceId ?? null);
       if (!workspaceId) {
-        return next(new Error('Unauthorized socket connection'));
+        return next(new Error('AUTH_ERROR: Workspace resolution failed'));
       }
 
       (socket.data as any).userId = user.id;
@@ -119,7 +130,8 @@ export const initRealtimeServer = (httpServer: HttpServer): SocketIOServer => {
       socket.join(toWorkspaceRoom(workspaceId));
       next();
     } catch (error: any) {
-      next(new Error(error?.message || 'Socket authentication failed'));
+      logger.error('Socket middleware unexpected error', { error: error.message });
+      next(new Error(`AUTH_ERROR: ${error?.message || 'Socket authentication failed'}`));
     }
   });
 
