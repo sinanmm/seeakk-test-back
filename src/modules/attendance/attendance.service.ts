@@ -270,7 +270,7 @@ export const getTodayStatus = async (userId: string, workspaceId: string) => {
         date: new Date(todayStr),
       },
     },
-  });
+  }) as any;
 
   const submissionState = resolveAttendanceSubmissionState(
     existingRecord,
@@ -314,7 +314,7 @@ export const getTodayStatus = async (userId: string, workspaceId: string) => {
     requiresMandatoryPopup: requiresMandatoryAttendancePopup(submissionState, user.isLocked),
     requiresMandatoryCheckoutPopup,
     canCheckOut: shouldRequireCheckout(existingRecord),
-    checkoutCompleted: Boolean((existingRecord as any)?.checkOutTime || (existingRecord as any)?.checkoutCompleted),
+    checkoutCompleted: Boolean(existingRecord?.checkOutTime || existingRecord?.checkoutCompleted),
     expectedCheckInTime: expectedTiming.expectedCheckInTime,
     expectedCheckOutTime: expectedTiming.expectedCheckOutTime,
     userAttendanceSetting: expectedTiming.userSetting,
@@ -349,7 +349,7 @@ export const markAttendance = async (userId: string, workspaceId: string, payloa
         date: dateObj,
       },
     },
-  });
+  }) as any;
 
   if (existingRecord && !isSystemGeneratedRecord(existingRecord)) {
     if (existingRecord.approvalStatus !== 'REJECTED') {
@@ -590,7 +590,7 @@ export const getHistory = async (userId: string, workspaceId: string, filters: a
       },
     },
     orderBy: { date: 'desc' },
-  });
+  }) as any[];
 
   // Fetch approver names in memory to avoid schema changes
   const approverIds = Array.from(new Set(records.map(r => r.approvedBy).filter(Boolean))) as string[];
@@ -722,7 +722,7 @@ export const getAdminOverview = async (workspaceId: string, filters: any) => {
       date: todayDateObj,
       userId: { in: users.map(u => u.id) },
     },
-  });
+  }) as any[];
 
   const attendanceMap = new Map(attendanceRecords.map(r => [r.userId, r]));
 
@@ -878,7 +878,7 @@ export const reviewAttendance = async (
     include: {
       user: { select: { supervisorId: true, name: true } },
     },
-  });
+  }) as any;
 
   if (!record) {
     throw createAttendanceServiceError('Attendance record not found', 404);
@@ -1050,7 +1050,7 @@ export const checkOutAttendance = async (userId: string, workspaceId: string, pa
         date: dateObj,
       },
     },
-  });
+  }) as any;
 
   if (!existingRecord || !existingRecord.checkInTime) {
     throw createAttendanceServiceError('Check-in is required before checkout.', 409);
@@ -1221,7 +1221,7 @@ export const requestClarification = async (workspaceId: string, recordId: string
   const record = await prisma.attendanceRecord.findFirst({
     where: { id: recordId, workspaceId },
     include: { user: { select: { supervisorId: true, name: true } } },
-  });
+  }) as any;
 
   if (!record) {
     throw createAttendanceServiceError('Attendance record not found', 404);
@@ -1296,7 +1296,7 @@ export const getApprovalHistory = async (workspaceId: string) => {
     },
     orderBy: [{ approvedAt: 'desc' }, { rejectedAt: 'desc' }, { date: 'desc' }],
     take: 200,
-  });
+  }) as any[];
 
   const actorIds = Array.from(
     new Set(records.flatMap((record) => [record.approvedBy, record.rejectedBy].filter(Boolean))),
