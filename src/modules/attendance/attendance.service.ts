@@ -191,6 +191,57 @@ const buildLocationRecordFields = (
       : payload.geoLocation ?? null,
 });
 
+const DEFAULT_EXPECTED_CHECK_IN_TIME = '09:00';
+const DEFAULT_EXPECTED_CHECK_OUT_TIME = '18:00';
+
+const timeStringToMinutes = (value?: string | null): number | null => {
+  if (!value || !/^\d{2}:\d{2}$/.test(value)) return null;
+  const [hours, minutes] = value.split(':').map(Number);
+  return hours * 60 + minutes;
+};
+
+const dateToMinutes = (value?: Date | null): number | null => {
+  if (!value) return null;
+  return value.getHours() * 60 + value.getMinutes();
+};
+
+const roundWorkingHours = (checkInTime?: Date | null, checkOutTime?: Date | null): number | null => {
+  if (!checkInTime || !checkOutTime) return null;
+  const diffMs = checkOutTime.getTime() - checkInTime.getTime();
+  if (diffMs <= 0) return 0;
+  return Math.round((diffMs / (1000 * 60 * 60)) * 100) / 100;
+};
+
+const shouldRequireCheckout = (record: any): boolean => {
+  if (!record || isSystemGeneratedRecord(record)) return false;
+  if (record.checkOutTime || record.checkoutCompleted) return false;
+  return ['PRESENT', 'HALF_DAY', 'WORK_FROM_HOME'].includes(record.attendanceType);
+};
+
+const resolveCheckoutPopupRequirement = (record: any, expectedCheckOutTime?: string | null): boolean => {
+  if (!shouldRequireCheckout(record)) return false;
+  const expectedMinutes = timeStringToMinutes(expectedCheckOutTime);
+  if (expectedMinutes == null) return false;
+  const currentMinutes = dateToMinutes(new Date());
+  return currentMinutes != null && currentMinutes >= expectedMinutes;
+};
+
+const resolveExpectedAttendanceTimes = async (workspaceId: string, userId: string) => {
+  const [settings, userSetting] = await Promise.all([
+    getSettings(workspaceId),
+    (prisma as any).attendanceUserSetting.findUnique({ where: { userId } }),
+  ]);
+
+  return {
+    settings,
+    userSetting,
+    expectedCheckInTime:
+      userSetting?.expectedCheckInTime || settings.attendanceStartTime || DEFAULT_EXPECTED_CHECK_IN_TIME,
+    expectedCheckOutTime:
+      userSetting?.expectedCheckOutTime || DEFAULT_EXPECTED_CHECK_OUT_TIME,
+  };
+};
+
 export const getTodayStatus = async (userId: string, workspaceId: string) => {
   const user = await prisma.user.findFirst({
     where: { id: userId, deletedAt: null, isActive: true },
@@ -233,6 +284,11 @@ export const getTodayStatus = async (userId: string, workspaceId: string) => {
     attendanceApplyType,
     attendanceOfficeLocationId: user.attendanceOfficeLocationId,
   });
+  const expectedTiming = await resolveExpectedAttendanceTimes(workspaceId, userId);
+  const requiresMandatoryCheckoutPopup = resolveCheckoutPopupRequirement(
+    existingRecord,
+    expectedTiming.expectedCheckOutTime,
+  );
 
   let targetLock: Awaited<ReturnType<typeof import('../targets/targetLockEvaluation.service').getTargetLockDisplayForUser>> = null;
   if (user.isLocked && user.targetLockedAt) {
@@ -256,6 +312,12 @@ export const getTodayStatus = async (userId: string, workspaceId: string) => {
     isMarked,
     submissionState,
     requiresMandatoryPopup: requiresMandatoryAttendancePopup(submissionState, user.isLocked),
+    requiresMandatoryCheckoutPopup,
+    canCheckOut: shouldRequireCheckout(existingRecord),
+    checkoutCompleted: Boolean(existingRecord?.checkOutTime || existingRecord?.checkoutCompleted),
+    expectedCheckInTime: expectedTiming.expectedCheckInTime,
+    expectedCheckOutTime: expectedTiming.expectedCheckOutTime,
+    userAttendanceSetting: expectedTiming.userSetting,
     record: existingRecord,
     attendanceApplyType,
     officeLocationConfigured: locationSetup.officeLocationConfigured,
@@ -267,6 +329,7 @@ export const getTodayStatus = async (userId: string, workspaceId: string) => {
       : null,
   };
 };
+
 
 export const markAttendance = async (userId: string, workspaceId: string, payload: any) => {
   const user = await assertUserInWorkspace(userId, workspaceId);
@@ -303,7 +366,8 @@ export const markAttendance = async (userId: string, workspaceId: string, payloa
   const holidayName = holidayCheck.isHoliday ? holidayCheck.name : null;
   const attendanceType = isWeeklyOff ? 'WEEKLY_OFF' : isHoliday ? 'HOLIDAY' : payload.attendanceType;
 
-  const settings = await getSettings(workspaceId);
+  const expectedTiming = await resolveExpectedAttendanceTimes(workspaceId, userId);
+  const settings = expectedTiming.settings;
 
   let isInsideOfficeRadius = false;
   let locationValidationResult: ReturnType<typeof validateOfficeLocation> | null = null;
@@ -355,100 +419,102 @@ export const markAttendance = async (userId: string, workspaceId: string, payloa
     isInsideOfficeRadius = true;
   }
 
-  const locationFields = buildLocationRecordFields(
-    payload,
-    locationValidationResult,
-    isInsideOfficeRadius,
-  );
+  const locationFields = buildLocationRecordFields(payload, locationValidationResult, isInsideOfficeRadius);
+  const checkInTime = payload.checkInTime ? new Date(payload.checkInTime) : new Date();
+  const actualCheckInMinutes = dateToMinutes(checkInTime);
+  const expectedCheckInMinutes = timeStringToMinutes(expectedTiming.expectedCheckInTime);
+  const lateMinutes =
+    !isHoliday &&
+    !isWeeklyOff &&
+    actualCheckInMinutes != null &&
+    expectedCheckInMinutes != null &&
+    actualCheckInMinutes > expectedCheckInMinutes
+      ? actualCheckInMinutes - expectedCheckInMinutes
+      : 0;
 
   let warningCount = 0;
-  let checkInTime = payload.checkInTime ? new Date(payload.checkInTime) : new Date();
 
-  // Settings warnings
   if (!isHoliday && !isWeeklyOff && ['PRESENT', 'HALF_DAY', 'WORK_FROM_HOME'].includes(attendanceType)) {
-    if (settings.enableWarning) {
+    if (settings.enableWarning && lateMinutes > 0) {
       const checkInHHMM = `${String(checkInTime.getHours()).padStart(2, '0')}:${String(checkInTime.getMinutes()).padStart(2, '0')}`;
-      if (checkInHHMM > settings.cutoffTime) {
-        warningCount = 1;
-        await prisma.attendanceWarning.create({
+      warningCount = 1;
+      await prisma.attendanceWarning.create({
+        data: {
+          userId,
+          workspaceId,
+          date: dateObj,
+          warningType: 'LATE_CHECKIN',
+          reason: `Late check-in at ${checkInHHMM}. Expected check-in was ${expectedTiming.expectedCheckInTime}.`,
+        },
+      });
+
+      const totalWarnings = await prisma.attendanceWarning.count({
+        where: { userId, workspaceId },
+      });
+
+      if (settings.enableAutoLock && totalWarnings >= settings.warningThreshold) {
+        await lockUser(
+          userId,
+          workspaceId,
+          `Exceeded late attendance warnings limit (${totalWarnings}/${settings.warningThreshold})`,
+        );
+        await prisma.attendanceNotification.create({
           data: {
-            userId,
             workspaceId,
-            date: dateObj,
-            warningType: 'LATE_CHECKIN',
-            reason: `Late check-in at ${checkInHHMM}. Cutoff was ${settings.cutoffTime}.`,
+            userId,
+            title: 'Account Locked',
+            message: `Your account was locked due to exceeding late check-in warnings (${totalWarnings})`,
           },
         });
-
-        const totalWarnings = await prisma.attendanceWarning.count({
-          where: { userId, workspaceId },
-        });
-
-        if (settings.enableAutoLock && totalWarnings >= settings.warningThreshold) {
-          await lockUser(userId, workspaceId, `Exceeded late attendance warnings limit (${totalWarnings}/${settings.warningThreshold})`);
-          await prisma.attendanceNotification.create({
-            data: {
-              workspaceId,
-              userId,
-              title: 'Account Locked',
-              message: `Your account was locked due to exceeding late check-in warnings (${totalWarnings})`,
-            },
-          });
-        }
       }
     }
   }
 
   const approvalStatus = settings.approvalRequired ? 'PENDING' : 'APPROVED';
+  const recordStatus = approvalStatus === 'APPROVED' ? 'APPROVED' as const : 'PENDING' as const;
 
-  let record;
-  if (existingRecord) {
-    record = await prisma.attendanceRecord.update({
-      where: { id: existingRecord.id },
-      data: {
-        checkInTime: isHoliday || isWeeklyOff ? null : checkInTime,
-        attendanceType,
-        status: approvalStatus === 'APPROVED' ? 'APPROVED' : 'PENDING',
-        warningCount,
-        isHoliday,
-        holidayName: isWeeklyOff ? 'Weekly Off' : holidayName,
-        isLocked: user.isLocked,
-        createdBy: userId,
-        attendanceApplyType,
-        deviceInfo: payload.deviceInfo,
-        approvalStatus,
-        supervisorId: user.supervisorId,
-        notes: payload.notes,
-        attachmentUrl: payload.attachmentUrl,
-        submittedAt: new Date(),
-        rejectedReason: null,
-        ...locationFields,
-      },
-    });
-  } else {
-    record = await prisma.attendanceRecord.create({
-      data: {
-        userId,
-        workspaceId,
-        date: dateObj,
-        checkInTime: isHoliday || isWeeklyOff ? null : checkInTime,
-        attendanceType,
-        status: approvalStatus === 'APPROVED' ? 'APPROVED' : 'PENDING',
-        warningCount,
-        isHoliday,
-        holidayName,
-        isLocked: user.isLocked,
-        createdBy: userId,
-        attendanceApplyType,
-        deviceInfo: payload.deviceInfo,
-        approvalStatus,
-        supervisorId: user.supervisorId,
-        notes: payload.notes,
-        attachmentUrl: payload.attachmentUrl,
-        ...locationFields,
-      },
-    });
-  }
+  const commonRecordData = {
+    checkInTime: isHoliday || isWeeklyOff ? null : checkInTime,
+    checkOutTime: null,
+    dailySummary: null,
+    checkoutCompleted: false,
+    workingHours: null,
+    expectedCheckInTime: expectedTiming.expectedCheckInTime,
+    expectedCheckOutTime: expectedTiming.expectedCheckOutTime,
+    lateMinutes,
+    attendanceType,
+    status: recordStatus,
+    warningCount,
+    isHoliday,
+    holidayName: isWeeklyOff ? 'Weekly Off' : holidayName,
+    isLocked: user.isLocked,
+    createdBy: userId,
+    attendanceApplyType,
+    deviceInfo: payload.deviceInfo,
+    approvalStatus,
+    supervisorId: user.supervisorId,
+    notes: payload.notes,
+    attachmentUrl: payload.attachmentUrl,
+    submittedAt: new Date(),
+    approvedBy: approvalStatus === 'APPROVED' ? userId : null,
+    approvedAt: approvalStatus === 'APPROVED' ? new Date() : null,
+    rejectedReason: null,
+    ...locationFields,
+  };
+
+  const record = existingRecord
+    ? await prisma.attendanceRecord.update({
+        where: { id: existingRecord.id },
+        data: commonRecordData,
+      })
+    : await prisma.attendanceRecord.create({
+        data: {
+          userId,
+          workspaceId,
+          date: dateObj,
+          ...commonRecordData,
+        },
+      });
 
   await prisma.attendanceAuditLog.create({
     data: {
@@ -459,6 +525,9 @@ export const markAttendance = async (userId: string, workspaceId: string, payloa
         module: 'attendance',
         attendanceType,
         approvalStatus,
+        lateMinutes,
+        expectedCheckInTime: expectedTiming.expectedCheckInTime,
+        expectedCheckOutTime: expectedTiming.expectedCheckOutTime,
         selfApproved: false,
         isInsideOfficeRadius,
         calculatedDistanceMeters: locationFields.calculatedDistanceMeters,
@@ -470,20 +539,20 @@ export const markAttendance = async (userId: string, workspaceId: string, payloa
     },
   });
 
-  // Notify Supervisor
   if (user.supervisorId) {
     await prisma.attendanceNotification.create({
       data: {
         workspaceId,
         userId: user.supervisorId,
         title: 'New Attendance Request',
-        message: `${user.name || 'An employee'} submitted a new attendance request for approval.`,
+        message: `${user.name || 'An employee'} submitted attendance for ${dateStr}.`,
       },
     });
   }
 
   return record;
 };
+
 
 export const getHistory = async (userId: string, workspaceId: string, filters: any) => {
   const user = await prisma.user.findUnique({ where: { id: userId } });
@@ -903,6 +972,147 @@ export const reviewAttendance = async (
   return updatedRecord;
 };
 
+export const getAttendanceUserSettings = async (workspaceId: string) => {
+  return (prisma as any).attendanceUserSetting.findMany({
+    where: { workspaceId },
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+    },
+    orderBy: { createdAt: 'asc' },
+  });
+};
+
+export const updateAttendanceUserSetting = async (workspaceId: string, userId: string, actorId: string, data: any) => {
+  await assertUserInWorkspace(userId, workspaceId);
+
+  const record = await (prisma as any).attendanceUserSetting.upsert({
+    where: { userId },
+    update: {
+      expectedCheckInTime: data.expectedCheckInTime,
+      expectedCheckOutTime: data.expectedCheckOutTime,
+      createdBy: actorId,
+    },
+    create: {
+      workspaceId,
+      userId,
+      expectedCheckInTime: data.expectedCheckInTime,
+      expectedCheckOutTime: data.expectedCheckOutTime,
+      createdBy: actorId,
+    },
+    include: {
+      user: {
+        select: { id: true, name: true, email: true },
+      },
+    },
+  });
+
+  await prisma.attendanceAuditLog.create({
+    data: {
+      workspaceId,
+      userId: actorId,
+      action: 'UPDATE_USER_TIMING',
+      details: JSON.stringify({
+        module: 'attendance',
+        targetUserId: userId,
+        expectedCheckInTime: data.expectedCheckInTime,
+        expectedCheckOutTime: data.expectedCheckOutTime,
+      }),
+    },
+  });
+
+  return record;
+};
+
+export const checkOutAttendance = async (userId: string, workspaceId: string, payload: any) => {
+  const user = await assertUserInWorkspace(userId, workspaceId);
+  const dateStr = payload.date || getLocalDateString();
+  const dateObj = new Date(dateStr);
+
+  const existingRecord = await prisma.attendanceRecord.findUnique({
+    where: {
+      userId_date: {
+        userId,
+        date: dateObj,
+      },
+    },
+  });
+
+  if (!existingRecord || !existingRecord.checkInTime) {
+    throw createAttendanceServiceError('Check-in is required before checkout.', 409);
+  }
+
+  if (!shouldRequireCheckout(existingRecord)) {
+    throw createAttendanceServiceError('Checkout is not available for this attendance record.', 409);
+  }
+
+  const dailySummary = payload.dailySummary?.trim();
+  if (!dailySummary) {
+    throw createAttendanceServiceError('Daily work summary is mandatory for checkout.', 400);
+  }
+
+  const checkOutTime = payload.checkOutTime ? new Date(payload.checkOutTime) : new Date();
+  if (checkOutTime.getTime() < new Date(existingRecord.checkInTime).getTime()) {
+    throw createAttendanceServiceError('Checkout time cannot be earlier than check-in time.', 400);
+  }
+
+  const expectedTiming = await resolveExpectedAttendanceTimes(workspaceId, userId);
+  const approvalStatus = expectedTiming.settings.approvalRequired ? 'PENDING' : 'APPROVED';
+  const recordStatus = approvalStatus === 'APPROVED' ? 'APPROVED' as const : 'PENDING' as const;
+
+  const updatedRecord = await prisma.attendanceRecord.update({
+    where: { id: existingRecord.id },
+    data: {
+      checkOutTime,
+      dailySummary,
+      checkoutCompleted: true,
+      workingHours: roundWorkingHours(existingRecord.checkInTime, checkOutTime),
+      expectedCheckInTime: existingRecord.expectedCheckInTime || expectedTiming.expectedCheckInTime,
+      expectedCheckOutTime: existingRecord.expectedCheckOutTime || expectedTiming.expectedCheckOutTime,
+      approvalStatus,
+      status: recordStatus,
+      approvedBy: approvalStatus === 'APPROVED' ? userId : null,
+      approvedAt: approvalStatus === 'APPROVED' ? new Date() : null,
+      rejectedReason: null,
+      submittedAt: new Date(),
+      notes: payload.notes ?? existingRecord.notes,
+      attachmentUrl: payload.attachmentUrl ?? existingRecord.attachmentUrl,
+    },
+  });
+
+  await prisma.attendanceAuditLog.create({
+    data: {
+      workspaceId,
+      userId,
+      action: 'CHECK_OUT',
+      details: JSON.stringify({
+        module: 'attendance',
+        attendanceRecordId: existingRecord.id,
+        workingHours: updatedRecord.workingHours,
+        approvalStatus,
+      }),
+    },
+  });
+
+  if (user.supervisorId) {
+    await prisma.attendanceNotification.create({
+      data: {
+        workspaceId,
+        userId: user.supervisorId,
+        title: 'Attendance Checkout Submitted',
+        message: `${user.name || 'An employee'} completed checkout for ${dateStr}.`,
+      },
+    });
+  }
+
+  return updatedRecord;
+};
+
 export const updateUserApplyType = async (workspaceId: string, userId: string, applyType: string) => {
   return prisma.user.update({
     where: { id: userId, workspaceId },
@@ -986,7 +1196,7 @@ export const getAdminStats = async (workspaceId: string) => {
   const totalPending = userSubmittedRecords.filter((r) => r.approvalStatus === 'PENDING').length;
   const totalRejected = userSubmittedRecords.filter((r) => r.approvalStatus === 'REJECTED').length;
   const totalApproved = userSubmittedRecords.filter((r) => r.approvalStatus === 'APPROVED').length;
-  const totalLate = userSubmittedRecords.filter((r) => r.warningCount > 0).length;
+  const totalLate = userSubmittedRecords.filter((r) => (r.lateMinutes ?? 0) > 0 || r.warningCount > 0).length;
   const totalAbsent = Math.max(
     0,
     activeUserCount -
@@ -1218,3 +1428,4 @@ export const autoAbsentMarking = async (workspaceId: string) => {
     }
   }
 };
+

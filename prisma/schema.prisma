@@ -1136,6 +1136,7 @@ model User {
   attendanceApplyType      String                 @default("FROM_ANYWHERE") // FROM_OFFICE, FROM_ANYWHERE
   attendanceOfficeLocationId String?
   attendanceOfficeLocation AttendanceOfficeLocation? @relation(fields: [attendanceOfficeLocationId], references: [id], onDelete: SetNull)
+  attendanceUserSetting  AttendanceUserSetting?
   followUps                FollowUp[]
   snoozedActivities        FollowupActivityLog[]
   createdLeads             Lead[]       @relation("LeadCreatedBy")
@@ -1611,6 +1612,13 @@ model AttendanceRecord {
   workspaceId         String
   date                DateTime         @db.Date
   checkInTime         DateTime?
+  checkOutTime        DateTime?
+  workingHours        Float?
+  dailySummary        String?
+  checkoutCompleted   Boolean          @default(false)
+  expectedCheckInTime String?
+  expectedCheckOutTime String?
+  lateMinutes         Int              @default(0)
   attendanceType      AttendanceType   @default(PRESENT)
   status              AttendanceStatus @default(MARKED)
   warningCount        Int              @default(0)
@@ -1652,6 +1660,7 @@ model AttendanceRecord {
   @@index([workspaceId])
   @@index([date])
   @@index([userId, date])
+  @@index([workspaceId, approvalStatus, date])
   @@map("attendance_records")
 }
 
@@ -1684,6 +1693,23 @@ model AttendanceSetting {
   updatedAt           DateTime @updatedAt
 
   @@map("attendance_settings")
+}
+
+model AttendanceUserSetting {
+  id                   String   @id @default(uuid())
+  workspaceId          String
+  userId               String   @unique
+  expectedCheckInTime  String
+  expectedCheckOutTime String
+  createdBy            String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@index([workspaceId, expectedCheckInTime])
+  @@map("attendance_user_settings")
 }
 
 model AttendanceLog {

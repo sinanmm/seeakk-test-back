@@ -15,6 +15,14 @@ export const markAttendanceSchema = z.object({
   clientChannel: z.enum(['web', 'mobile']).optional(),
 });
 
+export const checkOutAttendanceSchema = z.object({
+  checkOutTime: z.string().datetime().optional().nullable(),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Must be in YYYY-MM-DD format').optional(),
+  dailySummary: z.string().min(1, 'Daily summary is required'),
+  notes: z.string().optional().nullable(),
+  attachmentUrl: z.string().optional().nullable(),
+});
+
 export const updateSettingsSchema = z.object({
   cutoffTime: z.string().regex(/^\d{2}:\d{2}$/, 'Must be in HH:MM format').optional(),
   enableWarning: z.boolean().optional(),
@@ -67,7 +75,12 @@ export const attendanceOfficeLocationSchema = z.object({
   isEnabled: z.boolean().default(true),
 });
 
-/** @deprecated Use attendanceOfficeLocationSchema â€” kept for legacy /networks route body mapping */
+export const attendanceUserSettingSchema = z.object({
+  expectedCheckInTime: z.string().regex(/^\d{2}:\d{2}$/, 'Must be in HH:MM format'),
+  expectedCheckOutTime: z.string().regex(/^\d{2}:\d{2}$/, 'Must be in HH:MM format'),
+});
+
+/** @deprecated Use attendanceOfficeLocationSchema — kept for legacy /networks route body mapping */
 export const attendanceNetworkSchema = attendanceOfficeLocationSchema;
 
 export const assignOfficeBranchSchema = z.object({

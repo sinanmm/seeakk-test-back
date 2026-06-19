@@ -4,11 +4,13 @@ import { emitWorkspaceEvent } from '../../realtime/socket';
 import { applyCorsHeadersIfAllowed } from '../../config/cors';
 import type { AttendanceRequest } from './attendance.middleware';
 import {
+  attendanceOfficeLocationSchema,
+  attendanceQuerySchema,
+  attendanceUserSettingSchema,
+  assignOfficeBranchSchema,
+  checkOutAttendanceSchema,
   markAttendanceSchema,
   updateSettingsSchema,
-  attendanceQuerySchema,
-  attendanceOfficeLocationSchema,
-  assignOfficeBranchSchema,
 } from './attendance.validation';
 
 const getAttendanceWorkspaceId = (req: AttendanceRequest, res: Response): string | null => {
@@ -30,10 +32,7 @@ export const getTodayStatusController = async (req: Request, res: Response, next
 
   try {
     const status = await attendanceService.getTodayStatus(req.user!.id, workspaceId);
-    return res.status(200).json({
-      success: true,
-      data: status,
-    });
+    return res.status(200).json({ success: true, data: status });
   } catch (error) {
     next(error);
   }
@@ -81,16 +80,49 @@ export const markAttendanceController = async (req: Request, res: Response, next
   }
 };
 
+export const checkOutAttendanceController = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = getAttendanceWorkspaceId(req as AttendanceRequest, res);
+  if (!workspaceId) return;
+
+  const parsed = checkOutAttendanceSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(422).json({
+      success: false,
+      message: 'Validation failed.',
+      errors: parsed.error.flatten().fieldErrors,
+    });
+  }
+
+  try {
+    const record = await attendanceService.checkOutAttendance(req.user!.id, workspaceId, parsed.data);
+
+    emitWorkspaceEvent(workspaceId, 'attendance_updated', {
+      recordId: record.id,
+      userId: record.userId,
+      action: 'checked_out',
+      approvalStatus: record.approvalStatus,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Checkout completed successfully',
+      data: record,
+    });
+  } catch (error: any) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({ success: false, message: error.message });
+    }
+    next(error);
+  }
+};
+
 export const getHistoryController = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
   const workspaceId = getAttendanceWorkspaceId(req as AttendanceRequest, res);
   if (!workspaceId) return;
 
   try {
     const history = await attendanceService.getHistory(req.user!.id, workspaceId, req.query);
-    return res.status(200).json({
-      success: true,
-      data: history,
-    });
+    return res.status(200).json({ success: true, data: history });
   } catch (error) {
     next(error);
   }
@@ -111,10 +143,7 @@ export const getAdminOverviewController = async (req: Request, res: Response, ne
 
   try {
     const data = await attendanceService.getAdminOverview(workspaceId, parsed.data);
-    return res.status(200).json({
-      success: true,
-      data,
-    });
+    return res.status(200).json({ success: true, data });
   } catch (error) {
     next(error);
   }
@@ -126,10 +155,7 @@ export const getStatsController = async (req: Request, res: Response, next: Next
 
   try {
     const stats = await attendanceService.getStats(req.user!.id, workspaceId);
-    return res.status(200).json({
-      success: true,
-      data: stats,
-    });
+    return res.status(200).json({ success: true, data: stats });
   } catch (error) {
     next(error);
   }
@@ -141,10 +167,7 @@ export const getAdminStatsController = async (req: Request, res: Response, next:
 
   try {
     const stats = await attendanceService.getAdminStats(workspaceId);
-    return res.status(200).json({
-      success: true,
-      data: stats,
-    });
+    return res.status(200).json({ success: true, data: stats });
   } catch (error) {
     next(error);
   }
@@ -156,10 +179,7 @@ export const getSettingsController = async (req: Request, res: Response, next: N
 
   try {
     const settings = await attendanceService.getSettings(workspaceId);
-    return res.status(200).json({
-      success: true,
-      data: settings,
-    });
+    return res.status(200).json({ success: true, data: settings });
   } catch (error) {
     next(error);
   }
@@ -190,25 +210,59 @@ export const updateSettingsController = async (req: Request, res: Response, next
   }
 };
 
+export const getAttendanceUserSettingsController = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = getAttendanceWorkspaceId(req as AttendanceRequest, res);
+  if (!workspaceId) return;
+
+  try {
+    const data = await attendanceService.getAttendanceUserSettings(workspaceId);
+    return res.status(200).json({ success: true, data });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateAttendanceUserSettingController = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = getAttendanceWorkspaceId(req as AttendanceRequest, res);
+  if (!workspaceId) return;
+
+  const parsed = attendanceUserSettingSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(422).json({
+      success: false,
+      message: 'Validation failed.',
+      errors: parsed.error.flatten().fieldErrors,
+    });
+  }
+
+  try {
+    const data = await attendanceService.updateAttendanceUserSetting(
+      workspaceId,
+      req.params.userId as string,
+      req.user!.id,
+      parsed.data,
+    );
+    return res.status(200).json({ success: true, message: 'User attendance timing updated', data });
+  } catch (error: any) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({ success: false, message: error.message });
+    }
+    next(error);
+  }
+};
+
 export const unlockUserController = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
   const workspaceId = getAttendanceWorkspaceId(req as AttendanceRequest, res);
   if (!workspaceId) return;
 
   const { userId } = req.params;
   if (!userId) {
-    return res.status(400).json({
-      success: false,
-      message: 'User ID parameter is required.',
-    });
+    return res.status(400).json({ success: false, message: 'User ID parameter is required.' });
   }
 
   try {
     const user = await attendanceService.unlockUserAdmin(userId as string, workspaceId, req.user!.id);
-    return res.status(200).json({
-      success: true,
-      message: 'User account unlocked successfully',
-      data: user,
-    });
+    return res.status(200).json({ success: true, message: 'User account unlocked successfully', data: user });
   } catch (error) {
     next(error);
   }
@@ -232,20 +286,12 @@ export const createOfficeLocationController = async (req: Request, res: Response
 
   const parsed = attendanceOfficeLocationSchema.safeParse(req.body);
   if (!parsed.success) {
-    return res.status(422).json({
-      success: false,
-      message: 'Validation failed.',
-      errors: parsed.error.flatten().fieldErrors,
-    });
+    return res.status(422).json({ success: false, message: 'Validation failed.', errors: parsed.error.flatten().fieldErrors });
   }
 
   try {
     const location = await attendanceService.createOfficeLocation(workspaceId, parsed.data);
-    return res.status(201).json({
-      success: true,
-      message: 'Office location created successfully',
-      data: location,
-    });
+    return res.status(201).json({ success: true, message: 'Office location created successfully', data: location });
   } catch (error) {
     next(error);
   }
@@ -257,24 +303,12 @@ export const updateOfficeLocationController = async (req: Request, res: Response
 
   const parsed = attendanceOfficeLocationSchema.safeParse(req.body);
   if (!parsed.success) {
-    return res.status(422).json({
-      success: false,
-      message: 'Validation failed.',
-      errors: parsed.error.flatten().fieldErrors,
-    });
+    return res.status(422).json({ success: false, message: 'Validation failed.', errors: parsed.error.flatten().fieldErrors });
   }
 
   try {
-    const location = await attendanceService.updateOfficeLocation(
-      workspaceId,
-      req.params.id as string,
-      parsed.data,
-    );
-    return res.status(200).json({
-      success: true,
-      message: 'Office location updated successfully',
-      data: location,
-    });
+    const location = await attendanceService.updateOfficeLocation(workspaceId, req.params.id as string, parsed.data);
+    return res.status(200).json({ success: true, message: 'Office location updated successfully', data: location });
   } catch (error) {
     next(error);
   }
@@ -286,10 +320,7 @@ export const deleteOfficeLocationController = async (req: Request, res: Response
 
   try {
     await attendanceService.deleteOfficeLocation(workspaceId, req.params.id as string);
-    return res.status(200).json({
-      success: true,
-      message: 'Office location deleted successfully',
-    });
+    return res.status(200).json({ success: true, message: 'Office location deleted successfully' });
   } catch (error) {
     next(error);
   }
@@ -300,21 +331,13 @@ export const createNetworkController = createOfficeLocationController;
 export const updateNetworkController = updateOfficeLocationController;
 export const deleteNetworkController = deleteOfficeLocationController;
 
-export const updateUserOfficeBranchController = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-): Promise<any> => {
+export const updateUserOfficeBranchController = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
   const workspaceId = getAttendanceWorkspaceId(req as AttendanceRequest, res);
   if (!workspaceId) return;
 
   const parsed = assignOfficeBranchSchema.safeParse(req.body);
   if (!parsed.success) {
-    return res.status(422).json({
-      success: false,
-      message: 'Validation failed.',
-      errors: parsed.error.flatten().fieldErrors,
-    });
+    return res.status(422).json({ success: false, message: 'Validation failed.', errors: parsed.error.flatten().fieldErrors });
   }
 
   try {
@@ -374,6 +397,16 @@ export const reviewAttendanceController = async (req: Request, res: Response, ne
   }
 };
 
+export const approveAttendanceController = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  req.body.action = 'APPROVE';
+  return reviewAttendanceController(req, res, next);
+};
+
+export const rejectAttendanceController = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  req.body.action = 'REJECT';
+  return reviewAttendanceController(req, res, next);
+};
+
 export const updateUserApplyTypeController = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
   const workspaceId = getAttendanceWorkspaceId(req as AttendanceRequest, res);
   if (!workspaceId) return;
@@ -411,11 +444,7 @@ export const exportController = async (req: Request, res: Response, next: NextFu
 
   const parsed = attendanceQuerySchema.safeParse(req.query);
   if (!parsed.success) {
-    return res.status(422).json({
-      success: false,
-      message: 'Validation failed.',
-      errors: parsed.error.flatten().fieldErrors,
-    });
+    return res.status(422).json({ success: false, message: 'Validation failed.', errors: parsed.error.flatten().fieldErrors });
   }
 
   try {
