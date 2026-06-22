@@ -1143,7 +1143,7 @@ export const getSchedules = async (workspaceId: string) => {
       department: { select: { name: true } },
       role: { select: { name: true } },
       attendanceSchedule: true,
-    },
+    } as any,
     orderBy: { name: 'asc' },
   });
 };
@@ -1160,7 +1160,7 @@ export const getSchedule = async (userId: string, workspaceId: string) => {
       department: { select: { name: true } },
       role: { select: { name: true } },
       attendanceSchedule: true,
-    },
+    } as any,
   });
 
   if (!user) {
@@ -1294,7 +1294,7 @@ export const getApprovalHistory = async (workspaceId: string) => {
         },
       },
     },
-    orderBy: [{ approvedAt: 'desc' }, { rejectedAt: 'desc' }, { date: 'desc' }],
+    orderBy: [{ approvedAt: 'desc' }, { rejectedAt: 'desc' }, { date: 'desc' }] as any,
     take: 200,
   }) as any[];
 
@@ -1385,7 +1385,7 @@ export const getAdminStats = async (workspaceId: string) => {
     prisma.attendanceRecord.findMany({
       where: { workspaceId, date: todayDate },
       include: { user: { select: { departmentId: true } } },
-    }),
+    }) as Promise<any[]>,
     prisma.attendanceWarning.count({ where: { workspaceId } }),
     prisma.user.count({ where: { workspaceId, isLocked: true, deletedAt: null } }),
     prisma.user.count({ where: { workspaceId, deletedAt: null, isActive: true } }),
