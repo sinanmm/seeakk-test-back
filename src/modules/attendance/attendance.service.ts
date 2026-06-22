@@ -935,7 +935,7 @@ export const reviewAttendance = async (
       rejectedBy: action === 'REJECT' ? actorId : null,
       rejectedAt: action === 'REJECT' ? reviewedAt : null,
     } as any,
-  });
+  }) as any;
 
   await prisma.attendanceApprovalLog.create({
     data: {
@@ -1103,7 +1103,7 @@ export const checkOutAttendance = async (userId: string, workspaceId: string, pa
       notes: payload.notes ?? existingRecord.notes,
       attachmentUrl: payload.attachmentUrl ?? existingRecord.attachmentUrl,
     } as any,
-  });
+  }) as any;
 
   await prisma.attendanceAuditLog.create({
     data: {
@@ -1242,7 +1242,7 @@ export const requestClarification = async (workspaceId: string, recordId: string
       approvedBy: null,
       approvedAt: null,
     } as any,
-  });
+  }) as any;
 
   await prisma.attendanceApprovalLog.create({
     data: {
