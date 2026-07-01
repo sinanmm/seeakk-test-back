@@ -1102,7 +1102,6 @@ export const listReports = async (workspaceId: string, query: ListReportsQueryIn
   if (query.reportName) {
     where.reportName = {
       contains: query.reportName,
-      mode: 'insensitive',
     };
   }
 

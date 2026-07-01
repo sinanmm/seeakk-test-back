@@ -14,9 +14,9 @@ export const assertLeadStageModuleReady = async (): Promise<void> => {
   }
 
   const columns = await prisma.$queryRaw<Array<{ column_name: string }>>`
-    SELECT column_name::text AS column_name
+    SELECT column_name
     FROM information_schema.columns
-    WHERE table_schema = 'public'
+    WHERE table_schema = DATABASE()
       AND table_name = 'lead_stages'
       AND column_name IN ('stageShortForm', 'showInCalendar')
   `;

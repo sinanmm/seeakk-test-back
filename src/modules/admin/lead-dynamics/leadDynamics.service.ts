@@ -45,13 +45,19 @@ const hasGeneratedDelegates = (): boolean => {
 
 const assertModuleReady = async (): Promise<void> => {
   const fieldTable = await prisma.$queryRaw<Array<{ table_name: string | null }>>`
-    SELECT to_regclass('public.lead_dynamic_fields')::text AS table_name
+    SELECT TABLE_NAME AS table_name 
+    FROM information_schema.tables 
+    WHERE table_schema = DATABASE() AND table_name = 'lead_dynamic_fields'
   `;
   const optionTable = await prisma.$queryRaw<Array<{ table_name: string | null }>>`
-    SELECT to_regclass('public.lead_dynamic_options')::text AS table_name
+    SELECT TABLE_NAME AS table_name 
+    FROM information_schema.tables 
+    WHERE table_schema = DATABASE() AND table_name = 'lead_dynamic_options'
   `;
   const valueTable = await prisma.$queryRaw<Array<{ table_name: string | null }>>`
-    SELECT to_regclass('public.lead_dynamic_values')::text AS table_name
+    SELECT TABLE_NAME AS table_name 
+    FROM information_schema.tables 
+    WHERE table_schema = DATABASE() AND table_name = 'lead_dynamic_values'
   `;
 
   if (!fieldTable[0]?.table_name || !optionTable[0]?.table_name || !valueTable[0]?.table_name) {
@@ -226,7 +232,7 @@ export const listLeadDynamicFields = async (
 
   const where = {
     workspaceId,
-    ...(search ? { name: { contains: search, mode: 'insensitive' as const } } : {}),
+    ...(search ? { name: { contains: search} } : {}),
     ...(isActive !== undefined ? { isActive } : {}),
     ...(inputType ? { inputType } : {}),
   };
@@ -366,13 +372,13 @@ export const deleteLeadDynamicField = async (id: string, workspaceId: string): P
   }
 
   const usageCountRows = await prisma.$queryRaw<Array<{ count: number }>>`
-    SELECT COUNT(*)::int AS count
-    FROM "lead_dynamic_values" ldv
-    INNER JOIN "leads" l
-      ON l."id" = ldv."leadId"
-    WHERE ldv."fieldId" = ${id}
-      AND l."workspaceId" = ${workspaceId}
-      AND l."deletedAt" IS NULL
+    SELECT COUNT(*) AS count
+    FROM lead_dynamic_values ldv
+    INNER JOIN leads l
+      ON l.id = ldv.leadId
+    WHERE ldv.fieldId = ${id}
+      AND l.workspaceId = ${workspaceId}
+      AND l.deletedAt IS NULL
   `;
 
   const usageCount = Number(usageCountRows[0]?.count ?? 0);

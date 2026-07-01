@@ -82,12 +82,12 @@ export type ClosedLeadRecord = Awaited<ReturnType<typeof findLeadById>>;
 export const ensureClosedLeadSchemaReady = async (): Promise<boolean> => {
   const rows = await prisma.$queryRaw<Array<{ has_required_columns: boolean }>>`
     SELECT
-      COUNT(*) FILTER (WHERE column_name = 'generatedRevenue') > 0
-      AND COUNT(*) FILTER (WHERE column_name = 'closedAt') > 0
-      AND COUNT(*) FILTER (WHERE column_name = 'closedById') > 0
-      AND COUNT(*) FILTER (WHERE column_name = 'closureType') > 0 AS has_required_columns
+      SUM(CASE WHEN column_name = 'generatedRevenue' THEN 1 ELSE 0 END) > 0
+      AND SUM(CASE WHEN column_name = 'closedAt' THEN 1 ELSE 0 END) > 0
+      AND SUM(CASE WHEN column_name = 'closedById' THEN 1 ELSE 0 END) > 0
+      AND SUM(CASE WHEN column_name = 'closureType' THEN 1 ELSE 0 END) > 0 AS has_required_columns
     FROM information_schema.columns
-    WHERE table_schema = 'public'
+    WHERE table_schema = DATABASE()
       AND table_name = 'leads'
   `;
 

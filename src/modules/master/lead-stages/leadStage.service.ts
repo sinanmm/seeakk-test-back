@@ -291,7 +291,7 @@ export const listLeadStages = async (
     deletedAt: null,
     ...(search
       ? {
-          name: { contains: search, mode: 'insensitive' as const },
+          name: { contains: search},
         }
       : {}),
     ...(status ? { status } : {}),

@@ -14,10 +14,10 @@ export const extensionReasonSelect = {
 
 export const ensureExtensionReasonSchemaReady = async (): Promise<boolean> => {
   const rows = await prisma.$queryRaw<Array<{ ready: boolean }>>`
-    SELECT COUNT(*) FILTER (WHERE table_name = 'followup_extension_reasons') > 0 AS ready
+    SELECT COUNT(*) > 0 AS ready
     FROM information_schema.tables
-    WHERE table_schema = 'public'
-      AND table_name IN ('followup_extension_reasons')
+    WHERE table_schema = DATABASE()
+      AND table_name = 'followup_extension_reasons'
   `;
 
   return Boolean(rows[0]?.ready);
@@ -44,7 +44,6 @@ export const findByName = async (workspaceId: string, name: string, excludeId?: 
       workspaceId,
       reasonName: {
         equals: name,
-        mode: 'insensitive',
       },
       ...(excludeId ? { id: { not: excludeId } } : {}),
     },

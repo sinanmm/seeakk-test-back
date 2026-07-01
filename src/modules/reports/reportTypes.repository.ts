@@ -51,10 +51,10 @@ export const reportTypeSelect = {
 export const ensureReportSchemaReady = async (): Promise<boolean> => {
   const rows = await prisma.$queryRaw<Array<{ ready: boolean }>>`
     SELECT
-      COUNT(*) FILTER (WHERE table_name = 'report_types') > 0
-      AND COUNT(*) FILTER (WHERE table_name = 'report_logs') > 0 AS ready
+      SUM(CASE WHEN table_name = 'report_types' THEN 1 ELSE 0 END) > 0
+      AND SUM(CASE WHEN table_name = 'report_logs' THEN 1 ELSE 0 END) > 0 AS ready
     FROM information_schema.tables
-    WHERE table_schema = 'public'
+    WHERE table_schema = DATABASE()
       AND table_name IN ('report_types', 'report_logs')
   `;
 
@@ -90,7 +90,6 @@ export const findByName = async (workspaceId: string, name: string, excludeId?: 
       deletedAt: null,
       name: {
         equals: name,
-        mode: 'insensitive',
       },
       ...(excludeId ? { id: { not: excludeId } } : {}),
     },

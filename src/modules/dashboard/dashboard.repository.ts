@@ -17,10 +17,10 @@ const DASHBOARD_AUDIT_ACTIONS = [
 export const ensureDashboardSchemaReady = async (): Promise<boolean> => {
   const rows = await prisma.$queryRaw<Array<{ ready: boolean }>>`
     SELECT
-      COUNT(*) FILTER (WHERE table_name = 'leads') > 0
-      AND COUNT(*) FILTER (WHERE table_name = 'users') > 0 AS ready
+      SUM(CASE WHEN table_name = 'leads' THEN 1 ELSE 0 END) > 0
+      AND SUM(CASE WHEN table_name = 'users' THEN 1 ELSE 0 END) > 0 AS ready
     FROM information_schema.tables
-    WHERE table_schema = 'public'
+    WHERE table_schema = DATABASE()
       AND table_name IN ('leads', 'users')
   `;
 

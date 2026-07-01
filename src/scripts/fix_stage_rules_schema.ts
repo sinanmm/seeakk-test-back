@@ -16,6 +16,11 @@ const migrationFiles = [
 ];
 
 const run = async () => {
+  if (!databaseUrl.startsWith('postgresql://') && !databaseUrl.startsWith('postgres://')) {
+    console.log('Non-PostgreSQL DATABASE_URL detected. Skipping pg-specific stage rules schema fixes.');
+    return;
+  }
+
   const client = new Client({
     connectionString: databaseUrl,
   });

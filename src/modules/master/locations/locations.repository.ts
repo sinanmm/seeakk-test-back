@@ -100,24 +100,24 @@ export const locationSelect = {
 export const ensureLocationSchemaReady = async (): Promise<boolean> => {
   const rows = await prisma.$queryRaw<Array<{ ready: boolean }>>`
     SELECT
-      COUNT(*) FILTER (WHERE table_name = 'countries') > 0
-      AND COUNT(*) FILTER (WHERE table_name = 'location_levels') > 0
+      (SUM(CASE WHEN table_name = 'countries' THEN 1 ELSE 0 END) > 0)
+      AND (SUM(CASE WHEN table_name = 'location_levels' THEN 1 ELSE 0 END) > 0)
       AND EXISTS (
         SELECT 1
         FROM information_schema.columns
-        WHERE table_schema = 'public'
+        WHERE table_schema = DATABASE()
           AND table_name = 'locations'
           AND column_name = 'countryId'
       )
       AND EXISTS (
         SELECT 1
         FROM information_schema.columns
-        WHERE table_schema = 'public'
+        WHERE table_schema = DATABASE()
           AND table_name = 'locations'
           AND column_name = 'levelId'
       ) AS ready
     FROM information_schema.tables
-    WHERE table_schema = 'public'
+    WHERE table_schema = DATABASE()
       AND table_name IN ('countries', 'location_levels')
   `;
 
@@ -146,7 +146,6 @@ export const findCountryByName = async (workspaceId: string, name: string, exclu
       deletedAt: null,
       name: {
         equals: name,
-        mode: 'insensitive',
       },
       ...(excludeId ? { id: { not: excludeId } } : {}),
     },
@@ -160,7 +159,6 @@ export const findCountryByCode = async (workspaceId: string, code: string, exclu
       deletedAt: null,
       code: {
         equals: code,
-        mode: 'insensitive',
       },
       ...(excludeId ? { id: { not: excludeId } } : {}),
     },
@@ -393,7 +391,6 @@ export const findLocationByNameInParent = async (
       deletedAt: null,
       name: {
         equals: name,
-        mode: 'insensitive',
       },
       ...(excludeId ? { id: { not: excludeId } } : {}),
     },

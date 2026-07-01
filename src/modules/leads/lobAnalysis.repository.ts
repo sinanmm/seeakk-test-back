@@ -7,13 +7,13 @@ export const ensureLOBAnalysisSchemaReady = async (): Promise<boolean> => {
   const rows = await prisma.$queryRaw<Array<{ ready: boolean }>>`
     WITH tables_ok AS (
       SELECT
-        COUNT(*) FILTER (WHERE table_name = 'leads') > 0
-        AND COUNT(*) FILTER (WHERE table_name = 'lead_lob_logs') > 0
-        AND COUNT(*) FILTER (WHERE table_name = 'lob_reasons') > 0
-        AND COUNT(*) FILTER (WHERE table_name = 'audit_logs') > 0
-        AND COUNT(*) FILTER (WHERE table_name = 'lead_stage_approvals') > 0 AS ready
+        SUM(CASE WHEN table_name = 'leads' THEN 1 ELSE 0 END) > 0
+        AND SUM(CASE WHEN table_name = 'lead_lob_logs' THEN 1 ELSE 0 END) > 0
+        AND SUM(CASE WHEN table_name = 'lob_reasons' THEN 1 ELSE 0 END) > 0
+        AND SUM(CASE WHEN table_name = 'audit_logs' THEN 1 ELSE 0 END) > 0
+        AND SUM(CASE WHEN table_name = 'lead_stage_approvals' THEN 1 ELSE 0 END) > 0 AS ready
       FROM information_schema.tables
-      WHERE table_schema = 'public'
+      WHERE table_schema = DATABASE()
         AND table_name IN ('leads', 'lead_lob_logs', 'lob_reasons', 'audit_logs', 'lead_stage_approvals')
     ),
     lob_log_columns_ok AS (
@@ -21,14 +21,14 @@ export const ensureLOBAnalysisSchemaReady = async (): Promise<boolean> => {
         EXISTS (
           SELECT 1
           FROM information_schema.columns c1
-          WHERE c1.table_schema = 'public'
+          WHERE c1.table_schema = DATABASE()
             AND c1.table_name = 'lead_lob_logs'
             AND c1.column_name = 'previousStageId'
         )
         AND EXISTS (
           SELECT 1
           FROM information_schema.columns c2
-          WHERE c2.table_schema = 'public'
+          WHERE c2.table_schema = DATABASE()
             AND c2.table_name = 'lead_lob_logs'
             AND c2.column_name = 'previousStageName'
         ) AS ready

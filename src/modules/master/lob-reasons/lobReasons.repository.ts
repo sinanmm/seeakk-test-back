@@ -31,10 +31,10 @@ export const lobReasonSelect = {
 
 export const ensureLOBReasonSchemaReady = async (): Promise<boolean> => {
   const rows = await prisma.$queryRaw<Array<{ ready: boolean }>>`
-    SELECT COUNT(*) FILTER (WHERE table_name = 'lob_reasons') > 0 AS ready
+    SELECT COUNT(*) > 0 AS ready
     FROM information_schema.tables
-    WHERE table_schema = 'public'
-      AND table_name IN ('lob_reasons')
+    WHERE table_schema = DATABASE()
+      AND table_name = 'lob_reasons'
   `;
 
   return Boolean(rows[0]?.ready);
@@ -62,7 +62,6 @@ export const findByName = async (workspaceId: string, name: string, excludeId?: 
       deletedAt: null,
       name: {
         equals: name,
-        mode: 'insensitive',
       },
       ...(excludeId ? { id: { not: excludeId } } : {}),
     },

@@ -80,7 +80,7 @@ const hasHolidayColorColumn = async (): Promise<boolean> => {
   const rows = await prisma.$queryRaw<Array<{ column_name: string }>>(Prisma.sql`
     SELECT column_name
     FROM information_schema.columns
-    WHERE table_schema = 'public'
+    WHERE table_schema = DATABASE()
       AND table_name = 'holidays'
       AND column_name = 'color'
   `);

@@ -318,7 +318,6 @@ export const listApprovals = async (workspaceId: string, actor: Actor, query: Li
         lead: {
           name: {
             contains: query.search,
-            mode: 'insensitive',
           },
         },
       },
@@ -326,7 +325,6 @@ export const listApprovals = async (workspaceId: string, actor: Actor, query: Li
         lead: {
           email: {
             contains: query.search,
-            mode: 'insensitive',
           },
         },
       },
@@ -334,7 +332,6 @@ export const listApprovals = async (workspaceId: string, actor: Actor, query: Li
         lead: {
           phone: {
             contains: query.search,
-            mode: 'insensitive',
           },
         },
       },
@@ -342,7 +339,6 @@ export const listApprovals = async (workspaceId: string, actor: Actor, query: Li
         requestedBy: {
           name: {
             contains: query.search,
-            mode: 'insensitive',
           },
         },
       },
@@ -350,7 +346,6 @@ export const listApprovals = async (workspaceId: string, actor: Actor, query: Li
         assignedTo: {
           name: {
             contains: query.search,
-            mode: 'insensitive',
           },
         },
       },
@@ -358,7 +353,6 @@ export const listApprovals = async (workspaceId: string, actor: Actor, query: Li
         fromStage: {
           name: {
             contains: query.search,
-            mode: 'insensitive',
           },
         },
       },
@@ -366,7 +360,6 @@ export const listApprovals = async (workspaceId: string, actor: Actor, query: Li
         toStage: {
           name: {
             contains: query.search,
-            mode: 'insensitive',
           },
         },
       },

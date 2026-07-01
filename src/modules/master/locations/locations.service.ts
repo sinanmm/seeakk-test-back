@@ -220,13 +220,11 @@ export const listCountries = async (workspaceId: string, actor: Actor, query: Li
       {
         name: {
           contains: query.search,
-          mode: 'insensitive',
         },
       },
       {
         code: {
           contains: query.search,
-          mode: 'insensitive',
         },
       },
     ];

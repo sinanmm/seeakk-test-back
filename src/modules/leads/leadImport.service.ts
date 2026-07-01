@@ -40,7 +40,9 @@ const hasMeaningfulFallbackData = (input: {
 
 const ensureLeadImportSchemaReady = async (): Promise<LeadImportSchemaState> => {
   const leadTableRows = await prisma.$queryRaw<Array<{ table_name: string | null }>>`
-    SELECT to_regclass('public.leads')::text AS table_name
+    SELECT TABLE_NAME AS table_name 
+    FROM information_schema.tables 
+    WHERE table_schema = DATABASE() AND table_name = 'leads'
   `;
 
   if (!leadTableRows[0]?.table_name) {
@@ -50,9 +52,9 @@ const ensureLeadImportSchemaReady = async (): Promise<LeadImportSchemaState> => 
   }
 
   const leadColumns = await prisma.$queryRaw<Array<{ column_name: string }>>`
-    SELECT column_name::text AS column_name
+    SELECT column_name
     FROM information_schema.columns
-    WHERE table_schema = 'public' AND table_name = 'leads'
+    WHERE table_schema = DATABASE() AND table_name = 'leads'
   `;
   const presentColumns = new Set(leadColumns.map((row) => row.column_name.toLowerCase()));
   const requiredColumns = ['name', 'workspaceId', 'createdById'] as const;
@@ -239,17 +241,12 @@ const processRows = async (jobId: string, rows: any[], workspaceId: string, user
         insertData.sourceId = sourceId ?? null;
       }
 
-      const columnEntries = Object.entries(insertData);
-      const columnNames = columnEntries.map(([column]) => `"${column}"`).join(', ');
-      const placeholders = columnEntries.map((_, index) => `$${index + 1}`).join(', ');
-      const values = columnEntries.map(([, value]) => value);
+      const inserted = await prisma.lead.create({
+        data: insertData as any,
+        select: { id: true }
+      });
 
-      const insertedRows = await prisma.$queryRawUnsafe<Array<{ id: string }>>(
-        `INSERT INTO "leads" (${columnNames}) VALUES (${placeholders}) RETURNING "id"`,
-        ...values,
-      );
-
-      latestImportedLeadId = insertedRows[0]?.id || latestImportedLeadId;
+      latestImportedLeadId = inserted.id || latestImportedLeadId;
 
       success++;
     } catch (err: any) {

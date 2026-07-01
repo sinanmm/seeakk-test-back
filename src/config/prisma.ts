@@ -71,6 +71,7 @@ const createPrismaClient = () => {
     const code = String((error as any)?.code || '');
     return (
       (message.includes('Error in PostgreSQL connection') && message.includes('kind: Closed')) ||
+      (message.includes('Error in MySQL connection') && message.includes('kind: Closed')) ||
       message.includes('Connection terminated unexpectedly') ||
       message.includes('server closed the connection unexpectedly') ||
       message.includes('Can not perform operation: connection is closed') ||

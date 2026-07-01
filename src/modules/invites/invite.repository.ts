@@ -20,7 +20,7 @@ export type InviteUserRecord = Awaited<ReturnType<typeof findUserById>>;
 export const findUserByEmail = (email: string) =>
   (prisma as any).user.findFirst({
     where: {
-      email: { equals: email, mode: 'insensitive' },
+      email: { equals: email},
     },
     select: {
       id: true,
@@ -42,7 +42,7 @@ export const findRoleByIdOrName = (value: string, workspaceId: string) =>
       workspaceId,
       OR: [
         { id: value },
-        { name: { equals: value, mode: 'insensitive' } },
+        { name: { equals: value} },
       ],
     },
     select: { id: true, name: true },
@@ -55,7 +55,7 @@ export const findDepartmentByIdOrName = (value: string, workspaceId: string) =>
       deletedAt: null,
       OR: [
         { id: value },
-        { name: { equals: value, mode: 'insensitive' } },
+        { name: { equals: value} },
       ],
     },
     select: { id: true, name: true },

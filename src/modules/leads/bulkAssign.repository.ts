@@ -6,10 +6,10 @@ const { sql, join } = Prisma as any;
 export const ensureBulkAssignSchemaReady = async (): Promise<boolean> => {
   const rows = await prisma.$queryRaw<Array<{ ready: boolean }>>`
     SELECT
-      COUNT(*) FILTER (WHERE table_name = 'leads') > 0
-      AND COUNT(*) FILTER (WHERE table_name = 'lead_activities') > 0 AS ready
+      SUM(CASE WHEN table_name = 'leads' THEN 1 ELSE 0 END) > 0
+      AND SUM(CASE WHEN table_name = 'lead_activities' THEN 1 ELSE 0 END) > 0 AS ready
     FROM information_schema.tables
-    WHERE table_schema = 'public'
+    WHERE table_schema = DATABASE()
       AND table_name IN ('leads', 'lead_activities')
   `;
 
@@ -182,33 +182,45 @@ export const bulkAssignLeads = async (input: {
       return { updatedCount: 0, failedLeadIds };
     }
 
-    const assignmentValues = join(
-      validAssignments.map((assignment: { leadId: string; assignTo: string }) => sql`(${assignment.leadId}::text, ${assignment.assignTo}::text)`),
-    );
+    const updatedRows = validAssignments
+      .map((assignment: any) => ({
+        id: assignment.leadId,
+        assignedToId: assignment.assignTo,
+      }));
 
-    const updatedRows = (await (tx as any).$queryRaw(sql`
-      UPDATE "leads" AS l
-      SET "assignedToId" = v.assign_to_id,
-          "updatedAt" = NOW()
-      FROM (VALUES ${assignmentValues}) AS v(lead_id, assign_to_id)
-      WHERE l."id" = v.lead_id
-        AND l."workspaceId" = ${workspaceId}
-        AND l."deletedAt" IS NULL
-        AND l."isClosed" = false
-        AND l."isLOB" = false
-      RETURNING l."id", l."assignedToId"
-    `)) as Array<{ id: string; assignedToId: string }>;
+    const groups: Record<string, string[]> = {};
+    for (const row of updatedRows) {
+      if (!groups[row.assignedToId]) {
+        groups[row.assignedToId] = [];
+      }
+      groups[row.assignedToId].push(row.id);
+    }
 
-    // Single bulk UPDATE — per-lead updateMany() caused transaction timeout (P2028) on ~200+ leads.
-    await (tx as any).$queryRaw(sql`
-      UPDATE "follow_ups" AS f
-      SET "userId" = v.assign_to_id,
-          "updatedAt" = NOW()
-      FROM (VALUES ${assignmentValues}) AS v(lead_id, assign_to_id)
-      WHERE f."leadId" = v.lead_id
-        AND f."workspaceId" = ${workspaceId}
-        AND f."status" = 'PENDING'
-    `);
+    for (const [assignToId, leadIds] of Object.entries(groups)) {
+      await tx.lead.updateMany({
+        where: {
+          id: { in: leadIds },
+          workspaceId,
+          deletedAt: null,
+          isClosed: false,
+          isLOB: false,
+        },
+        data: {
+          assignedToId: assignToId,
+        },
+      });
+
+      await tx.followUp.updateMany({
+        where: {
+          leadId: { in: leadIds },
+          workspaceId,
+          status: 'PENDING',
+        },
+        data: {
+          userId: assignToId,
+        },
+      });
+    }
 
     await (tx as any).leadActivity.createMany({
       data: updatedRows.map((row: any) => ({

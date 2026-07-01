@@ -131,10 +131,14 @@ const hasGeneratedDelegates = (): boolean => {
 
 const assertSchemaReady = async (): Promise<void> => {
   const tableRows = await prisma.$queryRaw<Array<{ table_name: string | null }>>`
-    SELECT to_regclass('public.target_cycles')::text AS table_name
+    SELECT TABLE_NAME AS table_name 
+    FROM information_schema.tables 
+    WHERE table_schema = DATABASE() AND table_name = 'target_cycles'
   `;
   const rangesRows = await prisma.$queryRaw<Array<{ table_name: string | null }>>`
-    SELECT to_regclass('public.target_cycle_ranges')::text AS table_name
+    SELECT TABLE_NAME AS table_name 
+    FROM information_schema.tables 
+    WHERE table_schema = DATABASE() AND table_name = 'target_cycle_ranges'
   `;
 
   if (!tableRows[0]?.table_name || !rangesRows[0]?.table_name) {
@@ -224,7 +228,7 @@ const hasTargetCycleIdInTargetSettings = async (): Promise<boolean> => {
   const rows = await prisma.$queryRaw<Array<{ column_name: string }>>`
     SELECT column_name
     FROM information_schema.columns
-    WHERE table_schema = 'public'
+    WHERE table_schema = DATABASE()
       AND table_name = 'target_settings'
       AND column_name = 'targetCycleId'
   `;
@@ -328,9 +332,7 @@ export const createTargetCycle = async (
   createdBy?: string,
 ): Promise<TargetCycleResponse> => {
   await assertSchemaReady();
-  const data = hasGeneratedDelegates()
-    ? await createTargetCycleWithDelegates(workspaceId, input, createdBy)
-    : await createTargetCycleWithSql(workspaceId, input, createdBy);
+  const data = await createTargetCycleWithDelegates(workspaceId, input, createdBy);
 
   const [mapped] = await mapCycleCreatorNames([data]);
   await clearTargetCycleCache(workspaceId);
@@ -358,84 +360,46 @@ export const listTargetCycles = async (
   let records: TargetCycleResponse[] = [];
   let total = 0;
 
-  if (hasGeneratedDelegates()) {
-    const targetCycle = (prisma as any).targetCycle;
-    const where = {
-      workspaceId,
-      deletedAt: null,
-      ...(search ? { name: { contains: search, mode: 'insensitive' as const } } : {}),
-      ...(status ? { status } : {}),
-    };
+  const targetCycle = (prisma as any).targetCycle;
+  const where = {
+    workspaceId,
+    deletedAt: null,
+    ...(search ? { name: { contains: search } } : {}),
+    ...(status ? { status } : {}),
+  };
 
-    const [countValue, rows] = await prisma.$transaction([
-      targetCycle.count({ where }),
-      targetCycle.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: { createdAt: 'desc' },
-        include: {
-          ranges: {
-            orderBy: { startDay: 'asc' },
-          },
-          periods: {
-            orderBy: { periodIndex: 'asc' },
-            include: {
-              metrics: {
-                include: {
-                  stageTargets: {
-                    include: {
-                      leadStage: { select: { id: true, name: true, color: true } }
-                    }
+  const [countValue, rows] = await prisma.$transaction([
+    targetCycle.count({ where }),
+    targetCycle.findMany({
+      where,
+      skip,
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        ranges: {
+          orderBy: { startDay: 'asc' },
+        },
+        periods: {
+          orderBy: { periodIndex: 'asc' },
+          include: {
+            metrics: {
+              include: {
+                stageTargets: {
+                  include: {
+                    leadStage: { select: { id: true, name: true, color: true } }
                   }
                 }
               }
             }
-          },
-          leadStage: { select: { id: true, name: true, color: true } },
+          }
         },
-      }),
-    ]);
+        leadStage: { select: { id: true, name: true, color: true } },
+      },
+    }),
+  ]);
 
-    total = countValue;
-    records = rows as TargetCycleResponse[];
-  } else {
-    const whereConditions = ['"workspaceId" = $1', '"deletedAt" IS NULL'];
-    const params: unknown[] = [workspaceId];
-    let paramIndex = 2;
-
-    if (search) {
-      whereConditions.push(`"name" ILIKE $${paramIndex}`);
-      params.push(`%${search}%`);
-      paramIndex += 1;
-    }
-    if (status) {
-      whereConditions.push(`"status" = $${paramIndex}`);
-      params.push(status);
-      paramIndex += 1;
-    }
-
-    const whereSql = whereConditions.join(' AND ');
-    const countRows = (await (prisma as any).$queryRawUnsafe(
-      `SELECT COUNT(*)::int AS count FROM "target_cycles" WHERE ${whereSql}`,
-      ...params,
-    )) as Array<{ count: number }>;
-    total = Number(countRows[0]?.count || 0);
-
-    const pagedRows = (await (prisma as any).$queryRawUnsafe(
-      `SELECT "id", "name", "workspaceId", "totalDays", "status", "createdBy", "createdAt", "updatedAt", "deletedAt"
-       FROM "target_cycles"
-       WHERE ${whereSql}
-       ORDER BY "createdAt" DESC
-       LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`,
-      ...params,
-      limit,
-      skip,
-    )) as CycleRow[];
-
-    const rangesMap = await fetchRangesByCycleIds(prisma as any, pagedRows.map((row: CycleRow) => row.id));
-    records = pagedRows.map((row: CycleRow) => toResponse(row, rangesMap.get(row.id) || []));
-  }
+  total = countValue;
+  records = rows as TargetCycleResponse[];
 
   const mappedRecords = await mapCycleCreatorNames(records);
 
@@ -459,46 +423,33 @@ export const listTargetCycles = async (
 export const getTargetCycleById = async (id: string, workspaceId: string): Promise<TargetCycleResponse> => {
   await assertSchemaReady();
 
-  if (hasGeneratedDelegates()) {
-    const cycle = await (prisma as any).targetCycle.findFirst({
-      where: { id, workspaceId, deletedAt: null },
-      include: {
-        ranges: { orderBy: { startDay: 'asc' } },
-        periods: {
-          orderBy: { periodIndex: 'asc' },
-          include: {
-            metrics: {
-              include: {
-                stageTargets: {
-                  include: {
-                    leadStage: { select: { id: true, name: true, color: true } }
-                  }
+  const cycle = await (prisma as any).targetCycle.findFirst({
+    where: { id, workspaceId, deletedAt: null },
+    include: {
+      ranges: { orderBy: { startDay: 'asc' } },
+      periods: {
+        orderBy: { periodIndex: 'asc' },
+        include: {
+          metrics: { 
+            include: {
+              stageTargets: {
+                include: {
+                  leadStage: { select: { id: true, name: true, color: true } }
                 }
               }
             }
           }
-        },
-        leadStage: { select: { id: true, name: true, color: true } },
+        }
       },
-    });
-    if (!cycle) {
-      const error: any = new Error('Target cycle not found.');
-      error.statusCode = 404;
-      throw error;
-    }
-    const [mapped] = await mapCycleCreatorNames([cycle as TargetCycleResponse]);
-    return mapped as TargetCycleResponse;
-  }
-
-  const cycle = await getCycleByIdScopedSql(prisma as any, id, workspaceId);
+      leadStage: { select: { id: true, name: true, color: true } },
+    },
+  });
   if (!cycle) {
     const error: any = new Error('Target cycle not found.');
     error.statusCode = 404;
     throw error;
   }
-
-  const rangesMap = await fetchRangesByCycleIds(prisma as any, [id]);
-  const [mapped] = await mapCycleCreatorNames([toResponse(cycle, rangesMap.get(id) || [])]);
+  const [mapped] = await mapCycleCreatorNames([cycle as TargetCycleResponse]);
   return mapped as TargetCycleResponse;
 };
 
@@ -509,65 +460,12 @@ export const updateTargetCycle = async (
 ): Promise<TargetCycleResponse> => {
   await assertSchemaReady();
 
-  if (hasGeneratedDelegates()) {
-    const targetCycleRange = (prisma as any).targetCycleRange;
-    const existing = await (prisma as any).targetCycle.findFirst({
-      where: { id, workspaceId, deletedAt: null },
-      select: { id: true, name: true, totalDays: true, status: true },
-    });
+  const targetCycleRange = (prisma as any).targetCycleRange;
+  const existing = await (prisma as any).targetCycle.findFirst({
+    where: { id, workspaceId, deletedAt: null },
+    select: { id: true, name: true, totalDays: true, status: true },
+  });
 
-    if (!existing) {
-      const error: any = new Error('Target cycle not found.');
-      error.statusCode = 404;
-      throw error;
-    }
-
-    const nextName = input.name ?? existing.name;
-    await ensureNameIsAvailableSql(prisma as any, workspaceId, nextName, id);
-
-    const targetRanges =
-      input.ranges ??
-      (await targetCycleRange.findMany({
-        where: { targetCycleId: id },
-        orderBy: { startDay: 'asc' },
-        select: { startDay: true, endDay: true },
-      }));
-
-    const totalDays = validateRangesAndComputeTotalDays(targetRanges);
-
-    const updatedCycle = await prisma.$transaction(async (tx: any) => {
-      if (input.ranges) {
-        await (tx as any).targetCycleRange.deleteMany({ where: { targetCycleId: id } });
-        await (tx as any).targetCycleRange.createMany({
-          data: input.ranges.map((range) => ({
-            targetCycleId: id,
-            startDay: range.startDay,
-            endDay: range.endDay,
-          })),
-        });
-      }
-
-      await (tx as any).targetCycle.update({
-        where: { id },
-        data: {
-          ...(input.name !== undefined ? { name: input.name } : {}),
-          ...(input.status !== undefined ? { status: input.status } : {}),
-          totalDays,
-        },
-      });
-
-      return (tx as any).targetCycle.findUnique({
-        where: { id },
-        include: { ranges: { orderBy: { startDay: 'asc' } } },
-      });
-    });
-
-    const [mapped] = await mapCycleCreatorNames([updatedCycle as TargetCycleResponse]);
-    await clearTargetCycleCache(workspaceId);
-    return mapped as TargetCycleResponse;
-  }
-
-  const existing = await getCycleByIdScopedSql(prisma as any, id, workspaceId);
   if (!existing) {
     const error: any = new Error('Target cycle not found.');
     error.statusCode = 404;
@@ -577,57 +475,44 @@ export const updateTargetCycle = async (
   const nextName = input.name ?? existing.name;
   await ensureNameIsAvailableSql(prisma as any, workspaceId, nextName, id);
 
-  const targetRanges: DayRange[] =
+  const targetRanges =
     input.ranges ??
-    ((await (prisma as any).$queryRawUnsafe(
-      `SELECT "id", "targetCycleId", "startDay", "endDay", "createdAt"
-       FROM "target_cycle_ranges"
-       WHERE "targetCycleId" = $1
-       ORDER BY "startDay" ASC`,
-      id,
-    )) as RangeRow[]).map((row: RangeRow) => ({ startDay: row.startDay, endDay: row.endDay }));
+    (await targetCycleRange.findMany({
+      where: { targetCycleId: id },
+      orderBy: { startDay: 'asc' },
+      select: { startDay: true, endDay: true },
+    }));
 
   const totalDays = validateRangesAndComputeTotalDays(targetRanges);
 
-  const updated = await prisma.$transaction(async (tx: any) => {
+  const updatedCycle = await prisma.$transaction(async (tx: any) => {
     if (input.ranges) {
-      await (tx as any).$queryRawUnsafe(
-        `DELETE FROM "target_cycle_ranges" WHERE "targetCycleId" = $1`,
-        id,
-      );
-
-      for (const range of input.ranges) {
-        await (tx as any).$queryRawUnsafe(
-          `INSERT INTO "target_cycle_ranges"
-            ("id", "targetCycleId", "startDay", "endDay", "createdAt")
-           VALUES ($1, $2, $3, $4, NOW())`,
-          createId('tcr'),
-          id,
-          range.startDay,
-          range.endDay,
-        );
-      }
+      await (tx as any).targetCycleRange.deleteMany({ where: { targetCycleId: id } });
+      await (tx as any).targetCycleRange.createMany({
+        data: input.ranges.map((range) => ({
+          targetCycleId: id,
+          startDay: range.startDay,
+          endDay: range.endDay,
+        })),
+      });
     }
 
-    const updatedRows = (await (tx as any).$queryRawUnsafe(
-      `UPDATE "target_cycles"
-       SET "name" = $1,
-           "status" = $2,
-           "totalDays" = $3,
-           "updatedAt" = NOW()
-       WHERE "id" = $4
-       RETURNING "id", "name", "workspaceId", "totalDays", "status", "createdBy", "createdAt", "updatedAt", "deletedAt"`,
-      input.name ?? existing.name,
-      input.status ?? existing.status,
-      totalDays,
-      id,
-    )) as CycleRow[];
+    await (tx as any).targetCycle.update({
+      where: { id },
+      data: {
+        ...(input.name !== undefined ? { name: input.name } : {}),
+        ...(input.status !== undefined ? { status: input.status } : {}),
+        totalDays,
+      },
+    });
 
-    const rangesMap = await fetchRangesByCycleIds(tx as any, [id]);
-    return toResponse(updatedRows[0], rangesMap.get(id) || []);
+    return (tx as any).targetCycle.findUnique({
+      where: { id },
+      include: { ranges: { orderBy: { startDay: 'asc' } } },
+    });
   });
 
-  const [mapped] = await mapCycleCreatorNames([updated]);
+  const [mapped] = await mapCycleCreatorNames([updatedCycle as TargetCycleResponse]);
   await clearTargetCycleCache(workspaceId);
   return mapped as TargetCycleResponse;
 };
@@ -674,48 +559,25 @@ export const deleteTargetCycle = async (id: string, workspaceId: string): Promis
     throw error;
   }
 
-  if (hasGeneratedDelegates()) {
-    await (prisma as any).targetCycle.update({
-      where: { id },
-      data: { deletedAt: new Date() },
-    });
+  await (prisma as any).targetCycle.update({
+    where: { id },
+    data: { deletedAt: new Date() },
+  });
 
-    await (prisma as any).targetAssignment.updateMany({
-      where: { targetCycleId: id, isActive: true },
-      data: { isActive: false },
-    });
+  await (prisma as any).targetAssignment.updateMany({
+    where: { targetCycleId: id, isActive: true },
+    data: { isActive: false },
+  });
 
-    await (prisma as any).user.updateMany({
-      where: { assignedTargetCycleId: id },
-      data: {
-        assignedTargetCycleId: null,
-        isLocked: false,
-        targetLockedAt: null,
-        targetLockReason: null,
-      },
-    });
-  } else {
-    await (prisma as any).$queryRawUnsafe(
-      `UPDATE "target_cycles"
-       SET "deletedAt" = NOW(), "updatedAt" = NOW()
-       WHERE "id" = $1`,
-      id,
-    );
-
-    await (prisma as any).$queryRawUnsafe(
-      `UPDATE "target_assignments"
-       SET "isActive" = false, "updatedAt" = NOW()
-       WHERE "targetCycleId" = $1 AND "isActive" = true`,
-      id,
-    );
-
-    await (prisma as any).$queryRawUnsafe(
-      `UPDATE "users"
-       SET "assignedTargetCycleId" = NULL, "isLocked" = false, "targetLockedAt" = NULL, "targetLockReason" = NULL, "updatedAt" = NOW()
-       WHERE "assignedTargetCycleId" = $1`,
-      id,
-    );
-  }
+  await (prisma as any).user.updateMany({
+    where: { assignedTargetCycleId: id },
+    data: {
+      assignedTargetCycleId: null,
+      isLocked: false,
+      targetLockedAt: null,
+      targetLockReason: null,
+    },
+  });
 
   await clearTargetCycleCache(workspaceId);
 };

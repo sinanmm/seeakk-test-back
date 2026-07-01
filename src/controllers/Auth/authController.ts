@@ -235,7 +235,7 @@ export const register = async (req: Request, res: Response): Promise<any> => {
 
     const email = String(rawEmail).toLowerCase().trim();
     const existingUser = await prisma.user.findFirst({
-      where: { email: { equals: email, mode: 'insensitive' } },
+      where: { email: { equals: email} },
     });
     if (existingUser) {
       logger.warn('Failed registration - email already exists', { email, action: 'register_failed' });
@@ -453,7 +453,7 @@ export const login = async (req: Request, res: Response): Promise<any> => {
 
     let user: any = await prisma.user.findFirst({
       where: {
-        email: { equals: email, mode: 'insensitive' },
+        email: { equals: email},
         deletedAt: null,
       },
       select: authenticatedUserBaseSelect,
@@ -698,7 +698,7 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
     // 2. If not found by googleId, try finding by email
     if (!user) {
       user = await prisma.user.findFirst({
-        where: { email: { equals: email, mode: 'insensitive' } },
+        where: { email: { equals: email} },
         select: authenticatedUserBaseSelect,
       });
 
@@ -1106,8 +1106,8 @@ export const listUsers = async (req: Request, res: Response): Promise<any> => {
       ...(search
         ? {
             OR: [
-              { name: { contains: search, mode: 'insensitive' as const } },
-              { email: { contains: search, mode: 'insensitive' as const } },
+              { name: { contains: search} },
+              { email: { contains: search} },
             ],
           }
         : {}),
@@ -1178,7 +1178,7 @@ export const updateMe = async (req: Request, res: Response): Promise<any> => {
     if (username) {
       const existingUser = await prisma.user.findFirst({
         where: {
-          username: { equals: username, mode: 'insensitive' },
+          username: { equals: username},
           id: { not: currentUser.id },
         },
       });

@@ -90,11 +90,15 @@ const hasGeneratedDelegates = (): boolean => {
 
 const assertSchemaReady = async (): Promise<void> => {
   const lifeCycleTable = await prisma.$queryRaw<Array<{ table_name: string | null }>>`
-    SELECT to_regclass('public.lead_life_cycles')::text AS table_name
+    SELECT TABLE_NAME AS table_name 
+    FROM information_schema.tables 
+    WHERE table_schema = DATABASE() AND table_name = 'lead_life_cycles'
   `;
 
   const transitionTable = await prisma.$queryRaw<Array<{ table_name: string | null }>>`
-    SELECT to_regclass('public.lead_life_cycle_transitions')::text AS table_name
+    SELECT TABLE_NAME AS table_name 
+    FROM information_schema.tables 
+    WHERE table_schema = DATABASE() AND table_name = 'lead_life_cycle_transitions'
   `;
 
   if (!lifeCycleTable[0]?.table_name || !transitionTable[0]?.table_name) {
@@ -194,7 +198,7 @@ const ensureUniqueLifecycleName = async (
   const existing = await (prisma as any).leadLifeCycle.findFirst({
     where: {
       workspaceId,
-      name: { equals: name, mode: 'insensitive' },
+      name: { equals: name},
       ...(excludeId ? { id: { not: excludeId } } : {}),
     },
     select: { id: true },
@@ -235,17 +239,19 @@ const countLifecycleUsage = async (workspaceId: string, lifecycleId: string): Pr
   }
 
   const tableRows = await prisma.$queryRaw<Array<{ table_name: string | null }>>`
-    SELECT to_regclass('public.leads')::text AS table_name
+    SELECT TABLE_NAME AS table_name 
+    FROM information_schema.tables 
+    WHERE table_schema = DATABASE() AND table_name = 'leads'
   `;
 
   if (!tableRows[0]?.table_name) return 0;
 
   const result = await prisma.$queryRawUnsafe<Array<{ count: number }>>(
-    `SELECT COUNT(*)::int AS count
-     FROM "leads"
-     WHERE "workspaceId" = $1
-       AND "lifecycleId" = $2
-       AND "deletedAt" IS NULL`,
+    `SELECT COUNT(*) AS count
+     FROM leads
+     WHERE workspaceId = ?
+       AND lifecycleId = ?
+       AND deletedAt IS NULL`,
     workspaceId,
     lifecycleId,
   );
@@ -358,7 +364,7 @@ export const listLifeCycles = async (workspaceId: string, query: ListLeadLifeCyc
     workspaceId,
     ...(search
       ? {
-          name: { contains: search, mode: 'insensitive' as const },
+          name: { contains: search},
         }
       : {}),
   };

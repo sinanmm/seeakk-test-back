@@ -32,7 +32,9 @@ const ensureLeadSourceSchemaReady = async (): Promise<void> => {
   }
 
   const tableRows = await prisma.$queryRaw<Array<{ table_name: string | null }>>`
-    SELECT to_regclass('public.lead_sources')::text AS table_name
+    SELECT TABLE_NAME AS table_name 
+    FROM information_schema.tables 
+    WHERE table_schema = DATABASE() AND table_name = 'lead_sources'
   `;
 
   if (!tableRows[0]?.table_name) {
@@ -46,7 +48,7 @@ const ensureLeadSourceSchemaReady = async (): Promise<void> => {
   const columnRows = await prisma.$queryRaw<Array<{ column_name: string }>>`
     SELECT column_name
     FROM information_schema.columns
-    WHERE table_schema = 'public'
+    WHERE table_schema = DATABASE()
       AND table_name = 'lead_sources'
   `;
 
@@ -127,7 +129,9 @@ const countLeadUsage = async (leadSourceId: string): Promise<number> => {
   }
 
   const tableRows = await prisma.$queryRaw<Array<{ table_name: string | null }>>`
-    SELECT to_regclass('public.leads')::text AS table_name
+    SELECT TABLE_NAME AS table_name 
+    FROM information_schema.tables 
+    WHERE table_schema = DATABASE() AND table_name = 'leads'
   `;
   const hasLeadsTable = Boolean(tableRows[0]?.table_name);
   if (!hasLeadsTable) return 0;
@@ -135,7 +139,7 @@ const countLeadUsage = async (leadSourceId: string): Promise<number> => {
   const columnRows = await prisma.$queryRaw<Array<{ column_name: string }>>`
     SELECT column_name
     FROM information_schema.columns
-    WHERE table_schema = 'public'
+    WHERE table_schema = DATABASE()
       AND table_name = 'leads'
   `;
 
@@ -144,9 +148,9 @@ const countLeadUsage = async (leadSourceId: string): Promise<number> => {
 
   if (!hasCamelColumn && !hasSnakeColumn) return 0;
 
-  const filterColumn = hasCamelColumn ? '"leadSourceId"' : '"lead_source_id"';
+  const filterColumn = hasCamelColumn ? 'leadSourceId' : 'lead_source_id';
   const result = await prisma.$queryRawUnsafe<Array<{ count: number }>>(
-    `SELECT COUNT(*)::int AS count FROM "leads" WHERE ${filterColumn} = $1`,
+    `SELECT COUNT(*) AS count FROM leads WHERE ${filterColumn} = ?`,
     leadSourceId,
   );
 
@@ -163,7 +167,7 @@ export const createLeadSource = async (
   const existing = await leadSourceDelegate.findFirst({
     where: {
       workspaceId: ws,
-      name: { equals: input.name, mode: 'insensitive' },
+      name: { equals: input.name},
     },
   });
 
@@ -215,7 +219,7 @@ export const listLeadSources = async (
     deletedAt: null,
     ...(search
       ? {
-          name: { contains: search, mode: 'insensitive' as const },
+          name: { contains: search},
         }
       : {}),
     ...(status ? { status } : {}),
@@ -308,7 +312,6 @@ export const resolveOrCreateLeadSourceByName = async (
       workspaceId: ws,
       name: {
         equals: normalizedName,
-        mode: 'insensitive',
       },
     },
   });
@@ -367,7 +370,7 @@ export const updateLeadSource = async (
     const nameTaken = await leadSourceDelegate.findFirst({
       where: {
         workspaceId,
-        name: { equals: input.name, mode: 'insensitive' },
+        name: { equals: input.name},
       },
     });
 

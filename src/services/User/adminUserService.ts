@@ -178,7 +178,7 @@ const resolveRoleId = async (value: string, workspaceId: string): Promise<string
       workspaceId,
       OR: [
         { id: value },
-        { name: { equals: value, mode: 'insensitive' } },
+        { name: { equals: value} },
       ],
     },
     select: { id: true },
@@ -193,7 +193,7 @@ const resolveDepartmentId = async (value: string, workspaceId: string): Promise<
       deletedAt: null,
       OR: [
         { id: value },
-        { name: { equals: value, mode: 'insensitive' } },
+        { name: { equals: value} },
       ],
     },
     select: { id: true },
@@ -234,7 +234,7 @@ export const createUser = async (
   // 1. Email and Username uniqueness (supports restore from soft-deleted record)
   const existingEmail = await (prisma as any).user.findFirst({
     where: {
-      email: { equals: email, mode: 'insensitive' },
+      email: { equals: email},
     },
     select: {
       id: true,
@@ -431,13 +431,13 @@ export const listUsers = async (query: ListUsersQuery, workspaceId: string) => {
     deletedAt: null,
     ...(isActive !== undefined ? { isActive } : {}),
     ...(roleId ? { roleId } : {}),
-    ...(email ? { email: { contains: email, mode: 'insensitive' } } : {}),
+    ...(email ? { email: { contains: email} } : {}),
     ...(search
       ? {
           OR: [
-            { name: { contains: search, mode: 'insensitive' } },
-            { email: { contains: search, mode: 'insensitive' } },
-            { phone: { contains: search, mode: 'insensitive' } },
+            { name: { contains: search} },
+            { email: { contains: search} },
+            { phone: { contains: search} },
           ],
         }
       : {}),

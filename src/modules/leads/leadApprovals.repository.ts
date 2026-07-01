@@ -3,11 +3,10 @@ import { normalizeFollowUpType } from '../../constants/followUpType';
 
 export const ensureLeadApprovalSchemaReady = async (): Promise<boolean> => {
   const rows = await prisma.$queryRaw<Array<{ ready: boolean }>>`
-    SELECT
-      COUNT(*) FILTER (WHERE table_name = 'lead_stage_approvals') > 0 AS ready
+    SELECT COUNT(*) > 0 AS ready
     FROM information_schema.tables
-    WHERE table_schema = 'public'
-      AND table_name IN ('lead_stage_approvals')
+    WHERE table_schema = DATABASE()
+      AND table_name = 'lead_stage_approvals'
   `;
 
   return Boolean(rows[0]?.ready);

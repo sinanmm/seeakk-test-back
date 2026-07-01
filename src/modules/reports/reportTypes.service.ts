@@ -229,7 +229,6 @@ export const listReportTypes = async (workspaceId: string, actor: Actor, query: 
   if (query.search) {
     where.name = {
       contains: query.search,
-      mode: 'insensitive',
     };
   }
 

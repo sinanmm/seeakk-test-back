@@ -68,8 +68,9 @@ export const getWorkspaceWeeklyOffSettings = async (workspaceId: string): Promis
     };
   }
 
-  const weeklyOffDays = Array.isArray(workspace.weeklyOffDays) && workspace.weeklyOffDays.length
-    ? [...new Set(workspace.weeklyOffDays)].sort((a, b) => a - b)
+  const rawDays = Array.isArray(workspace.weeklyOffDays) ? (workspace.weeklyOffDays as any[]) : [];
+  const weeklyOffDays = rawDays.length
+    ? [...new Set(rawDays)].map(Number).sort((a, b) => a - b)
     : [...DEFAULT_WEEKLY_OFF_DAYS];
 
   return {
@@ -85,7 +86,7 @@ export const updateWorkspaceWeeklyOffSettings = async (
   return prisma.workspace.update({
     where: { id: workspaceId },
     data: {
-      weeklyOffDays: payload.weeklyOffDays,
+      weeklyOffDays: payload.weeklyOffDays as any,
       weeklyOffColor: payload.weeklyOffColor,
     },
     select: { weeklyOffDays: true, weeklyOffColor: true },

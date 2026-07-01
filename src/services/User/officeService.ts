@@ -106,7 +106,7 @@ const ensureOfficeNameUnique = async (
   const existing = await (prisma as any).office.findFirst({
     where: {
       workspaceId,
-      name: { equals: name, mode: 'insensitive' },
+      name: { equals: name},
       ...(excludeId ? { id: { not: excludeId } } : {}),
     },
     select: { id: true },
@@ -172,7 +172,7 @@ export const listOffices = async (workspaceId: string, query?: ListOfficesQuery)
     ...(status ? { isActive: status === 'ACTIVE' } : { isActive: true }),
     ...(search
       ? {
-          name: { contains: search, mode: 'insensitive' },
+          name: { contains: search},
         }
       : {}),
     ...(countryId ? { countryId } : {}),

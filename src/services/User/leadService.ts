@@ -237,9 +237,9 @@ const ensureLeadsColumnsMatchPrismaModel = async (): Promise<void> => {
   }
 
   const rows = await prisma.$queryRaw<Array<{ column_name: string }>>`
-    SELECT column_name::text AS column_name
+    SELECT column_name
     FROM information_schema.columns
-    WHERE table_schema = 'public' AND table_name = 'leads'
+    WHERE table_schema = DATABASE() AND table_name = 'leads'
   `;
 
   const present = new Set(rows.map((row) => row.column_name.toLowerCase()));
@@ -265,7 +265,9 @@ const ensureLeadsColumnsMatchPrismaModel = async (): Promise<void> => {
 
 const assertModuleReady = async (): Promise<void> => {
   const leadTable = await prisma.$queryRaw<Array<{ table_name: string | null }>>`
-    SELECT to_regclass('public.leads')::text AS table_name
+    SELECT TABLE_NAME AS table_name 
+    FROM information_schema.tables 
+    WHERE table_schema = DATABASE() AND table_name = 'leads'
   `;
 
   if (!leadTable[0]?.table_name) {
@@ -689,7 +691,7 @@ const getLobStageForWorkspace = async (_workspaceId: string) =>
       workspaceId: _workspaceId,
       deletedAt: null,
       status: 'ACTIVE',
-      OR: [{ isLOB: true }, { name: { equals: 'LOB', mode: 'insensitive' } }],
+      OR: [{ isLOB: true }, { name: { equals: 'LOB'} }],
     },
     orderBy: [{ order: 'asc' }, { createdAt: 'asc' }],
     select: {
@@ -728,8 +730,8 @@ const getNewStageForWorkspace = async (_workspaceId: string) =>
       isLOB: false,
       isClosed: false,
       OR: [
-        { name: { equals: 'new', mode: 'insensitive' } },
-        { name: { equals: 'new lead', mode: 'insensitive' } },
+        { name: { equals: 'new'} },
+        { name: { equals: 'new lead'} },
       ],
     },
     orderBy: [{ order: 'asc' }, { createdAt: 'asc' }],
@@ -1035,9 +1037,9 @@ const buildListWhere = async (
   if (query.search) {
     const searchCond = {
       OR: [
-        { name: { contains: query.search, mode: 'insensitive' as const } },
-        { email: { contains: query.search, mode: 'insensitive' as const } },
-        { phone: { contains: query.search, mode: 'insensitive' as const } },
+        { name: { contains: query.search} },
+        { email: { contains: query.search} },
+        { phone: { contains: query.search} },
       ],
     };
     if (where.AND) {

@@ -51,54 +51,16 @@ const getStageRuleColumnsMeta = async (): Promise<StageRuleColumnMeta[]> =>
   prisma.$queryRaw<StageRuleColumnMeta[]>`
     SELECT column_name, is_nullable, column_default
     FROM information_schema.columns
-    WHERE table_schema = 'public'
+    WHERE table_schema = DATABASE()
       AND table_name = 'stage_rules'
   `;
 
 const ensureStageIdNullable = async (): Promise<void> => {
-  const stageIdNullabilityRows = await prisma.$queryRaw<Array<{ is_nullable: 'YES' | 'NO' }>>`
-    SELECT is_nullable
-    FROM information_schema.columns
-    WHERE table_schema = 'public'
-      AND table_name = 'stage_rules'
-      AND column_name = 'stageId'
-    LIMIT 1
-  `;
-
-  if (stageIdNullabilityRows[0]?.is_nullable === 'NO') {
-    await prisma.$executeRawUnsafe(`
-      ALTER TABLE "stage_rules"
-      ALTER COLUMN "stageId" DROP NOT NULL;
-    `);
-  }
+  // Bypassed under MySQL: nullability is natively managed by Prisma schema/migrations.
 };
 
 const ensureLegacyStageRuleColumnsCompatible = async (): Promise<void> => {
-  const columns = await getStageRuleColumnsMeta();
-  const findColumn = (name: string) =>
-    columns.find((column) => column.column_name.toLowerCase() === name.toLowerCase());
-
-  const relaxLegacyTextNotNull = async (columnName: string): Promise<void> => {
-    const column = findColumn(columnName);
-    if (column?.is_nullable === 'NO') {
-      await prisma.$executeRawUnsafe(`
-        ALTER TABLE "stage_rules"
-        ALTER COLUMN "${columnName}" DROP NOT NULL;
-      `);
-    }
-  };
-
-  await relaxLegacyTextNotNull('field');
-  await relaxLegacyTextNotNull('condition');
-  await relaxLegacyTextNotNull('value');
-
-  const legacyIsMandatory = findColumn('isMandatory');
-  if (legacyIsMandatory && !legacyIsMandatory.column_default) {
-    await prisma.$executeRawUnsafe(`
-      ALTER TABLE "stage_rules"
-      ALTER COLUMN "isMandatory" SET DEFAULT false;
-    `);
-  }
+  // Bypassed under MySQL: nullability and default values are natively managed by Prisma schema/migrations.
 };
 
 const isStageIdNullConstraintError = (error: unknown): boolean => {
@@ -126,7 +88,9 @@ const ensureStageRuleSchemaReady = async (): Promise<void> => {
   }
 
   const tableRows = await prisma.$queryRaw<Array<{ table_name: string | null }>>`
-    SELECT to_regclass('public.stage_rules')::text AS table_name
+    SELECT TABLE_NAME AS table_name 
+    FROM information_schema.tables 
+    WHERE table_schema = DATABASE() AND table_name = 'stage_rules'
   `;
   const hasStageRulesTable = Boolean(tableRows[0]?.table_name);
   if (!hasStageRulesTable) {
@@ -140,19 +104,9 @@ const ensureStageRuleSchemaReady = async (): Promise<void> => {
   const columns = await prisma.$queryRaw<Array<{ column_name: string }>>`
     SELECT column_name
     FROM information_schema.columns
-    WHERE table_schema = 'public'
+    WHERE table_schema = DATABASE()
       AND table_name = 'stage_rules'
   `;
-
-  // Stage Rules supports global rules (stageId = null); legacy schemas may still keep this column NOT NULL.
-  await ensureStageIdNullable();
-  // Legacy pre-refactor columns may still enforce constraints not used by new Prisma model.
-  await ensureLegacyStageRuleColumnsCompatible();
-
-  await prisma.$executeRawUnsafe(`
-    ALTER TABLE "stage_rules"
-      ADD COLUMN IF NOT EXISTS "options" JSONB;
-  `);
 
   const colSet = new Set(columns.map((column) => column.column_name));
   const lowerColSet = new Set(columns.map((column) => column.column_name.toLowerCase()));
@@ -162,120 +116,11 @@ const ensureStageRuleSchemaReady = async (): Promise<void> => {
   );
 
   if (!hasAllColumns) {
-    // Attempt self-heal for older stage_rules structure without data loss.
-    await prisma.$executeRawUnsafe(`
-      DO $$
-      BEGIN
-        CREATE TYPE "InputType" AS ENUM ('TEXT', 'TEXTAREA', 'RADIO', 'SELECT');
-      EXCEPTION
-        WHEN duplicate_object THEN NULL;
-      END $$;
-    `);
-
-    await prisma.$executeRawUnsafe(`
-      DO $$
-      BEGIN
-        CREATE TYPE "RuleStatus" AS ENUM ('ACTIVE', 'INACTIVE');
-      EXCEPTION
-        WHEN duplicate_object THEN NULL;
-      END $$;
-    `);
-
-    await prisma.$executeRawUnsafe(`
-      ALTER TABLE "stage_rules"
-        ADD COLUMN IF NOT EXISTS "name" TEXT,
-        ADD COLUMN IF NOT EXISTS "inputType" "InputType",
-        ADD COLUMN IF NOT EXISTS "sortOrder" INTEGER,
-        ADD COLUMN IF NOT EXISTS "required" BOOLEAN NOT NULL DEFAULT false,
-        ADD COLUMN IF NOT EXISTS "status" "RuleStatus" NOT NULL DEFAULT 'ACTIVE',
-        ADD COLUMN IF NOT EXISTS "createdBy" TEXT,
-        ADD COLUMN IF NOT EXISTS "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        ADD COLUMN IF NOT EXISTS "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        ADD COLUMN IF NOT EXISTS "deletedAt" TIMESTAMP(3),
-        ADD COLUMN IF NOT EXISTS "options" JSONB;
-    `);
-
-    await prisma.$executeRawUnsafe(`
-      ALTER TABLE "stage_rules"
-      ALTER COLUMN "stageId" DROP NOT NULL;
-    `);
-
-    const hasField = lowerColSet.has('field');
-    const hasIsMandatory = lowerColSet.has('ismandatory');
-    if (hasField || hasIsMandatory) {
-      await prisma.$executeRawUnsafe(`
-        WITH ranked AS (
-          SELECT "id", ROW_NUMBER() OVER (PARTITION BY "stageId" ORDER BY "id") AS row_num
-          FROM "stage_rules"
-        )
-        UPDATE "stage_rules" AS sr
-        SET
-          "name" = COALESCE(NULLIF(TRIM(sr."name"), ''), NULLIF(TRIM(sr."field"), ''), CONCAT('Rule ', ranked.row_num::text)),
-          "inputType" = COALESCE(sr."inputType", 'TEXT'::"InputType"),
-          "sortOrder" = COALESCE(sr."sortOrder", ranked.row_num),
-          "required" = COALESCE(sr."required", sr."isMandatory", false),
-          "status" = COALESCE(sr."status", 'ACTIVE'::"RuleStatus"),
-          "updatedAt" = COALESCE(sr."updatedAt", NOW())
-        FROM ranked
-        WHERE sr."id" = ranked."id";
-      `);
-    } else {
-      await prisma.$executeRawUnsafe(`
-        UPDATE "stage_rules"
-        SET
-          "name" = COALESCE(NULLIF(TRIM("name"), ''), 'Untitled Rule'),
-          "inputType" = COALESCE("inputType", 'TEXT'::"InputType"),
-          "sortOrder" = COALESCE("sortOrder", 1),
-          "updatedAt" = COALESCE("updatedAt", NOW())
-        WHERE
-          "name" IS NULL OR TRIM("name") = ''
-          OR "inputType" IS NULL
-          OR "sortOrder" IS NULL
-          OR "updatedAt" IS NULL;
-      `);
-    }
-
-    await prisma.$executeRawUnsafe(`
-      ALTER TABLE "stage_rules"
-        ALTER COLUMN "name" SET DEFAULT 'Untitled Rule',
-        ALTER COLUMN "inputType" SET DEFAULT 'TEXT'::"InputType",
-        ALTER COLUMN "sortOrder" SET DEFAULT 1,
-        ALTER COLUMN "updatedAt" SET DEFAULT NOW();
-    `);
-
-    await prisma.$executeRawUnsafe(`
-      ALTER TABLE "stage_rules"
-        ALTER COLUMN "name" SET NOT NULL,
-        ALTER COLUMN "inputType" SET NOT NULL,
-        ALTER COLUMN "sortOrder" SET NOT NULL,
-        ALTER COLUMN "updatedAt" SET NOT NULL;
-    `);
-
-    await prisma.$executeRawUnsafe(`
-      CREATE INDEX IF NOT EXISTS "stage_rules_name_idx" ON "stage_rules"("name");
-      CREATE INDEX IF NOT EXISTS "stage_rules_status_idx" ON "stage_rules"("status");
-      CREATE INDEX IF NOT EXISTS "stage_rules_sortOrder_idx" ON "stage_rules"("sortOrder");
-      CREATE INDEX IF NOT EXISTS "stage_rules_stageId_idx" ON "stage_rules"("stageId");
-    `);
-
-    const finalColumns = await prisma.$queryRaw<Array<{ column_name: string }>>`
-      SELECT column_name
-      FROM information_schema.columns
-      WHERE table_schema = 'public'
-        AND table_name = 'stage_rules'
-    `;
-
-    const finalSet = new Set(finalColumns.map((column) => column.column_name.toLowerCase()));
-    const finalRequired = ['name', 'inputtype', 'sortorder', 'required', 'status', 'deletedat'];
-    const finallyReady = finalRequired.every((column) => finalSet.has(column));
-
-    if (!finallyReady) {
-      const error: any = new Error(
-        'Stage Rules DB schema is not updated. Run Prisma migration/db push for latest stage_rules columns, then restart backend.',
-      );
-      error.statusCode = 503;
-      throw error;
-    }
+    const error: any = new Error(
+      'Stage Rules DB schema is not updated. Run Prisma migration/db push for latest stage_rules columns, then restart backend.',
+    );
+    error.statusCode = 503;
+    throw error;
   }
 
   stageRuleSchemaCheckedAt = now;
@@ -462,7 +307,7 @@ export const listStageRules = async (
     deletedAt: null,
     ...(search
       ? {
-          name: { contains: search, mode: 'insensitive' as const },
+          name: { contains: search},
         }
       : {}),
     ...(status ? { status } : {}),

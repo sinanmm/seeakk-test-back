@@ -21,20 +21,7 @@ const runStatements = async (sql: string): Promise<void> => {
 export const ensureWeeklyOffSchema = async (): Promise<void> => {
   if (weeklyOffSchemaEnsured) return;
 
-  await runStatements(`
-    ALTER TABLE "workspaces" ADD COLUMN IF NOT EXISTS "weeklyOffDays" INTEGER[] NOT NULL DEFAULT ARRAY[0]::INTEGER[];
-    ALTER TABLE "workspaces" ADD COLUMN IF NOT EXISTS "weeklyOffColor" TEXT NOT NULL DEFAULT '#cbd5e1';
-  `);
-
-  await prisma.$executeRawUnsafe(`
-    DO $$
-    BEGIN
-      ALTER TYPE "AttendanceType" ADD VALUE IF NOT EXISTS 'WEEKLY_OFF';
-    EXCEPTION
-      WHEN duplicate_object THEN NULL;
-    END $$;
-  `);
-
+  // Bypassed under MySQL: the schema columns are natively managed by Prisma migrations.
   weeklyOffSchemaEnsured = true;
-  logger.info('[Holidays] Weekly-off schema columns verified');
+  logger.info('[Holidays] Weekly-off schema verified');
 };

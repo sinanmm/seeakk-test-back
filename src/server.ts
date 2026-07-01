@@ -134,7 +134,7 @@ const startServer = async () => {
     // Connect Prisma in background so API process can still boot and avoid ERR_CONNECTION_REFUSED.
     connectPrismaWithRetry(prisma)
       .then(async () => {
-        console.log('PostgreSQL connected via Prisma');
+        console.log('Database connected via Prisma');
         try {
           const { ensureReportTypeSchemaColumns } = await import('./modules/reports/reportTypeSchemaGuard');
           await ensureReportTypeSchemaColumns();
@@ -175,7 +175,7 @@ const startServer = async () => {
         }
       })
       .catch((error) => {
-        console.error('PostgreSQL initial connection failed. API is running in degraded mode:', error);
+        console.error('Database initial connection failed. API is running in degraded mode:', error);
       });
 
     // Graceful Shutdown Handler

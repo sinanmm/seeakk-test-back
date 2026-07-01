@@ -57,7 +57,7 @@ export const createRole = async (
   const existingRole = await prisma.role.findFirst({
     where: {
       workspaceId,
-      name: { equals: name, mode: 'insensitive' },
+      name: { equals: name},
     },
     select: { id: true },
   });
@@ -120,8 +120,8 @@ export const listRoles = async (query: ListRolesQuery, workspaceId: string): Pro
     ...(search
       ? {
           OR: [
-            { name: { contains: search, mode: 'insensitive' as const } },
-            { description: { contains: search, mode: 'insensitive' as const } },
+            { name: { contains: search} },
+            { description: { contains: search} },
           ],
         }
       : {}),
@@ -207,7 +207,7 @@ export const updateRole = async (id: string, input: UpdateRoleInput, workspaceId
       where: {
         workspaceId,
         id: { not: id },
-        name: { equals: name, mode: 'insensitive' },
+        name: { equals: name},
       },
       select: { id: true },
     });
