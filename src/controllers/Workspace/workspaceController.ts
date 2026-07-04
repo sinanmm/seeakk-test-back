@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import prisma from '../../config/prisma';
+import prisma, { directPrisma } from '../../config/prisma';
 import logger from '../../utils/logger';
 import { seedDefaultMasterData } from '../../services/Seeding/seedingService';
 
@@ -91,7 +91,7 @@ export const setupWorkspace = async (req: Request, res: Response, next: NextFunc
     // 1. Create the workspace and link to the owner simultaneously
     let newWorkspace;
     try {
-      newWorkspace = await prisma.workspace.create({
+      newWorkspace = await directPrisma.workspace.create({
         data: {
           companyName: branding.companyName,
           logoUrl: branding.logoUrl,
@@ -113,7 +113,7 @@ export const setupWorkspace = async (req: Request, res: Response, next: NextFunc
           (error.message.includes('workspaces.logoUrl') || error.message.includes('logoUrl')));
 
       if (missingLogoColumn) {
-        newWorkspace = await prisma.workspace.create({
+        newWorkspace = await directPrisma.workspace.create({
           data: {
             companyName: branding.companyName,
             employeeCount,
@@ -177,7 +177,32 @@ export const setupWorkspace = async (req: Request, res: Response, next: NextFunc
         workspaceId: updatedUser.workspaceId,
       },
     });
-  } catch (error) {
+  } catch (error: any) {
+    logger.error('Workspace setup failed', {
+      action: 'workspace_setup_error',
+      incomingRequestBody: req.body,
+      validatedPayload: {
+        companyName: req.body.companyName,
+        employeeCount: req.body.employeeCount,
+        timeZone: req.body.timeZone,
+        language: req.body.language,
+        currencyLocale: req.body.currencyLocale,
+        loadSampleData: req.body.loadSampleData,
+        logoUrlLength: req.body.logoUrl ? req.body.logoUrl.length : 0,
+      },
+      prismaDataObject: {
+        companyName: req.body.companyName,
+        employeeCount: req.body.employeeCount,
+        timeZone: req.body.timeZone || 'UTC',
+        language: req.body.language || 'en-US',
+        currencyLocale: req.body.currencyLocale || 'USD',
+        loadSampleData: req.body.loadSampleData || false,
+        ownerId: req.user?.id,
+        logoUrlLength: req.body.logoUrl ? req.body.logoUrl.length : 0,
+      },
+      fullPrismaError: error,
+      completePostgresError: error.meta ?? error.message,
+    });
     next(error);
   }
 };
@@ -193,7 +218,7 @@ export const updateWorkspaceProfile = async (req: Request, res: Response, next: 
       return res.status(400).json({ message: branding.error });
     }
 
-    const workspace = await prisma.workspace.update({
+    const workspace = await directPrisma.workspace.update({
       where: { id: req.user.workspaceId },
       data: {
         companyName: branding.companyName,

@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 
-const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
+const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient; directPrisma?: PrismaClient };
 
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) {
@@ -144,6 +144,16 @@ export const prisma = globalForPrisma.prisma ?? createPrismaClient();
 // production can instantiate a new PrismaClient per cold start edge case and stack middleware.
 if (!globalForPrisma.prisma) {
   globalForPrisma.prisma = prisma;
+}
+
+const directUrl = process.env.DIRECT_URL || connectionString;
+export const directPrisma = globalForPrisma.directPrisma ?? new PrismaClient({
+  datasources: { db: { url: directUrl } },
+  log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
+});
+
+if (!globalForPrisma.directPrisma) {
+  globalForPrisma.directPrisma = directPrisma;
 }
 
 export default prisma;
