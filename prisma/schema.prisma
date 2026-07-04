@@ -107,7 +107,7 @@ model Workspace {
   language       String       @default("en-US")
   currencyLocale String       @default("USD")
   loadSampleData Boolean      @default(false)
-  weeklyOffDays  Json         @default("[0]")
+  weeklyOffDays  Int[]         @default([0])
   weeklyOffColor String       @default("#cbd5e1")
   owner          User         @relation("WorkspaceOwner", fields: [ownerId], references: [id])
   ownerId        String       @unique
