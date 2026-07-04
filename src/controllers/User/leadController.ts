@@ -193,7 +193,23 @@ export const updateLead = async (req: Request, res: Response, next: NextFunction
   if (!input) return;
 
   try {
-    const lead = await leadService.updateLead(workspaceId, getActor(req), params.id, input);
+    const result = await leadService.updateLead(workspaceId, getActor(req), params.id, input);
+    
+    if ((result as any)._approvalRequired) {
+      // The other updates (name, etc) were saved, but stage requires approval
+      emitWorkspaceEvent(workspaceId, 'lead_updated', { leadId: result.id, action: 'updated' });
+      return res.status(202).json({
+        success: true,
+        message: 'Approval required for stage change. Other updates were saved successfully.',
+        approvalRequired: true,
+        data: {
+          lead: result,
+          approval: (result as any)._approval,
+        },
+      });
+    }
+
+    const lead = result;
     emitWorkspaceEvent(workspaceId, 'lead_updated', { leadId: lead.id, action: 'updated' });
 
     await auditService.log({

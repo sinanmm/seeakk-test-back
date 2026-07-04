@@ -41,6 +41,7 @@ const socketCorsOrigin = (
     origin,
     allowedOrigins: getAllowedOrigins(),
   });
+  logger.info('Socket Error', { error: 'CORS Blocked', origin });
   callback(new Error(`Not allowed by Socket.io CORS: ${origin}`), false);
 };
 
@@ -128,6 +129,7 @@ export const initRealtimeServer = (httpServer: HttpServer): SocketIOServer => {
       (socket.data as any).workspaceId = workspaceId;
       socket.join(toUserRoom(user.id));
       socket.join(toWorkspaceRoom(workspaceId));
+      logger.info('Socket Handshake Completed', { userId: user.id });
       next();
     } catch (error: any) {
       logger.error('Socket middleware unexpected error', { error: error.message });
@@ -136,10 +138,15 @@ export const initRealtimeServer = (httpServer: HttpServer): SocketIOServer => {
   });
 
   io.on('connection', (socket) => {
+    logger.info('Socket Connected');
     logger.info('Realtime socket connected', {
       socketId: socket.id,
       userId: (socket.data as any)?.userId,
       workspaceId: (socket.data as any)?.workspaceId,
+    });
+    
+    socket.on('disconnect', () => {
+      logger.info('Socket Disconnected');
     });
   });
 

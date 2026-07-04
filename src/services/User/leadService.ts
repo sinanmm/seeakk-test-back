@@ -1345,7 +1345,7 @@ export const updateLead = async (
   actor: Actor,
   id: string,
   input: UpdateLeadInput,
-): Promise<ReturnType<typeof mapLeadRecord>> => {
+): Promise<ReturnType<typeof mapLeadRecord> & { _approvalRequired?: boolean; _approval?: any }> => {
   await assertModuleReady();
 
   const existing = await getLeadScoped(workspaceId, id, actor);
@@ -1395,6 +1395,7 @@ export const updateLead = async (
         ? await resolveLifecycle(workspaceId, existing.lifecycleId)
         : null;
 
+  let approvalResult: any = null;
   if (
     input.stageId !== undefined &&
     stage?.id &&
@@ -1402,10 +1403,47 @@ export const updateLead = async (
     stage.id !== existing.stageId &&
     shouldRequireApprovalForStage(stage)
   ) {
-    throw createServiceError(
-      'This stage change requires approval. Use the stage transition flow instead of a direct lead update.',
-      409,
-    );
+    const requestingUser = await prisma.user.findUnique({
+      where: { id: actor.id },
+      select: { supervisorId: true },
+    });
+
+    if (!requestingUser?.supervisorId && isManagerialRole(actor.role?.name)) {
+      logger.info('Bypassing lead stage approval in updateLead for managerial user without supervisor', {
+        userId: actor.id,
+        role: actor.role?.name,
+        targetStage: stage.name,
+      });
+    } else {
+      const executionRules = await getActiveStageRulesForExecution(workspaceId, stage.id);
+      const ruleNameById = new Map(executionRules.map((rule) => [rule.id, rule.name]));
+      
+      approvalResult = await leadApprovalService.createLeadApproval(
+        workspaceId,
+        { id: actor.id, roleId: actor.roleId ?? null, role: actor.role },
+        {
+          leadId: id,
+          fromStageId: existing.stageId,
+          toStageId: stage.id,
+          requestData: {
+            reasonId: input.reasonId ?? null,
+            remarks: input.remarks ?? null,
+            nextFollowUpAt: input.nextFollowUpAt ? input.nextFollowUpAt.toISOString() : null,
+            nextFollowUpType: input.nextFollowUpType ?? null,
+            followUpDescription: input.followUpDescription ?? null,
+            stageRuleValues: [],
+            ...(stage.isLOB && existing.stageId
+              ? {
+                  previousStageId: existing.stageId,
+                  previousStageName: existing.stage?.name ?? null,
+                }
+              : {}),
+          },
+        },
+      );
+      
+      input.stageId = undefined;
+    }
   }
 
   if (
@@ -1602,7 +1640,12 @@ export const updateLead = async (
     await touchFollowUpTodayCachesAfterLeadMutation(workspaceId, assignedToId || existing.createdById, nextFollowUpAt);
   }
   const updated = await getLeadScoped(workspaceId, updatedLeadId, actor);
-  return mapLeadRecord(updated);
+  const result = mapLeadRecord(updated);
+  if (approvalResult) {
+    (result as any)._approvalRequired = true;
+    (result as any)._approval = approvalResult.approval;
+  }
+  return result;
 };
 
 export const changeStage = async (

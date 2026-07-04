@@ -59,6 +59,43 @@ const app = express();
 // Render / Vercel / proxies: trust X-Forwarded-* for correct req.ip and secure cookies if used later
 app.set('trust proxy', 1);
 
+console.log('Application Started');
+
+const corsOptions: cors.CorsOptions = {
+  origin: corsOriginHandler,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization',
+    'x-device-id',
+    'x-request-id',
+    'x-workspace-id',
+    'Accept',
+    'Origin',
+    'X-Requested-With',
+  ],
+  exposedHeaders: ['Authorization'],
+  credentials: true,
+  optionsSuccessStatus: 204,
+};
+
+// Add diagnostic log for OPTIONS
+app.use((req, res, next) => {
+  if (req.method === 'OPTIONS') {
+    logger.info('OPTIONS Request Received', { path: req.path, origin: req.headers.origin });
+    res.on('finish', () => {
+      logger.info('OPTIONS Response Sent', { path: req.path, statusCode: res.statusCode });
+    });
+  }
+  next();
+});
+
+// Production-grade CORS config FIRST
+app.use(cors(corsOptions));
+
+
+console.log('CORS Initialized');
+
 app.use(cookieParser());
 
 const shouldCompress = (req: Request): boolean => {
@@ -87,28 +124,8 @@ app.use(
 
 const requestBodyLimit = process.env.REQUEST_BODY_LIMIT || '5mb';
 
-const corsOptions: cors.CorsOptions = {
-  origin: corsOriginHandler,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: [
-    'Content-Type',
-    'Authorization',
-    'x-device-id',
-    'x-request-id',
-    'x-workspace-id',
-    'Accept',
-    'Origin',
-    'X-Requested-With',
-  ],
-  exposedHeaders: ['Authorization'],
-  credentials: true,
-  optionsSuccessStatus: 204,
-};
-
 // Preflight must succeed before auth / rate-limit / route handlers (fixes Vercel CORS on meta APIs).
-app.use(handlePreflightRequest);
-// Stamp ACAO early so every response path (401/423/422/504) includes CORS for allowed origins.
-app.use(ensureCorsHeadersMiddleware);
+// CORS is now handled at the very top of the file
 app.use(requestTimeoutMiddleware);
 
 // Access logs: "tiny" in production reduces log volume unless ACCESS_LOG_VERBOSE=true
@@ -116,9 +133,7 @@ const accessLogFormat =
   process.env.NODE_ENV === 'production' && process.env.ACCESS_LOG_VERBOSE !== 'true' ? 'tiny' : 'combined';
 app.use(morgan(accessLogFormat, { stream: { write: (message: string) => logger.info(message.trim()) } }));
 
-// Production-grade CORS config
-app.use(cors(corsOptions));
-app.options(/.*/, cors(corsOptions));
+// Production-grade CORS config (moved to top of file)
 
 // Correlation id for support / log cross-reference (idempotent if client sends X-Request-Id)
 app.use((req, res, next) => {
@@ -151,6 +166,7 @@ app.use((req, res, next) => {
 
 // Liveness: no DB — for load balancers & browser checks (must stay fast)
 app.get('/healthz', (_req, res) => {
+  logger.info('Health Endpoint Accessed');
   res.status(200).json({
     ok: true,
     uptime: process.uptime(),

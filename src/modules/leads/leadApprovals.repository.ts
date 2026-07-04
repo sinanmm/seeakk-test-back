@@ -1,5 +1,5 @@
 import prisma from '../../config/prisma';
-import { normalizeFollowUpType } from '../../constants/followUpType';
+
 
 export const ensureLeadApprovalSchemaReady = async (): Promise<boolean> => {
   const rows = await prisma.$queryRaw<Array<{ ready: boolean }>>`
@@ -386,27 +386,8 @@ export const processApproval = async (input: {
       }
 
       const requestData = input.requestData ?? {};
-      const nextFollowUpAt =
-        typeof requestData.nextFollowUpAt === 'string' && requestData.nextFollowUpAt.trim()
-          ? new Date(requestData.nextFollowUpAt)
-          : null;
-
-      if (nextFollowUpAt && !Number.isNaN(nextFollowUpAt.getTime())) {
-        await (tx as any).followUp.create({
-          data: {
-            leadId: approval.leadId,
-            workspaceId: input.workspaceId,
-            userId: approval.lead.assignedToId ?? approval.approvedById ?? input.approvedById,
-            type: normalizeFollowUpType((requestData as { nextFollowUpType?: unknown }).nextFollowUpType),
-            description:
-              typeof requestData.followUpDescription === 'string' && requestData.followUpDescription.trim()
-                ? requestData.followUpDescription.trim()
-                : 'Follow-up created from approved stage transition',
-            status: 'PENDING',
-            scheduledAt: nextFollowUpAt,
-          },
-        });
-      }
+      // NOTE: Follow-up creation and validation are completely decoupled from stage approvals.
+      // We no longer read nextFollowUpAt from requestData to create a follow-up here.
 
       if (approval.toStage?.isLOB) {
         const snapshotPrevId =

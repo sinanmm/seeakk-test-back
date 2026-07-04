@@ -424,16 +424,7 @@ export const processLeadApproval = async (
   }
 
   const requestData = normalizeRequestData(approval.requestData);
-  if (input.action === 'APPROVE' && requestData.nextFollowUpAt) {
-    const parsedNextFollowUpAt = new Date(requestData.nextFollowUpAt);
-    if (Number.isNaN(parsedNextFollowUpAt.getTime())) {
-      throw createServiceError('Requested follow-up date is invalid.', 422);
-    }
-
-    if (parsedNextFollowUpAt.getTime() <= Date.now()) {
-      throw createServiceError('Requested follow-up date must be in the future.', 422);
-    }
-  }
+  // NOTE: Stage approval is strictly for approval; follow-up validation is bypassed here.
 
   const requiresClosureRevenue = Boolean(approval.toStage?.isClosed && !approval.toStage?.isLOB);
 
@@ -456,14 +447,7 @@ export const processLeadApproval = async (
     earnedRevenue: (input as any).earnedRevenue,
     leadUpdateData:
       input.action === 'APPROVE'
-        ? {
-            ...buildApprovalLeadUpdateData({ ...approval, approvedById: actor.id }),
-            ...(requestData.nextFollowUpAt
-              ? {
-                  nextFollowUpAt: new Date(requestData.nextFollowUpAt),
-                }
-              : {}),
-          }
+        ? buildApprovalLeadUpdateData({ ...approval, approvedById: actor.id })
         : undefined,
     requestData,
     ipAddress: context?.ipAddress,

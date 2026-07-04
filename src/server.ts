@@ -6,6 +6,7 @@
  * - Engine.IO path defaults to /socket.io (see socketConstants + realtime/socket.ts)
  */
 import dotenv from 'dotenv';
+
 dotenv.config();
 
 import dns from 'dns';
