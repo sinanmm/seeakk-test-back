@@ -8,7 +8,7 @@
     "dev": "nodemon --watch src --ext ts,json --exec ts-node --transpile-only src/server.ts",
     "dev:once": "ts-node --transpile-only src/server.ts",
     "build": "node scripts/clean-prisma.js && npx prisma generate && tsc",
-    "start": "npx prisma migrate deploy && node scripts/clean-prisma.js && npx prisma generate && node dist/server.js",
+    "start": "node scripts/clean-prisma.js && npx prisma generate && node dist/server.js",
     "postinstall": "node scripts/setup-env.js && node scripts/clean-prisma.js && npx prisma generate",
     "migrate": "node scripts/setup-env.js && npx prisma migrate deploy",
     "release": "node scripts/setup-env.js && npx prisma migrate deploy",

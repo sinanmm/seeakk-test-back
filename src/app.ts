@@ -95,6 +95,7 @@ app.use(cors(corsOptions));
 
 app.use(ensureCorsHeadersMiddleware);
 app.use(handlePreflightRequest);
+
 console.log('CORS Initialized');
 
 app.use(cookieParser());
