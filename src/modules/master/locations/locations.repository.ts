@@ -105,19 +105,19 @@ export const ensureLocationSchemaReady = async (): Promise<boolean> => {
       AND EXISTS (
         SELECT 1
         FROM information_schema.columns
-        WHERE table_schema = DATABASE()
+        WHERE table_schema = current_schema()
           AND table_name = 'locations'
           AND column_name = 'countryId'
       )
       AND EXISTS (
         SELECT 1
         FROM information_schema.columns
-        WHERE table_schema = DATABASE()
+        WHERE table_schema = current_schema()
           AND table_name = 'locations'
           AND column_name = 'levelId'
       ) AS ready
     FROM information_schema.tables
-    WHERE table_schema = DATABASE()
+    WHERE table_schema = current_schema()
       AND table_name IN ('countries', 'location_levels')
   `;
 
@@ -418,3 +418,4 @@ export const countLocationChildren = async (workspaceId: string, parentId: strin
       deletedAt: null,
     },
   });
+

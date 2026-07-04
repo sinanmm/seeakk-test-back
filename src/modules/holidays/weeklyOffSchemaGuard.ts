@@ -21,7 +21,8 @@ const runStatements = async (sql: string): Promise<void> => {
 export const ensureWeeklyOffSchema = async (): Promise<void> => {
   if (weeklyOffSchemaEnsured) return;
 
-  // Bypassed under MySQL: the schema columns are natively managed by Prisma migrations.
+  // Prisma migrations own these columns in the PostgreSQL schema.
   weeklyOffSchemaEnsured = true;
   logger.info('[Holidays] Weekly-off schema verified');
 };
+

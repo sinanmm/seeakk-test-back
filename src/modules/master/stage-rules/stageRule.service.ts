@@ -51,16 +51,16 @@ const getStageRuleColumnsMeta = async (): Promise<StageRuleColumnMeta[]> =>
   prisma.$queryRaw<StageRuleColumnMeta[]>`
     SELECT column_name, is_nullable, column_default
     FROM information_schema.columns
-    WHERE table_schema = DATABASE()
+    WHERE table_schema = current_schema()
       AND table_name = 'stage_rules'
   `;
 
 const ensureStageIdNullable = async (): Promise<void> => {
-  // Bypassed under MySQL: nullability is natively managed by Prisma schema/migrations.
+  // Prisma migrations own this nullability in the PostgreSQL schema.
 };
 
 const ensureLegacyStageRuleColumnsCompatible = async (): Promise<void> => {
-  // Bypassed under MySQL: nullability and default values are natively managed by Prisma schema/migrations.
+  // Prisma migrations own these defaults and nullability rules in PostgreSQL.
 };
 
 const isStageIdNullConstraintError = (error: unknown): boolean => {
@@ -90,7 +90,7 @@ const ensureStageRuleSchemaReady = async (): Promise<void> => {
   const tableRows = await prisma.$queryRaw<Array<{ table_name: string | null }>>`
     SELECT TABLE_NAME AS table_name 
     FROM information_schema.tables 
-    WHERE table_schema = DATABASE() AND table_name = 'stage_rules'
+    WHERE table_schema = current_schema() AND table_name = 'stage_rules'
   `;
   const hasStageRulesTable = Boolean(tableRows[0]?.table_name);
   if (!hasStageRulesTable) {
@@ -104,7 +104,7 @@ const ensureStageRuleSchemaReady = async (): Promise<void> => {
   const columns = await prisma.$queryRaw<Array<{ column_name: string }>>`
     SELECT column_name
     FROM information_schema.columns
-    WHERE table_schema = DATABASE()
+    WHERE table_schema = current_schema()
       AND table_name = 'stage_rules'
   `;
 
@@ -662,3 +662,5 @@ export const validateLeadStageTransitionInputs = async (
     missingFields: [],
   };
 };
+
+

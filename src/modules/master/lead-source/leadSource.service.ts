@@ -34,7 +34,7 @@ const ensureLeadSourceSchemaReady = async (): Promise<void> => {
   const tableRows = await prisma.$queryRaw<Array<{ table_name: string | null }>>`
     SELECT TABLE_NAME AS table_name 
     FROM information_schema.tables 
-    WHERE table_schema = DATABASE() AND table_name = 'lead_sources'
+    WHERE table_schema = current_schema() AND table_name = 'lead_sources'
   `;
 
   if (!tableRows[0]?.table_name) {
@@ -48,7 +48,7 @@ const ensureLeadSourceSchemaReady = async (): Promise<void> => {
   const columnRows = await prisma.$queryRaw<Array<{ column_name: string }>>`
     SELECT column_name
     FROM information_schema.columns
-    WHERE table_schema = DATABASE()
+    WHERE table_schema = current_schema()
       AND table_name = 'lead_sources'
   `;
 
@@ -131,7 +131,7 @@ const countLeadUsage = async (leadSourceId: string): Promise<number> => {
   const tableRows = await prisma.$queryRaw<Array<{ table_name: string | null }>>`
     SELECT TABLE_NAME AS table_name 
     FROM information_schema.tables 
-    WHERE table_schema = DATABASE() AND table_name = 'leads'
+    WHERE table_schema = current_schema() AND table_name = 'leads'
   `;
   const hasLeadsTable = Boolean(tableRows[0]?.table_name);
   if (!hasLeadsTable) return 0;
@@ -139,7 +139,7 @@ const countLeadUsage = async (leadSourceId: string): Promise<number> => {
   const columnRows = await prisma.$queryRaw<Array<{ column_name: string }>>`
     SELECT column_name
     FROM information_schema.columns
-    WHERE table_schema = DATABASE()
+    WHERE table_schema = current_schema()
       AND table_name = 'leads'
   `;
 
@@ -449,3 +449,4 @@ export const deleteLeadSource = async (workspaceId: string, id: string): Promise
 
   await clearActiveLeadSourcesCache(workspaceId);
 };
+

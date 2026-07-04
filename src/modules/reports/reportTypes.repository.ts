@@ -54,7 +54,7 @@ export const ensureReportSchemaReady = async (): Promise<boolean> => {
       SUM(CASE WHEN table_name = 'report_types' THEN 1 ELSE 0 END) > 0
       AND SUM(CASE WHEN table_name = 'report_logs' THEN 1 ELSE 0 END) > 0 AS ready
     FROM information_schema.tables
-    WHERE table_schema = DATABASE()
+    WHERE table_schema = current_schema()
       AND table_name IN ('report_types', 'report_logs')
   `;
 
@@ -183,3 +183,4 @@ export const listReportLogs = async (where: Prisma.ReportLogWhereInput, skip: nu
 
 export const executeDynamicQuery = async <T = Record<string, unknown>>(query: Prisma.Sql): Promise<T[]> =>
   prisma.$queryRaw<T[]>(query);
+

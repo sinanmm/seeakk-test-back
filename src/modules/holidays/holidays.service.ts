@@ -80,7 +80,7 @@ const hasHolidayColorColumn = async (): Promise<boolean> => {
   const rows = await prisma.$queryRaw<Array<{ column_name: string }>>(Prisma.sql`
     SELECT column_name
     FROM information_schema.columns
-    WHERE table_schema = DATABASE()
+    WHERE table_schema = current_schema()
       AND table_name = 'holidays'
       AND column_name = 'color'
   `);
@@ -467,3 +467,4 @@ export const getWorkingDays = async (workspaceId: string, user: any, start: Date
     return !isHolidayOnDate(holidays, formatted) && !isWeeklyOffDate(day, weeklyOffDays);
   });
 };
+

@@ -16,7 +16,7 @@ export const assertLeadStageModuleReady = async (): Promise<void> => {
   const columns = await prisma.$queryRaw<Array<{ column_name: string }>>`
     SELECT column_name
     FROM information_schema.columns
-    WHERE table_schema = DATABASE()
+    WHERE table_schema = current_schema()
       AND table_name = 'lead_stages'
       AND column_name IN ('stageShortForm', 'showInCalendar')
   `;
@@ -59,3 +59,4 @@ export const assertLeadStageModuleReady = async (): Promise<void> => {
 
   leadStageModuleReadyValidUntil = Date.now() + MODULE_CHECK_TTL_MS;
 };
+

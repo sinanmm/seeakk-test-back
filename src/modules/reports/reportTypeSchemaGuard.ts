@@ -33,7 +33,7 @@ const runStatements = async (sql: string): Promise<void> => {
  * missing when Prisma migrations were not deployed (e.g. Render only runs npm start).
  */
 export const ensureReportTypeSchemaColumns = async (): Promise<void> => {
-  // Bypassed under MySQL: the schema columns are natively managed by Prisma migrations.
+  // Prisma migrations own these columns in the PostgreSQL schema.
   schemaColumnsEnsured = true;
 };
 
@@ -41,9 +41,11 @@ export const getMissingReportTypeColumns = async (): Promise<string[]> => {
   const rows = await prisma.$queryRaw<Array<{ column_name: string }>>`
     SELECT column_name
     FROM information_schema.columns
-    WHERE table_schema = DATABASE() AND table_name = 'report_types'
+    WHERE table_schema = current_schema() AND table_name = 'report_types'
   `;
 
   const present = new Set(rows.map((row) => row.column_name.toLowerCase()));
   return REQUIRED_REPORT_TYPE_COLUMNS.filter((col) => !present.has(col.toLowerCase()));
 };
+
+

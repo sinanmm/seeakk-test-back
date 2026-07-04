@@ -16,7 +16,7 @@ export const ensureExtensionReasonSchemaReady = async (): Promise<boolean> => {
   const rows = await prisma.$queryRaw<Array<{ ready: boolean }>>`
     SELECT COUNT(*) > 0 AS ready
     FROM information_schema.tables
-    WHERE table_schema = DATABASE()
+    WHERE table_schema = current_schema()
       AND table_name = 'followup_extension_reasons'
   `;
 
@@ -121,3 +121,4 @@ export const deleteExtensionReason = async (id: string) =>
     where: { id },
     select: extensionReasonSelect,
   });
+

@@ -33,7 +33,7 @@ export const ensureLOBReasonSchemaReady = async (): Promise<boolean> => {
   const rows = await prisma.$queryRaw<Array<{ ready: boolean }>>`
     SELECT COUNT(*) > 0 AS ready
     FROM information_schema.tables
-    WHERE table_schema = DATABASE()
+    WHERE table_schema = current_schema()
       AND table_name = 'lob_reasons'
   `;
 
@@ -158,3 +158,4 @@ export const countActiveLeadUsage = async (workspaceId: string, reasonId: string
       },
     },
   });
+

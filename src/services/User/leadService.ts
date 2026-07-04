@@ -239,7 +239,7 @@ const ensureLeadsColumnsMatchPrismaModel = async (): Promise<void> => {
   const rows = await prisma.$queryRaw<Array<{ column_name: string }>>`
     SELECT column_name
     FROM information_schema.columns
-    WHERE table_schema = DATABASE() AND table_name = 'leads'
+    WHERE table_schema = current_schema() AND table_name = 'leads'
   `;
 
   const present = new Set(rows.map((row) => row.column_name.toLowerCase()));
@@ -267,7 +267,7 @@ const assertModuleReady = async (): Promise<void> => {
   const leadTable = await prisma.$queryRaw<Array<{ table_name: string | null }>>`
     SELECT TABLE_NAME AS table_name 
     FROM information_schema.tables 
-    WHERE table_schema = DATABASE() AND table_name = 'leads'
+    WHERE table_schema = current_schema() AND table_name = 'leads'
   `;
 
   if (!leadTable[0]?.table_name) {
@@ -2032,4 +2032,5 @@ export const exportLeads = async (
 
 export const canAssignOtherUsers = async (actor: Actor): Promise<boolean> =>
   actorCanAssignToOthers(actor);
+
 

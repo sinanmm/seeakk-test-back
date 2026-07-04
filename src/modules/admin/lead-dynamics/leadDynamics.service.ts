@@ -47,17 +47,17 @@ const assertModuleReady = async (): Promise<void> => {
   const fieldTable = await prisma.$queryRaw<Array<{ table_name: string | null }>>`
     SELECT TABLE_NAME AS table_name 
     FROM information_schema.tables 
-    WHERE table_schema = DATABASE() AND table_name = 'lead_dynamic_fields'
+    WHERE table_schema = current_schema() AND table_name = 'lead_dynamic_fields'
   `;
   const optionTable = await prisma.$queryRaw<Array<{ table_name: string | null }>>`
     SELECT TABLE_NAME AS table_name 
     FROM information_schema.tables 
-    WHERE table_schema = DATABASE() AND table_name = 'lead_dynamic_options'
+    WHERE table_schema = current_schema() AND table_name = 'lead_dynamic_options'
   `;
   const valueTable = await prisma.$queryRaw<Array<{ table_name: string | null }>>`
     SELECT TABLE_NAME AS table_name 
     FROM information_schema.tables 
-    WHERE table_schema = DATABASE() AND table_name = 'lead_dynamic_values'
+    WHERE table_schema = current_schema() AND table_name = 'lead_dynamic_values'
   `;
 
   if (!fieldTable[0]?.table_name || !optionTable[0]?.table_name || !valueTable[0]?.table_name) {
@@ -497,3 +497,4 @@ export const saveLeadDynamicValues = async (
 
   return records as LeadDynamicValueResponse[];
 };
+

@@ -148,12 +148,12 @@ const assertModuleReady = async (): Promise<void> => {
   const followUpTable = await prisma.$queryRaw<Array<{ table_name: string | null }>>`
     SELECT TABLE_NAME AS table_name 
     FROM information_schema.tables 
-    WHERE table_schema = DATABASE() AND table_name = 'follow_ups'
+    WHERE table_schema = current_schema() AND table_name = 'follow_ups'
   `;
   const followUpImageTable = await prisma.$queryRaw<Array<{ table_name: string | null }>>`
     SELECT TABLE_NAME AS table_name 
     FROM information_schema.tables 
-    WHERE table_schema = DATABASE() AND table_name = 'follow_up_images'
+    WHERE table_schema = current_schema() AND table_name = 'follow_up_images'
   `;
 
   if (!followUpTable[0]?.table_name || !followUpImageTable[0]?.table_name) {
@@ -201,22 +201,22 @@ const assertModuleReady = async (): Promise<void> => {
     prisma.$queryRaw<Array<{ column_name: string }>>`
       SELECT column_name
       FROM information_schema.columns
-      WHERE table_schema = DATABASE() AND table_name = 'follow_ups'
+      WHERE table_schema = current_schema() AND table_name = 'follow_ups'
     `,
     prisma.$queryRaw<Array<{ column_name: string }>>`
       SELECT column_name
       FROM information_schema.columns
-      WHERE table_schema = DATABASE() AND table_name = 'follow_up_images'
+      WHERE table_schema = current_schema() AND table_name = 'follow_up_images'
     `,
     prisma.$queryRaw<Array<{ column_name: string }>>`
       SELECT column_name
       FROM information_schema.columns
-      WHERE table_schema = DATABASE() AND table_name = 'workspaces'
+      WHERE table_schema = current_schema() AND table_name = 'workspaces'
     `,
     prisma.$queryRaw<Array<{ column_name: string }>>`
       SELECT column_name
       FROM information_schema.columns
-      WHERE table_schema = DATABASE() AND table_name = 'leads'
+      WHERE table_schema = current_schema() AND table_name = 'leads'
     `,
   ]);
 
@@ -487,7 +487,7 @@ const getLeadTableColumns = async (): Promise<{
   const tableRows = await prisma.$queryRaw<Array<{ table_name: string | null }>>`
     SELECT TABLE_NAME AS table_name 
     FROM information_schema.tables 
-    WHERE table_schema = DATABASE() AND table_name = 'leads'
+    WHERE table_schema = current_schema() AND table_name = 'leads'
   `;
 
   if (!tableRows[0]?.table_name) {
@@ -497,7 +497,7 @@ const getLeadTableColumns = async (): Promise<{
   const columnRows = await prisma.$queryRaw<Array<{ column_name: string }>>`
     SELECT column_name
     FROM information_schema.columns
-    WHERE table_schema = DATABASE()
+    WHERE table_schema = current_schema()
       AND table_name = 'leads'
   `;
 
@@ -2256,3 +2256,4 @@ export const getUserFollowUpLimitReport = async (workspaceId: string) => {
 
   return result;
 };
+

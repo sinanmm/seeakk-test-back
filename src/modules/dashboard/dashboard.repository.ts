@@ -20,7 +20,7 @@ export const ensureDashboardSchemaReady = async (): Promise<boolean> => {
       SUM(CASE WHEN table_name = 'leads' THEN 1 ELSE 0 END) > 0
       AND SUM(CASE WHEN table_name = 'users' THEN 1 ELSE 0 END) > 0 AS ready
     FROM information_schema.tables
-    WHERE table_schema = DATABASE()
+    WHERE table_schema = current_schema()
       AND table_name IN ('leads', 'users')
   `;
 
@@ -179,3 +179,4 @@ export const findTodayFollowUps = async (
       },
     },
   });
+

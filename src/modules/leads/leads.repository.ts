@@ -87,7 +87,7 @@ export const ensureClosedLeadSchemaReady = async (): Promise<boolean> => {
       AND SUM(CASE WHEN column_name = 'closedById' THEN 1 ELSE 0 END) > 0
       AND SUM(CASE WHEN column_name = 'closureType' THEN 1 ELSE 0 END) > 0 AS has_required_columns
     FROM information_schema.columns
-    WHERE table_schema = DATABASE()
+    WHERE table_schema = current_schema()
       AND table_name = 'leads'
   `;
 
@@ -257,3 +257,4 @@ export const updateLeadClosure = async (
     data,
     select: closedLeadSelect,
   });
+

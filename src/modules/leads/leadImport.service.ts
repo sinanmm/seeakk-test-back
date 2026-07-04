@@ -42,7 +42,7 @@ const ensureLeadImportSchemaReady = async (): Promise<LeadImportSchemaState> => 
   const leadTableRows = await prisma.$queryRaw<Array<{ table_name: string | null }>>`
     SELECT TABLE_NAME AS table_name 
     FROM information_schema.tables 
-    WHERE table_schema = DATABASE() AND table_name = 'leads'
+    WHERE table_schema = current_schema() AND table_name = 'leads'
   `;
 
   if (!leadTableRows[0]?.table_name) {
@@ -54,7 +54,7 @@ const ensureLeadImportSchemaReady = async (): Promise<LeadImportSchemaState> => 
   const leadColumns = await prisma.$queryRaw<Array<{ column_name: string }>>`
     SELECT column_name
     FROM information_schema.columns
-    WHERE table_schema = DATABASE() AND table_name = 'leads'
+    WHERE table_schema = current_schema() AND table_name = 'leads'
   `;
   const presentColumns = new Set(leadColumns.map((row) => row.column_name.toLowerCase()));
   const requiredColumns = ['name', 'workspaceId', 'createdById'] as const;
@@ -310,3 +310,4 @@ const processRows = async (jobId: string, rows: any[], workspaceId: string, user
     // Non-blocking
   }
 };
+

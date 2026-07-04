@@ -53,7 +53,7 @@ export const ensureReportInstanceSchemaReady = async (): Promise<boolean> => {
       AND SUM(CASE WHEN table_name = 'report_filters' THEN 1 ELSE 0 END) > 0
       AND SUM(CASE WHEN table_name = 'report_logs' THEN 1 ELSE 0 END) > 0 AS ready
     FROM information_schema.tables
-    WHERE table_schema = DATABASE()
+    WHERE table_schema = current_schema()
       AND table_name IN ('reports', 'report_filters', 'report_logs')
   `;
 
@@ -218,3 +218,4 @@ export const replaceReportDefinition = async (
       select: reportSelect,
     });
   });
+

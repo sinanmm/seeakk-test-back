@@ -92,13 +92,13 @@ const assertSchemaReady = async (): Promise<void> => {
   const lifeCycleTable = await prisma.$queryRaw<Array<{ table_name: string | null }>>`
     SELECT TABLE_NAME AS table_name 
     FROM information_schema.tables 
-    WHERE table_schema = DATABASE() AND table_name = 'lead_life_cycles'
+    WHERE table_schema = current_schema() AND table_name = 'lead_life_cycles'
   `;
 
   const transitionTable = await prisma.$queryRaw<Array<{ table_name: string | null }>>`
     SELECT TABLE_NAME AS table_name 
     FROM information_schema.tables 
-    WHERE table_schema = DATABASE() AND table_name = 'lead_life_cycle_transitions'
+    WHERE table_schema = current_schema() AND table_name = 'lead_life_cycle_transitions'
   `;
 
   if (!lifeCycleTable[0]?.table_name || !transitionTable[0]?.table_name) {
@@ -241,7 +241,7 @@ const countLifecycleUsage = async (workspaceId: string, lifecycleId: string): Pr
   const tableRows = await prisma.$queryRaw<Array<{ table_name: string | null }>>`
     SELECT TABLE_NAME AS table_name 
     FROM information_schema.tables 
-    WHERE table_schema = DATABASE() AND table_name = 'leads'
+    WHERE table_schema = current_schema() AND table_name = 'leads'
   `;
 
   if (!tableRows[0]?.table_name) return 0;
@@ -546,3 +546,4 @@ export const deleteLifeCycle = async (id: string, workspaceId: string) => {
     workspaceId,
   });
 };
+

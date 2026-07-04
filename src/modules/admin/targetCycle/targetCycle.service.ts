@@ -133,12 +133,12 @@ const assertSchemaReady = async (): Promise<void> => {
   const tableRows = await prisma.$queryRaw<Array<{ table_name: string | null }>>`
     SELECT TABLE_NAME AS table_name 
     FROM information_schema.tables 
-    WHERE table_schema = DATABASE() AND table_name = 'target_cycles'
+    WHERE table_schema = current_schema() AND table_name = 'target_cycles'
   `;
   const rangesRows = await prisma.$queryRaw<Array<{ table_name: string | null }>>`
     SELECT TABLE_NAME AS table_name 
     FROM information_schema.tables 
-    WHERE table_schema = DATABASE() AND table_name = 'target_cycle_ranges'
+    WHERE table_schema = current_schema() AND table_name = 'target_cycle_ranges'
   `;
 
   if (!tableRows[0]?.table_name || !rangesRows[0]?.table_name) {
@@ -228,7 +228,7 @@ const hasTargetCycleIdInTargetSettings = async (): Promise<boolean> => {
   const rows = await prisma.$queryRaw<Array<{ column_name: string }>>`
     SELECT column_name
     FROM information_schema.columns
-    WHERE table_schema = DATABASE()
+    WHERE table_schema = current_schema()
       AND table_name = 'target_settings'
       AND column_name = 'targetCycleId'
   `;
@@ -581,3 +581,4 @@ export const deleteTargetCycle = async (id: string, workspaceId: string): Promis
 
   await clearTargetCycleCache(workspaceId);
 };
+

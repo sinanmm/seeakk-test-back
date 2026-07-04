@@ -9,7 +9,7 @@ export const ensureBulkAssignSchemaReady = async (): Promise<boolean> => {
       SUM(CASE WHEN table_name = 'leads' THEN 1 ELSE 0 END) > 0
       AND SUM(CASE WHEN table_name = 'lead_activities' THEN 1 ELSE 0 END) > 0 AS ready
     FROM information_schema.tables
-    WHERE table_schema = DATABASE()
+    WHERE table_schema = current_schema()
       AND table_name IN ('leads', 'lead_activities')
   `;
 
@@ -268,3 +268,4 @@ export const bulkAssignLeads = async (input: {
 
   return result;
 };
+
