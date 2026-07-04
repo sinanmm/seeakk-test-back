@@ -88,7 +88,7 @@ export const attendanceUserSettingSchema = z.object({
   expectedCheckOutTime: z.string().regex(/^\d{2}:\d{2}$/, 'Must be in HH:MM format'),
 });
 
-/** @deprecated Use attendanceOfficeLocationSchema — kept for legacy /networks route body mapping */
+/** @deprecated Use attendanceOfficeLocationSchema ï¿½ kept for legacy /networks route body mapping */
 export const attendanceNetworkSchema = attendanceOfficeLocationSchema;
 
 export const assignOfficeBranchSchema = z.object({
