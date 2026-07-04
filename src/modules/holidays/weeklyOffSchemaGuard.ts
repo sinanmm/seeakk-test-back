@@ -21,8 +21,16 @@ const runStatements = async (sql: string): Promise<void> => {
 export const ensureWeeklyOffSchema = async (): Promise<void> => {
   if (weeklyOffSchemaEnsured) return;
 
-  // Prisma migrations own these columns in the PostgreSQL schema.
-  weeklyOffSchemaEnsured = true;
-  logger.info('[Holidays] Weekly-off schema verified');
+  try {
+    await runStatements(`
+      ALTER TABLE "workspaces" ADD COLUMN IF NOT EXISTS "weeklyOffDays" JSONB DEFAULT '[0]'::jsonb;
+      ALTER TABLE "workspaces" ADD COLUMN IF NOT EXISTS "weeklyOffColor" TEXT DEFAULT '#cbd5e1';
+      ALTER TABLE "workspaces" ALTER COLUMN "weeklyOffDays" TYPE JSONB USING "weeklyOffDays"::JSONB;
+    `);
+    weeklyOffSchemaEnsured = true;
+    logger.info('[Holidays] Weekly-off schema verified');
+  } catch (error) {
+    logger.error('[Holidays] Failed to verify weekly-off schema', error);
+  }
 };
 

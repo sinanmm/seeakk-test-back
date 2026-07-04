@@ -1,5 +1,6 @@
 import { eachDayOfInterval, format, getDay, parseISO, startOfDay } from 'date-fns';
 import prisma from '../../config/prisma';
+import { ensureWeeklyOffSchema } from './weeklyOffSchemaGuard';
 
 export const WEEKDAY_OPTIONS = [
   { value: 0, label: 'Sunday' },
@@ -56,10 +57,17 @@ export type WorkspaceWeeklyOffSettings = {
 };
 
 export const getWorkspaceWeeklyOffSettings = async (workspaceId: string): Promise<WorkspaceWeeklyOffSettings> => {
-  const workspace = await prisma.workspace.findUnique({
-    where: { id: workspaceId },
-    select: { weeklyOffDays: true, weeklyOffColor: true },
-  });
+  await ensureWeeklyOffSchema();
+  let workspace: any = null;
+  try {
+    workspace = await prisma.workspace.findUnique({
+      where: { id: workspaceId },
+      select: { weeklyOffDays: true, weeklyOffColor: true },
+    });
+  } catch (error) {
+    // Fallback if schema is still inconsistent
+    workspace = null;
+  }
 
   if (!workspace) {
     return {
@@ -83,6 +91,7 @@ export const updateWorkspaceWeeklyOffSettings = async (
   workspaceId: string,
   payload: { weeklyOffDays: number[]; weeklyOffColor: string },
 ) => {
+  await ensureWeeklyOffSchema();
   return prisma.workspace.update({
     where: { id: workspaceId },
     data: {
