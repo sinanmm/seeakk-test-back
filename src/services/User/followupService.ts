@@ -812,12 +812,12 @@ export const createFollowUp = async (
 
 export const getCalendarData = async (
   workspaceId: string,
-  actor: { id: string; role?: { name?: string | null } | null },
+  actor: { id: string; roleId?: string | null; role?: { name?: string | null } | null },
   query: CalendarQueryInput,
 ) => {
   await assertModuleReady();
 
-  const targetUserId = actor.id;
+  const targetUserId = await resolveTargetUserId(workspaceId, actor, query.userId);
   const timeZone = await getWorkspaceTimeZone(workspaceId);
 
   const where = buildFollowUpWhere({
@@ -947,7 +947,7 @@ export const getAdvancedCalendarSummary = async (
 
   await markPendingFollowUpsOverdueForWorkspace(workspaceId);
 
-  const targetUserId = actor.id;
+  const targetUserId = await resolveTargetUserId(workspaceId, actor, query.userId);
   const timeZone = await getWorkspaceTimeZone(workspaceId);
   const leadAccess = await buildAccessWhere(workspaceId, actor);
   const leadAccessFilter =
@@ -1185,14 +1185,14 @@ export const getAdvancedCalendarSummary = async (
 
 export const getAdvancedCalendarDetails = async (
   workspaceId: string,
-  actor: { id: string; role?: { name?: string | null } | null },
+  actor: { id: string; roleId?: string | null; role?: { name?: string | null } | null },
   query: AdvancedCalendarDetailsInput,
 ) => {
   await assertModuleReady();
 
   await markPendingFollowUpsOverdueForWorkspace(workspaceId);
 
-  const targetUserId = actor.id;
+  const targetUserId = await resolveTargetUserId(workspaceId, actor, query.userId);
   const timeZone = await getWorkspaceTimeZone(workspaceId);
   const skip = (query.page - 1) * query.limit;
 
@@ -1389,12 +1389,12 @@ export const getAdvancedCalendarDetails = async (
 
 export const getTodayFollowUps = async (
   workspaceId: string,
-  actor: { id: string; role?: { name?: string | null } | null },
+  actor: { id: string; roleId?: string | null; role?: { name?: string | null } | null },
   query: TodayFollowUpsQueryInput,
 ) => {
   await assertModuleReady();
 
-  const targetUserId = actor.id;
+  const targetUserId = await resolveTargetUserId(workspaceId, actor, query.userId);
   const { start, end, cacheDateKey, timeZone } = await getDayRangeForWorkspace(workspaceId);
   const cacheKey = buildTodayCacheKey(workspaceId, targetUserId, cacheDateKey);
 
@@ -1431,12 +1431,12 @@ export const getTodayFollowUps = async (
 
 export const getReminderAlerts = async (
   workspaceId: string,
-  actor: { id: string; role?: { name?: string | null } | null },
+  actor: { id: string; roleId?: string | null; role?: { name?: string | null } | null },
   query: ReminderAlertsQueryInput,
 ) => {
   await assertModuleReady();
 
-  const targetUserId = actor.id;
+  const targetUserId = await resolveTargetUserId(workspaceId, actor, query.userId);
   const timeZone = await getWorkspaceTimeZone(workspaceId);
   if (MISSED_AFTER_MINUTES > 0) {
     const cutoff = new Date(Date.now() - MISSED_AFTER_MINUTES * 60_000);
