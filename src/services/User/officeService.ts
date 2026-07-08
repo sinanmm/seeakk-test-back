@@ -172,7 +172,7 @@ export const listOffices = async (workspaceId: string, query?: ListOfficesQuery)
     ...(status ? { isActive: status === 'ACTIVE' } : { isActive: true }),
     ...(search
       ? {
-          name: { contains: search},
+          name: { contains: search, mode: 'insensitive'},
         }
       : {}),
     ...(countryId ? { countryId } : {}),

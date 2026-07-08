@@ -232,7 +232,7 @@ export const listLeadDynamicFields = async (
 
   const where = {
     workspaceId,
-    ...(search ? { name: { contains: search} } : {}),
+    ...(search ? { name: { contains: search, mode: 'insensitive'} } : {}),
     ...(isActive !== undefined ? { isActive } : {}),
     ...(inputType ? { inputType } : {}),
   };

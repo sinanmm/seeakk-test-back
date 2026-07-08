@@ -130,7 +130,7 @@ export const listExtensionReasons = async (workspaceId: string, actor: Actor, qu
 
   if (query.search) {
     where.reasonName = {
-      contains: query.search,
+      contains: query.search, mode: 'insensitive',
     };
   }
 

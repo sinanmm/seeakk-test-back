@@ -1037,9 +1037,9 @@ const buildListWhere = async (
   if (query.search) {
     const searchCond = {
       OR: [
-        { name: { contains: query.search} },
-        { email: { contains: query.search} },
-        { phone: { contains: query.search} },
+        { name: { contains: query.search, mode: 'insensitive'} },
+        { email: { contains: query.search, mode: 'insensitive'} },
+        { phone: { contains: query.search, mode: 'insensitive'} },
       ],
     };
     if (where.AND) {

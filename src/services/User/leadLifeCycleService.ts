@@ -364,7 +364,7 @@ export const listLifeCycles = async (workspaceId: string, query: ListLeadLifeCyc
     workspaceId,
     ...(search
       ? {
-          name: { contains: search},
+          name: { contains: search, mode: 'insensitive'},
         }
       : {}),
   };

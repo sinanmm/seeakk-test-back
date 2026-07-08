@@ -317,49 +317,49 @@ export const listApprovals = async (workspaceId: string, actor: Actor, query: Li
       {
         lead: {
           name: {
-            contains: query.search,
+            contains: query.search, mode: 'insensitive',
           },
         },
       },
       {
         lead: {
           email: {
-            contains: query.search,
+            contains: query.search, mode: 'insensitive',
           },
         },
       },
       {
         lead: {
           phone: {
-            contains: query.search,
+            contains: query.search, mode: 'insensitive',
           },
         },
       },
       {
         requestedBy: {
           name: {
-            contains: query.search,
+            contains: query.search, mode: 'insensitive',
           },
         },
       },
       {
         assignedTo: {
           name: {
-            contains: query.search,
+            contains: query.search, mode: 'insensitive',
           },
         },
       },
       {
         fromStage: {
           name: {
-            contains: query.search,
+            contains: query.search, mode: 'insensitive',
           },
         },
       },
       {
         toStage: {
           name: {
-            contains: query.search,
+            contains: query.search, mode: 'insensitive',
           },
         },
       },

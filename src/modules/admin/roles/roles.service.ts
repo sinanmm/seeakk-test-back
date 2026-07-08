@@ -120,8 +120,8 @@ export const listRoles = async (query: ListRolesQuery, workspaceId: string): Pro
     ...(search
       ? {
           OR: [
-            { name: { contains: search} },
-            { description: { contains: search} },
+            { name: { contains: search, mode: 'insensitive'} },
+            { description: { contains: search, mode: 'insensitive'} },
           ],
         }
       : {}),

@@ -431,13 +431,13 @@ export const listUsers = async (query: ListUsersQuery, workspaceId: string) => {
     deletedAt: null,
     ...(isActive !== undefined ? { isActive } : {}),
     ...(roleId ? { roleId } : {}),
-    ...(email ? { email: { contains: email} } : {}),
+    ...(email ? { email: { contains: email, mode: 'insensitive'} } : {}),
     ...(search
       ? {
           OR: [
-            { name: { contains: search} },
-            { email: { contains: search} },
-            { phone: { contains: search} },
+            { name: { contains: search, mode: 'insensitive'} },
+            { email: { contains: search, mode: 'insensitive'} },
+            { phone: { contains: search, mode: 'insensitive'} },
           ],
         }
       : {}),

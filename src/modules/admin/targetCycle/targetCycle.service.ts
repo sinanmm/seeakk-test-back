@@ -364,7 +364,7 @@ export const listTargetCycles = async (
   const where = {
     workspaceId,
     deletedAt: null,
-    ...(search ? { name: { contains: search } } : {}),
+    ...(search ? { name: { contains: search, mode: 'insensitive' } } : {}),
     ...(status ? { status } : {}),
   };
 

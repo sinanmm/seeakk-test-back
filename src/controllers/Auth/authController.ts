@@ -1106,8 +1106,8 @@ export const listUsers = async (req: Request, res: Response): Promise<any> => {
       ...(search
         ? {
             OR: [
-              { name: { contains: search} },
-              { email: { contains: search} },
+              { name: { contains: search, mode: 'insensitive'} },
+              { email: { contains: search, mode: 'insensitive'} },
             ],
           }
         : {}),

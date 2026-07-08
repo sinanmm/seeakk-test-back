@@ -131,7 +131,7 @@ export const getFollowupsSummary = async (filters: SummaryFilterDto) => {
   const page = Number(filters.page) || 1;
   const limit = Number(filters.limit) || 20;
 
-  const where: any = { workspaceId: filters.workspaceId, action: { contains: 'FOLLOWUP' } };
+  const where: any = { workspaceId: filters.workspaceId, action: { contains: 'FOLLOWUP', mode: 'insensitive' } };
   const dateFilter = await getDateFilter(filters.workspaceId, filters.startDate, filters.endDate);
   if (dateFilter) where.createdAt = dateFilter;
   const userFilter = getUserFilter(filters.userId);

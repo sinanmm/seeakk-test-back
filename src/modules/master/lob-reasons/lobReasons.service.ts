@@ -158,7 +158,7 @@ export const listLOBReasons = async (workspaceId: string, actor: Actor, query: L
 
   if (query.search) {
     where.name = {
-      contains: query.search,
+      contains: query.search, mode: 'insensitive',
     };
   }
 

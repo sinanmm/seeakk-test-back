@@ -219,12 +219,12 @@ export const listCountries = async (workspaceId: string, actor: Actor, query: Li
     where.OR = [
       {
         name: {
-          contains: query.search,
+          contains: query.search, mode: 'insensitive',
         },
       },
       {
         code: {
-          contains: query.search,
+          contains: query.search, mode: 'insensitive',
         },
       },
     ];

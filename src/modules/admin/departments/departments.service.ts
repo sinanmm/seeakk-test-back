@@ -65,7 +65,7 @@ export const listDepartments = async (
     ...(status ? { status } : {}),
     ...(search
       ? {
-          name: { contains: search},
+          name: { contains: search, mode: 'insensitive'},
         }
       : {}),
   };
