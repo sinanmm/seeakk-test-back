@@ -346,6 +346,10 @@ const buildClosedWhere = async (workspaceId: string, actor: Actor, query: Closed
           { name: { contains: query.search, mode: 'insensitive'} },
           { email: { contains: query.search, mode: 'insensitive'} },
           { phone: { contains: query.search, mode: 'insensitive'} },
+          { companyName: { contains: query.search, mode: 'insensitive'} },
+          { assignedTo: { name: { contains: query.search, mode: 'insensitive'} } },
+          { source: { name: { contains: query.search, mode: 'insensitive'} } },
+          { stage: { name: { contains: query.search, mode: 'insensitive'} } },
         ],
       },
     ];

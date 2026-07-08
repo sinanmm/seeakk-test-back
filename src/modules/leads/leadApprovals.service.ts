@@ -336,6 +336,22 @@ export const listApprovals = async (workspaceId: string, actor: Actor, query: Li
         },
       },
       {
+        lead: {
+          companyName: {
+            contains: query.search, mode: 'insensitive',
+          },
+        },
+      },
+      {
+        lead: {
+          source: {
+            name: {
+              contains: query.search, mode: 'insensitive',
+            },
+          },
+        },
+      },
+      {
         requestedBy: {
           name: {
             contains: query.search, mode: 'insensitive',
