@@ -180,16 +180,28 @@ const enrichSmtpError = (error: any): Error => {
   return error instanceof Error ? error : new Error(String(error || 'Email delivery failed.'));
 };
 
-const sendWithRetry = async (mailOptions: any, retries = 2): Promise<void> => {
+const sendWithRetry = async (mailOptions: any, retries = 1): Promise<void> => {
   assertSmtpAllowedForRuntime();
 
   let lastError: any = null;
+  const OVERALL_TIMEOUT_MS = 8000;
 
   for (const endpoint of getSmtpEndpoints()) {
     for (let attempt = 0; attempt <= retries; attempt++) {
       try {
         const transporter = await getTransporter(endpoint);
-        await transporter.sendMail(mailOptions);
+        
+        await Promise.race([
+          transporter.sendMail(mailOptions),
+          new Promise((_, reject) => 
+            setTimeout(() => {
+              const err: any = new Error('SMTP connection timed out');
+              err.code = 'ETIMEDOUT';
+              reject(err);
+            }, OVERALL_TIMEOUT_MS)
+          )
+        ]);
+        
         return;
       } catch (error: any) {
         lastError = error;

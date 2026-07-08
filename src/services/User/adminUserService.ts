@@ -765,41 +765,55 @@ export const resetUserPassword = async (
   input: ResetPasswordInput,
   workspaceId: string,
 ) => {
+  logger.info('Incoming request: Admin reset user password', { userId: id, workspaceId, hasNewPassword: !!input.newPassword });
+
+  logger.info('User lookup: Finding user for password reset', { userId: id });
   const existing = await (prisma as any).user.findFirst({
     where: { id, workspaceId, deletedAt: null },
   });
   if (!existing) {
+    logger.warn('User lookup failed: User not found', { userId: id });
     const err: any = new Error('User not found in this workspace.');
     err.statusCode = 404;
     throw err;
   }
+  logger.info('User lookup successful', { userId: id, userEmail: existing.email });
 
   if (input.newPassword) {
+    logger.info('Password hashing: Hashing provided new password', { userId: id });
     const hashedPassword = await bcrypt.hash(input.newPassword, 12);
 
+    logger.info('Database update: Updating user with new password', { userId: id });
     await (prisma as any).user.update({
       where: { id },
       data: { password: hashedPassword },
     });
 
+    logger.info('Database update successful: Invalidating user sessions', { userId: id });
     await invalidateUserSessions(id);
-    logger.info('Admin reset user password directly', { id, workspaceId });
+    
+    logger.info('Response: Password reset directly completed', { userId: id, workspaceId });
     return {
       message: 'Password reset successfully. User must log in again with the new password.',
     };
   }
 
   const fallbackToGeneratedPasswordReset = async (reason: string) => {
+    logger.info('Password generation: Generating secure fallback password', { userId: id, reason });
     const generatedPassword = generateSecurePassword();
+    
+    logger.info('Password hashing: Hashing generated password', { userId: id });
     const hashedPassword = await bcrypt.hash(generatedPassword, 12);
 
+    logger.info('Database update: Updating user with generated password', { userId: id });
     await (prisma as any).user.update({
       where: { id },
       data: { password: hashedPassword },
     });
 
+    logger.info('Database update successful: Invalidating user sessions', { userId: id });
     await invalidateUserSessions(id);
-    logger.warn('Admin reset password fallback used generated password', {
+    logger.warn('Response: Admin reset password fallback used generated password', {
       id,
       workspaceId,
       reason,
@@ -824,18 +838,17 @@ export const resetUserPassword = async (
 
   const token = jwt.sign({ userId: existing.id, purpose: 'password_reset' }, jwtSecret, { expiresIn: '30m' });
   try {
+    logger.info('Email service: Attempting to send password reset email', { userId: id, userEmail: existing.email });
     const delivered = await sendPasswordResetEmail(existing.email, existing.name, token);
     if (!delivered) {
       return fallbackToGeneratedPasswordReset('email_delivery_failed');
     }
   } catch (error: any) {
-    if (String(error?.message || '').toLowerCase().includes('email')) {
-      return fallbackToGeneratedPasswordReset('email_delivery_failed');
-    }
-    throw error;
+    logger.error('Unhandled exception during password reset email delivery', { userId: id, error: error });
+    return fallbackToGeneratedPasswordReset('email_delivery_failed_exception');
   }
 
-  logger.info('Admin requested password reset link', { id, email: existing.email, workspaceId });
+  logger.info('Response: Password reset link sent to user email', { userId: id, email: existing.email, workspaceId });
   return {
     message: 'Password reset link sent to user email.',
   };
