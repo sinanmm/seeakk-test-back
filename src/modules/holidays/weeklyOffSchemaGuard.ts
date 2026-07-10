@@ -23,10 +23,19 @@ export const ensureWeeklyOffSchema = async (): Promise<void> => {
 
   try {
     await runStatements(`
-      ALTER TABLE "workspaces" ADD COLUMN IF NOT EXISTS "weeklyOffDays" JSONB DEFAULT '[0]'::jsonb;
-      ALTER TABLE "workspaces" ADD COLUMN IF NOT EXISTS "weeklyOffColor" TEXT DEFAULT '#cbd5e1';
-      ALTER TABLE "workspaces" ALTER COLUMN "weeklyOffDays" TYPE JSONB USING "weeklyOffDays"::JSONB;
+      ALTER TABLE "workspaces" ADD COLUMN IF NOT EXISTS "weeklyOffDays" INTEGER[] NOT NULL DEFAULT ARRAY[0]::INTEGER[];
+      ALTER TABLE "workspaces" ADD COLUMN IF NOT EXISTS "weeklyOffColor" TEXT NOT NULL DEFAULT '#cbd5e1';
     `);
+
+    await prisma.$executeRawUnsafe(`
+      DO $$
+      BEGIN
+        ALTER TYPE "AttendanceType" ADD VALUE IF NOT EXISTS 'WEEKLY_OFF';
+      EXCEPTION
+        WHEN duplicate_object THEN NULL;
+      END $$;
+    `);
+
     weeklyOffSchemaEnsured = true;
     logger.info('[Holidays] Weekly-off schema verified');
   } catch (error) {
