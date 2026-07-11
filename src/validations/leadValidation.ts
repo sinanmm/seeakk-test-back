@@ -83,6 +83,11 @@ const nullableLobRemarksField = z.preprocess(
   z.string().trim().max(2000, 'lobRemarks is too long').nullable().optional(),
 );
 
+const leadDynamicValueEntrySchema = z.object({
+  fieldId: z.string().trim().min(1, 'fieldId is required').max(191, 'Invalid fieldId'),
+  value: z.string().max(1000, 'dynamic field value must not exceed 1000 characters').optional().default(''),
+});
+
 export const createLeadSchema = z.object({
   name: z.string().trim().min(1, 'name is required').max(160, 'name is too long'),
   email: z.preprocess(emptyStringToUndefined, z.string().trim().email('email must be valid').max(191, 'email is too long').optional()),
@@ -100,6 +105,7 @@ export const createLeadSchema = z.object({
   reasonId: optionalId('reasonId'),
   remarks: leadRemarksField,
   lobRemarks: lobRemarksField,
+  dynamicValues: z.array(leadDynamicValueEntrySchema).optional(),
   skipAutoStageAssignment: z.coerce.boolean().optional().default(false),
   totalAmount: z.coerce.number().nonnegative('Total amount must be a positive number').optional(),
   advancePayments: z.array(
@@ -134,6 +140,7 @@ export const updateLeadSchema = z.object({
   reasonId: z.union([optionalId('reasonId'), z.null()]).optional(),
   remarks: nullableLeadRemarksField,
   lobRemarks: nullableLobRemarksField,
+  dynamicValues: z.array(leadDynamicValueEntrySchema).optional(),
   totalAmount: z.coerce.number().nonnegative('Total amount must be a positive number').optional(),
 });
 

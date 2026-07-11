@@ -467,6 +467,229 @@ const buildRemarksAuditAction = (previousRemarks: string | null, nextRemarks: st
   return 'LEAD_REMARKS_UPDATED';
 };
 
+type LeadDynamicValueInput = { fieldId: string; value?: string };
+
+type LeadDynamicValueRecord = {
+  id: string;
+  leadId: string;
+  fieldId: string;
+  value: string;
+  createdAt: Date;
+  field: {
+    id: string;
+    name: string;
+    inputType: string;
+    sortOrder: number;
+  };
+};
+
+const OPTION_DYNAMIC_INPUT_TYPES = new Set(['SELECT', 'RADIO', 'CHECKBOX']);
+
+const isHttpUrl = (value: string): boolean => {
+  try {
+    const parsed = new URL(value);
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+  } catch {
+    return false;
+  }
+};
+
+const normalizeDynamicValueEntries = (entries?: LeadDynamicValueInput[]): LeadDynamicValueInput[] => {
+  const ordered = new Map<string, LeadDynamicValueInput>();
+  for (const entry of entries || []) {
+    const fieldId = entry?.fieldId?.trim();
+    if (!fieldId) continue;
+    ordered.set(fieldId, {
+      fieldId,
+      value: typeof entry.value === 'string' ? entry.value.trim() : '',
+    });
+  }
+  return Array.from(ordered.values());
+};
+
+const getActiveDynamicFields = async (tx: any, workspaceId: string) =>
+  (tx as any).leadDynamicField.findMany({
+    where: { workspaceId, isActive: true },
+    include: {
+      options: {
+        orderBy: { sortOrder: 'asc' },
+        select: { value: true },
+      },
+    },
+    orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
+  });
+
+const splitDynamicOptionValue = (value: string): string[] =>
+  value
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+const validateDynamicValueForField = (field: any, value: string): void => {
+  if (!value) return;
+
+  if (field.inputType === 'FILE' && !isHttpUrl(value)) {
+    throw createServiceError(`"${field.name}" must be a valid HTTP/HTTPS file URL.`, 422);
+  }
+
+  if (!OPTION_DYNAMIC_INPUT_TYPES.has(field.inputType)) {
+    return;
+  }
+
+  const allowed = new Set((field.options || []).map((option: { value: string }) => option.value));
+  const submittedValues = field.inputType === 'CHECKBOX' ? splitDynamicOptionValue(value) : [value];
+  const invalidValue = submittedValues.find((item) => !allowed.has(item));
+  if (invalidValue) {
+    throw createServiceError(`"${invalidValue}" is not a valid option for "${field.name}".`, 422);
+  }
+};
+
+const validateLeadDynamicValues = async (
+  tx: any,
+  workspaceId: string,
+  entries?: LeadDynamicValueInput[],
+  options?: { requireAllRequired?: boolean },
+): Promise<Array<{ fieldId: string; value: string; field: any }>> => {
+  const normalized = normalizeDynamicValueEntries(entries);
+  if (!normalized.length && !options?.requireAllRequired) return [];
+
+  const activeFields = await getActiveDynamicFields(tx, workspaceId);
+  const fieldById = new Map(activeFields.map((field: any) => [field.id, field]));
+  const valueByFieldId = new Map(normalized.map((entry) => [entry.fieldId, entry.value || '']));
+
+  for (const entry of normalized) {
+    const field = fieldById.get(entry.fieldId);
+    if (!field) {
+      throw createServiceError('One or more dynamic fields are no longer active for this workspace.', 422);
+    }
+    validateDynamicValueForField(field, entry.value || '');
+  }
+
+  for (const field of activeFields) {
+    if (!field.isRequired) continue;
+    if (!options?.requireAllRequired && !valueByFieldId.has(field.id)) continue;
+    const value = valueByFieldId.get(field.id) || '';
+    if (!value.trim()) {
+      throw createServiceError(`"${field.name}" is required.`, 422);
+    }
+  }
+
+  return normalized.map((entry) => ({
+    fieldId: entry.fieldId,
+    value: entry.value || '',
+    field: fieldById.get(entry.fieldId),
+  }));
+};
+
+const persistLeadDynamicValues = async (
+  tx: any,
+  workspaceId: string,
+  leadId: string,
+  entries: LeadDynamicValueInput[] | undefined,
+  actorId: string,
+  options?: { requireAllRequired?: boolean },
+): Promise<void> => {
+  const prepared = await validateLeadDynamicValues(tx, workspaceId, entries, options);
+  if (!prepared.length) return;
+
+  const fieldIds = prepared.map((entry) => entry.fieldId);
+  const previousRows = await (tx as any).leadDynamicValue.findMany({
+    where: { leadId, fieldId: { in: fieldIds } },
+    select: { fieldId: true, value: true },
+  });
+  const previousByFieldId = new Map(previousRows.map((row: { fieldId: string; value: string }) => [row.fieldId, row.value]));
+
+  await (tx as any).leadDynamicValue.deleteMany({
+    where: { leadId, fieldId: { in: fieldIds } },
+  });
+
+  const rows = prepared
+    .filter((entry) => entry.value.trim().length > 0)
+    .map((entry) => ({
+      leadId,
+      fieldId: entry.fieldId,
+      value: entry.value.trim(),
+    }));
+
+  if (rows.length > 0) {
+    await (tx as any).leadDynamicValue.createMany({ data: rows });
+  }
+
+  for (const entry of prepared) {
+    const previousValue = previousByFieldId.get(entry.fieldId) || '';
+    const nextValue = entry.value.trim();
+    if (previousValue === nextValue) continue;
+    await (tx as any).auditLog.create({
+      data: {
+        userId: actorId,
+        workspaceId,
+        action: previousValue && !nextValue ? 'LEAD_DYNAMIC_FIELD_REMOVED' : previousValue ? 'LEAD_DYNAMIC_FIELD_UPDATED' : 'LEAD_DYNAMIC_FIELD_CREATED',
+        entityType: 'Lead',
+        entityId: leadId,
+        details: {
+          fieldId: entry.fieldId,
+          fieldName: entry.field?.name,
+          previousValue: previousValue || null,
+          newValue: nextValue || null,
+          changedBy: actorId,
+        },
+      },
+    });
+  }
+};
+
+const fetchLeadDynamicValueMap = async (leadIds: string[]): Promise<Map<string, LeadDynamicValueRecord[]>> => {
+  const map = new Map<string, LeadDynamicValueRecord[]>();
+  if (leadIds.length === 0) return map;
+
+  const rows = (await (prisma as any).leadDynamicValue.findMany({
+    where: { leadId: { in: leadIds } },
+    include: {
+      field: {
+        select: {
+          id: true,
+          name: true,
+          inputType: true,
+          sortOrder: true,
+        },
+      },
+    },
+    orderBy: [{ createdAt: 'asc' }],
+  })) as LeadDynamicValueRecord[];
+
+  rows.sort(
+    (left, right) =>
+      (left.field?.sortOrder ?? 0) - (right.field?.sortOrder ?? 0) ||
+      left.createdAt.getTime() - right.createdAt.getTime(),
+  );
+
+  for (const row of rows) {
+    const values = map.get(row.leadId) || [];
+    values.push(row);
+    map.set(row.leadId, values);
+  }
+
+  return map;
+};
+
+const serializeLeadDynamicValues = (values?: LeadDynamicValueRecord[]) =>
+  (values || []).map((item) => ({
+    id: item.id,
+    leadId: item.leadId,
+    fieldId: item.fieldId,
+    value: item.value,
+    createdAt: item.createdAt.toISOString(),
+    field: item.field,
+  }));
+
+const mapLeadRecordWithDynamicValues = (
+  lead: LeadIncludeRecord,
+  dynamicValueMap: Map<string, LeadDynamicValueRecord[]>,
+) => ({
+  ...mapLeadRecord(lead),
+  dynamicValues: serializeLeadDynamicValues(dynamicValueMap.get(lead.id)),
+});
+
 const escapeCsv = (value: unknown): string => {
   if (value === null || value === undefined) return '';
   const text = String(value);
@@ -1016,6 +1239,7 @@ type StageValidationPatch = {
   remarks?: string | null;
   lobRemarks?: string | null;
   stageId?: string | null;
+  dynamicValues?: LeadDynamicValueInput[];
 };
 
 const toValidationLeadData = async (
@@ -1059,6 +1283,25 @@ const toValidationLeadData = async (
     if (!fieldName) continue;
     data[fieldName] = entry.value;
     data[normalizeRuleFieldKey(fieldName)] = entry.value;
+  }
+
+  if (patch.dynamicValues?.length) {
+    const submittedFieldIds = patch.dynamicValues
+      .map((entry) => entry.fieldId?.trim())
+      .filter(Boolean);
+    const submittedFields = await (prisma as any).leadDynamicField.findMany({
+      where: { id: { in: submittedFieldIds }, workspaceId: lead.workspaceId, isActive: true },
+      select: { id: true, name: true },
+    }) as Array<{ id: string; name: string }>;
+    const fieldById = new Map(submittedFields.map((field: { id: string; name: string }) => [field.id, field]));
+    for (const entry of patch.dynamicValues) {
+      const field = fieldById.get(entry.fieldId);
+      const fieldName = field?.name?.trim();
+      if (!fieldName) continue;
+      const value = typeof entry.value === 'string' ? entry.value.trim() : '';
+      data[fieldName] = value;
+      data[normalizeRuleFieldKey(fieldName)] = value;
+    }
   }
 
   return data;
@@ -1155,6 +1398,15 @@ const buildListWhere = async (
   }
 
   if (query.search) {
+    const dynamicMatches = await (prisma as any).leadDynamicValue.findMany({
+      where: {
+        value: { contains: query.search, mode: 'insensitive' },
+        field: { workspaceId, isActive: true },
+      },
+      select: { leadId: true },
+      take: 1000,
+    });
+    const dynamicLeadIds = Array.from(new Set(dynamicMatches.map((item: { leadId: string }) => item.leadId)));
     const searchCond = {
       OR: [
         { name: { contains: query.search, mode: 'insensitive'} },
@@ -1165,6 +1417,7 @@ const buildListWhere = async (
         { assignedTo: { name: { contains: query.search, mode: 'insensitive'} } },
         { source: { name: { contains: query.search, mode: 'insensitive'} } },
         { stage: { name: { contains: query.search, mode: 'insensitive'} } },
+        ...(dynamicLeadIds.length > 0 ? [{ id: { in: dynamicLeadIds } }] : []),
       ],
     };
     if (where.AND) {
@@ -1344,6 +1597,10 @@ export const createLead = async (
 
       logger.info('[Diagnostic] Lead record saved', { leadId: lead.id });
 
+      await persistLeadDynamicValues(tx, workspaceId, lead.id, input.dynamicValues, actor.id, {
+        requireAllRequired: true,
+      });
+
       if (input.nextFollowUpAt) {
         await createAutomaticFollowUp(
           tx,
@@ -1507,8 +1764,9 @@ export const createLead = async (
       await touchFollowUpTodayCachesAfterLeadMutation(workspaceId, followUpOwnerId, input.nextFollowUpAt);
     }
     const created = await getLeadScoped(workspaceId, createdLeadId, actor);
+    const dynamicValueMap = await fetchLeadDynamicValueMap([createdLeadId]);
     logger.info('[Diagnostic] API response returned', { leadId: createdLeadId });
-    return { lead: mapLeadRecord(created), autoSelfAssigned };
+    return { lead: mapLeadRecordWithDynamicValues(created, dynamicValueMap), autoSelfAssigned };
   } catch (error: any) {
     logger.info('[Diagnostic] Database transaction rolled back', { error: error?.message });
     throw error;
@@ -1558,8 +1816,10 @@ export const getLeads = async (
   ]);
 
   const totalPages = Math.max(1, Math.ceil(total / query.limit));
+  const leadRows = rows as LeadIncludeRecord[];
+  const dynamicValueMap = await fetchLeadDynamicValueMap(leadRows.map((lead) => lead.id));
   const result = {
-    leads: (rows as LeadIncludeRecord[]).map(mapLeadRecord),
+    leads: leadRows.map((lead) => mapLeadRecordWithDynamicValues(lead, dynamicValueMap)),
     pagination: {
       page: query.page,
       limit: query.limit,
@@ -1595,7 +1855,8 @@ export const getLeadById = async (
     logger.error('Background SLA sweep error:', { error: err?.message });
   });
   const lead = await getLeadScoped(workspaceId, id, actor);
-  return mapLeadRecord(lead);
+  const dynamicValueMap = await fetchLeadDynamicValueMap([id]);
+  return mapLeadRecordWithDynamicValues(lead, dynamicValueMap);
 };
 
 export const updateLead = async (
@@ -1803,6 +2064,8 @@ export const updateLead = async (
       },
     });
 
+    await persistLeadDynamicValues(tx, workspaceId, id, input.dynamicValues, actor.id);
+
     const followUpOwnerId = assignedToId || existing.createdById;
 
     if (input.assignedToId !== undefined && existing.assignedToId !== assignedToId) {
@@ -1931,7 +2194,8 @@ export const updateLead = async (
     await touchFollowUpTodayCachesAfterLeadMutation(workspaceId, assignedToId || existing.createdById, nextFollowUpAt);
   }
   const updated = await getLeadScoped(workspaceId, updatedLeadId, actor);
-  const result = mapLeadRecord(updated);
+  const dynamicValueMap = await fetchLeadDynamicValueMap([updatedLeadId]);
+  const result = mapLeadRecordWithDynamicValues(updated, dynamicValueMap);
   if (approvalResult) {
     (result as any)._approvalRequired = true;
     (result as any)._approval = approvalResult.approval;
@@ -2234,27 +2498,37 @@ export const bulkDeleteLeads = async (workspaceId: string, ids: string[], perman
   await clearLeadCache(workspaceId);
 };
 
-const buildLeadExportCsvRow = (lead: LeadIncludeRecord): unknown[] => [
-  lead.id,
-  lead.name,
-  lead.email || '',
-  lead.phone || '',
-  lead.companyName || '',
-  lead.address || '',
-  lead.remarks || '',
-  lead.expectedRevenue ?? '',
-  lead.assignedTo ? resolveDisplayName(lead.assignedTo) : '',
-  lead.stage?.name || '',
-  lead.lifecycle?.name || '',
-  lead.source?.name || '',
-  lead.nextFollowUpAt ? lead.nextFollowUpAt.toISOString() : '',
-  lead.isClosed ? 'Yes' : 'No',
-  lead.isLOB ? 'Yes' : 'No',
-  lead.deletedAt ? lead.deletedAt.toISOString() : '',
-  resolveDisplayName(lead.createdBy),
-  lead.createdAt.toISOString(),
-  lead.updatedAt.toISOString(),
-];
+const buildLeadExportCsvRow = (
+  lead: LeadIncludeRecord,
+  dynamicFields: Array<{ id: string }>,
+  dynamicValues: LeadDynamicValueRecord[] = [],
+): unknown[] => {
+  const dynamicValueByFieldId = new Map(dynamicValues.map((entry) => [entry.fieldId, entry.value]));
+  return [
+    lead.id,
+    lead.name,
+    lead.email || '',
+    lead.phone || '',
+    lead.companyName || '',
+    lead.address || '',
+    lead.remarks || '',
+    lead.expectedRevenue ?? '',
+    lead.assignedTo ? resolveDisplayName(lead.assignedTo) : '',
+    lead.stage?.name || '',
+    lead.lifecycle?.name || '',
+    lead.source?.name || '',
+    lead.nextFollowUpAt ? lead.nextFollowUpAt.toISOString() : '',
+    lead.isClosed ? 'Yes' : 'No',
+    lead.isLOB ? 'Yes' : 'No',
+    deletedAtToExport(lead),
+    resolveDisplayName(lead.createdBy),
+    lead.createdAt.toISOString(),
+    lead.updatedAt.toISOString(),
+    ...dynamicFields.map((field) => dynamicValueByFieldId.get(field.id) || ''),
+  ];
+};
+
+const deletedAtToExport = (lead: LeadIncludeRecord): string => lead.deletedAt ? lead.deletedAt.toISOString() : '';
 
 export const exportLeads = async (
   workspaceId: string,
@@ -2264,6 +2538,11 @@ export const exportLeads = async (
   await assertModuleReady();
 
   const where = await buildListWhere(workspaceId, query, actor, { includeArchived: query.includeArchived });
+  const dynamicFields = await (prisma as any).leadDynamicField.findMany({
+    where: { workspaceId, isActive: true },
+    select: { id: true, name: true },
+    orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
+  }) as Array<{ id: string; name: string }>;
 
   const headers = [
     'Lead ID',
@@ -2285,6 +2564,7 @@ export const exportLeads = async (
     'Created By',
     'Created At',
     'Updated At',
+    ...dynamicFields.map((field) => field.name),
   ];
 
   // Cursor batching: stable order by id so exports scale without loading the full table into memory.
@@ -2305,8 +2585,10 @@ export const exportLeads = async (
       break;
     }
 
+    const dynamicValueMap = await fetchLeadDynamicValueMap(batch.map((lead) => lead.id));
+
     for (const lead of batch) {
-      lines.push(buildLeadExportCsvRow(lead));
+      lines.push(buildLeadExportCsvRow(lead, dynamicFields, dynamicValueMap.get(lead.id)));
     }
 
     if (batch.length < EXPORT_BATCH) {
