@@ -45,11 +45,13 @@ export const findLOBEvents = async (
   workspaceId: string,
   changedAtRange?: { gte?: Date; lte?: Date },
   leadAccess: Prisma.LeadWhereInput = {},
+  searchWhere?: Prisma.LeadLOBLogWhereInput,
 ) =>
   (prisma as any).leadLOBLog.findMany({
     where: {
       workspaceId,
       ...(changedAtRange ? { changedAt: changedAtRange } : {}),
+      ...(searchWhere ? { AND: [searchWhere] } : {}),
       lead: {
         is: mergeWorkspaceLeadFilters(workspaceId, leadAccess, lobModuleLeadWhere()),
       },
@@ -68,8 +70,25 @@ export const findLOBEvents = async (
         select: {
           id: true,
           name: true,
+          email: true,
+          phone: true,
+          companyName: true,
           assignedToId: true,
           createdAt: true,
+          stage: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          createdBy: {
+            select: {
+              id: true,
+              name: true,
+              username: true,
+              email: true,
+            },
+          },
           assignedTo: {
             select: {
               id: true,
@@ -91,6 +110,36 @@ export const findLOBEvents = async (
       },
     },
   });
+
+export const findLOBReasonIdsBySearch = async (workspaceId: string, search: string): Promise<string[]> => {
+  const rows = await prisma.lOBReason.findMany({
+    where: {
+      workspaceId,
+      name: { contains: search, mode: 'insensitive' },
+    },
+    select: { id: true },
+    take: 250,
+  });
+
+  return rows.map((row) => row.id);
+};
+
+export const findUserIdsBySearch = async (workspaceId: string, search: string): Promise<string[]> => {
+  const rows = await prisma.user.findMany({
+    where: {
+      workspaceId,
+      OR: [
+        { name: { contains: search, mode: 'insensitive' } },
+        { username: { contains: search, mode: 'insensitive' } },
+        { email: { contains: search, mode: 'insensitive' } },
+      ],
+    },
+    select: { id: true },
+    take: 250,
+  });
+
+  return rows.map((row) => row.id);
+};
 
 export const countLeadsForAnalytics = async (
   workspaceId: string,
@@ -224,4 +273,3 @@ export const findWorkspaceStages = async (workspaceId: string) =>
       name: true,
     },
   });
-

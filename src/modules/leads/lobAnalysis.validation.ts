@@ -34,6 +34,7 @@ const paginationNumber = (fallback: number) =>
 export const lobAnalysisQuerySchema = z.object({
   date_from: optionalDateString('date_from'),
   date_to: optionalDateString('date_to'),
+  search: z.preprocess(emptyStringToUndefined, z.string().trim().max(160, 'search is too long').optional()),
   stage: optionalId('stage'),
   reason_id: optionalId('reason_id'),
   user_id: optionalId('user_id'),
