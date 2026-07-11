@@ -20,6 +20,12 @@ type NormalizedLOBEvent = {
   id: string;
   leadId: string;
   leadName: string;
+  leadEmail: string | null;
+  leadPhone: string | null;
+  companyName: string | null;
+  assignedToName: string;
+  currentStageName: string | null;
+  createdByName: string;
   fromStageId: string | null;
   fromStageName: string;
   reasonId: string;
@@ -74,6 +80,84 @@ const buildChangedAtRange = (filters: LOBAnalysisQueryInput) => {
     ...(filters.date_from ? { gte: startOfDay(filters.date_from) } : {}),
     ...(filters.date_to ? { lte: endOfDay(filters.date_to) } : {}),
   };
+};
+
+const normalizeSearch = (value?: string | null): string => (value || '').trim();
+
+const includesSearch = (value: unknown, search: string): boolean =>
+  String(value ?? '').toLowerCase().includes(search.toLowerCase());
+
+const buildLOBSearchWhere = async (
+  workspaceId: string,
+  search: string,
+): Promise<Prisma.LeadLOBLogWhereInput | undefined> => {
+  if (!search) return undefined;
+
+  const [reasonIds, userIds] = await Promise.all([
+    repository.findLOBReasonIdsBySearch(workspaceId, search),
+    repository.findUserIdsBySearch(workspaceId, search),
+  ]);
+  const matchingSystemReasonIds = Object.entries(SYSTEM_REASON_LABELS)
+    .filter(([id, label]) => includesSearch(id, search) || includesSearch(label, search))
+    .map(([id]) => id);
+  const matchedReasonIds = Array.from(new Set([...reasonIds, ...matchingSystemReasonIds]));
+
+  return {
+    OR: [
+      { id: { contains: search, mode: 'insensitive' } },
+      { leadId: { contains: search, mode: 'insensitive' } },
+      { reasonId: { contains: search, mode: 'insensitive' } },
+      { remarks: { contains: search, mode: 'insensitive' } },
+      { previousStageId: { contains: search, mode: 'insensitive' } },
+      { previousStageName: { contains: search, mode: 'insensitive' } },
+      { changedById: { contains: search, mode: 'insensitive' } },
+      ...(matchedReasonIds.length > 0 ? [{ reasonId: { in: matchedReasonIds } }] : []),
+      ...(userIds.length > 0 ? [{ changedById: { in: userIds } }] : []),
+      {
+        lead: {
+          is: {
+            OR: [
+              { id: { contains: search, mode: 'insensitive' } },
+              { name: { contains: search, mode: 'insensitive' } },
+              { email: { contains: search, mode: 'insensitive' } },
+              { phone: { contains: search, mode: 'insensitive' } },
+              { companyName: { contains: search, mode: 'insensitive' } },
+              { remarks: { contains: search, mode: 'insensitive' } },
+              { assignedTo: { name: { contains: search, mode: 'insensitive' } } },
+              { assignedTo: { username: { contains: search, mode: 'insensitive' } } },
+              { assignedTo: { email: { contains: search, mode: 'insensitive' } } },
+              { createdBy: { name: { contains: search, mode: 'insensitive' } } },
+              { createdBy: { username: { contains: search, mode: 'insensitive' } } },
+              { createdBy: { email: { contains: search, mode: 'insensitive' } } },
+              { stage: { name: { contains: search, mode: 'insensitive' } } },
+            ],
+          },
+        },
+      },
+    ],
+  };
+};
+
+const matchesNormalizedSearch = (item: NormalizedLOBEvent, search: string): boolean => {
+  if (!search) return true;
+  return [
+    item.id,
+    item.leadId,
+    item.leadName,
+    item.leadEmail,
+    item.leadPhone,
+    item.companyName,
+    item.assignedToName,
+    item.currentStageName,
+    item.createdByName,
+    item.fromStageId,
+    item.fromStageName,
+    item.reasonId,
+    item.reasonName,
+    item.changedById,
+    item.changedByName,
+    item.remarks,
+  ].some((value) => includesSearch(value, search));
 };
 
 const matchesLocation = (user: LocationAwareUser, locationId?: string) => {
@@ -196,7 +280,9 @@ const normalizeLOBEvents = async (
   leadAccess: Prisma.LeadWhereInput = {},
 ): Promise<NormalizedLOBEvent[]> => {
   const changedAtRange = buildChangedAtRange(filters);
-  const rawEvents = await repository.findLOBEvents(workspaceId, changedAtRange, leadAccess);
+  const search = normalizeSearch(filters.search);
+  const searchWhere = await buildLOBSearchWhere(workspaceId, search);
+  const rawEvents = await repository.findLOBEvents(workspaceId, changedAtRange, leadAccess, searchWhere);
   const leadIds = Array.from(new Set<string>(rawEvents.map((item: any) => String(item.leadId))));
 
   const [approvalRows, auditRows, reasonRows, userRows, stageRows] = await Promise.all([
@@ -272,6 +358,12 @@ const normalizeLOBEvents = async (
         id: item.id,
         leadId: item.leadId,
         leadName: item.lead?.name || 'Unknown Lead',
+        leadEmail: item.lead?.email || null,
+        leadPhone: item.lead?.phone || null,
+        companyName: item.lead?.companyName || null,
+        assignedToName: resolveDisplayName(item.lead?.assignedTo),
+        currentStageName: item.lead?.stage?.name || null,
+        createdByName: resolveDisplayName(item.lead?.createdBy),
         fromStageId: fromStage.id,
         fromStageName: fromStage.name,
         reasonId: item.reasonId,
@@ -285,7 +377,8 @@ const normalizeLOBEvents = async (
     })
     .filter((item: NormalizedLOBEvent) => (filters.reason_id ? item.reasonId === filters.reason_id : true))
     .filter((item: NormalizedLOBEvent) => (filters.user_id ? item.changedById === filters.user_id : true))
-    .filter((item: NormalizedLOBEvent) => (filters.stage ? item.fromStageId === filters.stage : true));
+    .filter((item: NormalizedLOBEvent) => (filters.stage ? item.fromStageId === filters.stage : true))
+    .filter((item: NormalizedLOBEvent) => matchesNormalizedSearch(item, search));
 };
 
 const countReferenceLeads = async (
@@ -322,7 +415,7 @@ export const getSummary = async (
 
   const [events, totalLeads] = await Promise.all([
     normalizeLOBEvents(workspaceId, filters, leadAccess),
-    countReferenceLeads(workspaceId, filters, leadAccess),
+    normalizeSearch(filters.search) ? Promise.resolve(0) : countReferenceLeads(workspaceId, filters, leadAccess),
   ]);
 
   const stageCounts = new Map<string, number>();
@@ -334,10 +427,11 @@ export const getSummary = async (
   });
 
   const totalLOBLeads = events.length;
-  const lobPercentage = totalLeads > 0 ? Number(((totalLOBLeads / totalLeads) * 100).toFixed(2)) : 0;
+  const referenceTotal = normalizeSearch(filters.search) ? totalLOBLeads : totalLeads;
+  const lobPercentage = referenceTotal > 0 ? Number(((totalLOBLeads / referenceTotal) * 100).toFixed(2)) : 0;
 
   return {
-    total_leads: totalLeads,
+    total_leads: referenceTotal,
     total_lob_leads: totalLOBLeads,
     lob_percentage: lobPercentage,
     stage_wise: Array.from(stageCounts.entries())
@@ -359,7 +453,7 @@ export const getStageBreakdown = async (
 
   const [events, totalReference] = await Promise.all([
     normalizeLOBEvents(workspaceId, filters, leadAccess),
-    countReferenceLeads(workspaceId, filters, leadAccess),
+    normalizeSearch(filters.search) ? Promise.resolve(0) : countReferenceLeads(workspaceId, filters, leadAccess),
   ]);
 
   const stageCounts = new Map<string, number>();
@@ -374,7 +468,7 @@ export const getStageBreakdown = async (
   return {
     labels: sorted.map((item) => item.label),
     lob_counts: sorted.map((item) => item.count),
-    total_reference: totalReference,
+    total_reference: normalizeSearch(filters.search) ? events.length : totalReference,
   };
 };
 
