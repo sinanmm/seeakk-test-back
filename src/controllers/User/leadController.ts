@@ -15,6 +15,7 @@ import type {
   LeadIdParamInput,
   LeadStageRulesQueryInput,
   ListLeadsQueryInput,
+  ToggleLeadStarInput,
   UpdateLeadInput,
 } from '../../validations/leadValidation';
 import {
@@ -26,6 +27,7 @@ import {
   leadIdParamSchema,
   leadStageRulesQuerySchema,
   listLeadsQuerySchema,
+  toggleLeadStarSchema,
   updateLeadSchema,
 } from '../../validations/leadValidation';
 
@@ -181,6 +183,33 @@ export const getLeadById = async (req: Request, res: Response, next: NextFunctio
     });
   } catch (error) {
     handleServiceError(error, res, next, 'getLeadById');
+  }
+};
+
+export const toggleLeadStar = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = requireWorkspace(req, res);
+  if (!workspaceId) return;
+
+  const params = validate<LeadIdParamInput>(leadIdParamSchema, req.params, res);
+  if (!params) return;
+
+  const input = validate<ToggleLeadStarInput>(toggleLeadStarSchema, req.body, res);
+  if (!input) return;
+
+  try {
+    const result = await leadService.setLeadStar(workspaceId, getActor(req), params.id, input.starred);
+    emitWorkspaceEvent(workspaceId, 'lead_updated', {
+      leadId: params.id,
+      action: input.starred ? 'starred' : 'unstarred',
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: input.starred ? 'Lead starred successfully' : 'Lead unstarred successfully',
+      data: result,
+    });
+  } catch (error) {
+    handleServiceError(error, res, next, 'toggleLeadStar');
   }
 };
 

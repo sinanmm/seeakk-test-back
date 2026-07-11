@@ -121,6 +121,7 @@ model Workspace {
   leadLifeCycles LeadLifeCycle[]
   leadDynamicFields LeadDynamicField[]
   leads          Lead[]
+  leadStars      LeadStar[]
   leadActivities LeadActivity[]
   leadStageApprovals LeadStageApproval[]
   holidays           Holiday[]
@@ -756,6 +757,7 @@ model Lead {
   phone           String?
   companyName     String?
   address         String?
+  remarks         String?
   expectedRevenue Float?
   generatedRevenue Float        @default(0)
   assignedToId    String?
@@ -798,6 +800,7 @@ model Lead {
   stageApprovals  LeadStageApproval[]
   stageHistory    LeadStageHistory[]
   revenueTransactions RevenueTransaction[]
+  stars           LeadStar[]
 
   totalAmount          Float?                 @default(0)
   totalAmountHistory   LeadTotalAmountHistory[]
@@ -998,6 +1001,25 @@ model LeadDynamicValue {
   @@map("lead_dynamic_values")
 }
 
+model LeadStar {
+  id          String    @id @default(cuid())
+  leadId      String
+  userId      String
+  workspaceId String
+  isStarred   Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  lead        Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, userId, leadId])
+  @@index([workspaceId, userId, isStarred])
+  @@index([leadId])
+  @@map("lead_stars")
+}
+
 model LeadActivity {
   id           String   @id @default(cuid())
   leadId        String
@@ -1133,6 +1155,7 @@ model User {
 
   // Audit logs relation
   auditLogs                AuditLog[]
+  leadStars                LeadStar[]
   performedLeadActivities  LeadActivity[] @relation("LeadActivityPerformedBy")
   requestedLeadStageApprovals LeadStageApproval[] @relation("LeadStageApprovalRequestedBy")
   assignedLeadStageApprovals LeadStageApproval[] @relation("LeadStageApprovalAssignedTo")
@@ -1965,5 +1988,3 @@ model AdvancePayment {
   @@index([rejectedById])
   @@map("advance_payments")
 }
-
-

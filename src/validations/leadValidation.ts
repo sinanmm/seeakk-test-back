@@ -52,6 +52,42 @@ const limitSchema = z
 
 const followUpTypeField = z.enum(['CALL', 'VISIT', 'MEETING']).optional();
 
+const rejectHtmlOrScript = (value: string) =>
+  !/<[^>]*>/u.test(value) && !/javascript\s*:/iu.test(value);
+
+const leadRemarksField = z.preprocess(
+  emptyStringToUndefined,
+  z
+    .string()
+    .trim()
+    .max(1000, 'remarks must be 1000 characters or fewer')
+    .refine(rejectHtmlOrScript, 'remarks cannot contain HTML or script content')
+    .optional(),
+);
+
+const nullableLeadRemarksField = z.preprocess(
+  emptyStringToUndefined,
+  z
+    .string()
+    .trim()
+    .max(1000, 'remarks must be 1000 characters or fewer')
+    .refine(rejectHtmlOrScript, 'remarks cannot contain HTML or script content')
+    .nullable()
+    .optional(),
+);
+
+const lobRemarksField = z.preprocess(emptyStringToUndefined, z.string().trim().max(2000, 'lobRemarks is too long').optional());
+
+const nullableLobRemarksField = z.preprocess(
+  emptyStringToUndefined,
+  z.string().trim().max(2000, 'lobRemarks is too long').nullable().optional(),
+);
+
+const leadDynamicValueEntrySchema = z.object({
+  fieldId: z.string().trim().min(1, 'fieldId is required').max(191, 'Invalid fieldId'),
+  value: z.string().max(1000, 'dynamic field value must not exceed 1000 characters').optional().default(''),
+});
+
 export const createLeadSchema = z.object({
   name: z.string().trim().min(1, 'name is required').max(160, 'name is too long'),
   email: z.preprocess(emptyStringToUndefined, z.string().trim().email('email must be valid').max(191, 'email is too long').optional()),
@@ -67,7 +103,9 @@ export const createLeadSchema = z.object({
   nextFollowUpType: followUpTypeField,
   followUpDescription: z.preprocess(emptyStringToUndefined, z.string().trim().max(1000, 'followUpDescription is too long').optional()),
   reasonId: optionalId('reasonId'),
-  remarks: z.preprocess(emptyStringToUndefined, z.string().trim().max(2000, 'remarks is too long').optional()),
+  remarks: leadRemarksField,
+  lobRemarks: lobRemarksField,
+  dynamicValues: z.array(leadDynamicValueEntrySchema).optional(),
   skipAutoStageAssignment: z.coerce.boolean().optional().default(false),
   totalAmount: z.coerce.number().nonnegative('Total amount must be a positive number').optional(),
   advancePayments: z.array(
@@ -100,7 +138,9 @@ export const updateLeadSchema = z.object({
   followUpDescription: z.preprocess(emptyStringToUndefined, z.string().trim().max(1000, 'followUpDescription is too long').optional()),
   isClosed: z.boolean().optional(),
   reasonId: z.union([optionalId('reasonId'), z.null()]).optional(),
-  remarks: z.preprocess(emptyStringToUndefined, z.string().trim().max(2000, 'remarks is too long').nullable().optional()),
+  remarks: nullableLeadRemarksField,
+  lobRemarks: nullableLobRemarksField,
+  dynamicValues: z.array(leadDynamicValueEntrySchema).optional(),
   totalAmount: z.coerce.number().nonnegative('Total amount must be a positive number').optional(),
 });
 
@@ -163,9 +203,16 @@ export const listLeadsQuerySchema = z.object({
   stage: z.preprocess(emptyStringToUndefined, z.string().trim().optional()).optional(),
   source: z.preprocess(emptyStringToUndefined, z.string().trim().optional()).optional(),
   status: z.preprocess(emptyStringToUndefined, z.enum(['OPEN', 'CLOSED', 'LOB', 'ACTIVE', 'ARCHIVED']).optional()).optional(),
+  starred: z.preprocess(emptyStringToUndefined, z.enum(['ALL', 'STARRED']).optional()).optional(),
 });
 
 export type ListLeadsQueryInput = z.infer<typeof listLeadsQuerySchema>;
+
+export const toggleLeadStarSchema = z.object({
+  starred: z.boolean(),
+});
+
+export type ToggleLeadStarInput = z.infer<typeof toggleLeadStarSchema>;
 
 export const exportLeadsQuerySchema = listLeadsQuerySchema.extend({
   format: z.preprocess(emptyStringToUndefined, z.enum(['csv']).optional()).default('csv'),
