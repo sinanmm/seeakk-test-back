@@ -86,6 +86,12 @@ const handleServiceError = (error: any, res: Response, next: NextFunction, actio
 
   if (error?.statusCode) {
     const isConflict = error.statusCode === 409;
+    logger.error(`Lead service error during ${action}`, {
+      action,
+      statusCode: error.statusCode,
+      message: error?.message,
+      stack: error?.stack,
+    });
     res.status(error.statusCode).json({
       success: false,
       message: error.message,
@@ -94,7 +100,14 @@ const handleServiceError = (error: any, res: Response, next: NextFunction, actio
     return;
   }
 
-  logger.error(`Lead error during ${action}`, { error: error?.message });
+  logger.error(`Lead error during ${action}`, {
+    action,
+    name: error?.name,
+    code: error?.code,
+    meta: error?.meta,
+    message: error?.message,
+    stack: error?.stack,
+  });
   next(error);
 };
 
