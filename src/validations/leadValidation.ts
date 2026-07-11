@@ -203,9 +203,16 @@ export const listLeadsQuerySchema = z.object({
   stage: z.preprocess(emptyStringToUndefined, z.string().trim().optional()).optional(),
   source: z.preprocess(emptyStringToUndefined, z.string().trim().optional()).optional(),
   status: z.preprocess(emptyStringToUndefined, z.enum(['OPEN', 'CLOSED', 'LOB', 'ACTIVE', 'ARCHIVED']).optional()).optional(),
+  starred: z.preprocess(emptyStringToUndefined, z.enum(['ALL', 'STARRED']).optional()).optional(),
 });
 
 export type ListLeadsQueryInput = z.infer<typeof listLeadsQuerySchema>;
+
+export const toggleLeadStarSchema = z.object({
+  starred: z.boolean(),
+});
+
+export type ToggleLeadStarInput = z.infer<typeof toggleLeadStarSchema>;
 
 export const exportLeadsQuerySchema = listLeadsQuerySchema.extend({
   format: z.preprocess(emptyStringToUndefined, z.enum(['csv']).optional()).default('csv'),

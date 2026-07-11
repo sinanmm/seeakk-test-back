@@ -270,12 +270,15 @@ const leadInclude = {
 const hasGeneratedDelegates = (): boolean => {
   const lead = (prisma as any).lead;
   const followUp = (prisma as any).followUp;
+  const leadStar = (prisma as any).leadStar;
   return Boolean(
     lead?.findFirst &&
       lead?.findMany &&
       lead?.create &&
       lead?.update &&
-      followUp?.create,
+      followUp?.create &&
+      leadStar?.findMany &&
+      leadStar?.upsert,
   );
 };
 
@@ -363,6 +366,19 @@ const assertModuleReady = async (): Promise<void> => {
   if (!leadTable[0]?.table_name) {
     throw createServiceError(
       'Leads module is not ready. Required database schema is missing. Run Prisma migration/db push.',
+      503,
+    );
+  }
+
+  const leadStarTable = await prisma.$queryRaw<Array<{ table_name: string | null }>>`
+    SELECT TABLE_NAME AS table_name
+    FROM information_schema.tables
+    WHERE table_schema = current_schema() AND table_name = 'lead_stars'
+  `;
+
+  if (!leadStarTable[0]?.table_name) {
+    throw createServiceError(
+      'Lead stars module is not ready. Run Prisma migration/db push and restart backend.',
       503,
     );
   }
@@ -685,10 +701,45 @@ const serializeLeadDynamicValues = (values?: LeadDynamicValueRecord[]) =>
 const mapLeadRecordWithDynamicValues = (
   lead: LeadIncludeRecord,
   dynamicValueMap: Map<string, LeadDynamicValueRecord[]>,
+  starredLeadIds?: Set<string>,
 ) => ({
   ...mapLeadRecord(lead),
   dynamicValues: serializeLeadDynamicValues(dynamicValueMap.get(lead.id)),
+  isStarred: starredLeadIds?.has(lead.id) ?? false,
 });
+
+const fetchStarredLeadIds = async (
+  workspaceId: string,
+  userId: string | undefined,
+  leadIds: string[],
+): Promise<Set<string>> => {
+  if (!userId || leadIds.length === 0) return new Set();
+
+  const rows = await (prisma as any).leadStar.findMany({
+    where: {
+      workspaceId,
+      userId,
+      leadId: { in: leadIds },
+      isStarred: true,
+    },
+    select: { leadId: true },
+  });
+
+  return new Set(rows.map((row: { leadId: string }) => row.leadId));
+};
+
+const findStarredLeadIdsForUser = async (workspaceId: string, userId: string): Promise<string[]> => {
+  const rows = await (prisma as any).leadStar.findMany({
+    where: {
+      workspaceId,
+      userId,
+      isStarred: true,
+    },
+    select: { leadId: true },
+  });
+
+  return rows.map((row: { leadId: string }) => row.leadId);
+};
 
 const escapeCsv = (value: unknown): string => {
   if (value === null || value === undefined) return '';
@@ -1385,6 +1436,15 @@ const buildListWhere = async (
     }
   }
 
+  if (query.starred === 'STARRED') {
+    if (!actor?.id) {
+      where.id = { in: [] };
+    } else {
+      const starredLeadIds = await findStarredLeadIdsForUser(workspaceId, actor.id);
+      where.id = { in: starredLeadIds };
+    }
+  }
+
   const includeArchived = Boolean(options?.includeArchived);
 
   if (!includeArchived) {
@@ -1765,8 +1825,9 @@ export const createLead = async (
     }
     const created = await getLeadScoped(workspaceId, createdLeadId, actor);
     const dynamicValueMap = await fetchLeadDynamicValueMap([createdLeadId]);
+    const starredLeadIds = await fetchStarredLeadIds(workspaceId, actor.id, [createdLeadId]);
     logger.info('[Diagnostic] API response returned', { leadId: createdLeadId });
-    return { lead: mapLeadRecordWithDynamicValues(created, dynamicValueMap), autoSelfAssigned };
+    return { lead: mapLeadRecordWithDynamicValues(created, dynamicValueMap, starredLeadIds), autoSelfAssigned };
   } catch (error: any) {
     logger.info('[Diagnostic] Database transaction rolled back', { error: error?.message });
     throw error;
@@ -1818,8 +1879,9 @@ export const getLeads = async (
   const totalPages = Math.max(1, Math.ceil(total / query.limit));
   const leadRows = rows as LeadIncludeRecord[];
   const dynamicValueMap = await fetchLeadDynamicValueMap(leadRows.map((lead) => lead.id));
+  const starredLeadIds = await fetchStarredLeadIds(workspaceId, actor?.id, leadRows.map((lead) => lead.id));
   const result = {
-    leads: leadRows.map((lead) => mapLeadRecordWithDynamicValues(lead, dynamicValueMap)),
+    leads: leadRows.map((lead) => mapLeadRecordWithDynamicValues(lead, dynamicValueMap, starredLeadIds)),
     pagination: {
       page: query.page,
       limit: query.limit,
@@ -1856,7 +1918,57 @@ export const getLeadById = async (
   });
   const lead = await getLeadScoped(workspaceId, id, actor);
   const dynamicValueMap = await fetchLeadDynamicValueMap([id]);
-  return mapLeadRecordWithDynamicValues(lead, dynamicValueMap);
+  const starredLeadIds = await fetchStarredLeadIds(workspaceId, actor?.id, [id]);
+  return mapLeadRecordWithDynamicValues(lead, dynamicValueMap, starredLeadIds);
+};
+
+export const setLeadStar = async (
+  workspaceId: string,
+  actor: Actor,
+  id: string,
+  starred: boolean,
+): Promise<{ leadId: string; isStarred: boolean }> => {
+  await assertModuleReady();
+  await getLeadScoped(workspaceId, id, actor);
+
+  await prisma.$transaction(async (tx: any) => {
+    await (tx as any).leadStar.upsert({
+      where: {
+        workspaceId_userId_leadId: {
+          workspaceId,
+          userId: actor.id,
+          leadId: id,
+        },
+      },
+      create: {
+        workspaceId,
+        userId: actor.id,
+        leadId: id,
+        isStarred: starred,
+      },
+      update: {
+        isStarred: starred,
+      },
+    });
+
+    await (tx as any).auditLog.create({
+      data: {
+        userId: actor.id,
+        workspaceId,
+        action: starred ? 'LEAD_STARRED' : 'LEAD_UNSTARRED',
+        entityType: 'Lead',
+        entityId: id,
+        details: {
+          leadId: id,
+          isStarred: starred,
+          changedBy: actor.id,
+        },
+      },
+    });
+  });
+
+  await clearLeadCache(workspaceId);
+  return { leadId: id, isStarred: starred };
 };
 
 export const updateLead = async (
@@ -2195,7 +2307,8 @@ export const updateLead = async (
   }
   const updated = await getLeadScoped(workspaceId, updatedLeadId, actor);
   const dynamicValueMap = await fetchLeadDynamicValueMap([updatedLeadId]);
-  const result = mapLeadRecordWithDynamicValues(updated, dynamicValueMap);
+  const starredLeadIds = await fetchStarredLeadIds(workspaceId, actor.id, [updatedLeadId]);
+  const result = mapLeadRecordWithDynamicValues(updated, dynamicValueMap, starredLeadIds);
   if (approvalResult) {
     (result as any)._approvalRequired = true;
     (result as any)._approval = approvalResult.approval;
