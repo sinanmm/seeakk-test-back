@@ -454,6 +454,12 @@ export const processLeadApproval = async (
     }
   }
 
+  if (input.action === 'APPROVE' && approval.type === 'ADVANCE_PAYMENT') {
+    if (!input.checkNumber || !input.checkNumber.trim()) {
+      throw createServiceError('Check number is required when approving an advance payment.', 422);
+    }
+  }
+
   const result = await repository.processApproval({
     workspaceId,
     approvalId,
@@ -461,8 +467,9 @@ export const processLeadApproval = async (
     comment: input.comment,
     approvedById: actor.id,
     earnedRevenue: (input as any).earnedRevenue,
+    checkNumber: input.checkNumber,
     leadUpdateData:
-      input.action === 'APPROVE'
+      input.action === 'APPROVE' && approval.type !== 'ADVANCE_PAYMENT'
         ? buildApprovalLeadUpdateData({ ...approval, approvedById: actor.id })
         : undefined,
     requestData,

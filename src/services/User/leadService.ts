@@ -22,6 +22,94 @@ import { hasPermission } from '../../middlewares/authMiddleware';
 
 const LEADS_CACHE_TTL_SECONDS = 60;
 
+export const validateClosedStageBalance = async (leadId: string, targetStageId: string, workspaceId: string) => {
+  const stage = await prisma.leadStage.findFirst({
+    where: { id: targetStageId, workspaceId, deletedAt: null },
+    select: { isClosed: true, name: true }
+  });
+  if (stage?.isClosed) {
+    const lead = await prisma.lead.findUnique({
+      where: { id: leadId },
+      select: { totalAmount: true }
+    });
+    const approvedSumResult = await prisma.advancePayment.aggregate({
+      where: { leadId, status: 'APPROVED' },
+      _sum: { amount: true }
+    });
+    const totalAmount = lead?.totalAmount || 0;
+    const approvedSum = approvedSumResult._sum.amount || 0;
+    const balance = totalAmount - approvedSum;
+    if (balance > 0) {
+      const error = new Error('Outstanding balance remaining. Please complete the payment before closing this lead.') as Error & { statusCode: number };
+      error.statusCode = 422;
+      throw error;
+    }
+  }
+};
+
+export const syncLeadRevenueTransaction = async (tx: any, workspaceId: string, leadId: string, stageId: string | null, actorId: string) => {
+  if (!stageId) return;
+  const stage = await tx.leadStage.findFirst({
+    where: { id: stageId, workspaceId, deletedAt: null },
+    select: { isClosed: true, isLOB: true }
+  });
+  const isClosedWon = Boolean(stage?.isClosed && !stage?.isLOB);
+
+  const existing = await tx.revenueTransaction.findFirst({
+    where: { leadId }
+  });
+
+  if (isClosedWon) {
+    const lead = await tx.lead.findUnique({
+      where: { id: leadId },
+      select: { totalAmount: true, assignedToId: true, createdById: true }
+    });
+
+    const approvedAdvances = await tx.advancePayment.aggregate({
+      where: { leadId, status: 'APPROVED' },
+      _sum: { amount: true }
+    });
+
+    const totalAmount = lead?.totalAmount || 0;
+    const approvedSum = approvedAdvances._sum.amount || 0;
+    const balance = totalAmount - approvedSum;
+
+    if (balance === 0 && totalAmount > 0) {
+      const closingUserId = lead?.assignedToId || lead?.createdById || actorId;
+      if (!existing) {
+        await tx.revenueTransaction.create({
+          data: {
+            workspaceId,
+            leadId,
+            userId: closingUserId,
+            approvedById: actorId,
+            amount: totalAmount,
+            closedStageId: stageId
+          }
+        });
+      } else {
+        await tx.revenueTransaction.update({
+          where: { id: existing.id },
+          data: {
+            amount: totalAmount,
+            userId: closingUserId,
+            approvedById: actorId,
+            closedStageId: stageId
+          }
+        });
+      }
+    } else if (existing) {
+      await tx.revenueTransaction.delete({
+        where: { id: existing.id }
+      });
+    }
+  } else if (existing) {
+    await tx.revenueTransaction.delete({
+      where: { id: existing.id }
+    });
+  }
+};
+
 type Actor = {
   id: string;
   roleId?: string | null;
@@ -1155,9 +1243,11 @@ export const createLead = async (
   input: CreateLeadInput,
 ): Promise<{ lead: ReturnType<typeof mapLeadRecord>; autoSelfAssigned: boolean }> => {
   await assertModuleReady();
+  logger.info('[Diagnostic] Lead creation started', { workspaceId, actorId: actor.id, inputName: input.name });
   ensureFutureFollowUp(input.nextFollowUpAt);
 
   await findDuplicateLead(workspaceId, input.email ?? null, input.phone ?? null);
+  logger.info('[Diagnostic] Lead validation completed', { email: input.email, phone: input.phone });
 
   const { assignedToId, autoSelfAssigned } = await resolveCreateAssignedToId(
     workspaceId,
@@ -1180,89 +1270,195 @@ export const createLead = async (
     ? emptySlaSnapshot()
     : await buildLeadSlaSnapshot(lifecycle, stage?.id || null);
 
-  const createdLeadId = await prisma.$transaction(async (tx: any) => {
-    const outcomeFlags = stage
-      ? buildLeadOutcomeFlagsFromStage(stage, actor.id)
-      : buildClosureUpdateData(stage, actor.id);
+  try {
+    const createdLeadId = await prisma.$transaction(async (tx: any) => {
+      const outcomeFlags = stage
+        ? buildLeadOutcomeFlagsFromStage(stage, actor.id)
+        : buildClosureUpdateData(stage, actor.id);
 
-    const lead = await (tx as any).lead.create({
-      data: {
-        name: input.name.trim(),
-        email: input.email?.trim() || null,
-        phone: input.phone?.trim() || null,
-        companyName: input.companyName?.trim() || null,
-        address: input.address?.trim() || null,
-        expectedRevenue: input.expectedRevenue ?? null,
-        assignedToId,
-        stageId: stage?.id || null,
-        lifecycleId: lifecycle?.id || null,
-        sourceId: source?.id || null,
-        nextFollowUpAt: input.nextFollowUpAt ?? null,
-        stageEnteredAt: slaSnapshot.stageEnteredAt,
-        stageExpiresAt: slaSnapshot.stageExpiresAt,
-        slaAction: slaSnapshot.slaAction,
-        slaWarningDays: slaSnapshot.slaWarningDays,
-        isClosed: outcomeFlags.isClosed,
-        isLOB: outcomeFlags.isLOB,
-        closedAt: outcomeFlags.closedAt,
-        closedById: outcomeFlags.closedById,
-        closureType: outcomeFlags.closureType,
-        generatedRevenue: outcomeFlags.generatedRevenue,
-        workspaceId,
-        createdById: actor.id,
-      },
-      include: leadInclude,
+      const lead = await (tx as any).lead.create({
+        data: {
+          name: input.name.trim(),
+          email: input.email?.trim() || null,
+          phone: input.phone?.trim() || null,
+          companyName: input.companyName?.trim() || null,
+          address: input.address?.trim() || null,
+          expectedRevenue: input.expectedRevenue ?? null,
+          assignedToId,
+          stageId: stage?.id || null,
+          lifecycleId: lifecycle?.id || null,
+          sourceId: source?.id || null,
+          nextFollowUpAt: input.nextFollowUpAt ?? null,
+          stageEnteredAt: slaSnapshot.stageEnteredAt,
+          stageExpiresAt: slaSnapshot.stageExpiresAt,
+          slaAction: slaSnapshot.slaAction,
+          slaWarningDays: slaSnapshot.slaWarningDays,
+          isClosed: outcomeFlags.isClosed,
+          isLOB: outcomeFlags.isLOB,
+          closedAt: outcomeFlags.closedAt,
+          closedById: outcomeFlags.closedById,
+          closureType: outcomeFlags.closureType,
+          generatedRevenue: outcomeFlags.generatedRevenue,
+          totalAmount: input.totalAmount ?? 0,
+          workspaceId,
+          createdById: actor.id,
+        },
+        include: leadInclude,
+      });
+
+      logger.info('[Diagnostic] Lead record saved', { leadId: lead.id });
+
+      if (input.nextFollowUpAt) {
+        await createAutomaticFollowUp(
+          tx,
+          lead.id,
+          workspaceId,
+          followUpOwnerId,
+          input.nextFollowUpAt,
+          input.followUpDescription,
+          normalizeFollowUpType(input.nextFollowUpType),
+        );
+      }
+
+      if (stage?.isLOB) {
+        await (tx as any).leadLOBLog.create({
+          data: {
+            leadId: lead.id,
+            reasonId: input.reasonId!,
+            remarks: input.remarks?.trim() || null,
+            previousStageId: null,
+            previousStageName: null,
+            changedById: actor.id,
+            workspaceId,
+          },
+        });
+      }
+
+      if (stage) {
+        await (tx as any).leadStageHistory.create({
+          data: {
+            leadId: lead.id,
+            fromStageId: null,
+            fromStageName: null,
+            toStageId: stage.id,
+            toStageName: stage.name?.trim() || null,
+            changedById: actor.id,
+            workspaceId,
+          },
+        });
+      }
+
+      logger.info('[Diagnostic] Dynamic fields saved', { leadId: lead.id });
+
+      // Save Payment Information
+      if (input.totalAmount && input.totalAmount > 0) {
+        await (tx as any).leadTotalAmountHistory.create({
+          data: {
+            leadId: lead.id,
+            oldAmount: 0,
+            newAmount: input.totalAmount,
+            changedById: actor.id,
+            reason: 'Initial amount set on lead creation.',
+          },
+        });
+        logger.info('[Diagnostic] Payment information saved', { leadId: lead.id, totalAmount: input.totalAmount });
+      }
+
+      // Save Pending Advance Requests
+      const advancePayments = (input as any).advancePayments;
+      if (advancePayments && advancePayments.length > 0) {
+        const creatorUser = await (tx as any).user.findFirst({
+          where: { id: actor.id, workspaceId, deletedAt: null, isActive: true },
+          select: { id: true, supervisorId: true },
+        });
+
+        if (!creatorUser?.supervisorId) {
+          throw createServiceError(
+            'You must have a supervisor assigned to your account before you can request an advance payment.',
+            409,
+          );
+        }
+
+        for (const advReq of advancePayments) {
+          const adv = await (tx as any).advancePayment.create({
+            data: {
+              leadId: lead.id,
+              workspaceId,
+              amount: advReq.amount,
+              paymentDate: new Date(advReq.paymentDate),
+              proofUrl: advReq.proofUrl || null,
+              remarks: advReq.remarks || null,
+              requestedById: actor.id,
+              status: 'PENDING',
+            },
+          });
+
+          const approval = await (tx as any).leadStageApproval.create({
+            data: {
+              workspaceId,
+              leadId: lead.id,
+              type: 'ADVANCE_PAYMENT',
+              requestedById: actor.id,
+              assignedToId: creatorUser.supervisorId,
+              status: 'PENDING',
+              requestData: {
+                advancePaymentId: adv.id,
+                amount: advReq.amount,
+                paymentDate: advReq.paymentDate,
+                remarks: advReq.remarks || '',
+                proofUrl: advReq.proofUrl || null,
+              },
+            },
+          });
+
+          await (tx as any).leadActivity.create({
+            data: {
+              leadId: lead.id,
+              performedById: actor.id,
+              workspaceId,
+              action: 'ADVANCE_PAYMENT_REQUESTED',
+              metadata: {
+                advancePaymentId: adv.id,
+                amount: advReq.amount,
+                approvalId: approval.id,
+              },
+            },
+          });
+
+          await (tx as any).auditLog.create({
+            data: {
+              userId: actor.id,
+              workspaceId,
+              action: 'ADVANCE_PAYMENT_REQUESTED',
+              entityType: 'Lead',
+              entityId: lead.id,
+              details: {
+                advancePaymentId: adv.id,
+                amount: advReq.amount,
+                approvalId: approval.id,
+              },
+            },
+          });
+        }
+        logger.info('[Diagnostic] Advance requests created', { leadId: lead.id, count: advancePayments.length });
+      }
+
+      return lead.id;
     });
 
+    logger.info('[Diagnostic] Database transaction committed', { leadId: createdLeadId });
+
+    await clearLeadCache(workspaceId);
     if (input.nextFollowUpAt) {
-      await createAutomaticFollowUp(
-        tx,
-        lead.id,
-        workspaceId,
-        followUpOwnerId,
-        input.nextFollowUpAt,
-        input.followUpDescription,
-        normalizeFollowUpType(input.nextFollowUpType),
-      );
+      await touchFollowUpTodayCachesAfterLeadMutation(workspaceId, followUpOwnerId, input.nextFollowUpAt);
     }
-
-    if (stage?.isLOB) {
-      await (tx as any).leadLOBLog.create({
-        data: {
-          leadId: lead.id,
-          reasonId: input.reasonId!,
-          remarks: input.remarks?.trim() || null,
-          previousStageId: null,
-          previousStageName: null,
-          changedById: actor.id,
-          workspaceId,
-        },
-      });
-    }
-
-    if (stage) {
-      await (tx as any).leadStageHistory.create({
-        data: {
-          leadId: lead.id,
-          fromStageId: null,
-          fromStageName: null,
-          toStageId: stage.id,
-          toStageName: stage.name?.trim() || null,
-          changedById: actor.id,
-          workspaceId,
-        },
-      });
-    }
-
-    return lead.id;
-  });
-
-  await clearLeadCache(workspaceId);
-  if (input.nextFollowUpAt) {
-    await touchFollowUpTodayCachesAfterLeadMutation(workspaceId, followUpOwnerId, input.nextFollowUpAt);
+    const created = await getLeadScoped(workspaceId, createdLeadId, actor);
+    logger.info('[Diagnostic] API response returned', { leadId: createdLeadId });
+    return { lead: mapLeadRecord(created), autoSelfAssigned };
+  } catch (error: any) {
+    logger.info('[Diagnostic] Database transaction rolled back', { error: error?.message });
+    throw error;
   }
-  const created = await getLeadScoped(workspaceId, createdLeadId, actor);
-  return { lead: mapLeadRecord(created), autoSelfAssigned };
 };
 
 export const getLeads = async (
@@ -1281,7 +1477,9 @@ export const getLeads = async (
   };
 }> => {
   await assertModuleReady();
-  await maybeRunLeadSlaSweep(workspaceId);
+  maybeRunLeadSlaSweep(workspaceId).catch((err) => {
+    logger.error('Background SLA sweep error:', { error: err?.message });
+  });
 
   const cacheKey = buildLeadCacheKey(workspaceId, query, actor);
   if (redisClient.isOpen) {
@@ -1294,7 +1492,7 @@ export const getLeads = async (
   const skip = (query.page - 1) * query.limit;
   const where = await buildListWhere(workspaceId, query, actor);
 
-  const [total, rows] = await prisma.$transaction([
+  const [total, rows] = await Promise.all([
     (prisma as any).lead.count({ where }),
     (prisma as any).lead.findMany({
       where,
@@ -1339,7 +1537,9 @@ export const getLeadById = async (
   actor?: Actor,
 ): Promise<ReturnType<typeof mapLeadRecord>> => {
   await assertModuleReady();
-  await maybeRunLeadSlaSweep(workspaceId);
+  maybeRunLeadSlaSweep(workspaceId).catch((err) => {
+    logger.error('Background SLA sweep error:', { error: err?.message });
+  });
   const lead = await getLeadScoped(workspaceId, id, actor);
   return mapLeadRecord(lead);
 };
@@ -1456,6 +1656,7 @@ export const updateLead = async (
     existing.stageId &&
     stage.id !== existing.stageId
   ) {
+    await validateClosedStageBalance(id, stage.id, workspaceId);
     const validationData = await toValidationLeadData(existing, input);
     await validateLeadStageTransition(workspaceId, stage.id, validationData, undefined);
   }
@@ -1633,6 +1834,8 @@ export const updateLead = async (
       });
     }
 
+    await syncLeadRevenueTransaction(tx, workspaceId, id, nextStageId || existing.stageId || stage?.id || null, actor.id);
+
     return id;
   });
 
@@ -1671,6 +1874,7 @@ export const changeStage = async (
   }
 
   if (existing.stageId && existing.stageId !== targetStage.id) {
+    await validateClosedStageBalance(id, targetStage.id, workspaceId);
     const validationData = await toValidationLeadData(existing, input);
     const stageRuleAnswers = stageRuleValuesToAnswerMap(input.stageRuleValues);
     await validateLeadStageTransition(workspaceId, targetStage.id, validationData, stageRuleAnswers);

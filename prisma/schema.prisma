@@ -139,6 +139,7 @@ model Workspace {
   followUpSettings         FollowUpSettings?
   temporaryBulkExtensionAccesses TemporaryBulkExtensionAccess[]
   bulkFollowUpExtensions   BulkFollowUpExtension[]
+  advancePayments          AdvancePayment[]
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
@@ -798,6 +799,10 @@ model Lead {
   stageHistory    LeadStageHistory[]
   revenueTransactions RevenueTransaction[]
 
+  totalAmount          Float?                 @default(0)
+  totalAmountHistory   LeadTotalAmountHistory[]
+  advancePayments      AdvancePayment[]
+
   @@index([workspaceId, assignedToId, stageId])
   @@index([workspaceId, sourceId, createdAt])
   @@index([workspaceId, deletedAt])
@@ -887,8 +892,9 @@ model LeadStageApproval {
   id            String             @id @default(cuid())
   workspaceId   String
   leadId        String
-  fromStageId   String
-  toStageId     String
+  fromStageId   String?
+  toStageId     String?
+  type          String             @default("STAGE_CHANGE") // STAGE_CHANGE or ADVANCE_PAYMENT
   requestedById String
   assignedToId  String?
   status        LeadApprovalStatus @default(PENDING)
@@ -901,8 +907,8 @@ model LeadStageApproval {
 
   workspace     Workspace          @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   lead          Lead               @relation(fields: [leadId], references: [id], onDelete: Cascade)
-  fromStage     LeadStage          @relation("LeadStageApprovalFromStage", fields: [fromStageId], references: [id], onDelete: Restrict)
-  toStage       LeadStage          @relation("LeadStageApprovalToStage", fields: [toStageId], references: [id], onDelete: Restrict)
+  fromStage     LeadStage?         @relation("LeadStageApprovalFromStage", fields: [fromStageId], references: [id], onDelete: Restrict)
+  toStage       LeadStage?         @relation("LeadStageApprovalToStage", fields: [toStageId], references: [id], onDelete: Restrict)
   requestedBy   User               @relation("LeadStageApprovalRequestedBy", fields: [requestedById], references: [id], onDelete: Restrict)
   assignedTo    User?              @relation("LeadStageApprovalAssignedTo", fields: [assignedToId], references: [id], onDelete: SetNull)
   approvedBy    User?              @relation("LeadStageApprovalApprovedBy", fields: [approvedById], references: [id], onDelete: SetNull)
@@ -1131,6 +1137,12 @@ model User {
   requestedLeadStageApprovals LeadStageApproval[] @relation("LeadStageApprovalRequestedBy")
   assignedLeadStageApprovals LeadStageApproval[] @relation("LeadStageApprovalAssignedTo")
   approvedLeadStageApprovals LeadStageApproval[] @relation("LeadStageApprovalApprovedBy")
+
+  leadTotalAmountHistory      LeadTotalAmountHistory[]
+  advancePaymentsRequested    AdvancePayment[] @relation("AdvanceRequestedBy")
+  advancePaymentsApproved     AdvancePayment[] @relation("AdvanceApprovedBy")
+  advancePaymentsRejected     AdvancePayment[] @relation("AdvanceRejectedBy")
+
   rosterEntries            RosterEntry[]
   attendanceRecords        AttendanceRecord[]
   attendanceSchedule       AttendanceSchedule?
@@ -1902,6 +1914,56 @@ model AttendanceSchedule {
 
   @@index([workspaceId])
   @@map("attendance_schedules")
+}
+
+model LeadTotalAmountHistory {
+  id          String   @id @default(cuid())
+  leadId      String
+  oldAmount   Float
+  newAmount   Float
+  changedById String
+  reason      String
+  createdAt   DateTime @default(now())
+
+  lead        Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  changedBy   User     @relation(fields: [changedById], references: [id], onDelete: Cascade)
+
+  @@index([leadId])
+  @@index([changedById])
+  @@map("lead_total_amount_histories")
+}
+
+model AdvancePayment {
+  id              String    @id @default(cuid())
+  leadId          String
+  workspaceId     String
+  amount          Float
+  paymentDate     DateTime
+  proofUrl        String?   @db.Text
+  remarks         String?
+  status          String    @default("PENDING") // PENDING, APPROVED, REJECTED
+  checkNumber     String?
+  requestedById   String
+  approvedById    String?
+  approvedAt      DateTime?
+  rejectedById    String?
+  rejectedAt      DateTime?
+  rejectionReason String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  lead            Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  requestedBy     User      @relation("AdvanceRequestedBy", fields: [requestedById], references: [id], onDelete: Cascade)
+  approvedBy      User?     @relation("AdvanceApprovedBy", fields: [approvedById], references: [id], onDelete: SetNull)
+  rejectedBy      User?     @relation("AdvanceRejectedBy", fields: [rejectedById], references: [id], onDelete: SetNull)
+  workspace       Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([leadId])
+  @@index([workspaceId])
+  @@index([requestedById])
+  @@index([approvedById])
+  @@index([rejectedById])
+  @@map("advance_payments")
 }
 
 

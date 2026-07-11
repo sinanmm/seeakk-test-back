@@ -307,6 +307,69 @@ export const getApprovalById = async (workspaceId: string, id: string) =>
     },
   });
 
+export const syncRevenueTransactionInline = async (tx: any, workspaceId: string, leadId: string, stageId: string | null, actorId: string) => {
+  if (!stageId) return;
+  const stage = await tx.leadStage.findFirst({
+    where: { id: stageId, workspaceId, deletedAt: null },
+    select: { isClosed: true, isLOB: true }
+  });
+  const isClosedWon = Boolean(stage?.isClosed && !stage?.isLOB);
+
+  const existing = await tx.revenueTransaction.findFirst({
+    where: { leadId }
+  });
+
+  if (isClosedWon) {
+    const lead = await tx.lead.findUnique({
+      where: { id: leadId },
+      select: { totalAmount: true, assignedToId: true, createdById: true }
+    });
+
+    const approvedAdvances = await tx.advancePayment.aggregate({
+      where: { leadId, status: 'APPROVED' },
+      _sum: { amount: true }
+    });
+
+    const totalAmount = lead?.totalAmount || 0;
+    const approvedSum = approvedAdvances._sum.amount || 0;
+    const balance = totalAmount - approvedSum;
+
+    if (balance === 0 && totalAmount > 0) {
+      const closingUserId = lead?.assignedToId || lead?.createdById || actorId;
+      if (!existing) {
+        await tx.revenueTransaction.create({
+          data: {
+            workspaceId,
+            leadId,
+            userId: closingUserId,
+            approvedById: actorId,
+            amount: totalAmount,
+            closedStageId: stageId
+          }
+        });
+      } else {
+        await tx.revenueTransaction.update({
+          where: { id: existing.id },
+          data: {
+            amount: totalAmount,
+            userId: closingUserId,
+            approvedById: actorId,
+            closedStageId: stageId
+          }
+        });
+      }
+    } else if (existing) {
+      await tx.revenueTransaction.delete({
+        where: { id: existing.id }
+      });
+    }
+  } else if (existing) {
+    await tx.revenueTransaction.delete({
+      where: { id: existing.id }
+    });
+  }
+};
+
 export const processApproval = async (input: {
   workspaceId: string;
   approvalId: string;
@@ -318,6 +381,7 @@ export const processApproval = async (input: {
   ipAddress?: string;
   userAgent?: string;
   earnedRevenue?: number;
+  checkNumber?: string;
 }) =>
   prisma.$transaction(async (tx: any) => {
     const approval = await (tx as any).leadStageApproval.findUnique({
@@ -328,6 +392,7 @@ export const processApproval = async (input: {
             id: true,
             workspaceId: true,
             assignedToId: true,
+            stageId: true,
           },
         },
         fromStage: { select: { id: true, name: true } },
@@ -349,7 +414,41 @@ export const processApproval = async (input: {
       throw new Error('ALREADY_PROCESSED');
     }
 
-    if (input.action === 'APPROVE' && input.leadUpdateData) {
+    if (approval.type === 'ADVANCE_PAYMENT') {
+      const reqData = approval.requestData as any;
+      const advancePaymentId = reqData?.advancePaymentId;
+      if (!advancePaymentId) {
+        throw new Error('MISSING_ADVANCE_PAYMENT_ID');
+      }
+
+      if (input.action === 'APPROVE') {
+        if (!input.checkNumber || !input.checkNumber.trim()) {
+          throw new Error('CHECK_NUMBER_REQUIRED');
+        }
+
+        await tx.advancePayment.update({
+          where: { id: advancePaymentId },
+          data: {
+            status: 'APPROVED',
+            checkNumber: input.checkNumber.trim(),
+            approvedById: input.approvedById,
+            approvedAt: new Date(),
+          },
+        });
+
+        await syncRevenueTransactionInline(tx, input.workspaceId, approval.leadId, approval.lead.stageId, input.approvedById);
+      } else {
+        await tx.advancePayment.update({
+          where: { id: advancePaymentId },
+          data: {
+            status: 'REJECTED',
+            rejectedById: input.approvedById,
+            rejectedAt: new Date(),
+            rejectionReason: input.comment || null,
+          },
+        });
+      }
+    } else if (input.action === 'APPROVE' && input.leadUpdateData) {
       const isClosedWonStage = Boolean(approval.toStage?.isClosed && !approval.toStage?.isLOB);
       const earnedRevenue =
         isClosedWonStage && typeof input.earnedRevenue === 'number' ? input.earnedRevenue : undefined;
@@ -371,18 +470,8 @@ export const processApproval = async (input: {
         data: finalLeadUpdateData,
       });
 
-      if (isClosedWonStage && earnedRevenue !== undefined) {
-        const closingUserId = approval.lead.assignedToId || approval.requestedById;
-        await (tx as any).revenueTransaction.create({
-          data: {
-            workspaceId: input.workspaceId,
-            leadId: approval.leadId,
-            userId: closingUserId,
-            approvedById: input.approvedById,
-            amount: earnedRevenue,
-            closedStageId: approval.toStageId,
-          },
-        });
+      if (isClosedWonStage) {
+        await syncRevenueTransactionInline(tx, input.workspaceId, approval.leadId, approval.toStageId, input.approvedById);
       }
 
       const requestData = input.requestData ?? {};

@@ -83,9 +83,11 @@ const handleServiceError = (error: any, res: Response, next: NextFunction, actio
   }
 
   if (error?.statusCode) {
+    const isConflict = error.statusCode === 409;
     res.status(error.statusCode).json({
       success: false,
       message: error.message,
+      ...(isConflict ? { code: 'DUPLICATE_LEAD' } : {}),
     });
     return;
   }

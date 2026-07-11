@@ -69,6 +69,17 @@ export const createLeadSchema = z.object({
   reasonId: optionalId('reasonId'),
   remarks: z.preprocess(emptyStringToUndefined, z.string().trim().max(2000, 'remarks is too long').optional()),
   skipAutoStageAssignment: z.coerce.boolean().optional().default(false),
+  totalAmount: z.coerce.number().nonnegative('Total amount must be a positive number').optional(),
+  advancePayments: z.array(
+    z.object({
+      amount: z.number().positive('Advance amount must be a positive number'),
+      paymentDate: z.string().refine((val) => !isNaN(Date.parse(val)), {
+        message: 'Invalid payment date',
+      }),
+      remarks: z.string().optional(),
+      proofUrl: z.string().optional(),
+    })
+  ).optional(),
 });
 
 export type CreateLeadInput = z.infer<typeof createLeadSchema>;
@@ -90,6 +101,7 @@ export const updateLeadSchema = z.object({
   isClosed: z.boolean().optional(),
   reasonId: z.union([optionalId('reasonId'), z.null()]).optional(),
   remarks: z.preprocess(emptyStringToUndefined, z.string().trim().max(2000, 'remarks is too long').nullable().optional()),
+  totalAmount: z.coerce.number().nonnegative('Total amount must be a positive number').optional(),
 });
 
 export type UpdateLeadInput = z.infer<typeof updateLeadSchema>;
