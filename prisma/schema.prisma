@@ -756,6 +756,7 @@ model Lead {
   phone           String?
   companyName     String?
   address         String?
+  remarks         String?
   expectedRevenue Float?
   generatedRevenue Float        @default(0)
   assignedToId    String?
@@ -1965,5 +1966,4 @@ model AdvancePayment {
   @@index([rejectedById])
   @@map("advance_payments")
 }
-
 

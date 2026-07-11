@@ -132,6 +132,7 @@ type LeadIncludeRecord = {
   phone: string | null;
   companyName: string | null;
   address: string | null;
+  remarks: string | null;
   expectedRevenue: number | null;
   generatedRevenue: number;
   assignedToId: string | null;
@@ -290,6 +291,7 @@ const LEAD_MODEL_DB_COLUMNS = [
   'phone',
   'companyName',
   'address',
+  'remarks',
   'expectedRevenue',
   'generatedRevenue',
   'assignedToId',
@@ -434,6 +436,35 @@ const mapLeadRecord = (lead: LeadIncludeRecord) => {
     changedAt: item.changedAt.toISOString(),
   })),
   };
+};
+
+const normalizeLeadRemarks = (value: string | null | undefined): string | null | undefined => {
+  if (value === undefined) return undefined;
+  if (value === null) return null;
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+};
+
+const resolveLobRemarks = (
+  input: { remarks?: string | null; lobRemarks?: string | null },
+  stage: { isLOB: boolean; name: string } | null,
+): string | null => {
+  const explicit = normalizeLeadRemarks(input.lobRemarks);
+  if (explicit !== undefined) return explicit;
+
+  // Backward compatibility for older clients that used `remarks` as the LOB context.
+  if (stage?.isLOB || normalizeRoleKey(stage?.name) === 'lob') {
+    return normalizeLeadRemarks(input.remarks) ?? null;
+  }
+
+  return null;
+};
+
+const buildRemarksAuditAction = (previousRemarks: string | null, nextRemarks: string | null): string | null => {
+  if (previousRemarks === nextRemarks) return null;
+  if (!previousRemarks && nextRemarks) return 'LEAD_REMARKS_CREATED';
+  if (previousRemarks && !nextRemarks) return 'LEAD_REMARKS_REMOVED';
+  return 'LEAD_REMARKS_UPDATED';
 };
 
 const escapeCsv = (value: unknown): string => {
@@ -983,6 +1014,7 @@ type StageValidationPatch = {
   followUpDescription?: string | null;
   reasonId?: string | null;
   remarks?: string | null;
+  lobRemarks?: string | null;
   stageId?: string | null;
 };
 
@@ -1129,6 +1161,7 @@ const buildListWhere = async (
         { email: { contains: query.search, mode: 'insensitive'} },
         { phone: { contains: query.search, mode: 'insensitive'} },
         { companyName: { contains: query.search, mode: 'insensitive'} },
+        { remarks: { contains: query.search, mode: 'insensitive'} },
         { assignedTo: { name: { contains: query.search, mode: 'insensitive'} } },
         { source: { name: { contains: query.search, mode: 'insensitive'} } },
         { stage: { name: { contains: query.search, mode: 'insensitive'} } },
@@ -1264,7 +1297,9 @@ export const createLead = async (
     : null;
   const lifecycle = await resolveLifecycle(workspaceId, input.lifecycleId);
   const source = await resolveSource(workspaceId, input.sourceId);
-  ensureLOBPayload(stage, input.reasonId, input.remarks ?? null);
+  const leadRemarks = normalizeLeadRemarks(input.remarks) ?? null;
+  const lobRemarks = resolveLobRemarks(input, stage);
+  ensureLOBPayload(stage, input.reasonId, lobRemarks);
   await ensureValidLOBReasonForStage(workspaceId, stage, input.reasonId);
   const slaSnapshot = isLobStage(stage) || isClosedWonStage(stage)
     ? emptySlaSnapshot()
@@ -1283,6 +1318,7 @@ export const createLead = async (
           phone: input.phone?.trim() || null,
           companyName: input.companyName?.trim() || null,
           address: input.address?.trim() || null,
+          remarks: leadRemarks,
           expectedRevenue: input.expectedRevenue ?? null,
           assignedToId,
           stageId: stage?.id || null,
@@ -1325,7 +1361,7 @@ export const createLead = async (
           data: {
             leadId: lead.id,
             reasonId: input.reasonId!,
-            remarks: input.remarks?.trim() || null,
+            remarks: lobRemarks,
             previousStageId: null,
             previousStageName: null,
             changedById: actor.id,
@@ -1441,6 +1477,24 @@ export const createLead = async (
           });
         }
         logger.info('[Diagnostic] Advance requests created', { leadId: lead.id, count: advancePayments.length });
+      }
+
+      if (leadRemarks) {
+        await (tx as any).auditLog.create({
+          data: {
+            userId: actor.id,
+            workspaceId,
+            action: 'LEAD_REMARKS_CREATED',
+            entityType: 'Lead',
+            entityId: lead.id,
+            details: {
+              previousRemarks: null,
+              newRemarks: leadRemarks,
+              changedBy: actor.id,
+              action: 'Lead Remarks Created',
+            },
+          },
+        });
       }
 
       return lead.id;
@@ -1631,7 +1685,7 @@ export const updateLead = async (
           toStageId: stage.id,
           requestData: {
             reasonId: input.reasonId ?? null,
-            remarks: input.remarks ?? null,
+            remarks: input.lobRemarks ?? input.remarks ?? null,
             nextFollowUpAt: input.nextFollowUpAt ? input.nextFollowUpAt.toISOString() : null,
             nextFollowUpType: input.nextFollowUpType ?? null,
             followUpDescription: input.followUpDescription ?? null,
@@ -1661,9 +1715,10 @@ export const updateLead = async (
     await validateLeadStageTransition(workspaceId, stage.id, validationData, undefined);
   }
 
-  const remarks = input.remarks === null ? null : input.remarks ?? null;
+  const nextLeadRemarks = normalizeLeadRemarks(input.remarks);
+  const lobRemarks = resolveLobRemarks(input, stage);
   const reasonId = input.reasonId === null ? null : input.reasonId ?? null;
-  ensureLOBPayload(stage, reasonId, remarks);
+  ensureLOBPayload(stage, reasonId, lobRemarks);
   await ensureValidLOBReasonForStage(workspaceId, stage, reasonId);
   const closureData = input.stageId !== undefined
     ? buildClosureUpdateData(stage as any, actor.id, {
@@ -1708,6 +1763,7 @@ export const updateLead = async (
           ? { companyName: input.companyName === null ? null : input.companyName.trim() }
           : {}),
         ...(input.address !== undefined ? { address: input.address === null ? null : input.address.trim() } : {}),
+        ...(input.remarks !== undefined ? { remarks: nextLeadRemarks ?? null } : {}),
         ...(input.expectedRevenue !== undefined
           ? { expectedRevenue: input.expectedRevenue === null ? null : input.expectedRevenue }
           : {}),
@@ -1811,7 +1867,7 @@ export const updateLead = async (
         data: {
           leadId: id,
           reasonId: reasonId!,
-          remarks: remarks?.trim() || null,
+          remarks: lobRemarks,
           previousStageId: existing.stageId,
           previousStageName: existing.stage?.name?.trim() || null,
           changedById: actor.id,
@@ -1835,6 +1891,34 @@ export const updateLead = async (
     }
 
     await syncLeadRevenueTransaction(tx, workspaceId, id, nextStageId || existing.stageId || stage?.id || null, actor.id);
+
+    if (input.remarks !== undefined) {
+      const previousRemarks = existing.remarks || null;
+      const newRemarks = nextLeadRemarks ?? null;
+      const action = buildRemarksAuditAction(previousRemarks, newRemarks);
+      if (action) {
+        await (tx as any).auditLog.create({
+          data: {
+            userId: actor.id,
+            workspaceId,
+            action,
+            entityType: 'Lead',
+            entityId: id,
+            details: {
+              previousRemarks,
+              newRemarks,
+              changedBy: actor.id,
+              action:
+                action === 'LEAD_REMARKS_CREATED'
+                  ? 'Lead Remarks Created'
+                  : action === 'LEAD_REMARKS_REMOVED'
+                    ? 'Lead Remarks Removed'
+                    : 'Lead Remarks Updated',
+            },
+          },
+        });
+      }
+    }
 
     return id;
   });
@@ -2157,6 +2241,7 @@ const buildLeadExportCsvRow = (lead: LeadIncludeRecord): unknown[] => [
   lead.phone || '',
   lead.companyName || '',
   lead.address || '',
+  lead.remarks || '',
   lead.expectedRevenue ?? '',
   lead.assignedTo ? resolveDisplayName(lead.assignedTo) : '',
   lead.stage?.name || '',
@@ -2187,6 +2272,7 @@ export const exportLeads = async (
     'Phone',
     'Company Name',
     'Address',
+    'Remarks',
     'Expected Revenue',
     'Assigned To',
     'Stage',
@@ -2240,5 +2326,3 @@ export const exportLeads = async (
 
 export const canAssignOtherUsers = async (actor: Actor): Promise<boolean> =>
   actorCanAssignToOthers(actor);
-
-
