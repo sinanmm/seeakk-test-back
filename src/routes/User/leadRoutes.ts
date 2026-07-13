@@ -17,6 +17,7 @@ router.get('/export', leadController.exportLeads);
 router.get('/', leadController.listLeads);
 router.post('/', leadController.createLead);
 router.get('/:id', leadController.getLeadById);
+router.get('/:id/history', leadController.getLeadHistory);
 router.put('/:id', leadController.updateLead);
 router.patch('/:id/star', leadController.toggleLeadStar);
 router.patch('/:id/stage', leadController.changeStage);

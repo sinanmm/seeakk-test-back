@@ -598,3 +598,163 @@ export const listLeadTransitionStageRules = async (req: Request, res: Response, 
     handleServiceError(error, res, next, 'listLeadTransitionStageRules');
   }
 };
+
+export const getLeadHistory = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = requireWorkspace(req, res);
+  if (!workspaceId) return;
+
+  const actor = req.user;
+  if (!actor) {
+    return res.status(401).json({ success: false, message: 'Unauthorized' });
+  }
+
+  const id = req.params.id as string;
+
+  try {
+    const lead = await prisma.lead.findFirst({
+      where: { id, workspaceId, deletedAt: null },
+      select: { id: true },
+    });
+
+    if (!lead) {
+      return res.status(404).json({ success: false, message: 'Lead not found' });
+    }
+
+    const [
+      auditLogs,
+      leadActivities,
+      stageHistories,
+      amountHistories,
+      advancePayments,
+      lobLogs,
+    ] = await Promise.all([
+      prisma.auditLog.findMany({ where: { entityType: 'Lead', entityId: id, workspaceId } }),
+      prisma.leadActivity.findMany({ where: { leadId: id, workspaceId }, include: { performedBy: { select: { name: true, email: true } } } }),
+      prisma.leadStageHistory.findMany({ where: { leadId: id, workspaceId } }),
+      prisma.leadTotalAmountHistory.findMany({ where: { leadId: id }, include: { changedBy: { select: { name: true, email: true } } } }),
+      prisma.advancePayment.findMany({ where: { leadId: id, workspaceId }, include: { requestedBy: { select: { name: true } }, approvedBy: { select: { name: true } }, rejectedBy: { select: { name: true } } } }),
+      prisma.leadLOBLog.findMany({ where: { leadId: id, workspaceId } }),
+    ]);
+
+    // Collect user IDs that need mapping
+    const userIdsToFetch = new Set<string>();
+    auditLogs.forEach(log => { if (log.userId) userIdsToFetch.add(log.userId); });
+    stageHistories.forEach(log => { if (log.changedById) userIdsToFetch.add(log.changedById); });
+    lobLogs.forEach(log => { if (log.changedById) userIdsToFetch.add(log.changedById); });
+
+    const usersMap: Record<string, string> = {};
+    if (userIdsToFetch.size > 0) {
+      const users = await prisma.user.findMany({
+        where: { id: { in: Array.from(userIdsToFetch) } },
+        select: { id: true, name: true },
+      });
+      users.forEach(u => { usersMap[u.id] = u.name || 'System'; });
+    }
+
+    const timeline: any[] = [];
+
+    auditLogs.forEach(log => {
+      timeline.push({
+        id: log.id,
+        eventType: 'AUDIT',
+        title: log.action,
+        description: `Lead audited: ${log.action}`,
+        timestamp: log.createdAt,
+        user: log.userId ? { name: usersMap[log.userId] || 'System' } : null,
+        metadata: log.details,
+      });
+    });
+
+    leadActivities.forEach((log: any) => {
+      timeline.push({
+        id: log.id,
+        eventType: 'ACTIVITY',
+        title: log.action.replace(/_/g, ' '),
+        description: `Activity recorded: ${log.action}`,
+        timestamp: log.createdAt,
+        user: log.performedBy,
+        metadata: log.metadata,
+      });
+    });
+
+    stageHistories.forEach(log => {
+      timeline.push({
+        id: log.id,
+        eventType: 'STAGE_CHANGE',
+        title: 'Stage Changed',
+        description: `Stage changed from ${log.fromStageName || 'None'} to ${log.toStageName || 'None'}`,
+        timestamp: log.changedAt,
+        user: { name: usersMap[log.changedById] || 'System' },
+        metadata: { fromStageId: log.fromStageId, toStageId: log.toStageId },
+      });
+    });
+
+    amountHistories.forEach((log: any) => {
+      timeline.push({
+        id: log.id,
+        eventType: 'AMOUNT_CHANGE',
+        title: 'Total Amount Changed',
+        description: log.reason || `Amount updated from ${log.oldAmount} to ${log.newAmount}`,
+        timestamp: log.createdAt,
+        user: log.changedBy,
+        metadata: { oldAmount: log.oldAmount, newAmount: log.newAmount },
+      });
+    });
+
+    advancePayments.forEach((log: any) => {
+      timeline.push({
+        id: `adv_${log.id}_req`,
+        eventType: 'PAYMENT',
+        title: 'Advance Payment Requested',
+        description: `Amount: ${log.amount}, Remarks: ${log.remarks || 'None'}`,
+        timestamp: log.createdAt,
+        user: log.requestedBy,
+        metadata: { advancePaymentId: log.id, status: log.status, amount: log.amount },
+      });
+      if (log.approvedAt && log.approvedBy) {
+        timeline.push({
+          id: `adv_${log.id}_app`,
+          eventType: 'PAYMENT_APPROVAL',
+          title: 'Advance Payment Approved',
+          description: `Approved by ${log.approvedBy.name}`,
+          timestamp: log.approvedAt,
+          user: log.approvedBy,
+          metadata: { advancePaymentId: log.id, status: 'APPROVED' },
+        });
+      }
+      if (log.rejectedAt && log.rejectedBy) {
+        timeline.push({
+          id: `adv_${log.id}_rej`,
+          eventType: 'PAYMENT_REJECTION',
+          title: 'Advance Payment Rejected',
+          description: `Rejected by ${log.rejectedBy.name}. Reason: ${log.rejectionReason || 'None'}`,
+          timestamp: log.rejectedAt,
+          user: log.rejectedBy,
+          metadata: { advancePaymentId: log.id, status: 'REJECTED' },
+        });
+      }
+    });
+
+    lobLogs.forEach(log => {
+      timeline.push({
+        id: log.id,
+        eventType: 'LOB',
+        title: 'Lead Marked LOB',
+        description: log.remarks || 'Lead was marked as Lost Opportunity',
+        timestamp: log.changedAt,
+        user: { name: usersMap[log.changedById] || 'System' },
+        metadata: { reasonId: log.reasonId, previousStageName: log.previousStageName },
+      });
+    });
+
+    timeline.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+    return res.status(200).json({
+      success: true,
+      message: 'Lead history fetched successfully',
+      data: timeline,
+    });
+  } catch (error) {
+    handleServiceError(error, res, next, 'getLeadHistory');
+  }
+};
