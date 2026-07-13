@@ -53,18 +53,18 @@ enum RoleStatus {
 }
 
 model Role {
-  id          String     @id @default(uuid())
-  workspaceId String
-  name        String
-  status      RoleStatus @default(ACTIVE)
-  description String?
-  isSystemRole Boolean   @default(false)
+  id           String     @id @default(uuid())
+  workspaceId  String
+  name         String
+  status       RoleStatus @default(ACTIVE)
+  description  String?
+  isSystemRole Boolean    @default(false)
 
-  createdBy   String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspace   Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   permissions RolePermission[]
   users       User[]
 
@@ -75,14 +75,14 @@ model Role {
 }
 
 model Permission {
-  id          String   @id @default(uuid())
-  key         String   @unique
+  id          String  @id @default(uuid())
+  key         String  @unique
   group       String
   description String?
 
-  createdAt   DateTime @default(now())
+  createdAt DateTime @default(now())
 
-  roles       RolePermission[]
+  roles RolePermission[]
 
   @@map("permissions")
 }
@@ -91,59 +91,60 @@ model RolePermission {
   roleId       String
   permissionId String
 
-  role         Role       @relation(fields: [roleId], references: [id])
-  permission   Permission @relation(fields: [permissionId], references: [id])
+  role       Role       @relation(fields: [roleId], references: [id])
+  permission Permission @relation(fields: [permissionId], references: [id])
 
   @@id([roleId, permissionId])
   @@map("role_permissions")
 }
 
 model Workspace {
-  id             String       @id @default(cuid())
-  companyName    String
-  logoUrl        String?      @db.Text
-  employeeCount  String
-  timeZone       String       @default("UTC")
-  language       String       @default("en-US")
-  currencyLocale String       @default("USD")
-  loadSampleData Boolean      @default(false)
-  weeklyOffDays  Int[]         @default([0])
-  weeklyOffColor String       @default("#cbd5e1")
-  owner          User         @relation("WorkspaceOwner", fields: [ownerId], references: [id])
-  ownerId        String       @unique
-  users          User[]       @relation("WorkspaceMembers")
-  roles          Role[]
-  departments    Department[]
-  leadSources    LeadSource[]
-  leadStages     LeadStage[]
-  stageRules     StageRule[]
-  targetCycles   TargetCycle[]
-  leadLifeCycles LeadLifeCycle[]
-  leadDynamicFields LeadDynamicField[]
-  leads          Lead[]
-  leadStars      LeadStar[]
-  leadActivities LeadActivity[]
-  leadStageApprovals LeadStageApproval[]
-  holidays           Holiday[]
-  holidaySyncLogs    HolidaySyncLog[]
-  countries          Country[]
-  locationLevels     LocationLevel[]
-  lobReasons         LOBReason[]
-  reportTypes        ReportType[]
-  reports            Report[]
-  reportLogs         ReportLog[]
-  importJobs         ImportJob[]
-  invites            Invite[]
-  stageHistory       LeadStageHistory[]
-  revenueTransactions RevenueTransaction[]
-  followUpExtensionReasons FollowUpExtensionReason[]
-  followUpSettings         FollowUpSettings?
+  id                             String                         @id @default(cuid())
+  companyName                    String
+  logoUrl                        String?                        @db.Text
+  employeeCount                  String
+  timeZone                       String                         @default("UTC")
+  language                       String                         @default("en-US")
+  currencyLocale                 String                         @default("USD")
+  loadSampleData                 Boolean                        @default(false)
+  weeklyOffDays                  Int[]                          @default([0])
+  weeklyOffColor                 String                         @default("#cbd5e1")
+  owner                          User                           @relation("WorkspaceOwner", fields: [ownerId], references: [id])
+  ownerId                        String                         @unique
+  users                          User[]                         @relation("WorkspaceMembers")
+  roles                          Role[]
+  departments                    Department[]
+  leadSources                    LeadSource[]
+  leadStages                     LeadStage[]
+  stageRules                     StageRule[]
+  targetCycles                   TargetCycle[]
+  leadLifeCycles                 LeadLifeCycle[]
+  leadDynamicFields              LeadDynamicField[]
+  leads                          Lead[]
+  leadStars                      LeadStar[]
+  leadActivities                 LeadActivity[]
+  leadStageApprovals             LeadStageApproval[]
+  holidays                       Holiday[]
+  holidaySyncLogs                HolidaySyncLog[]
+  countries                      Country[]
+  locationLevels                 LocationLevel[]
+  lobReasons                     LOBReason[]
+  reportTypes                    ReportType[]
+  reports                        Report[]
+  reportLogs                     ReportLog[]
+  importJobs                     ImportJob[]
+  invites                        Invite[]
+  stageHistory                   LeadStageHistory[]
+  revenueTransactions            RevenueTransaction[]
+  followUpExtensionReasons       FollowUpExtensionReason[]
+  followUpSettings               FollowUpSettings?
   temporaryBulkExtensionAccesses TemporaryBulkExtensionAccess[]
-  bulkFollowUpExtensions   BulkFollowUpExtension[]
-  advancePayments          AdvancePayment[]
-  fieldHighlightConfigs    FieldHighlightConfig[]
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  bulkFollowUpExtensions         BulkFollowUpExtension[]
+  advancePayments                AdvancePayment[]
+  fieldHighlightConfigs          FieldHighlightConfig[]
+  createdAt                      DateTime                       @default(now())
+  updatedAt                      DateTime                       @updatedAt
+  LeadRemark                     LeadRemark[]
 
   @@map("workspaces")
 }
@@ -241,19 +242,19 @@ enum ShiftSession {
 }
 
 model Department {
-  id          String   @id @default(uuid())
+  id          String           @id @default(uuid())
   name        String
   description String?
   status      DepartmentStatus @default(ACTIVE)
-  
+
   workspace   Workspace? @relation(fields: [workspaceId], references: [id])
   workspaceId String?
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  deletedAt   DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 
-  users       User[]
+  users User[]
 
   @@unique([name, workspaceId])
   @@index([workspaceId])
@@ -285,29 +286,29 @@ model LeadSource {
 }
 
 model LeadStage {
-  id                 String          @id @default(uuid())
-  workspaceId        String
-  name               String
-  stageShortForm     String?
-  showInCalendar     Boolean         @default(true)
-  color              String          @default("#10b981")
-  isApprovalRequired Boolean         @default(false)
-  isLOB              Boolean         @default(false)
-  isClosed           Boolean         @default(false)
-  order              Int
-  status             StageStatus     @default(ACTIVE)
-  createdBy          String?
-  createdAt          DateTime        @default(now())
-  updatedAt          DateTime        @updatedAt
-  deletedAt          DateTime?
-  workspace          Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  rules              StageRule[]
-  leads              Lead[]
-  targetCycles       TargetCycle[]
-  approvalsFrom      LeadStageApproval[] @relation("LeadStageApprovalFromStage")
-  approvalsTo        LeadStageApproval[] @relation("LeadStageApprovalToStage")
+  id                  String               @id @default(uuid())
+  workspaceId         String
+  name                String
+  stageShortForm      String?
+  showInCalendar      Boolean              @default(true)
+  color               String               @default("#10b981")
+  isApprovalRequired  Boolean              @default(false)
+  isLOB               Boolean              @default(false)
+  isClosed            Boolean              @default(false)
+  order               Int
+  status              StageStatus          @default(ACTIVE)
+  createdBy           String?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  deletedAt           DateTime?
+  workspace           Workspace            @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  rules               StageRule[]
+  leads               Lead[]
+  targetCycles        TargetCycle[]
+  approvalsFrom       LeadStageApproval[]  @relation("LeadStageApprovalFromStage")
+  approvalsTo         LeadStageApproval[]  @relation("LeadStageApprovalToStage")
   revenueTransactions RevenueTransaction[]
-  stageTargets       TargetStageTarget[]
+  stageTargets        TargetStageTarget[]
 
   @@unique([workspaceId, name])
   @@unique([workspaceId, stageShortForm])
@@ -320,25 +321,25 @@ model LeadStage {
 }
 
 model StageRule {
-  id        String     @id @default(uuid())
-  workspaceId String
-  name      String     @default("Untitled Rule")
-  inputType InputType  @default(TEXT)
+  id                String     @id @default(uuid())
+  workspaceId       String
+  name              String     @default("Untitled Rule")
+  inputType         InputType  @default(TEXT)
   /// JSON string[] â€” choices for RADIO / SELECT
-  options   Json?
-  sortOrder Int        @default(1)
-  required  Boolean    @default(false)
+  options           Json?
+  sortOrder         Int        @default(1)
+  required          Boolean    @default(false)
   // Legacy columns kept for backward compatibility to avoid destructive schema pushes.
-  legacyField       String? @map("field")
-  legacyCondition   String? @map("condition")
-  legacyValue       String? @map("value")
-  legacyIsMandatory Boolean? @map("isMandatory")
-  status    RuleStatus @default(ACTIVE)
-  stageId   String?
-  createdBy String?
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @default(now()) @updatedAt
-  deletedAt DateTime?
+  legacyField       String?    @map("field")
+  legacyCondition   String?    @map("condition")
+  legacyValue       String?    @map("value")
+  legacyIsMandatory Boolean?   @map("isMandatory")
+  status            RuleStatus @default(ACTIVE)
+  stageId           String?
+  createdBy         String?
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @default(now()) @updatedAt
+  deletedAt         DateTime?
 
   workspace  Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   stage      LeadStage?       @relation(fields: [stageId], references: [id], onDelete: SetNull)
@@ -402,11 +403,11 @@ model Country {
   updatedAt   DateTime  @updatedAt
   deletedAt   DateTime?
 
-  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  createdBy   User?     @relation("CountryCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
-  updatedBy   User?     @relation("CountryUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
-  levels      LocationLevel[]
-  locations   Location[]
+  workspace Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdBy User?           @relation("CountryCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy User?           @relation("CountryUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  levels    LocationLevel[]
+  locations Location[]
 
   @@index([workspaceId])
   @@index([workspaceId, isActive, createdAt(sort: Desc)])
@@ -414,22 +415,22 @@ model Country {
 }
 
 model LocationLevel {
-  id          String    @id @default(uuid())
+  id          String   @id @default(uuid())
   workspaceId String
   countryId   String
   levelName   String
   levelOrder  Int
-  isActive    Boolean   @default(true)
+  isActive    Boolean  @default(true)
   createdById String?
   updatedById String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  country     Country   @relation(fields: [countryId], references: [id], onDelete: Cascade)
-  createdBy   User?     @relation("LocationLevelCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
-  updatedBy   User?     @relation("LocationLevelUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
-  locations   Location[]
+  workspace Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  country   Country    @relation(fields: [countryId], references: [id], onDelete: Cascade)
+  createdBy User?      @relation("LocationLevelCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy User?      @relation("LocationLevelUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  locations Location[]
 
   @@unique([countryId, levelOrder])
   @@index([workspaceId])
@@ -438,25 +439,25 @@ model LocationLevel {
 }
 
 model Location {
-  id          String   @id @default(cuid())
+  id          String       @id @default(cuid())
   name        String
   type        LocationType
   workspaceId String
   countryId   String?
   levelId     String?
-  isActive    Boolean  @default(true)
+  isActive    Boolean      @default(true)
   createdById String?
   updatedById String?
   deletedAt   DateTime?
-  
-  parentId    String?
-  parent      Location?  @relation("LocationHierarchy", fields: [parentId], references: [id])
-  children    Location[] @relation("LocationHierarchy")
-  country     Country?   @relation(fields: [countryId], references: [id], onDelete: SetNull)
-  level       LocationLevel? @relation(fields: [levelId], references: [id], onDelete: SetNull)
-  
+
+  parentId String?
+  parent   Location?      @relation("LocationHierarchy", fields: [parentId], references: [id])
+  children Location[]     @relation("LocationHierarchy")
+  country  Country?       @relation(fields: [countryId], references: [id], onDelete: SetNull)
+  level    LocationLevel? @relation(fields: [levelId], references: [id], onDelete: SetNull)
+
   assignedUsers UserLocationAssignment[]
-  
+
   // Potential address relations for users (where they live)
   usersAtCountry  User[] @relation("UserCountry")
   usersAtState    User[] @relation("UserState")
@@ -466,8 +467,8 @@ model Location {
   holidaysAtState    Holiday[] @relation("HolidayState")
   holidaysAtDistrict Holiday[] @relation("HolidayDistrict")
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([workspaceId])
   @@index([parentId])
@@ -478,16 +479,16 @@ model Location {
 }
 
 model UserLocationAssignment {
-  id          String   @id @default(cuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  locationId  String
-  location    Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
-  
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  locationId String
+  location   Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
   workspaceId String
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([userId, locationId])
   @@index([workspaceId])
@@ -498,7 +499,7 @@ model TargetType {
   id          String          @id @default(cuid())
   name        String          @unique // e.g., "Revenue", "Leads Generated"
   description String?
-  workspaceId String?         // Optional: Global types or workspace-specific
+  workspaceId String? // Optional: Global types or workspace-specific
   settings    TargetSetting[]
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
@@ -507,34 +508,34 @@ model TargetType {
 }
 
 model TargetCycle {
-  id          String             @id @default(cuid())
+  id          String  @id @default(cuid())
   name        String
   workspaceId String
   description String?
 
-  totalDays   Int                @default(30)
-  status      String             @default("ACTIVE")
+  totalDays Int    @default(30)
+  status    String @default("ACTIVE")
 
-  targetType     TargetCycleType   @default(MONTHLY)
-  targetMetric   TargetMetricType  @default(LEADS)
+  targetType     TargetCycleType  @default(MONTHLY)
+  targetMetric   TargetMetricType @default(LEADS)
   leadStageId    String?
-  startDate      DateTime          @default(now())
+  startDate      DateTime         @default(now())
   endDate        DateTime?
   numberOfMonths Int?
-  lockingEnabled Boolean           @default(true)
+  lockingEnabled Boolean          @default(true)
 
-  createdBy   String?
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime           @updatedAt
-  deletedAt   DateTime?
+  createdBy String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 
-  workspace   Workspace          @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  leadStage   LeadStage?         @relation(fields: [leadStageId], references: [id], onDelete: SetNull)
-  ranges      TargetCycleRange[]
-  periods     TargetCyclePeriod[]
-  targets     TargetSetting[]
-  assignments TargetAssignment[]
-  assignedUsers User[]           @relation("UserAssignedTargetCycle")
+  workspace     Workspace           @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  leadStage     LeadStage?          @relation(fields: [leadStageId], references: [id], onDelete: SetNull)
+  ranges        TargetCycleRange[]
+  periods       TargetCyclePeriod[]
+  targets       TargetSetting[]
+  assignments   TargetAssignment[]
+  assignedUsers User[]              @relation("UserAssignedTargetCycle")
 
   @@unique([name, workspaceId])
   @@index([workspaceId])
@@ -544,21 +545,21 @@ model TargetCycle {
 }
 
 model TargetCyclePeriod {
-  id            String      @id @default(cuid())
+  id            String   @id @default(cuid())
   targetCycleId String
   label         String
   periodIndex   Int
-  targetCount   Int         @default(0)
+  targetCount   Int      @default(0)
   startDate     DateTime
   endDate       DateTime
   lockingDate   DateTime
 
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  targetCycle   TargetCycle @relation(fields: [targetCycleId], references: [id], onDelete: Cascade)
-  performances  TargetPerformanceLog[]
-  metrics       TargetPeriodMetric[]
+  targetCycle  TargetCycle            @relation(fields: [targetCycleId], references: [id], onDelete: Cascade)
+  performances TargetPerformanceLog[]
+  metrics      TargetPeriodMetric[]
 
   @@index([targetCycleId])
   @@index([lockingDate])
@@ -566,27 +567,27 @@ model TargetCyclePeriod {
 }
 
 model TargetAssignment {
-  id            String      @id @default(cuid())
-  userId        String
-  targetCycleId String
-  workspaceId   String
-  supervisorId  String?
-  isActive      Boolean     @default(true)
-  assignedById  String?
-  graceUntil    DateTime?
-  isLockExempt  Boolean     @default(false)
+  id                   String    @id @default(cuid())
+  userId               String
+  targetCycleId        String
+  workspaceId          String
+  supervisorId         String?
+  isActive             Boolean   @default(true)
+  assignedById         String?
+  graceUntil           DateTime?
+  isLockExempt         Boolean   @default(false)
   exemptUntilPeriodEnd DateTime?
   exemptPeriodId       String?
   lastUnlockDate       DateTime?
   lastUnlockedBy       String?
-  assignedAt    DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  assignedAt           DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
 
-  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  targetCycle   TargetCycle @relation(fields: [targetCycleId], references: [id], onDelete: Cascade)
-  performances  TargetPerformanceLog[]
-  lockLogs      TargetLockLog[]
-  unlockLogs    TargetUnlockLog[]
+  user         User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  targetCycle  TargetCycle            @relation(fields: [targetCycleId], references: [id], onDelete: Cascade)
+  performances TargetPerformanceLog[]
+  lockLogs     TargetLockLog[]
+  unlockLogs   TargetUnlockLog[]
 
   @@unique([userId, targetCycleId])
   @@index([workspaceId, isActive])
@@ -596,28 +597,28 @@ model TargetAssignment {
 }
 
 model TargetPerformanceLog {
-  id                   String            @id @default(cuid())
+  id                   String    @id @default(cuid())
   assignmentId         String
   periodId             String
   targetCount          Int
-  achievedCount        Int               @default(0)
-  achievedRevenue      Float             @default(0)
-  completionPercentage Float             @default(0)
-  status               String            @default("PENDING")
+  achievedCount        Int       @default(0)
+  achievedRevenue      Float     @default(0)
+  completionPercentage Float     @default(0)
+  status               String    @default("PENDING")
   evaluatedAt          DateTime?
-  createdAt            DateTime          @default(now())
-  updatedAt            DateTime          @updatedAt
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
 
   // Extended fields for multi-metric support
-  metricType           String?
-  leadStageId          String?
-  targetValue          Float?
-  achievedValue        Float?
-  followupCount        Int               @default(0)
-  revenueAmount        Float             @default(0)
+  metricType    String?
+  leadStageId   String?
+  targetValue   Float?
+  achievedValue Float?
+  followupCount Int     @default(0)
+  revenueAmount Float   @default(0)
 
-  assignment           TargetAssignment  @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
-  period               TargetCyclePeriod @relation(fields: [periodId], references: [id], onDelete: Cascade)
+  assignment TargetAssignment  @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  period     TargetCyclePeriod @relation(fields: [periodId], references: [id], onDelete: Cascade)
 
   @@unique([assignmentId, periodId])
   @@index([periodId])
@@ -625,34 +626,34 @@ model TargetPerformanceLog {
 }
 
 model TargetPeriodMetric {
-  id                    String              @id @default(cuid())
-  periodId              String
-  metricType            String              // "LEADS", "REVENUE", "FOLLOW_UP"
-  targetValue           Float               @default(0)
-  achievedValue         Float               @default(0)
-  completionPercentage  Float               @default(0)
-  createdAt             DateTime            @default(now())
-  updatedAt             DateTime            @updatedAt
+  id                   String   @id @default(cuid())
+  periodId             String
+  metricType           String // "LEADS", "REVENUE", "FOLLOW_UP"
+  targetValue          Float    @default(0)
+  achievedValue        Float    @default(0)
+  completionPercentage Float    @default(0)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
 
-  period                TargetCyclePeriod   @relation(fields: [periodId], references: [id], onDelete: Cascade)
-  stageTargets          TargetStageTarget[]
+  period       TargetCyclePeriod   @relation(fields: [periodId], references: [id], onDelete: Cascade)
+  stageTargets TargetStageTarget[]
 
   @@index([periodId])
   @@map("target_period_metrics")
 }
 
 model TargetStageTarget {
-  id                    String              @id @default(cuid())
-  periodMetricId        String
-  leadStageId           String
-  targetValue           Int
-  achievedValue         Int                 @default(0)
-  completionPercentage  Float               @default(0)
-  createdAt             DateTime            @default(now())
-  updatedAt             DateTime            @updatedAt
+  id                   String   @id @default(cuid())
+  periodMetricId       String
+  leadStageId          String
+  targetValue          Int
+  achievedValue        Int      @default(0)
+  completionPercentage Float    @default(0)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
 
-  periodMetric          TargetPeriodMetric  @relation(fields: [periodMetricId], references: [id], onDelete: Cascade)
-  leadStage             LeadStage           @relation(fields: [leadStageId], references: [id], onDelete: Cascade)
+  periodMetric TargetPeriodMetric @relation(fields: [periodMetricId], references: [id], onDelete: Cascade)
+  leadStage    LeadStage          @relation(fields: [leadStageId], references: [id], onDelete: Cascade)
 
   @@index([periodMetricId])
   @@index([leadStageId])
@@ -660,13 +661,13 @@ model TargetStageTarget {
 }
 
 model TargetFollowupLog {
-  id                    String              @id @default(cuid())
-  followUpId            String              @unique
-  userId                String
-  workspaceId           String
-  completedAt           DateTime
-  status                String
-  createdAt             DateTime            @default(now())
+  id          String   @id @default(cuid())
+  followUpId  String   @unique
+  userId      String
+  workspaceId String
+  completedAt DateTime
+  status      String
+  createdAt   DateTime @default(now())
 
   @@index([userId, completedAt])
   @@index([workspaceId])
@@ -674,20 +675,20 @@ model TargetFollowupLog {
 }
 
 model TargetLockLog {
-  id             String           @id @default(cuid())
+  id             String    @id @default(cuid())
   userId         String
   workspaceId    String
   assignmentId   String?
   periodId       String?
   lockPeriodId   String?
   reason         String
-  lockedAt       DateTime         @default(now())
-  lockedBySystem Boolean          @default(true)
-  isInvalidLock  Boolean          @default(false)
+  lockedAt       DateTime  @default(now())
+  lockedBySystem Boolean   @default(true)
+  isInvalidLock  Boolean   @default(false)
   invalidatedAt  DateTime?
 
-  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  assignment     TargetAssignment? @relation(fields: [assignmentId], references: [id], onDelete: SetNull)
+  user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assignment TargetAssignment? @relation(fields: [assignmentId], references: [id], onDelete: SetNull)
 
   @@index([userId, lockedAt])
   @@index([workspaceId])
@@ -696,19 +697,19 @@ model TargetLockLog {
 }
 
 model TargetUnlockLog {
-  id             String           @id @default(cuid())
-  userId         String
-  workspaceId    String
-  assignmentId   String?
-  unlockedById   String
-  reason         String?
+  id                   String    @id @default(cuid())
+  userId               String
+  workspaceId          String
+  assignmentId         String?
+  unlockedById         String
+  reason               String?
   exemptPeriodId       String?
   exemptUntilPeriodEnd DateTime?
-  unlockedAt     DateTime         @default(now())
+  unlockedAt           DateTime  @default(now())
 
-  user           User             @relation("TargetUnlockUser", fields: [userId], references: [id], onDelete: Cascade)
-  unlockedBy     User             @relation("TargetUnlockActor", fields: [unlockedById], references: [id], onDelete: Cascade)
-  assignment     TargetAssignment? @relation(fields: [assignmentId], references: [id], onDelete: SetNull)
+  user       User              @relation("TargetUnlockUser", fields: [userId], references: [id], onDelete: Cascade)
+  unlockedBy User              @relation("TargetUnlockActor", fields: [unlockedById], references: [id], onDelete: Cascade)
+  assignment TargetAssignment? @relation(fields: [assignmentId], references: [id], onDelete: SetNull)
 
   @@index([userId, unlockedAt])
   @@index([workspaceId])
@@ -716,30 +717,30 @@ model TargetUnlockLog {
 }
 
 model TargetCycleRange {
-  id            String      @id @default(cuid())
+  id            String @id @default(cuid())
   targetCycleId String
 
-  startDay      Int
-  endDay        Int
+  startDay Int
+  endDay   Int
 
-  createdAt     DateTime    @default(now())
+  createdAt DateTime @default(now())
 
-  targetCycle   TargetCycle @relation(fields: [targetCycleId], references: [id], onDelete: Cascade)
+  targetCycle TargetCycle @relation(fields: [targetCycleId], references: [id], onDelete: Cascade)
 
   @@index([targetCycleId])
   @@map("target_cycle_ranges")
 }
 
 model LeadLifeCycle {
-  id          String   @id @default(cuid())
-  name        String
-  isDefault   Boolean  @default(false)
+  id        String  @id @default(cuid())
+  name      String
+  isDefault Boolean @default(false)
 
   workspaceId String
 
-  createdBy   String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   workspace   Workspace                 @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   transitions LeadLifeCycleTransition[]
@@ -752,62 +753,63 @@ model LeadLifeCycle {
 }
 
 model Lead {
-  id              String        @id @default(cuid())
-  name            String
-  email           String?
-  phone           String?
-  companyName     String?
-  address         String?
-  remarks         String?
-  expectedRevenue Float?
-  generatedRevenue Float        @default(0)
-  assignedToId    String?
-  stageId         String?
-  lifecycleId     String?
-  sourceId        String?
-  nextFollowUpAt  DateTime?
-  stageEnteredAt  DateTime?
-  stageExpiresAt  DateTime?
-  slaAction       LeadExpiryAction?
-  slaWarningDays  Int?
-  approvalState   LeadApprovalState @default(NONE)
-  pendingApprovalToStageId String?
+  id                         String            @id @default(cuid())
+  name                       String
+  email                      String?
+  phone                      String?
+  companyName                String?
+  address                    String?
+  remarks                    String?
+  expectedRevenue            Float?
+  generatedRevenue           Float             @default(0)
+  assignedToId               String?
+  stageId                    String?
+  lifecycleId                String?
+  sourceId                   String?
+  nextFollowUpAt             DateTime?
+  stageEnteredAt             DateTime?
+  stageExpiresAt             DateTime?
+  slaAction                  LeadExpiryAction?
+  slaWarningDays             Int?
+  approvalState              LeadApprovalState @default(NONE)
+  pendingApprovalToStageId   String?
   pendingApprovalRequestedAt DateTime?
-  isClosed        Boolean       @default(false)
-  isLOB           Boolean       @default(false)
-  closedAt        DateTime?
-  closedById      String?
-  closureType     LeadClosureType?
-  earnedRevenue      Float?
-  revenueApprovedById String?
-  revenueApprovedAt   DateTime?
-  workspaceId     String
-  createdById     String
-  deletedAt       DateTime?
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  isClosed                   Boolean           @default(false)
+  isLOB                      Boolean           @default(false)
+  closedAt                   DateTime?
+  closedById                 String?
+  closureType                LeadClosureType?
+  earnedRevenue              Float?
+  revenueApprovedById        String?
+  revenueApprovedAt          DateTime?
+  workspaceId                String
+  createdById                String
+  deletedAt                  DateTime?
+  createdAt                  DateTime          @default(now())
+  updatedAt                  DateTime          @updatedAt
 
-  assignedTo      User?         @relation("LeadAssignedTo", fields: [assignedToId], references: [id], onDelete: SetNull)
-  stage           LeadStage?    @relation(fields: [stageId], references: [id], onDelete: SetNull)
-  lifecycle       LeadLifeCycle? @relation(fields: [lifecycleId], references: [id], onDelete: SetNull)
-  source          LeadSource?   @relation(fields: [sourceId], references: [id], onDelete: SetNull)
-  createdBy       User          @relation("LeadCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
-  closedBy        User?         @relation("LeadClosedBy", fields: [closedById], references: [id], onDelete: SetNull)
-  revenueApprovedBy User?         @relation("LeadRevenueApprovedBy", fields: [revenueApprovedById], references: [id], onDelete: SetNull)
-  workspace       Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  followUps       FollowUp[]
-  lobLogs         LeadLOBLog[]
-  activities      LeadActivity[]
-  stageApprovals  LeadStageApproval[]
-  stageHistory    LeadStageHistory[]
+  assignedTo          User?                @relation("LeadAssignedTo", fields: [assignedToId], references: [id], onDelete: SetNull)
+  stage               LeadStage?           @relation(fields: [stageId], references: [id], onDelete: SetNull)
+  lifecycle           LeadLifeCycle?       @relation(fields: [lifecycleId], references: [id], onDelete: SetNull)
+  source              LeadSource?          @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+  createdBy           User                 @relation("LeadCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  closedBy            User?                @relation("LeadClosedBy", fields: [closedById], references: [id], onDelete: SetNull)
+  revenueApprovedBy   User?                @relation("LeadRevenueApprovedBy", fields: [revenueApprovedById], references: [id], onDelete: SetNull)
+  workspace           Workspace            @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  followUps           FollowUp[]
+  lobLogs             LeadLOBLog[]
+  activities          LeadActivity[]
+  stageApprovals      LeadStageApproval[]
+  stageHistory        LeadStageHistory[]
   revenueTransactions RevenueTransaction[]
-  stars           LeadStar[]
+  stars               LeadStar[]
 
-  totalAmount          Float?                 @default(0)
-  totalAmountHistory   LeadTotalAmountHistory[]
-  advancePayments      AdvancePayment[]
-  fieldEditSummaries   LeadFieldEditSummary[]
-  fieldEditHistories   LeadFieldEditHistory[]
+  totalAmount        Float?                   @default(0)
+  totalAmountHistory LeadTotalAmountHistory[]
+  advancePayments    AdvancePayment[]
+  fieldEditSummaries LeadFieldEditSummary[]
+  fieldEditHistories LeadFieldEditHistory[]
+  remarksList        LeadRemark[]
 
   @@index([workspaceId, assignedToId, stageId])
   @@index([workspaceId, sourceId, createdAt])
@@ -833,24 +835,42 @@ model Lead {
 }
 
 model LeadLOBLog {
-  id          String   @id @default(cuid())
-  leadId      String
-  reasonId    String
-  remarks     String?
+  id                String   @id @default(cuid())
+  leadId            String
+  reasonId          String
+  remarks           String?
   /// Pipeline stage the lead was in immediately before this LOB event (denormalized name for analytics).
   previousStageId   String?
   previousStageName String?
-  changedById String
-  changedAt   DateTime @default(now())
-  workspaceId String
+  changedById       String
+  changedAt         DateTime @default(now())
+  workspaceId       String
 
-  lead        Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  lead Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
 
   @@index([leadId, changedAt])
   @@index([workspaceId, reasonId])
   @@index([previousStageId])
   @@index([workspaceId, previousStageId])
   @@map("lead_lob_logs")
+}
+
+model LeadRemark {
+  id          String   @id @default(cuid())
+  text        String   @db.Text
+  leadId      String
+  createdById String
+  workspaceId String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  lead      Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  createdBy User      @relation(fields: [createdById], references: [id], onDelete: Restrict)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([leadId, createdAt(sort: Desc)])
+  @@index([workspaceId, createdById])
+  @@map("lead_remarks")
 }
 
 model LeadStageHistory {
@@ -864,8 +884,8 @@ model LeadStageHistory {
   changedAt     DateTime @default(now())
   workspaceId   String
 
-  lead          Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
-  workspace     Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  lead      Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@index([leadId, changedAt])
   @@index([workspaceId, changedAt])
@@ -884,9 +904,9 @@ model LOBReason {
   updatedAt   DateTime        @updatedAt
   deletedAt   DateTime?
 
-  workspace   Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  createdBy   User?           @relation("LOBReasonCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
-  updatedBy   User?           @relation("LOBReasonUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdBy User?     @relation("LOBReasonCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy User?     @relation("LOBReasonUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
 
   @@index([workspaceId])
   @@index([status])
@@ -911,13 +931,13 @@ model LeadStageApproval {
   createdAt     DateTime           @default(now())
   updatedAt     DateTime           @updatedAt
 
-  workspace     Workspace          @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  lead          Lead               @relation(fields: [leadId], references: [id], onDelete: Cascade)
-  fromStage     LeadStage?         @relation("LeadStageApprovalFromStage", fields: [fromStageId], references: [id], onDelete: Restrict)
-  toStage       LeadStage?         @relation("LeadStageApprovalToStage", fields: [toStageId], references: [id], onDelete: Restrict)
-  requestedBy   User               @relation("LeadStageApprovalRequestedBy", fields: [requestedById], references: [id], onDelete: Restrict)
-  assignedTo    User?              @relation("LeadStageApprovalAssignedTo", fields: [assignedToId], references: [id], onDelete: SetNull)
-  approvedBy    User?              @relation("LeadStageApprovalApprovedBy", fields: [approvedById], references: [id], onDelete: SetNull)
+  workspace   Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  lead        Lead       @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  fromStage   LeadStage? @relation("LeadStageApprovalFromStage", fields: [fromStageId], references: [id], onDelete: Restrict)
+  toStage     LeadStage? @relation("LeadStageApprovalToStage", fields: [toStageId], references: [id], onDelete: Restrict)
+  requestedBy User       @relation("LeadStageApprovalRequestedBy", fields: [requestedById], references: [id], onDelete: Restrict)
+  assignedTo  User?      @relation("LeadStageApprovalAssignedTo", fields: [assignedToId], references: [id], onDelete: SetNull)
+  approvedBy  User?      @relation("LeadStageApprovalApprovedBy", fields: [approvedById], references: [id], onDelete: SetNull)
 
   @@index([workspaceId])
   @@index([status])
@@ -929,23 +949,23 @@ model LeadStageApproval {
 }
 
 model LeadLifeCycleTransition {
-  id           String   @id @default(cuid())
-  lifecycleId  String
-  lifecycle    LeadLifeCycle @relation(fields: [lifecycleId], references: [id], onDelete: Cascade)
+  id          String        @id @default(cuid())
+  lifecycleId String
+  lifecycle   LeadLifeCycle @relation(fields: [lifecycleId], references: [id], onDelete: Cascade)
 
-  fromStageId  String
-  toStageId    String
+  fromStageId String
+  toStageId   String
 
   numberOfDays Int
   expiryAction LeadExpiryAction @default(WARN_AND_CHOOSE)
   warningDays  Int              @default(1)
 
-  sortOrder    Int
+  sortOrder Int
 
-  workspaceId  String
+  workspaceId String
 
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([lifecycleId])
   @@index([workspaceId])
@@ -953,21 +973,21 @@ model LeadLifeCycleTransition {
 }
 
 model LeadDynamicField {
-  id          String   @id @default(cuid())
-  name        String
-  inputType   String
-  sortOrder   Int
-  isRequired  Boolean  @default(false)
-  isActive    Boolean  @default(true)
+  id         String  @id @default(cuid())
+  name       String
+  inputType  String
+  sortOrder  Int
+  isRequired Boolean @default(false)
+  isActive   Boolean @default(true)
 
   workspaceId String
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  workspace   Workspace          @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  options     LeadDynamicOption[]
-  values      LeadDynamicValue[]
+  workspace Workspace           @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  options   LeadDynamicOption[]
+  values    LeadDynamicValue[]
 
   @@unique([name, workspaceId])
   @@index([workspaceId, sortOrder])
@@ -976,28 +996,28 @@ model LeadDynamicField {
 }
 
 model LeadDynamicOption {
-  id        String   @id @default(cuid())
-  fieldId   String
+  id      String @id @default(cuid())
+  fieldId String
 
   value     String
   sortOrder Int
 
-  field     LeadDynamicField @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+  field LeadDynamicField @relation(fields: [fieldId], references: [id], onDelete: Cascade)
 
   @@index([fieldId])
   @@map("lead_dynamic_options")
 }
 
 model LeadDynamicValue {
-  id        String   @id @default(cuid())
-  leadId    String
-  fieldId   String
+  id      String @id @default(cuid())
+  leadId  String
+  fieldId String
 
-  value     String
+  value String
 
   createdAt DateTime @default(now())
 
-  field     LeadDynamicField @relation(fields: [fieldId], references: [id], onDelete: Restrict)
+  field LeadDynamicField @relation(fields: [fieldId], references: [id], onDelete: Restrict)
 
   @@index([leadId])
   @@index([fieldId])
@@ -1005,17 +1025,17 @@ model LeadDynamicValue {
 }
 
 model LeadStar {
-  id          String    @id @default(cuid())
+  id          String   @id @default(cuid())
   leadId      String
   userId      String
   workspaceId String
-  isStarred   Boolean   @default(true)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  isStarred   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  lead        Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  lead      Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@unique([workspaceId, userId, leadId])
   @@index([workspaceId, userId, isStarred])
@@ -1024,7 +1044,7 @@ model LeadStar {
 }
 
 model LeadActivity {
-  id           String   @id @default(cuid())
+  id            String   @id @default(cuid())
   leadId        String
   performedById String?
   workspaceId   String
@@ -1032,9 +1052,9 @@ model LeadActivity {
   metadata      Json?
   createdAt     DateTime @default(now())
 
-  lead          Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
-  performedBy   User?     @relation("LeadActivityPerformedBy", fields: [performedById], references: [id], onDelete: SetNull)
-  workspace     Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  lead        Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  performedBy User?     @relation("LeadActivityPerformedBy", fields: [performedById], references: [id], onDelete: SetNull)
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@index([leadId, createdAt(sort: Desc)])
   @@index([workspaceId, action, createdAt(sort: Desc)])
@@ -1042,25 +1062,25 @@ model LeadActivity {
 }
 
 model TargetSetting {
-  id                   String     @id @default(cuid())
-  user                 User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId               String
-  targetType           TargetType @relation(fields: [targetTypeId], references: [id])
-  targetTypeId         String
-  cycle                TargetSettingCycle @default(MONTHLY)
-  targetCycleId        String?
-  targetCycle          TargetCycle?       @relation(fields: [targetCycleId], references: [id], onDelete: SetNull)
-  
-  monthlyTargetLeads   Int        @default(0)
-  dailyFollowupTarget  Int        @default(0)
-  revenueTarget        Float      @default(0)
-  
-  startDate            DateTime
-  endDate              DateTime?
-  
-  workspaceId          String
-  createdAt            DateTime   @default(now())
-  updatedAt            DateTime   @updatedAt
+  id            String             @id @default(cuid())
+  user          User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        String
+  targetType    TargetType         @relation(fields: [targetTypeId], references: [id])
+  targetTypeId  String
+  cycle         TargetSettingCycle @default(MONTHLY)
+  targetCycleId String?
+  targetCycle   TargetCycle?       @relation(fields: [targetCycleId], references: [id], onDelete: SetNull)
+
+  monthlyTargetLeads  Int   @default(0)
+  dailyFollowupTarget Int   @default(0)
+  revenueTarget       Float @default(0)
+
+  startDate DateTime
+  endDate   DateTime?
+
+  workspaceId String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@index([userId, workspaceId])
   @@index([targetTypeId])
@@ -1077,10 +1097,10 @@ model TargetViolation {
   attemptCount Int           @default(1)
   status       String        @default("WARNING") // WARNING, FINAL_WARNING, LOCKED
   message      String?
-  
-  workspaceId  String
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+
+  workspaceId String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@index([userId, date])
   @@index([workspaceId])
@@ -1088,17 +1108,17 @@ model TargetViolation {
 }
 
 model User {
-  id                       String      @id @default(cuid())
+  id                       String    @id @default(cuid())
   name                     String?
-  username                 String?     @unique
-  email                    String      @unique
+  username                 String?   @unique
+  email                    String    @unique
   password                 String?
   phone                    String?
-  googleId                 String?     @unique
-  isOnboarded              Boolean     @default(false)
-  isActive                 Boolean     @default(true)
-  isEmailVerified          Boolean     @default(false)
-  isLocked                 Boolean     @default(false) // Target compliance lock
+  googleId                 String?   @unique
+  isOnboarded              Boolean   @default(false)
+  isActive                 Boolean   @default(true)
+  isEmailVerified          Boolean   @default(false)
+  isLocked                 Boolean   @default(false) // Target compliance lock
   verificationToken        String?
   verificationTokenExpires DateTime?
   invitationToken          String?
@@ -1106,107 +1126,108 @@ model User {
   deletedAt                DateTime?
 
   // Role relation
-  role                     Role?       @relation(fields: [roleId], references: [id])
-  roleId                   String?
+  role   Role?   @relation(fields: [roleId], references: [id])
+  roleId String?
 
   // Workspace relation
-  workspace                Workspace?  @relation("WorkspaceMembers", fields: [workspaceId], references: [id])
-  workspaceId              String?
-  ownedWorkspace           Workspace?  @relation("WorkspaceOwner")
+  workspace      Workspace? @relation("WorkspaceMembers", fields: [workspaceId], references: [id])
+  workspaceId    String?
+  ownedWorkspace Workspace? @relation("WorkspaceOwner")
 
   // Department relation
-  department               Department? @relation(fields: [departmentId], references: [id])
-  departmentId             String?
+  department   Department? @relation(fields: [departmentId], references: [id])
+  departmentId String?
 
   // Office relation
-  office                   Office?     @relation(fields: [officeId], references: [id])
-  officeId                 String?
+  office   Office? @relation(fields: [officeId], references: [id])
+  officeId String?
 
   // User's own location fields (Address)
-  countryId                String?
-  country                  Location?   @relation("UserCountry", fields: [countryId], references: [id])
-  stateId                  String?
-  state                    Location?   @relation("UserState", fields: [stateId], references: [id])
-  districtId               String?
-  district                 Location?   @relation("UserDistrict", fields: [districtId], references: [id])
+  countryId  String?
+  country    Location? @relation("UserCountry", fields: [countryId], references: [id])
+  stateId    String?
+  state      Location? @relation("UserState", fields: [stateId], references: [id])
+  districtId String?
+  district   Location? @relation("UserDistrict", fields: [districtId], references: [id])
 
   // Assigned Locations for Visibility Boundary
-  assignedLocations        UserLocationAssignment[]
+  assignedLocations UserLocationAssignment[]
 
   // Supervisor self-relation
-  supervisor               User?       @relation("UserSupervisor", fields: [supervisorId], references: [id])
-  supervisorId             String?
-  subordinates             User[]      @relation("UserSupervisor")
+  supervisor   User?   @relation("UserSupervisor", fields: [supervisorId], references: [id])
+  supervisorId String?
+  subordinates User[]  @relation("UserSupervisor")
 
   // Target relations
-  assignedTargetCycleId    String?
-  assignedTargetCycle      TargetCycle?      @relation("UserAssignedTargetCycle", fields: [assignedTargetCycleId], references: [id], onDelete: SetNull)
-  targetLockedAt           DateTime?
-  targetLockReason         String?
-  targetSettings           TargetSetting[]
-  targetAssignments        TargetAssignment[]
-  targetLockLogs           TargetLockLog[]
-  targetUnlockLogs         TargetUnlockLog[] @relation("TargetUnlockUser")
-  targetUnlockActions      TargetUnlockLog[] @relation("TargetUnlockActor")
-  violations               TargetViolation[]
+  assignedTargetCycleId String?
+  assignedTargetCycle   TargetCycle?       @relation("UserAssignedTargetCycle", fields: [assignedTargetCycleId], references: [id], onDelete: SetNull)
+  targetLockedAt        DateTime?
+  targetLockReason      String?
+  targetSettings        TargetSetting[]
+  targetAssignments     TargetAssignment[]
+  targetLockLogs        TargetLockLog[]
+  targetUnlockLogs      TargetUnlockLog[]  @relation("TargetUnlockUser")
+  targetUnlockActions   TargetUnlockLog[]  @relation("TargetUnlockActor")
+  violations            TargetViolation[]
 
   // Devices
-  devices                  Device[]
+  devices Device[]
 
   // Password reset tokens (self-service forgot password)
-  passwordResetTokens      PasswordResetToken[]
+  passwordResetTokens PasswordResetToken[]
 
   // Audit logs relation
-  auditLogs                AuditLog[]
-  leadStars                LeadStar[]
-  performedLeadActivities  LeadActivity[] @relation("LeadActivityPerformedBy")
+  auditLogs                   AuditLog[]
+  leadStars                   LeadStar[]
+  performedLeadActivities     LeadActivity[]      @relation("LeadActivityPerformedBy")
   requestedLeadStageApprovals LeadStageApproval[] @relation("LeadStageApprovalRequestedBy")
-  assignedLeadStageApprovals LeadStageApproval[] @relation("LeadStageApprovalAssignedTo")
-  approvedLeadStageApprovals LeadStageApproval[] @relation("LeadStageApprovalApprovedBy")
+  assignedLeadStageApprovals  LeadStageApproval[] @relation("LeadStageApprovalAssignedTo")
+  approvedLeadStageApprovals  LeadStageApproval[] @relation("LeadStageApprovalApprovedBy")
 
-  leadTotalAmountHistory      LeadTotalAmountHistory[]
-  advancePaymentsRequested    AdvancePayment[] @relation("AdvanceRequestedBy")
-  advancePaymentsApproved     AdvancePayment[] @relation("AdvanceApprovedBy")
-  advancePaymentsRejected     AdvancePayment[] @relation("AdvanceRejectedBy")
+  leadTotalAmountHistory   LeadTotalAmountHistory[]
+  advancePaymentsRequested AdvancePayment[]         @relation("AdvanceRequestedBy")
+  advancePaymentsApproved  AdvancePayment[]         @relation("AdvanceApprovedBy")
+  advancePaymentsRejected  AdvancePayment[]         @relation("AdvanceRejectedBy")
+  leadRemarks              LeadRemark[]
 
-  rosterEntries            RosterEntry[]
-  attendanceRecords        AttendanceRecord[]
-  attendanceSchedule       AttendanceSchedule?
-  attendanceApplyType      String                 @default("FROM_ANYWHERE") // FROM_OFFICE, FROM_ANYWHERE
-  attendanceOfficeLocationId String?
-  attendanceOfficeLocation AttendanceOfficeLocation? @relation(fields: [attendanceOfficeLocationId], references: [id], onDelete: SetNull)
-  attendanceUserSetting  AttendanceUserSetting?
-  followUps                FollowUp[]
-  snoozedActivities        FollowupActivityLog[]
-  createdLeads             Lead[]       @relation("LeadCreatedBy")
-  assignedLeads            Lead[]       @relation("LeadAssignedTo")
-  closedLeads              Lead[]       @relation("LeadClosedBy")
-  approvedLeadsRevenue     Lead[]       @relation("LeadRevenueApprovedBy")
-  revenueTransactions      RevenueTransaction[] @relation("RevenueTransactionUser")
-  approvedRevenueTransactions RevenueTransaction[] @relation("RevenueTransactionApprovedBy")
-  leadFieldEditHistories   LeadFieldEditHistory[]
+  rosterEntries               RosterEntry[]
+  attendanceRecords           AttendanceRecord[]
+  attendanceSchedule          AttendanceSchedule?
+  attendanceApplyType         String                    @default("FROM_ANYWHERE") // FROM_OFFICE, FROM_ANYWHERE
+  attendanceOfficeLocationId  String?
+  attendanceOfficeLocation    AttendanceOfficeLocation? @relation(fields: [attendanceOfficeLocationId], references: [id], onDelete: SetNull)
+  attendanceUserSetting       AttendanceUserSetting?
+  followUps                   FollowUp[]
+  snoozedActivities           FollowupActivityLog[]
+  createdLeads                Lead[]                    @relation("LeadCreatedBy")
+  assignedLeads               Lead[]                    @relation("LeadAssignedTo")
+  closedLeads                 Lead[]                    @relation("LeadClosedBy")
+  approvedLeadsRevenue        Lead[]                    @relation("LeadRevenueApprovedBy")
+  revenueTransactions         RevenueTransaction[]      @relation("RevenueTransactionUser")
+  approvedRevenueTransactions RevenueTransaction[]      @relation("RevenueTransactionApprovedBy")
+  leadFieldEditHistories      LeadFieldEditHistory[]
 
-  createdHolidays          Holiday[]    @relation("HolidayCreatedBy")
-  updatedHolidays          Holiday[]    @relation("HolidayUpdatedBy")
-  createdCountries         Country[]    @relation("CountryCreatedBy")
-  updatedCountries         Country[]    @relation("CountryUpdatedBy")
-  createdLocationLevels    LocationLevel[] @relation("LocationLevelCreatedBy")
-  updatedLocationLevels    LocationLevel[] @relation("LocationLevelUpdatedBy")
-  createdLOBReasons        LOBReason[]  @relation("LOBReasonCreatedBy")
-  updatedLOBReasons        LOBReason[]  @relation("LOBReasonUpdatedBy")
-  createdReportTypes       ReportType[] @relation("ReportTypeCreatedBy")
-  updatedReportTypes       ReportType[] @relation("ReportTypeUpdatedBy")
-  createdReports           Report[]     @relation("ReportCreatedBy")
-  generatedReportLogs      ReportLog[]  @relation("ReportLogGeneratedBy")
-  createdImportJobs        ImportJob[]  @relation("ImportJobCreatedBy")
-  receivedInvites          Invite[]     @relation("InviteUser")
-  createdInvites           Invite[]     @relation("InviteCreatedBy")
+  createdHolidays                Holiday[]                      @relation("HolidayCreatedBy")
+  updatedHolidays                Holiday[]                      @relation("HolidayUpdatedBy")
+  createdCountries               Country[]                      @relation("CountryCreatedBy")
+  updatedCountries               Country[]                      @relation("CountryUpdatedBy")
+  createdLocationLevels          LocationLevel[]                @relation("LocationLevelCreatedBy")
+  updatedLocationLevels          LocationLevel[]                @relation("LocationLevelUpdatedBy")
+  createdLOBReasons              LOBReason[]                    @relation("LOBReasonCreatedBy")
+  updatedLOBReasons              LOBReason[]                    @relation("LOBReasonUpdatedBy")
+  createdReportTypes             ReportType[]                   @relation("ReportTypeCreatedBy")
+  updatedReportTypes             ReportType[]                   @relation("ReportTypeUpdatedBy")
+  createdReports                 Report[]                       @relation("ReportCreatedBy")
+  generatedReportLogs            ReportLog[]                    @relation("ReportLogGeneratedBy")
+  createdImportJobs              ImportJob[]                    @relation("ImportJobCreatedBy")
+  receivedInvites                Invite[]                       @relation("InviteUser")
+  createdInvites                 Invite[]                       @relation("InviteCreatedBy")
   temporaryBulkExtensionAccesses TemporaryBulkExtensionAccess[] @relation("BulkExtensionUser")
-  grantedBulkExtensionAccesses TemporaryBulkExtensionAccess[] @relation("BulkExtensionGrantedBy")
-  bulkFollowUpExtensions   BulkFollowUpExtension[]
+  grantedBulkExtensionAccesses   TemporaryBulkExtensionAccess[] @relation("BulkExtensionGrantedBy")
+  bulkFollowUpExtensions         BulkFollowUpExtension[]
 
-  createdAt                DateTime    @default(now())
-  updatedAt                DateTime    @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([workspaceId])
   @@index([roleId])
@@ -1229,9 +1250,9 @@ model Invite {
   createdBy   String
   createdAt   DateTime  @default(now())
 
-  user        User      @relation("InviteUser", fields: [userId], references: [id], onDelete: Cascade)
-  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  creator     User      @relation("InviteCreatedBy", fields: [createdBy], references: [id], onDelete: Restrict)
+  user      User      @relation("InviteUser", fields: [userId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  creator   User      @relation("InviteCreatedBy", fields: [createdBy], references: [id], onDelete: Restrict)
 
   @@index([workspaceId, userId])
   @@index([workspaceId, createdBy])
@@ -1257,23 +1278,23 @@ model PasswordResetToken {
 }
 
 model FollowUp {
-  id          String   @id @default(cuid())
+  id          String @id @default(cuid())
   leadId      String
   userId      String
   workspaceId String
 
-  type        String
-  description String?
+  type                  String
+  description           String?
   completionDescription String?
-  status      String   @default("PENDING")
+  status                String  @default("PENDING")
 
   scheduledAt DateTime
   completedAt DateTime?
 
-  isOverdue              Boolean   @default(false)
-  overdueAt              DateTime?
-  completedAfterOverdue  Boolean   @default(false)
-  extendedAfterOverdue   Boolean   @default(false)
+  isOverdue             Boolean   @default(false)
+  overdueAt             DateTime?
+  completedAfterOverdue Boolean   @default(false)
+  extendedAfterOverdue  Boolean   @default(false)
 
   // Snooze fields
   recentDescription    String?
@@ -1285,12 +1306,12 @@ model FollowUp {
   extensionReasonId    String?
   extensionReasonName  String?
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  lead        Lead            @relation(fields: [leadId], references: [id], onDelete: Cascade)
-  images      FollowUpImage[]
+  user         User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lead         Lead                  @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  images       FollowUpImage[]
   activityLogs FollowupActivityLog[]
 
   @@index([workspaceId, userId, scheduledAt])
@@ -1314,8 +1335,8 @@ model FollowupActivityLog {
   extensionReasonId    String?
   extensionReasonName  String?
 
-  followUp             FollowUp @relation(fields: [followUpId], references: [id], onDelete: Cascade)
-  snoozedByUser        User     @relation(fields: [snoozedById], references: [id], onDelete: Cascade)
+  followUp      FollowUp @relation(fields: [followUpId], references: [id], onDelete: Cascade)
+  snoozedByUser User     @relation(fields: [snoozedById], references: [id], onDelete: Cascade)
 
   @@index([followUpId])
   @@index([workspaceId])
@@ -1323,33 +1344,33 @@ model FollowupActivityLog {
 }
 
 model FollowUpImage {
-  id         String   @id @default(cuid())
+  id         String @id @default(cuid())
   followUpId String
   url        String
 
-  createdAt  DateTime @default(now())
+  createdAt DateTime @default(now())
 
-  followUp   FollowUp @relation(fields: [followUpId], references: [id], onDelete: Cascade)
+  followUp FollowUp @relation(fields: [followUpId], references: [id], onDelete: Cascade)
 
   @@index([followUpId])
   @@map("follow_up_images")
 }
 
 model RosterEntry {
-  id         String       @id @default(uuid())
-  userId     String
-  rosterType RosterType
-  name       String
-  startDate  DateTime
-  endDate    DateTime?
+  id             String        @id @default(uuid())
+  userId         String
+  rosterType     RosterType
+  name           String
+  startDate      DateTime
+  endDate        DateTime?
   shiftSession   ShiftSession?
   shiftStartTime String?
   shiftEndTime   String?
-  status     RosterStatus @default(ACTIVE)
-  createdBy  String?
-  createdAt  DateTime     @default(now())
-  updatedAt  DateTime     @updatedAt
-  deletedAt  DateTime?
+  status         RosterStatus  @default(ACTIVE)
+  createdBy      String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  deletedAt      DateTime?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -1364,10 +1385,10 @@ model AuditLog {
   userId      String?
   user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
   workspaceId String?
-  action      String   // e.g., "USER_LOGIN", "USER_CREATED", "SETTINGS_UPDATED"
-  entityType  String?  // e.g., "User", "Workspace"
+  action      String // e.g., "USER_LOGIN", "USER_CREATED", "SETTINGS_UPDATED"
+  entityType  String? // e.g., "User", "Workspace"
   entityId    String?
-  details     Json?    // Store old/new values or extra metadata
+  details     Json? // Store old/new values or extra metadata
   ipAddress   String?
   userAgent   String?
   createdAt   DateTime @default(now())
@@ -1390,11 +1411,11 @@ model Device {
   ipAddress  String?
   lastActive DateTime @default(now())
 
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId     String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
 
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([userId, deviceId])
   @@map("devices")
@@ -1426,19 +1447,19 @@ model Holiday {
   source         HolidaySource @default(MANUAL)
   status         HolidayStatus @default(ACTIVE)
 
-  createdById    String?
-  updatedById    String?
+  createdById String?
+  updatedById String?
 
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  workspace      Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  country        Location?     @relation("HolidayCountry", fields: [countryId], references: [id])
-  state          Location?     @relation("HolidayState", fields: [stateId], references: [id])
-  district       Location?     @relation("HolidayDistrict", fields: [districtId], references: [id])
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  country   Location? @relation("HolidayCountry", fields: [countryId], references: [id])
+  state     Location? @relation("HolidayState", fields: [stateId], references: [id])
+  district  Location? @relation("HolidayDistrict", fields: [districtId], references: [id])
 
-  createdBy      User?         @relation("HolidayCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
-  updatedBy      User?         @relation("HolidayUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  createdBy User? @relation("HolidayCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy User? @relation("HolidayUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
 
   @@index([workspaceId])
   @@index([countryId, stateId, districtId])
@@ -1454,7 +1475,7 @@ model HolidaySyncLog {
   message     String?       @db.Text
   syncedAt    DateTime      @default(now())
 
-  workspace   Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@index([workspaceId])
   @@index([syncedAt])
@@ -1462,37 +1483,37 @@ model HolidaySyncLog {
 }
 
 model ReportType {
-  id             String             @id @default(uuid())
-  workspaceId    String
-  name           String
-  module         ReportModule
-  modules        Json?              @default("[]")
-  baseDataSource ReportBaseDataSource
-  baseDataSources Json?             @default("[]")
-  description    String?
-  allowedFilters Json               @default("[]")
-  status         ReportTypeStatus   @default(ACTIVE)
-  createdById    String?
-  updatedById    String?
-  createdAt      DateTime           @default(now())
-  updatedAt      DateTime           @updatedAt
-  deletedAt      DateTime?
+  id              String               @id @default(uuid())
+  workspaceId     String
+  name            String
+  module          ReportModule
+  modules         Json?                @default("[]")
+  baseDataSource  ReportBaseDataSource
+  baseDataSources Json?                @default("[]")
+  description     String?
+  allowedFilters  Json                 @default("[]")
+  status          ReportTypeStatus     @default(ACTIVE)
+  createdById     String?
+  updatedById     String?
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+  deletedAt       DateTime?
 
-  category           String?            @default("Leads Report")
-  categories         Json?              @default("[]")
-  trackModules       Json?              @default("[]")
-  enableUserFilter   Boolean            @default(false)
-  enableDateFilter   Boolean            @default(false)
-  trackActivityTypes Json?              @default("[]")
-  allowExport        Boolean            @default(false)
-  showSummary        Boolean            @default(false)
-  showDetailedLogs   Boolean            @default(false)
+  category           String? @default("Leads Report")
+  categories         Json?   @default("[]")
+  trackModules       Json?   @default("[]")
+  enableUserFilter   Boolean @default(false)
+  enableDateFilter   Boolean @default(false)
+  trackActivityTypes Json?   @default("[]")
+  allowExport        Boolean @default(false)
+  showSummary        Boolean @default(false)
+  showDetailedLogs   Boolean @default(false)
 
-  workspace      Workspace          @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  createdBy      User?              @relation("ReportTypeCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
-  updatedBy      User?              @relation("ReportTypeUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
-  logs           ReportLog[]
-  reports        Report[]
+  workspace Workspace   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdBy User?       @relation("ReportTypeCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy User?       @relation("ReportTypeUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  logs      ReportLog[]
+  reports   Report[]
 
   @@index([workspaceId])
   @@index([status])
@@ -1502,21 +1523,21 @@ model ReportType {
 }
 
 model ReportLog {
-  id            String     @id @default(uuid())
+  id            String   @id @default(uuid())
   workspaceId   String
   reportTypeId  String?
   reportId      String?
   generatedById String?
   action        String?
-  filters       Json       @default("[]")
-  resultCount   Int        @default(0)
-  meta          Json       @default("{}")
-  createdAt     DateTime   @default(now())
+  filters       Json     @default("[]")
+  resultCount   Int      @default(0)
+  meta          Json     @default("{}")
+  createdAt     DateTime @default(now())
 
-  workspace     Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  reportType    ReportType? @relation(fields: [reportTypeId], references: [id], onDelete: SetNull)
-  report        Report?     @relation("ReportInstanceLogs", fields: [reportId], references: [id], onDelete: Cascade)
-  generatedBy   User?      @relation("ReportLogGeneratedBy", fields: [generatedById], references: [id], onDelete: SetNull)
+  workspace   Workspace   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  reportType  ReportType? @relation(fields: [reportTypeId], references: [id], onDelete: SetNull)
+  report      Report?     @relation("ReportInstanceLogs", fields: [reportId], references: [id], onDelete: Cascade)
+  generatedBy User?       @relation("ReportLogGeneratedBy", fields: [generatedById], references: [id], onDelete: SetNull)
 
   @@index([workspaceId])
   @@index([reportTypeId])
@@ -1528,25 +1549,25 @@ model ReportLog {
 }
 
 model Report {
-  id               String        @id @default(uuid())
+  id               String    @id @default(uuid())
   workspaceId      String
   reportName       String
   reportTypeId     String
-  reportDate       DateTime      @db.Date
-  isActive         Boolean       @default(true)
-  isGenerated      Boolean       @default(false)
+  reportDate       DateTime  @db.Date
+  isActive         Boolean   @default(true)
+  isGenerated      Boolean   @default(false)
   generatedFileUrl String?
   generatedAt      DateTime?
   createdById      String
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
   deletedAt        DateTime?
 
-  workspace        Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  reportType       ReportType    @relation(fields: [reportTypeId], references: [id], onDelete: Restrict)
-  createdBy        User          @relation("ReportCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
-  filters          ReportFilter[]
-  logs             ReportLog[]   @relation("ReportInstanceLogs")
+  workspace  Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  reportType ReportType     @relation(fields: [reportTypeId], references: [id], onDelete: Restrict)
+  createdBy  User           @relation("ReportCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  filters    ReportFilter[]
+  logs       ReportLog[]    @relation("ReportInstanceLogs")
 
   @@index([workspaceId])
   @@index([reportTypeId])
@@ -1566,7 +1587,7 @@ model ReportFilter {
   filterValue String   @db.Text
   createdAt   DateTime @default(now())
 
-  report      Report   @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  report Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
 
   @@index([reportId])
   @@index([filterKey])
@@ -1581,22 +1602,22 @@ enum ImportJobStatus {
 }
 
 model ImportJob {
-  id              String          @id @default(uuid())
-  workspaceId     String
-  fileName        String
-  totalRows       Int?            @default(0)
-  processedRows   Int             @default(0)
-  successCount    Int             @default(0)
-  failedCount     Int             @default(0)
-  status          ImportJobStatus @default(PENDING)
-  errorFileUrl    String?         @db.Text
-  createdById     String?
+  id            String          @id @default(uuid())
+  workspaceId   String
+  fileName      String
+  totalRows     Int?            @default(0)
+  processedRows Int             @default(0)
+  successCount  Int             @default(0)
+  failedCount   Int             @default(0)
+  status        ImportJobStatus @default(PENDING)
+  errorFileUrl  String?         @db.Text
+  createdById   String?
 
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  workspace       Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  createdBy       User?           @relation("ImportJobCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdBy User?     @relation("ImportJobCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
 
   @@index([workspaceId])
   @@index([status])
@@ -1605,20 +1626,20 @@ model ImportJob {
 }
 
 model RevenueTransaction {
-  id            String    @id @default(cuid())
+  id            String   @id @default(cuid())
   workspaceId   String
   leadId        String
   userId        String
   approvedById  String
   amount        Float
   closedStageId String
-  createdAt     DateTime  @default(now())
+  createdAt     DateTime @default(now())
 
-  workspace     Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  lead          Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
-  user          User      @relation("RevenueTransactionUser", fields: [userId], references: [id], onDelete: Cascade)
-  approvedBy    User      @relation("RevenueTransactionApprovedBy", fields: [approvedById], references: [id], onDelete: Cascade)
-  closedStage   LeadStage @relation(fields: [closedStageId], references: [id], onDelete: Cascade)
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  lead        Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  user        User      @relation("RevenueTransactionUser", fields: [userId], references: [id], onDelete: Cascade)
+  approvedBy  User      @relation("RevenueTransactionApprovedBy", fields: [approvedById], references: [id], onDelete: Cascade)
+  closedStage LeadStage @relation(fields: [closedStageId], references: [id], onDelete: Cascade)
 
   @@index([workspaceId])
   @@index([leadId])
@@ -1674,33 +1695,33 @@ model AttendanceRecord {
   longitude                Float?
   calculatedDistanceMeters Float?
   officeLocationId         String?
-  isInsideOfficeRadius     Boolean          @default(false)
+  isInsideOfficeRadius     Boolean   @default(false)
   gpsAccuracy              Float?
   ipAddress                String?
   networkName              String?
   routerIp                 String?
   subnet                   String?
-  attendanceApplyType      String?          @default("FROM_ANYWHERE")
-  isOfficeNetwork          Boolean          @default(false)
+  attendanceApplyType      String?   @default("FROM_ANYWHERE")
+  isOfficeNetwork          Boolean   @default(false)
   deviceInfo               String?
   geoLocation              String?
-  approvalStatus           String           @default("PENDING") // PENDING, PENDING_APPROVAL, CLARIFICATION_REQUESTED, APPROVED, REJECTED
+  approvalStatus           String    @default("PENDING") // PENDING, PENDING_APPROVAL, CLARIFICATION_REQUESTED, APPROVED, REJECTED
   approvedBy               String?
   approvedAt               DateTime?
   rejectedReason           String?
   supervisorId             String?
-  submittedAt              DateTime?        @default(now())
+  submittedAt              DateTime? @default(now())
   notes                    String?
   attachmentUrl            String?
-  workSummary              String?          @db.Text
-  achievements             String?          @db.Text
-  pendingTasks             String?          @db.Text
-  challenges               String?          @db.Text
-  additionalNotes          String?          @db.Text
+  workSummary              String?   @db.Text
+  achievements             String?   @db.Text
+  pendingTasks             String?   @db.Text
+  challenges               String?   @db.Text
+  additionalNotes          String?   @db.Text
   rejectedBy               String?
   rejectedAt               DateTime?
 
-  user                     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, date])
   @@index([workspaceId])
@@ -1709,14 +1730,15 @@ model AttendanceRecord {
   @@index([workspaceId, approvalStatus, date])
   @@map("attendance_records")
 }
+
 model AttendanceWarning {
-  id           String   @id @default(uuid())
-  userId       String
-  workspaceId  String
-  date         DateTime @db.Date
-  reason       String
-  warningType  String   // e.g. "ABSENT", "LATE_CHECKIN"
-  createdAt    DateTime @default(now())
+  id          String   @id @default(uuid())
+  userId      String
+  workspaceId String
+  date        DateTime @db.Date
+  reason      String
+  warningType String // e.g. "ABSENT", "LATE_CHECKIN"
+  createdAt   DateTime @default(now())
 
   @@index([userId])
   @@index([workspaceId])
@@ -1750,7 +1772,7 @@ model AttendanceUserSetting {
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
 
-  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([workspaceId])
   @@index([workspaceId, expectedCheckInTime])
@@ -1761,7 +1783,7 @@ model AttendanceLog {
   id          String   @id @default(uuid())
   userId      String
   workspaceId String
-  action      String   // e.g. "CHECK_IN", "AUTO_ABSENT", "WARNING_GENERATED"
+  action      String // e.g. "CHECK_IN", "AUTO_ABSENT", "WARNING_GENERATED"
   details     String?
   createdAt   DateTime @default(now())
 
@@ -1771,35 +1793,35 @@ model AttendanceLog {
 }
 
 model AttendanceNetwork {
-  id             String   @id @default(uuid())
-  workspaceId    String
-  officeName     String
-  branch         String?
-  wifiSsid       String
-  routerIp       String
-  gateway        String?
+  id              String   @id @default(uuid())
+  workspaceId     String
+  officeName      String
+  branch          String?
+  wifiSsid        String
+  routerIp        String
+  gateway         String?
   allowedIpRanges String?
-  subnet         String?
-  macValidation  String?
-  isEnabled      Boolean  @default(true)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  subnet          String?
+  macValidation   String?
+  isEnabled       Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   @@index([workspaceId])
   @@map("attendance_networks")
 }
 
 model AttendanceOfficeLocation {
-  id            String   @id @default(uuid())
-  workspaceId   String
-  officeName    String
-  branch        String?
-  latitude      Float
-  longitude     Float
-  radiusMeters  Int      @default(50)
-  isEnabled     Boolean  @default(true)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id           String   @id @default(uuid())
+  workspaceId  String
+  officeName   String
+  branch       String?
+  latitude     Float
+  longitude    Float
+  radiusMeters Int      @default(50)
+  isEnabled    Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   assignedUsers User[]
 
@@ -1811,7 +1833,7 @@ model AttendanceOfficeLocation {
 model AttendanceApprovalLog {
   id                 String   @id @default(uuid())
   attendanceRecordId String
-  action             String   // e.g. "APPROVE", "REJECT"
+  action             String // e.g. "APPROVE", "REJECT"
   actorId            String
   reason             String?
   createdAt          DateTime @default(now())
@@ -1849,55 +1871,55 @@ model AttendanceAuditLog {
 }
 
 model FollowUpExtensionReason {
-  id          String    @id @default(cuid())
+  id          String   @id @default(cuid())
   reasonName  String
   description String?
-  isActive    Boolean   @default(true)
-  sortOrder   Int       @default(0)
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0)
   workspaceId String
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@index([workspaceId, isActive, sortOrder, reasonName])
   @@map("followup_extension_reasons")
 }
 
 model FollowUpSettings {
-  id                            String    @id @default(cuid())
-  workspaceId                   String    @unique
-  dailyLimitEnabled             Boolean   @default(false)
-  dailyLimitCount               Int       @default(10)
-  isActive                      Boolean   @default(true)
-  capacityValidationEnabled     Boolean   @default(false)
-  bulkExtensionEnabled          Boolean   @default(false)
-  autoDistributionEnabled       Boolean   @default(false)
-  defaultBulkExtensionDuration  String    @default("1 Day")
-  maxBulkExtensionCount         Int       @default(100)
-  createdAt                     DateTime  @default(now())
-  updatedAt                     DateTime  @updatedAt
+  id                           String   @id @default(cuid())
+  workspaceId                  String   @unique
+  dailyLimitEnabled            Boolean  @default(false)
+  dailyLimitCount              Int      @default(10)
+  isActive                     Boolean  @default(true)
+  capacityValidationEnabled    Boolean  @default(false)
+  bulkExtensionEnabled         Boolean  @default(false)
+  autoDistributionEnabled      Boolean  @default(false)
+  defaultBulkExtensionDuration String   @default("1 Day")
+  maxBulkExtensionCount        Int      @default(100)
+  createdAt                    DateTime @default(now())
+  updatedAt                    DateTime @updatedAt
 
-  workspace                     Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@map("followup_settings")
 }
 
 model TemporaryBulkExtensionAccess {
-  id            String    @id @default(cuid())
-  userId        String
-  workspaceId   String
-  grantedById   String
-  duration      String    // "1 Day", "3 Days", "7 Days", "Custom"
-  startsAt      DateTime  @default(now())
-  expiresAt     DateTime
-  isActive      Boolean   @default(true)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id          String   @id @default(cuid())
+  userId      String
+  workspaceId String
+  grantedById String
+  duration    String // "1 Day", "3 Days", "7 Days", "Custom"
+  startsAt    DateTime @default(now())
+  expiresAt   DateTime
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  user          User      @relation("BulkExtensionUser", fields: [userId], references: [id], onDelete: Cascade)
-  workspace     Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  grantedBy     User      @relation("BulkExtensionGrantedBy", fields: [grantedById], references: [id], onDelete: Cascade)
+  user      User      @relation("BulkExtensionUser", fields: [userId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  grantedBy User      @relation("BulkExtensionGrantedBy", fields: [grantedById], references: [id], onDelete: Cascade)
 
   @@index([workspaceId])
   @@index([userId])
@@ -1905,19 +1927,19 @@ model TemporaryBulkExtensionAccess {
 }
 
 model BulkFollowUpExtension {
-  id                    String    @id @default(cuid())
-  workspaceId           String
-  userId                String    // User who extended
-  targetDate            DateTime
-  extensionReasonId     String?
-  extensionReasonName   String?
-  customReason          String?
-  followupCount         Int
-  autoDistributed       Boolean   @default(false)
-  createdAt             DateTime  @default(now())
+  id                  String   @id @default(cuid())
+  workspaceId         String
+  userId              String // User who extended
+  targetDate          DateTime
+  extensionReasonId   String?
+  extensionReasonName String?
+  customReason        String?
+  followupCount       Int
+  autoDistributed     Boolean  @default(false)
+  createdAt           DateTime @default(now())
 
-  workspace             Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([workspaceId])
   @@index([userId])
@@ -1937,7 +1959,7 @@ model AttendanceSchedule {
   createdAt               DateTime @default(now())
   updatedAt               DateTime @updatedAt
 
-  user                    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([workspaceId])
   @@map("attendance_schedules")
@@ -1952,8 +1974,8 @@ model LeadTotalAmountHistory {
   reason      String
   createdAt   DateTime @default(now())
 
-  lead        Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
-  changedBy   User     @relation(fields: [changedById], references: [id], onDelete: Cascade)
+  lead      Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  changedBy User @relation(fields: [changedById], references: [id], onDelete: Cascade)
 
   @@index([leadId])
   @@index([changedById])
@@ -1979,11 +2001,11 @@ model AdvancePayment {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
-  lead            Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
-  requestedBy     User      @relation("AdvanceRequestedBy", fields: [requestedById], references: [id], onDelete: Cascade)
-  approvedBy      User?     @relation("AdvanceApprovedBy", fields: [approvedById], references: [id], onDelete: SetNull)
-  rejectedBy      User?     @relation("AdvanceRejectedBy", fields: [rejectedById], references: [id], onDelete: SetNull)
-  workspace       Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  lead        Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  requestedBy User      @relation("AdvanceRequestedBy", fields: [requestedById], references: [id], onDelete: Cascade)
+  approvedBy  User?     @relation("AdvanceApprovedBy", fields: [approvedById], references: [id], onDelete: SetNull)
+  rejectedBy  User?     @relation("AdvanceRejectedBy", fields: [rejectedById], references: [id], onDelete: SetNull)
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@index([leadId])
   @@index([workspaceId])
@@ -1999,7 +2021,7 @@ model FieldHighlightConfig {
   isEnabled   Boolean  @default(false)
   updatedAt   DateTime @updatedAt
 
-  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@unique([workspaceId, fieldKey])
   @@index([workspaceId])
@@ -2007,13 +2029,13 @@ model FieldHighlightConfig {
 }
 
 model LeadFieldEditSummary {
-  id          String   @id @default(cuid())
-  leadId      String
-  fieldKey    String
-  editCount   Int      @default(0)
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(cuid())
+  leadId    String
+  fieldKey  String
+  editCount Int      @default(0)
+  updatedAt DateTime @updatedAt
 
-  lead        Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  lead Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
 
   @@unique([leadId, fieldKey])
   @@index([leadId])
@@ -2031,12 +2053,11 @@ model LeadFieldEditHistory {
   editNumber  Int
   reason      String?
 
-  lead        Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
-  changedBy   User     @relation(fields: [changedById], references: [id], onDelete: Cascade)
+  lead      Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  changedBy User @relation(fields: [changedById], references: [id], onDelete: Cascade)
 
   @@index([leadId])
   @@index([fieldKey])
   @@index([changedById])
   @@map("lead_field_edit_histories")
 }
-

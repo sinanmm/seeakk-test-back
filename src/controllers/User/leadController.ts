@@ -603,6 +603,33 @@ export const listLeadTransitionStageRules = async (req: Request, res: Response, 
   }
 };
 
+export const getLeadRemarks = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const workspaceId = requireWorkspace(req, res);
+    if (!workspaceId) return;
+
+    const input = validate<LeadIdParamInput>(leadIdParamSchema, req.params, res);
+    if (!input) return;
+
+    const remarks = await prisma.leadRemark.findMany({
+      where: { leadId: input.id, workspaceId },
+      include: {
+        createdBy: {
+          select: { name: true, email: true }
+        }
+      },
+      orderBy: { createdAt: 'asc' }
+    });
+
+    res.json({
+      success: true,
+      data: remarks,
+    });
+  } catch (error) {
+    handleServiceError(error, res, next, 'getLeadRemarks');
+  }
+};
+
 export const getLeadHistory = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
   const workspaceId = requireWorkspace(req, res);
   if (!workspaceId) return;

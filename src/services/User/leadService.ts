@@ -1659,6 +1659,17 @@ export const createLead = async (
 
       logger.info('[Diagnostic] Lead record saved', { leadId: lead.id });
 
+      if (leadRemarks) {
+        await (tx as any).leadRemark.create({
+          data: {
+            text: leadRemarks,
+            leadId: lead.id,
+            createdById: actor.id,
+            workspaceId,
+          },
+        });
+      }
+
       await persistLeadDynamicValues(tx, workspaceId, lead.id, input.dynamicValues, actor.id, {
         requireAllRequired: true,
       });
@@ -2101,6 +2112,12 @@ export const updateLead = async (
   const reasonId = input.reasonId === null ? null : input.reasonId ?? null;
   ensureLOBPayload(stage, reasonId, lobRemarks);
   await ensureValidLOBReasonForStage(workspaceId, stage, reasonId);
+
+  if (existing.isLOB && stage && !isLobStage(stage)) {
+    if (!nextLeadRemarks && !input.lobRemarks) {
+      throw createServiceError('A mandatory reason is required when moving a lead out of LOB.', 422);
+    }
+  }
   const closureData = input.stageId !== undefined
     ? buildClosureUpdateData(stage as any, actor.id, {
         isClosed: existing.isClosed,
@@ -2183,6 +2200,17 @@ export const updateLead = async (
           : { isLOB: false }),
       },
     });
+
+    if (nextLeadRemarks) {
+      await (tx as any).leadRemark.create({
+        data: {
+          text: nextLeadRemarks,
+          leadId: id,
+          createdById: actor.id,
+          workspaceId,
+        },
+      });
+    }
 
     await persistLeadDynamicValues(tx, workspaceId, id, input.dynamicValues, actor.id);
     

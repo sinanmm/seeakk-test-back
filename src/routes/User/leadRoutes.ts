@@ -19,6 +19,7 @@ router.get('/', leadController.listLeads);
 router.post('/', leadController.createLead);
 router.get('/:id', leadController.getLeadById);
 router.get('/:id/history', leadController.getLeadHistory);
+router.get('/:id/remarks', leadController.getLeadRemarks);
 router.get('/:id/field-edits', fieldHighlightController.getLeadEdits.bind(fieldHighlightController));
 router.put('/:id', leadController.updateLead);
 router.patch('/:id/star', leadController.toggleLeadStar);
