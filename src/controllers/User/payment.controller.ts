@@ -3,6 +3,7 @@ import { z } from 'zod';
 import prisma from '../../config/prisma';
 import auditService from '../../services/Audit/auditService';
 import logger from '../../utils/logger';
+import { trackFieldEdits } from '../../modules/admin/field-highlights/fieldHighlights.interceptor';
 import { emitWorkspaceEvent } from '../../realtime/socket';
 
 const leadIdParamSchema = z.object({
@@ -170,6 +171,12 @@ export const updateTotalAmount = async (req: Request, res: Response, next: NextF
         where: { id: lead.id },
         data: { totalAmount: newAmount },
       });
+
+      await trackFieldEdits(tx, workspaceId, lead.id, req.user!.id, [{
+        fieldKey: 'totalAmount',
+        oldValue: oldAmount,
+        newValue: newAmount,
+      }], body.reason);
 
       await tx.leadTotalAmountHistory.create({
         data: {

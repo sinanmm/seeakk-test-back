@@ -141,6 +141,7 @@ model Workspace {
   temporaryBulkExtensionAccesses TemporaryBulkExtensionAccess[]
   bulkFollowUpExtensions   BulkFollowUpExtension[]
   advancePayments          AdvancePayment[]
+  fieldHighlightConfigs    FieldHighlightConfig[]
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
@@ -805,6 +806,8 @@ model Lead {
   totalAmount          Float?                 @default(0)
   totalAmountHistory   LeadTotalAmountHistory[]
   advancePayments      AdvancePayment[]
+  fieldEditSummaries   LeadFieldEditSummary[]
+  fieldEditHistories   LeadFieldEditHistory[]
 
   @@index([workspaceId, assignedToId, stageId])
   @@index([workspaceId, sourceId, createdAt])
@@ -1181,6 +1184,7 @@ model User {
   approvedLeadsRevenue     Lead[]       @relation("LeadRevenueApprovedBy")
   revenueTransactions      RevenueTransaction[] @relation("RevenueTransactionUser")
   approvedRevenueTransactions RevenueTransaction[] @relation("RevenueTransactionApprovedBy")
+  leadFieldEditHistories   LeadFieldEditHistory[]
 
   createdHolidays          Holiday[]    @relation("HolidayCreatedBy")
   updatedHolidays          Holiday[]    @relation("HolidayUpdatedBy")
@@ -1985,6 +1989,54 @@ model AdvancePayment {
   @@index([workspaceId])
   @@index([requestedById])
   @@index([approvedById])
-  @@index([rejectedById])
   @@map("advance_payments")
 }
+
+model FieldHighlightConfig {
+  id          String   @id @default(cuid())
+  workspaceId String
+  fieldKey    String
+  isEnabled   Boolean  @default(false)
+  updatedAt   DateTime @updatedAt
+
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, fieldKey])
+  @@index([workspaceId])
+  @@map("field_highlight_configs")
+}
+
+model LeadFieldEditSummary {
+  id          String   @id @default(cuid())
+  leadId      String
+  fieldKey    String
+  editCount   Int      @default(0)
+  updatedAt   DateTime @updatedAt
+
+  lead        Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@unique([leadId, fieldKey])
+  @@index([leadId])
+  @@map("lead_field_edit_summaries")
+}
+
+model LeadFieldEditHistory {
+  id          String   @id @default(cuid())
+  leadId      String
+  fieldKey    String
+  oldValue    String?  @db.Text
+  newValue    String?  @db.Text
+  changedById String
+  changedAt   DateTime @default(now())
+  editNumber  Int
+  reason      String?
+
+  lead        Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  changedBy   User     @relation(fields: [changedById], references: [id], onDelete: Cascade)
+
+  @@index([leadId])
+  @@index([fieldKey])
+  @@index([changedById])
+  @@map("lead_field_edit_histories")
+}
+

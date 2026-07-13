@@ -29,6 +29,7 @@ import {
   leadDynamicsRouter,
   leadValuesRouter,
 } from './modules/admin/lead-dynamics/leadDynamics.routes';
+import { fieldHighlightRoutes } from './modules/admin/field-highlights/fieldHighlights.routes';
 import leadSourceRoutes from './modules/master/lead-source/leadSource.routes';
 import locationRoutes from './modules/master/locations/locations.routes';
 import leadStageRoutes from './modules/master/lead-stages/leadStage.routes';
@@ -236,6 +237,7 @@ app.use('/api/admin/target-cycles', targetCycleRoutes);
 app.use('/api/targets', targetRoutes);
 app.use('/api/admin/lead-dynamics', leadDynamicsAdminRoutes);
 app.use('/api/master/target-cycles', targetCycleRoutes);
+app.use('/api/admin/field-highlights', fieldHighlightRoutes);
 app.use('/api/lead-dynamics', leadDynamicsRouter);
 app.use('/api/leads', leadValuesRouter);
 app.use('/api/master/lead-sources', leadSourceRoutes);

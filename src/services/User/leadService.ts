@@ -18,6 +18,8 @@ import type {
 } from '../../validations/leadValidation';
 import { touchFollowUpTodayCachesAfterLeadMutation } from './followupService';
 
+import { buildLeadChangesToTrack, trackFieldEdits } from '../../modules/admin/field-highlights/fieldHighlights.interceptor';
+
 import { hasPermission } from '../../middlewares/authMiddleware';
 
 const LEADS_CACHE_TTL_SECONDS = 60;
@@ -1980,6 +1982,12 @@ export const updateLead = async (
   await assertModuleReady();
 
   const existing = await getLeadScoped(workspaceId, id, actor);
+  
+  const existingDynamicValues = await (prisma as any).leadDynamicValue.findMany({
+    where: { leadId: id }
+  });
+  const changesToTrack = buildLeadChangesToTrack(existing, input, existingDynamicValues);
+
   if (
     existing.approvalState === 'PENDING' &&
     input.stageId !== undefined &&
@@ -2177,6 +2185,8 @@ export const updateLead = async (
     });
 
     await persistLeadDynamicValues(tx, workspaceId, id, input.dynamicValues, actor.id);
+    
+    await trackFieldEdits(tx, workspaceId, id, actor.id, changesToTrack, input.remarks || undefined);
 
     const followUpOwnerId = assignedToId || existing.createdById;
 
