@@ -2277,34 +2277,6 @@ export const updateLead = async (
 
     await syncLeadRevenueTransaction(tx, workspaceId, id, nextStageId || existing.stageId || stage?.id || null, actor.id);
 
-    if (input.remarks !== undefined) {
-      const previousRemarks = existing.remarks || null;
-      const newRemarks = nextLeadRemarks ?? null;
-      const action = buildRemarksAuditAction(previousRemarks, newRemarks);
-      if (action) {
-        await (tx as any).auditLog.create({
-          data: {
-            userId: actor.id,
-            workspaceId,
-            action,
-            entityType: 'Lead',
-            entityId: id,
-            details: {
-              previousRemarks,
-              newRemarks,
-              changedBy: actor.id,
-              action:
-                action === 'LEAD_REMARKS_CREATED'
-                  ? 'Lead Remarks Created'
-                  : action === 'LEAD_REMARKS_REMOVED'
-                    ? 'Lead Remarks Removed'
-                    : 'Lead Remarks Updated',
-            },
-          },
-        });
-      }
-    }
-
     return id;
   });
 
@@ -2323,6 +2295,7 @@ export const updateLead = async (
     (result as any)._approvalRequired = true;
     (result as any)._approval = approvalResult.approval;
   }
+  (result as any)._changes = changesToTrack;
   return result;
 };
 

@@ -256,21 +256,25 @@ export const updateLead = async (req: Request, res: Response, next: NextFunction
     const lead = result;
     emitWorkspaceEvent(workspaceId, 'lead_updated', { leadId: lead.id, action: 'updated' });
 
-    await auditService.log({
-      userId: req.user?.id,
-      workspaceId,
-      action: 'LEAD_UPDATED',
-      entityType: 'Lead',
-      entityId: lead.id,
-      details: {
-        updatedFields: Object.keys(req.body || {}),
-        assignedToId: lead.assignedToId,
-        stageId: lead.stageId,
-        nextFollowUpAt: lead.nextFollowUpAt,
-      },
-      ipAddress: req.ip,
-      userAgent: req.headers['user-agent'],
-    });
+    const changesToTrack = (result as any)._changes || [];
+
+    if (changesToTrack.length > 0) {
+      await auditService.log({
+        userId: req.user?.id,
+        workspaceId,
+        action: 'LEAD_UPDATED',
+        entityType: 'Lead',
+        entityId: lead.id,
+        details: {
+          changes: changesToTrack,
+          assignedToId: lead.assignedToId,
+          stageId: lead.stageId,
+          nextFollowUpAt: lead.nextFollowUpAt,
+        },
+        ipAddress: req.ip,
+        userAgent: req.headers['user-agent'],
+      });
+    }
 
     return res.status(200).json({
       success: true,
@@ -654,14 +658,21 @@ export const getLeadHistory = async (req: Request, res: Response, next: NextFunc
     const timeline: any[] = [];
 
     auditLogs.forEach(log => {
+      const isFieldUpdate = log.action === 'LEAD_UPDATED';
+      const metadataDetails = log.details as any;
+      const changes = metadataDetails?.changes;
+      
       timeline.push({
         id: log.id,
-        eventType: 'AUDIT',
-        title: log.action,
-        description: `Lead audited: ${log.action}`,
+        eventType: isFieldUpdate ? 'FIELD_UPDATE' : 'AUDIT',
+        title: isFieldUpdate ? 'Lead Fields Updated' : log.action,
+        description: isFieldUpdate && changes?.length 
+          ? `Updated ${changes.length} field(s)`
+          : `Lead audited: ${log.action}`,
         timestamp: log.createdAt,
         user: log.userId ? { name: usersMap[log.userId] || 'System' } : null,
         metadata: log.details,
+        changes: isFieldUpdate ? changes : undefined,
       });
     });
 
