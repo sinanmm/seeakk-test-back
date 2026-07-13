@@ -136,6 +136,7 @@ type LeadIncludeRecord = {
   address: string | null;
   remarks: string | null;
   expectedRevenue: number | null;
+  totalAmount: number | null;
   generatedRevenue: number;
   assignedToId: string | null;
   stageId: string | null;
@@ -2493,7 +2494,8 @@ export const updateLead = async (
       }
     }
 
-    if (stage?.isLOB && (existing.stageId !== stage.id || !existing.isLOB)) {
+    const isEnteringLOB = stage?.isLOB && !existing.isLOB;
+    if (isEnteringLOB) {
       await (tx as any).leadLOBLog.create({
         data: {
           leadId: id,
@@ -2866,6 +2868,7 @@ const buildLeadExportCsvRow = (
     lead.assignedTo ? resolveDisplayName(lead.assignedTo) : '',
     lead.stage?.name || '',
     lead.lifecycle?.name || '',
+    lead.totalAmount ?? 0,
     lead.source?.name || '',
     lead.nextFollowUpAt ? lead.nextFollowUpAt.toISOString() : '',
     lead.isClosed ? 'Yes' : 'No',
@@ -2906,6 +2909,7 @@ export const exportLeads = async (
     'Assigned To',
     'Stage',
     'Lifecycle',
+    'Total Amount',
     'Source',
     'Next Follow Up At',
     'Is Closed',
