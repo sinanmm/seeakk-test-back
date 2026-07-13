@@ -30,11 +30,11 @@ export const validateClosedStageBalance = async (leadId: string, targetStageId: 
     select: { isClosed: true, name: true }
   });
   if (stage?.isClosed) {
-    const lead = await prisma.lead.findUnique({
+    const lead = await (prisma as any).lead.findUnique({
       where: { id: leadId },
       select: { totalAmount: true }
     });
-    const approvedSumResult = await prisma.advancePayment.aggregate({
+    const approvedSumResult = await (prisma as any).advancePayment.aggregate({
       where: { leadId, status: 'APPROVED' },
       _sum: { amount: true }
     });
