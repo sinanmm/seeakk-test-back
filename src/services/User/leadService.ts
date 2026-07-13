@@ -2311,10 +2311,13 @@ export const updateLead = async (
   const nextLeadRemarks = normalizeLeadRemarks(input.remarks);
   const lobRemarks = resolveLobRemarks(input, stage);
   const reasonId = input.reasonId === null ? null : input.reasonId ?? null;
-  ensureLOBPayload(stage, reasonId, lobRemarks);
-  await ensureValidLOBReasonForStage(workspaceId, stage, reasonId);
+  const isStageUpdateRequested = input.stageId !== undefined;
+  if (isStageUpdateRequested && isLobStage(stage)) {
+    ensureLOBPayload(stage, reasonId, lobRemarks);
+    await ensureValidLOBReasonForStage(workspaceId, stage, reasonId);
+  }
 
-  if (existing.isLOB && stage && !isLobStage(stage)) {
+  if (isStageUpdateRequested && existing.isLOB && stage && !isLobStage(stage)) {
     if (!nextLeadRemarks && !input.lobRemarks) {
       throw createServiceError('A mandatory reason is required when moving a lead out of LOB.', 422);
     }
@@ -2408,7 +2411,7 @@ export const updateLead = async (
                 generatedRevenue: outcomeFlags.generatedRevenue,
               };
             })()
-          : { isLOB: false }),
+          : {}),
       },
     });
 
@@ -2567,8 +2570,15 @@ export const changeStage = async (
     await validateLeadStageTransition(workspaceId, targetStage.id, validationData, stageRuleAnswers);
   }
 
-  ensureLOBPayload(targetStage, input.reasonId, input.remarks ?? null);
-  await ensureValidLOBReasonForStage(workspaceId, targetStage, input.reasonId);
+  const isMovingOutOfLob = existing.isLOB && !isLobStage(targetStage);
+  if (isLobStage(targetStage)) {
+    ensureLOBPayload(targetStage, input.reasonId, input.remarks ?? null);
+    await ensureValidLOBReasonForStage(workspaceId, targetStage, input.reasonId);
+  }
+
+  if (isMovingOutOfLob && !normalizeLeadRemarks(input.remarks)) {
+    throw createServiceError('A mandatory reason is required when moving a lead out of LOB.', 422);
+  }
 
   if (existing.stageId !== targetStage.id && shouldRequireApprovalForStage(targetStage)) {
     const requestingUser = await prisma.user.findUnique({

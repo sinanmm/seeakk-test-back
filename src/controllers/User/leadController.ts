@@ -633,19 +633,70 @@ export const getLeadRemarks = async (req: Request, res: Response, next: NextFunc
     const input = validate<LeadIdParamInput>(leadIdParamSchema, req.params, res);
     if (!input) return;
 
-    const remarks = await (prisma as any).leadRemark.findMany({
-      where: { leadId: input.id, workspaceId },
-      include: {
-        createdBy: {
-          select: { name: true, email: true }
-        }
-      },
-      orderBy: { createdAt: 'asc' }
+    const [remarks, stageHistories, lobStages] = await Promise.all([
+      (prisma as any).leadRemark.findMany({
+        where: { leadId: input.id, workspaceId },
+        include: {
+          createdBy: {
+            select: { name: true, email: true }
+          }
+        },
+        orderBy: { createdAt: 'asc' }
+      }),
+      prisma.leadStageHistory.findMany({
+        where: { leadId: input.id, workspaceId },
+        orderBy: { changedAt: 'asc' },
+      }),
+      prisma.leadStage.findMany({
+        where: { workspaceId, isLOB: true },
+        select: { id: true },
+      }),
+    ]);
+
+    const lobStageIds = new Set(lobStages.map((stage) => stage.id));
+    const normalizeStage = (value?: string | null) =>
+      (value || '').toLowerCase().trim().replace(/[\s_-]+/g, '');
+    const isLobStageRef = (stageId?: string | null, stageName?: string | null) =>
+      Boolean((stageId && lobStageIds.has(stageId)) || normalizeStage(stageName) === 'lob');
+    const lobReturnHistories = stageHistories.filter((history) =>
+      isLobStageRef(history.fromStageId, history.fromStageName) &&
+      !isLobStageRef(history.toStageId, history.toStageName),
+    );
+    const matchedRemarkIds = new Set<string>();
+
+    const enrichedRemarks = remarks.map((remark: any) => {
+      const closestReturn = lobReturnHistories
+        .filter((history) => history.changedById === remark.createdById)
+        .map((history) => ({
+          history,
+          diffMs: Math.abs(history.changedAt.getTime() - remark.createdAt.getTime()),
+        }))
+        .filter((item) => item.diffMs <= 5 * 60 * 1000)
+        .sort((left, right) => left.diffMs - right.diffMs)[0];
+
+      const isLobReturn = Boolean(closestReturn && !matchedRemarkIds.has(remark.id));
+      if (isLobReturn) {
+        matchedRemarkIds.add(remark.id);
+      }
+
+      return {
+        ...remark,
+        remarkType: isLobReturn ? 'LOB_RETURN' : 'GENERAL',
+        lobReturnStage: closestReturn
+          ? {
+              fromStageId: closestReturn.history.fromStageId,
+              fromStageName: closestReturn.history.fromStageName,
+              toStageId: closestReturn.history.toStageId,
+              toStageName: closestReturn.history.toStageName,
+              changedAt: closestReturn.history.changedAt,
+            }
+          : null,
+      };
     });
 
     res.json({
       success: true,
-      data: remarks,
+      data: enrichedRemarks,
     });
   } catch (error) {
     handleServiceError(error, res, next, 'getLeadRemarks');
