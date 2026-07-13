@@ -11,5 +11,12 @@ router.get(
   checkAnyPermission(['USERS_VIEW', 'DEPARTMENTS_VIEW', 'SYSTEM_CONFIG']),
   organisationChartController.getOrganisationChart,
 );
+// GET /api/admin/organisation-chart/:userId/details
+router.get(
+  '/:userId/details',
+  protect,
+  checkAnyPermission(['USERS_VIEW', 'DEPARTMENTS_VIEW', 'SYSTEM_CONFIG']),
+  organisationChartController.getUserDetails,
+);
 
 export default router;

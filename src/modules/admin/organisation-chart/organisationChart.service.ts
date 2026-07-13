@@ -14,6 +14,8 @@ type UserRow = {
   email: string;
   isActive: boolean;
   supervisorId: string | null;
+  departmentId: string | null;
+  phone: string | null;
   role: { name: string } | null;
   department: { name: string } | null;
 };
@@ -38,26 +40,30 @@ const assignDepth = (roots: OrganisationChartNode[]): void => {
 };
 
 const buildOrganisationTree = (
+  workspaceName: string,
   users: UserRow[],
 ): { roots: OrganisationChartNode[]; orphanCount: number; cycleBreakCount: number } => {
   const nodeMap = new Map<string, OrganisationChartNode>();
-  const roots: OrganisationChartNode[] = [];
   let orphanCount = 0;
   let cycleBreakCount = 0;
 
+  // 1. Create User nodes
   users.forEach((user) => {
     nodeMap.set(user.id, {
       id: user.id,
       name: user.name?.trim() || user.email,
       email: user.email,
+      phone: user.phone,
       role: user.role?.name ?? null,
       department: user.department?.name ?? null,
       reportingTo: user.supervisorId,
-      nodeType: 'STAFF',
+      nodeType: 'USER',
       depth: 0,
       isActive: user.isActive,
       isOrphan: false,
       children: [],
+      memberCount: 0,
+      activeCount: 0,
     });
   });
 
@@ -72,23 +78,25 @@ const buildOrganisationTree = (
       const node = nodeMap.get(current);
       current = node?.reportingTo ?? null;
     }
-
     return false;
   };
+
+  // 2. Link User nodes to Supervisors globally
+  const noSupervisorUsers: OrganisationChartNode[] = [];
 
   users.forEach((user) => {
     const node = nodeMap.get(user.id)!;
     const parentId = user.supervisorId;
 
     if (!parentId) {
-      roots.push(node);
+      noSupervisorUsers.push(node);
       return;
     }
 
     if (parentId === user.id) {
       cycleBreakCount += 1;
       node.isOrphan = true;
-      roots.push(node);
+      noSupervisorUsers.push(node);
       return;
     }
 
@@ -96,29 +104,71 @@ const buildOrganisationTree = (
     if (!parentNode) {
       orphanCount += 1;
       node.isOrphan = true;
-      roots.push(node);
+      noSupervisorUsers.push(node);
       return;
     }
 
     if (createsCycle(user.id, parentId)) {
       cycleBreakCount += 1;
       node.isOrphan = true;
-      roots.push(node);
+      noSupervisorUsers.push(node);
       return;
     }
 
     parentNode.children.push(node);
   });
 
+  // Calculate team counts for supervisors
   nodeMap.forEach((node) => {
-    if (!node.reportingTo) {
-      node.nodeType = 'TOP';
-      return;
+    if (node.children.length > 0) {
+      const countMembers = (n: OrganisationChartNode): { total: number; active: number } => {
+        let total = n.children.length;
+        let active = n.children.filter((c) => c.isActive).length;
+        n.children.forEach((c) => {
+          const nested = countMembers(c);
+          total += nested.total;
+          active += nested.active;
+        });
+        return { total, active };
+      };
+      const counts = countMembers(node);
+      node.memberCount = counts.total;
+      node.activeCount = counts.active;
     }
-    node.nodeType = node.children.length > 0 ? 'MANAGER' : 'STAFF';
   });
 
-  sortTreeByName(roots);
+  // 3. Group remaining top-level users by Department
+  const departmentNodes = new Map<string, OrganisationChartNode>();
+  
+  noSupervisorUsers.forEach((userNode) => {
+    const userRow = users.find((u) => u.id === userNode.id);
+    const deptName = userRow?.department?.name || 'Unassigned';
+    
+    if (!departmentNodes.has(deptName)) {
+      departmentNodes.set(deptName, {
+        id: `dept-${deptName}`,
+        name: deptName,
+        nodeType: 'DEPARTMENT',
+        depth: 0,
+        children: [],
+      });
+    }
+    departmentNodes.get(deptName)!.children.push(userNode);
+  });
+
+  const sortedDepts = Array.from(departmentNodes.values());
+  sortTreeByName(sortedDepts);
+
+  // 4. Create Workspace Root
+  const rootNode: OrganisationChartNode = {
+    id: 'root-workspace',
+    name: workspaceName || 'Company',
+    nodeType: 'WORKSPACE',
+    depth: 0,
+    children: sortedDepts,
+  };
+
+  const roots = [rootNode];
   assignDepth(roots);
 
   return { roots, orphanCount, cycleBreakCount };
@@ -137,6 +187,11 @@ export const getOrganisationChart = async (
     }
   }
 
+  const workspace = await prisma.workspace.findUnique({
+    where: { id: workspaceId },
+    select: { companyName: true },
+  });
+
   const users = await prisma.user.findMany({
     where: {
       workspaceId,
@@ -149,13 +204,15 @@ export const getOrganisationChart = async (
       email: true,
       isActive: true,
       supervisorId: true,
+      departmentId: true,
+      phone: true,
       role: { select: { name: true } },
       department: { select: { name: true } },
     },
     orderBy: [{ name: 'asc' }],
   });
 
-  const { roots, orphanCount, cycleBreakCount } = buildOrganisationTree(users as UserRow[]);
+  const { roots, orphanCount, cycleBreakCount } = buildOrganisationTree(workspace?.companyName || 'Workspace', users as UserRow[]);
 
   const response: OrganisationChartResponse = {
     data: roots,
@@ -168,8 +225,64 @@ export const getOrganisationChart = async (
   };
 
   if (redisClient.isOpen) {
-    await redisClient.setEx(cacheKey, ORG_CHART_CACHE_TTL_SECONDS, JSON.stringify(response));
+    redisClient.setEx(cacheKey, ORG_CHART_CACHE_TTL_SECONDS, JSON.stringify(response)).catch(() => {});
   }
 
   return response;
+};
+
+export const getUserDetails = async (workspaceId: string, userId: string) => {
+  const user = await (prisma as any).user.findFirst({
+    where: { id: userId, workspaceId },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      phone: true,
+      isActive: true,
+      createdAt: true,
+      role: { select: { name: true, permissions: true } },
+      department: { select: { name: true } },
+      supervisor: { select: { name: true, id: true } },
+      subordinates: { select: { id: true, name: true, email: true, role: { select: { name: true } }, isActive: true } },
+      _count: {
+        select: {
+          assignedLeads: { where: { isClosed: false } }
+        }
+      }
+    }
+  });
+
+  if (!user) throw new Error('User not found in workspace.');
+
+  // Attendance for today
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const attendance = await (prisma as any).attendanceLog?.findFirst({
+    where: {
+      userId,
+      workspaceId,
+      date: today,
+    },
+    select: {
+      status: true,
+    }
+  });
+
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    phone: user.phone,
+    isActive: user.isActive,
+    createdAt: user.createdAt,
+    role: user.role?.name || null,
+    department: user.department?.name || null,
+    supervisor: user.supervisor,
+    subordinates: user.subordinates || [],
+    permissionsCount: user.role?.permissions?.length || 0,
+    openLeadsCount: user._count?.assignedLeads || 0,
+    todayAttendance: attendance?.status || 'NOT_MARKED',
+  };
 };

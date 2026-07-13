@@ -66,3 +66,32 @@ export const getOrganisationChart = async (
   }
 };
 
+export const getUserDetails = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<any> => {
+  const workspaceId = req.user?.workspaceId ?? null;
+  if (!workspaceId) {
+    return res.status(403).json({
+      success: false,
+      message: 'Forbidden: No workspace linked to your account.',
+    });
+  }
+
+  const userId = req.params.userId as string;
+  if (!userId) {
+    return res.status(400).json({ success: false, message: 'User ID is required.' });
+  }
+
+  try {
+    const data = await organisationChartService.getUserDetails(workspaceId, userId);
+    return res.status(200).json({
+      success: true,
+      data,
+    });
+  } catch (error) {
+    handleServiceError(error, res, next, 'getUserDetails');
+  }
+};
+
