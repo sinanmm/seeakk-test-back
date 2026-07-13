@@ -2848,13 +2848,14 @@ export const bulkDeleteLeads = async (workspaceId: string, ids: string[], perman
 };
 
 const buildLeadExportCsvRow = (
+  slNo: number,
   lead: LeadIncludeRecord,
   dynamicFields: Array<{ id: string }>,
   dynamicValues: LeadDynamicValueRecord[] = [],
 ): unknown[] => {
   const dynamicValueByFieldId = new Map(dynamicValues.map((entry) => [entry.fieldId, entry.value]));
   return [
-    lead.id,
+    slNo,
     lead.name,
     lead.email || '',
     lead.phone || '',
@@ -2894,7 +2895,7 @@ export const exportLeads = async (
   }) as Array<{ id: string; name: string }>;
 
   const headers = [
-    'Lead ID',
+    'SL No.',
     'Name',
     'Email',
     'Phone',
@@ -2920,6 +2921,7 @@ export const exportLeads = async (
   const EXPORT_BATCH = 750;
   const lines: unknown[][] = [];
   let cursorId: string | undefined;
+  let slNoCounter = 1;
 
   for (;;) {
     const batch = (await (prisma as any).lead.findMany({
@@ -2937,7 +2939,7 @@ export const exportLeads = async (
     const dynamicValueMap = await fetchLeadDynamicValueMap(batch.map((lead) => lead.id));
 
     for (const lead of batch) {
-      lines.push(buildLeadExportCsvRow(lead, dynamicFields, dynamicValueMap.get(lead.id)));
+      lines.push(buildLeadExportCsvRow(slNoCounter++, lead, dynamicFields, dynamicValueMap.get(lead.id)));
     }
 
     if (batch.length < EXPORT_BATCH) {
