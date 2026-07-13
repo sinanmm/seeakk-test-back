@@ -611,7 +611,7 @@ export const getLeadRemarks = async (req: Request, res: Response, next: NextFunc
     const input = validate<LeadIdParamInput>(leadIdParamSchema, req.params, res);
     if (!input) return;
 
-    const remarks = await prisma.leadRemark.findMany({
+    const remarks = await (prisma as any).leadRemark.findMany({
       where: { leadId: input.id, workspaceId },
       include: {
         createdBy: {
@@ -662,16 +662,16 @@ export const getLeadHistory = async (req: Request, res: Response, next: NextFunc
       prisma.auditLog.findMany({ where: { entityType: 'Lead', entityId: id, workspaceId } }),
       prisma.leadActivity.findMany({ where: { leadId: id, workspaceId }, include: { performedBy: { select: { name: true, email: true } } } }),
       prisma.leadStageHistory.findMany({ where: { leadId: id, workspaceId } }),
-      prisma.leadTotalAmountHistory.findMany({ where: { leadId: id }, include: { changedBy: { select: { name: true, email: true } } } }),
-      prisma.advancePayment.findMany({ where: { leadId: id, workspaceId }, include: { requestedBy: { select: { name: true } }, approvedBy: { select: { name: true } }, rejectedBy: { select: { name: true } } } }),
+      (prisma as any).leadTotalAmountHistory.findMany({ where: { leadId: id }, include: { changedBy: { select: { name: true, email: true } } } }),
+      (prisma as any).advancePayment.findMany({ where: { leadId: id, workspaceId }, include: { requestedBy: { select: { name: true } }, approvedBy: { select: { name: true } }, rejectedBy: { select: { name: true } } } }),
       prisma.leadLOBLog.findMany({ where: { leadId: id, workspaceId } }),
     ]);
 
     // Collect user IDs that need mapping
     const userIdsToFetch = new Set<string>();
-    auditLogs.forEach(log => { if (log.userId) userIdsToFetch.add(log.userId); });
-    stageHistories.forEach(log => { if (log.changedById) userIdsToFetch.add(log.changedById); });
-    lobLogs.forEach(log => { if (log.changedById) userIdsToFetch.add(log.changedById); });
+    auditLogs.forEach((log: any) => { if (log.userId) userIdsToFetch.add(log.userId); });
+    stageHistories.forEach((log: any) => { if (log.changedById) userIdsToFetch.add(log.changedById); });
+    lobLogs.forEach((log: any) => { if (log.changedById) userIdsToFetch.add(log.changedById); });
 
     const usersMap: Record<string, string> = {};
     if (userIdsToFetch.size > 0) {
@@ -715,7 +715,7 @@ export const getLeadHistory = async (req: Request, res: Response, next: NextFunc
       });
     });
 
-    stageHistories.forEach(log => {
+    stageHistories.forEach((log: any) => {
       timeline.push({
         id: log.id,
         eventType: 'STAGE_CHANGE',
@@ -773,7 +773,7 @@ export const getLeadHistory = async (req: Request, res: Response, next: NextFunc
       }
     });
 
-    lobLogs.forEach(log => {
+    lobLogs.forEach((log: any) => {
       timeline.push({
         id: log.id,
         eventType: 'LOB',
