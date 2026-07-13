@@ -192,6 +192,39 @@ const ensureModuleReady = async (): Promise<void> => {
   }
 };
 
+const calculateExpectedRevenue = async (workspaceId: string, leadAccess: Prisma.LeadWhereInput): Promise<number> => {
+  const where: Prisma.LeadWhereInput = {
+    workspaceId,
+    deletedAt: null,
+    ...leadAccess,
+  };
+  const rows = await prisma.lead.findMany({
+    where,
+    select: {
+      id: true,
+      totalAmount: true,
+    },
+  });
+  if (rows.length === 0) return 0;
+
+  const leadIds = rows.map((lead) => lead.id);
+  const advanceGroups = await prisma.advancePayment.groupBy({
+    by: ['leadId'],
+    where: {
+      workspaceId,
+      leadId: { in: leadIds },
+      status: 'APPROVED',
+    },
+    _sum: { amount: true },
+  });
+  const approvedByLead = new Map(advanceGroups.map((item) => [item.leadId, Number(item._sum.amount || 0)]));
+
+  return rows.reduce((sum, lead) => {
+    const balance = Math.max(0, Number(lead.totalAmount || 0) - (approvedByLead.get(lead.id) || 0));
+    return sum + balance;
+  }, 0);
+};
+
 export const getDashboardSummary = async (
   workspaceId: string,
   actor: Actor,
@@ -276,6 +309,7 @@ export const getDashboardSummary = async (
       },
       leadAccess,
     ),
+    calculateExpectedRevenue(workspaceId, leadAccess),
   ]);
 
   const getValue = <T>(index: number, fallback: T): T => {
@@ -303,6 +337,7 @@ export const getDashboardSummary = async (
   const followUps = getValue<any[]>(15, []);
   const lobStageBreakdown = getValue<any>(16, { labels: [], lob_counts: [], total_reference: 0 });
   const pendingApprovals = getValue<number>(17, 0);
+  const expectedRevenue = getValue<number>(18, 0);
 
   const auditLeadEntityIds = Array.from(
     new Set(
@@ -377,6 +412,13 @@ export const getDashboardSummary = async (
         growth: `${closedThisWeekCount} closed this week`,
         trend: getTrend(closedThisWeekCount, closedLastWeekCount),
         iconName: 'CheckCircle2',
+      },
+      {
+        title: 'Expected Revenue',
+        value: expectedRevenue,
+        growth: 'Outstanding balance',
+        trend: 'up',
+        iconName: 'IndianRupee',
       },
       {
         title: 'Active Users',

@@ -181,6 +181,17 @@ type LeadIncludeRecord = {
     changedById: string;
     changedAt: Date;
   }>;
+  products?: Array<{
+    id: string;
+    productId: string | null;
+    productName: string;
+    productCode: string | null;
+    unitPrice: number;
+    quantity: number;
+    lineTotal: number;
+    createdAt: Date;
+    updatedAt: Date;
+  }>;
 };
 
 const createServiceError = (message: string, statusCode: number): Error & { statusCode: number } => {
@@ -265,6 +276,20 @@ const leadInclude = {
       description: true,
       scheduledAt: true,
       status: true,
+    },
+  },
+  products: {
+    orderBy: { createdAt: 'asc' as const },
+    select: {
+      id: true,
+      productId: true,
+      productName: true,
+      productCode: true,
+      unitPrice: true,
+      quantity: true,
+      lineTotal: true,
+      createdAt: true,
+      updatedAt: true,
     },
   },
 } as const;
@@ -453,6 +478,11 @@ const mapLeadRecord = (lead: LeadIncludeRecord) => {
     ...item,
     changedAt: item.changedAt.toISOString(),
   })),
+  products: ((lead as any).products || []).map((item: any) => ({
+    ...item,
+    createdAt: item.createdAt.toISOString(),
+    updatedAt: item.updatedAt.toISOString(),
+  })),
   };
 };
 
@@ -461,6 +491,134 @@ const normalizeLeadRemarks = (value: string | null | undefined): string | null |
   if (value === null) return null;
   const trimmed = value.trim();
   return trimmed.length > 0 ? trimmed : null;
+};
+
+type LeadProductInput = { productId: string; quantity: number };
+type LeadProductSnapshot = {
+  productId: string;
+  productName: string;
+  productCode: string | null;
+  unitPrice: number;
+  quantity: number;
+  lineTotal: number;
+};
+
+type ProductSnapshotSource = {
+  id: string;
+  name: string;
+  code: string | null;
+  unitPrice: number;
+};
+
+const resolveLeadProductSnapshots = async (
+  tx: any,
+  workspaceId: string,
+  products?: LeadProductInput[],
+): Promise<LeadProductSnapshot[] | undefined> => {
+  if (products === undefined) return undefined;
+  if (products.length === 0) return [];
+
+  const normalized = products.map((item) => ({
+    productId: item.productId.trim(),
+    quantity: Math.max(1, Math.trunc(Number(item.quantity) || 1)),
+  }));
+  const ids = Array.from(new Set(normalized.map((item) => item.productId)));
+  const productRows = await tx.product.findMany({
+    where: {
+      id: { in: ids },
+      workspaceId,
+      status: 'ACTIVE',
+      deletedAt: null,
+    },
+    select: {
+      id: true,
+      name: true,
+      code: true,
+      unitPrice: true,
+    },
+  });
+  const productById = new Map<string, ProductSnapshotSource>(
+    productRows.map((item: ProductSnapshotSource) => [item.id, item]),
+  );
+
+  return normalized.map((item) => {
+    const product = productById.get(item.productId);
+    if (!product) {
+      throw createServiceError('One or more selected products are inactive or unavailable.', 422);
+    }
+    const unitPrice = Number(product.unitPrice || 0);
+    const lineTotal = unitPrice * item.quantity;
+    return {
+      productId: product.id,
+      productName: product.name,
+      productCode: product.code || null,
+      unitPrice,
+      quantity: item.quantity,
+      lineTotal,
+    };
+  });
+};
+
+const sumProductSnapshots = (snapshots?: LeadProductSnapshot[]): number | undefined => {
+  if (snapshots === undefined) return undefined;
+  return snapshots.reduce((sum, item) => sum + item.lineTotal, 0);
+};
+
+const replaceLeadProducts = async (
+  tx: any,
+  workspaceId: string,
+  leadId: string,
+  actorId: string,
+  snapshots: LeadProductSnapshot[],
+): Promise<void> => {
+  const previous = await tx.leadProduct.findMany({
+    where: { workspaceId, leadId },
+    select: {
+      productId: true,
+      productName: true,
+      quantity: true,
+      unitPrice: true,
+      lineTotal: true,
+    },
+  });
+
+  await tx.leadProduct.deleteMany({ where: { workspaceId, leadId } });
+  if (snapshots.length > 0) {
+    await tx.leadProduct.createMany({
+      data: snapshots.map((item) => ({
+        workspaceId,
+        leadId,
+        productId: item.productId,
+        productName: item.productName,
+        productCode: item.productCode,
+        unitPrice: item.unitPrice,
+        quantity: item.quantity,
+        lineTotal: item.lineTotal,
+        createdById: actorId,
+      })),
+    });
+  }
+
+  await tx.leadActivity.create({
+    data: {
+      leadId,
+      performedById: actorId,
+      workspaceId,
+      action: 'LEAD_PRODUCTS_UPDATED',
+      metadata: { previous, next: snapshots },
+    },
+  });
+
+  await tx.auditLog.create({
+    data: {
+      userId: actorId,
+      workspaceId,
+      action: 'LEAD_PRODUCTS_UPDATED',
+      entityType: 'Lead',
+      entityId: leadId,
+      details: { previous, next: snapshots },
+    },
+  });
 };
 
 const resolveLobRemarks = (
@@ -709,6 +867,37 @@ const mapLeadRecordWithDynamicValues = (
   dynamicValues: serializeLeadDynamicValues(dynamicValueMap.get(lead.id)),
   isStarred: starredLeadIds?.has(lead.id) ?? false,
 });
+
+const calculateExpectedRevenueForWhere = async (where: any): Promise<number> => {
+  const rows = await (prisma as any).lead.findMany({
+    where,
+    select: {
+      id: true,
+      totalAmount: true,
+    },
+  });
+
+  if (rows.length === 0) return 0;
+
+  const leadIds = rows.map((lead: any) => lead.id);
+  const advanceGroups = await (prisma as any).advancePayment.groupBy({
+    by: ['leadId'],
+    where: {
+      leadId: { in: leadIds },
+      status: 'APPROVED',
+    },
+    _sum: { amount: true },
+  });
+  const approvedByLead = new Map<string, number>(
+    advanceGroups.map((item: any) => [item.leadId, Number(item._sum?.amount || 0)]),
+  );
+
+  return rows.reduce((sum: number, lead: any) => {
+    const totalAmount = Number(lead.totalAmount || 0);
+    const approved = approvedByLead.get(lead.id) || 0;
+    return sum + Math.max(0, totalAmount - approved);
+  }, 0);
+};
 
 const fetchStarredLeadIds = async (
   workspaceId: string,
@@ -1622,6 +1811,9 @@ export const createLead = async (
 
   try {
     const createdLeadId = await prisma.$transaction(async (tx: any) => {
+      const productSnapshots = await resolveLeadProductSnapshots(tx, workspaceId, (input as any).products);
+      const productTotal = sumProductSnapshots(productSnapshots);
+      const resolvedTotalAmount = productTotal !== undefined ? productTotal : input.totalAmount ?? 0;
       const outcomeFlags = stage
         ? buildLeadOutcomeFlagsFromStage(stage, actor.id)
         : buildClosureUpdateData(stage, actor.id);
@@ -1650,7 +1842,7 @@ export const createLead = async (
           closedById: outcomeFlags.closedById,
           closureType: outcomeFlags.closureType,
           generatedRevenue: outcomeFlags.generatedRevenue,
-          totalAmount: input.totalAmount ?? 0,
+          totalAmount: resolvedTotalAmount,
           workspaceId,
           createdById: actor.id,
         },
@@ -1673,6 +1865,10 @@ export const createLead = async (
       await persistLeadDynamicValues(tx, workspaceId, lead.id, input.dynamicValues, actor.id, {
         requireAllRequired: true,
       });
+
+      if (productSnapshots !== undefined) {
+        await replaceLeadProducts(tx, workspaceId, lead.id, actor.id, productSnapshots);
+      }
 
       if (input.nextFollowUpAt) {
         await createAutomaticFollowUp(
@@ -1717,17 +1913,19 @@ export const createLead = async (
       logger.info('[Diagnostic] Dynamic fields saved', { leadId: lead.id });
 
       // Save Payment Information
-      if (input.totalAmount && input.totalAmount > 0) {
+      if (resolvedTotalAmount > 0) {
         await (tx as any).leadTotalAmountHistory.create({
           data: {
             leadId: lead.id,
             oldAmount: 0,
-            newAmount: input.totalAmount,
+            newAmount: resolvedTotalAmount,
             changedById: actor.id,
-            reason: 'Initial amount set on lead creation.',
+            reason: productSnapshots !== undefined
+              ? 'Initial amount calculated from selected products.'
+              : 'Initial amount set on lead creation.',
           },
         });
-        logger.info('[Diagnostic] Payment information saved', { leadId: lead.id, totalAmount: input.totalAmount });
+        logger.info('[Diagnostic] Payment information saved', { leadId: lead.id, totalAmount: resolvedTotalAmount });
       }
 
       // Save Pending Advance Requests
@@ -1853,6 +2051,7 @@ export const getLeads = async (
   actor?: Actor,
 ): Promise<{
   leads: Array<ReturnType<typeof mapLeadRecord>>;
+  expectedRevenue: number;
   pagination: {
     page: number;
     limit: number;
@@ -1878,7 +2077,7 @@ export const getLeads = async (
   const skip = (query.page - 1) * query.limit;
   const where = await buildListWhere(workspaceId, query, actor);
 
-  const [total, rows] = await Promise.all([
+  const [total, rows, expectedRevenue] = await Promise.all([
     (prisma as any).lead.count({ where }),
     (prisma as any).lead.findMany({
       where,
@@ -1887,6 +2086,7 @@ export const getLeads = async (
       orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
       include: leadInclude,
     }),
+    calculateExpectedRevenueForWhere(where),
   ]);
 
   const totalPages = Math.max(1, Math.ceil(total / query.limit));
@@ -1895,6 +2095,7 @@ export const getLeads = async (
   const starredLeadIds = await fetchStarredLeadIds(workspaceId, actor?.id, leadRows.map((lead) => lead.id));
   const result = {
     leads: leadRows.map((lead) => mapLeadRecordWithDynamicValues(lead, dynamicValueMap, starredLeadIds)),
+    expectedRevenue,
     pagination: {
       page: query.page,
       limit: query.limit,
@@ -2151,6 +2352,15 @@ export const updateLead = async (
       };
 
   const updatedLeadId = await prisma.$transaction(async (tx: any) => {
+    const productSnapshots = await resolveLeadProductSnapshots(tx, workspaceId, (input as any).products);
+    const productTotal = sumProductSnapshots(productSnapshots);
+    const resolvedTotalAmount =
+      productTotal !== undefined
+        ? productTotal
+        : input.totalAmount !== undefined
+          ? input.totalAmount
+          : undefined;
+
     await (tx as any).lead.update({
       where: { id },
       data: {
@@ -2165,6 +2375,7 @@ export const updateLead = async (
         ...(input.expectedRevenue !== undefined
           ? { expectedRevenue: input.expectedRevenue === null ? null : input.expectedRevenue }
           : {}),
+        ...(resolvedTotalAmount !== undefined ? { totalAmount: resolvedTotalAmount } : {}),
         ...(input.assignedToId !== undefined ? { assignedToId } : {}),
         ...(input.stageId !== undefined ? { stageId: stage?.id || null } : {}),
         ...(input.lifecycleId !== undefined ? { lifecycleId: lifecycle?.id || null } : {}),
@@ -2213,6 +2424,10 @@ export const updateLead = async (
     }
 
     await persistLeadDynamicValues(tx, workspaceId, id, input.dynamicValues, actor.id);
+
+    if (productSnapshots !== undefined) {
+      await replaceLeadProducts(tx, workspaceId, id, actor.id, productSnapshots);
+    }
     
     await trackFieldEdits(tx, workspaceId, id, actor.id, changesToTrack, input.remarks || undefined);
 

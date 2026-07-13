@@ -55,13 +55,34 @@ function validate<T>(
   schema: { safeParse: (data: unknown) => { success: boolean; data?: T; error?: any } },
   data: unknown,
   res: Response,
+  context?: string,
 ): T | null {
+  if (process.env.NODE_ENV !== 'production') {
+    logger.info('[LeadValidation] Incoming payload before validation', {
+      context,
+      payload: data,
+    });
+  }
+
   const result = schema.safeParse(data);
   if (!result.success) {
+    const errors = (result.error?.issues || []).map((issue: any) => ({
+      field: issue.path?.length ? issue.path.join('.') : 'payload',
+      message: issue.message || 'Invalid value.',
+    }));
+
+    if (process.env.NODE_ENV !== 'production') {
+      logger.warn('[LeadValidation] Validation failed', {
+        context,
+        errors,
+        rawError: result.error,
+      });
+    }
+
     res.status(422).json({
       success: false,
       message: 'Validation failed.',
-      errors: result.error.flatten().fieldErrors,
+      errors,
     });
     return null;
   }
@@ -121,7 +142,7 @@ export const createLead = async (req: Request, res: Response, next: NextFunction
   const workspaceId = requireWorkspace(req, res);
   if (!workspaceId) return;
 
-  const input = validate<CreateLeadInput>(createLeadSchema, req.body, res);
+  const input = validate<CreateLeadInput>(createLeadSchema, req.body, res, 'createLead');
   if (!input) return;
 
   try {
@@ -164,7 +185,7 @@ export const listLeads = async (req: Request, res: Response, next: NextFunction)
   const workspaceId = requireWorkspace(req, res);
   if (!workspaceId) return;
 
-  const query = validate<ListLeadsQueryInput>(listLeadsQuerySchema, req.query, res);
+  const query = validate<ListLeadsQueryInput>(listLeadsQuerySchema, req.query, res, 'listLeads');
   if (!query) return;
 
   try {
@@ -173,6 +194,7 @@ export const listLeads = async (req: Request, res: Response, next: NextFunction)
       success: true,
       message: 'Leads fetched successfully',
       leads: result.leads,
+      expectedRevenue: result.expectedRevenue,
       pagination: result.pagination,
     });
   } catch (error) {
@@ -184,7 +206,7 @@ export const getLeadById = async (req: Request, res: Response, next: NextFunctio
   const workspaceId = requireWorkspace(req, res);
   if (!workspaceId) return;
 
-  const params = validate<LeadIdParamInput>(leadIdParamSchema, req.params, res);
+  const params = validate<LeadIdParamInput>(leadIdParamSchema, req.params, res, 'getLeadById.params');
   if (!params) return;
 
   try {
@@ -203,10 +225,10 @@ export const toggleLeadStar = async (req: Request, res: Response, next: NextFunc
   const workspaceId = requireWorkspace(req, res);
   if (!workspaceId) return;
 
-  const params = validate<LeadIdParamInput>(leadIdParamSchema, req.params, res);
+  const params = validate<LeadIdParamInput>(leadIdParamSchema, req.params, res, 'toggleLeadStar.params');
   if (!params) return;
 
-  const input = validate<ToggleLeadStarInput>(toggleLeadStarSchema, req.body, res);
+  const input = validate<ToggleLeadStarInput>(toggleLeadStarSchema, req.body, res, 'toggleLeadStar.body');
   if (!input) return;
 
   try {
@@ -230,10 +252,10 @@ export const updateLead = async (req: Request, res: Response, next: NextFunction
   const workspaceId = requireWorkspace(req, res);
   if (!workspaceId) return;
 
-  const params = validate<LeadIdParamInput>(leadIdParamSchema, req.params, res);
+  const params = validate<LeadIdParamInput>(leadIdParamSchema, req.params, res, 'updateLead.params');
   if (!params) return;
 
-  const input = validate<UpdateLeadInput>(updateLeadSchema, req.body, res);
+  const input = validate<UpdateLeadInput>(updateLeadSchema, req.body, res, 'updateLead.body');
   if (!input) return;
 
   try {

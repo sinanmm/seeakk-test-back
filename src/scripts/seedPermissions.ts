@@ -107,6 +107,11 @@ const permissions = [
   { key: 'LEADS_IMPORT', group: 'LEADS_MANAGEMENT', description: 'Import leads from external files' },
 
   // OTHER MODULES (Future proofing)
+  { key: 'PRODUCTS_VIEW', group: 'MASTER_CONFIGURATION', description: 'View product master records' },
+  { key: 'PRODUCTS_CREATE', group: 'MASTER_CONFIGURATION', description: 'Create product master records' },
+  { key: 'PRODUCTS_EDIT', group: 'MASTER_CONFIGURATION', description: 'Edit, activate, and deactivate product master records' },
+  { key: 'PRODUCTS_DELETE', group: 'MASTER_CONFIGURATION', description: 'Delete unused product master records' },
+  { key: 'PRODUCT_PRICES_VIEW', group: 'MASTER_CONFIGURATION', description: 'View product pricing in lead workflows' },
   { key: 'FINANCE_VIEW', group: 'MASTER_CONFIGURATION', description: 'View finance records' },
   { key: 'INVENTORY_VIEW', group: 'MASTER_CONFIGURATION', description: 'View inventory' },
   { key: 'REPORT_TYPE_MANAGE', group: 'REPORTS_ANALYTICS', description: 'Create, edit, activate, deactivate, and delete report types' },

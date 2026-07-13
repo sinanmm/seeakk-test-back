@@ -115,12 +115,14 @@ model Workspace {
   roles                          Role[]
   departments                    Department[]
   leadSources                    LeadSource[]
+  products                       Product[]
   leadStages                     LeadStage[]
   stageRules                     StageRule[]
   targetCycles                   TargetCycle[]
   leadLifeCycles                 LeadLifeCycle[]
   leadDynamicFields              LeadDynamicField[]
   leads                          Lead[]
+  leadProducts                   LeadProduct[]
   leadStars                      LeadStar[]
   leadActivities                 LeadActivity[]
   leadStageApprovals             LeadStageApproval[]
@@ -155,6 +157,11 @@ enum DepartmentStatus {
 }
 
 enum LeadSourceStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum ProductStatus {
   ACTIVE
   INACTIVE
 }
@@ -803,6 +810,7 @@ model Lead {
   stageHistory        LeadStageHistory[]
   revenueTransactions RevenueTransaction[]
   stars               LeadStar[]
+  products            LeadProduct[]
 
   totalAmount        Float?                   @default(0)
   totalAmountHistory LeadTotalAmountHistory[]
@@ -832,6 +840,54 @@ model Lead {
   @@index([email])
   @@index([phone])
   @@map("leads")
+}
+
+model Product {
+  id          String        @id @default(cuid())
+  workspaceId String
+  name        String
+  code        String?
+  category    String?
+  description String?
+  unitPrice   Float
+  status      ProductStatus @default(ACTIVE)
+  createdById String?
+  deletedAt   DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  workspace    Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdBy    User?         @relation("ProductCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  leadProducts LeadProduct[]
+
+  @@unique([workspaceId, name])
+  @@index([workspaceId, status, deletedAt])
+  @@index([workspaceId, category])
+  @@map("products")
+}
+
+model LeadProduct {
+  id          String   @id @default(cuid())
+  workspaceId String
+  leadId      String
+  productId   String?
+  productName String
+  productCode String?
+  unitPrice   Float
+  quantity    Int
+  lineTotal   Float
+  createdById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  lead      Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  product   Product?  @relation(fields: [productId], references: [id], onDelete: SetNull)
+  createdBy User?     @relation("LeadProductCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([workspaceId, leadId])
+  @@index([workspaceId, productId])
+  @@map("lead_products")
 }
 
 model LeadLOBLog {
@@ -1203,6 +1259,8 @@ model User {
   assignedLeads               Lead[]                    @relation("LeadAssignedTo")
   closedLeads                 Lead[]                    @relation("LeadClosedBy")
   approvedLeadsRevenue        Lead[]                    @relation("LeadRevenueApprovedBy")
+  createdProducts             Product[]                 @relation("ProductCreatedBy")
+  createdLeadProducts         LeadProduct[]             @relation("LeadProductCreatedBy")
   revenueTransactions         RevenueTransaction[]      @relation("RevenueTransactionUser")
   approvedRevenueTransactions RevenueTransaction[]      @relation("RevenueTransactionApprovedBy")
   leadFieldEditHistories      LeadFieldEditHistory[]
