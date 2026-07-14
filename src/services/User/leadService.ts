@@ -228,7 +228,7 @@ const resolveDisplayName = (user?: { name?: string | null; username?: string | n
   return user.email || '';
 };
 
-const leadInclude = {
+const leadRelationSelect = {
   assignedTo: {
     select: {
       id: true,
@@ -339,6 +339,54 @@ const leadInclude = {
   },
 } as const;
 
+const leadBaseSelect = {
+  id: true,
+  name: true,
+  email: true,
+  phone: true,
+  companyName: true,
+  address: true,
+  remarks: true,
+  expectedRevenue: true,
+  totalAmount: true,
+  generatedRevenue: true,
+  assignedToId: true,
+  stageId: true,
+  lifecycleId: true,
+  sourceId: true,
+  nextFollowUpAt: true,
+  stageEnteredAt: true,
+  stageExpiresAt: true,
+  slaAction: true,
+  slaWarningDays: true,
+  approvalState: true,
+  pendingApprovalToStageId: true,
+  pendingApprovalRequestedAt: true,
+  isClosed: true,
+  isLOB: true,
+  closedAt: true,
+  closedById: true,
+  closureType: true,
+  workspaceId: true,
+  createdById: true,
+  deletedAt: true,
+  createdAt: true,
+  updatedAt: true,
+} as const;
+
+const leadProfileImageSelect = {
+  profileImageUrl: true,
+  profileImageThumbnail: true,
+  profileImageUploadedAt: true,
+  profileImageUploadedById: true,
+} as const;
+
+const buildLeadSelect = (includeProfileImageColumns: boolean) => ({
+  ...leadBaseSelect,
+  ...(includeProfileImageColumns ? leadProfileImageSelect : {}),
+  ...leadRelationSelect,
+});
+
 const hasGeneratedDelegates = (): boolean => {
   const lead = (prisma as any).lead;
   const followUp = (prisma as any).followUp;
@@ -367,10 +415,6 @@ const LEAD_MODEL_DB_COLUMNS = [
   'companyName',
   'address',
   'remarks',
-  'profileImageUrl',
-  'profileImageThumbnail',
-  'profileImageUploadedAt',
-  'profileImageUploadedById',
   'expectedRevenue',
   'generatedRevenue',
   'assignedToId',
@@ -397,21 +441,53 @@ const LEAD_MODEL_DB_COLUMNS = [
   'updatedAt',
 ] as const;
 
+const LEAD_PROFILE_IMAGE_DB_COLUMNS = [
+  'profileImageUrl',
+  'profileImageThumbnail',
+  'profileImageUploadedAt',
+  'profileImageUploadedById',
+] as const;
+
 let leadsColumnCheckValidUntil = 0;
+let profileImageColumnsReadyValidUntil = 0;
+let profileImageColumnsReady = false;
 const LEADS_COLUMN_CHECK_TTL_MS = 60_000;
 
-const ensureLeadsColumnsMatchPrismaModel = async (): Promise<void> => {
-  if (Date.now() < leadsColumnCheckValidUntil) {
-    return;
-  }
-
+const getLeadColumnSet = async (): Promise<Set<string>> => {
   const rows = await prisma.$queryRaw<Array<{ column_name: string }>>`
     SELECT column_name
     FROM information_schema.columns
     WHERE table_schema = current_schema() AND table_name = 'leads'
   `;
 
-  const present = new Set(rows.map((row) => row.column_name.toLowerCase()));
+  return new Set(rows.map((row) => row.column_name.toLowerCase()));
+};
+
+const areLeadProfileImageColumnsReady = async (): Promise<boolean> => {
+  if (Date.now() < profileImageColumnsReadyValidUntil) {
+    return profileImageColumnsReady;
+  }
+
+  const present = await getLeadColumnSet();
+  profileImageColumnsReady = LEAD_PROFILE_IMAGE_DB_COLUMNS.every((col) => present.has(col.toLowerCase()));
+  profileImageColumnsReadyValidUntil = Date.now() + LEADS_COLUMN_CHECK_TTL_MS;
+  return profileImageColumnsReady;
+};
+
+export const ensureLeadProfileImageColumnsReady = async (): Promise<void> => {
+  if (await areLeadProfileImageColumnsReady()) return;
+  throw createServiceError(
+    'Lead profile image storage is not ready. Run `npx prisma migrate deploy` on the production database, then restart the API.',
+    503,
+  );
+};
+
+const ensureLeadsColumnsMatchPrismaModel = async (): Promise<void> => {
+  if (Date.now() < leadsColumnCheckValidUntil) {
+    return;
+  }
+
+  const present = await getLeadColumnSet();
   const missing = LEAD_MODEL_DB_COLUMNS.filter((col) => !present.has(col.toLowerCase()));
 
   if (missing.length > 0) {
@@ -516,6 +592,10 @@ const mapLeadRecord = (lead: LeadIncludeRecord) => {
   const { followUps, ...rest } = lead;
   return {
     ...rest,
+    profileImageUrl: lead.profileImageUrl ?? null,
+    profileImageThumbnail: lead.profileImageThumbnail ?? null,
+    profileImageUploadedAt: lead.profileImageUploadedAt ? lead.profileImageUploadedAt.toISOString() : null,
+    profileImageUploadedById: lead.profileImageUploadedById ?? null,
     advanceAmount,
     lastRemark,
     nextFollowUpAt: lead.nextFollowUpAt ? lead.nextFollowUpAt.toISOString() : null,
@@ -524,7 +604,6 @@ const mapLeadRecord = (lead: LeadIncludeRecord) => {
     stageExpiresAt: lead.stageExpiresAt ? lead.stageExpiresAt.toISOString() : null,
     pendingApprovalRequestedAt: lead.pendingApprovalRequestedAt ? lead.pendingApprovalRequestedAt.toISOString() : null,
     closedAt: lead.closedAt ? lead.closedAt.toISOString() : null,
-    profileImageUploadedAt: lead.profileImageUploadedAt ? lead.profileImageUploadedAt.toISOString() : null,
     deletedAt: lead.deletedAt ? lead.deletedAt.toISOString() : null,
     createdAt: lead.createdAt.toISOString(),
     updatedAt: lead.updatedAt.toISOString(),
@@ -1819,9 +1898,10 @@ const getLeadScoped = async (workspaceId: string, id: string, actor?: Actor) => 
     }
   }
 
+  const includeProfileImageColumns = await areLeadProfileImageColumnsReady();
   const lead = await (prisma as any).lead.findFirst({
     where,
-    include: leadInclude,
+    select: buildLeadSelect(includeProfileImageColumns),
   });
 
   if (!lead) {
@@ -1906,6 +1986,7 @@ export const createLead = async (
     : await buildLeadSlaSnapshot(lifecycle, stage?.id || null);
 
   try {
+    const includeProfileImageColumns = await areLeadProfileImageColumnsReady();
     const createdLeadId = await prisma.$transaction(async (tx: any) => {
       const productSnapshots = await resolveLeadProductSnapshots(tx, workspaceId, (input as any).products);
       const productTotal = sumProductSnapshots(productSnapshots);
@@ -1942,7 +2023,7 @@ export const createLead = async (
           workspaceId,
           createdById: actor.id,
         },
-        include: leadInclude,
+        select: buildLeadSelect(includeProfileImageColumns),
       });
 
       logger.info('[Diagnostic] Lead record saved', { leadId: lead.id });
@@ -2172,6 +2253,7 @@ export const getLeads = async (
 
   const skip = (query.page - 1) * query.limit;
   const where = await buildListWhere(workspaceId, query, actor);
+  const includeProfileImageColumns = await areLeadProfileImageColumnsReady();
 
   const [total, rows, expectedRevenue] = await Promise.all([
     (prisma as any).lead.count({ where }),
@@ -2180,7 +2262,7 @@ export const getLeads = async (
       skip,
       take: query.limit,
       orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
-      include: leadInclude,
+      select: buildLeadSelect(includeProfileImageColumns),
     }),
     calculateExpectedRevenueForWhere(where),
   ]);
@@ -2784,7 +2866,7 @@ export const extendLeadSla = async (
     data: {
       stageExpiresAt: addDays(lead.stageExpiresAt, extraDays),
     },
-    include: leadInclude,
+    select: buildLeadSelect(await areLeadProfileImageColumnsReady()),
   });
 
   await clearLeadCache(workspaceId);
@@ -3032,7 +3114,7 @@ export const exportLeads = async (
       take: EXPORT_BATCH,
       orderBy: { id: 'asc' },
       ...(cursorId ? { cursor: { id: cursorId }, skip: 1 } : {}),
-      include: leadInclude,
+      select: buildLeadSelect(await areLeadProfileImageColumnsReady()),
     })) as LeadIncludeRecord[];
 
     if (!batch.length) {

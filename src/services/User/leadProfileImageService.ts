@@ -2,7 +2,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import sharp from 'sharp';
 import prisma from '../../config/prisma';
-import { clearLeadCache, getLeadById } from './leadService';
+import { clearLeadCache, ensureLeadProfileImageColumnsReady, getLeadById } from './leadService';
 
 type Actor = {
   id: string;
@@ -90,6 +90,7 @@ export const uploadLeadProfileImage = async (
     throw createServiceError('Only JPG, JPEG, PNG, and WEBP profile images are allowed.', 422);
   }
 
+  await ensureLeadProfileImageColumnsReady();
   await ensureLeadVisible(workspaceId, leadId, actor);
 
   const existing = await (prisma as any).lead.findFirst({
@@ -162,6 +163,7 @@ export const removeLeadProfileImage = async (
   actor: Actor,
   leadId: string,
 ) => {
+  await ensureLeadProfileImageColumnsReady();
   await ensureLeadVisible(workspaceId, leadId, actor);
   const existing = await (prisma as any).lead.findFirst({
     where: { id: leadId, workspaceId, deletedAt: null },
