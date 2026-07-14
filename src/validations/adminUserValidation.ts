@@ -33,8 +33,27 @@ const nullableOptionalId = (label: string) =>
     ]).optional(),
   );
 
+import { validatePhoneStr } from '../utils/phoneUtils';
+
 const optionalText = (schema: z.ZodString) =>
   z.preprocess(emptyStringToUndefined, schema.optional());
+
+const phoneValidationSchema = z.preprocess(
+  emptyStringToUndefined,
+  z.string()
+    .trim()
+    .superRefine((val, ctx) => {
+      if (!val) return;
+      const res = validatePhoneStr(val);
+      if (!res.isValid) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: res.message || 'Invalid phone number.',
+        });
+      }
+    })
+    .optional()
+);
 
 export const createUserSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').max(100, 'Name too long'),
@@ -45,7 +64,7 @@ export const createUserSchema = z.object({
     .min(8, 'Password must be at least 8 characters')
     .max(128, 'Password too long')
     .optional(),
-  phone: optionalText(z.string().max(20, 'Phone number too long')),
+  phone: phoneValidationSchema,
   roleId: optionalId('role'),
   departmentId: optionalId('department'),
   supervisorId: optionalId('supervisor'),
@@ -62,7 +81,7 @@ export type CreateUserInput = z.infer<typeof createUserSchema>;
 export const updateUserSchema = z.object({
   name: optionalText(z.string().min(2, 'Name must be at least 2 characters').max(100, 'Name too long')),
   username: optionalText(z.string().min(3, 'Username must be at least 3 characters').max(50, 'Username too long')),
-  phone: optionalText(z.string().max(20, 'Phone number too long')),
+  phone: phoneValidationSchema,
   roleId: optionalId('role'),
   departmentId: optionalId('department'),
   supervisorId: nullableOptionalId('supervisor'),

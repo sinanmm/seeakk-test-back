@@ -1,6 +1,7 @@
 import prisma from '../../config/prisma';
 import { redisClient } from '../../config/redis';
 import logger from '../../utils/logger';
+import { formatPhoneStr } from '../../utils/phoneUtils';
 import { normalizeFollowUpType } from '../../constants/followUpType';
 import { buildAccessWhere, buildClosureUpdateData, isClosureStage, resolveLeadVisibilityMode } from '../../modules/leads/leads.service';
 import { buildLeadOutcomeFlagsFromStage, isClosedWonStage, isLobStage } from '../../modules/leads/leadVisibility.util';
@@ -3047,7 +3048,7 @@ const buildLeadExportCsvRow = (
     slNo,
     lead.name,
     lead.email || '',
-    lead.phone || '',
+    formatPhoneStr(lead.phone),
     lead.companyName || '',
     lead.address || '',
     lead.remarks || '',

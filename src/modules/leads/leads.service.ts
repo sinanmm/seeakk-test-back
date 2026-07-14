@@ -3,6 +3,7 @@ import type { Prisma } from '@prisma/client';
 import type { ClosedLeadQueryInput, UpdateClosedLeadInput } from './leads.validation';
 import * as leadsRepository from './leads.repository';
 import prisma from '../../config/prisma';
+import { formatPhoneStr } from '../../utils/phoneUtils';
 import {
   buildLeadOutcomeFlagsFromStage,
   closedModuleLeadWhere,
@@ -563,7 +564,7 @@ export const exportClosedLeads = async (workspaceId: string, actor: Actor, query
     lead.id,
     lead.name,
     lead.email || '',
-    lead.phone || '',
+    formatPhoneStr(lead.phone),
     lead.companyName || '',
     lead.address || '',
     resolveDisplayName(lead.assignedTo) || '',

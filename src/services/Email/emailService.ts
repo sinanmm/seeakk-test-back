@@ -201,7 +201,6 @@ const sendWithRetry = async (mailOptions: any, retries = 1): Promise<void> => {
             }, OVERALL_TIMEOUT_MS)
           )
         ]);
-        
         return;
       } catch (error: any) {
         lastError = error;

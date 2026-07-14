@@ -5,6 +5,7 @@ import prisma from '../../config/prisma';
 import logger from '../../utils/logger';
 import { clearLeadCache } from '../../services/User/leadService';
 import { resolveOrCreateLeadSourceByName } from '../master/lead-source/leadSource.service';
+import { cleanAndParseImportedPhone } from '../../utils/phoneUtils';
 
 type LeadImportSchemaState = {
   presentColumns: Set<string>;
@@ -226,7 +227,7 @@ const processRows = async (jobId: string, rows: any[], workspaceId: string, user
         insertData.email = email || null;
       }
       if (schemaState.presentColumns.has('phone')) {
-        insertData.phone = phone || null;
+        insertData.phone = phone ? cleanAndParseImportedPhone(phone) : null;
       }
       if (schemaState.presentColumns.has('companyname')) {
         insertData.companyName = companyNameStr || null;

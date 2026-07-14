@@ -1,7 +1,26 @@
 import { z } from 'zod';
+import { validatePhoneStr } from '../utils/phoneUtils';
 
 const emptyStringToUndefined = (value: unknown) =>
   typeof value === 'string' && value.trim() === '' ? undefined : value;
+
+const phoneValidationSchema = z.preprocess(
+  emptyStringToUndefined,
+  z.string()
+    .trim()
+    .superRefine((val, ctx) => {
+      if (!val) return;
+      const res = validatePhoneStr(val);
+      if (!res.isValid) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: res.message || 'Invalid phone number.',
+        });
+      }
+    })
+    .nullable()
+    .optional()
+);
 
 const requiredId = (label: string) =>
   z.string().trim().min(1, `${label} is required`).max(191, `Invalid ${label}`);
@@ -96,7 +115,7 @@ const leadProductEntrySchema = z.object({
 export const createLeadSchema = z.object({
   name: z.string().trim().min(1, 'name is required').max(160, 'name is too long'),
   email: z.preprocess(emptyStringToUndefined, z.string().trim().email('email must be valid').max(191, 'email is too long').optional()),
-  phone: z.preprocess(emptyStringToUndefined, z.string().trim().max(40, 'phone is too long').optional()),
+  phone: phoneValidationSchema,
   companyName: z.preprocess(emptyStringToUndefined, z.string().trim().max(200, 'companyName is too long').optional()),
   address: z.preprocess(emptyStringToUndefined, z.string().trim().max(2000, 'address is too long').optional()),
   expectedRevenue: parseOptionalFloat('expectedRevenue'),
@@ -131,7 +150,7 @@ export type CreateLeadInput = z.infer<typeof createLeadSchema>;
 export const updateLeadSchema = z.object({
   name: z.string().trim().min(1, 'name is required').max(160, 'name is too long').optional(),
   email: z.preprocess(emptyStringToUndefined, z.string().trim().email('email must be valid').max(191, 'email is too long').nullable().optional()),
-  phone: z.preprocess(emptyStringToUndefined, z.string().trim().max(40, 'phone is too long').nullable().optional()),
+  phone: phoneValidationSchema,
   companyName: z.preprocess(emptyStringToUndefined, z.string().trim().max(200, 'companyName is too long').nullable().optional()),
   address: z.preprocess(emptyStringToUndefined, z.string().trim().max(2000, 'address is too long').nullable().optional()),
   expectedRevenue: z.union([parseOptionalFloat('expectedRevenue'), z.null()]).optional(),
