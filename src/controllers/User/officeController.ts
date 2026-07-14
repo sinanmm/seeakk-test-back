@@ -135,8 +135,8 @@ export const updateOffice = async (req: Request, res: Response, next: NextFuncti
     }
 
     const office = await officeService.updateOffice(
-      (params.data as OfficeIdParamInput).id,
       workspaceId,
+      (params.data as OfficeIdParamInput).id,
       input.data as UpdateOfficeInput,
     );
 
