@@ -2312,7 +2312,7 @@ export const updateLead = async (
   const nextLeadRemarks = normalizeLeadRemarks(input.remarks);
   const lobRemarks = resolveLobRemarks(input, stage);
   const reasonId = input.reasonId === null ? null : input.reasonId ?? null;
-  const isStageUpdateRequested = input.stageId !== undefined;
+  const isStageUpdateRequested = input.stageId !== undefined && input.stageId !== existing.stageId;
   if (isStageUpdateRequested && isLobStage(stage)) {
     ensureLOBPayload(stage, reasonId, lobRemarks);
     await ensureValidLOBReasonForStage(workspaceId, stage, reasonId);
