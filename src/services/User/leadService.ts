@@ -204,9 +204,14 @@ type LeadIncludeRecord = {
   }>;
 };
 
-const createServiceError = (message: string, statusCode: number): Error & { statusCode: number } => {
-  const error = new Error(message) as Error & { statusCode: number };
+const createServiceError = (
+  message: string,
+  statusCode: number,
+  errorCode?: string,
+): Error & { statusCode: number; errorCode?: string } => {
+  const error = new Error(message) as Error & { statusCode: number; errorCode?: string };
   error.statusCode = statusCode;
+  if (errorCode) error.errorCode = errorCode;
   return error;
 };
 
@@ -476,9 +481,14 @@ const areLeadProfileImageColumnsReady = async (): Promise<boolean> => {
 
 export const ensureLeadProfileImageColumnsReady = async (): Promise<void> => {
   if (await areLeadProfileImageColumnsReady()) return;
+  logger.error('Lead profile image schema is not ready', {
+    missingColumns: LEAD_PROFILE_IMAGE_DB_COLUMNS,
+    remediation: 'Run `npx prisma migrate deploy` against the production API DATABASE_URL, then restart the API.',
+  });
   throw createServiceError(
-    'Lead profile image storage is not ready. Run `npx prisma migrate deploy` on the production database, then restart the API.',
+    'Lead profile image uploads are temporarily unavailable. Please try again later.',
     503,
+    'LEAD_PROFILE_IMAGE_STORAGE_NOT_READY',
   );
 };
 

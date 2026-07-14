@@ -117,6 +117,7 @@ const handleServiceError = (error: any, res: Response, next: NextFunction, actio
     res.status(error.statusCode).json({
       success: false,
       message: error.message,
+      ...(error.errorCode ? { errorCode: error.errorCode } : {}),
       ...(isConflict ? { code: 'DUPLICATE_LEAD' } : {}),
     });
     return;
