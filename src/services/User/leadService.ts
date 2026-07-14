@@ -180,6 +180,7 @@ type LeadIncludeRecord = {
   lobLogs: Array<{
     id: string;
     reasonId: string;
+    reason: { name: string } | null;
     remarks: string | null;
     previousStageId: string | null;
     previousStageName: string | null;

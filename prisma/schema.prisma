@@ -906,7 +906,8 @@ model LeadLOBLog {
   changedAt         DateTime @default(now())
   workspaceId       String
 
-  lead Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  lead   Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  reason LOBReason @relation(fields: [reasonId], references: [id], onDelete: Restrict)
 
   @@index([leadId, changedAt])
   @@index([workspaceId, reasonId])
@@ -967,6 +968,7 @@ model LOBReason {
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   createdBy User?     @relation("LOBReasonCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
   updatedBy User?     @relation("LOBReasonUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  lobLogs   LeadLOBLog[]
 
   @@index([workspaceId])
   @@index([status])
