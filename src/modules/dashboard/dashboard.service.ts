@@ -198,7 +198,7 @@ const calculateExpectedRevenue = async (workspaceId: string, leadAccess: Prisma.
     deletedAt: null,
     ...leadAccess,
   };
-  const rows = await prisma.lead.findMany({
+  const rows = await (prisma as any).lead.findMany({
     where,
     select: {
       id: true,
@@ -207,8 +207,8 @@ const calculateExpectedRevenue = async (workspaceId: string, leadAccess: Prisma.
   });
   if (rows.length === 0) return 0;
 
-  const leadIds = rows.map((lead) => lead.id);
-  const advanceGroups = await prisma.advancePayment.groupBy({
+  const leadIds = rows.map((lead: any) => lead.id);
+  const advanceGroups = await (prisma as any).advancePayment.groupBy({
     by: ['leadId'],
     where: {
       workspaceId,
@@ -217,10 +217,11 @@ const calculateExpectedRevenue = async (workspaceId: string, leadAccess: Prisma.
     },
     _sum: { amount: true },
   });
-  const approvedByLead = new Map(advanceGroups.map((item) => [item.leadId, Number(item._sum.amount || 0)]));
+  const approvedByLead = new Map(advanceGroups.map((item: any) => [item.leadId, Number(item._sum.amount || 0)]));
 
-  return rows.reduce((sum, lead) => {
-    const balance = Math.max(0, Number(lead.totalAmount || 0) - (approvedByLead.get(lead.id) || 0));
+  return rows.reduce((sum: number, lead: any) => {
+    const approved = Number(approvedByLead.get(lead.id) || 0);
+    const balance = Math.max(0, Number(lead.totalAmount || 0) - approved);
     return sum + balance;
   }, 0);
 };
