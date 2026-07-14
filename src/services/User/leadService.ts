@@ -176,7 +176,7 @@ type LeadIncludeRecord = {
   advancePayments: Array<{ amount: number }>;
   remarksList: Array<{ text: string; createdAt: Date }>;
   activities: Array<{ action: string; metadata: any; createdAt: Date }>;
-  stageHistory: Array<{ remarks: string | null; createdAt: Date }>;
+
   lobLogs: Array<{
     id: string;
     reasonId: string;
@@ -298,15 +298,10 @@ const leadInclude = {
     take: 1,
     select: { action: true, metadata: true, createdAt: true },
   },
-  stageHistory: {
-    orderBy: { createdAt: 'desc' as const },
-    take: 1,
-    select: { remarks: true, createdAt: true },
-  },
   lobLogs: {
-    orderBy: { createdAt: 'desc' as const },
+    orderBy: { changedAt: 'desc' as const },
     take: 1,
-    select: { reason: { select: { name: true } }, remarks: true, createdAt: true },
+    select: { reason: { select: { name: true } }, remarks: true, changedAt: true },
   },
   products: {
     orderBy: { createdAt: 'asc' as const },
@@ -478,9 +473,7 @@ const extractLastRemark = (lead: any): string | null => {
     remarks.push({ text: `LOB Return: ${text}`, date: log.createdAt?.getTime() || log.changedAt?.getTime() || 0 });
   }
   
-  if (lead.stageHistory?.[0]?.remarks) {
-    remarks.push({ text: lead.stageHistory[0].remarks, date: lead.stageHistory[0].createdAt.getTime() });
-  }
+
 
   if (lead.activities?.[0]) {
     const act = lead.activities[0];
@@ -1733,7 +1726,7 @@ const buildListWhere = async (
         { remarks: { contains: query.search, mode: 'insensitive'} },
         { remarksList: { some: { text: { contains: query.search, mode: 'insensitive' } } } },
         { lobLogs: { some: { OR: [ { remarks: { contains: query.search, mode: 'insensitive' } }, { reason: { name: { contains: query.search, mode: 'insensitive' } } } ] } } },
-        { stageHistory: { some: { remarks: { contains: query.search, mode: 'insensitive' } } } },
+
 
         { assignedTo: { name: { contains: query.search, mode: 'insensitive'} } },
         { source: { name: { contains: query.search, mode: 'insensitive'} } },
