@@ -49,6 +49,7 @@ import prisma from './config/prisma';
 import { redisClient } from './config/redis';
 import { SOCKET_IO_PATH } from './config/socketConstants';
 import {
+  CORS_ALLOWED_HEADERS,
   corsOriginHandler,
   ensureCorsHeadersMiddleware,
   handlePreflightRequest,
@@ -67,16 +68,7 @@ console.log('Application Started');
 const corsOptions: cors.CorsOptions = {
   origin: corsOriginHandler,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: [
-    'Content-Type',
-    'Authorization',
-    'x-device-id',
-    'x-request-id',
-    'x-workspace-id',
-    'Accept',
-    'Origin',
-    'X-Requested-With',
-  ],
+  allowedHeaders: CORS_ALLOWED_HEADERS.split(',').map((header) => header.trim()),
   exposedHeaders: ['Authorization'],
   credentials: true,
   optionsSuccessStatus: 204,
@@ -147,6 +139,32 @@ app.use((req, res, next) => {
   res.setHeader('X-Request-Id', id);
   (req as Request & { id?: string }).id = id;
   next();
+});
+
+app.use((req, res, next) => {
+  const startedAt = Date.now();
+  const origin = req.headers.origin as string | undefined;
+  const requestId = (req as Request & { id?: string }).id || req.headers['x-request-id'];
+  const isDashboard = req.path.startsWith('/api/dashboard');
+  const isCorsBrowserRequest = Boolean(origin);
+
+  if (!isDashboard && !isCorsBrowserRequest) {
+    return next();
+  }
+
+  res.on('finish', () => {
+    logger.info(isDashboard ? 'Dashboard request completed' : 'CORS browser request completed', {
+      requestId,
+      method: req.method,
+      path: req.originalUrl?.split('?')[0] || req.path,
+      origin,
+      statusCode: res.statusCode,
+      durationMs: Date.now() - startedAt,
+      corsOrigin: res.getHeader('Access-Control-Allow-Origin') || null,
+    });
+  });
+
+  return next();
 });
 
 app.use((req, res, next) => {

@@ -46,12 +46,11 @@ const socketCorsOrigin = (
 };
 
 /**
- * Render's edge often drops Engine.IO WebSocket upgrades; long-polling is reliable.
- * Set SOCKET_IO_ALLOW_UPGRADES=true on Render only if you have confirmed WS works for your service.
+ * Reverse proxies often drop Engine.IO WebSocket upgrades; long-polling is reliable.
+ * Set SOCKET_IO_ALLOW_UPGRADES=true only after the production proxy is verified to pass Upgrade headers.
  */
 const allowSocketTransportUpgrades = (): boolean => {
-  if (process.env.SOCKET_IO_ALLOW_UPGRADES === 'false') return false;
-  return true;
+  return String(process.env.SOCKET_IO_ALLOW_UPGRADES || '').trim().toLowerCase() === 'true';
 };
 
 export const initRealtimeServer = (httpServer: HttpServer): SocketIOServer => {
@@ -145,8 +144,13 @@ export const initRealtimeServer = (httpServer: HttpServer): SocketIOServer => {
       workspaceId: (socket.data as any)?.workspaceId,
     });
     
-    socket.on('disconnect', () => {
-      logger.info('Socket Disconnected');
+    socket.on('disconnect', (reason) => {
+      logger.info('Socket Disconnected', {
+        socketId: socket.id,
+        userId: (socket.data as any)?.userId,
+        workspaceId: (socket.data as any)?.workspaceId,
+        reason,
+      });
     });
   });
 

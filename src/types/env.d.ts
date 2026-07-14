@@ -15,6 +15,8 @@ declare global {
       FRONTEND_URL?: string;
       /** Comma- or space-separated extra browser origins for CORS. */
       ALLOWED_ORIGINS?: string;
+      /** Alias for ALLOWED_ORIGINS used by production deploy platforms. */
+      CORS_ORIGINS?: string;
       /** Set to "false" to stop trusting all https://*.vercel.app origins. */
       CORS_ALLOW_VERCEL_APP?: string;
       BACKEND_URL?: string;

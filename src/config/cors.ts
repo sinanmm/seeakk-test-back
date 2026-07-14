@@ -20,6 +20,8 @@ export const CORS_ALLOWED_HEADERS = [
   'x-device-id',
   'x-request-id',
   'x-workspace-id',
+  'x-tenant-id',
+  'x-csrf-token',
   'Accept',
   'Origin',
   'X-Requested-With',
@@ -81,6 +83,7 @@ export const getAllowedOrigins = (): string[] =>
       ...BUILTIN_ALLOWED_ORIGINS.map(normalizeOrigin),
       ...splitOrigins(process.env.FRONTEND_URL),
       ...splitOrigins(process.env.ALLOWED_ORIGINS),
+      ...splitOrigins(process.env.CORS_ORIGINS),
     ]),
   );
 
