@@ -356,6 +356,12 @@ const buildClosedWhere = async (workspaceId: string, actor: Actor, query: Closed
   }
 
   if (query.assignedTo) where.assignedToId = query.assignedTo;
+  if (query.officeId) {
+    where.AND = [
+      ...(Array.isArray(where.AND) ? where.AND : []),
+      { assignedTo: { officeId: query.officeId } },
+    ];
+  }
   if (query.source) where.sourceId = query.source;
   if (query.closureType) where.closureType = query.closureType;
   if (query.minRevenue !== undefined || query.maxRevenue !== undefined) {

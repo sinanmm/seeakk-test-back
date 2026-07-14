@@ -16,6 +16,25 @@ type LocationAwareUser = {
   assignedLocations?: Array<{ locationId: string }>;
 } | null | undefined;
 
+const getRequestedOfficeId = (filters: LOBAnalysisQueryInput): string | undefined =>
+  (filters as any).officeId || filters.office_id || undefined;
+
+const withOfficeLeadAccess = (
+  leadAccess: Prisma.LeadWhereInput,
+  filters: LOBAnalysisQueryInput,
+): Prisma.LeadWhereInput => {
+  const officeId = getRequestedOfficeId(filters);
+  if (!officeId) return leadAccess;
+
+  return {
+    ...leadAccess,
+    AND: [
+      ...(Array.isArray(leadAccess.AND) ? leadAccess.AND : leadAccess.AND ? [leadAccess.AND as Prisma.LeadWhereInput] : []),
+      { assignedTo: { officeId } },
+    ],
+  };
+};
+
 type NormalizedLOBEvent = {
   id: string;
   leadId: string;
@@ -283,7 +302,8 @@ const normalizeLOBEvents = async (
   const changedAtRange = buildChangedAtRange(filters);
   const search = normalizeSearch(filters.search);
   const searchWhere = await buildLOBSearchWhere(workspaceId, search);
-  const rawEvents = await repository.findLOBEvents(workspaceId, changedAtRange, leadAccess, searchWhere);
+  const effectiveLeadAccess = withOfficeLeadAccess(leadAccess, filters);
+  const rawEvents = await repository.findLOBEvents(workspaceId, changedAtRange, effectiveLeadAccess, searchWhere);
   const leadIds = Array.from(new Set<string>(rawEvents.map((item: any) => String(item.leadId))));
 
   const [approvalRows, auditRows, reasonRows, userRows, stageRows] = await Promise.all([
@@ -347,7 +367,7 @@ const normalizeLOBEvents = async (
   });
 
   return rawEvents
-    .filter((item: any) => matchesLocation(item.lead?.assignedTo, filters.location_id, filters.office_id))
+    .filter((item: any) => matchesLocation(item.lead?.assignedTo, filters.location_id, getRequestedOfficeId(filters)))
     .map((item: any) => {
       const fromStage = deriveFromStage(item, approvalsByLead, auditsByLead, stageIdByNameKey, stageNameById);
       const reason = reasonsById.get(item.reasonId);
@@ -400,10 +420,10 @@ const countReferenceLeads = async (
         : {}),
       ...(filters.user_id ? { assignedToId: filters.user_id } : {}),
     },
-    leadAccess,
+    withOfficeLeadAccess(leadAccess, filters),
   );
 
-  return rows.filter((item: any) => matchesLocation(item.assignedTo, filters.location_id, filters.office_id)).length;
+  return rows.filter((item: any) => matchesLocation(item.assignedTo, filters.location_id, getRequestedOfficeId(filters))).length;
 };
 
 export const getSummary = async (

@@ -261,6 +261,9 @@ export const getDashboardSummary = async (
   }
 
   const activeUserWhere = await buildActiveUsersScopedWhere(workspaceId, actor);
+  if (query.officeId) {
+    (activeUserWhere as Prisma.UserWhereInput).officeId = query.officeId;
+  }
 
   const results = await Promise.allSettled([
     dashboardRepository.countLeads(workspaceId, { createdAt: { gte: todayStart, lte: todayEnd } }, leadAccess),

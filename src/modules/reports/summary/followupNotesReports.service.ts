@@ -19,6 +19,28 @@ const getUserFilter = (userId?: string | string[]) => {
   return undefined;
 };
 
+const getUserFilterIds = (userId?: string | string[]): string[] | undefined => {
+  if (!userId) return undefined;
+  if (Array.isArray(userId)) return userId.filter(Boolean);
+  return userId ? [userId] : undefined;
+};
+
+const getEffectiveUserFilter = async (filters: SummaryFilterDto) => {
+  const officeId = filters.officeId || filters.branchId;
+  const explicitUserIds = getUserFilterIds(filters.userId);
+  if (!officeId) return getUserFilter(filters.userId);
+
+  const officeUsers = await db.user.findMany({
+    where: { workspaceId: filters.workspaceId, officeId, deletedAt: null },
+    select: { id: true },
+  });
+  const officeUserIds = officeUsers.map((user: { id: string }) => user.id);
+  const scopedIds = explicitUserIds
+    ? explicitUserIds.filter((id) => officeUserIds.includes(id))
+    : officeUserIds;
+  return { in: scopedIds };
+};
+
 const getScheduledDateFilter = async (workspaceId: string, startDate?: string, endDate?: string) => {
   if (startDate && endDate) {
     const tz = await getWorkspaceTimeZone(workspaceId);
@@ -74,7 +96,7 @@ const buildFollowUpReportWhere = async (filters: SummaryFilterDto) => {
     ];
   }
 
-  const userFilter = getUserFilter(filters.userId);
+  const userFilter = await getEffectiveUserFilter(filters);
   if (userFilter) where.userId = userFilter;
 
   return where;

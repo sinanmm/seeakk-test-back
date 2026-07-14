@@ -14,6 +14,7 @@ export interface SummaryFilterDto {
   leadSource?: string;
   leadStage?: string;
   branchId?: string;
+  officeId?: string;
   departmentId?: string;
   page?: number;
   limit?: number;
@@ -24,6 +25,33 @@ const getUserFilter = (userId?: string | string[]) => {
   if (Array.isArray(userId) && userId.length > 0) return { in: userId };
   if (typeof userId === 'string') return userId;
   return undefined;
+};
+
+const getUserFilterIds = (userId?: string | string[]): string[] | undefined => {
+  if (!userId) return undefined;
+  if (Array.isArray(userId)) return userId.filter(Boolean);
+  return userId ? [userId] : undefined;
+};
+
+const getEffectiveUserFilter = async (filters: SummaryFilterDto) => {
+  const officeId = filters.officeId || filters.branchId;
+  const explicitUserIds = getUserFilterIds(filters.userId);
+  if (!officeId) return getUserFilter(filters.userId);
+
+  const officeUsers = await db.user.findMany({
+    where: {
+      workspaceId: filters.workspaceId,
+      officeId,
+      deletedAt: null,
+    },
+    select: { id: true },
+  });
+  const officeUserIds = officeUsers.map((user: { id: string }) => user.id);
+  const scopedIds = explicitUserIds
+    ? explicitUserIds.filter((id) => officeUserIds.includes(id))
+    : officeUserIds;
+
+  return { in: scopedIds };
 };
 
 const getDateFilter = async (workspaceId: string, startDate?: string, endDate?: string) => {
@@ -46,7 +74,7 @@ export const getTimeline = async (filters: SummaryFilterDto) => {
   const dateFilter = await getDateFilter(filters.workspaceId, filters.startDate, filters.endDate);
   if (dateFilter) where.createdAt = dateFilter;
   
-  const userFilter = getUserFilter(filters.userId);
+  const userFilter = await getEffectiveUserFilter(filters);
   if (userFilter) where.performedById = userFilter;
 
   const activities = await db.leadActivity.findMany({
@@ -70,7 +98,7 @@ export const getTimeline = async (filters: SummaryFilterDto) => {
 
 export const getOverviewCard = async (filters: SummaryFilterDto) => {
   const dateFilter = await getDateFilter(filters.workspaceId, filters.startDate, filters.endDate);
-  const userFilter = getUserFilter(filters.userId);
+  const userFilter = await getEffectiveUserFilter(filters);
 
   const leadWhere: any = { workspaceId: filters.workspaceId, deletedAt: null };
   if (dateFilter) leadWhere.createdAt = dateFilter;
@@ -108,7 +136,7 @@ export const getLeadsSummary = async (filters: SummaryFilterDto) => {
   const where: any = { workspaceId: filters.workspaceId, deletedAt: null };
   const dateFilter = await getDateFilter(filters.workspaceId, filters.startDate, filters.endDate);
   if (dateFilter) where.createdAt = dateFilter;
-  const userFilter = getUserFilter(filters.userId);
+  const userFilter = await getEffectiveUserFilter(filters);
   if (userFilter) where.createdById = userFilter;
 
   const leads = await db.lead.findMany({
@@ -134,7 +162,7 @@ export const getFollowupsSummary = async (filters: SummaryFilterDto) => {
   const where: any = { workspaceId: filters.workspaceId, action: { contains: 'FOLLOWUP', mode: 'insensitive' } };
   const dateFilter = await getDateFilter(filters.workspaceId, filters.startDate, filters.endDate);
   if (dateFilter) where.createdAt = dateFilter;
-  const userFilter = getUserFilter(filters.userId);
+  const userFilter = await getEffectiveUserFilter(filters);
   if (userFilter) where.performedById = userFilter;
 
   const followups = await db.leadActivity.findMany({
@@ -162,7 +190,7 @@ export const getRevenueSummary = async (filters: SummaryFilterDto) => {
   const where: any = { workspaceId: filters.workspaceId };
   const dateFilter = await getDateFilter(filters.workspaceId, filters.startDate, filters.endDate);
   if (dateFilter) where.createdAt = dateFilter;
-  const userFilter = getUserFilter(filters.userId);
+  const userFilter = await getEffectiveUserFilter(filters);
   if (userFilter) where.userId = userFilter;
 
   const revenue = await db.revenueTransaction.findMany({
@@ -190,7 +218,7 @@ export const getStageMovementsSummary = async (filters: SummaryFilterDto) => {
   const where: any = { workspaceId: filters.workspaceId };
   const dateFilter = await getDateFilter(filters.workspaceId, filters.startDate, filters.endDate);
   if (dateFilter) where.changedAt = dateFilter;
-  const userFilter = getUserFilter(filters.userId);
+  const userFilter = await getEffectiveUserFilter(filters);
   if (userFilter) where.changedById = userFilter;
 
   const movements = await db.leadStageHistory.findMany({
@@ -221,7 +249,7 @@ export const getAttendanceSummary = async (filters: SummaryFilterDto) => {
       lte: moment.utc(filters.endDate).toDate(),
     };
   }
-  const userFilter = getUserFilter(filters.userId);
+  const userFilter = await getEffectiveUserFilter(filters);
   if (userFilter) where.userId = userFilter;
 
   const attendance = await db.attendanceRecord.findMany({
@@ -263,7 +291,7 @@ export const getExtensionsSummary = async (filters: SummaryFilterDto) => {
   const where: any = { workspaceId: filters.workspaceId, action: 'FOLLOWUP_EXTENDED' };
   const dateFilter = await getDateFilter(filters.workspaceId, filters.startDate, filters.endDate);
   if (dateFilter) where.createdAt = dateFilter;
-  const userFilter = getUserFilter(filters.userId);
+  const userFilter = await getEffectiveUserFilter(filters);
   if (userFilter) where.performedById = userFilter;
 
   const extensions = await db.leadActivity.findMany({
@@ -289,7 +317,7 @@ export const getTargetsSummary = async (filters: SummaryFilterDto) => {
   const limit = Number(filters.limit) || 20;
 
   const where: any = { workspaceId: filters.workspaceId };
-  const userFilter = getUserFilter(filters.userId);
+  const userFilter = await getEffectiveUserFilter(filters);
   if (userFilter) where.userId = userFilter;
 
   const targets = await db.targetAssignment.findMany({
@@ -314,7 +342,7 @@ export const getAuditSummary = async (filters: SummaryFilterDto) => {
   const where: any = { workspaceId: filters.workspaceId };
   const dateFilter = await getDateFilter(filters.workspaceId, filters.startDate, filters.endDate);
   if (dateFilter) where.createdAt = dateFilter;
-  const userFilter = getUserFilter(filters.userId);
+  const userFilter = await getEffectiveUserFilter(filters);
   if (userFilter) where.performedById = userFilter;
 
   const audits = await db.leadActivity.findMany({
@@ -342,7 +370,7 @@ export const getLeadUpdates = async (filters: SummaryFilterDto) => {
   const where: any = { workspaceId: filters.workspaceId, action: 'LEAD_UPDATED' };
   const dateFilter = await getDateFilter(filters.workspaceId, filters.startDate, filters.endDate);
   if (dateFilter) where.createdAt = dateFilter;
-  const userFilter = getUserFilter(filters.userId);
+  const userFilter = await getEffectiveUserFilter(filters);
   if (userFilter) where.performedById = userFilter;
 
   const updates = await db.leadActivity.findMany({
@@ -371,7 +399,7 @@ export const getApprovalsSummary = async (filters: SummaryFilterDto) => {
   // Only use dateFilter if we can match requestedAt/approvedAt
   const dateFilter = await getDateFilter(filters.workspaceId, filters.startDate, filters.endDate);
   if (dateFilter) where.createdAt = dateFilter;
-  const userFilter = getUserFilter(filters.userId);
+  const userFilter = await getEffectiveUserFilter(filters);
   if (userFilter) where.requestedById = userFilter;
 
   // Assume LeadStageApproval is standard

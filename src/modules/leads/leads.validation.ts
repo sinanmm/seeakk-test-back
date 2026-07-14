@@ -2,11 +2,15 @@ import { z } from 'zod';
 
 export const CLOSURE_TYPE_VALUES = ['WON', 'LOST', 'CANCELLED'] as const;
 
+const emptyStringToUndefined = (value: unknown) =>
+  typeof value === 'string' && value.trim() === '' ? undefined : value;
+
 export const closedLeadQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(10),
   search: z.string().trim().optional(),
   assignedTo: z.string().trim().optional(),
+  officeId: z.preprocess(emptyStringToUndefined, z.string().trim().optional()).optional(),
   source: z.string().trim().optional(),
   closureType: z.enum(CLOSURE_TYPE_VALUES).optional(),
   dateFrom: z.coerce.date().optional(),
