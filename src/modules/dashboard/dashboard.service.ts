@@ -1,9 +1,8 @@
-import { LeadApprovalState } from '@prisma/client';
-import type { Prisma } from '@prisma/client';
+import { LeadApprovalState, Prisma } from '@prisma/client';
 import prisma from '../../config/prisma';
 import * as dashboardRepository from './dashboard.repository';
 import { getStageBreakdown as getLOBStageBreakdown } from '../leads/lobAnalysis.service';
-import { buildAccessWhere, buildActiveUsersScopedWhere } from '../leads/leads.service';
+import { buildAccessWhere, buildActiveUsersScopedWhere, resolveVisibleLeadUserScope } from '../leads/leads.service';
 import type { DashboardSummaryQueryInput, RevenueAnalyticsQueryInput } from './dashboard.validation';
 import logger from '../../utils/logger';
 
@@ -312,39 +311,112 @@ const calculateDashboardRevenue = async (
   }, { sum: 0, count: 0 });
 };
 
+type ExpectedRevenueAggregate = {
+  amount: number;
+  matchingLeadCount: number;
+  positiveBalanceLeadCount: number;
+};
+
+const buildExpectedRevenueSqlConditions = (
+  workspaceId: string,
+  visibleLeadUserScope: string[] | 'ALL',
+  query: DashboardSummaryQueryInput,
+): Prisma.Sql[] => {
+  const conditions: Prisma.Sql[] = [
+    Prisma.sql`l."workspaceId" = ${workspaceId}`,
+    Prisma.sql`l."deletedAt" IS NULL`,
+    Prisma.sql`l."isClosed" = false`,
+    Prisma.sql`l."isLOB" = false`,
+    Prisma.sql`l."closureType" IS DISTINCT FROM 'CANCELLED'::"LeadClosureType"`,
+  ];
+
+  if (visibleLeadUserScope !== 'ALL') {
+    if (visibleLeadUserScope.length === 0) {
+      conditions.push(Prisma.sql`false`);
+    } else {
+      conditions.push(Prisma.sql`(l."assignedToId" IN (${Prisma.join(visibleLeadUserScope)}) OR l."createdById" IN (${Prisma.join(visibleLeadUserScope)}))`);
+    }
+  }
+
+  if (query.userId) conditions.push(Prisma.sql`l."assignedToId" = ${query.userId}`);
+  if (query.officeId) {
+    conditions.push(Prisma.sql`
+      EXISTS (
+        SELECT 1
+        FROM "User" office_user
+        WHERE office_user."id" = l."assignedToId"
+          AND office_user."officeId" = ${query.officeId}
+          AND office_user."deletedAt" IS NULL
+      )
+    `);
+  }
+  if (query.stageId) conditions.push(Prisma.sql`l."stageId" = ${query.stageId}`);
+  if (query.sourceId) conditions.push(Prisma.sql`l."sourceId" = ${query.sourceId}`);
+
+  const createdAt = buildDateRangeWhere(query.dateFrom, query.dateTo);
+  if (createdAt?.gte) conditions.push(Prisma.sql`l."createdAt" >= ${createdAt.gte}`);
+  if (createdAt?.lte) conditions.push(Prisma.sql`l."createdAt" <= ${createdAt.lte}`);
+
+  if (query.status === 'CLOSED' || query.status === 'LOB' || query.status === 'ARCHIVED') {
+    conditions.push(Prisma.sql`false`);
+  } else if (query.status === 'ACTIVE' || query.status === 'OPEN') {
+    conditions.push(Prisma.sql`l."isClosed" = false`);
+  }
+
+  return conditions;
+};
+
+const toSafeNumber = (value: unknown): number => {
+  if (typeof value === 'number') return Number.isFinite(value) ? value : 0;
+  if (typeof value === 'bigint') return Number(value);
+  if (value && typeof (value as { toString?: () => string }).toString === 'function') {
+    const parsed = Number((value as { toString: () => string }).toString());
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+  return 0;
+};
+
 const calculateExpectedRevenue = async (
   workspaceId: string,
-  leadAccess: Prisma.LeadWhereInput,
-  dashboardFilters: Prisma.LeadWhereInput,
-): Promise<number> => {
-  const rows = await (prisma as any).lead.findMany({
-    where: {
-      workspaceId,
-      deletedAt: null,
-      AND: [
-        leadAccess,
-        dashboardFilters,
-        {
-          isClosed: false,
-          isLOB: false,
-          closureType: { not: 'CANCELLED' },
-        },
-      ],
-    },
-    select: {
-      id: true,
-      totalAmount: true,
-    },
-  });
-  if (rows.length === 0) return 0;
+  visibleLeadUserScope: string[] | 'ALL',
+  query: DashboardSummaryQueryInput,
+): Promise<ExpectedRevenueAggregate> => {
+  const conditions = buildExpectedRevenueSqlConditions(workspaceId, visibleLeadUserScope, query);
+  const rows = await prisma.$queryRaw<Array<{
+    matchingLeadCount: bigint | number | string | null;
+    positiveBalanceLeadCount: bigint | number | string | null;
+    expectedRevenue: unknown;
+  }>>`
+    WITH lead_balances AS (
+      SELECT
+        l."id",
+        COALESCE(l."totalAmount", 0)::numeric
+          - COALESCE(approved_payments."approvedAmount", 0)::numeric AS "balanceAmount"
+      FROM "Lead" l
+      LEFT JOIN (
+        SELECT
+          ap."leadId",
+          SUM(COALESCE(ap."amount", 0))::numeric AS "approvedAmount"
+        FROM "advance_payments" ap
+        WHERE ap."workspaceId" = ${workspaceId}
+          AND ap."status" = 'APPROVED'
+        GROUP BY ap."leadId"
+      ) approved_payments ON approved_payments."leadId" = l."id"
+      WHERE ${Prisma.join(conditions, ' AND ')}
+    )
+    SELECT
+      COUNT(*) AS "matchingLeadCount",
+      COUNT(*) FILTER (WHERE "balanceAmount" > 0) AS "positiveBalanceLeadCount",
+      COALESCE(SUM("balanceAmount") FILTER (WHERE "balanceAmount" > 0), 0)::numeric AS "expectedRevenue"
+    FROM lead_balances
+  `;
 
-  const approvedByLead = await getApprovedAdvanceByLead(workspaceId, rows.map((lead: any) => lead.id));
-
-  return rows.reduce((sum: number, lead: any) => {
-    const approved = Number(approvedByLead.get(lead.id) || 0);
-    const balance = Math.max(0, Number(lead.totalAmount || 0) - approved);
-    return balance > 0 ? sum + balance : sum;
-  }, 0);
+  const row = rows[0] || { matchingLeadCount: 0, positiveBalanceLeadCount: 0, expectedRevenue: 0 };
+  return {
+    amount: toSafeNumber(row.expectedRevenue),
+    matchingLeadCount: toSafeNumber(row.matchingLeadCount),
+    positiveBalanceLeadCount: toSafeNumber(row.positiveBalanceLeadCount),
+  };
 };
 
 const calculateTotalAdvance = async (
@@ -389,10 +461,13 @@ export const getDashboardSummary = async (
   const growthStartDate = getGrowthStartDate(query.range);
 
   let leadAccess: Prisma.LeadWhereInput = {};
+  let visibleLeadUserScope: string[] | 'ALL' = [];
   try {
     leadAccess = await buildAccessWhere(workspaceId, actor);
+    visibleLeadUserScope = await resolveVisibleLeadUserScope(workspaceId, actor);
   } catch (err) {
     leadAccess = { id: { in: [] } };
+    visibleLeadUserScope = [];
   }
   const dashboardFilters = buildDashboardLeadFilters(query);
   const scopedLeadAccess: Prisma.LeadWhereInput =
@@ -404,6 +479,7 @@ export const getDashboardSummary = async (
     actorId: actor.id,
     query,
     dashboardFilters,
+    visibleLeadUserScope: visibleLeadUserScope === 'ALL' ? 'ALL' : { count: visibleLeadUserScope.length },
   });
 
   const activeUserWhere = await buildActiveUsersScopedWhere(workspaceId, actor);
@@ -469,7 +545,7 @@ export const getDashboardSummary = async (
       },
       scopedLeadAccess,
     ),
-    calculateExpectedRevenue(workspaceId, scopedLeadAccess, {}),
+    calculateExpectedRevenue(workspaceId, visibleLeadUserScope, query),
     calculateDashboardRevenue(workspaceId, scopedLeadAccess, {}),
     calculateDashboardRevenue(workspaceId, scopedLeadAccess, {}, { gte: currentWeekStart, lte: todayEnd }),
     calculateDashboardRevenue(workspaceId, scopedLeadAccess, {}, { gte: previousWeekStart, lte: previousWeekEnd }),
@@ -482,6 +558,17 @@ export const getDashboardSummary = async (
     logger.error(`Dashboard sub-query failed at index ${index}`, { error: (result as PromiseRejectedResult).reason });
     return fallback;
   };
+
+  const expectedRevenueResult = results[18];
+  if (expectedRevenueResult.status === 'rejected') {
+    logger.error('Dashboard Expected Revenue query failed', {
+      workspaceId,
+      actorId: actor.id,
+      query,
+      error: expectedRevenueResult.reason,
+    });
+    throw expectedRevenueResult.reason;
+  }
 
   const todayLeadCount = getValue(0, 0);
   const yesterdayLeadCount = getValue(1, 0);
@@ -501,7 +588,11 @@ export const getDashboardSummary = async (
   const followUps = getValue<any[]>(15, []);
   const lobStageBreakdown = getValue<any>(16, { labels: [], lob_counts: [], total_reference: 0 });
   const pendingApprovals = getValue<number>(17, 0);
-  const expectedRevenue = getValue<number>(18, 0);
+  const expectedRevenue = getValue<ExpectedRevenueAggregate>(18, {
+    amount: 0,
+    matchingLeadCount: 0,
+    positiveBalanceLeadCount: 0,
+  });
   const revenue = getValue<{ sum: number; count: number }>(19, { sum: 0, count: 0 });
   const revenueThisWeek = getValue<{ sum: number; count: number }>(20, { sum: 0, count: 0 });
   const revenueLastWeek = getValue<{ sum: number; count: number }>(21, { sum: 0, count: 0 });
@@ -514,7 +605,9 @@ export const getDashboardSummary = async (
     pendingApprovals,
     revenueLeadCount: revenue.count,
     revenueSum: revenue.sum,
-    expectedRevenue,
+    expectedRevenue: expectedRevenue.amount,
+    expectedRevenueMatchingLeadCount: expectedRevenue.matchingLeadCount,
+    expectedRevenuePositiveBalanceLeadCount: expectedRevenue.positiveBalanceLeadCount,
     totalAdvance,
     followUpCount: followUps.length,
   });
@@ -595,10 +688,11 @@ export const getDashboardSummary = async (
       },
       {
         title: 'Expected Revenue',
-        value: expectedRevenue,
-        growth: 'Outstanding balance',
+        value: expectedRevenue.amount,
+        growth: `${formatNumber(expectedRevenue.positiveBalanceLeadCount)} active balances`,
         trend: 'up',
         iconName: 'IndianRupee',
+        format: 'currency',
       },
       {
         title: 'Revenue',
@@ -606,6 +700,7 @@ export const getDashboardSummary = async (
         growth: `${formatNumber(revenueThisWeek.count)} paid closings this week`,
         trend: getTrend(revenueThisWeek.sum, revenueLastWeek.sum),
         iconName: 'IndianRupee',
+        format: 'currency',
       },
       {
         title: 'Total Advance',
@@ -613,6 +708,7 @@ export const getDashboardSummary = async (
         growth: 'Approved advances',
         trend: 'up',
         iconName: 'IndianRupee',
+        format: 'currency',
       },
       {
         title: 'Active Users',
@@ -657,6 +753,7 @@ export const getDashboardSummary = async (
     scheduleDateLabel: formatScheduleLabel(now),
     range: query.range,
     pendingApprovals,
+    expectedRevenue: expectedRevenue.amount,
     formatted: {
       totalLeads: formatNumber(totalLeadCount),
       closedLeads: formatNumber(totalClosedLeadCount),
