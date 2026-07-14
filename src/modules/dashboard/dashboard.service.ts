@@ -248,7 +248,14 @@ export const getDashboardSummary = async (
   let leadAccess: Prisma.LeadWhereInput = {};
   try {
     leadAccess = await buildAccessWhere(workspaceId, actor);
-  } catch {
+    if (query.officeId) {
+      if (leadAccess.AND) {
+        (leadAccess.AND as Prisma.LeadWhereInput[]).push({ assignedTo: { officeId: query.officeId } });
+      } else {
+        leadAccess.AND = [{ assignedTo: { officeId: query.officeId } }];
+      }
+    }
+  } catch (err) {
     leadAccess = { id: { in: [] } };
   }
 
@@ -511,11 +518,16 @@ export const getRevenueAnalytics = async (
         select: { id: true },
       });
       const subordinateIds = subordinates.map((s) => s.id);
-      if (userIds) {
-        userIds = userIds.filter((id) => subordinateIds.includes(id));
-      } else {
-        userIds = subordinateIds;
-      }
+      userIds = userIds ? userIds.filter((id) => subordinateIds.includes(id)) : subordinateIds;
+    }
+
+    if (query.officeId) {
+      const officeUsers = await prisma.user.findMany({
+        where: { workspaceId, officeId: query.officeId, deletedAt: null },
+        select: { id: true },
+      });
+      const officeUserIds = officeUsers.map((u) => u.id);
+      userIds = userIds ? userIds.filter((id) => officeUserIds.includes(id)) : officeUserIds;
     }
   }
 

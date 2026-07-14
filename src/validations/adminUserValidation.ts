@@ -113,6 +113,7 @@ export const listUsersQuerySchema = z.object({
       return undefined;
     }),
   email: z.string().optional(),
+  officeId: z.string().trim().optional(),
 });
 
 export type ListUsersQuery = z.infer<typeof listUsersQuerySchema>;

@@ -122,16 +122,16 @@ export const createOffice = async (
   input: CreateOfficeInput,
   createdBy?: string,
 ) => {
-  await validateLocationHierarchy(workspaceId, input.countryId, input.stateId, input.districtId);
   await ensureOfficeNameUnique(workspaceId, input.name);
 
   const office = await (prisma as any).office.create({
     data: {
       name: input.name,
       address: input.address ?? null,
-      countryId: input.countryId,
-      stateId: input.stateId,
-      districtId: input.districtId,
+      country: input.country,
+      state: input.state,
+      district: input.district ?? null,
+      city: input.city,
       workspaceId,
       createdBy: createdBy ?? null,
       isActive: true,
@@ -164,7 +164,7 @@ export const listOffices = async (workspaceId: string, query?: ListOfficesQuery)
     };
   }
 
-  const { page, limit, search, status, countryId, stateId, districtId } = query;
+  const { page, limit, search, status, country, state, district, city } = query;
   const skip = (page - 1) * limit;
 
   const where: any = {
@@ -175,9 +175,10 @@ export const listOffices = async (workspaceId: string, query?: ListOfficesQuery)
           name: { contains: search, mode: 'insensitive'},
         }
       : {}),
-    ...(countryId ? { countryId } : {}),
-    ...(stateId ? { stateId } : {}),
-    ...(districtId ? { districtId } : {}),
+    ...(country ? { country } : {}),
+    ...(state ? { state } : {}),
+    ...(district ? { district } : {}),
+    ...(city ? { city } : {}),
   };
 
   const [total, offices] = await prisma.$transaction([
@@ -213,43 +214,39 @@ export const getOfficeById = async (id: string, workspaceId: string) => {
   return office;
 };
 
-export const updateOffice = async (id: string, workspaceId: string, input: UpdateOfficeInput) => {
+export const updateOffice = async (
+  workspaceId: string,
+  id: string,
+  input: UpdateOfficeInput,
+) => {
   const existing = await (prisma as any).office.findFirst({
     where: { id, workspaceId },
   });
 
   if (!existing) {
-    throw createServiceError('Office not found in this workspace.', 404);
+    throw createServiceError('Office not found.', 404);
   }
 
-  const nextName = input.name ?? existing.name;
-  await ensureOfficeNameUnique(workspaceId, nextName, id);
-
-  const countryId = input.countryId ?? existing.countryId;
-  const stateId = input.stateId ?? existing.stateId;
-  const districtId = input.districtId ?? existing.districtId;
-
-  if (!countryId || !stateId || !districtId) {
-    throw createServiceError('countryId, stateId and districtId are required for office.', 422);
+  if (input.name && input.name !== existing.name) {
+    await ensureOfficeNameUnique(workspaceId, input.name, id);
   }
 
-  await validateLocationHierarchy(workspaceId, countryId, stateId, districtId);
-
-  const office = await (prisma as any).office.update({
+  const updatedOffice = await (prisma as any).office.update({
     where: { id },
     data: {
       ...(input.name !== undefined ? { name: input.name } : {}),
-      ...(input.address !== undefined ? { address: input.address ?? null } : {}),
-      ...(input.countryId !== undefined ? { countryId: input.countryId } : {}),
-      ...(input.stateId !== undefined ? { stateId: input.stateId } : {}),
-      ...(input.districtId !== undefined ? { districtId: input.districtId } : {}),
+      ...(input.address !== undefined ? { address: input.address } : {}),
+      ...(input.country !== undefined ? { country: input.country } : {}),
+      ...(input.state !== undefined ? { state: input.state } : {}),
+      ...(input.district !== undefined ? { district: input.district } : {}),
+      ...(input.city !== undefined ? { city: input.city } : {}),
       ...(input.isActive !== undefined ? { isActive: input.isActive } : {}),
     },
   });
 
   logger.info('Office updated', { officeId: id, workspaceId, updatedFields: Object.keys(input) });
 
-  return office;
+  return updatedOffice;
 };
 
 export const deleteOffice = async (id: string, workspaceId: string) => {

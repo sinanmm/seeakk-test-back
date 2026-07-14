@@ -21,9 +21,10 @@ export const createOfficeSchema = z.object({
     emptyStringToUndefined,
     z.string().trim().max(500, 'Address too long').optional(),
   ),
-  countryId: requiredId('countryId'),
-  stateId: requiredId('stateId'),
-  districtId: requiredId('districtId'),
+  country: z.string().trim().min(1, 'Country is required'),
+  state: z.string().trim().min(1, 'State is required'),
+  district: z.preprocess(emptyStringToUndefined, z.string().trim().optional()),
+  city: z.string().trim().min(1, 'City is required'),
 });
 
 export type CreateOfficeInput = z.infer<typeof createOfficeSchema>;
@@ -35,18 +36,20 @@ export const updateOfficeSchema = z
       emptyStringToUndefined,
       z.string().trim().max(500, 'Address too long').optional(),
     ),
-    countryId: optionalId('countryId'),
-    stateId: optionalId('stateId'),
-    districtId: optionalId('districtId'),
+    country: z.string().trim().min(1, 'Country is required').optional(),
+    state: z.string().trim().min(1, 'State is required').optional(),
+    district: z.preprocess(emptyStringToUndefined, z.string().trim().optional()),
+    city: z.string().trim().min(1, 'City is required').optional(),
     isActive: z.boolean().optional(),
   })
   .refine(
     (value) =>
       value.name !== undefined ||
       value.address !== undefined ||
-      value.countryId !== undefined ||
-      value.stateId !== undefined ||
-      value.districtId !== undefined ||
+      value.country !== undefined ||
+      value.state !== undefined ||
+      value.district !== undefined ||
+      value.city !== undefined ||
       value.isActive !== undefined,
     { message: 'At least one field is required for update.' },
   );
@@ -64,9 +67,10 @@ export const listOfficesQuerySchema = z.object({
     .transform((value) => (value ? Math.min(100, Math.max(1, parseInt(value, 10))) : 10)),
   search: z.string().optional().default(''),
   status: officeStatusSchema.optional(),
-  countryId: optionalId('countryId'),
-  stateId: optionalId('stateId'),
-  districtId: optionalId('districtId'),
+  country: z.preprocess(emptyStringToUndefined, z.string().trim().optional()),
+  state: z.preprocess(emptyStringToUndefined, z.string().trim().optional()),
+  district: z.preprocess(emptyStringToUndefined, z.string().trim().optional()),
+  city: z.preprocess(emptyStringToUndefined, z.string().trim().optional()),
 });
 
 export type ListOfficesQuery = z.infer<typeof listOfficesQuerySchema>;

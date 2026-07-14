@@ -160,7 +160,9 @@ const matchesNormalizedSearch = (item: NormalizedLOBEvent, search: string): bool
   ].some((value) => includesSearch(value, search));
 };
 
-const matchesLocation = (user: LocationAwareUser, locationId?: string) => {
+const matchesLocation = (user: LocationAwareUser, locationId?: string, officeId?: string) => {
+  if (officeId && user?.officeId !== officeId) return false;
+  
   if (!locationId) return true;
   if (!user) return false;
 
@@ -346,7 +348,7 @@ const normalizeLOBEvents = async (
   });
 
   return rawEvents
-    .filter((item: any) => matchesLocation(item.lead?.assignedTo, filters.location_id))
+    .filter((item: any) => matchesLocation(item.lead?.assignedTo, filters.location_id, filters.office_id))
     .map((item: any) => {
       const fromStage = deriveFromStage(item, approvalsByLead, auditsByLead, stageIdByNameKey, stageNameById);
       const reason = reasonsById.get(item.reasonId);
@@ -402,7 +404,7 @@ const countReferenceLeads = async (
     leadAccess,
   );
 
-  return rows.filter((item: any) => matchesLocation(item.assignedTo, filters.location_id)).length;
+  return rows.filter((item: any) => matchesLocation(item.assignedTo, filters.location_id, filters.office_id)).length;
 };
 
 export const getSummary = async (

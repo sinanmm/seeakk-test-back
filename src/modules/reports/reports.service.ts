@@ -381,6 +381,17 @@ const buildLeadWhereClauses = (
         );
         break;
       }
+      case 'office':
+        clauses.push(
+          Prisma.sql`EXISTS (
+            SELECT 1
+            FROM "users" u
+            WHERE u."id" = l."assignedToId"
+            AND u."workspaceId" = ${workspaceId}
+            AND ${buildInClause('u."officeId"', filter.value)}
+          )`,
+        );
+        break;
       default:
         break;
     }
@@ -467,6 +478,17 @@ const buildFollowUpWhereClauses = (
       case 'status':
         clauses.push(
           Prisma.sql`LOWER(f."status") IN (${Prisma.join(filter.value.map((value) => value.toLowerCase()))})`,
+        );
+        break;
+      case 'office':
+        clauses.push(
+          Prisma.sql`EXISTS (
+            SELECT 1
+            FROM "users" u
+            WHERE u."id" = l."assignedToId"
+            AND u."workspaceId" = ${workspaceId}
+            AND ${buildInClause('u."officeId"', filter.value)}
+          )`,
         );
         break;
       default:

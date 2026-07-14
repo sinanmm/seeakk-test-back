@@ -32,7 +32,7 @@ import {
 import { fieldHighlightRoutes } from './modules/admin/field-highlights/fieldHighlights.routes';
 import leadSourceRoutes from './modules/master/lead-source/leadSource.routes';
 import productRoutes from './modules/master/products/product.routes';
-import locationRoutes from './modules/master/locations/locations.routes';
+
 import leadStageRoutes from './modules/master/lead-stages/leadStage.routes';
 import lobReasonRoutes from './modules/master/lob-reasons/lobReasons.routes';
 import followupExtensionReasonRoutes from './modules/master/followup-extension-reasons/followUpExtensionReasons.routes';
@@ -243,7 +243,7 @@ app.use('/api/lead-dynamics', leadDynamicsRouter);
 app.use('/api/leads', leadValuesRouter);
 app.use('/api/master/lead-sources', leadSourceRoutes);
 app.use('/api/master/products', productRoutes);
-app.use('/api/locations', locationRoutes);
+
 app.use('/api/master/lead-stages', leadStageRoutes);
 app.use('/api/lob-reasons', lobReasonRoutes);
 app.use('/api/followup-extension-reasons', followupExtensionReasonRoutes);

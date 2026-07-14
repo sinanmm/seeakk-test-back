@@ -423,7 +423,7 @@ export const createUser = async (
  * Always filters by workspaceId and excludes soft-deleted users.
  */
 export const listUsers = async (query: ListUsersQuery, workspaceId: string) => {
-  const { page, limit, search, roleId, isActive, email } = query;
+  const { page, limit, search, roleId, isActive, email, officeId } = query;
   const skip = (page - 1) * limit;
 
   const where: any = {
@@ -431,6 +431,7 @@ export const listUsers = async (query: ListUsersQuery, workspaceId: string) => {
     deletedAt: null,
     ...(isActive !== undefined ? { isActive } : {}),
     ...(roleId ? { roleId } : {}),
+    ...(officeId ? { officeId } : {}),
     ...(email ? { email: { contains: email, mode: 'insensitive'} } : {}),
     ...(search
       ? {

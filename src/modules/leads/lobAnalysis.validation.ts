@@ -39,6 +39,7 @@ export const lobAnalysisQuerySchema = z.object({
   reason_id: optionalId('reason_id'),
   user_id: optionalId('user_id'),
   location_id: optionalId('location_id'),
+  office_id: optionalId('office_id'),
 });
 
 export const lobAnalysisAuditQuerySchema = lobAnalysisQuerySchema.extend({

@@ -383,6 +383,10 @@ model Office {
   countryId   String?
   stateId     String?
   districtId  String?
+  country     String?
+  state       String?
+  district    String?
+  city        String?
   isActive    Boolean  @default(true)
   createdBy   String?
   workspaceId String

@@ -1683,6 +1683,14 @@ const buildListWhere = async (
   if (query.stage) where.stageId = query.stage;
   if (query.source) where.sourceId = query.source;
 
+  if ('officeId' in query && query.officeId) {
+    if (where.AND) {
+      where.AND.push({ assignedTo: { officeId: query.officeId } });
+    } else {
+      where.AND = [{ assignedTo: { officeId: query.officeId } }];
+    }
+  }
+
   if (query.status === 'OPEN') {
     where.isClosed = false;
   } else if (query.status === 'CLOSED') {
@@ -2313,7 +2321,7 @@ export const updateLead = async (
   const lobRemarks = resolveLobRemarks(input, stage);
   const reasonId = input.reasonId === null ? null : input.reasonId ?? null;
   const isStageUpdateRequested = input.stageId !== undefined && input.stageId !== existing.stageId;
-  if (isStageUpdateRequested && isLobStage(stage)) {
+  if (isStageUpdateRequested && isLobStage(stage) && !existing.isLOB) {
     ensureLOBPayload(stage, reasonId, lobRemarks);
     await ensureValidLOBReasonForStage(workspaceId, stage, reasonId);
   }

@@ -16,14 +16,7 @@ router.use(protect);
  * Workspace scoping is enforced inside the service layer using req.user.workspaceId.
  */
 // ─── Location & Office Meta Routes (Configurable by Admin) ────────────────
-import * as locationController from '../../controllers/User/locationController';
 import * as officeController from '../../controllers/User/officeController';
-
-// Locations
-router.get('/meta/locations/tree', locationController.getLocationTree);
-router.get('/meta/locations/all', locationController.getAllLocations);
-router.post('/meta/locations', locationController.createLocation);
-router.get('/meta/my-locations', locationController.getMyVisibleLocations); // For testing/boundary check
 
 // Offices
 router.get('/meta/offices', officeController.listOffices);
