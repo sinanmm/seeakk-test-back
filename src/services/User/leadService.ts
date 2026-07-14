@@ -173,6 +173,10 @@ type LeadIncludeRecord = {
     scheduledAt: Date;
     status: string;
   }>;
+  advancePayments: Array<{ amount: number }>;
+  remarksList: Array<{ text: string; createdAt: Date }>;
+  activities: Array<{ action: string; metadata: any; createdAt: Date }>;
+  stageHistory: Array<{ remarks: string | null; createdAt: Date }>;
   lobLogs: Array<{
     id: string;
     reasonId: string;
@@ -278,6 +282,31 @@ const leadInclude = {
       scheduledAt: true,
       status: true,
     },
+  },
+  advancePayments: {
+    where: { status: 'APPROVED' },
+    select: { amount: true },
+  },
+  remarksList: {
+    orderBy: { createdAt: 'desc' as const },
+    take: 1,
+    select: { text: true, createdAt: true },
+  },
+  activities: {
+    where: { action: { in: ['REMARK_ADDED', 'LEAD_REMARKS_CREATED', 'STAGE_CHANGED', 'ADVANCE_PAYMENT_REQUESTED', 'ADVANCE_PAYMENT_APPROVED', 'ADVANCE_PAYMENT_REJECTED', 'LOB_RETURN'] } },
+    orderBy: { createdAt: 'desc' as const },
+    take: 1,
+    select: { action: true, metadata: true, createdAt: true },
+  },
+  stageHistory: {
+    orderBy: { createdAt: 'desc' as const },
+    take: 1,
+    select: { remarks: true, createdAt: true },
+  },
+  lobLogs: {
+    orderBy: { createdAt: 'desc' as const },
+    take: 1,
+    select: { reason: { select: { name: true } }, remarks: true, createdAt: true },
   },
   products: {
     orderBy: { createdAt: 'asc' as const },
@@ -433,10 +462,45 @@ const resolveNextFollowUpType = (lead: LeadIncludeRecord): 'CALL' | 'VISIT' | 'M
   return 'CALL';
 };
 
+
+const extractLastRemark = (lead: any): string | null => {
+  let remarks: Array<{ text: string; date: number }> = [];
+
+  if (lead.remarks) remarks.push({ text: lead.remarks, date: lead.updatedAt?.getTime() || 0 });
+  
+  if (lead.remarksList?.[0]?.text) {
+    remarks.push({ text: lead.remarksList[0].text, date: lead.remarksList[0].createdAt.getTime() });
+  }
+  
+  if (lead.lobLogs?.[0]) {
+    const log = lead.lobLogs[0];
+    const text = log.remarks || log.reason?.name || 'LOB Return';
+    remarks.push({ text: `LOB Return: ${text}`, date: log.createdAt?.getTime() || log.changedAt?.getTime() || 0 });
+  }
+  
+  if (lead.stageHistory?.[0]?.remarks) {
+    remarks.push({ text: lead.stageHistory[0].remarks, date: lead.stageHistory[0].createdAt.getTime() });
+  }
+
+  if (lead.activities?.[0]) {
+    const act = lead.activities[0];
+    if (act.action === 'LEAD_REMARKS_CREATED' && act.metadata?.newRemarks) {
+      remarks.push({ text: act.metadata.newRemarks, date: act.createdAt.getTime() });
+    }
+  }
+
+  remarks.sort((a, b) => b.date - a.date);
+  return remarks.length > 0 ? remarks[0].text : null;
+};
+
 const mapLeadRecord = (lead: LeadIncludeRecord) => {
+  const advanceAmount = lead.advancePayments?.reduce((sum: number, p: any) => sum + (p.amount || 0), 0) || 0;
+  const lastRemark = extractLastRemark(lead);
   const { followUps, ...rest } = lead;
   return {
     ...rest,
+    advanceAmount,
+    lastRemark,
     nextFollowUpAt: lead.nextFollowUpAt ? lead.nextFollowUpAt.toISOString() : null,
     nextFollowUpType: resolveNextFollowUpType(lead),
     stageEnteredAt: lead.stageEnteredAt ? lead.stageEnteredAt.toISOString() : null,
@@ -1665,7 +1729,12 @@ const buildListWhere = async (
         { email: { contains: query.search, mode: 'insensitive'} },
         { phone: { contains: query.search, mode: 'insensitive'} },
         { companyName: { contains: query.search, mode: 'insensitive'} },
+
         { remarks: { contains: query.search, mode: 'insensitive'} },
+        { remarksList: { some: { text: { contains: query.search, mode: 'insensitive' } } } },
+        { lobLogs: { some: { OR: [ { remarks: { contains: query.search, mode: 'insensitive' } }, { reason: { name: { contains: query.search, mode: 'insensitive' } } } ] } } },
+        { stageHistory: { some: { remarks: { contains: query.search, mode: 'insensitive' } } } },
+
         { assignedTo: { name: { contains: query.search, mode: 'insensitive'} } },
         { source: { name: { contains: query.search, mode: 'insensitive'} } },
         { stage: { name: { contains: query.search, mode: 'insensitive'} } },
@@ -2877,6 +2946,8 @@ const buildLeadExportCsvRow = (
     lead.stage?.name || '',
     lead.lifecycle?.name || '',
     lead.totalAmount ?? 0,
+    (lead as any).advanceAmount ?? (lead.advancePayments?.reduce((sum: number, p: any) => sum + (p.amount || 0), 0) || 0),
+    ((lead as any).lastRemark ?? extractLastRemark(lead)) || '',
     lead.source?.name || '',
     lead.nextFollowUpAt ? lead.nextFollowUpAt.toISOString() : '',
     lead.isClosed ? 'Yes' : 'No',
@@ -2918,6 +2989,8 @@ export const exportLeads = async (
     'Stage',
     'Lifecycle',
     'Total Amount',
+    'Advance Amount',
+    'Last Remark',
     'Source',
     'Next Follow Up At',
     'Is Closed',
