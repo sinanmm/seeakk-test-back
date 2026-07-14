@@ -49,12 +49,19 @@ export const findLeadCreationTimestamps = async (
   workspaceId: string,
   startDate: Date,
   leadAccess: Prisma.LeadWhereInput = {},
+  where: Prisma.LeadWhereInput = {},
 ) =>
   prisma.lead.findMany({
     where: mergeWorkspaceLeadFilters(workspaceId, leadAccess, {
-      createdAt: {
-        gte: startDate,
-      },
+      ...where,
+      AND: [
+        ...(Array.isArray(where.AND) ? where.AND : where.AND ? [where.AND as Prisma.LeadWhereInput] : []),
+        {
+          createdAt: {
+            gte: startDate,
+          },
+        },
+      ],
     }),
     orderBy: {
       createdAt: 'asc',
@@ -64,10 +71,14 @@ export const findLeadCreationTimestamps = async (
     },
   });
 
-export const groupLeadsByStage = async (workspaceId: string, leadAccess: Prisma.LeadWhereInput = {}) =>
+export const groupLeadsByStage = async (
+  workspaceId: string,
+  leadAccess: Prisma.LeadWhereInput = {},
+  where: Prisma.LeadWhereInput = {},
+) =>
   (prisma as any).lead.groupBy({
     by: ['stageId'],
-    where: mergeWorkspaceLeadFilters(workspaceId, leadAccess, {}),
+    where: mergeWorkspaceLeadFilters(workspaceId, leadAccess, where),
     _count: {
       _all: true,
     },
@@ -146,23 +157,20 @@ export const findLeadsByIds = async (
 
 export const findTodayFollowUps = async (
   workspaceId: string,
-  userId: string,
   startDate: Date,
   endDate: Date,
   take: number,
+  leadAccess: Prisma.LeadWhereInput = {},
 ) =>
   prisma.followUp.findMany({
     where: {
       workspaceId,
-      userId,
       status: 'PENDING',
       scheduledAt: {
         gte: startDate,
         lte: endDate,
       },
-      lead: {
-        deletedAt: null,
-      },
+      lead: mergeWorkspaceLeadFilters(workspaceId, leadAccess, {}),
     },
     orderBy: {
       scheduledAt: 'asc',
@@ -179,4 +187,3 @@ export const findTodayFollowUps = async (
       },
     },
   });
-

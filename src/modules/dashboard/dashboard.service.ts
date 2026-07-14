@@ -192,22 +192,52 @@ const ensureModuleReady = async (): Promise<void> => {
   }
 };
 
-const calculateExpectedRevenue = async (workspaceId: string, leadAccess: Prisma.LeadWhereInput): Promise<number> => {
-  const where: Prisma.LeadWhereInput = {
-    workspaceId,
-    deletedAt: null,
-    ...leadAccess,
-  };
-  const rows = await (prisma as any).lead.findMany({
-    where,
-    select: {
-      id: true,
-      totalAmount: true,
-    },
-  });
-  if (rows.length === 0) return 0;
+const appendLeadAnd = (where: Prisma.LeadWhereInput, condition: Prisma.LeadWhereInput): Prisma.LeadWhereInput => ({
+  ...where,
+  AND: [
+    ...(Array.isArray(where.AND) ? where.AND : where.AND ? [where.AND as Prisma.LeadWhereInput] : []),
+    condition,
+  ],
+});
 
-  const leadIds = rows.map((lead: any) => lead.id);
+const buildDateRangeWhere = (dateFrom?: string, dateTo?: string): Prisma.DateTimeFilter | undefined => {
+  if (!dateFrom && !dateTo) return undefined;
+  return {
+    ...(dateFrom ? { gte: startOfDay(new Date(dateFrom)) } : {}),
+    ...(dateTo ? { lte: endOfDay(new Date(dateTo)) } : {}),
+  };
+};
+
+const buildDashboardLeadFilters = (query: DashboardSummaryQueryInput | RevenueAnalyticsQueryInput): Prisma.LeadWhereInput => {
+  let where: Prisma.LeadWhereInput = {};
+
+  if (query.userId) where.assignedToId = query.userId;
+  if (query.officeId) where = appendLeadAnd(where, { assignedTo: { officeId: query.officeId } });
+  if (query.stageId) where.stageId = query.stageId;
+  if (query.sourceId) where.sourceId = query.sourceId;
+
+  const createdAt = buildDateRangeWhere(query.dateFrom, query.dateTo);
+  if (createdAt) where.createdAt = createdAt;
+
+  if (query.status === 'OPEN') {
+    where.isClosed = false;
+  } else if (query.status === 'CLOSED') {
+    where.isClosed = true;
+    where.isLOB = false;
+  } else if (query.status === 'LOB') {
+    where.isLOB = true;
+  } else if (query.status === 'ACTIVE') {
+    where.isClosed = false;
+    where.isLOB = false;
+  } else if (query.status === 'ARCHIVED') {
+    where.deletedAt = { not: null };
+  }
+
+  return where;
+};
+
+const getApprovedAdvanceByLead = async (workspaceId: string, leadIds: string[]): Promise<Map<string, number>> => {
+  if (leadIds.length === 0) return new Map();
   const advanceGroups = await (prisma as any).advancePayment.groupBy({
     by: ['leadId'],
     where: {
@@ -217,13 +247,125 @@ const calculateExpectedRevenue = async (workspaceId: string, leadAccess: Prisma.
     },
     _sum: { amount: true },
   });
-  const approvedByLead = new Map(advanceGroups.map((item: any) => [item.leadId, Number(item._sum.amount || 0)]));
+  return new Map(advanceGroups.map((item: any) => [item.leadId, Number(item._sum.amount || 0)]));
+};
+
+const findRevenueEligibleLeads = async (
+  workspaceId: string,
+  leadAccess: Prisma.LeadWhereInput,
+  dashboardFilters: Prisma.LeadWhereInput,
+) => {
+  return (prisma as any).lead.findMany({
+    where: {
+      workspaceId,
+      deletedAt: null,
+      AND: [
+        leadAccess,
+        dashboardFilters,
+        {
+          stage: {
+            is: {
+              isClosed: true,
+              isLOB: false,
+              deletedAt: null,
+            },
+          },
+          isLOB: false,
+          closureType: { notIn: ['LOST', 'CANCELLED'] },
+        },
+      ],
+    },
+    select: {
+      id: true,
+      totalAmount: true,
+      closedAt: true,
+      updatedAt: true,
+    },
+  });
+};
+
+const calculateDashboardRevenue = async (
+  workspaceId: string,
+  leadAccess: Prisma.LeadWhereInput,
+  dashboardFilters: Prisma.LeadWhereInput,
+  dateWindow?: { gte?: Date; lte?: Date },
+): Promise<{ sum: number; count: number }> => {
+  const rows = await findRevenueEligibleLeads(workspaceId, leadAccess, dashboardFilters);
+  if (rows.length === 0) return { sum: 0, count: 0 };
+  const leadIds = rows.map((lead: any) => lead.id);
+  const approvedByLead = await getApprovedAdvanceByLead(workspaceId, leadIds);
+
+  return rows.reduce((acc: { sum: number; count: number }, lead: any) => {
+    const approved = Number(approvedByLead.get(lead.id) || 0);
+    const totalAmount = Number(lead.totalAmount || 0);
+    const balance = Math.max(0, totalAmount - approved);
+    const closedTime = (lead.closedAt || lead.updatedAt) as Date | null;
+    const inWindow = !dateWindow || !closedTime || (
+      (!dateWindow.gte || closedTime >= dateWindow.gte) &&
+      (!dateWindow.lte || closedTime <= dateWindow.lte)
+    );
+    if (balance === 0 && inWindow) {
+      acc.sum += totalAmount;
+      acc.count += 1;
+    }
+    return acc;
+  }, { sum: 0, count: 0 });
+};
+
+const calculateExpectedRevenue = async (
+  workspaceId: string,
+  leadAccess: Prisma.LeadWhereInput,
+  dashboardFilters: Prisma.LeadWhereInput,
+): Promise<number> => {
+  const rows = await (prisma as any).lead.findMany({
+    where: {
+      workspaceId,
+      deletedAt: null,
+      AND: [
+        leadAccess,
+        dashboardFilters,
+        {
+          isClosed: false,
+          isLOB: false,
+          closureType: { not: 'CANCELLED' },
+        },
+      ],
+    },
+    select: {
+      id: true,
+      totalAmount: true,
+    },
+  });
+  if (rows.length === 0) return 0;
+
+  const approvedByLead = await getApprovedAdvanceByLead(workspaceId, rows.map((lead: any) => lead.id));
 
   return rows.reduce((sum: number, lead: any) => {
     const approved = Number(approvedByLead.get(lead.id) || 0);
     const balance = Math.max(0, Number(lead.totalAmount || 0) - approved);
-    return sum + balance;
+    return balance > 0 ? sum + balance : sum;
   }, 0);
+};
+
+const calculateTotalAdvance = async (
+  workspaceId: string,
+  leadAccess: Prisma.LeadWhereInput,
+): Promise<number> => {
+  const result = await (prisma as any).advancePayment.aggregate({
+    where: {
+      workspaceId,
+      status: 'APPROVED',
+      lead: {
+        workspaceId,
+        deletedAt: null,
+        AND: [leadAccess],
+      },
+    },
+    _sum: {
+      amount: true,
+    },
+  });
+  return Number(result._sum?.amount || 0);
 };
 
 export const getDashboardSummary = async (
@@ -249,29 +391,36 @@ export const getDashboardSummary = async (
   let leadAccess: Prisma.LeadWhereInput = {};
   try {
     leadAccess = await buildAccessWhere(workspaceId, actor);
-    if (query.officeId) {
-      if (leadAccess.AND) {
-        (leadAccess.AND as Prisma.LeadWhereInput[]).push({ assignedTo: { officeId: query.officeId } });
-      } else {
-        leadAccess.AND = [{ assignedTo: { officeId: query.officeId } }];
-      }
-    }
   } catch (err) {
     leadAccess = { id: { in: [] } };
   }
+  const dashboardFilters = buildDashboardLeadFilters(query);
+  const scopedLeadAccess: Prisma.LeadWhereInput =
+    Object.keys(dashboardFilters).length > 0
+      ? { AND: [leadAccess, dashboardFilters] }
+      : leadAccess;
+  logger.info('Dashboard summary filters applied', {
+    workspaceId,
+    actorId: actor.id,
+    query,
+    dashboardFilters,
+  });
 
   const activeUserWhere = await buildActiveUsersScopedWhere(workspaceId, actor);
   if (query.officeId) {
     (activeUserWhere as Prisma.UserWhereInput).officeId = query.officeId;
   }
+  if (query.userId) {
+    (activeUserWhere as Prisma.UserWhereInput).id = query.userId;
+  }
 
   const results = await Promise.allSettled([
-    dashboardRepository.countLeads(workspaceId, { createdAt: { gte: todayStart, lte: todayEnd } }, leadAccess),
-    dashboardRepository.countLeads(workspaceId, { createdAt: { gte: yesterdayStart, lte: yesterdayEnd } }, leadAccess),
-    dashboardRepository.countLeads(workspaceId, {}, leadAccess),
-    dashboardRepository.countLeads(workspaceId, { createdAt: { gte: currentThirtyDayStart, lte: todayEnd } }, leadAccess),
-    dashboardRepository.countLeads(workspaceId, { createdAt: { gte: previousThirtyDayStart, lte: previousThirtyDayEnd } }, leadAccess),
-    dashboardRepository.countLeads(workspaceId, { isClosed: true, isLOB: false }, leadAccess),
+    dashboardRepository.countLeads(workspaceId, { createdAt: { gte: todayStart, lte: todayEnd } }, scopedLeadAccess),
+    dashboardRepository.countLeads(workspaceId, { createdAt: { gte: yesterdayStart, lte: yesterdayEnd } }, scopedLeadAccess),
+    dashboardRepository.countLeads(workspaceId, {}, scopedLeadAccess),
+    dashboardRepository.countLeads(workspaceId, { createdAt: { gte: currentThirtyDayStart, lte: todayEnd } }, scopedLeadAccess),
+    dashboardRepository.countLeads(workspaceId, { createdAt: { gte: previousThirtyDayStart, lte: previousThirtyDayEnd } }, scopedLeadAccess),
+    dashboardRepository.countLeads(workspaceId, { isClosed: true, isLOB: false }, scopedLeadAccess),
     dashboardRepository.countLeads(
       workspaceId,
       {
@@ -282,7 +431,7 @@ export const getDashboardSummary = async (
           { closedAt: null, updatedAt: { gte: currentWeekStart, lte: todayEnd } },
         ],
       },
-      leadAccess,
+      scopedLeadAccess,
     ),
     dashboardRepository.countLeads(
       workspaceId,
@@ -294,7 +443,7 @@ export const getDashboardSummary = async (
           { closedAt: null, updatedAt: { gte: previousWeekStart, lte: previousWeekEnd } },
         ],
       },
-      leadAccess,
+      scopedLeadAccess,
     ),
     dashboardRepository.countUsers(workspaceId, { isActive: true, ...activeUserWhere }),
     dashboardRepository.countUsers(workspaceId, {
@@ -307,20 +456,24 @@ export const getDashboardSummary = async (
       createdAt: { gte: previousWeekStart, lte: previousWeekEnd },
       ...activeUserWhere,
     }),
-    dashboardRepository.findLeadCreationTimestamps(workspaceId, growthStartDate, leadAccess),
-    dashboardRepository.groupLeadsByStage(workspaceId, leadAccess),
+    dashboardRepository.findLeadCreationTimestamps(workspaceId, growthStartDate, scopedLeadAccess),
+    dashboardRepository.groupLeadsByStage(workspaceId, scopedLeadAccess, { isClosed: false, isLOB: false }),
     dashboardRepository.findLeadStages(workspaceId),
     dashboardRepository.findRecentLeadAuditLogs(workspaceId, 60),
-    dashboardRepository.findTodayFollowUps(workspaceId, actor.id, todayStart, todayEnd, 5),
-    getLOBStageBreakdown(workspaceId, actor, {}, leadAccess),
+    dashboardRepository.findTodayFollowUps(workspaceId, todayStart, todayEnd, 5, scopedLeadAccess),
+    getLOBStageBreakdown(workspaceId, actor, {}, scopedLeadAccess),
     dashboardRepository.countLeads(
       workspaceId,
       {
         approvalState: LeadApprovalState.PENDING,
       },
-      leadAccess,
+      scopedLeadAccess,
     ),
-    calculateExpectedRevenue(workspaceId, leadAccess),
+    calculateExpectedRevenue(workspaceId, scopedLeadAccess, {}),
+    calculateDashboardRevenue(workspaceId, scopedLeadAccess, {}),
+    calculateDashboardRevenue(workspaceId, scopedLeadAccess, {}, { gte: currentWeekStart, lte: todayEnd }),
+    calculateDashboardRevenue(workspaceId, scopedLeadAccess, {}, { gte: previousWeekStart, lte: previousWeekEnd }),
+    calculateTotalAdvance(workspaceId, scopedLeadAccess),
   ]);
 
   const getValue = <T>(index: number, fallback: T): T => {
@@ -349,6 +502,22 @@ export const getDashboardSummary = async (
   const lobStageBreakdown = getValue<any>(16, { labels: [], lob_counts: [], total_reference: 0 });
   const pendingApprovals = getValue<number>(17, 0);
   const expectedRevenue = getValue<number>(18, 0);
+  const revenue = getValue<{ sum: number; count: number }>(19, { sum: 0, count: 0 });
+  const revenueThisWeek = getValue<{ sum: number; count: number }>(20, { sum: 0, count: 0 });
+  const revenueLastWeek = getValue<{ sum: number; count: number }>(21, { sum: 0, count: 0 });
+  const totalAdvance = getValue<number>(22, 0);
+  logger.info('Dashboard summary aggregates calculated', {
+    workspaceId,
+    actorId: actor.id,
+    totalLeadCount,
+    totalClosedLeadCount,
+    pendingApprovals,
+    revenueLeadCount: revenue.count,
+    revenueSum: revenue.sum,
+    expectedRevenue,
+    totalAdvance,
+    followUpCount: followUps.length,
+  });
 
   const auditLeadEntityIds = Array.from(
     new Set(
@@ -359,7 +528,7 @@ export const getDashboardSummary = async (
   );
   const auditLeadRows =
     auditLeadEntityIds.length > 0
-      ? await dashboardRepository.findLeadsByIds(workspaceId, auditLeadEntityIds, leadAccess)
+      ? await dashboardRepository.findLeadsByIds(workspaceId, auditLeadEntityIds, scopedLeadAccess)
       : [];
   const auditVisibleLeadIds = new Set(auditLeadRows.map((lead) => lead.id));
   const recentAuditLogs = rawAuditLogs
@@ -428,6 +597,20 @@ export const getDashboardSummary = async (
         title: 'Expected Revenue',
         value: expectedRevenue,
         growth: 'Outstanding balance',
+        trend: 'up',
+        iconName: 'IndianRupee',
+      },
+      {
+        title: 'Revenue',
+        value: revenue.sum,
+        growth: `${formatNumber(revenueThisWeek.count)} paid closings this week`,
+        trend: getTrend(revenueThisWeek.sum, revenueLastWeek.sum),
+        iconName: 'IndianRupee',
+      },
+      {
+        title: 'Total Advance',
+        value: totalAdvance,
+        growth: 'Approved advances',
         trend: 'up',
         iconName: 'IndianRupee',
       },
@@ -545,6 +728,31 @@ export const getRevenueAnalytics = async (
 
   if (query.stageId) {
     baseWhere.closedStageId = query.stageId;
+  }
+
+  const revenueLeadFilters = buildDashboardLeadFilters(query);
+  delete (revenueLeadFilters as any).stageId;
+  if (Object.keys(revenueLeadFilters).length > 0) {
+    baseWhere.lead = {
+      deletedAt: null,
+      ...revenueLeadFilters,
+      stage: {
+        is: {
+          isClosed: true,
+          isLOB: false,
+        },
+      },
+    };
+  } else {
+    baseWhere.lead = {
+      deletedAt: null,
+      stage: {
+        is: {
+          isClosed: true,
+          isLOB: false,
+        },
+      },
+    };
   }
 
   if (query.dateFrom || query.dateTo) {
