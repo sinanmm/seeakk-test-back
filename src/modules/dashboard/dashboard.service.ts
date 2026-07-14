@@ -343,7 +343,7 @@ const buildExpectedRevenueSqlConditions = (
     conditions.push(Prisma.sql`
       EXISTS (
         SELECT 1
-        FROM "User" office_user
+        FROM "users" office_user
         WHERE office_user."id" = l."assignedToId"
           AND office_user."officeId" = ${query.officeId}
           AND office_user."deletedAt" IS NULL
@@ -392,7 +392,7 @@ const calculateExpectedRevenue = async (
         l."id",
         COALESCE(l."totalAmount", 0)::numeric
           - COALESCE(approved_payments."approvedAmount", 0)::numeric AS "balanceAmount"
-      FROM "Lead" l
+      FROM "leads" l
       LEFT JOIN (
         SELECT
           ap."leadId",
