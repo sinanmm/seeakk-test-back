@@ -21,10 +21,10 @@ export const createOfficeSchema = z.object({
     emptyStringToUndefined,
     z.string().trim().max(500, 'Address too long').optional(),
   ),
-  country: z.string().trim().min(1, 'Country is required'),
-  state: z.string().trim().min(1, 'State is required'),
+  country: z.preprocess(emptyStringToUndefined, z.string().trim().optional()),
+  state: z.preprocess(emptyStringToUndefined, z.string().trim().optional()),
   district: z.preprocess(emptyStringToUndefined, z.string().trim().optional()),
-  city: z.string().trim().min(1, 'City is required'),
+  city: z.preprocess(emptyStringToUndefined, z.string().trim().optional()),
 });
 
 export type CreateOfficeInput = z.infer<typeof createOfficeSchema>;
@@ -36,10 +36,10 @@ export const updateOfficeSchema = z
       emptyStringToUndefined,
       z.string().trim().max(500, 'Address too long').optional(),
     ),
-    country: z.string().trim().min(1, 'Country is required').optional(),
-    state: z.string().trim().min(1, 'State is required').optional(),
+    country: z.preprocess(emptyStringToUndefined, z.string().trim().optional()),
+    state: z.preprocess(emptyStringToUndefined, z.string().trim().optional()),
     district: z.preprocess(emptyStringToUndefined, z.string().trim().optional()),
-    city: z.string().trim().min(1, 'City is required').optional(),
+    city: z.preprocess(emptyStringToUndefined, z.string().trim().optional()),
     isActive: z.boolean().optional(),
   })
   .refine(
