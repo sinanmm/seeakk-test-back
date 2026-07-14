@@ -26,6 +26,7 @@ coverage/
 
 # System Logs
 logs/
+uploads/
 
 # TypeScript build output
 dist/

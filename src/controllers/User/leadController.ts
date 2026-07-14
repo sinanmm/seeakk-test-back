@@ -3,6 +3,7 @@ import prisma from '../../config/prisma';
 import auditService from '../../services/Audit/auditService';
 import logger from '../../utils/logger';
 import * as leadService from '../../services/User/leadService';
+import * as leadProfileImageService from '../../services/User/leadProfileImageService';
 import { emitWorkspaceEvent } from '../../realtime/socket';
 import { getActiveStageRulesForExecution } from '../../modules/master/stage-rules/stageRule.service';
 import { resolveWorkspaceIdForUser } from '../../utils/workspaceContext';
@@ -218,6 +219,69 @@ export const getLeadById = async (req: Request, res: Response, next: NextFunctio
     });
   } catch (error) {
     handleServiceError(error, res, next, 'getLeadById');
+  }
+};
+
+export const uploadLeadProfileImage = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = requireWorkspace(req, res);
+  if (!workspaceId) return;
+
+  const params = validate<LeadIdParamInput>(leadIdParamSchema, req.params, res, 'uploadLeadProfileImage.params');
+  if (!params) return;
+
+  try {
+    const lead = await leadProfileImageService.uploadLeadProfileImage(workspaceId, getActor(req), params.id, req.file);
+    emitWorkspaceEvent(workspaceId, 'lead_updated', { leadId: lead.id, action: 'profile_image_updated' });
+    return res.status(200).json({
+      success: true,
+      message: 'Lead profile image saved successfully',
+      data: lead,
+    });
+  } catch (error) {
+    handleServiceError(error, res, next, 'uploadLeadProfileImage');
+  }
+};
+
+export const removeLeadProfileImage = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = requireWorkspace(req, res);
+  if (!workspaceId) return;
+
+  const params = validate<LeadIdParamInput>(leadIdParamSchema, req.params, res, 'removeLeadProfileImage.params');
+  if (!params) return;
+
+  try {
+    const lead = await leadProfileImageService.removeLeadProfileImage(workspaceId, getActor(req), params.id);
+    emitWorkspaceEvent(workspaceId, 'lead_updated', { leadId: lead.id, action: 'profile_image_removed' });
+    return res.status(200).json({
+      success: true,
+      message: 'Lead profile image removed successfully',
+      data: lead,
+    });
+  } catch (error) {
+    handleServiceError(error, res, next, 'removeLeadProfileImage');
+  }
+};
+
+export const getLeadProfileImage = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = requireWorkspace(req, res);
+  if (!workspaceId) return;
+
+  const params = validate<LeadIdParamInput>(leadIdParamSchema, req.params, res, 'getLeadProfileImage.params');
+  if (!params) return;
+
+  const variant = req.params.variant === 'full' ? 'full' : req.params.variant === 'thumb' ? 'thumb' : null;
+  if (!variant) {
+    return res.status(404).json({ success: false, message: 'Lead profile image was not found.' });
+  }
+
+  try {
+    const image = await leadProfileImageService.getLeadProfileImage(workspaceId, getActor(req), params.id, variant);
+    res.setHeader('Content-Type', image.contentType);
+    res.setHeader('Content-Disposition', `inline; filename="${image.filename}"`);
+    res.setHeader('Cache-Control', 'private, max-age=3600');
+    return res.status(200).send(image.buffer);
+  } catch (error) {
+    handleServiceError(error, res, next, 'getLeadProfileImage');
   }
 };
 

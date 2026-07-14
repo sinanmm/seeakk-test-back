@@ -1,10 +1,25 @@
 import { Router } from 'express';
+import multer from 'multer';
 import { protect } from '../../middlewares/authMiddleware';
 import { checkUserLock } from '../../middlewares/lockMiddleware';
 import * as leadController from '../../controllers/User/leadController';
 import { fieldHighlightController } from '../../modules/admin/field-highlights/fieldHighlights.controller';
 
 const router = Router();
+const profileImageUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 20 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    const allowed = new Set(['image/jpeg', 'image/jpg', 'image/png', 'image/webp']);
+    if (!allowed.has(file.mimetype)) {
+      const error = new Error('Only JPG, JPEG, PNG, and WEBP profile images are allowed.') as Error & { statusCode?: number };
+      error.statusCode = 422;
+      cb(error);
+      return;
+    }
+    cb(null, true);
+  },
+});
 
 router.use(protect);
 
@@ -17,6 +32,9 @@ router.get('/meta/stage-rules', leadController.listLeadTransitionStageRules);
 router.get('/export', leadController.exportLeads);
 router.get('/', leadController.listLeads);
 router.post('/', leadController.createLead);
+router.get('/:id/profile-image/:variant', leadController.getLeadProfileImage);
+router.post('/:id/profile-image', profileImageUpload.single('image'), leadController.uploadLeadProfileImage);
+router.delete('/:id/profile-image', leadController.removeLeadProfileImage);
 router.get('/:id', leadController.getLeadById);
 router.get('/:id/history', leadController.getLeadHistory);
 router.get('/:id/remarks', leadController.getLeadRemarks);

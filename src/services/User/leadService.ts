@@ -135,6 +135,10 @@ type LeadIncludeRecord = {
   companyName: string | null;
   address: string | null;
   remarks: string | null;
+  profileImageUrl: string | null;
+  profileImageThumbnail: string | null;
+  profileImageUploadedAt: Date | null;
+  profileImageUploadedById: string | null;
   expectedRevenue: number | null;
   totalAmount: number | null;
   generatedRevenue: number;
@@ -294,7 +298,22 @@ const leadInclude = {
     select: { text: true, createdAt: true },
   },
   activities: {
-    where: { action: { in: ['REMARK_ADDED', 'LEAD_REMARKS_CREATED', 'STAGE_CHANGED', 'ADVANCE_PAYMENT_REQUESTED', 'ADVANCE_PAYMENT_APPROVED', 'ADVANCE_PAYMENT_REJECTED', 'LOB_RETURN'] } },
+    where: {
+      action: {
+        in: [
+          'REMARK_ADDED',
+          'LEAD_REMARKS_CREATED',
+          'STAGE_CHANGED',
+          'ADVANCE_PAYMENT_REQUESTED',
+          'ADVANCE_PAYMENT_APPROVED',
+          'ADVANCE_PAYMENT_REJECTED',
+          'LOB_RETURN',
+          'LEAD_PROFILE_IMAGE_UPLOADED',
+          'LEAD_PROFILE_IMAGE_UPDATED',
+          'LEAD_PROFILE_IMAGE_REMOVED',
+        ],
+      },
+    },
     orderBy: { createdAt: 'desc' as const },
     take: 1,
     select: { action: true, metadata: true, createdAt: true },
@@ -348,6 +367,10 @@ const LEAD_MODEL_DB_COLUMNS = [
   'companyName',
   'address',
   'remarks',
+  'profileImageUrl',
+  'profileImageThumbnail',
+  'profileImageUploadedAt',
+  'profileImageUploadedById',
   'expectedRevenue',
   'generatedRevenue',
   'assignedToId',
@@ -501,6 +524,7 @@ const mapLeadRecord = (lead: LeadIncludeRecord) => {
     stageExpiresAt: lead.stageExpiresAt ? lead.stageExpiresAt.toISOString() : null,
     pendingApprovalRequestedAt: lead.pendingApprovalRequestedAt ? lead.pendingApprovalRequestedAt.toISOString() : null,
     closedAt: lead.closedAt ? lead.closedAt.toISOString() : null,
+    profileImageUploadedAt: lead.profileImageUploadedAt ? lead.profileImageUploadedAt.toISOString() : null,
     deletedAt: lead.deletedAt ? lead.deletedAt.toISOString() : null,
     createdAt: lead.createdAt.toISOString(),
     updatedAt: lead.updatedAt.toISOString(),

@@ -34,6 +34,13 @@ export const errorHandler = (err: any, req: Request, res: Response, next: NextFu
     message = 'Request payload is too large. Please upload a smaller file.';
   }
 
+  if (err.name === 'MulterError') {
+    statusCode = err.code === 'LIMIT_FILE_SIZE' ? 413 : 422;
+    message = err.code === 'LIMIT_FILE_SIZE'
+      ? 'Profile image must be 20 MB or less.'
+      : err.message || 'Invalid uploaded file.';
+  }
+
   logger.error(err.message, {
     stack: err.stack,
     path: req.originalUrl,

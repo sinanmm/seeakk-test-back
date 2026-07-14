@@ -771,6 +771,10 @@ model Lead {
   companyName                String?
   address                    String?
   remarks                    String?
+  profileImageUrl            String?           @db.Text
+  profileImageThumbnail      String?           @db.Text
+  profileImageUploadedAt     DateTime?
+  profileImageUploadedById   String?
   expectedRevenue            Float?
   generatedRevenue           Float             @default(0)
   assignedToId               String?
