@@ -323,6 +323,8 @@ export const getLiveLocations = async (workspaceId: string, actor: any, userId?:
         id: user.id,
         name: user.name,
         email: user.email,
+        phone: user.phone || null,
+        employeeId: user.employeeId || null,
         avatarUrl: user.avatarUrl || user.profileImageUrl || null,
         role: user.role?.name || null,
         department: user.department?.name || null,
