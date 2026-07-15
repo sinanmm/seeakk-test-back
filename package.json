@@ -43,6 +43,7 @@
     "csv-parser": "^3.2.0",
     "currency-codes": "^2.2.0",
     "date-fns": "^4.1.0",
+    "exceljs": "^4.4.0",
     "express": "^5.2.1",
     "express-rate-limit": "^8.3.0",
     "geoip-lite": "^1.4.10",

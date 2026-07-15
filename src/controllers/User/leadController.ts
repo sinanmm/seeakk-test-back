@@ -628,6 +628,24 @@ export const exportLeads = async (req: Request, res: Response, next: NextFunctio
   }
 };
 
+export const exportLeadsXlsx = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = requireWorkspace(req, res);
+  if (!workspaceId) return;
+
+  const query = validate<ExportLeadsQueryInput>(exportLeadsQuerySchema, req.query, res);
+  if (!query) return;
+
+  try {
+    const exported = await leadService.exportLeadsXlsx(workspaceId, query, getActor(req));
+    res.setHeader('Content-Type', exported.contentType);
+    res.setHeader('Content-Disposition', `attachment; filename="${exported.filename}"`);
+    res.setHeader('Access-Control-Expose-Headers', 'Content-Disposition');
+    return res.status(200).send(exported.buffer);
+  } catch (error) {
+    handleServiceError(error, res, next, 'exportLeadsXlsx');
+  }
+};
+
 export const listLeadAssignees = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
   // Meta endpoints should still work even if `req.user.workspaceId` is not set.
   const workspaceId =

@@ -2,6 +2,9 @@ import prisma from '../../config/prisma';
 import { redisClient } from '../../config/redis';
 import logger from '../../utils/logger';
 import { formatPhoneStr } from '../../utils/phoneUtils';
+import ExcelJS from 'exceljs';
+import moment from 'moment-timezone';
+import { getWorkspaceTimeZone } from './followupService';
 import { normalizeFollowUpType } from '../../constants/followUpType';
 import { buildAccessWhere, buildClosureUpdateData, isClosureStage, resolveLeadVisibilityMode } from '../../modules/leads/leads.service';
 import { buildLeadOutcomeFlagsFromStage, isClosedWonStage, isLobStage } from '../../modules/leads/leadVisibility.util';
@@ -165,7 +168,7 @@ type LeadIncludeRecord = {
   deletedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
-  assignedTo: { id: string; name: string | null; username: string | null; email: string; supervisorId: string | null } | null;
+  assignedTo: { id: string; name: string | null; username: string | null; email: string; supervisorId: string | null; office: { id: string; name: string } | null } | null;
   stage: { id: string; name: string; color: string; isLOB: boolean; isClosed: boolean } | null;
   lifecycle: { id: string; name: string; isDefault: boolean } | null;
   source: { id: string; name: string; status: string } | null;
@@ -242,6 +245,12 @@ const leadRelationSelect = {
       username: true,
       email: true,
       supervisorId: true,
+      office: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
     },
   },
   stage: {
@@ -3155,3 +3164,224 @@ export const exportLeads = async (
 
 export const canAssignOtherUsers = async (actor: Actor): Promise<boolean> =>
   actorCanAssignToOthers(actor);
+
+export const exportLeadsXlsx = async (
+  workspaceId: string,
+  query: ExportLeadsQueryInput,
+  actor?: Actor,
+): Promise<{ filename: string; buffer: Buffer; contentType: string }> => {
+  await assertModuleReady();
+
+  const where = await buildListWhere(workspaceId, query, actor, { includeArchived: query.includeArchived });
+  const dynamicFields = await (prisma as any).leadDynamicField.findMany({
+    where: { workspaceId, isActive: true },
+    select: { id: true, name: true },
+    orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
+  }) as Array<{ id: string; name: string }>;
+
+  const headers = [
+    'SL No.',
+    'Lead Name',
+    'Email',
+    'Mobile Number',
+    'Company Name',
+    'Address',
+    'Remarks',
+    'Expected Revenue Contribution',
+    'Assigned User',
+    'Reporting Office',
+    'Current Lead Stage',
+    'Lead Lifecycle',
+    'Lead Source',
+    'Total Amount',
+    'Approved Advance Amount',
+    'Balance Amount',
+    'Last Remark',
+    'Next Follow Up At',
+    'Is Closed',
+    'Is LOB',
+    'Archived At',
+    'Created By',
+    'Created Date',
+    'Updated Date',
+    'Products',
+    ...dynamicFields.map((field) => field.name),
+  ];
+
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet('Leads');
+
+  // Freeze top row
+  worksheet.views = [
+    { state: 'frozen', ySplit: 1, activeCell: 'A2' }
+  ];
+
+  // Set columns
+  worksheet.columns = headers.map((header) => ({
+    header,
+    key: header,
+    width: 20
+  }));
+
+  // Style header row
+  const headerRow = worksheet.getRow(1);
+  headerRow.font = { bold: true };
+  headerRow.alignment = { vertical: 'middle', horizontal: 'left' };
+
+  // Fetch all leads using cursor batching
+  const EXPORT_BATCH = 750;
+  let cursorId: string | undefined;
+  let slNoCounter = 1;
+
+  const tz = await getWorkspaceTimeZone(workspaceId);
+
+  const formatExcelDate = (date: Date | null | undefined, includeTime = true): string => {
+    if (!date) return '';
+    const m = moment(date).tz(tz);
+    if (!m.isValid()) return '';
+    return m.format(includeTime ? 'DD-MMM-YYYY hh:mm A' : 'DD-MMM-YYYY');
+  };
+
+  for (;;) {
+    const batch = (await (prisma as any).lead.findMany({
+      where,
+      take: EXPORT_BATCH,
+      orderBy: { id: 'asc' },
+      ...(cursorId ? { cursor: { id: cursorId }, skip: 1 } : {}),
+      select: buildLeadSelect(await areLeadProfileImageColumnsReady()),
+    })) as LeadIncludeRecord[];
+
+    if (!batch.length) {
+      break;
+    }
+
+    const dynamicValueMap = await fetchLeadDynamicValueMap(batch.map((lead) => lead.id));
+
+    for (const lead of batch) {
+      const dynamicValueByFieldId = new Map(
+        (dynamicValueMap.get(lead.id) || []).map((entry) => [entry.fieldId, entry.value])
+      );
+      
+      const totalAmount = lead.totalAmount !== null ? Number(lead.totalAmount) : 0;
+      const advanceAmount = Number(
+        (lead as any).advanceAmount ?? 
+        (lead.advancePayments?.reduce((sum: number, p: any) => sum + (p.amount || 0), 0) || 0)
+      );
+      const balanceAmount = Math.max(0, totalAmount - advanceAmount);
+      const productsStr = lead.products?.map((p: any) => `${p.productName || 'Product'} × ${p.quantity || 1}`).join('; ') || '';
+      
+      const rowData = [
+        slNoCounter++,
+        lead.name,
+        lead.email || '',
+        lead.phone || '', // Mobile Number
+        lead.companyName || '',
+        lead.address || '',
+        lead.remarks || '',
+        lead.expectedRevenue !== null && lead.expectedRevenue !== undefined ? Number(lead.expectedRevenue) : '',
+        lead.assignedTo ? resolveDisplayName(lead.assignedTo) : '',
+        lead.assignedTo?.office?.name || '', // Reporting Office
+        lead.stage?.name || '',
+        lead.lifecycle?.name || '',
+        lead.source?.name || '',
+        totalAmount,
+        advanceAmount,
+        balanceAmount,
+        ((lead as any).lastRemark ?? extractLastRemark(lead)) || '',
+        formatExcelDate(lead.nextFollowUpAt, true), // Next Follow Up At
+        lead.isClosed ? 'Yes' : 'No',
+        lead.isLOB ? 'Yes' : 'No',
+        formatExcelDate(lead.deletedAt, true), // Archived At
+        resolveDisplayName(lead.createdBy),
+        formatExcelDate(lead.createdAt, true), // Created Date
+        formatExcelDate(lead.updatedAt, true), // Updated Date
+        productsStr,
+        ...dynamicFields.map((field) => dynamicValueByFieldId.get(field.id) || ''),
+      ];
+
+      worksheet.addRow(rowData);
+    }
+
+    if (batch.length < EXPORT_BATCH) {
+      break;
+    }
+
+    cursorId = batch[batch.length - 1]!.id;
+  }
+
+  // Enable auto-filter
+  worksheet.autoFilter = {
+    from: { row: 1, column: 1 },
+    to: { row: worksheet.rowCount, column: headers.length }
+  };
+
+  // Adjust column widths, alignment, format types
+  worksheet.eachRow((row, rowNumber) => {
+    if (rowNumber === 1) return; // Skip headers
+
+    // Mobile Number (col 4) - Force text formatting to preserve plus/zeros
+    const phoneCell = row.getCell(4);
+    if (phoneCell.value) {
+      phoneCell.numFmt = '@';
+      phoneCell.value = String(phoneCell.value);
+    }
+
+    // Right-align currency / numeric values
+    [8, 14, 15, 16].forEach((colIdx) => {
+      const cell = row.getCell(colIdx);
+      if (typeof cell.value === 'number') {
+        cell.alignment = { horizontal: 'right' };
+        cell.numFmt = '#,##0.00';
+      }
+    });
+
+    // Wrap text for Address, Remarks, Last Remark, Products
+    [6, 7, 17, 25].forEach((colIdx) => {
+      const cell = row.getCell(colIdx);
+      if (cell.value) {
+        cell.alignment = { wrapText: true };
+      }
+    });
+  });
+
+  // Auto-adjust column widths based on maximum content length
+  worksheet.columns.forEach((column) => {
+    let maxLength = 10;
+    column.eachCell!({ includeEmpty: true }, (cell) => {
+      const cellValue = cell.value;
+      if (cellValue) {
+        const len = String(cellValue).length;
+        if (len > maxLength) {
+          maxLength = len;
+        }
+      }
+    });
+    column.width = Math.min(45, maxLength + 3);
+  });
+
+  const buffer = await workbook.xlsx.writeBuffer() as Buffer;
+
+  const isFiltered = Object.keys(query).some(k => k !== 'includeArchived' && query[k as keyof ExportLeadsQueryInput] !== undefined);
+  const prefix = isFiltered ? 'Leads_Filtered_' : 'Leads_';
+  const filename = `${prefix}${new Date().toISOString().slice(0, 10)}.xlsx`;
+
+  try {
+    await (prisma as any).leadActivity.create({
+      data: {
+        leadId: '', // System-wide audit log
+        performedById: actor?.id || '',
+        workspaceId,
+        action: 'EXPORT_BULK',
+        description: `Lead XLSX Exported. Applied filters: ${JSON.stringify(query)}. Format: XLSX. Record count: ${slNoCounter - 1}.`,
+      }
+    });
+  } catch (auditError) {
+    logger.error(`Failed to audit lead XLSX export: ${auditError}`);
+  }
+
+  return {
+    filename,
+    buffer,
+    contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+  };
+};

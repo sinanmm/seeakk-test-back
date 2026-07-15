@@ -30,6 +30,7 @@ router.use(checkUserLock);
 
 router.get('/meta/stage-rules', leadController.listLeadTransitionStageRules);
 router.get('/export', leadController.exportLeads);
+router.get('/export-xlsx', leadController.exportLeadsXlsx);
 router.get('/', leadController.listLeads);
 router.post('/', leadController.createLead);
 router.get('/:id/profile-image/:variant', leadController.getLeadProfileImage);
