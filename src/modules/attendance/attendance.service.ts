@@ -17,6 +17,10 @@ import {
   validateOfficeLocation,
 } from './attendanceLocation.util';
 import { resolveWorkspaceIdForUser } from '../../utils/workspaceContext';
+import {
+  startSessionForAttendance,
+  stopSessionForAttendance,
+} from '../location-tracking/locationTracking.service';
 
 const createAttendanceServiceError = (message: string, statusCode = 400): Error & { statusCode: number } => {
   const error = new Error(message) as Error & { statusCode: number };
@@ -552,6 +556,10 @@ export const markAttendance = async (userId: string, workspaceId: string, payloa
         message: `${user.name || 'An employee'} submitted attendance for ${dateStr}.`,
       },
     });
+  }
+
+  if (record.checkInTime && ['PRESENT', 'HALF_DAY', 'WORK_FROM_HOME'].includes(attendanceType)) {
+    await startSessionForAttendance(workspaceId, userId, record.id, payload.deviceInfo || null);
   }
 
   return record;
@@ -1130,6 +1138,8 @@ export const checkOutAttendance = async (userId: string, workspaceId: string, pa
     });
   }
 
+  await stopSessionForAttendance(workspaceId, userId, existingRecord.id, userId);
+
   return updatedRecord;
 };
 
@@ -1631,6 +1641,5 @@ export const autoAbsentMarking = async (workspaceId: string) => {
     }
   }
 };
-
 
 

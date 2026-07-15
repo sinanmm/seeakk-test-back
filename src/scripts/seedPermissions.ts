@@ -144,6 +144,13 @@ const permissions = [
   { key: 'edit_attendance_apply_type', group: 'ATTENDANCE_MANAGEMENT', description: 'Edit employee attendance apply type settings' },
   { key: 'view_attendance_network_logs', group: 'ATTENDANCE_MANAGEMENT', description: 'View attendance network audit logs' },
   { key: 'ATTENDANCE_APPROVE', group: 'ATTENDANCE_MANAGEMENT', description: 'Can view attendance summaries and approve/reject attendance records.' },
+  { key: 'LOCATION_TRACKING_SHARE', group: 'ATTENDANCE_MANAGEMENT', description: 'Upload own live field location while checked in' },
+  { key: 'LOCATION_TRACKING_VIEW_LIVE', group: 'ATTENDANCE_MANAGEMENT', description: 'View live field staff locations' },
+  { key: 'LOCATION_TRACKING_VIEW_HISTORY', group: 'ATTENDANCE_MANAGEMENT', description: 'View historical field staff travel routes' },
+  { key: 'LOCATION_TRACKING_REPLAY', group: 'ATTENDANCE_MANAGEMENT', description: 'Replay field staff route movement' },
+  { key: 'LOCATION_TRACKING_EXPORT', group: 'ATTENDANCE_MANAGEMENT', description: 'Export field staff route reports' },
+  { key: 'LOCATION_TRACKING_VIEW_ALL', group: 'ATTENDANCE_MANAGEMENT', description: 'View all users in location tracker' },
+  { key: 'LOCATION_TRACKING_VIEW_ASSIGNED', group: 'ATTENDANCE_MANAGEMENT', description: 'View assigned users in location tracker' },
 ];
 
 async function syncWorkspaceSuperAdminRoles() {

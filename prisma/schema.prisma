@@ -1258,6 +1258,9 @@ model User {
 
   rosterEntries               RosterEntry[]
   attendanceRecords           AttendanceRecord[]
+  locationSessions            LocationSession[]          @relation("LocationSessionUser")
+  locationPoints              LocationPoint[]            @relation("LocationPointUser")
+  locationStops               LocationStop[]             @relation("LocationStopUser")
   attendanceSchedule          AttendanceSchedule?
   attendanceApplyType         String                    @default("FROM_ANYWHERE") // FROM_OFFICE, FROM_ANYWHERE
   attendanceOfficeLocationId  String?
@@ -1790,6 +1793,8 @@ model AttendanceRecord {
   rejectedAt               DateTime?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  locationSessions LocationSession[]
+  locationPoints LocationPoint[]
 
   @@unique([userId, date])
   @@index([workspaceId])
@@ -1797,6 +1802,87 @@ model AttendanceRecord {
   @@index([userId, date])
   @@index([workspaceId, approvalStatus, date])
   @@map("attendance_records")
+}
+
+model LocationSession {
+  id                 String    @id @default(uuid())
+  workspaceId        String
+  userId             String
+  attendanceRecordId String?
+  startedAt          DateTime  @default(now())
+  stoppedAt          DateTime?
+  status             String    @default("ACTIVE")
+  startedBy          String?
+  stoppedBy          String?
+  deviceType         String?
+  lastLatitude       Float?
+  lastLongitude      Float?
+  lastAccuracy       Float?
+  lastSpeed          Float?
+  lastHeading        Float?
+  lastBattery        Float?
+  lastUpdatedAt      DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  user       User              @relation("LocationSessionUser", fields: [userId], references: [id], onDelete: Cascade)
+  attendance AttendanceRecord? @relation(fields: [attendanceRecordId], references: [id], onDelete: SetNull)
+  points     LocationPoint[]
+  stops      LocationStop[]
+
+  @@index([workspaceId, status])
+  @@index([workspaceId, userId, startedAt])
+  @@index([attendanceRecordId])
+  @@map("location_sessions")
+}
+
+model LocationPoint {
+  id                 String   @id @default(uuid())
+  workspaceId        String
+  userId             String
+  sessionId          String
+  attendanceRecordId String?
+  latitude           Float
+  longitude          Float
+  accuracy           Float?
+  speed              Float?
+  heading            Float?
+  batteryPercentage  Float?
+  recordedAt         DateTime
+  deviceType         String?
+  source             String   @default("web")
+  createdAt          DateTime @default(now())
+
+  user       User              @relation("LocationPointUser", fields: [userId], references: [id], onDelete: Cascade)
+  session    LocationSession   @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  attendance AttendanceRecord? @relation(fields: [attendanceRecordId], references: [id], onDelete: SetNull)
+
+  @@index([workspaceId, recordedAt])
+  @@index([workspaceId, userId, recordedAt])
+  @@index([sessionId, recordedAt])
+  @@map("location_points")
+}
+
+model LocationStop {
+  id                 String    @id @default(uuid())
+  workspaceId        String
+  userId             String
+  sessionId          String
+  attendanceRecordId String?
+  latitude           Float
+  longitude          Float
+  startedAt          DateTime
+  endedAt            DateTime?
+  durationSeconds    Int       @default(0)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  user    User            @relation("LocationStopUser", fields: [userId], references: [id], onDelete: Cascade)
+  session LocationSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, userId, startedAt])
+  @@index([sessionId])
+  @@map("location_stops")
 }
 
 model AttendanceWarning {
