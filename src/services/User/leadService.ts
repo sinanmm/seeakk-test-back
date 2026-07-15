@@ -178,8 +178,12 @@ type LeadIncludeRecord = {
     id: string;
     type: string;
     description: string | null;
+    completionDescription: string | null;
+    recentDescription: string | null;
     scheduledAt: Date;
+    completedAt: Date | null;
     status: string;
+    updatedAt: Date;
   }>;
   advancePayments: Array<{ amount: number }>;
   remarksList: Array<{ text: string; createdAt: Date }>;
@@ -293,14 +297,18 @@ const leadRelationSelect = {
     },
   },
   followUps: {
-    orderBy: [{ scheduledAt: 'desc' as const }, { createdAt: 'desc' as const }],
-    take: 10,
+    orderBy: [{ updatedAt: 'desc' as const }, { scheduledAt: 'desc' as const }, { createdAt: 'desc' as const }],
+    take: 25,
     select: {
       id: true,
       type: true,
       description: true,
+      completionDescription: true,
+      recentDescription: true,
       scheduledAt: true,
+      completedAt: true,
       status: true,
+      updatedAt: true,
     },
   },
   advancePayments: {
@@ -577,6 +585,26 @@ const resolveNextFollowUpType = (lead: LeadIncludeRecord): 'CALL' | 'VISIT' | 'M
   return 'CALL';
 };
 
+const resolveFollowUpNote = (
+  followUp?: {
+    description?: string | null;
+    completionDescription?: string | null;
+    recentDescription?: string | null;
+  } | null,
+): string | null => {
+  const completionDescription = followUp?.completionDescription?.trim();
+  if (completionDescription) return completionDescription;
+  const recentDescription = followUp?.recentDescription?.trim();
+  if (recentDescription) return recentDescription;
+  const description = followUp?.description?.trim();
+  return description || null;
+};
+
+const resolveLatestFollowUpDescription = (lead: LeadIncludeRecord): string | null => {
+  const latestWithNote = lead.followUps.find((item) => resolveFollowUpNote(item));
+  return resolveFollowUpNote(latestWithNote);
+};
+
 
 const extractLastRemark = (lead: any): string | null => {
   let remarks: Array<{ text: string; date: number }> = [];
@@ -627,8 +655,7 @@ const mapLeadRecord = (lead: LeadIncludeRecord) => {
     deletedAt: lead.deletedAt ? lead.deletedAt.toISOString() : null,
     createdAt: lead.createdAt.toISOString(),
     updatedAt: lead.updatedAt.toISOString(),
-    followUpDescription:
-      followUps.find((item) => typeof item.description === 'string' && item.description.trim().length > 0)?.description || null,
+    followUpDescription: resolveLatestFollowUpDescription(lead),
   slaState: (() => {
     if (!lead.stageExpiresAt || !lead.slaAction || lead.isClosed || lead.isLOB) return null;
     const now = Date.now();

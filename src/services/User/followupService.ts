@@ -461,20 +461,31 @@ const resolveTargetUserId = async (
 };
 
 export const syncLeadNextFollowUpPointer = async (leadId: string, workspaceId: string): Promise<void> => {
-  const nextPending = await (prisma as any).followUp.findFirst({
-    where: {
-      leadId,
-      workspaceId,
-      status: FOLLOWUP_PENDING,
-    },
-    orderBy: [{ scheduledAt: 'asc' }, { createdAt: 'asc' }],
-    select: { scheduledAt: true },
-  });
+  const [nextPending, latestFollowUp] = await prisma.$transaction([
+    (prisma as any).followUp.findFirst({
+      where: {
+        leadId,
+        workspaceId,
+        status: FOLLOWUP_PENDING,
+      },
+      orderBy: [{ scheduledAt: 'asc' }, { createdAt: 'asc' }],
+      select: { scheduledAt: true },
+    }),
+    (prisma as any).followUp.findFirst({
+      where: {
+        leadId,
+        workspaceId,
+      },
+      orderBy: [{ updatedAt: 'desc' }, { scheduledAt: 'desc' }, { createdAt: 'desc' }],
+      select: { id: true },
+    }),
+  ]);
 
   await (prisma as any).lead.update({
     where: { id: leadId },
     data: {
       nextFollowUpAt: nextPending?.scheduledAt ?? null,
+      updatedAt: latestFollowUp ? new Date() : undefined,
     },
   });
 };
@@ -2058,6 +2069,15 @@ export const bulkExtendFollowUps = async (
         },
       });
     });
+
+    const affectedLeadIds = Array.from(
+      new Set<string>(
+        followUps
+          .filter((row: any) => successIds.includes(row.id))
+          .map((row: any) => String(row.leadId)),
+      ),
+    );
+    await Promise.all(affectedLeadIds.map((leadId) => syncLeadNextFollowUpPointer(leadId, workspaceId)));
   }
 
   const { invalidateOverdueFollowUpCache } = await import('../../middlewares/overdueFollowupMiddleware');
@@ -2262,4 +2282,3 @@ export const getUserFollowUpLimitReport = async (workspaceId: string) => {
 
   return result;
 };
-
