@@ -249,8 +249,8 @@ const countLifecycleUsage = async (workspaceId: string, lifecycleId: string): Pr
   const result = await prisma.$queryRawUnsafe<Array<{ count: number }>>(
     `SELECT COUNT(*) AS count
      FROM leads
-     WHERE workspaceId = ?
-       AND lifecycleId = ?
+     WHERE workspaceId = $1
+       AND lifecycleId = $2
        AND deletedAt IS NULL`,
     workspaceId,
     lifecycleId,

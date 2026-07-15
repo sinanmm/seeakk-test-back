@@ -530,8 +530,8 @@ const ensureLeadExistsInWorkspace = async (leadId: string, workspaceId: string):
   const rows = (await (prisma as any).$queryRawUnsafe(
     `SELECT ${idColumn} AS id
      FROM leads
-     WHERE ${idColumn} = ?
-       AND ${workspaceColumn} = ?
+     WHERE ${idColumn} = $1
+       AND ${workspaceColumn} = $2
      LIMIT 1`,
     leadId,
     workspaceId,

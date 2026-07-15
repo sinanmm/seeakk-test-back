@@ -150,7 +150,7 @@ const countLeadUsage = async (leadSourceId: string): Promise<number> => {
 
   const filterColumn = hasCamelColumn ? 'leadSourceId' : 'lead_source_id';
   const result = await prisma.$queryRawUnsafe<Array<{ count: number }>>(
-    `SELECT COUNT(*) AS count FROM leads WHERE ${filterColumn} = ?`,
+    `SELECT COUNT(*) AS count FROM leads WHERE "${filterColumn}" = $1`,
     leadSourceId,
   );
 
