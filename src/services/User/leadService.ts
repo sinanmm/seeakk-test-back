@@ -3359,7 +3359,7 @@ export const exportLeadsXlsx = async (
     column.width = Math.min(45, maxLength + 3);
   });
 
-  const buffer = await workbook.xlsx.writeBuffer() as Buffer;
+  const buffer = (await workbook.xlsx.writeBuffer()) as unknown as Buffer;
 
   const isFiltered = Object.keys(query).some(k => k !== 'includeArchived' && query[k as keyof ExportLeadsQueryInput] !== undefined);
   const prefix = isFiltered ? 'Leads_Filtered_' : 'Leads_';
