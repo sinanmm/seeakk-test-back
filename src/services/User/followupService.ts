@@ -827,6 +827,8 @@ export const getCalendarData = async (
     endDate: query.endDate,
   });
 
+  (where as any).status = { not: FOLLOWUP_COMPLETED };
+
   const records = await (prisma as any).followUp.findMany({
     where,
     orderBy: [{ scheduledAt: 'asc' }, { createdAt: 'asc' }],
@@ -993,13 +995,16 @@ export const getAdvancedCalendarSummary = async (
       select: { changedAt: true, toStageId: true, toStageName: true },
     }),
     (prisma as any).followUp.findMany({
-      where: buildFollowUpWhere({
-        workspaceId,
-        userId: targetUserId,
-        startDate: query.startDate,
-        endDate: query.endDate,
-        leadFilter: leadAccessFilter,
-      }),
+      where: {
+        ...buildFollowUpWhere({
+          workspaceId,
+          userId: targetUserId,
+          startDate: query.startDate,
+          endDate: query.endDate,
+          leadFilter: leadAccessFilter,
+        }),
+        status: { not: FOLLOWUP_COMPLETED },
+      },
       select: {
         scheduledAt: true,
         previousFollowupDate: true,
@@ -1363,6 +1368,7 @@ export const getAdvancedCalendarDetails = async (
         ? { ...leadAccessFilter, stageId: query.stageId }
         : leadAccessFilter,
     });
+    where.status = { not: FOLLOWUP_COMPLETED };
     const allRows = await (prisma as any).followUp.findMany({
       where,
       orderBy: { scheduledAt: 'asc' },
