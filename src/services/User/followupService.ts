@@ -490,65 +490,16 @@ export const syncLeadNextFollowUpPointer = async (leadId: string, workspaceId: s
   });
 };
 
-const getLeadTableColumns = async (): Promise<{
-  leadTableExists: boolean;
-  idColumn: string | null;
-  workspaceColumn: string | null;
-}> => {
-  const tableRows = await prisma.$queryRaw<Array<{ table_name: string | null }>>`
-    SELECT TABLE_NAME AS table_name 
-    FROM information_schema.tables 
-    WHERE table_schema = current_schema() AND table_name = 'leads'
-  `;
-
-  if (!tableRows[0]?.table_name) {
-    return { leadTableExists: false, idColumn: null, workspaceColumn: null };
-  }
-
-  const columnRows = await prisma.$queryRaw<Array<{ column_name: string }>>`
-    SELECT column_name
-    FROM information_schema.columns
-    WHERE table_schema = current_schema()
-      AND table_name = 'leads'
-  `;
-
-  const idColumn = ['id', 'leadId', 'lead_id'].find((column) =>
-    columnRows.some((row: { column_name: string }) => row.column_name === column),
-  ) || null;
-  const workspaceColumn = ['workspaceId', 'workspace_id'].find((column) =>
-    columnRows.some((row: { column_name: string }) => row.column_name === column),
-  ) || null;
-
-  return {
-    leadTableExists: true,
-    idColumn,
-    workspaceColumn,
-  };
-};
-
 const ensureLeadExistsInWorkspace = async (leadId: string, workspaceId: string): Promise<void> => {
-  const columns = await getLeadTableColumns();
+  const lead = await prisma.lead.findFirst({
+    where: { 
+      id: leadId,
+      workspaceId: workspaceId
+    },
+    select: { id: true }
+  });
 
-  if (!columns.leadTableExists || !columns.idColumn || !columns.workspaceColumn) {
-    throw createServiceError('Lead module is not ready. Database table "leads" is missing or invalid.', 503);
-  }
-
-  const { idColumn, workspaceColumn } = columns;
-  if (!idColumn || !workspaceColumn) {
-    throw createServiceError('Lead module columns are missing.', 500);
-  }
-
-  const rows = (await (prisma as any).$queryRawUnsafe(
-    `SELECT "${idColumn}" AS id
-     FROM leads
-     WHERE "${idColumn}" = $1
-       AND "${workspaceColumn}" = $2
-     LIMIT 1`,
-    leadId,
-    workspaceId,
-  )) as Array<{ id: string }>;
-
-  if (rows.length === 0) {
+  if (!lead) {
     throw createServiceError('Lead not found in this workspace.', 404);
   }
 };

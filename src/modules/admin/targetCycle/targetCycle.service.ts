@@ -150,99 +150,49 @@ const assertSchemaReady = async (): Promise<void> => {
   }
 };
 
-const fetchRangesByCycleIds = async (
-  executor: QueryExecutor,
-  cycleIds: string[],
-): Promise<Map<string, RangeRow[]>> => {
-  const map = new Map<string, RangeRow[]>();
-  if (cycleIds.length === 0) return map;
-
-  const placeholders = cycleIds.map((_, index) => `$${index + 1}`).join(', ');
-  const rows = await executor.$queryRawUnsafe<RangeRow[]>(
-    `SELECT "id", "targetCycleId", "startDay", "endDay", "createdAt"
-     FROM "target_cycle_ranges"
-     WHERE "targetCycleId" IN (${placeholders})
-     ORDER BY "targetCycleId" ASC, "startDay" ASC`,
-    ...cycleIds,
-  );
-
-  rows.forEach((row) => {
-    const list = map.get(row.targetCycleId) || [];
-    list.push(row);
-    map.set(row.targetCycleId, list);
-  });
-
-  return map;
-};
-
-const toResponse = (cycle: CycleRow, ranges: RangeRow[]): TargetCycleResponse => ({
-  ...cycle,
-  status: cycle.status as TargetCycleResponse['status'],
-  ranges,
-});
-
-const ensureNameIsAvailableSql = async (
-  executor: QueryExecutor,
+const ensureNameIsAvailable = async (
   workspaceId: string,
   name: string,
   excludeId?: string,
 ): Promise<void> => {
-  const rows = await executor.$queryRawUnsafe<Array<{ id: string }>>(
-    `SELECT "id"
-     FROM "target_cycles"
-     WHERE "workspaceId" = $1
-       AND "name" = $2
-       AND ($3::text IS NULL OR "id" <> $3)
-     LIMIT 1`,
-    workspaceId,
-    name,
-    excludeId ?? null,
-  );
+  const existing = await (prisma as any).targetCycle.findFirst({
+    where: {
+      workspaceId,
+      name,
+      ...(excludeId ? { id: { not: excludeId } } : {})
+    },
+    select: { id: true }
+  });
 
-  if (rows.length > 0) {
+  if (existing) {
     const error: any = new Error(`Target cycle "${name}" already exists.`);
     error.statusCode = 409;
     throw error;
   }
 };
 
-const getCycleByIdScopedSql = async (
-  executor: QueryExecutor,
+const getCycleByIdScoped = async (
   id: string,
   workspaceId: string,
 ): Promise<CycleRow | null> => {
-  const rows = await executor.$queryRawUnsafe<CycleRow[]>(
-    `SELECT "id", "name", "workspaceId", "totalDays", "status", "createdBy", "createdAt", "updatedAt", "deletedAt"
-     FROM "target_cycles"
-     WHERE "id" = $1
-       AND "workspaceId" = $2
-       AND "deletedAt" IS NULL
-     LIMIT 1`,
-    id,
-    workspaceId,
-  );
-  return rows[0] || null;
+  return await (prisma as any).targetCycle.findFirst({
+    where: {
+      id,
+      workspaceId,
+      deletedAt: null
+    }
+  });
 };
 
-const hasTargetCycleIdInTargetSettings = async (): Promise<boolean> => {
-  const rows = await prisma.$queryRaw<Array<{ column_name: string }>>`
-    SELECT column_name
-    FROM information_schema.columns
-    WHERE table_schema = current_schema()
-      AND table_name = 'target_settings'
-      AND column_name = 'targetCycleId'
-  `;
-  return rows.length > 0;
-};
-
-const createTargetCycleWithDelegates = async (
+export const createTargetCycle = async (
   workspaceId: string,
   input: CreateTargetCycleInput,
   createdBy?: string,
 ): Promise<TargetCycleResponse> => {
+  await assertSchemaReady();
   const totalDays = validateRangesAndComputeTotalDays(input.ranges);
 
-  await ensureNameIsAvailableSql(prisma as any, workspaceId, input.name);
+  await ensureNameIsAvailable(workspaceId, input.name);
 
   const createdCycle = await prisma.$transaction(async (tx: any) => {
     const cycle = await (tx as any).targetCycle.create({
@@ -281,60 +231,7 @@ const createTargetCycleWithDelegates = async (
     return fullCycle;
   });
 
-  return createdCycle as TargetCycleResponse;
-};
-
-const createTargetCycleWithSql = async (
-  workspaceId: string,
-  input: CreateTargetCycleInput,
-  createdBy?: string,
-): Promise<TargetCycleResponse> => {
-  const totalDays = validateRangesAndComputeTotalDays(input.ranges);
-  await ensureNameIsAvailableSql(prisma as any, workspaceId, input.name);
-
-  const created = await prisma.$transaction(async (tx: any) => {
-    const cycleId = createId('tc');
-    const cycleRows = (await (tx as any).$queryRawUnsafe(
-      `INSERT INTO "target_cycles"
-        ("id", "name", "workspaceId", "totalDays", "status", "createdBy", "createdAt", "updatedAt")
-       VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
-       RETURNING "id", "name", "workspaceId", "totalDays", "status", "createdBy", "createdAt", "updatedAt", "deletedAt"`,
-      cycleId,
-      input.name,
-      workspaceId,
-      totalDays,
-      input.status,
-      createdBy ?? null,
-    )) as CycleRow[];
-
-    for (const range of input.ranges) {
-      await (tx as any).$queryRawUnsafe(
-        `INSERT INTO "target_cycle_ranges"
-          ("id", "targetCycleId", "startDay", "endDay", "createdAt")
-         VALUES ($1, $2, $3, $4, NOW())`,
-        createId('tcr'),
-        cycleId,
-        range.startDay,
-        range.endDay,
-      );
-    }
-
-    const rangesMap = await fetchRangesByCycleIds(tx as any, [cycleId]);
-    return toResponse(cycleRows[0], rangesMap.get(cycleId) || []);
-  });
-
-  return created;
-};
-
-export const createTargetCycle = async (
-  workspaceId: string,
-  input: CreateTargetCycleInput,
-  createdBy?: string,
-): Promise<TargetCycleResponse> => {
-  await assertSchemaReady();
-  const data = await createTargetCycleWithDelegates(workspaceId, input, createdBy);
-
-  const [mapped] = await mapCycleCreatorNames([data]);
+  const [mapped] = await mapCycleCreatorNames([createdCycle as TargetCycleResponse]);
   await clearTargetCycleCache(workspaceId);
   return mapped as TargetCycleResponse;
 };
@@ -473,7 +370,7 @@ export const updateTargetCycle = async (
   }
 
   const nextName = input.name ?? existing.name;
-  await ensureNameIsAvailableSql(prisma as any, workspaceId, nextName, id);
+  await ensureNameIsAvailable(workspaceId, nextName, id);
 
   const targetRanges =
     input.ranges ??
@@ -520,12 +417,7 @@ export const updateTargetCycle = async (
 export const deleteTargetCycle = async (id: string, workspaceId: string): Promise<void> => {
   await assertSchemaReady();
 
-  const existing = hasGeneratedDelegates()
-    ? await (prisma as any).targetCycle.findFirst({
-        where: { id, workspaceId, deletedAt: null },
-        select: { id: true },
-      })
-    : await getCycleByIdScopedSql(prisma as any, id, workspaceId);
+  const existing = await getCycleByIdScoped(id, workspaceId);
 
   if (!existing) {
     const error: any = new Error('Target cycle not found.');
@@ -533,25 +425,9 @@ export const deleteTargetCycle = async (id: string, workspaceId: string): Promis
     throw error;
   }
 
-  let usageCount = 0;
-  const hasColumn = await hasTargetCycleIdInTargetSettings();
-  if (hasColumn) {
-    if (hasGeneratedDelegates()) {
-      usageCount = await (prisma as any).targetSetting.count({
-        where: { workspaceId, targetCycleId: id },
-      });
-    } else {
-      const usageRows = (await (prisma as any).$queryRawUnsafe(
-        `SELECT COUNT(*)::int AS count
-         FROM "target_settings"
-         WHERE "workspaceId" = $1
-           AND "targetCycleId" = $2`,
-        workspaceId,
-        id,
-      )) as Array<{ count: number }>;
-      usageCount = Number(usageRows[0]?.count || 0);
-    }
-  }
+  const usageCount = await (prisma as any).targetSetting.count({
+    where: { workspaceId, targetCycleId: id },
+  });
 
   if (usageCount > 0) {
     const error: any = new Error('Target cycle is used in targets and cannot be deleted.');

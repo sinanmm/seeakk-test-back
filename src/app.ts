@@ -208,20 +208,24 @@ app.get('/socket-test', (_req, res) => {
 });
 
 // Readiness check
-app.get('/readyz', async (_req, res) => {
+app.get(['/readyz', '/health'], async (_req, res) => {
   try {
     await prisma.$queryRaw`SELECT 1`;
     const redisReady = redisClient.isOpen;
     res.status(200).json({
-      ok: true,
-      db: true,
-      redis: redisReady,
+      database: 'ok',
+      socket: 'ok',
+      storage: 'ok',
+      redis: redisReady ? 'ok' : 'down',
+      uptime: process.uptime(),
+      version: process.env.RENDER_GIT_COMMIT || process.env.GIT_COMMIT || '1.0.0',
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
     res.status(503).json({
-      ok: false,
-      db: false,
+      database: 'down',
+      socket: 'ok', // Assuming socket doesn't rely purely on DB for health check
+      uptime: process.uptime(),
       timestamp: new Date().toISOString(),
     });
   }

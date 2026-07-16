@@ -41,18 +41,40 @@ export const errorHandler = (err: any, req: Request, res: Response, next: NextFu
       : err.message || 'Invalid uploaded file.';
   }
 
-  logger.error(err.message, {
-    stack: err.stack,
-    path: req.originalUrl,
-    method: req.method,
-    ip: req.ip,
-  });
+  // Identify Prisma errors
+  const isPrismaError = err.name && err.name.startsWith('PrismaClient');
+
+  const userId = (req as any).user?.id || 'unauthenticated';
+  const workspaceId = (req as any).user?.workspaceId || req.headers['x-workspace-id'] || 'unknown';
+  const requestId = (req as any).id || req.headers['x-request-id'] || 'unknown';
+
+  if (statusCode >= 500) {
+    logger.error(`[500 Error] ${err.message}`, {
+      requestId,
+      userId,
+      workspaceId,
+      path: req.originalUrl,
+      route: req.route?.path || req.path,
+      method: req.method,
+      ip: req.ip,
+      isPrismaError,
+      prismaCode: err.code,
+      prismaMeta: err.meta,
+      stack: err.stack,
+    });
+  } else {
+    logger.warn(`[${statusCode} Error] ${err.message}`, {
+      path: req.originalUrl,
+      method: req.method,
+      ip: req.ip,
+    });
+  }
 
   applyCorsHeadersIfAllowed(req, res);
 
   res.status(statusCode).json({
     success: false,
-    message: message,
+    message: statusCode >= 500 ? 'Internal Server Error' : message,
     errorCode: err.errorCode,
     details: err.details,
     stack: process.env.NODE_ENV === 'production' ? undefined : err.stack,
