@@ -104,11 +104,30 @@ type ReminderFollowUpRecord = {
     name: string | null;
     username: string | null;
     email: string;
+    office?: {
+      name: string;
+    } | null;
   };
   lead: {
     id: string;
     name: string;
+    profileImage?: string | null;
+    phone?: string | null;
+    stage?: {
+      id: string;
+      name: string;
+      color?: string | null;
+    } | null;
+    assignedTo?: {
+      id: string;
+      name: string | null;
+      username: string | null;
+      email: string;
+    } | null;
   };
+  priority?: string | null;
+  status: string;
+  recentDescription?: string | null;
 };
 
 const createServiceError = (message: string, statusCode: number): Error & { statusCode: number } => {
@@ -319,11 +338,22 @@ const mapReminderFollowUpRecord = (record: ReminderFollowUpRecord) => ({
   id: record.id,
   leadId: record.leadId,
   leadName: record.lead?.name || 'Lead',
+  leadProfileImage: record.lead?.profileImage || null,
+  leadPhone: record.lead?.phone || null,
+  leadStage: record.lead?.stage ? {
+    name: record.lead.stage.name,
+    color: record.lead.stage.color || '#6b7280',
+  } : null,
+  assignedUserName: resolveDisplayName(record.lead?.assignedTo) || resolveDisplayName(record.user),
+  officeName: record.user?.office?.name || null,
   userId: record.userId,
   type: normalizeFollowUpType(record.type),
   description: record.description,
+  latestFollowupNote: record.recentDescription || null,
   scheduledAt: record.scheduledAt.toISOString(),
   minutesUntil: Math.ceil((record.scheduledAt.getTime() - Date.now()) / 60_000),
+  priority: record.priority || null,
+  status: record.status,
   user: {
     ...record.user,
     displayName: resolveDisplayName(record.user),
@@ -383,11 +413,40 @@ const buildFollowUpInclude = {
 } as const;
 
 const buildReminderInclude = {
-  user: buildFollowUpInclude.user,
+  user: {
+    select: {
+      id: true,
+      name: true,
+      username: true,
+      email: true,
+      office: {
+        select: {
+          name: true,
+        },
+      },
+    },
+  },
   lead: {
     select: {
       id: true,
       name: true,
+      profileImage: true,
+      phone: true,
+      stage: {
+        select: {
+          id: true,
+          name: true,
+          color: true,
+        },
+      },
+      assignedTo: {
+        select: {
+          id: true,
+          name: true,
+          username: true,
+          email: true,
+        },
+      },
     },
   },
   images: {
