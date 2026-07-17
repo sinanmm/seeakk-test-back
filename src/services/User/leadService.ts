@@ -3181,7 +3181,7 @@ export const exportLeads = async (
   }
 
   const keepIndices = reqFields.length > 0 
-    ? allFieldIds.map((id, index) => reqFields.includes(id) ? index : -1).filter(i => i !== -1)
+    ? reqFields.map(id => allFieldIds.indexOf(id)).filter(i => i !== -1)
     : allFieldIds.map((_, i) => i);
 
   const headers = keepIndices.map(i => allHeaders[i]);
@@ -3308,7 +3308,7 @@ export const exportLeadsXlsx = async (
   }
 
   const keepIndices = reqFields.length > 0 
-    ? allFieldIds.map((id, index) => reqFields.includes(id) ? index : -1).filter(i => i !== -1)
+    ? reqFields.map(id => allFieldIds.indexOf(id)).filter(i => i !== -1)
     : allFieldIds.map((_, i) => i);
 
   const headers = keepIndices.map(i => allHeaders[i]);
