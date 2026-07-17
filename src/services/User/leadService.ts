@@ -3123,7 +3123,7 @@ export const exportLeads = async (
     orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
   }) as Array<{ id: string; name: string }>;
 
-  const headers = [
+  const allHeaders = [
     'SL No.',
     'Name',
     'Email',
@@ -3149,6 +3149,43 @@ export const exportLeads = async (
     ...dynamicFields.map((field) => field.name),
   ];
 
+  const allFieldIds = [
+    'sl_no',
+    'name',
+    'email',
+    'phone',
+    'companyName',
+    'address',
+    'remarks',
+    'expectedRevenue',
+    'assignedUser',
+    'stage',
+    'lifecycle',
+    'totalAmount',
+    'advanceAmount',
+    'lastRemark',
+    'source',
+    'nextFollowUpAt',
+    'isClosed',
+    'isLOB',
+    'archivedAt',
+    'createdBy',
+    'createdAt',
+    'updatedAt',
+    ...dynamicFields.map((field) => field.id),
+  ];
+
+  let reqFields: string[] = [];
+  if (query.fields) {
+    reqFields = Array.isArray(query.fields) ? query.fields : (query.fields as string).split(',');
+  }
+
+  const keepIndices = reqFields.length > 0 
+    ? allFieldIds.map((id, index) => reqFields.includes(id) ? index : -1).filter(i => i !== -1)
+    : allFieldIds.map((_, i) => i);
+
+  const headers = keepIndices.map(i => allHeaders[i]);
+
   // Cursor batching: stable order by id so exports scale without loading the full table into memory.
   const EXPORT_BATCH = 750;
   const lines: unknown[][] = [];
@@ -3171,7 +3208,8 @@ export const exportLeads = async (
     const dynamicValueMap = await fetchLeadDynamicValueMap(batch.map((lead) => lead.id));
 
     for (const lead of batch) {
-      lines.push(buildLeadExportCsvRow(slNoCounter++, lead, dynamicFields, dynamicValueMap.get(lead.id)));
+      const fullRow = buildLeadExportCsvRow(slNoCounter++, lead, dynamicFields, dynamicValueMap.get(lead.id));
+      lines.push(keepIndices.map(i => fullRow[i]));
     }
 
     if (batch.length < EXPORT_BATCH) {
@@ -3206,7 +3244,7 @@ export const exportLeadsXlsx = async (
     orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
   }) as Array<{ id: string; name: string }>;
 
-  const headers = [
+  const allHeaders = [
     'SL No.',
     'Lead Name',
     'Email',
@@ -3234,6 +3272,46 @@ export const exportLeadsXlsx = async (
     'Products',
     ...dynamicFields.map((field) => field.name),
   ];
+
+  const allFieldIds = [
+    'sl_no',
+    'name',
+    'email',
+    'phone',
+    'companyName',
+    'address',
+    'remarks',
+    'expectedRevenue',
+    'assignedUser',
+    'reportingOffice',
+    'stage',
+    'lifecycle',
+    'source',
+    'totalAmount',
+    'advanceAmount',
+    'balanceAmount',
+    'lastRemark',
+    'nextFollowUpAt',
+    'isClosed',
+    'isLOB',
+    'archivedAt',
+    'createdBy',
+    'createdAt',
+    'updatedAt',
+    'products',
+    ...dynamicFields.map((field) => field.id),
+  ];
+
+  let reqFields: string[] = [];
+  if (query.fields) {
+    reqFields = Array.isArray(query.fields) ? query.fields : (query.fields as string).split(',');
+  }
+
+  const keepIndices = reqFields.length > 0 
+    ? allFieldIds.map((id, index) => reqFields.includes(id) ? index : -1).filter(i => i !== -1)
+    : allFieldIds.map((_, i) => i);
+
+  const headers = keepIndices.map(i => allHeaders[i]);
 
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet('Leads');
@@ -3297,7 +3375,7 @@ export const exportLeadsXlsx = async (
       const balanceAmount = Math.max(0, totalAmount - advanceAmount);
       const productsStr = lead.products?.map((p: any) => `${p.productName || 'Product'} × ${p.quantity || 1}`).join('; ') || '';
       
-      const rowData = [
+      const fullRow = [
         slNoCounter++,
         lead.name,
         lead.email || '',
@@ -3326,6 +3404,7 @@ export const exportLeadsXlsx = async (
         ...dynamicFields.map((field) => dynamicValueByFieldId.get(field.id) || ''),
       ];
 
+      const rowData = keepIndices.map(i => fullRow[i]);
       worksheet.addRow(rowData);
     }
 
