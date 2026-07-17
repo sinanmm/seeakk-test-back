@@ -74,6 +74,7 @@ export const createUserSchema = z.object({
   districtId: optionalId('district'),
   assignedLocationIds: z.array(z.string().trim().min(1, 'Invalid location ID')).optional(),
   assignedTargetCycleId: nullableOptionalId('target cycle'),
+  profileImageUrl: optionalText(z.string().url('Invalid URL').max(2048)),
 });
 
 export type CreateUserInput = z.infer<typeof createUserSchema>;
@@ -92,6 +93,7 @@ export const updateUserSchema = z.object({
   assignedLocationIds: z.array(z.string().trim().min(1, 'Invalid location ID')).optional(),
   isEmailVerified: z.boolean().optional(),
   assignedTargetCycleId: nullableOptionalId('target cycle'),
+  profileImageUrl: optionalText(z.string().url('Invalid URL').max(2048)),
 });
 
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;

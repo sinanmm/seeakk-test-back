@@ -10,6 +10,7 @@ export const authenticatedUserBaseSelect = {
   isOnboarded: true,
   isActive: true,
   isEmailVerified: true,
+  profileImageUrl: true,
 } as const;
 
 export const hydrateAuthenticatedUser = async (user: any): Promise<any> => {

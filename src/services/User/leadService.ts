@@ -248,6 +248,7 @@ const leadRelationSelect = {
       name: true,
       username: true,
       email: true,
+      profileImageUrl: true,
       supervisorId: true,
       office: {
         select: {
@@ -286,6 +287,7 @@ const leadRelationSelect = {
       name: true,
       username: true,
       email: true,
+      profileImageUrl: true,
     },
   },
   closedBy: {
@@ -294,6 +296,7 @@ const leadRelationSelect = {
       name: true,
       username: true,
       email: true,
+      profileImageUrl: true,
     },
   },
   followUps: {

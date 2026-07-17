@@ -1181,6 +1181,7 @@ model User {
   password                 String?
   phone                    String?
   googleId                 String?   @unique
+  profileImageUrl          String?
   isOnboarded              Boolean   @default(false)
   isActive                 Boolean   @default(true)
   isEmailVerified          Boolean   @default(false)

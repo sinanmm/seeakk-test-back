@@ -87,6 +87,7 @@ const USER_SELECT = {
   roleId: true,
   workspaceId: true,
   phone: true,
+  profileImageUrl: true,
   isActive: true,
   isEmailVerified: true,
   isOnboarded: true,
@@ -228,6 +229,7 @@ export const createUser = async (
     districtId,
     assignedLocationIds,
     assignedTargetCycleId,
+    profileImageUrl,
   } = input;
   const email = rawEmail.toLowerCase().trim();
 
@@ -311,6 +313,7 @@ export const createUser = async (
     email,
     password: hashedPassword,
     phone: phone ?? null,
+    profileImageUrl: profileImageUrl ?? null,
     isEmailVerified: true,
     isActive: true,
     isOnboarded: true,
@@ -608,6 +611,7 @@ export const updateUser = async (
           ...(input.stateId !== undefined ? { stateId: input.stateId } : {}),
           ...(input.districtId !== undefined ? { districtId: input.districtId } : {}),
           ...(input.isEmailVerified !== undefined ? { isEmailVerified: input.isEmailVerified } : {}),
+          ...(input.profileImageUrl !== undefined ? { profileImageUrl: input.profileImageUrl } : {}),
           ...(input.assignedLocationIds !== undefined && input.assignedLocationIds.length > 0
             ? {
                 assignedLocations: {
