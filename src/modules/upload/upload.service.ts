@@ -1,4 +1,4 @@
-import { storage } from '../../lib/storage/storage.factory';
+import { StorageFactory } from '../../lib/storage/storage.factory';
 import logger from '../../utils/logger';
 
 export class UploadService {
@@ -8,7 +8,7 @@ export class UploadService {
   static async uploadFile(file: Express.Multer.File): Promise<{ url: string; key: string }> {
     try {
       logger.info(`Uploading file: ${file.originalname} (${file.mimetype})`);
-      const result = await storage.upload(file);
+      const result = await StorageFactory.getInstance().upload(file);
       logger.info(`File uploaded successfully: ${result.key}`);
       return result;
     } catch (error) {
@@ -26,7 +26,7 @@ export class UploadService {
   static async deleteFile(key: string): Promise<void> {
     try {
       logger.info(`Deleting file: ${key}`);
-      await storage.delete(key);
+      await StorageFactory.getInstance().delete(key);
       logger.info(`File deleted successfully: ${key}`);
     } catch (error) {
       logger.error('Error deleting file from storage', {

@@ -1,7 +1,7 @@
 import { StorageInterface } from './storage.interface';
 import { WasabiStorage } from './wasabi.storage';
 
-class StorageFactory {
+export class StorageFactory {
   private static instance: StorageInterface;
 
   static getInstance(): StorageInterface {
@@ -20,4 +20,3 @@ class StorageFactory {
   }
 }
 
-export const storage = StorageFactory.getInstance();
