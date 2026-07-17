@@ -70,7 +70,7 @@ export const initRealtimeServer = (httpServer: HttpServer): SocketIOServer => {
   io = new SocketIOServer(httpServer, {
     path: SOCKET_IO_PATH,
     cors: {
-      origin: socketCorsOrigin,
+      origin: ['https://app.seeakk.com', 'https://seeakk.com', 'http://localhost:5173'],
       credentials: true,
       methods: ['GET', 'POST'],
     },
