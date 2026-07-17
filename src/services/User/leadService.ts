@@ -3408,7 +3408,19 @@ export const exportLeadsXlsx = async (
       ];
 
       const rowData = keepIndices.map(i => fullRow[i]);
-      worksheet.addRow(rowData);
+      const newRow = worksheet.addRow(rowData);
+
+      const stageFullIndex = allFieldIds.indexOf('stage');
+      const stageExportIndex = keepIndices.indexOf(stageFullIndex);
+      
+      if (stageExportIndex !== -1 && lead.stage?.color) {
+        const cell = newRow.getCell(stageExportIndex + 1);
+        const hexColor = lead.stage.color.replace('#', '');
+        cell.font = { 
+          color: { argb: 'FF' + hexColor }, 
+          bold: true 
+        };
+      }
     }
 
     if (batch.length < EXPORT_BATCH) {
