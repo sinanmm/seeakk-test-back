@@ -375,6 +375,8 @@ const buildFollowUpInclude = {
       name: true,
       email: true,
       phone: true,
+      profileImageUrl: true,
+      profileImageThumbnail: true,
       createdById: true,
       assignedToId: true,
       assignedTo: {
