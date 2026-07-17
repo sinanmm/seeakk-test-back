@@ -1079,7 +1079,10 @@ const mapLeadRecordWithDynamicValues = (
 
 const calculateExpectedRevenueForWhere = async (where: any): Promise<number> => {
   const rows = await (prisma as any).lead.findMany({
-    where,
+    where: {
+      ...where,
+      isLOB: false,
+    },
     select: {
       id: true,
       totalAmount: true,
