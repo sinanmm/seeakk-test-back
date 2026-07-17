@@ -111,7 +111,7 @@ type ReminderFollowUpRecord = {
   lead: {
     id: string;
     name: string;
-    profileImage?: string | null;
+    profileImageUrl?: string | null;
     phone?: string | null;
     stage?: {
       id: string;
@@ -338,7 +338,7 @@ const mapReminderFollowUpRecord = (record: ReminderFollowUpRecord) => ({
   id: record.id,
   leadId: record.leadId,
   leadName: record.lead?.name || 'Lead',
-  leadProfileImage: record.lead?.profileImage || null,
+  leadProfileImage: record.lead?.profileImageUrl || null,
   leadPhone: record.lead?.phone || null,
   leadStage: record.lead?.stage ? {
     name: record.lead.stage.name,
@@ -430,7 +430,7 @@ const buildReminderInclude = {
     select: {
       id: true,
       name: true,
-      profileImage: true,
+      profileImageUrl: true,
       phone: true,
       stage: {
         select: {

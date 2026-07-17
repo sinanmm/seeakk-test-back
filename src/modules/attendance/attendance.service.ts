@@ -1606,36 +1606,44 @@ export const autoAbsentMarking = async (workspaceId: string) => {
       });
 
       if (!existing) {
-        await prisma.attendanceRecord.create({
-          data: {
-            userId: user.id,
-            workspaceId,
-            date: dateObj,
-            attendanceType: 'ABSENT',
-            status: 'APPROVED',
-            approvalStatus: 'APPROVED',
-            createdBy: 'SYSTEM_CRON',
-          },
-        });
-
-        if (settings.enableWarning) {
-          await prisma.attendanceWarning.create({
+        try {
+          await prisma.attendanceRecord.create({
             data: {
               userId: user.id,
               workspaceId,
               date: dateObj,
-              warningType: 'ABSENT',
-              reason: 'Automatically marked absent due to missing check-in before cutoff.',
+              attendanceType: 'ABSENT',
+              status: 'APPROVED',
+              approvalStatus: 'APPROVED',
+              createdBy: 'SYSTEM_CRON',
             },
           });
 
-          const totalWarnings = await prisma.attendanceWarning.count({
-            where: { userId: user.id, workspaceId },
-          });
+          if (settings.enableWarning) {
+            await prisma.attendanceWarning.create({
+              data: {
+                userId: user.id,
+                workspaceId,
+                date: dateObj,
+                warningType: 'ABSENT',
+                reason: 'Automatically marked absent due to missing check-in before cutoff.',
+              },
+            });
 
-          if (settings.enableAutoLock && totalWarnings >= settings.warningThreshold) {
-            await lockUser(user.id, workspaceId, `Automatically locked due to consecutive absent records (${totalWarnings})`);
+            const totalWarnings = await prisma.attendanceWarning.count({
+              where: { userId: user.id, workspaceId },
+            });
+
+            if (settings.enableAutoLock && totalWarnings >= settings.warningThreshold) {
+              await lockUser(user.id, workspaceId, `Automatically locked due to consecutive absent records (${totalWarnings})`);
+            }
           }
+        } catch (error: any) {
+          if (error.code === 'P2002') {
+            // A record was created concurrently, skip
+            continue;
+          }
+          throw error;
         }
       }
     }

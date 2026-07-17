@@ -258,8 +258,29 @@ export const getReminderAlerts = async (req: Request, res: Response, next: NextF
       message: 'Follow-up alerts fetched successfully',
       data,
     });
-  } catch (error) {
-    handleServiceError(error, req, res, next, 'getReminderAlerts');
+  } catch (error: any) {
+    logger.error('Failed to get reminder alerts', {
+      workspaceId,
+      error: error.message,
+      stack: error.stack,
+    });
+    
+    // Fallback response to prevent frontend polling crashes
+    return res.status(200).json({
+      success: false,
+      message: 'Unable to load follow-up alerts.',
+      data: {
+        timeZone: 'UTC',
+        generatedAt: new Date().toISOString(),
+        window: {
+          start: new Date(Date.now() - query.includePastMinutes * 60_000).toISOString(),
+          end: new Date(Date.now() + query.minutesAhead * 60_000).toISOString(),
+          minutesAhead: query.minutesAhead,
+          includePastMinutes: query.includePastMinutes,
+        },
+        items: [],
+      },
+    });
   }
 };
 
