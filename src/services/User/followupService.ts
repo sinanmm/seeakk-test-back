@@ -99,6 +99,8 @@ type ReminderFollowUpRecord = {
   type: string;
   description: string | null;
   scheduledAt: Date;
+  previousFollowupDate?: Date | null;
+  newFollowupDate?: Date | null;
   user: {
     id: string;
     name: string | null;
@@ -111,6 +113,8 @@ type ReminderFollowUpRecord = {
   lead: {
     id: string;
     name: string;
+    email?: string | null;
+    companyName?: string | null;
     profileImageUrl?: string | null;
     phone?: string | null;
     stage?: {
@@ -338,6 +342,8 @@ const mapReminderFollowUpRecord = (record: ReminderFollowUpRecord) => ({
   id: record.id,
   leadId: record.leadId,
   leadName: record.lead?.name || 'Lead',
+  leadEmail: record.lead?.email || null,
+  leadCompanyName: record.lead?.companyName || null,
   leadProfileImage: record.lead?.profileImageUrl || null,
   leadPhone: record.lead?.phone || null,
   leadStage: record.lead?.stage ? {
@@ -350,6 +356,8 @@ const mapReminderFollowUpRecord = (record: ReminderFollowUpRecord) => ({
   type: normalizeFollowUpType(record.type),
   description: record.description,
   latestFollowupNote: record.recentDescription || null,
+  originalScheduledDate: record.previousFollowupDate ? record.previousFollowupDate.toISOString() : record.scheduledAt.toISOString(),
+  extendedDate: record.newFollowupDate ? record.newFollowupDate.toISOString() : null,
   scheduledAt: record.scheduledAt.toISOString(),
   minutesUntil: Math.ceil((record.scheduledAt.getTime() - Date.now()) / 60_000),
   priority: record.priority || null,
@@ -430,6 +438,8 @@ const buildReminderInclude = {
     select: {
       id: true,
       name: true,
+      email: true,
+      companyName: true,
       profileImageUrl: true,
       phone: true,
       stage: {
