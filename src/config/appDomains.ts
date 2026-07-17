@@ -9,5 +9,4 @@ export const PRODUCTION_FRONTEND_URL = 'https://www.seeakk.com';
 export const PRODUCTION_FRONTEND_ORIGINS = [
   PRODUCTION_FRONTEND_URL,
   'https://seeakk.com',
-  'https://prkqafwj4vbevbh4a6v8a7nm.65.108.51.208.sslip.io',
 ] as const;

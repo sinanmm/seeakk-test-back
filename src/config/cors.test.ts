@@ -16,10 +16,6 @@ test('isAllowedOrigin permits production Seeakk domain (www and apex)', () => {
   assert.equal(isAllowedOrigin('https://seeakk.com'), true);
 });
 
-test('isAllowedOrigin permits known sslip staging frontend', () => {
-  assert.equal(isAllowedOrigin('https://prkqafwj4vbevbh4a6v8a7nm.65.108.51.208.sslip.io'), true);
-});
-
 test('handlePreflightRequest responds with CORS headers for allowed origin', () => {
   const headers: Record<string, string | number> = {};
   const req = {
