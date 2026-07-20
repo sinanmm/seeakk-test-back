@@ -83,7 +83,7 @@ const profileImageUpload = multer({
 });
 
 router.get('/:id/profile-image', (req, res, next) => {
-  req.params.variant = 'full';
+  (req.params as any).variant = 'full';
   adminUserController.getUserProfileImage(req, res, next);
 });
 router.get('/:id/profile-image/:variant', adminUserController.getUserProfileImage);

@@ -34,7 +34,7 @@ router.get('/export-xlsx', leadController.exportLeadsXlsx);
 router.get('/', leadController.listLeads);
 router.post('/', leadController.createLead);
 router.get('/:id/profile-image', (req, res, next) => {
-  req.params.variant = 'full';
+  (req.params as any).variant = 'full';
   leadController.getLeadProfileImage(req, res, next);
 });
 router.get('/:id/profile-image/:variant', leadController.getLeadProfileImage);
