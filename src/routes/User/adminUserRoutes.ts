@@ -82,6 +82,10 @@ const profileImageUpload = multer({
   limits: { fileSize: 20 * 1024 * 1024 }, // 20 MB limit before compression
 });
 
+router.get('/:id/profile-image', (req, res, next) => {
+  req.params.variant = 'full';
+  adminUserController.getUserProfileImage(req, res, next);
+});
 router.get('/:id/profile-image/:variant', adminUserController.getUserProfileImage);
 router.post('/:id/profile-image', profileImageUpload.single('image'), adminUserController.uploadUserProfileImage);
 router.delete('/:id/profile-image', adminUserController.removeUserProfileImage);
