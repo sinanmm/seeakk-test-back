@@ -109,16 +109,14 @@ export const uploadUserProfileImage = async (
 
   const now = new Date();
   const profileImageUrl = userImageUrl(userId, 'full', now);
-  const profileImageThumbnail = userImageUrl(userId, 'thumb', now);
 
   const updatedUser = await (prisma as any).user.update({
     where: { id: userId },
-    data: { profileImageUrl, profileImageThumbnail },
+    data: { profileImageUrl },
   });
 
   return {
     profileImageUrl: updatedUser.profileImageUrl,
-    profileImageThumbnail: updatedUser.profileImageThumbnail,
   };
 };
 
@@ -162,11 +160,10 @@ export const removeUserProfileImage = async (
 
   const updatedUser = await (prisma as any).user.update({
     where: { id: userId },
-    data: { profileImageUrl: null, profileImageThumbnail: null },
+    data: { profileImageUrl: null },
   });
 
   return {
     profileImageUrl: updatedUser.profileImageUrl,
-    profileImageThumbnail: updatedUser.profileImageThumbnail,
   };
 };

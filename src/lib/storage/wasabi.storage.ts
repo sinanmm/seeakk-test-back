@@ -64,10 +64,10 @@ export class WasabiStorage implements StorageInterface {
   }
 
   getPublicUrl(key: string): string {
-    const backendUrl = process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 5001}`;
     const cleanKey = key.startsWith('/') ? key.slice(1) : key;
     // Encode the key so spaces and special characters are handled correctly
-    return `${backendUrl}/api/upload/${encodeURIComponent(cleanKey)}`;
+    // Return relative path so the frontend can resolve it properly based on its environment
+    return `/api/upload/${encodeURIComponent(cleanKey)}`;
   }
 
   async getPresignedUrl(key: string): Promise<string> {
