@@ -265,6 +265,9 @@ export const updateRole = async (id: string, input: UpdateRoleInput, workspaceId
 
 export const listPermissions = async () =>
   prisma.permission.findMany({
+    where: {
+      key: { notIn: ['LOCATION_VIEW', 'LOCATION_MANAGE'] },
+    },
     orderBy: [{ group: 'asc' }, { key: 'asc' }],
   });
 

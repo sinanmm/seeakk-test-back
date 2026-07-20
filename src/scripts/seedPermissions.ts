@@ -77,9 +77,6 @@ const permissions = [
   },
   { key: 'grant_bulk_extension_access', group: 'ADMIN_MANAGEMENT', description: 'Grant temporary bulk extension access' },
   { key: 'view_followup_capacity', group: 'ADMIN_MANAGEMENT', description: 'View follow-up capacity settings and reports' },
-  { key: 'LOCATION_VIEW', group: 'MASTER_CONFIGURATION', description: 'View countries, levels, and locations' },
-  { key: 'LOCATION_MANAGE', group: 'MASTER_CONFIGURATION', description: 'Create and manage countries, levels, and locations' },
-
   // HOLIDAY LIST
   { key: 'HOLIDAY_VIEW', group: 'MASTER_CONFIGURATION', description: 'View holidays and weekly-off settings' },
   { key: 'HOLIDAY_CREATE', group: 'MASTER_CONFIGURATION', description: 'Create holidays' },

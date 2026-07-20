@@ -6,12 +6,12 @@ const router = Router();
 
 router.use(protect);
 
-router.get('/', checkPermission('LOCATION_VIEW'), officeController.listOffices);
-router.get('/:id', checkPermission('LOCATION_VIEW'), officeController.getOfficeById);
+router.get('/', checkPermission('SYSTEM_CONFIG'), officeController.listOffices);
+router.get('/:id', checkPermission('SYSTEM_CONFIG'), officeController.getOfficeById);
 
-router.post('/', checkPermission('LOCATION_MANAGE'), officeController.createOffice);
-router.put('/:id', checkPermission('LOCATION_MANAGE'), officeController.updateOffice);
-router.delete('/:id', checkPermission('LOCATION_MANAGE'), officeController.deleteOffice);
-router.patch('/:id/status', checkPermission('LOCATION_MANAGE'), officeController.toggleOfficeStatus);
+router.post('/', checkPermission('SYSTEM_CONFIG'), officeController.createOffice);
+router.put('/:id', checkPermission('SYSTEM_CONFIG'), officeController.updateOffice);
+router.delete('/:id', checkPermission('SYSTEM_CONFIG'), officeController.deleteOffice);
+router.patch('/:id/status', checkPermission('SYSTEM_CONFIG'), officeController.toggleOfficeStatus);
 
 export default router;
