@@ -115,8 +115,6 @@ type ReminderFollowUpRecord = {
     name: string;
     email?: string | null;
     companyName?: string | null;
-    remarks?: string | null;
-    updatedAt?: Date | null;
     profileImageUrl?: string | null;
     phone?: string | null;
     stage?: {
@@ -130,32 +128,6 @@ type ReminderFollowUpRecord = {
       username: string | null;
       email: string;
     } | null;
-    followUps?: Array<{
-      id: string;
-      description: string | null;
-      completionDescription: string | null;
-      recentDescription: string | null;
-      createdAt: Date;
-      updatedAt: Date;
-      user?: {
-        id: string;
-        name: string | null;
-        username: string | null;
-        email: string;
-      } | null;
-    }>;
-    remarksList?: Array<{
-      id: string;
-      text: string;
-      createdAt: Date;
-      updatedAt: Date;
-      createdBy?: {
-        id: string;
-        name: string | null;
-        username: string | null;
-        email: string;
-      } | null;
-    }>;
   };
   priority?: string | null;
   status: string;
@@ -366,51 +338,35 @@ export const resolveLeadFollowUpOwnerId = (lead: {
   createdById: string;
 }): string => lead.assignedToId || lead.createdById;
 
-const mapReminderFollowUpRecord = (record: ReminderFollowUpRecord) => {
-  const latestFollowUp = record.lead?.followUps?.[0] || null;
-  const latestRemark = record.lead?.remarksList?.[0] || null;
-  const latestFollowupNote =
-    latestFollowUp?.recentDescription ||
-    latestFollowUp?.completionDescription ||
-    latestFollowUp?.description ||
-    record.recentDescription ||
-    null;
-
-  return {
-    id: record.id,
-    leadId: record.leadId,
-    leadName: record.lead?.name || 'Lead',
-    leadEmail: record.lead?.email || null,
-    leadCompanyName: record.lead?.companyName || null,
-    leadProfileImage: record.lead?.profileImageUrl || null,
-    leadPhone: record.lead?.phone || null,
-    leadStage: record.lead?.stage ? {
-      name: record.lead.stage.name,
-      color: record.lead.stage.color || '#6b7280',
-    } : null,
-    assignedUserName: resolveDisplayName(record.lead?.assignedTo) || resolveDisplayName(record.user),
-    officeName: record.user?.office?.name || null,
-    userId: record.userId,
-    type: normalizeFollowUpType(record.type),
-    description: record.description,
-    latestFollowupNote,
-    latestFollowupAt: latestFollowUp?.updatedAt?.toISOString() || null,
-    latestFollowupBy: latestFollowUp?.user ? resolveDisplayName(latestFollowUp.user) : null,
-    latestLeadRemark: latestRemark?.text || record.lead?.remarks || null,
-    latestLeadRemarkAt: latestRemark?.createdAt?.toISOString() || (record.lead?.remarks ? record.lead?.updatedAt?.toISOString() || null : null),
-    latestLeadRemarkBy: latestRemark?.createdBy ? resolveDisplayName(latestRemark.createdBy) : null,
-    originalScheduledDate: record.previousFollowupDate ? record.previousFollowupDate.toISOString() : record.scheduledAt.toISOString(),
-    extendedDate: record.newFollowupDate ? record.newFollowupDate.toISOString() : null,
-    scheduledAt: record.scheduledAt.toISOString(),
-    minutesUntil: Math.ceil((record.scheduledAt.getTime() - Date.now()) / 60_000),
-    priority: record.priority || null,
-    status: record.status,
-    user: {
-      ...record.user,
-      displayName: resolveDisplayName(record.user),
-    },
-  };
-};
+const mapReminderFollowUpRecord = (record: ReminderFollowUpRecord) => ({
+  id: record.id,
+  leadId: record.leadId,
+  leadName: record.lead?.name || 'Lead',
+  leadEmail: record.lead?.email || null,
+  leadCompanyName: record.lead?.companyName || null,
+  leadProfileImage: record.lead?.profileImageUrl || null,
+  leadPhone: record.lead?.phone || null,
+  leadStage: record.lead?.stage ? {
+    name: record.lead.stage.name,
+    color: record.lead.stage.color || '#6b7280',
+  } : null,
+  assignedUserName: resolveDisplayName(record.lead?.assignedTo) || resolveDisplayName(record.user),
+  officeName: record.user?.office?.name || null,
+  userId: record.userId,
+  type: normalizeFollowUpType(record.type),
+  description: record.description,
+  latestFollowupNote: record.recentDescription || null,
+  originalScheduledDate: record.previousFollowupDate ? record.previousFollowupDate.toISOString() : record.scheduledAt.toISOString(),
+  extendedDate: record.newFollowupDate ? record.newFollowupDate.toISOString() : null,
+  scheduledAt: record.scheduledAt.toISOString(),
+  minutesUntil: Math.ceil((record.scheduledAt.getTime() - Date.now()) / 60_000),
+  priority: record.priority || null,
+  status: record.status,
+  user: {
+    ...record.user,
+    displayName: resolveDisplayName(record.user),
+  },
+});
 
 const buildFollowUpInclude = {
   lead: {
@@ -462,44 +418,6 @@ const buildFollowUpInclude = {
           email: true,
         },
       },
-      followUps: {
-        orderBy: [{ updatedAt: 'desc' as const }, { createdAt: 'desc' as const }],
-        take: 1,
-        select: {
-          id: true,
-          description: true,
-          completionDescription: true,
-          recentDescription: true,
-          createdAt: true,
-          updatedAt: true,
-          user: {
-            select: {
-              id: true,
-              name: true,
-              username: true,
-              email: true,
-            },
-          },
-        },
-      },
-      remarksList: {
-        orderBy: { createdAt: 'desc' as const },
-        take: 1,
-        select: {
-          id: true,
-          text: true,
-          createdAt: true,
-          updatedAt: true,
-          createdBy: {
-            select: {
-              id: true,
-              name: true,
-              username: true,
-              email: true,
-            },
-          },
-        },
-      },
     },
   },
 } as const;
@@ -524,8 +442,6 @@ const buildReminderInclude = {
       name: true,
       email: true,
       companyName: true,
-      remarks: true,
-      updatedAt: true,
       profileImageUrl: true,
       phone: true,
       stage: {
