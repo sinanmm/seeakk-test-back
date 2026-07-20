@@ -14,6 +14,7 @@ RUN npm ci
 
 # Copy source code
 COPY tsconfig.json ./
+COPY scripts ./scripts/
 COPY src ./src/
 
 # Generate Prisma client and compile TypeScript
@@ -30,6 +31,7 @@ WORKDIR /app
 # Copy package files and install only production dependencies
 COPY package*.json ./
 COPY prisma ./prisma/
+COPY scripts ./scripts/
 # dotenv is imported at runtime by server.ts but listed under devDependencies locally
 RUN npm ci --omit=dev && npm install dotenv --no-save
 
