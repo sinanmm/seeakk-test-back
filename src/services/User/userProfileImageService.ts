@@ -2,6 +2,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import sharp from 'sharp';
 import prisma from '../../config/prisma';
+import { UploadService } from '../../modules/upload/upload.service';
 
 type Actor = {
   id: string;
@@ -34,8 +35,42 @@ const userImageDir = (userId: string): string =>
 const userImagePath = (userId: string, variant: 'full' | 'thumb'): string =>
   path.join(userImageDir(userId), `${variant}.webp`);
 
-const userImageUrl = (userId: string, variant: 'full' | 'thumb', uploadedAt: Date): string =>
-  `/admin/users/${userId}/profile-image/${variant}?v=${uploadedAt.getTime()}`;
+const storageKeyFromUrl = (url?: string | null): string | null => {
+  if (!url) return null;
+
+  let pathname = url;
+  try {
+    pathname = new URL(url).pathname;
+  } catch {
+    // Relative URLs are expected for first-party upload proxy paths.
+  }
+
+  const prefixes = ['/api/upload/', '/upload/'];
+  const prefix = prefixes.find((candidate) => pathname.startsWith(candidate));
+  if (!prefix) return null;
+
+  return decodeURIComponent(pathname.slice(prefix.length));
+};
+
+const deleteStoredUserProfileImage = async (profileImageUrl?: string | null): Promise<void> => {
+  const key = storageKeyFromUrl(profileImageUrl);
+  if (!key) return;
+  await UploadService.deleteFile(key);
+};
+
+const optimizedFile = (
+  userId: string,
+  variant: 'full' | 'thumb',
+  buffer: Buffer,
+): Express.Multer.File =>
+  ({
+    fieldname: 'image',
+    originalname: `${userId}-${variant}.webp`,
+    encoding: '7bit',
+    mimetype: 'image/webp',
+    size: buffer.byteLength,
+    buffer,
+  }) as Express.Multer.File;
 
 const deleteUserProfileImageFiles = async (userId: string): Promise<void> => {
   await Promise.allSettled([
@@ -92,28 +127,21 @@ export const uploadUserProfileImage = async (
      throw createServiceError('User not found.', 404);
   }
 
-  const action = existing?.profileImageUrl ? 'USER_PROFILE_IMAGE_UPDATED' : 'USER_PROFILE_IMAGE_UPLOADED';
+  const fullBuffer = await toOptimizedWebp(file.buffer, 800, 80);
 
-  const [fullBuffer, thumbBuffer] = await Promise.all([
-    toOptimizedWebp(file.buffer, 800, 80),
-    toOptimizedWebp(file.buffer, 150, 75),
-  ]);
+  const fullUpload = await UploadService.uploadFile(optimizedFile(userId, 'full', fullBuffer));
 
-  const targetDir = userImageDir(userId);
-  await fs.mkdir(targetDir, { recursive: true });
-
-  await Promise.all([
-    fs.writeFile(userImagePath(userId, 'full'), fullBuffer),
-    fs.writeFile(userImagePath(userId, 'thumb'), thumbBuffer),
-  ]);
-
-  const now = new Date();
-  const profileImageUrl = userImageUrl(userId, 'full', now);
+  const profileImageUrl = fullUpload.url;
 
   const updatedUser = await (prisma as any).user.update({
     where: { id: userId },
     data: { profileImageUrl },
   });
+
+  await Promise.allSettled([
+    deleteStoredUserProfileImage(existing.profileImageUrl),
+    deleteUserProfileImageFiles(userId),
+  ]);
 
   return {
     profileImageUrl: updatedUser.profileImageUrl,
@@ -156,7 +184,10 @@ export const removeUserProfileImage = async (
     throw createServiceError('User does not have a profile image.', 400);
   }
 
-  await deleteUserProfileImageFiles(userId);
+  await Promise.allSettled([
+    deleteStoredUserProfileImage(existing.profileImageUrl),
+    deleteUserProfileImageFiles(userId),
+  ]);
 
   const updatedUser = await (prisma as any).user.update({
     where: { id: userId },

@@ -1,9 +1,24 @@
 import { Router } from 'express';
+import multer from 'multer';
 import { protect, authorize, checkPermission, checkAnyPermission } from '../../middlewares/authMiddleware';
 import { globalLimiter } from '../../middlewares/rateLimiter';
 import * as adminUserController from '../../controllers/User/adminUserController';
 
 const router = Router();
+const profileImageUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 20 * 1024 * 1024 }, // 20 MB limit before compression
+  fileFilter: (_req, file, cb) => {
+    const allowed = new Set(['image/jpeg', 'image/jpg', 'image/png', 'image/webp']);
+    if (!allowed.has(file.mimetype)) {
+      const error = new Error('Only JPG, JPEG, PNG, and WEBP profile images are allowed.') as Error & { statusCode?: number };
+      error.statusCode = 422;
+      cb(error);
+      return;
+    }
+    cb(null, true);
+  },
+});
 
 // Apply protection to all admin user routes
 router.use(protect);
@@ -58,6 +73,15 @@ router.post(
   targetController.unlockUser,
 );
 
+// ─── Profile Image Routes (register before generic /:id routes) ───────────
+router.get('/:id/profile-image', (req, res, next) => {
+  (req.params as any).variant = 'full';
+  adminUserController.getUserProfileImage(req, res, next);
+});
+router.get('/:id/profile-image/:variant', adminUserController.getUserProfileImage);
+router.post('/:id/profile-image', profileImageUpload.single('image'), adminUserController.uploadUserProfileImage);
+router.delete('/:id/profile-image', adminUserController.removeUserProfileImage);
+
 // GET    /api/admin/users/:id       — Get single user
 router.get('/:id', checkPermission('USERS_VIEW'), adminUserController.getUserById);
 
@@ -74,20 +98,5 @@ router.patch('/:id/status', adminUserController.updateUserStatus);
 router.post('/:id/reset-password', adminUserController.resetUserPassword);
 router.post('/:id/access-link', checkPermission('USERS_EDIT'), adminUserController.sendUserAccessLink);
 router.post('/:id/send-invite', checkPermission('USERS_EDIT'), adminUserController.sendInviteToUser);
-
-// ─── Profile Image Routes ────────────────────────────────────────────────
-import multer from 'multer';
-const profileImageUpload = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: 20 * 1024 * 1024 }, // 20 MB limit before compression
-});
-
-router.get('/:id/profile-image', (req, res, next) => {
-  (req.params as any).variant = 'full';
-  adminUserController.getUserProfileImage(req, res, next);
-});
-router.get('/:id/profile-image/:variant', adminUserController.getUserProfileImage);
-router.post('/:id/profile-image', profileImageUpload.single('image'), adminUserController.uploadUserProfileImage);
-router.delete('/:id/profile-image', adminUserController.removeUserProfileImage);
 
 export default router;
