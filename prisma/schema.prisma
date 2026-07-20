@@ -134,6 +134,8 @@ model Workspace {
   reportTypes                    ReportType[]
   reports                        Report[]
   reportLogs                     ReportLog[]
+  sheets                         Sheet[]
+  sheetVersions                  SheetVersion[]
   importJobs                     ImportJob[]
   invites                        Invite[]
   stageHistory                   LeadStageHistory[]
@@ -1263,6 +1265,9 @@ model User {
   locationPoints              LocationPoint[]            @relation("LocationPointUser")
   locationStops               LocationStop[]             @relation("LocationStopUser")
   attendanceSchedule          AttendanceSchedule?
+  sheetsCreated               Sheet[]                    @relation("SheetCreatedBy")
+  sheetsUpdated               Sheet[]                    @relation("SheetUpdatedBy")
+  sheetVersionsCreated        SheetVersion[]             @relation("SheetVersionCreatedBy")
   attendanceApplyType         String                    @default("FROM_ANYWHERE") // FROM_OFFICE, FROM_ANYWHERE
   attendanceOfficeLocationId  String?
   attendanceOfficeLocation    AttendanceOfficeLocation? @relation(fields: [attendanceOfficeLocationId], references: [id], onDelete: SetNull)
@@ -2215,4 +2220,55 @@ model LeadFieldEditHistory {
   @@index([fieldKey])
   @@index([changedById])
   @@map("lead_field_edit_histories")
+}
+
+model Sheet {
+  id               String         @id @default(cuid())
+  workspaceId      String
+  name             String
+  description      String?
+  source           String         @default("BLANK")
+  columns          Json
+  rows             Json
+  formatting       Json?
+  metadata         Json?
+  originalSnapshot Json?
+  autoSaveEnabled  Boolean        @default(true)
+  lastAutoSavedAt  DateTime?
+  deletedAt        DateTime?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  createdById      String?
+  updatedById      String?
+
+  workspace Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdBy User?          @relation("SheetCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy User?          @relation("SheetUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  versions  SheetVersion[]
+
+  @@index([workspaceId, deletedAt, updatedAt])
+  @@index([workspaceId, name])
+  @@map("sheets")
+}
+
+model SheetVersion {
+  id          String   @id @default(cuid())
+  sheetId     String
+  workspaceId String
+  version     Int
+  name        String
+  columns     Json
+  rows        Json
+  formatting  Json?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+  createdById String?
+
+  sheet     Sheet     @relation(fields: [sheetId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdBy User?     @relation("SheetVersionCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@unique([sheetId, version])
+  @@index([workspaceId, sheetId, createdAt])
+  @@map("sheet_versions")
 }

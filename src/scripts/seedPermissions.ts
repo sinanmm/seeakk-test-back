@@ -103,6 +103,16 @@ const permissions = [
   { key: 'LEADS_EXPORT', group: 'LEADS_MANAGEMENT', description: 'Export leads data' },
   { key: 'LEADS_IMPORT', group: 'LEADS_MANAGEMENT', description: 'Import leads from external files' },
 
+  // SHEETS MODULE
+  { key: 'SHEETS_VIEW', group: 'SHEETS', description: 'View Sheets module and sheet files' },
+  { key: 'SHEETS_CREATE', group: 'SHEETS', description: 'Create blank sheets and duplicate sheets' },
+  { key: 'SHEETS_EDIT', group: 'SHEETS', description: 'Edit and save sheet cell values' },
+  { key: 'SHEETS_DELETE', group: 'SHEETS', description: 'Delete sheets' },
+  { key: 'SHEETS_IMPORT', group: 'SHEETS', description: 'Import CSV/XLS/XLSX files and lead exports into Sheets' },
+  { key: 'SHEETS_EXPORT', group: 'SHEETS', description: 'Export sheets to CSV or Excel' },
+  { key: 'SHEETS_SYNC_LEADS', group: 'SHEETS', description: 'Validate and synchronize sheet changes back to leads' },
+  { key: 'SHEETS_FORMAT_MANAGE', group: 'SHEETS', description: 'Manage sheet formatting and layout' },
+
   // OTHER MODULES (Future proofing)
   { key: 'PRODUCTS_VIEW', group: 'MASTER_CONFIGURATION', description: 'View product master records' },
   { key: 'PRODUCTS_CREATE', group: 'MASTER_CONFIGURATION', description: 'Create product master records' },
