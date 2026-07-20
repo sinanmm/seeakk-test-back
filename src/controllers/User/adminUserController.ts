@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import * as adminUserService from '../../services/User/adminUserService';
+import * as userProfileImageService from '../../services/User/userProfileImageService';
 import {
   createUserSchema,
   updateUserSchema,
@@ -485,5 +486,43 @@ export const sendInviteToUser = async (req: Request, res: Response, next: NextFu
     });
   } catch (error: any) {
     handleServiceError(error, res, next, 'sendInviteToUser');
+  }
+};
+
+export const removeUserProfileImage = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const result = await userProfileImageService.removeUserProfileImage(id);
+    res.json({ success: true, data: result });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getUserProfileImage = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const { id, variant } = req.params;
+    const { buffer, contentType, filename } = await userProfileImageService.getUserProfileImage(
+      id,
+      variant as 'full' | 'thumb',
+    );
+    res.set({
+      'Content-Type': contentType,
+      'Content-Disposition': `inline; filename="${filename}"`,
+      'Cache-Control': 'public, max-age=31536000, immutable',
+    });
+    res.send(buffer);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const uploadUserProfileImage = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const result = await userProfileImageService.uploadUserProfileImage(id, req.file);
+    res.json({ success: true, data: result });
+  } catch (error) {
+    next(error);
   }
 };
