@@ -492,7 +492,7 @@ export const sendInviteToUser = async (req: Request, res: Response, next: NextFu
 export const removeUserProfileImage = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { id } = req.params;
-    const result = await userProfileImageService.removeUserProfileImage(id);
+    const result = await userProfileImageService.removeUserProfileImage(id as string);
     res.json({ success: true, data: result });
   } catch (error) {
     next(error);
@@ -503,7 +503,7 @@ export const getUserProfileImage = async (req: Request, res: Response, next: Nex
   try {
     const { id, variant } = req.params;
     const { buffer, contentType, filename } = await userProfileImageService.getUserProfileImage(
-      id,
+      id as string,
       variant as 'full' | 'thumb',
     );
     res.set({
@@ -520,7 +520,7 @@ export const getUserProfileImage = async (req: Request, res: Response, next: Nex
 export const uploadUserProfileImage = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { id } = req.params;
-    const result = await userProfileImageService.uploadUserProfileImage(id, req.file);
+    const result = await userProfileImageService.uploadUserProfileImage(id as string, req.file);
     res.json({ success: true, data: result });
   } catch (error) {
     next(error);
