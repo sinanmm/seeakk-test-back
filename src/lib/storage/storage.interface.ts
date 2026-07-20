@@ -13,4 +13,13 @@ export interface StorageInterface {
    * Get the public URL for a given storage key.
    */
   getPublicUrl(key: string): string;
+
+  /**
+   * Get a presigned URL for secure access.
+   */
+  getPresignedUrl?(key: string): Promise<string>;
+  /**
+   * Get a readable stream for a file.
+   */
+  getFileStream?(key: string): Promise<{ stream: any; contentType?: string; contentLength?: number }>;
 }

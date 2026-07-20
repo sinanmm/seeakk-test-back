@@ -20,6 +20,21 @@ export class UploadService {
     }
   }
 
+  static async getFileStream(key: string): Promise<{ stream: any; contentType?: string; contentLength?: number }> {
+    if (storage.getFileStream) {
+      return await storage.getFileStream(key);
+    }
+    throw new Error('Storage driver does not support file streaming');
+  }
+
+  static async getPresignedUrl(key: string): Promise<string> {
+    if (storage.getPresignedUrl) {
+      return await storage.getPresignedUrl(key);
+    }
+    // Fallback if storage driver doesn't support presigned URLs
+    return (storage as any).getPublicUrl ? (storage as any).getPublicUrl(key) : '';
+  }
+
   /**
    * Deletes a file from the configured storage driver.
    */

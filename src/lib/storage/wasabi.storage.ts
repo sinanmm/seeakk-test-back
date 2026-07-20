@@ -1,4 +1,5 @@
-import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, DeleteObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { StorageInterface } from './storage.interface';
 import { v4 as uuidv4 } from 'uuid';
 import path from 'path';
@@ -63,9 +64,33 @@ export class WasabiStorage implements StorageInterface {
   }
 
   getPublicUrl(key: string): string {
-    // Trim trailing slash from base if present, and leading slash from key
-    const base = this.publicUrlBase.endsWith('/') ? this.publicUrlBase.slice(0, -1) : this.publicUrlBase;
+    const backendUrl = process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 5001}`;
     const cleanKey = key.startsWith('/') ? key.slice(1) : key;
-    return `${base}/${cleanKey}`;
+    // Encode the key so spaces and special characters are handled correctly
+    return `${backendUrl}/api/upload/${encodeURIComponent(cleanKey)}`;
+  }
+
+  async getPresignedUrl(key: string): Promise<string> {
+    const cleanKey = key.startsWith('/') ? key.slice(1) : key;
+    const command = new GetObjectCommand({
+      Bucket: this.bucket,
+      Key: cleanKey,
+    });
+    // URL valid for 1 hour
+    return await getSignedUrl(this.client, command, { expiresIn: 3600 });
+  }
+
+  async getFileStream(key: string): Promise<{ stream: any; contentType?: string; contentLength?: number }> {
+    const cleanKey = key.startsWith('/') ? key.slice(1) : key;
+    const command = new GetObjectCommand({
+      Bucket: this.bucket,
+      Key: cleanKey,
+    });
+    const response = await this.client.send(command);
+    return {
+      stream: response.Body,
+      contentType: response.ContentType,
+      contentLength: response.ContentLength,
+    };
   }
 }

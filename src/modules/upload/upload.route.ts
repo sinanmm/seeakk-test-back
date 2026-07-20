@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import multer from 'multer';
-import { uploadFile } from './upload.controller';
+import { uploadFile, getFile } from './upload.controller';
 import { protect } from '../../middlewares/authMiddleware';
 
 const router = Router();
@@ -22,5 +22,8 @@ const upload = multer({
 
 // Protect route with auth middleware and handle single file upload
 router.post('/', protect, upload.single('file'), uploadFile);
+
+// Public proxy route to fetch files using presigned URLs
+router.get(/^\/(.+)$/, getFile);
 
 export default router;

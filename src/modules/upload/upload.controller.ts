@@ -19,3 +19,23 @@ export const uploadFile = async (req: Request, res: Response, next: NextFunction
     next(error);
   }
 };
+
+export const getFile = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const key = req.params[0] || req.params.key;
+    if (!key) {
+      res.status(400).json({ success: false, message: 'No file key provided' });
+      return;
+    }
+    const { stream, contentType, contentLength } = await UploadService.getFileStream(key);
+    if (contentType) res.setHeader('Content-Type', contentType);
+    if (contentLength) res.setHeader('Content-Length', contentLength);
+    
+    // Support caching for static images
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    
+    (stream as any).pipe(res);
+  } catch (error) {
+    next(error);
+  }
+};
