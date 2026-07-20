@@ -22,7 +22,7 @@ export const uploadFile = async (req: Request, res: Response, next: NextFunction
 
 export const getFile = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const key = req.params[0] || req.params.key;
+    const key = (req.params[0] || req.params.key) as string;
     if (!key) {
       res.status(400).json({ success: false, message: 'No file key provided' });
       return;

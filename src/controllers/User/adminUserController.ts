@@ -489,7 +489,7 @@ export const sendInviteToUser = async (req: Request, res: Response, next: NextFu
   }
 };
 
-export const removeUserProfileImage = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+export const removeUserProfileImage = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { id } = req.params;
     const result = await userProfileImageService.removeUserProfileImage(id);
@@ -499,7 +499,7 @@ export const removeUserProfileImage = async (req: AuthRequest, res: Response, ne
   }
 };
 
-export const getUserProfileImage = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+export const getUserProfileImage = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { id, variant } = req.params;
     const { buffer, contentType, filename } = await userProfileImageService.getUserProfileImage(
@@ -517,7 +517,7 @@ export const getUserProfileImage = async (req: AuthRequest, res: Response, next:
   }
 };
 
-export const uploadUserProfileImage = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+export const uploadUserProfileImage = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { id } = req.params;
     const result = await userProfileImageService.uploadUserProfileImage(id, req.file);
