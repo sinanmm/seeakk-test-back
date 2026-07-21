@@ -5,7 +5,7 @@ export const getLeadFollowupContext = async (leadId: string, workspaceId: string
 
   // Fetch the latest Lead Remark
   let leadRemarks: string | null = null;
-  const latestRemark = await prisma.leadRemark.findFirst({
+  const latestRemark = await (prisma as any).leadRemark.findFirst({
     where: { leadId, workspaceId },
     orderBy: { createdAt: 'desc' },
     select: { text: true },
@@ -17,9 +17,9 @@ export const getLeadFollowupContext = async (leadId: string, workspaceId: string
     // Fallback to lead.remarks if no LeadRemark entries exist
     const lead = await prisma.lead.findUnique({
       where: { id: leadId },
-      select: { remarks: true },
+      select: { remarks: true } as any,
     });
-    leadRemarks = lead?.remarks || null;
+    leadRemarks = (lead as any)?.remarks || null;
   }
 
   // Fetch the Last Completed Follow-up
