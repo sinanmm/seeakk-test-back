@@ -34,6 +34,7 @@ import type {
 const FOLLOWUP_PENDING = 'PENDING';
 const FOLLOWUP_COMPLETED = 'COMPLETED';
 const FOLLOWUP_MISSED = 'MISSED';
+const FOLLOWUP_CANCELLED = 'CANCELLED';
 const TODAY_CACHE_TTL_SECONDS = 60;
 const MISSED_AFTER_MINUTES = Number(process.env.FOLLOWUP_MISSED_AFTER_MINUTES || 0);
 const FOLLOWUP_SCHEMA_CHECK_TTL_MS = 60_000;
@@ -860,7 +861,7 @@ export const getCalendarData = async (
     endDate: query.endDate,
   });
 
-  (where as any).status = { not: FOLLOWUP_COMPLETED };
+  (where as any).status = { notIn: [FOLLOWUP_COMPLETED, FOLLOWUP_CANCELLED] };
 
   const records = await (prisma as any).followUp.findMany({
     where,
@@ -1036,7 +1037,7 @@ export const getAdvancedCalendarSummary = async (
           endDate: query.endDate,
           leadFilter: leadAccessFilter,
         }),
-        status: { not: FOLLOWUP_COMPLETED },
+        status: { notIn: [FOLLOWUP_COMPLETED, FOLLOWUP_CANCELLED] },
       },
       select: {
         scheduledAt: true,
@@ -1401,7 +1402,7 @@ export const getAdvancedCalendarDetails = async (
         ? { ...leadAccessFilter, stageId: query.stageId }
         : leadAccessFilter,
     });
-    where.status = { not: FOLLOWUP_COMPLETED };
+    where.status = { notIn: [FOLLOWUP_COMPLETED, FOLLOWUP_CANCELLED] };
     const allRows = await (prisma as any).followUp.findMany({
       where,
       orderBy: { scheduledAt: 'asc' },
@@ -1869,7 +1870,7 @@ export const bulkExtendFollowUps = async (
     where: {
       id: { in: input.followUpIds },
       workspaceId,
-      status: { not: FOLLOWUP_COMPLETED },
+      status: { notIn: [FOLLOWUP_COMPLETED, FOLLOWUP_CANCELLED] },
     },
     select: {
       id: true,

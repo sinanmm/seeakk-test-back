@@ -2667,6 +2667,22 @@ export const updateLead = async (
 
     const followUpOwnerId = assignedToId || existing.createdById;
 
+    const isEnteringLOB = stage?.isLOB && !existing.isLOB;
+
+    if (isEnteringLOB) {
+      await (tx as any).followUp.updateMany({
+        where: {
+          leadId: id,
+          workspaceId,
+          status: 'PENDING',
+        },
+        data: {
+          status: 'CANCELLED',
+          completionDescription: 'Superseded by LOB Workflow',
+        },
+      });
+    }
+
     if (input.assignedToId !== undefined && existing.assignedToId !== assignedToId) {
       await (tx as any).followUp.updateMany({
         where: {
@@ -2724,7 +2740,6 @@ export const updateLead = async (
       }
     }
 
-    const isEnteringLOB = stage?.isLOB && !existing.isLOB;
     if (isEnteringLOB) {
       await (tx as any).leadLOBLog.create({
         data: {

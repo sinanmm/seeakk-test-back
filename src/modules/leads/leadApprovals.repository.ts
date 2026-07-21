@@ -479,6 +479,18 @@ export const processApproval = async (input: {
       // We no longer read nextFollowUpAt from requestData to create a follow-up here.
 
       if (approval.toStage?.isLOB) {
+        await (tx as any).followUp.updateMany({
+          where: {
+            leadId: approval.leadId,
+            workspaceId: input.workspaceId,
+            status: 'PENDING',
+          },
+          data: {
+            status: 'CANCELLED',
+            completionDescription: 'Superseded by LOB Workflow',
+          },
+        });
+
         const snapshotPrevId =
           typeof requestData.previousStageId === 'string' && requestData.previousStageId.trim()
             ? requestData.previousStageId.trim()
