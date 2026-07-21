@@ -41,7 +41,6 @@ router.get('/:id/profile-image/:variant', leadController.getLeadProfileImage);
 router.post('/:id/profile-image', profileImageUpload.single('image'), leadController.uploadLeadProfileImage);
 router.delete('/:id/profile-image', leadController.removeLeadProfileImage);
 router.get('/:id', leadController.getLeadById);
-router.get('/:id/latest-activity', leadController.getLeadLatestActivity);
 router.get('/:id/history', leadController.getLeadHistory);
 router.get('/:id/remarks', leadController.getLeadRemarks);
 router.get('/:id/field-edits', fieldHighlightController.getLeadEdits.bind(fieldHighlightController));

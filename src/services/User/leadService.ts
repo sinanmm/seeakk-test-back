@@ -2352,46 +2352,6 @@ export const getLeads = async (
   return result;
 };
 
-export const getLeadLatestActivity = async (
-  workspaceId: string,
-  leadId: string,
-  actor: { id: string; roleName: string | null }
-) => {
-  await assertModuleReady();
-
-  // Validate that lead exists and user has access
-  const lead = await getLeadById(workspaceId, leadId, actor);
-  if (!lead) {
-    throw createServiceError('Lead not found.', 404);
-  }
-
-  const [latestFollowUp, latestLeadRemark] = await Promise.all([
-    (prisma as any).followUp.findFirst({
-      where: {
-        leadId,
-        workspaceId,
-        description: { not: null, not: '' },
-      },
-      orderBy: { createdAt: 'desc' },
-      select: { description: true, createdAt: true },
-    }),
-    (prisma as any).leadRemark.findFirst({
-      where: {
-        leadId,
-        workspaceId,
-        text: { not: '' },
-      },
-      orderBy: { createdAt: 'desc' },
-      select: { text: true, createdAt: true },
-    }),
-  ]);
-
-  return {
-    latestFollowUpNote: latestFollowUp ? { text: latestFollowUp.description, createdAt: latestFollowUp.createdAt } : null,
-    latestLeadRemark: latestLeadRemark ? { text: latestLeadRemark.text, createdAt: latestLeadRemark.createdAt } : null,
-  };
-};
-
 export const getLeadById = async (
   workspaceId: string,
   id: string,
