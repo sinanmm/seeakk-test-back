@@ -100,7 +100,7 @@ export const getOverdueMandatoryFollowUps = async (
       status: { in: [PENDING, MISSED] },
       lead: {
         deletedAt: null,
-        ...(Object.keys(leadAccess).length > 0 ? leadAccess : {}),
+        assignedToId: actor.id,
       },
     },
     orderBy: [{ scheduledAt: 'asc' }, { createdAt: 'asc' }],

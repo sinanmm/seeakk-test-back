@@ -2431,6 +2431,8 @@ export const updateLead = async (
   });
   const changesToTrack = buildLeadChangesToTrack(existing, input, existingDynamicValues);
 
+  const isReassigned = input.assignedToId !== undefined && input.assignedToId !== existing.assignedToId;
+
   if (
     existing.approvalState === 'PENDING' &&
     input.stageId !== undefined &&

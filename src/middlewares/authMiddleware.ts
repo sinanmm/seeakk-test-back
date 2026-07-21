@@ -327,7 +327,7 @@ export const checkPermission = (permissionKey: string) => {
       }
 
       // 4. Check permission
-      let hasRequestedPermission = permissions.includes(permissionKey);
+      let hasRequestedPermission = permissions.includes(permissionKey) || permissions.includes('SUPERADMIN') || permissions.includes('*');
       if (!hasRequestedPermission && permissionKey === BULK_EXTEND_FOLLOWUPS_PERMISSION) {
         hasRequestedPermission = await userHasActiveTemporaryBulkExtensionAccess(
           req.user.id,
@@ -439,7 +439,7 @@ export const checkAnyPermission = (permissionKeys: string[]) => {
         req.user.workspaceId,
       );
       const hasMatch = permissionKeys.some((permissionKey) => {
-        if (permissions.includes(permissionKey)) return true;
+        if (permissions.includes(permissionKey) || permissions.includes('SUPERADMIN') || permissions.includes('*')) return true;
         if (permissionKey === BULK_EXTEND_FOLLOWUPS_PERMISSION && hasTemporaryBulkExtension) {
           return true;
         }
@@ -489,5 +489,5 @@ export const hasPermission = async (user: any, permissionKey: string): Promise<b
   });
 
   const permissions = rolePermissions.map((rp: any) => rp.permission.key);
-  return permissions.includes(permissionKey);
+  return permissions.includes(permissionKey) || permissions.includes('SUPERADMIN') || permissions.includes('*');
 };
