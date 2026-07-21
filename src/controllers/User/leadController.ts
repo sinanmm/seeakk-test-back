@@ -708,6 +708,24 @@ export const listLeadTransitionStageRules = async (req: Request, res: Response, 
   }
 };
 
+export const getLeadLatestActivity = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const workspaceId = requireWorkspace(req, res);
+    if (!workspaceId) return;
+
+    const input = validate<LeadIdParamInput>(leadIdParamSchema, req.params, res);
+    if (!input) return;
+
+    const data = await leadService.getLeadLatestActivity(workspaceId, input.id, {
+      id: req.user!.id,
+      roleName: req.user!.roleName,
+    });
+    res.json(data);
+  } catch (error) {
+    handleServiceError(error, res, next, 'getLeadLatestActivity');
+  }
+};
+
 export const getLeadRemarks = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const workspaceId = requireWorkspace(req, res);
