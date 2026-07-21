@@ -718,7 +718,7 @@ export const getLeadLatestActivity = async (req: Request, res: Response, next: N
 
     const data = await leadService.getLeadLatestActivity(workspaceId, input.id, {
       id: req.user!.id,
-      roleName: req.user!.roleName,
+      roleName: req.user!.role?.name || null,
     });
     res.json(data);
   } catch (error) {
