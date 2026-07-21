@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import * as service from './locationTracking.service';
+import { getVisitHistory } from './locationTracking.service';
 import {
   liveQuerySchema,
   pushLocationSchema,
@@ -113,5 +114,13 @@ export const exportRoute = async (req: Request, res: Response, next: NextFunctio
     return res.status(200).send(csv);
   } catch (error) {
     return handleError(error, res, next);
+  }
+};
+export const getVisitHistoryController = async (req: Request, res: Response) => {
+  try {
+    const data = await getVisitHistory(req.user!.workspaceId!, req.user!, req.query as any);
+    res.json(data);
+  } catch (error: any) {
+    res.status(error.statusCode || 500).json({ message: error.message });
   }
 };

@@ -2,6 +2,7 @@ import prisma from '../../config/prisma';
 import { hasPermission } from '../../middlewares/authMiddleware';
 import { emitWorkspaceEvent } from '../../realtime/socket';
 import type { PushLocationInput, RouteQueryInput, StartSessionInput, StopSessionInput } from './locationTracking.validation';
+import { recalculateStops } from './recalculateStops';
 
 const FIELD_TRACKING_TERMS = ['field sales', 'sales executive', 'marketing executive', 'field staff'];
 const OFFLINE_AFTER_MS = 2 * 60 * 1000;
@@ -286,6 +287,11 @@ export const pushLocation = async (workspaceId: string, actor: any, input: PushL
     },
   });
 
+  // Smart Stop Detection asynchronously
+  recalculateStops(session.id, workspaceId, actor.id).catch((err) => {
+    console.error(`Failed to recalculate stops for session ${session.id}:`, err.message);
+  });
+
   return { sessionId: session.id, uploaded: points.length, latest };
 };
 
@@ -415,7 +421,7 @@ const detectStops = (points: any[]) => {
 export const getRoute = async (workspaceId: string, actor: any, query: RouteQueryInput) => {
   await ensureUserVisible(workspaceId, actor, query.userId);
   const range = routeRange(query);
-  const [points, sessions] = await Promise.all([
+  const [points, sessions, stops] = await Promise.all([
     (prisma as any).locationPoint.findMany({
       where: {
         workspaceId,
@@ -433,9 +439,16 @@ export const getRoute = async (workspaceId: string, actor: any, query: RouteQuer
       },
       orderBy: { startedAt: 'asc' },
     }),
+    (prisma as any).locationStop.findMany({
+      where: {
+        workspaceId,
+        userId: query.userId,
+        startedAt: { gte: range.start, lte: range.end },
+      },
+      orderBy: { startedAt: 'asc' },
+    }),
   ]);
   const stats = summarizePoints(points);
-  const stops = detectStops(points);
   return {
     range,
     sessions,
@@ -476,4 +489,47 @@ export const exportRouteCsv = async (workspaceId: string, actor: any, query: Rou
   return [header, ...rows]
     .map((row: Array<string | number>) => row.map((cell: string | number) => `"${String(cell).replace(/"/g, '""')}"`).join(','))
     .join('\n');
+};
+
+export const getVisitHistory = async (workspaceId: string, actor: any, query: { userId?: string, startDate?: string, endDate?: string }) => {
+  if (query.userId) await ensureUserVisible(workspaceId, actor, query.userId);
+  const where: any = { workspaceId };
+  if (query.userId) where.userId = query.userId;
+  if (query.startDate || query.endDate) {
+    const start = query.startDate ? new Date(query.startDate) : undefined;
+    const end = query.endDate ? new Date(query.endDate) : undefined;
+    if (start || end) {
+      where.startedAt = {};
+      if (start) where.startedAt.gte = start;
+      if (end) where.startedAt.lte = end;
+    }
+  }
+
+  const stops = await (prisma as any).locationStop.findMany({
+    where,
+    orderBy: { startedAt: 'desc' },
+    include: { user: { select: { name: true } } }
+  });
+
+  // Group by address
+  const history: Record<string, { visits: number, totalDuration: number, lastVisit: Date, userName?: string }> = {};
+  stops.forEach((s: any) => {
+    const key = s.address || `${s.latitude.toFixed(4)},${s.longitude.toFixed(4)}`;
+    if (!history[key]) {
+      history[key] = { visits: 0, totalDuration: 0, lastVisit: s.startedAt, userName: s.user?.name };
+    }
+    history[key].visits++;
+    history[key].totalDuration += s.durationSeconds;
+    if (new Date(s.startedAt) > new Date(history[key].lastVisit)) {
+      history[key].lastVisit = s.startedAt;
+    }
+  });
+
+  return Object.entries(history).map(([address, stats]) => ({
+    address,
+    visits: stats.visits,
+    averageDuration: Math.round(stats.totalDuration / stats.visits),
+    lastVisit: stats.lastVisit,
+    userName: stats.userName,
+  })).sort((a, b) => b.visits - a.visits);
 };

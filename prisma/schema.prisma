@@ -1880,6 +1880,7 @@ model LocationStop {
   startedAt          DateTime
   endedAt            DateTime?
   durationSeconds    Int       @default(0)
+  address            String?
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
 

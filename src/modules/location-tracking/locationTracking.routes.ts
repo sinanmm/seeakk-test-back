@@ -20,6 +20,7 @@ router.post('/sessions/stop', checkAnyPermission(['LOCATION_TRACKING_SHARE', 'ma
 router.post('/points', checkAnyPermission(['LOCATION_TRACKING_SHARE', 'mark_attendance']), controller.pushLocation);
 router.get('/live', checkAnyPermission(viewPermissions), controller.getLiveLocations);
 router.get('/route', checkAnyPermission(viewPermissions), controller.getRoute);
+router.get('/visit-history', checkAnyPermission(viewPermissions), controller.getVisitHistoryController);
 router.get('/export', checkAnyPermission(['LOCATION_TRACKING_EXPORT', 'SYSTEM_CONFIG']), controller.exportRoute);
 
 export default router;
