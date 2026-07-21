@@ -2370,8 +2370,7 @@ export const getLeadLatestActivity = async (
       where: {
         leadId,
         workspaceId,
-        description: { not: null },
-        AND: [{ description: { not: '' } }],
+        description: { not: null, not: '' },
       },
       orderBy: { createdAt: 'desc' },
       select: { description: true, createdAt: true },
