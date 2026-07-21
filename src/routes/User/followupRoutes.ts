@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { protect, checkPermission } from '../../middlewares/authMiddleware';
 import * as followupController from '../../controllers/User/followupController';
+import * as followupContextController from '../../controllers/User/followupContextController';
 
 const router = Router();
 
@@ -27,5 +28,7 @@ router.get('/reports/export', protect, followupController.exportReport);
 router.post('/', protect, followupController.createFollowUp);
 router.post('/:id/complete', protect, followupController.completeFollowUp);
 router.patch('/:id/snooze', protect, followupController.snoozeFollowUp);
+
+router.get('/lead-context/:leadId', protect, followupContextController.getLeadFollowupContext);
 
 export default router;
