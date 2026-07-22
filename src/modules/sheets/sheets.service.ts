@@ -30,6 +30,8 @@ type SheetRow = {
     leadId?: string | null;
     leadName?: string | null;
     leadNumber?: string | null;
+    phone?: string | null;
+    email?: string | null;
   };
 };
 
@@ -137,8 +139,10 @@ const buildColumnsAndRows = (records: Record<string, unknown>[]) => {
   });
 
   const leadIdColumn = columns.find((column) => normalizeKey(column.label) === 'lead id');
-  const leadNameColumn = columns.find((column) => column.leadFieldKey === 'name');
+  const leadNameColumn = columns.find((column) => column.leadFieldKey === 'name' || normalizeKey(column.label).includes('name'));
   const leadNumberColumn = columns.find((column) => normalizeKey(column.label).includes('lead number'));
+  const phoneColumn = columns.find((column) => column.leadFieldKey === 'phone' || normalizeKey(column.label).includes('phone') || normalizeKey(column.label).includes('mobile'));
+  const emailColumn = columns.find((column) => column.leadFieldKey === 'email' || normalizeKey(column.label).includes('email'));
 
   const rows: SheetRow[] = records.map((record, rowIndex) => {
     const cells = columns.reduce<Record<string, unknown>>((acc, column) => {
@@ -153,6 +157,8 @@ const buildColumnsAndRows = (records: Record<string, unknown>[]) => {
         leadId: leadIdColumn ? String(cells[leadIdColumn.id] || '').trim() || null : null,
         leadName: leadNameColumn ? String(cells[leadNameColumn.id] || '').trim() || null : null,
         leadNumber: leadNumberColumn ? String(cells[leadNumberColumn.id] || '').trim() || null : null,
+        phone: phoneColumn ? String(cells[phoneColumn.id] || '').trim() || null : null,
+        email: emailColumn ? String(cells[emailColumn.id] || '').trim() || null : null,
       },
     };
   });
@@ -161,38 +167,57 @@ const buildColumnsAndRows = (records: Record<string, unknown>[]) => {
 };
 
 const enrichRowsWithLeadLinks = async (workspaceId: string, rows: SheetRow[]) => {
-  const names = Array.from(
-    new Set(
-      rows
-        .map((row) => row.metadata?.leadName)
-        .filter((value): value is string => Boolean(value?.trim()))
-        .map((value) => value.trim()),
-    ),
-  ).slice(0, 5000);
+  const ids = Array.from(new Set(rows.map((r) => r.metadata?.leadId).filter((v): v is string => Boolean(v?.trim()))));
+  const names = Array.from(new Set(rows.map((r) => r.metadata?.leadName).filter((v): v is string => Boolean(v?.trim()))));
+  const phones = Array.from(new Set(rows.map((r) => r.metadata?.phone).filter((v): v is string => Boolean(v?.trim()))));
+  const emails = Array.from(new Set(rows.map((r) => r.metadata?.email).filter((v): v is string => Boolean(v?.trim()))));
 
-  if (names.length === 0) return rows;
+  const orConditions: any[] = [];
+  if (ids.length > 0) orConditions.push({ id: { in: ids } });
+  if (names.length > 0) orConditions.push(...names.map((name) => ({ name: { equals: name, mode: 'insensitive' } })));
+  if (phones.length > 0) orConditions.push({ phone: { in: phones } });
+  if (emails.length > 0) orConditions.push({ email: { in: emails } });
+
+  if (orConditions.length === 0) return rows;
 
   const leads = await (prisma as any).lead.findMany({
     where: {
       workspaceId,
       deletedAt: null,
-      OR: names.map((name) => ({ name: { equals: name, mode: 'insensitive' } })),
+      OR: orConditions,
     },
-    select: { id: true, name: true },
+    select: { id: true, name: true, phone: true, email: true },
   });
 
-  const byName = new Map<string, string>();
-  leads.forEach((lead: any) => byName.set(normalizeKey(lead.name), lead.id));
+  const byId = new Map<string, any>();
+  const byName = new Map<string, any>();
+  const byPhone = new Map<string, any>();
+  const byEmail = new Map<string, any>();
+
+  leads.forEach((lead: any) => {
+    byId.set(lead.id, lead);
+    if (lead.name) byName.set(normalizeKey(lead.name), lead);
+    if (lead.phone) byPhone.set(lead.phone.trim(), lead);
+    if (lead.email) byEmail.set(lead.email.trim().toLowerCase(), lead);
+  });
 
   return rows.map((row) => {
-    if (row.metadata?.leadId || !row.metadata?.leadName) return row;
-    const leadId = byName.get(normalizeKey(row.metadata.leadName));
-    if (!leadId) return row;
+    const meta = row.metadata || {};
+    let matched = meta.leadId ? byId.get(meta.leadId) : null;
+    if (!matched && meta.phone) matched = byPhone.get(meta.phone.trim());
+    if (!matched && meta.email) matched = byEmail.get(meta.email.trim().toLowerCase());
+    if (!matched && meta.leadName) matched = byName.get(normalizeKey(meta.leadName));
+
+    if (!matched) return row;
+
     return {
       ...row,
       metadata: {
-        ...(row.metadata || {}),
-        leadId,
+        ...meta,
+        leadId: matched.id,
+        leadName: matched.name || meta.leadName,
+        phone: matched.phone || meta.phone,
+        email: matched.email || meta.email,
       },
     };
   });
