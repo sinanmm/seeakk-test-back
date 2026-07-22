@@ -1,5 +1,6 @@
 import ExcelJS from 'exceljs';
 import prisma from '../../config/prisma';
+import logger from '../../utils/logger';
 import { exportLeads as exportLeadCsv, updateLead as updateLeadService } from '../../services/User/leadService';
 import { createFollowUp, snoozeFollowUp } from '../../services/User/followupService';
 import type {
@@ -671,7 +672,13 @@ export const exportSheet = async (workspaceId: string, id: string, format: 'csv'
 };
 
 export const syncLeadChanges = async (workspaceId: string, actor: Actor, input: SyncSheetInput) => {
-  const [leadStages, workspaceUsers, workspaceSources, workspaceLifecycles] = await Promise.all([
+  logger.info('[Sync Lead Diagnostic] Sync Started', {
+    workspaceId,
+    actorId: actor.id,
+    changesCount: input?.changes?.length || 0,
+  });
+
+  const [leadStages, workspaceUsers, workspaceSources, workspaceLifecycles, workspaceProducts] = await Promise.all([
     (prisma as any).leadStage.findMany({
       where: { workspaceId, deletedAt: null },
       select: { id: true, name: true },
@@ -688,13 +695,23 @@ export const syncLeadChanges = async (workspaceId: string, actor: Actor, input: 
       where: { workspaceId, deletedAt: null },
       select: { id: true, name: true },
     }),
+    (prisma as any).product.findMany({
+      where: { workspaceId, status: 'ACTIVE', deletedAt: null },
+      select: { id: true, name: true, unitPrice: true, code: true },
+    }),
   ]);
 
   const applied: any[] = [];
   const pending: any[] = [];
   const blocked: any[] = [];
 
-  for (const change of input.changes) {
+  const changesList = input?.changes || [];
+  if (changesList.length === 0) {
+    logger.info('[Sync Lead Diagnostic] Sync Completed with 0 changes');
+    return { applied, pending, blocked, message: 'No changes detected to sync.' };
+  }
+
+  for (const change of changesList) {
     if (!change.leadId) {
       blocked.push({ ...change, status: 'BLOCKED', message: 'No lead ID associated with this row.' });
       continue;
@@ -705,6 +722,7 @@ export const syncLeadChanges = async (workspaceId: string, actor: Actor, input: 
     const leadId = change.leadId;
 
     try {
+      logger.info('[Sync Lead Diagnostic] Processing Update', { leadId, fieldKey, value });
       const updatePayload: Record<string, any> = {};
       const keyNorm = normalizeKey(fieldKey);
 
@@ -759,12 +777,42 @@ export const syncLeadChanges = async (workspaceId: string, actor: Actor, input: 
           (l: any) => l.id === value || l.name.toLowerCase() === valStr,
         );
         updatePayload.lifecycleId = matchedLifecycle ? matchedLifecycle.id : (value ? String(value).trim() : null);
+      } else if (keyNorm === 'products' || keyNorm === 'product') {
+        logger.info('[Sync Lead Diagnostic] Updating Products', { value });
+        if (Array.isArray(value)) {
+          updatePayload.products = value.map((item: any) => ({
+            productId: String(item.productId || item.id || '').trim(),
+            quantity: Math.max(1, Math.trunc(Number(item.quantity) || 1)),
+          }));
+        } else if (typeof value === 'string' && value.trim()) {
+          const parsedProducts: Array<{ productId: string; quantity: number }> = [];
+          const segments = value.split(/[,;]/);
+          for (const segment of segments) {
+            const match = segment.match(/(.*?)(?:[×x*]\s*(\d+)|$)/i);
+            if (match) {
+              const rawName = match[1]?.trim().toLowerCase();
+              const qty = match[2] ? parseInt(match[2], 10) : 1;
+              if (rawName) {
+                const matchedProd = workspaceProducts.find(
+                  (p: any) => p.name.toLowerCase() === rawName || p.id === rawName,
+                );
+                if (matchedProd && !parsedProducts.some((i) => i.productId === matchedProd.id)) {
+                  parsedProducts.push({ productId: matchedProd.id, quantity: Math.max(1, qty) });
+                }
+              }
+            }
+          }
+          if (parsedProducts.length > 0) {
+            updatePayload.products = parsedProducts;
+          }
+        }
       } else if (
         keyNorm.includes('followup') ||
         keyNorm.includes('next follow up') ||
         fieldKey === 'nextFollowupDate' ||
         fieldKey === 'nextFollowUpAt'
       ) {
+        logger.info('[Sync Lead Diagnostic] Updating Follow-up', { value });
         if (value && leadId) {
           const activeFollowup = await (prisma as any).followUp.findFirst({
             where: { leadId, workspaceId, status: 'SCHEDULED' },
@@ -792,7 +840,6 @@ export const syncLeadChanges = async (workspaceId: string, actor: Actor, input: 
           continue;
         }
       } else {
-        // Fallback for any other editable attribute (e.g. balanceAmount, custom fields, dynamic fields)
         updatePayload[fieldKey] = value;
       }
 

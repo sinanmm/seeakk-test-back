@@ -231,9 +231,22 @@ export const syncLeadChanges = async (req: Request, res: Response, next: NextFun
   const input = validate(syncSheetSchema, req.body, res);
   if (!input) return;
   try {
+    logger.info('[Sync Lead Diagnostic] Controller processing syncLeadChanges request', {
+      sheetId: req.params.id,
+      bodyChangesCount: input.changes?.length || 0,
+    });
     const data = await sheetsService.syncLeadChanges(workspaceId, actorFromRequest(req), input);
+    logger.info('[Sync Lead Diagnostic] Controller syncLeadChanges completed', {
+      appliedCount: data.applied?.length || 0,
+      pendingCount: data.pending?.length || 0,
+      blockedCount: data.blocked?.length || 0,
+    });
     res.status(200).json({ success: true, message: 'Sheet lead sync checked successfully.', data });
-  } catch (error) {
+  } catch (error: any) {
+    logger.error('[Sync Lead Diagnostic] Controller error during syncLeadChanges', {
+      error: error?.message,
+      stack: error?.stack,
+    });
     handleError(error, res, next, 'syncLeadChanges');
   }
 };

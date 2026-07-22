@@ -59,7 +59,8 @@ export const syncSheetSchema = z.object({
         newValue: z.any(),
       }),
     )
-    .max(500),
+    .optional()
+    .default([]),
 });
 
 export type ListSheetsQuery = z.infer<typeof listSheetsQuerySchema>;
