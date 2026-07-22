@@ -1,6 +1,6 @@
 import ExcelJS from 'exceljs';
 import prisma from '../../config/prisma';
-import { exportLeads as exportLeadCsv } from '../../services/User/leadService';
+import { exportLeads as exportLeadCsv, updateLead as updateLeadService } from '../../services/User/leadService';
 import type {
   CreateFromLeadExportInput,
   CreateSheetInput,
@@ -507,6 +507,22 @@ export const createFromLeadExport = async (
   });
 };
 
+const hexToArgb = (hex?: string | null): string | null => {
+  if (!hex) return null;
+  const clean = String(hex).trim().replace(/^#/, '');
+  if (clean.length === 3) {
+    const expanded = clean.split('').map((c) => c + c).join('');
+    return `FF${expanded.toUpperCase()}`;
+  }
+  if (clean.length === 6) {
+    return `FF${clean.toUpperCase()}`;
+  }
+  if (clean.length === 8) {
+    return clean.toUpperCase();
+  }
+  return null;
+};
+
 export const exportSheet = async (workspaceId: string, id: string, format: 'csv' | 'xlsx') => {
   const sheet = await getSheet(workspaceId, id);
   const columns = (sheet.columns || []) as SheetColumn[];
@@ -528,11 +544,90 @@ export const exportSheet = async (workspaceId: string, id: string, format: 'csv'
     };
   }
 
+  const leadStages = await (prisma as any).leadStage.findMany({
+    where: { workspaceId, deletedAt: null },
+    select: { id: true, name: true, color: true },
+  });
+
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet(sheet.name.slice(0, 31) || 'Sheet');
-  worksheet.columns = columns.map((column) => ({ header: column.label, key: column.id, width: Math.max(12, Math.floor((column.width || 160) / 10)) }));
-  rows.forEach((row) => worksheet.addRow(row.cells || {}));
-  worksheet.views = [{ state: 'frozen', ySplit: 1 }];
+  worksheet.columns = columns.map((column) => ({
+    header: column.label,
+    key: column.id,
+    width: Math.max(14, Math.floor((column.width || 160) / 9)),
+  }));
+
+  const headerRow = worksheet.getRow(1);
+  headerRow.height = 28;
+  headerRow.font = { name: 'Arial', size: 11, bold: true, color: { argb: 'FFFFFFFF' } };
+  headerRow.fill = {
+    type: 'pattern',
+    pattern: 'solid',
+    fgColor: { argb: 'FF1E293B' },
+  };
+  headerRow.alignment = { vertical: 'middle', horizontal: 'center' };
+
+  const formatting = (sheet.formatting || {}) as any;
+
+  rows.forEach((row) => {
+    const excelRow = worksheet.addRow(row.cells || {});
+    excelRow.height = 22;
+
+    columns.forEach((column) => {
+      const cell = excelRow.getCell(column.id);
+      const valStr = String(cell.value ?? '').trim();
+      const cellKey = `${row.id}:${column.id}`;
+      const cellStyle = formatting.cells?.[cellKey] || {};
+
+      cell.font = {
+        name: 'Arial',
+        size: 10,
+        bold: Boolean(cellStyle.bold),
+        italic: Boolean(cellStyle.italic),
+        underline: Boolean(cellStyle.underline),
+        color: cellStyle.color ? { argb: hexToArgb(String(cellStyle.color)) || 'FF0F172A' } : { argb: 'FF0F172A' },
+      };
+
+      cell.alignment = {
+        vertical: 'middle',
+        horizontal: (cellStyle.align as any) || (column.type === 'number' || column.type === 'currency' ? 'right' : 'left'),
+      };
+
+      cell.border = {
+        top: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+        left: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+        bottom: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+        right: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+      };
+
+      let bgHex: string | null = cellStyle.bgColor ? String(cellStyle.bgColor) : null;
+      const isStageColumn = column.leadFieldKey === 'stage' || column.label.toLowerCase().includes('stage');
+
+      if (isStageColumn && valStr) {
+        const matchedStage = leadStages.find(
+          (s: any) => s.name.toLowerCase() === valStr.toLowerCase() || s.id === valStr,
+        );
+        if (matchedStage?.color) {
+          bgHex = matchedStage.color;
+          cell.font.bold = true;
+          cell.font.color = { argb: 'FFFFFFFF' };
+        }
+      }
+
+      if (bgHex) {
+        const argb = hexToArgb(bgHex);
+        if (argb) {
+          cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb },
+          };
+        }
+      }
+    });
+  });
+
+  worksheet.views = [{ state: 'frozen', ySplit: 1, xSplit: formatting.frozenColumns || 0 }];
   const buffer = await workbook.xlsx.writeBuffer();
   return {
     filename: `${sheet.name.replace(/[^a-z0-9_-]+/gi, '-')}.xlsx`,
@@ -541,25 +636,94 @@ export const exportSheet = async (workspaceId: string, id: string, format: 'csv'
   };
 };
 
-export const syncLeadChanges = async (_workspaceId: string, _actor: Actor, input: SyncSheetInput) => {
-  const supported = new Set(['name', 'email', 'phone', 'companyName', 'address', 'expectedRevenue', 'remarks']);
-  const supportedChanges = input.changes.filter((change) => supported.has(change.fieldKey) && change.leadId);
-  const blockedChanges = input.changes.filter((change) => !supported.has(change.fieldKey) || !change.leadId);
+export const syncLeadChanges = async (workspaceId: string, actor: Actor, input: SyncSheetInput) => {
+  const leadStages = await (prisma as any).leadStage.findMany({
+    where: { workspaceId, deletedAt: null },
+    select: { id: true, name: true },
+  });
 
-  return {
-    applied: [],
-    pending: supportedChanges.map((change) => ({
-      ...change,
-      status: 'REQUIRES_CONFIRMATION',
-      message: 'Lead synchronization is prepared but not auto-applied from Sheets in this release.',
-    })),
-    blocked: blockedChanges.map((change) => ({
-      ...change,
-      status: 'BLOCKED',
-      message:
-        change.fieldKey === 'stage'
-          ? 'Stage changes must use the Lead Management workflow so approval, LOB, mandatory follow-up, payment, product and rule popups are not bypassed.'
-          : 'This column is not mapped to a safe lead field.',
-    })),
-  };
+  const applied: any[] = [];
+  const pending: any[] = [];
+  const blocked: any[] = [];
+
+  for (const change of input.changes) {
+    if (!change.leadId) {
+      blocked.push({ ...change, status: 'BLOCKED', message: 'No lead ID associated with this row.' });
+      continue;
+    }
+
+    const fieldKey = change.fieldKey;
+    const value = (change as any).newValue ?? (change as any).value;
+    const leadId = change.leadId;
+
+    try {
+      const updatePayload: Record<string, any> = {};
+
+      if (fieldKey === 'stage' || fieldKey === 'stageId') {
+        const matchedStage = leadStages.find(
+          (s: any) => s.name.toLowerCase() === String(value ?? '').toLowerCase().trim() || s.id === value,
+        );
+        if (!matchedStage) {
+          blocked.push({
+            ...change,
+            status: 'BLOCKED',
+            message: `Stage '${value}' is not a valid lead stage in this workspace.`,
+          });
+          continue;
+        }
+        updatePayload.stageId = matchedStage.id;
+      } else if (fieldKey === 'name') {
+        updatePayload.name = String(value ?? '').trim();
+      } else if (fieldKey === 'email') {
+        updatePayload.email = value ? String(value).trim() : null;
+      } else if (fieldKey === 'phone') {
+        updatePayload.phone = value ? String(value).trim() : null;
+      } else if (fieldKey === 'companyName') {
+        updatePayload.companyName = value ? String(value).trim() : null;
+      } else if (fieldKey === 'address') {
+        updatePayload.address = value ? String(value).trim() : null;
+      } else if (fieldKey === 'expectedRevenue') {
+        updatePayload.expectedRevenue = value !== null && value !== undefined && value !== '' ? Number(value) : null;
+      } else if (fieldKey === 'remarks') {
+        updatePayload.remarks = value ? String(value).trim() : null;
+      } else if (fieldKey === 'assignedUser' || fieldKey === 'assignedToId') {
+        updatePayload.assignedToId = value ? String(value).trim() : null;
+      } else if (fieldKey === 'source' || fieldKey === 'sourceId') {
+        updatePayload.sourceId = value ? String(value).trim() : null;
+      } else {
+        blocked.push({
+          ...change,
+          status: 'BLOCKED',
+          message: `Field '${fieldKey}' is not mapped to a direct lead attribute.`,
+        });
+        continue;
+      }
+
+      const result = await updateLeadService(workspaceId, actor, leadId, updatePayload as any);
+
+      if ((result as any)._approvalRequired || (result as any)._approval) {
+        pending.push({
+          ...change,
+          status: 'REQUIRES_APPROVAL',
+          message: 'Lead stage change submitted and pending supervisor approval.',
+          lead: result,
+        });
+      } else {
+        applied.push({
+          ...change,
+          status: 'APPLIED',
+          message: 'Successfully updated lead in CRM.',
+          lead: result,
+        });
+      }
+    } catch (err: any) {
+      blocked.push({
+        ...change,
+        status: 'FAILED',
+        message: err?.message || 'Failed to update lead.',
+      });
+    }
+  }
+
+  return { applied, pending, blocked };
 };
