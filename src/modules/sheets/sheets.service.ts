@@ -1,6 +1,7 @@
 import ExcelJS from 'exceljs';
 import prisma from '../../config/prisma';
 import { exportLeads as exportLeadCsv, updateLead as updateLeadService } from '../../services/User/leadService';
+import { createFollowUp, snoozeFollowUp } from '../../services/User/followupService';
 import type {
   CreateFromLeadExportInput,
   CreateSheetInput,
@@ -715,6 +716,42 @@ export const syncLeadChanges = async (workspaceId: string, actor: Actor, input: 
         updatePayload.assignedToId = value ? String(value).trim() : null;
       } else if (fieldKey === 'source' || fieldKey === 'sourceId') {
         updatePayload.sourceId = value ? String(value).trim() : null;
+      } else if (
+        fieldKey === 'nextFollowupDate' ||
+        fieldKey === 'nextFollowUpAt' ||
+        fieldKey === 'next_followup_date' ||
+        fieldKey === 'followupDate' ||
+        fieldKey === 'follow-up date' ||
+        fieldKey === 'next follow up at' ||
+        fieldKey.toLowerCase().includes('followup') ||
+        fieldKey.toLowerCase().includes('follow up')
+      ) {
+        if (value && leadId) {
+          const activeFollowup = await (prisma as any).followUp.findFirst({
+            where: { leadId, workspaceId, status: 'SCHEDULED' },
+            orderBy: { createdAt: 'desc' },
+          });
+          const scheduledAtDate = new Date(value);
+          if (activeFollowup) {
+            await snoozeFollowUp(workspaceId, actor, activeFollowup.id, {
+              scheduledAt: scheduledAtDate,
+              reminderActionType: 'SNOOZE',
+              recentDescription: 'Updated via Sheets',
+            });
+          } else {
+            await createFollowUp(workspaceId, actor, {
+              leadId,
+              type: 'CALL',
+              scheduledAt: scheduledAtDate,
+            });
+          }
+          applied.push({
+            ...change,
+            status: 'APPLIED',
+            message: 'Successfully updated follow-up in CRM.',
+          });
+          continue;
+        }
       } else {
         blocked.push({
           ...change,
