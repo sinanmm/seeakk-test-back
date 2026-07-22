@@ -231,6 +231,16 @@ export const listLeadsQuerySchema = z.object({
   status: z.preprocess(emptyStringToUndefined, z.enum(['OPEN', 'CLOSED', 'LOB', 'ACTIVE', 'ARCHIVED']).optional()).optional(),
   starred: z.preprocess(emptyStringToUndefined, z.enum(['ALL', 'STARRED']).optional()).optional(),
   officeId: z.preprocess(emptyStringToUndefined, z.string().trim().optional()).optional(),
+  createdFrom: z.preprocess(emptyStringToUndefined, z.string().trim().optional()).optional(),
+  createdTo: z.preprocess(emptyStringToUndefined, z.string().trim().optional()).optional(),
+  created_date_from: z.preprocess(emptyStringToUndefined, z.string().trim().optional()).optional(),
+  created_date_to: z.preprocess(emptyStringToUndefined, z.string().trim().optional()).optional(),
+  followupFrom: z.preprocess(emptyStringToUndefined, z.string().trim().optional()).optional(),
+  followupTo: z.preprocess(emptyStringToUndefined, z.string().trim().optional()).optional(),
+  followup_date_from: z.preprocess(emptyStringToUndefined, z.string().trim().optional()).optional(),
+  followup_date_to: z.preprocess(emptyStringToUndefined, z.string().trim().optional()).optional(),
+  dateFrom: z.preprocess(emptyStringToUndefined, z.string().trim().optional()).optional(),
+  dateTo: z.preprocess(emptyStringToUndefined, z.string().trim().optional()).optional(),
 });
 
 export type ListLeadsQueryInput = z.infer<typeof listLeadsQuerySchema>;

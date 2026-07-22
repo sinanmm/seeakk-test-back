@@ -1927,11 +1927,48 @@ const buildListWhere = async (
         },
       },
     ];
-  } else if (query.status === 'LOB') {
+  } else  if (query.status === 'LOB') {
     where.isLOB = true;
   } else if (query.status === 'ACTIVE') {
     where.isClosed = false;
     where.isLOB = false;
+  }
+
+  // Date Range Filtering for Created Date (createdFrom / createdTo / dateFrom / dateTo)
+  const qAny = query as Record<string, any>;
+  const createdFromVal = qAny.createdFrom || qAny.created_date_from || qAny.dateFrom;
+  const createdToVal = qAny.createdTo || qAny.created_date_to || qAny.dateTo;
+  if (createdFromVal || createdToVal) {
+    const createdAtFilter: any = {};
+    if (createdFromVal) {
+      const fromDate = new Date(createdFromVal);
+      fromDate.setHours(0, 0, 0, 0);
+      createdAtFilter.gte = fromDate;
+    }
+    if (createdToVal) {
+      const toDate = new Date(createdToVal);
+      toDate.setHours(23, 59, 59, 999);
+      createdAtFilter.lte = toDate;
+    }
+    where.createdAt = createdAtFilter;
+  }
+
+  // Date Range Filtering for Next Follow-up Date (followupFrom / followupTo)
+  const followupFromVal = qAny.followupFrom || qAny.followup_date_from;
+  const followupToVal = qAny.followupTo || qAny.followup_date_to;
+  if (followupFromVal || followupToVal) {
+    const followupFilter: any = {};
+    if (followupFromVal) {
+      const fromDate = new Date(followupFromVal);
+      fromDate.setHours(0, 0, 0, 0);
+      followupFilter.gte = fromDate;
+    }
+    if (followupToVal) {
+      const toDate = new Date(followupToVal);
+      toDate.setHours(23, 59, 59, 999);
+      followupFilter.lte = toDate;
+    }
+    where.nextFollowUpAt = followupFilter;
   }
 
   return where;
