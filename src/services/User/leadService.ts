@@ -3140,6 +3140,14 @@ const buildLeadExportCsvRow = (
   dynamicValues: LeadDynamicValueRecord[] = [],
 ): unknown[] => {
   const dynamicValueByFieldId = new Map(dynamicValues.map((entry) => [entry.fieldId, entry.value]));
+  const totalAmount = lead.totalAmount !== null && lead.totalAmount !== undefined ? Number(lead.totalAmount) : 0;
+  const advanceAmount = Number(
+    (lead as any).advanceAmount ?? 
+    (lead.advancePayments?.reduce((sum: number, p: any) => sum + (p.amount || 0), 0) || 0)
+  );
+  const balanceAmount = Math.max(0, totalAmount - advanceAmount);
+  const productsStr = lead.products?.map((p: any) => `${p.productName || 'Product'} × ${p.quantity || 1}`).join('; ') || '';
+
   return [
     slNo,
     lead.name,
@@ -3148,14 +3156,16 @@ const buildLeadExportCsvRow = (
     lead.companyName || '',
     lead.address || '',
     lead.remarks || '',
-    lead.expectedRevenue ?? '',
+    lead.expectedRevenue !== null && lead.expectedRevenue !== undefined ? Number(lead.expectedRevenue) : '',
     lead.assignedTo ? resolveDisplayName(lead.assignedTo) : '',
+    lead.assignedTo?.office?.name || '',
     lead.stage?.name || '',
     lead.lifecycle?.name || '',
-    lead.totalAmount ?? 0,
-    (lead as any).advanceAmount ?? (lead.advancePayments?.reduce((sum: number, p: any) => sum + (p.amount || 0), 0) || 0),
-    ((lead as any).lastRemark ?? extractLastRemark(lead)) || '',
     lead.source?.name || '',
+    totalAmount,
+    advanceAmount,
+    balanceAmount,
+    ((lead as any).lastRemark ?? extractLastRemark(lead)) || '',
     lead.nextFollowUpAt ? lead.nextFollowUpAt.toISOString() : '',
     lead.isClosed ? 'Yes' : 'No',
     lead.isLOB ? 'Yes' : 'No',
@@ -3163,6 +3173,7 @@ const buildLeadExportCsvRow = (
     resolveDisplayName(lead.createdBy),
     lead.createdAt.toISOString(),
     lead.updatedAt.toISOString(),
+    productsStr,
     ...dynamicFields.map((field) => dynamicValueByFieldId.get(field.id) || ''),
   ];
 };
@@ -3185,27 +3196,30 @@ export const exportLeads = async (
 
   const allHeaders = [
     'SL No.',
-    'Name',
+    'Lead Name',
     'Email',
-    'Phone',
+    'Mobile Number',
     'Company Name',
     'Address',
     'Remarks',
-    'Expected Revenue',
-    'Assigned To',
-    'Stage',
-    'Lifecycle',
+    'Expected Revenue Contribution',
+    'Assigned User',
+    'Reporting Office',
+    'Current Lead Stage',
+    'Lead Lifecycle',
+    'Lead Source',
     'Total Amount',
-    'Advance Amount',
+    'Approved Advance Amount',
+    'Balance Amount',
     'Last Remark',
-    'Source',
     'Next Follow Up At',
     'Is Closed',
     'Is LOB',
     'Archived At',
     'Created By',
-    'Created At',
-    'Updated At',
+    'Created Date',
+    'Updated Date',
+    'Products',
     ...dynamicFields.map((field) => field.name),
   ];
 
@@ -3219,12 +3233,14 @@ export const exportLeads = async (
     'remarks',
     'expectedRevenue',
     'assignedUser',
+    'reportingOffice',
     'stage',
     'lifecycle',
+    'source',
     'totalAmount',
     'advanceAmount',
+    'balanceAmount',
     'lastRemark',
-    'source',
     'nextFollowUpAt',
     'isClosed',
     'isLOB',
@@ -3232,6 +3248,7 @@ export const exportLeads = async (
     'createdBy',
     'createdAt',
     'updatedAt',
+    'products',
     ...dynamicFields.map((field) => field.id),
   ];
 

@@ -58,11 +58,19 @@ const LEAD_FIELD_ALIASES: Record<string, string> = {
   'expected revenue contribution': 'expectedRevenue',
   totalamount: 'totalAmount',
   'total amount': 'totalAmount',
+  advanceamount: 'advanceAmount',
+  'advance amount': 'advanceAmount',
+  'approved advance amount': 'advanceAmount',
+  balanceamount: 'balanceAmount',
+  'balance amount': 'balanceAmount',
+  products: 'products',
   nextfollowupat: 'nextFollowUpAt',
   'next follow up at': 'nextFollowUpAt',
   remarks: 'remarks',
   lastremark: 'lastRemark',
   'last remark': 'lastRemark',
+  lifecycle: 'lifecycle',
+  'lead lifecycle': 'lifecycle',
 };
 
 const normalizeKey = (value: unknown) =>
@@ -663,10 +671,24 @@ export const exportSheet = async (workspaceId: string, id: string, format: 'csv'
 };
 
 export const syncLeadChanges = async (workspaceId: string, actor: Actor, input: SyncSheetInput) => {
-  const leadStages = await (prisma as any).leadStage.findMany({
-    where: { workspaceId, deletedAt: null },
-    select: { id: true, name: true },
-  });
+  const [leadStages, workspaceUsers, workspaceSources, workspaceLifecycles] = await Promise.all([
+    (prisma as any).leadStage.findMany({
+      where: { workspaceId, deletedAt: null },
+      select: { id: true, name: true },
+    }),
+    (prisma as any).user.findMany({
+      where: { workspaceId, status: 'ACTIVE' },
+      select: { id: true, name: true, email: true },
+    }),
+    (prisma as any).leadSource.findMany({
+      where: { workspaceId, deletedAt: null },
+      select: { id: true, name: true },
+    }),
+    (prisma as any).leadLifecycle.findMany({
+      where: { workspaceId, deletedAt: null },
+      select: { id: true, name: true },
+    }),
+  ]);
 
   const applied: any[] = [];
   const pending: any[] = [];
@@ -684,8 +706,9 @@ export const syncLeadChanges = async (workspaceId: string, actor: Actor, input: 
 
     try {
       const updatePayload: Record<string, any> = {};
+      const keyNorm = normalizeKey(fieldKey);
 
-      if (fieldKey === 'stage' || fieldKey === 'stageId') {
+      if (keyNorm === 'stage' || keyNorm === 'stageid' || keyNorm === 'current lead stage') {
         const matchedStage = leadStages.find(
           (s: any) => s.name.toLowerCase() === String(value ?? '').toLowerCase().trim() || s.id === value,
         );
@@ -698,33 +721,49 @@ export const syncLeadChanges = async (workspaceId: string, actor: Actor, input: 
           continue;
         }
         updatePayload.stageId = matchedStage.id;
-      } else if (fieldKey === 'name') {
+      } else if (keyNorm === 'name' || keyNorm === 'lead name') {
         updatePayload.name = String(value ?? '').trim();
-      } else if (fieldKey === 'email') {
+      } else if (keyNorm === 'email') {
         updatePayload.email = value ? String(value).trim() : null;
-      } else if (fieldKey === 'phone') {
+      } else if (keyNorm === 'phone' || keyNorm === 'mobile' || keyNorm === 'mobile number') {
         updatePayload.phone = value ? String(value).trim() : null;
-      } else if (fieldKey === 'companyName') {
+      } else if (keyNorm === 'companyname' || keyNorm === 'company name') {
         updatePayload.companyName = value ? String(value).trim() : null;
-      } else if (fieldKey === 'address') {
+      } else if (keyNorm === 'address') {
         updatePayload.address = value ? String(value).trim() : null;
-      } else if (fieldKey === 'expectedRevenue') {
+      } else if (keyNorm === 'expectedrevenue' || keyNorm === 'expected revenue contribution' || keyNorm === 'expected revenue') {
         updatePayload.expectedRevenue = value !== null && value !== undefined && value !== '' ? Number(value) : null;
-      } else if (fieldKey === 'remarks') {
+      } else if (keyNorm === 'totalamount' || keyNorm === 'total amount') {
+        const numVal = value !== null && value !== undefined && value !== '' ? Number(value) : 0;
+        updatePayload.totalAmount = Number.isNaN(numVal) ? 0 : numVal;
+      } else if (keyNorm === 'advanceamount' || keyNorm === 'advance amount' || keyNorm === 'approved advance amount') {
+        const numVal = value !== null && value !== undefined && value !== '' ? Number(value) : 0;
+        updatePayload.advanceAmount = Number.isNaN(numVal) ? 0 : numVal;
+      } else if (keyNorm === 'remarks') {
         updatePayload.remarks = value ? String(value).trim() : null;
-      } else if (fieldKey === 'assignedUser' || fieldKey === 'assignedToId') {
-        updatePayload.assignedToId = value ? String(value).trim() : null;
-      } else if (fieldKey === 'source' || fieldKey === 'sourceId') {
-        updatePayload.sourceId = value ? String(value).trim() : null;
+      } else if (keyNorm === 'assigneduser' || keyNorm === 'assignedtoid' || keyNorm === 'assigned user' || keyNorm === 'assigned to') {
+        const valStr = String(value ?? '').trim().toLowerCase();
+        const matchedUser = workspaceUsers.find(
+          (u: any) => u.id === value || u.name.toLowerCase() === valStr || u.email.toLowerCase() === valStr,
+        );
+        updatePayload.assignedToId = matchedUser ? matchedUser.id : (value ? String(value).trim() : null);
+      } else if (keyNorm === 'source' || keyNorm === 'sourceid' || keyNorm === 'lead source') {
+        const valStr = String(value ?? '').trim().toLowerCase();
+        const matchedSource = workspaceSources.find(
+          (s: any) => s.id === value || s.name.toLowerCase() === valStr,
+        );
+        updatePayload.sourceId = matchedSource ? matchedSource.id : (value ? String(value).trim() : null);
+      } else if (keyNorm === 'lifecycle' || keyNorm === 'lifecycleid' || keyNorm === 'lead lifecycle') {
+        const valStr = String(value ?? '').trim().toLowerCase();
+        const matchedLifecycle = workspaceLifecycles.find(
+          (l: any) => l.id === value || l.name.toLowerCase() === valStr,
+        );
+        updatePayload.lifecycleId = matchedLifecycle ? matchedLifecycle.id : (value ? String(value).trim() : null);
       } else if (
+        keyNorm.includes('followup') ||
+        keyNorm.includes('next follow up') ||
         fieldKey === 'nextFollowupDate' ||
-        fieldKey === 'nextFollowUpAt' ||
-        fieldKey === 'next_followup_date' ||
-        fieldKey === 'followupDate' ||
-        fieldKey === 'follow-up date' ||
-        fieldKey === 'next follow up at' ||
-        fieldKey.toLowerCase().includes('followup') ||
-        fieldKey.toLowerCase().includes('follow up')
+        fieldKey === 'nextFollowUpAt'
       ) {
         if (value && leadId) {
           const activeFollowup = await (prisma as any).followUp.findFirst({
@@ -753,12 +792,8 @@ export const syncLeadChanges = async (workspaceId: string, actor: Actor, input: 
           continue;
         }
       } else {
-        blocked.push({
-          ...change,
-          status: 'BLOCKED',
-          message: `Field '${fieldKey}' is not mapped to a direct lead attribute.`,
-        });
-        continue;
+        // Fallback for any other editable attribute (e.g. balanceAmount, custom fields, dynamic fields)
+        updatePayload[fieldKey] = value;
       }
 
       const result = await updateLeadService(workspaceId, actor, leadId, updatePayload as any);
