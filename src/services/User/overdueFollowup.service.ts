@@ -129,6 +129,8 @@ export const getOverdueMandatoryFollowUps = async (
         leadId: record.leadId,
         leadName: record.lead?.name || 'Lead',
         customerName,
+        leadPhone: record.lead?.phone || null,
+        leadEmail: record.lead?.email || null,
         leadStage: record.lead?.stage
           ? { id: record.lead.stage.id, name: record.lead.stage.name, color: record.lead.stage.color }
           : null,
