@@ -639,6 +639,9 @@ const extractLastRemark = (lead: any): string | null => {
 
 const mapLeadRecord = (lead: LeadIncludeRecord) => {
   const advanceAmount = lead.advancePayments?.reduce((sum: number, p: any) => sum + (p.amount || 0), 0) || 0;
+  const totalAmount = Number(lead.totalAmount || 0);
+  const balanceAmount = Math.max(0, totalAmount - advanceAmount);
+  const expectedRevenue = lead.expectedRevenue !== null && lead.expectedRevenue !== undefined ? Number(lead.expectedRevenue) : balanceAmount;
   const lastRemark = extractLastRemark(lead);
   const { followUps, ...rest } = lead;
   return {
@@ -648,6 +651,10 @@ const mapLeadRecord = (lead: LeadIncludeRecord) => {
     profileImageUploadedAt: lead.profileImageUploadedAt ? lead.profileImageUploadedAt.toISOString() : null,
     profileImageUploadedById: lead.profileImageUploadedById ?? null,
     advanceAmount,
+    approvedAdvanceAmount: advanceAmount,
+    balanceAmount,
+    expectedRevenue,
+    expectedRevenueContribution: expectedRevenue,
     lastRemark,
     nextFollowUpAt: lead.nextFollowUpAt ? lead.nextFollowUpAt.toISOString() : null,
     nextFollowUpType: resolveNextFollowUpType(lead),

@@ -8,6 +8,7 @@ import type {
   ListLeadApprovalsQueryInput,
 } from './leadApprovals.validation';
 import { buildLeadOutcomeFlagsFromStage, isClosedWonStage, isLobStage } from './leadVisibility.util';
+import { getLeadById } from '../../services/User/leadService';
 
 type Actor = {
   id: string;
@@ -484,7 +485,7 @@ export const processLeadApproval = async (
   await clearWorkspaceLeadCache(workspaceId);
 
   const refreshedLead = approval.lead?.id
-    ? await repository.findLeadScoped(workspaceId, approval.lead.id)
+    ? await getLeadById(workspaceId, approval.lead.id, actor).catch(() => null)
     : null;
 
   return {
