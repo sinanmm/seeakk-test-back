@@ -90,5 +90,13 @@
     "nodemon": "^3.1.14",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.2"
+  },
+  "allowScripts": {
+    "@prisma/client": "true",
+    "@prisma/engines": "true",
+    "fsevents": "true",
+    "prisma": "true",
+    "sharp": "true",
+    "msgpackr-extract": "true"
   }
 }

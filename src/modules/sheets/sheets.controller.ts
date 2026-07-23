@@ -230,10 +230,15 @@ export const syncLeadChanges = async (req: Request, res: Response, next: NextFun
   if (!workspaceId) return;
   const input = validate(syncSheetSchema, req.body, res);
   if (!input) return;
+  if (!input.changes || !Array.isArray(input.changes) || input.changes.length === 0) {
+    res.status(200).json({ success: true, message: 'No changes to sync.' });
+    return;
+  }
+
   try {
     logger.info('[Sync Lead Diagnostic] Controller processing syncLeadChanges request', {
       sheetId: req.params.id,
-      bodyChangesCount: input.changes?.length || 0,
+      bodyChangesCount: input.changes.length,
     });
     const data = await sheetsService.syncLeadChanges(workspaceId, actorFromRequest(req), input);
     logger.info('[Sync Lead Diagnostic] Controller syncLeadChanges completed', {

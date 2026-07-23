@@ -691,7 +691,7 @@ export const syncLeadChanges = async (workspaceId: string, actor: Actor, input: 
       where: { workspaceId, deletedAt: null },
       select: { id: true, name: true },
     }),
-    (prisma as any).leadLifecycle.findMany({
+    (prisma as any).leadLifeCycle.findMany({
       where: { workspaceId, deletedAt: null },
       select: { id: true, name: true },
     }),
@@ -744,163 +744,175 @@ export const syncLeadChanges = async (workspaceId: string, actor: Actor, input: 
     };
   }
 
-  // Group changes by leadId for lead-level isolation
-  const changesByLeadMap = new Map<string, any[]>();
-  for (const change of changesList) {
-    if (!change.leadId) {
-      blocked.push({ ...change, status: 'BLOCKED', message: 'No lead ID associated with this row.' });
-      continue;
-    }
-    const list = changesByLeadMap.get(change.leadId) || [];
-    list.push(change);
-    changesByLeadMap.set(change.leadId, list);
-  }
-
-  const leadEntries = Array.from(changesByLeadMap.entries());
-
-  // Promise.allSettled guarantees that one failing lead never aborts the remaining batch
   await Promise.allSettled(
-    leadEntries.map(async ([leadId, leadChanges]) => {
-      logger.info('[Sync Lead Diagnostic] Processing lead batch', { leadId, changesCount: leadChanges.length });
-
-      const updatePayload: Record<string, any> = {};
-      const followUpChanges: any[] = [];
-
-      for (const change of leadChanges) {
+    changesList.map(async (change) => {
+      try {
+        const rowId = change.rowId;
+        const leadId = change.leadId;
         const fieldKey = change.fieldKey;
         const value = (change as any).newValue ?? (change as any).value;
         const oldValue = change.oldValue;
-        const keyNorm = normalizeKey(fieldKey);
 
-        // Check Whitelist & Skip Unmapped / Read-only Fields safely
-        const isSupported = SUPPORTED_KEYS.has(keyNorm) || dynamicFieldKeys.has(keyNorm);
-        if (!isSupported) {
-          logger.info('[Sync Skip] Skipped unmapped or unsupported field:', {
-            leadId,
-            fieldKey,
-            oldValue,
-            newValue: value,
+        logger.info(`Processing change\nLead: ${leadId}\nColumn: ${fieldKey}\nOld: ${oldValue}\nNew: ${value}\nUser: ${actor.id}`);
+
+        if (!leadId) {
+          blocked.push({
+            ...change,
+            status: 'BLOCKED',
+            message: 'No lead ID associated with this row.',
+            failedRow: rowId,
+            column: fieldKey,
+            reason: 'Missing Lead ID',
           });
-          continue;
+          return; // Continue remaining changes
         }
 
-        try {
-          if (keyNorm === 'stage' || keyNorm === 'stageid' || keyNorm === 'current lead stage') {
-            const matchedStage = leadStages.find(
-              (s: any) => s.name.toLowerCase() === String(value ?? '').toLowerCase().trim() || s.id === value,
-            );
-            if (!matchedStage) {
-              blocked.push({
-                ...change,
-                status: 'BLOCKED',
-                message: `Stage '${value}' is not a valid lead stage in this workspace.`,
-              });
-              continue;
-            }
-            updatePayload.stageId = matchedStage.id;
-          } else if (keyNorm === 'name' || keyNorm === 'lead name') {
-            updatePayload.name = String(value ?? '').trim();
-          } else if (keyNorm === 'email') {
-            updatePayload.email = value ? String(value).trim() : null;
-          } else if (keyNorm === 'phone' || keyNorm === 'mobile' || keyNorm === 'mobile number') {
-            updatePayload.phone = value ? String(value).trim() : null;
-          } else if (keyNorm === 'companyname' || keyNorm === 'company name') {
-            updatePayload.companyName = value ? String(value).trim() : null;
-          } else if (keyNorm === 'address') {
-            updatePayload.address = value ? String(value).trim() : null;
-          } else if (keyNorm === 'expectedrevenue' || keyNorm === 'expected revenue contribution' || keyNorm === 'expected revenue') {
-            updatePayload.expectedRevenue = value !== null && value !== undefined && value !== '' ? Number(value) : null;
-          } else if (keyNorm === 'totalamount' || keyNorm === 'total amount') {
-            const numVal = value !== null && value !== undefined && value !== '' ? Number(value) : 0;
-            updatePayload.totalAmount = Number.isNaN(numVal) ? 0 : numVal;
-          } else if (keyNorm === 'advanceamount' || keyNorm === 'advance amount' || keyNorm === 'approved advance amount') {
-            const numVal = value !== null && value !== undefined && value !== '' ? Number(value) : 0;
-            updatePayload.advanceAmount = Number.isNaN(numVal) ? 0 : numVal;
-          } else if (keyNorm === 'remarks') {
-            updatePayload.remarks = value ? String(value).trim() : null;
-          } else if (keyNorm === 'assigneduser' || keyNorm === 'assignedtoid' || keyNorm === 'assigned user' || keyNorm === 'assigned to') {
-            const valStr = String(value ?? '').trim().toLowerCase();
-            const matchedUser = workspaceUsers.find(
-              (u: any) => u.id === value || u.name.toLowerCase() === valStr || u.email.toLowerCase() === valStr,
-            );
-            updatePayload.assignedToId = matchedUser ? matchedUser.id : (value ? String(value).trim() : null);
-          } else if (keyNorm === 'source' || keyNorm === 'sourceid' || keyNorm === 'lead source') {
-            const valStr = String(value ?? '').trim().toLowerCase();
-            const matchedSource = workspaceSources.find(
-              (s: any) => s.id === value || s.name.toLowerCase() === valStr,
-            );
-            updatePayload.sourceId = matchedSource ? matchedSource.id : (value ? String(value).trim() : null);
-          } else if (keyNorm === 'lifecycle' || keyNorm === 'lifecycleid' || keyNorm === 'lead lifecycle') {
-            const valStr = String(value ?? '').trim().toLowerCase();
-            const matchedLifecycle = workspaceLifecycles.find(
-              (l: any) => l.id === value || l.name.toLowerCase() === valStr,
-            );
-            updatePayload.lifecycleId = matchedLifecycle ? matchedLifecycle.id : (value ? String(value).trim() : null);
-          } else if (keyNorm === 'products' || keyNorm === 'product') {
-            if (Array.isArray(value)) {
-              updatePayload.products = value.map((item: any) => ({
-                productId: String(item.productId || item.id || '').trim(),
-                quantity: Math.max(1, Math.trunc(Number(item.quantity) || 1)),
-              }));
-            } else if (typeof value === 'string' && value.trim()) {
-              const parsedProducts: Array<{ productId: string; quantity: number }> = [];
-              const segments = value.split(/[,;]/);
-              for (const segment of segments) {
-                const match = segment.match(/(.*?)(?:[×x*]\s*(\d+)|$)/i);
-                if (match) {
-                  const rawName = match[1]?.trim().toLowerCase();
-                  const qty = match[2] ? parseInt(match[2], 10) : 1;
-                  if (rawName) {
-                    const matchedProd = workspaceProducts.find(
-                      (p: any) => p.name.toLowerCase() === rawName || p.id === rawName,
-                    );
-                    if (matchedProd && !parsedProducts.some((i) => i.productId === matchedProd.id)) {
-                      parsedProducts.push({ productId: matchedProd.id, quantity: Math.max(1, qty) });
-                    }
-                  }
-                }
-              }
-              if (parsedProducts.length > 0) {
-                updatePayload.products = parsedProducts;
-              }
-            }
-          } else if (
-            keyNorm.includes('followup') ||
-            keyNorm.includes('next follow up') ||
-            fieldKey === 'nextFollowupDate' ||
-            fieldKey === 'nextFollowUpAt'
-          ) {
-            followUpChanges.push({ change, value });
-          } else {
-            updatePayload[fieldKey] = value;
-          }
-        } catch (fieldError: any) {
-          logger.error('[Sync Lead Field Error Trace]', {
-            leadId,
-            fieldKey,
-            oldValue,
-            newValue: value,
-            error: fieldError?.message,
-            stack: fieldError?.stack,
-          });
+        const existingLead = await (prisma as any).lead.findUnique({
+          where: { id: leadId },
+        });
+
+        if (!existingLead) {
+          logger.info('[Sync Skip] Lead not found:', { leadId });
           blocked.push({
             ...change,
             status: 'FAILED',
-            message: fieldError?.message || `Failed to process field '${fieldKey}'.`,
+            message: 'Lead not found',
+            failedRow: rowId,
+            column: fieldKey,
+            leadId,
+            reason: 'Lead not found',
           });
+          return;
         }
-      }
 
-      // Process Follow-up Changes for this lead with per-field isolation
-      for (const fuChange of followUpChanges) {
-        const { change, value } = fuChange;
-        try {
-          if (value && leadId) {
+        const keyNorm = normalizeKey(fieldKey);
+        const isSupported = SUPPORTED_KEYS.has(keyNorm) || dynamicFieldKeys.has(keyNorm);
+
+        if (!isSupported) {
+          logger.info('[Sync Skip] Unsupported column:', { leadId, fieldKey, oldValue, newValue: value });
+          applied.push({ ...change, status: 'SKIPPED', message: 'Unsupported column' });
+          return;
+        }
+
+        if (['balanceamount', 'balance amount', 'totalamount', 'total amount', 'expectedrevenue', 'expected revenue contribution', 'expected revenue'].includes(keyNorm)) {
+          logger.info('[Sync Skip] Computed field skipped:', { leadId, fieldKey, oldValue, newValue: value });
+          applied.push({ ...change, status: 'SKIPPED', message: 'Calculated field, skipped direct update' });
+          return;
+        }
+
+        const updatePayload: Record<string, any> = {};
+        const followUpChanges: any[] = [];
+
+        // Build Payload
+        if (keyNorm === 'stage' || keyNorm === 'stageid' || keyNorm === 'current lead stage') {
+          const matchedStage = leadStages.find(
+            (s: any) => s.name.toLowerCase() === String(value ?? '').toLowerCase().trim() || s.id === value,
+          );
+          if (!matchedStage) {
+            blocked.push({
+              ...change,
+              status: 'BLOCKED',
+              message: `Stage '${value}' is not a valid lead stage in this workspace.`,
+              failedRow: rowId,
+              column: fieldKey,
+              leadId,
+              reason: 'Invalid stage',
+            });
+            return;
+          }
+          updatePayload.stageId = matchedStage.id;
+        } else if (keyNorm === 'name' || keyNorm === 'lead name') {
+          updatePayload.name = String(value ?? '').trim();
+        } else if (keyNorm === 'email') {
+          updatePayload.email = value ? String(value).trim() : null;
+        } else if (keyNorm === 'phone' || keyNorm === 'mobile' || keyNorm === 'mobile number') {
+          updatePayload.phone = value ? String(value).trim() : null;
+        } else if (keyNorm === 'companyname' || keyNorm === 'company name') {
+          updatePayload.companyName = value ? String(value).trim() : null;
+        } else if (keyNorm === 'address') {
+          updatePayload.address = value ? String(value).trim() : null;
+        } else if (keyNorm === 'advanceamount' || keyNorm === 'advance amount' || keyNorm === 'approved advance amount') {
+          const numVal = value !== null && value !== undefined && value !== '' ? Number(value) : 0;
+          updatePayload.advanceAmount = Number.isNaN(numVal) ? 0 : numVal;
+        } else if (keyNorm === 'remarks') {
+          updatePayload.remarks = value ? String(value).trim() : null;
+        } else if (keyNorm === 'assigneduser' || keyNorm === 'assignedtoid' || keyNorm === 'assigned user' || keyNorm === 'assigned to') {
+          const valStr = String(value ?? '').trim().toLowerCase();
+          const matchedUser = workspaceUsers.find(
+            (u: any) => u.id === value || u.name.toLowerCase() === valStr || u.email.toLowerCase() === valStr,
+          );
+          updatePayload.assignedToId = matchedUser ? matchedUser.id : (value ? String(value).trim() : null);
+        } else if (keyNorm === 'source' || keyNorm === 'sourceid' || keyNorm === 'lead source') {
+          const valStr = String(value ?? '').trim().toLowerCase();
+          const matchedSource = workspaceSources.find(
+            (s: any) => s.id === value || s.name.toLowerCase() === valStr,
+          );
+          updatePayload.sourceId = matchedSource ? matchedSource.id : (value ? String(value).trim() : null);
+        } else if (keyNorm === 'lifecycle' || keyNorm === 'lifecycleid' || keyNorm === 'lead lifecycle') {
+          const valStr = String(value ?? '').trim().toLowerCase();
+          const matchedLifecycle = workspaceLifecycles.find(
+            (l: any) => l.id === value || l.name.toLowerCase() === valStr,
+          );
+          updatePayload.lifecycleId = matchedLifecycle ? matchedLifecycle.id : (value ? String(value).trim() : null);
+        } else if (keyNorm === 'products' || keyNorm === 'product') {
+          if (Array.isArray(value)) {
+            updatePayload.products = value.map((item: any) => ({
+              productId: String(item.productId || item.id || '').trim(),
+              quantity: Math.max(1, Math.trunc(Number(item.quantity) || 1)),
+            }));
+          } else if (typeof value === 'string' && value.trim()) {
+            const parsedProducts: Array<{ productId: string; quantity: number }> = [];
+            const segments = value.split(/[,;]/);
+            for (const segment of segments) {
+              const match = segment.match(/(.*?)(?:[×x*]\s*(\d+)|$)/i);
+              if (match) {
+                const rawName = match[1]?.trim().toLowerCase();
+                const qty = match[2] ? parseInt(match[2], 10) : 1;
+                if (rawName) {
+                  const matchedProd = workspaceProducts.find(
+                    (p: any) => p.name.toLowerCase() === rawName || p.id === rawName,
+                  );
+                  if (matchedProd && !parsedProducts.some((i) => i.productId === matchedProd.id)) {
+                    parsedProducts.push({ productId: matchedProd.id, quantity: Math.max(1, qty) });
+                  } else if (!matchedProd) {
+                    blocked.push({
+                      ...change,
+                      status: 'BLOCKED',
+                      message: `Product '${rawName}' not found.`,
+                      failedRow: rowId,
+                      column: fieldKey,
+                      leadId,
+                      reason: 'Product not found',
+                    });
+                    return; // Fail this particular change
+                  }
+                }
+              }
+            }
+            if (parsedProducts.length > 0) {
+              updatePayload.products = parsedProducts;
+            }
+          }
+        } else if (
+          keyNorm.includes('followup') ||
+          keyNorm.includes('next follow up') ||
+          fieldKey === 'nextFollowupDate' ||
+          fieldKey === 'nextFollowUpAt'
+        ) {
+          followUpChanges.push({ change, value });
+        } else {
+          updatePayload[fieldKey] = value;
+        }
+
+        // Process Update
+        if (followUpChanges.length > 0) {
+          const { change: fuChange, value: fuValue } = followUpChanges[0];
+          if (fuValue && leadId) {
             const activeFollowup = await (prisma as any).followUp.findFirst({
               where: { leadId, workspaceId, status: 'SCHEDULED' },
               orderBy: { createdAt: 'desc' },
             });
-            const scheduledAtDate = new Date(value);
+            const scheduledAtDate = new Date(fuValue);
             if (activeFollowup) {
               await snoozeFollowUp(workspaceId, actor, activeFollowup.id, {
                 scheduledAt: scheduledAtDate,
@@ -920,82 +932,49 @@ export const syncLeadChanges = async (workspaceId: string, actor: Actor, input: 
               message: 'Successfully updated follow-up in CRM.',
             });
           }
-        } catch (fuErr: any) {
-          logger.error('[Sync Follow Up Error Trace]', {
-            leadId,
-            fieldKey: change.fieldKey,
-            oldValue: change.oldValue,
-            newValue: value,
-            error: fuErr?.message,
-            stack: fuErr?.stack,
-          });
-          blocked.push({
-            ...change,
-            status: 'FAILED',
-            message: fuErr?.message || 'Failed to update follow-up.',
-          });
-        }
-      }
-
-      // Execute lead service updates if payload is not empty
-      if (Object.keys(updatePayload).length > 0) {
-        try {
+        } else if (Object.keys(updatePayload).length > 0) {
           logger.info('[Sync Lead Diagnostic] Updating lead service', { leadId, updatePayload });
           const result = await updateLeadService(workspaceId, actor, leadId, updatePayload as any);
-          const nonFollowUpChanges = leadChanges.filter(
-            (c) =>
-              !normalizeKey(c.fieldKey).includes('followup') &&
-              !normalizeKey(c.fieldKey).includes('next follow up') &&
-              c.fieldKey !== 'nextFollowupDate' &&
-              c.fieldKey !== 'nextFollowUpAt',
-          );
-
           if ((result as any)._approvalRequired || (result as any)._approval) {
-            nonFollowUpChanges.forEach((c) => {
-              pending.push({
-                ...c,
-                status: 'REQUIRES_APPROVAL',
-                message: 'Lead stage/attribute change submitted and pending supervisor approval.',
-                lead: result,
-              });
+            pending.push({
+              ...change,
+              status: 'REQUIRES_APPROVAL',
+              message: 'Lead stage/attribute change submitted and pending supervisor approval.',
+              lead: result,
+              reason: 'Approval required',
             });
           } else {
-            nonFollowUpChanges.forEach((c) => {
-              applied.push({
-                ...c,
-                status: 'APPLIED',
-                message: 'Successfully updated lead in CRM.',
-                lead: result,
-              });
+            applied.push({
+              ...change,
+              status: 'APPLIED',
+              message: 'Successfully updated lead in CRM.',
+              lead: result,
             });
           }
-        } catch (err: any) {
-          logger.error('[Sync Lead Service Error Trace]', {
-            leadId,
-            updatePayload,
-            error: err?.message,
-            stack: err?.stack,
-          });
-          const nonFollowUpChanges = leadChanges.filter(
-            (c) =>
-              !normalizeKey(c.fieldKey).includes('followup') &&
-              !normalizeKey(c.fieldKey).includes('next follow up') &&
-              c.fieldKey !== 'nextFollowupDate' &&
-              c.fieldKey !== 'nextFollowUpAt',
-          );
-          nonFollowUpChanges.forEach((c) => {
-            blocked.push({
-              ...c,
-              status: 'FAILED',
-              message: err?.message || 'Failed to update lead.',
-            });
-          });
         }
+
+      } catch (error: any) {
+        console.error(error);
+        console.error(error.stack);
+        console.error(change);
+
+        blocked.push({
+          ...change,
+          status: 'FAILED',
+          message: error?.message || 'Failed to process field.',
+          reason: error?.message || 'Internal Error',
+          failedRow: change.rowId,
+          column: change.fieldKey,
+          leadId: change.leadId,
+          stackTrace: error?.stack,
+        });
+
+        // Log and register error in blocked list instead of throwing HTTP 500
       }
-    }),
+    })
   );
 
-  const totalLeads = leadEntries.length;
+  const totalLeads = new Set(changesList.map((c: any) => c.leadId).filter(Boolean)).size;
   logger.info('[Sync Lead Diagnostic] Sync Completed', {
     totalLeads,
     appliedCount: applied.length,
