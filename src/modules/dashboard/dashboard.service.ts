@@ -533,7 +533,7 @@ export const getDashboardSummary = async (
       ...activeUserWhere,
     }),
     dashboardRepository.findLeadCreationTimestamps(workspaceId, growthStartDate, scopedLeadAccess),
-    dashboardRepository.groupLeadsByStage(workspaceId, scopedLeadAccess, { isClosed: false, isLOB: false }),
+    dashboardRepository.groupLeadsByStage(workspaceId, scopedLeadAccess, {}),
     dashboardRepository.findLeadStages(workspaceId),
     dashboardRepository.findRecentLeadAuditLogs(workspaceId, 60),
     dashboardRepository.findTodayFollowUps(workspaceId, todayStart, todayEnd, 5, scopedLeadAccess),
@@ -659,9 +659,32 @@ export const getDashboardSummary = async (
     }))
     .sort((left, right) => left.order - right.order);
 
-  const nonZeroStages = visibleStages.filter((stage) => stage.count > 0);
-  const pipelineStages = nonZeroStages.length > 0 ? nonZeroStages : visibleStages.slice(0, 4);
-  const highestStageCount = Math.max(...pipelineStages.map((stage) => stage.count), 1);
+  const pipelineStages = visibleStages;
+  const totalPipelineLeads = visibleStages.reduce((sum, stage) => sum + stage.count, 0);
+  const denominator = totalLeadCount > 0 ? totalLeadCount : (totalPipelineLeads > 0 ? totalPipelineLeads : 1);
+
+  const closedStage = visibleStages.find((s) => s.name.toLowerCase() === 'closed');
+  const missingStages = stages
+    .filter((s) => !stageCountMap.has(s.id))
+    .map((s) => s.name);
+
+  logger.info('Pipeline Stages Diagnostic Log', {
+    workspaceId,
+    actorId: actor.id,
+    'Lead Stages Loaded': stages.length,
+    'Dashboard Stage Counts': visibleStages.map((s) => ({ name: s.name, count: s.count })),
+    'Total Leads': totalLeadCount,
+    'Grouped Counts': Object.fromEntries(stageCountMap),
+    'Missing Stages': missingStages,
+    'Closed Stage Found': Boolean(closedStage),
+    'Closed Lead Count': closedStage ? closedStage.count : 0,
+    'Pipeline Response': pipelineStages.map((stage) => ({
+      name: stage.name,
+      count: stage.count,
+      percent: denominator > 0 ? Math.min(100, Math.round((stage.count / denominator) * 100)) : 0,
+      color: stage.color,
+    })),
+  });
 
   return {
     kpis: [
@@ -722,7 +745,7 @@ export const getDashboardSummary = async (
     pipeline: pipelineStages.map((stage) => ({
       name: stage.name,
       count: stage.count,
-      percent: Math.round((stage.count / highestStageCount) * 100),
+      percent: denominator > 0 ? Math.min(100, Math.round((stage.count / denominator) * 100)) : 0,
       color: stage.color,
     })),
     activities: recentAuditLogs.map((item) => {
