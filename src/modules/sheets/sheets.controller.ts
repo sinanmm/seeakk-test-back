@@ -230,25 +230,46 @@ export const syncLeadChanges = async (req: Request, res: Response, next: NextFun
   if (!workspaceId) return;
   const input = validate(syncSheetSchema, req.body, res);
   if (!input) return;
+
   if (!input.changes || !Array.isArray(input.changes) || input.changes.length === 0) {
-    res.status(200).json({ success: true, message: 'No changes to sync.' });
+    res.status(200).json({
+      success: true,
+      message: 'No changes to sync.',
+      updated: 0,
+      failed: 0,
+    });
     return;
   }
 
   try {
-    logger.info('[Sync Lead Diagnostic] Controller processing syncLeadChanges request', {
+    const actor = actorFromRequest(req);
+    logger.info('[Sync Lead Started]', {
       sheetId: req.params.id,
-      bodyChangesCount: input.changes.length,
+      userId: actor.id,
+      workspaceId,
+      changesCount: input.changes.length,
+      changes: input.changes.map((c) => ({
+        rowId: c.rowId,
+        leadId: c.leadId,
+        fieldKey: c.fieldKey,
+        oldValue: c.oldValue,
+        newValue: c.newValue,
+      })),
     });
-    const data = await sheetsService.syncLeadChanges(workspaceId, actorFromRequest(req), input);
-    logger.info('[Sync Lead Diagnostic] Controller syncLeadChanges completed', {
+
+    const data = await sheetsService.syncLeadChanges(workspaceId, actor, input);
+    logger.info('[Sync Lead Completed]', {
+      sheetId: req.params.id,
       appliedCount: data.applied?.length || 0,
       pendingCount: data.pending?.length || 0,
       blockedCount: data.blocked?.length || 0,
     });
-    res.status(200).json({ success: true, message: 'Sheet lead sync checked successfully.', data });
+    res.status(200).json({ success: true, message: 'Sheet lead sync completed successfully.', data });
   } catch (error: any) {
     logger.error('[Sync Lead Diagnostic] Controller error during syncLeadChanges', {
+      file: 'sheets.controller.ts',
+      function: 'syncLeadChanges',
+      sheetId: req.params.id,
       error: error?.message,
       stack: error?.stack,
     });

@@ -1,7 +1,7 @@
 import ExcelJS from 'exceljs';
 import prisma from '../../config/prisma';
 import logger from '../../utils/logger';
-import { exportLeads as exportLeadCsv, updateLead as updateLeadService } from '../../services/User/leadService';
+import { exportLeads as exportLeadCsv, getLeadById, updateLead as updateLeadService } from '../../services/User/leadService';
 import { createFollowUp, snoozeFollowUp } from '../../services/User/followupService';
 import type {
   CreateFromLeadExportInput,
@@ -926,10 +926,12 @@ export const syncLeadChanges = async (workspaceId: string, actor: Actor, input: 
                 scheduledAt: scheduledAtDate,
               });
             }
+            const refreshedLead = await getLeadById(workspaceId, leadId, actor).catch(() => null);
             applied.push({
               ...change,
               status: 'APPLIED',
               message: 'Successfully updated follow-up in CRM.',
+              lead: refreshedLead,
             });
           }
         } else if (Object.keys(updatePayload).length > 0) {
