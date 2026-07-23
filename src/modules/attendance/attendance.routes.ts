@@ -1,4 +1,4 @@
-﻿import { Router } from 'express';
+import { Router } from 'express';
 import { protect, checkPermission, checkAnyPermission } from '../../middlewares/authMiddleware';
 import { resolveAttendanceWorkspace } from './attendance.middleware';
 import * as controller from './attendance.controller';
@@ -75,10 +75,10 @@ router.post('/unlock/:userId', checkPermission('unlock_attendance_locked_users')
 router.get('/settings', checkPermission('manage_attendance_settings'), controller.getSettingsController);
 router.put('/settings', checkPermission('manage_attendance_settings'), controller.updateSettingsController);
 
-router.get('/locations', checkAnyPermission(['manage_attendance_locations', 'manage_attendance_network']), controller.getOfficeLocationsController);
-router.post('/locations', checkAnyPermission(['manage_attendance_locations', 'manage_attendance_network']), controller.createOfficeLocationController);
-router.put('/locations/:id', checkAnyPermission(['manage_attendance_locations', 'manage_attendance_network']), controller.updateOfficeLocationController);
-router.delete('/locations/:id', checkAnyPermission(['manage_attendance_locations', 'manage_attendance_network']), controller.deleteOfficeLocationController);
+router.get('/locations', checkAnyPermission(['OFFICE_LOCATION_VIEW', 'manage_attendance_locations', 'manage_attendance_network']), controller.getOfficeLocationsController);
+router.post('/locations', checkAnyPermission(['OFFICE_LOCATION_CREATE', 'manage_attendance_locations', 'manage_attendance_network']), controller.createOfficeLocationController);
+router.put('/locations/:id', checkAnyPermission(['OFFICE_LOCATION_EDIT', 'manage_attendance_locations', 'manage_attendance_network']), controller.updateOfficeLocationController);
+router.delete('/locations/:id', checkAnyPermission(['OFFICE_LOCATION_DELETE', 'manage_attendance_locations', 'manage_attendance_network']), controller.deleteOfficeLocationController);
 
 router.get('/networks', checkAnyPermission(['manage_attendance_locations', 'manage_attendance_network']), controller.getNetworksController);
 router.post('/networks', checkAnyPermission(['manage_attendance_locations', 'manage_attendance_network']), controller.createNetworkController);

@@ -156,6 +156,12 @@ const startServer = async () => {
           console.error('[Guard] Failed to run attendance permissions guard:', guardError);
         }
         try {
+          const { ensureSystemPermissionsSeeded } = await import('./modules/system/systemPermissionsGuard');
+          await ensureSystemPermissionsSeeded();
+        } catch (guardError) {
+          console.error('[Guard] Failed to run system permissions guard:', guardError);
+        }
+        try {
           const { ensureTargetLockRemediation } = await import('./modules/targets/targetLockRemediation.service');
           await ensureTargetLockRemediation();
         } catch (guardError) {

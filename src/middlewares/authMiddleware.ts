@@ -343,7 +343,11 @@ export const checkPermission = (permissionKey: string) => {
       const hasTargetCycleFallbackPermission =
         permissionKey.startsWith('TARGET_CYCLES_') && permissions.includes('SYSTEM_CONFIG');
       const hasLocationFallbackPermission =
-        permissionKey.startsWith('LOCATION_') && permissions.includes('SYSTEM_CONFIG');
+        (permissionKey.startsWith('LOCATION_') || permissionKey.startsWith('OFFICE_LOCATION_')) &&
+        (permissions.includes('SYSTEM_CONFIG') || permissions.includes('manage_attendance_locations'));
+      const hasDashboardFallbackPermission =
+        permissionKey.startsWith('DASHBOARD_') &&
+        (permissions.includes('SYSTEM_CONFIG') || permissions.includes('LEADS_VIEW_ALL'));
       const hasHolidayFallbackPermission =
         permissionKey.startsWith('HOLIDAY_') && permissions.includes('SYSTEM_CONFIG');
       const hasAttendanceMarkFallback =
@@ -359,6 +363,7 @@ export const checkPermission = (permissionKey: string) => {
         !hasStageRuleFallbackPermission &&
         !hasTargetCycleFallbackPermission &&
         !hasLocationFallbackPermission &&
+        !hasDashboardFallbackPermission &&
         !hasHolidayFallbackPermission &&
         !hasAttendanceMarkFallback
       ) {

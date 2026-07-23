@@ -6,6 +6,20 @@ dotenv.config();
 const prisma = new PrismaClient() as any;
 
 const permissions = [
+  // OFFICE LOCATION MANAGEMENT
+  { key: 'OFFICE_LOCATION_VIEW', group: 'OFFICE_LOCATION', description: 'View office locations' },
+  { key: 'OFFICE_LOCATION_CREATE', group: 'OFFICE_LOCATION', description: 'Create office locations' },
+  { key: 'OFFICE_LOCATION_EDIT', group: 'OFFICE_LOCATION', description: 'Edit office locations' },
+  { key: 'OFFICE_LOCATION_DELETE', group: 'OFFICE_LOCATION', description: 'Delete office locations' },
+
+  // DASHBOARD MANAGEMENT
+  { key: 'DASHBOARD_VIEW_OWN', group: 'DASHBOARD', description: 'View Own Dashboard' },
+  { key: 'DASHBOARD_VIEW_ASSIGNED', group: 'DASHBOARD', description: 'View Assigned Users Dashboard' },
+  { key: 'DASHBOARD_VIEW_ALL', group: 'DASHBOARD', description: 'View All Users Dashboard' },
+  { key: 'DASHBOARD_VIEW_OWN_OFFICE', group: 'DASHBOARD', description: 'View Own Office Dashboard' },
+  { key: 'DASHBOARD_VIEW_ASSIGNED_OFFICES', group: 'DASHBOARD', description: 'View Assigned Users Offices Dashboard' },
+  { key: 'DASHBOARD_VIEW_ALL_OFFICES', group: 'DASHBOARD', description: 'View All Offices Dashboard' },
+
   // USERS MANAGEMENT
   { key: 'USERS_VIEW', group: 'ADMIN_MANAGEMENT', description: 'View users list' },
   { key: 'USERS_CREATE', group: 'ADMIN_MANAGEMENT', description: 'Create new users' },
