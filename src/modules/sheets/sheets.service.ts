@@ -794,9 +794,14 @@ export const syncLeadChanges = async (workspaceId: string, actor: Actor, input: 
           return;
         }
 
-        if (['balanceamount', 'balance amount', 'totalamount', 'total amount', 'expectedrevenue', 'expected revenue contribution', 'expected revenue'].includes(keyNorm)) {
-          logger.info('[Sync Skip] Computed field skipped:', { leadId, fieldKey, oldValue, newValue: value });
-          applied.push({ ...change, status: 'SKIPPED', message: 'Calculated field, skipped direct update' });
+        if ([
+          'balanceamount', 'balance amount',
+          'totalamount', 'total amount',
+          'expectedrevenue', 'expected revenue contribution', 'expected revenue',
+          'advanceamount', 'advance amount', 'approved advance amount', 'approvedadvanceamount', 'approvedadvance', 'advance', 'advance payment'
+        ].includes(keyNorm)) {
+          logger.info('[Sync Skip] Computed/Protected field skipped:', { leadId, fieldKey, oldValue, newValue: value });
+          applied.push({ ...change, status: 'SKIPPED', message: 'Calculated or protected field, skipped direct update' });
           return;
         }
 
@@ -831,9 +836,6 @@ export const syncLeadChanges = async (workspaceId: string, actor: Actor, input: 
           updatePayload.companyName = value ? String(value).trim() : null;
         } else if (keyNorm === 'address') {
           updatePayload.address = value ? String(value).trim() : null;
-        } else if (keyNorm === 'advanceamount' || keyNorm === 'advance amount' || keyNorm === 'approved advance amount') {
-          const numVal = value !== null && value !== undefined && value !== '' ? Number(value) : 0;
-          updatePayload.advanceAmount = Number.isNaN(numVal) ? 0 : numVal;
         } else if (keyNorm === 'remarks') {
           updatePayload.remarks = value ? String(value).trim() : null;
         } else if (keyNorm === 'assigneduser' || keyNorm === 'assignedtoid' || keyNorm === 'assigned user' || keyNorm === 'assigned to') {
