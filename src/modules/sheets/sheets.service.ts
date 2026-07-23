@@ -939,12 +939,14 @@ export const syncLeadChanges = async (workspaceId: string, actor: Actor, input: 
         } else if (Object.keys(updatePayload).length > 0) {
           logger.info('[Sync Lead Diagnostic] Updating lead service', { leadId, updatePayload });
           const result = await updateLeadService(workspaceId, actor, leadId, updatePayload as any);
+          const refreshedLead = await getLeadById(workspaceId, leadId, actor).catch(() => null);
+          const finalLead = refreshedLead || (result as any).lead || result;
           if ((result as any)._approvalRequired || (result as any)._approval) {
             pending.push({
               ...change,
               status: 'REQUIRES_APPROVAL',
               message: 'Lead stage/attribute change submitted and pending supervisor approval.',
-              lead: result,
+              lead: finalLead,
               reason: 'Approval required',
             });
           } else {
@@ -952,7 +954,7 @@ export const syncLeadChanges = async (workspaceId: string, actor: Actor, input: 
               ...change,
               status: 'APPLIED',
               message: 'Successfully updated lead in CRM.',
-              lead: result,
+              lead: finalLead,
             });
           }
         }
