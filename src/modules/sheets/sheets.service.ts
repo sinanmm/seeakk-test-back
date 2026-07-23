@@ -580,7 +580,7 @@ export const exportSheet = async (workspaceId: string, id: string, format: 'csv'
   }
 
   const leadStages = await (prisma as any).leadStage.findMany({
-    where: { workspaceId, deletedAt: null },
+    where: { deletedAt: null },
     select: { id: true, name: true, color: true },
   });
 
@@ -680,23 +680,23 @@ export const syncLeadChanges = async (workspaceId: string, actor: Actor, input: 
 
   const [leadStages, workspaceUsers, workspaceSources, workspaceLifecycles, workspaceProducts, activeDynamicFields] = await Promise.all([
     (prisma as any).leadStage.findMany({
-      where: { workspaceId, deletedAt: null },
+      where: { deletedAt: null },
       select: { id: true, name: true },
     }),
     (prisma as any).user.findMany({
-      where: { workspaceId, status: 'ACTIVE' },
+      where: { workspaceId, deletedAt: null },
       select: { id: true, name: true, email: true },
     }),
     (prisma as any).leadSource.findMany({
-      where: { workspaceId, deletedAt: null },
+      where: { deletedAt: null },
       select: { id: true, name: true },
     }),
     (prisma as any).leadLifeCycle.findMany({
-      where: { workspaceId, deletedAt: null },
+      where: { workspaceId },
       select: { id: true, name: true },
     }),
     (prisma as any).product.findMany({
-      where: { workspaceId, status: 'ACTIVE', deletedAt: null },
+      where: { workspaceId, deletedAt: null },
       select: { id: true, name: true, unitPrice: true, code: true },
     }),
     (prisma as any).leadDynamicField.findMany({
