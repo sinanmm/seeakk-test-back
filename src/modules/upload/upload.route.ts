@@ -23,7 +23,7 @@ const upload = multer({
 // Protect route with auth middleware and handle single file upload
 router.post('/', protect, upload.single('file'), uploadFile);
 
-// Protected proxy route to fetch files securely using validated storage keys
-router.get(/^\/(.+)$/, protect, getFile);
+// Proxy route to stream uploaded files securely using validated storage keys
+router.get(/^\/(.+)$/, getFile);
 
 export default router;

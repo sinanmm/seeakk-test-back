@@ -31,7 +31,7 @@ export const getFile = async (req: Request, res: Response, next: NextFunction): 
 
     let key: string;
     try {
-      key = sanitizeStorageKey(rawKey);
+      key = sanitizeStorageKey(decodeURIComponent(rawKey));
     } catch {
       res.status(400).json({ success: false, message: 'Invalid file key format' });
       return;
