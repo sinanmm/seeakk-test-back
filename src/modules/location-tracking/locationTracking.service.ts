@@ -109,12 +109,24 @@ const userWhereForScope = async (workspaceId: string, actor: any) => {
 };
 
 const activeAttendanceForUser = async (workspaceId: string, userId: string, attendanceRecordId?: string) => {
-  const today = dayRange();
+  if (attendanceRecordId) {
+    const specificRecord = await (prisma as any).attendanceRecord.findFirst({
+      where: {
+        id: attendanceRecordId,
+        workspaceId,
+        userId,
+        checkInTime: { not: null },
+        checkoutCompleted: false,
+        checkOutTime: null,
+      },
+    });
+    if (specificRecord) return specificRecord;
+  }
+
   return (prisma as any).attendanceRecord.findFirst({
     where: {
       workspaceId,
       userId,
-      ...(attendanceRecordId ? { id: attendanceRecordId } : { date: { gte: today.start, lte: today.end } }),
       checkInTime: { not: null },
       checkoutCompleted: false,
       checkOutTime: null,
