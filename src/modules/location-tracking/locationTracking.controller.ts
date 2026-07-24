@@ -63,6 +63,14 @@ export const pushLocation = async (req: Request, res: Response, next: NextFuncti
     return res.status(422).json({ success: false, message: 'Validation failed.', errors: parsed.error.flatten().fieldErrors });
   }
   try {
+    console.info('Location request received:', {
+      'User ID': req.user?.id,
+      'Workspace ID': workspaceId,
+      'Attendance ID': parsed.data.attendanceRecordId,
+      Latitude: parsed.data.points[0]?.latitude,
+      Longitude: parsed.data.points[0]?.longitude,
+    });
+
     const data = await service.pushLocation(workspaceId, req.user, parsed.data);
     return res.status(201).json({ success: true, data });
   } catch (error) {
@@ -79,6 +87,10 @@ export const getLiveLocations = async (req: Request, res: Response, next: NextFu
   }
   try {
     const data = await service.getLiveLocations(workspaceId, req.user, parsed.data.userId);
+    console.info('Returning locations:', {
+      Count: data.length,
+      Users: data.map((d: any) => d.user?.name),
+    });
     return res.status(200).json({ success: true, data });
   } catch (error) {
     return handleError(error, res, next);

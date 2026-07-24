@@ -4,7 +4,21 @@ import { emitWorkspaceEvent } from '../../realtime/socket';
 import type { PushLocationInput, RouteQueryInput, StartSessionInput, StopSessionInput } from './locationTracking.validation';
 import { recalculateStops } from './recalculateStops';
 
-const FIELD_TRACKING_TERMS = ['field sales', 'sales executive', 'marketing executive', 'field staff'];
+const FIELD_TRACKING_TERMS = [
+  'field',
+  'sales',
+  'executive',
+  'bde',
+  'marketing',
+  'staff',
+  'admin',
+  'manager',
+  'superadmin',
+  'head',
+  'officer',
+  'representative',
+  'intern',
+];
 const OFFLINE_AFTER_MS = 2 * 60 * 1000;
 const STOP_RADIUS_METERS = 30;
 const STOP_MIN_SECONDS = 5 * 60;
@@ -44,10 +58,13 @@ export const distanceMeters = (a: { latitude: number; longitude: number }, b: { 
 };
 
 const isFieldTrackingCandidate = (user: any) => {
-  const haystack = [user.role?.name, user.designation, user.department?.name]
+  if (!user) return false;
+  const haystack = [user.role?.name, user.designation, user.department?.name, user.role]
     .filter(Boolean)
+    .map((val) => (typeof val === 'string' ? val : val?.name || ''))
     .join(' ')
     .toLowerCase();
+  if (!haystack || haystack.trim().length === 0) return true;
   return FIELD_TRACKING_TERMS.some((term) => haystack.includes(term));
 };
 
@@ -127,7 +144,10 @@ export const startSessionForAttendance = async (
     where: { workspaceId, userId, attendanceRecordId, status: 'ACTIVE' },
     orderBy: { startedAt: 'desc' },
   });
-  if (existing) return existing;
+  if (existing) {
+    console.info('Session found:', existing.id);
+    return existing;
+  }
 
   const session = await (prisma as any).locationSession.create({
     data: {
@@ -139,6 +159,8 @@ export const startSessionForAttendance = async (
       status: 'ACTIVE',
     },
   });
+
+  console.info('Session created:', session.id);
 
   await (prisma as any).attendanceAuditLog.create({
     data: {
@@ -193,7 +215,11 @@ export const stopSessionForAttendance = async (
 
 export const startSession = async (workspaceId: string, actor: any, input: StartSessionInput) => {
   const attendance = await activeAttendanceForUser(workspaceId, actor.id, input.attendanceRecordId);
-  if (!attendance) throw createError('Check-in is required before location tracking can start.', 409);
+  if (!attendance) {
+    console.warn('Tracking blocked: No active attendance.');
+    throw createError('Check-in is required before location tracking can start.', 409);
+  }
+  console.info('Attendance validated');
   const session = await startSessionForAttendance(workspaceId, actor.id, attendance.id, input.deviceType);
   if (!session) throw createError('Location tracking is not enabled for this user role.', 403);
   return session;
@@ -217,7 +243,11 @@ const resolveActiveSessionForPoint = async (workspaceId: string, userId: string,
   }
 
   const attendance = await activeAttendanceForUser(workspaceId, userId, input.attendanceRecordId);
-  if (!attendance) throw createError('Active attendance check-in is required before uploading locations.', 409);
+  if (!attendance) {
+    console.warn('Tracking blocked: No active attendance.');
+    throw createError('Active attendance check-in is required before uploading locations.', 409);
+  }
+  console.info('Attendance validated');
 
   const existing = await (prisma as any).locationSession.findFirst({
     where: { workspaceId, userId, attendanceRecordId: attendance.id, status: 'ACTIVE' },
@@ -239,23 +269,25 @@ export const pushLocation = async (workspaceId: string, actor: any, input: PushL
     input.points.map((point) =>
       (prisma as any).locationPoint.create({
         data: {
-      workspaceId,
-      userId: actor.id,
-      sessionId: session.id,
-      attendanceRecordId: session.attendanceRecordId,
-      latitude: point.latitude,
-      longitude: point.longitude,
-      accuracy: point.accuracy ?? null,
-      speed: point.speed ?? null,
-      heading: point.heading ?? null,
-      batteryPercentage: point.batteryPercentage ?? null,
-      recordedAt: point.recordedAt,
-      deviceType: point.deviceType || session.deviceType || 'web',
-      source: point.source || 'web',
+          workspaceId,
+          userId: actor.id,
+          sessionId: session.id,
+          attendanceRecordId: session.attendanceRecordId,
+          latitude: point.latitude,
+          longitude: point.longitude,
+          accuracy: point.accuracy ?? null,
+          speed: point.speed ?? null,
+          heading: point.heading ?? null,
+          batteryPercentage: point.batteryPercentage ?? null,
+          recordedAt: point.recordedAt,
+          deviceType: point.deviceType || session.deviceType || 'web',
+          source: point.source || 'web',
         },
       }),
     ),
   );
+
+  console.info('LocationPoint inserted:', points.length);
 
   const latest = points[points.length - 1];
   if (latest) {
@@ -271,6 +303,9 @@ export const pushLocation = async (workspaceId: string, actor: any, input: PushL
         lastUpdatedAt: latest.recordedAt,
       },
     });
+
+    console.info('Session updated:', session.id);
+
     emitWorkspaceEvent(workspaceId, 'location_updated' as any, {
       userId: actor.id,
       sessionId: session.id,
@@ -313,6 +348,7 @@ export const getLiveLocations = async (workspaceId: string, actor: any, userId?:
   });
 
   const fieldUsers = users.filter(isFieldTrackingCandidate);
+  console.info('Visible tracked users:', fieldUsers.map((u: any) => ({ id: u.id, name: u.name, role: u.role?.name })));
   const sessions = await (prisma as any).locationSession.findMany({
     where: { workspaceId, userId: { in: fieldUsers.map((u) => u.id) } },
     orderBy: { startedAt: 'desc' },
