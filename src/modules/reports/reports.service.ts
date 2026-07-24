@@ -213,8 +213,18 @@ const assertReportExecutionFilters = (
   }
 };
 
+const ALLOWED_COLUMN_NAME = /^[a-zA-Z0-9_"]+(\.[a-zA-Z0-9_"]+)?$/;
+
+const sanitizeColumnName = (column: string): string => {
+  const trimmed = column.trim();
+  if (!ALLOWED_COLUMN_NAME.test(trimmed)) {
+    throw createServiceError('Invalid query column identifier.', 400);
+  }
+  return trimmed;
+};
+
 const buildInClause = (column: string, values: string[]): Prisma.Sql =>
-  Prisma.sql`${Prisma.raw(column)} IN (${Prisma.join(values)})`;
+  Prisma.sql`${Prisma.raw(sanitizeColumnName(column))} IN (${Prisma.join(values)})`;
 
 /** User ids from USER and/or ASSIGNEE filters (before per-data-source stripping). */
 const extractSelectedUserIds = (filters: NormalizedFilter[]): string[] => {
@@ -228,6 +238,23 @@ const extractSelectedUserIds = (filters: NormalizedFilter[]): string[] => {
   }
   return Array.from(ids);
 };
+
+const pushScopeConstraint = (
+  clauses: Prisma.Sql[],
+  effectiveUserIds: string[] | null,
+  buildScope: (userScope: string[]) => Prisma.Sql,
+): void => {
+  if (!effectiveUserIds) {
+    return;
+  }
+  if (effectiveUserIds.length === 0) {
+    clauses.push(Prisma.sql`1 = 0`);
+    return;
+  }
+  clauses.push(buildScope(effectiveUserIds));
+};
+
+const appendEffectiveUserScope = pushScopeConstraint;
 
 const intersectUserScopes = (a: string[] | 'ALL', b: string[] | 'ALL'): string[] | 'ALL' => {
   if (a === 'ALL') return b;
@@ -319,27 +346,15 @@ const resolveEffectiveUserIds = (
   return rbacScope;
 };
 
-const appendEffectiveUserScope = (
-  clauses: Prisma.Sql[],
-  effectiveUserIds: string[] | null,
-  buildScope: (ids: string[]) => Prisma.Sql,
-): void => {
-  if (effectiveUserIds === null) return;
-  if (effectiveUserIds.length === 0) {
-    clauses.push(Prisma.sql`1 = 0`);
-    return;
-  }
-  clauses.push(buildScope(effectiveUserIds));
-};
-
 const buildDateClause = (column: string, range: DateRange): Prisma.Sql => {
+  const safeColumn = sanitizeColumnName(column);
   if (range.from && range.to) {
-    return Prisma.sql`${Prisma.raw(column)} BETWEEN ${range.from} AND ${range.to}`;
+    return Prisma.sql`${Prisma.raw(safeColumn)} BETWEEN ${range.from} AND ${range.to}`;
   }
   if (range.from) {
-    return Prisma.sql`${Prisma.raw(column)} >= ${range.from}`;
+    return Prisma.sql`${Prisma.raw(safeColumn)} >= ${range.from}`;
   }
-  return Prisma.sql`${Prisma.raw(column)} <= ${range.to!}`;
+  return Prisma.sql`${Prisma.raw(safeColumn)} <= ${range.to!}`;
 };
 
 const buildLeadWhereClauses = (

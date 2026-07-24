@@ -3,6 +3,7 @@ import { hasPermission } from '../../middlewares/authMiddleware';
 import { emitWorkspaceEvent } from '../../realtime/socket';
 import type { PushLocationInput, RouteQueryInput, StartSessionInput, StopSessionInput } from './locationTracking.validation';
 import { recalculateStops } from './recalculateStops';
+import { sanitizeCsvRow } from '../../utils/excelSanitizer';
 
 const FIELD_TRACKING_TERMS = [
   'field',
@@ -513,15 +514,17 @@ export const exportRouteCsv = async (workspaceId: string, actor: any, query: Rou
     },
   });
   const header = ['Recorded At', 'Latitude', 'Longitude', 'Accuracy', 'Speed', 'Heading', 'Battery'];
-  const rows = data.points.map((point: any) => [
-    new Date(point.recordedAt).toISOString(),
-    point.latitude,
-    point.longitude,
-    point.accuracy ?? '',
-    point.speed ?? '',
-    point.heading ?? '',
-    point.batteryPercentage ?? '',
-  ]);
+  const rows = data.points.map((point: any) =>
+    sanitizeCsvRow([
+      new Date(point.recordedAt).toISOString(),
+      point.latitude,
+      point.longitude,
+      point.accuracy ?? '',
+      point.speed ?? '',
+      point.heading ?? '',
+      point.batteryPercentage ?? '',
+    ]),
+  );
   return [header, ...rows]
     .map((row: Array<string | number>) => row.map((cell: string | number) => `"${String(cell).replace(/"/g, '""')}"`).join(','))
     .join('\n');

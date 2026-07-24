@@ -238,25 +238,18 @@ const countLifecycleUsage = async (workspaceId: string, lifecycleId: string): Pr
     });
   }
 
-  const tableRows = await prisma.$queryRaw<Array<{ table_name: string | null }>>`
-    SELECT TABLE_NAME AS table_name 
-    FROM information_schema.tables 
-    WHERE table_schema = current_schema() AND table_name = 'leads'
-  `;
-
-  if (!tableRows[0]?.table_name) return 0;
-
-  const result = await prisma.$queryRawUnsafe<Array<{ count: number }>>(
-    `SELECT COUNT(*) AS count
-     FROM leads
-     WHERE "workspaceId" = $1
-       AND "lifecycleId" = $2
-       AND "deletedAt" IS NULL`,
-    workspaceId,
-    lifecycleId,
-  );
-
-  return Number(result[0]?.count || 0);
+  try {
+    const count = await prisma.lead.count({
+      where: {
+        workspaceId,
+        lifecycleId,
+        deletedAt: null,
+      },
+    });
+    return count;
+  } catch {
+    return 0;
+  }
 };
 
 export const getLeadStageOptions = async () => {

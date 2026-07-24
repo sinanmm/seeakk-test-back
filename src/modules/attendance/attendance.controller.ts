@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import * as attendanceService from './attendance.service';
 import { emitWorkspaceEvent } from '../../realtime/socket';
 import { applyCorsHeadersIfAllowed } from '../../config/cors';
+import { sanitizeCsvRow } from '../../utils/excelSanitizer';
 import type { AttendanceRequest } from './attendance.middleware';
 import {
   attendanceOfficeLocationSchema,
@@ -440,7 +441,7 @@ export const exportController = async (req: Request, res: Response, next: NextFu
     const headers = ['Employee Name','Employee Email','Role','Date','Check-In Time','Check-Out Time','Working Hours','Attendance Type','Approval Status','Work Summary','Rejected Reason'];
     const csvRows = [headers.join(',')];
     for (const record of records as any[]) {
-      const row = [
+      const rawRow = [
         record.user?.name || '',
         record.user?.email || '',
         record.user?.role?.name || '',
@@ -452,7 +453,11 @@ export const exportController = async (req: Request, res: Response, next: NextFu
         record.approvalStatus || '',
         record.workSummary || '',
         record.rejectedReason || '',
-      ].map((value: string) => /[",\n\r]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value);
+      ];
+      const row = sanitizeCsvRow(rawRow).map((value: any) => {
+        const strVal = String(value ?? '');
+        return /[",\n\r]/.test(strVal) ? `"${strVal.replace(/"/g, '""')}"` : strVal;
+      });
       csvRows.push(row.join(','));
     }
     res.setHeader('Content-Type', 'text/csv');

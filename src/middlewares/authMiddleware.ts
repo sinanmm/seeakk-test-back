@@ -180,19 +180,25 @@ export const protect = async (req: Request, res: Response, next: NextFunction): 
       },
     });
 
-    if (!user) {
-      logger.warn('Access denied. Token user no longer exists.', {
+    if (!user || user.deletedAt !== null) {
+      logger.warn('Access denied. Token user no longer exists or is deleted.', {
         userId: decoded.userId,
         action: 'auth_ghost_user',
       });
       applyCorsHeadersIfAllowed(req, res);
-      return res.status(401).json({ message: 'The user belonging to this token no longer exists.' });
+      return res.status(401).json({ message: 'The user belonging to this token no longer exists or has been deleted.' });
     }
 
     if (!user.isActive) {
       logger.warn('Access denied. User is inactive.', { userId: user.id, action: 'auth_inactive_user' });
       applyCorsHeadersIfAllowed(req, res);
       return res.status(403).json({ message: 'User account is suspended or inactive.' });
+    }
+
+    if (!user.workspaceId) {
+      logger.warn('Access denied. User workspace missing.', { userId: user.id, action: 'auth_missing_workspace' });
+      applyCorsHeadersIfAllowed(req, res);
+      return res.status(403).json({ message: 'User account is not associated with an active workspace.' });
     }
 
     const hydratedUser = await ensureWorkspaceOwnerSuperAdmin(user);

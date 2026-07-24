@@ -146,15 +146,14 @@ const countLeadUsage = async (leadSourceId: string): Promise<number> => {
   const hasCamelColumn = columnRows.some((column) => column.column_name === 'leadSourceId');
   const hasSnakeColumn = columnRows.some((column) => column.column_name === 'lead_source_id');
 
-  if (!hasCamelColumn && !hasSnakeColumn) return 0;
-
-  const filterColumn = hasCamelColumn ? 'leadSourceId' : 'lead_source_id';
-  const result = await prisma.$queryRawUnsafe<Array<{ count: number }>>(
-    `SELECT COUNT(*) AS count FROM leads WHERE "${filterColumn}" = $1`,
-    leadSourceId,
-  );
-
-  return parseCount(result[0]?.count);
+  try {
+    const count = await (prisma as any).lead.count({
+      where: { leadSourceId },
+    });
+    return typeof count === 'number' ? count : Number(count || 0);
+  } catch {
+    return 0;
+  }
 };
 
 export const createLeadSource = async (
