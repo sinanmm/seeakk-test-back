@@ -440,6 +440,161 @@ const calculateTotalAdvance = async (
   return Number(result._sum?.amount || 0);
 };
 
+const getKpiHelperText = (
+  kpiKey: 'todaysLeads' | 'totalLeads' | 'closedLeads' | 'expectedRevenue' | 'revenue' | 'totalAdvance' | 'activeUsers',
+  query: DashboardSummaryQueryInput,
+  defaultText: string,
+): string => {
+  const activeFilterKeys: string[] = [];
+  if (query.officeId) activeFilterKeys.push('office');
+  if (query.userId) activeFilterKeys.push('user');
+  if (query.stageId) activeFilterKeys.push('stage');
+  if (query.sourceId) activeFilterKeys.push('source');
+  if (query.status) activeFilterKeys.push('status');
+  if (query.dateFrom || query.dateTo) activeFilterKeys.push('date');
+
+  if (activeFilterKeys.length === 0) {
+    switch (kpiKey) {
+      case 'todaysLeads':
+        return 'Total leads';
+      case 'totalLeads':
+        return 'All leads';
+      case 'closedLeads':
+        return 'Total closed leads';
+      case 'expectedRevenue':
+        return 'Total expected revenue';
+      case 'revenue':
+        return 'Total revenue';
+      case 'totalAdvance':
+        return 'Total approved advances';
+      case 'activeUsers':
+        return 'Total active users';
+    }
+  }
+
+  if (activeFilterKeys.length === 1) {
+    const filter = activeFilterKeys[0];
+    if (filter === 'date') {
+      switch (kpiKey) {
+        case 'todaysLeads':
+        case 'totalLeads':
+          return 'Leads during selected period';
+        case 'closedLeads':
+          return 'Closed leads during selected period';
+        case 'expectedRevenue':
+          return 'Expected revenue during selected period';
+        case 'revenue':
+          return 'Revenue during selected period';
+        case 'totalAdvance':
+          return 'Approved advances during selected period';
+        case 'activeUsers':
+          return 'Users matching selected filters';
+      }
+    }
+    if (filter === 'office') {
+      switch (kpiKey) {
+        case 'todaysLeads':
+        case 'totalLeads':
+          return 'Leads for selected office';
+        case 'closedLeads':
+          return 'Closed leads for selected office';
+        case 'expectedRevenue':
+          return 'Expected revenue for selected office';
+        case 'revenue':
+          return 'Revenue for selected office';
+        case 'totalAdvance':
+          return 'Approved advances for selected office';
+        case 'activeUsers':
+          return 'Users for selected office';
+      }
+    }
+    if (filter === 'user') {
+      switch (kpiKey) {
+        case 'todaysLeads':
+        case 'totalLeads':
+          return 'Leads for selected user';
+        case 'closedLeads':
+          return 'Closed leads for selected user';
+        case 'expectedRevenue':
+          return 'Expected revenue for selected user';
+        case 'revenue':
+          return 'Revenue for selected user';
+        case 'totalAdvance':
+          return 'Approved advances for selected user';
+        case 'activeUsers':
+          return 'Users for selected user';
+      }
+    }
+    if (filter === 'stage') {
+      switch (kpiKey) {
+        case 'todaysLeads':
+        case 'totalLeads':
+          return 'Leads for selected stage';
+        case 'closedLeads':
+          return 'Closed leads for selected stage';
+        case 'expectedRevenue':
+          return 'Expected revenue for selected stage';
+        case 'revenue':
+          return 'Revenue for selected stage';
+        case 'totalAdvance':
+          return 'Approved advances for selected stage';
+        case 'activeUsers':
+          return 'Users matching selected filters';
+      }
+    }
+    if (filter === 'source') {
+      switch (kpiKey) {
+        case 'todaysLeads':
+        case 'totalLeads':
+          return 'Leads for selected source';
+        case 'closedLeads':
+          return 'Closed leads for selected source';
+        case 'expectedRevenue':
+          return 'Expected revenue for selected source';
+        case 'revenue':
+          return 'Revenue for selected source';
+        case 'totalAdvance':
+          return 'Approved advances for selected source';
+        case 'activeUsers':
+          return 'Users matching selected filters';
+      }
+    }
+    if (filter === 'status') {
+      switch (kpiKey) {
+        case 'todaysLeads':
+        case 'totalLeads':
+          return 'Leads for selected status';
+        case 'closedLeads':
+          return 'Closed leads for selected status';
+        case 'expectedRevenue':
+          return 'Expected revenue for selected status';
+        case 'revenue':
+          return 'Revenue for selected status';
+        case 'totalAdvance':
+          return 'Approved advances for selected status';
+        case 'activeUsers':
+          return 'Users matching selected filters';
+      }
+    }
+  }
+
+  switch (kpiKey) {
+    case 'todaysLeads':
+    case 'totalLeads':
+      return 'Leads matching selected filters';
+    case 'closedLeads':
+      return 'Closed leads matching selected filters';
+    case 'expectedRevenue':
+      return 'Expected revenue matching selected filters';
+    case 'revenue':
+      return 'Revenue matching selected filters';
+    case 'totalAdvance':
+      return 'Approved advances matching selected filters';
+    case 'activeUsers':
+      return 'Users matching selected filters';
+  }
+};
+
 export const getDashboardSummary = async (
   workspaceId: string,
   actor: Actor,
@@ -546,9 +701,9 @@ export const getDashboardSummary = async (
       scopedLeadAccess,
     ),
     calculateExpectedRevenue(workspaceId, visibleLeadUserScope, query),
-    calculateDashboardRevenue(workspaceId, scopedLeadAccess, {}),
-    calculateDashboardRevenue(workspaceId, scopedLeadAccess, {}, { gte: currentWeekStart, lte: todayEnd }),
-    calculateDashboardRevenue(workspaceId, scopedLeadAccess, {}, { gte: previousWeekStart, lte: previousWeekEnd }),
+    calculateDashboardRevenue(workspaceId, scopedLeadAccess, dashboardFilters),
+    calculateDashboardRevenue(workspaceId, scopedLeadAccess, dashboardFilters, { gte: currentWeekStart, lte: todayEnd }),
+    calculateDashboardRevenue(workspaceId, scopedLeadAccess, dashboardFilters, { gte: previousWeekStart, lte: previousWeekEnd }),
     calculateTotalAdvance(workspaceId, scopedLeadAccess),
   ]);
 
@@ -652,6 +807,8 @@ export const getDashboardSummary = async (
 
   const visibleStages = stages
     .map((stage) => ({
+      id: stage.id,
+      stageId: stage.id,
       name: stage.name,
       count: stageCountMap.get(stage.id) || 0,
       color: stage.color || '#10B981',
@@ -679,6 +836,8 @@ export const getDashboardSummary = async (
     'Closed Stage Found': Boolean(closedStage),
     'Closed Lead Count': closedStage ? closedStage.count : 0,
     'Pipeline Response': pipelineStages.map((stage) => ({
+      id: stage.id,
+      stageId: stage.id,
       name: stage.name,
       count: stage.count,
       percent: denominator > 0 ? Math.min(100, Math.round((stage.count / denominator) * 100)) : 0,
@@ -691,28 +850,28 @@ export const getDashboardSummary = async (
       {
         title: "Today's Leads",
         value: todayLeadCount,
-        growth: getTodayLeadDeltaLabel(todayLeadCount, yesterdayLeadCount),
+        growth: getKpiHelperText('todaysLeads', query, getTodayLeadDeltaLabel(todayLeadCount, yesterdayLeadCount)),
         trend: getTrend(todayLeadCount, yesterdayLeadCount),
         iconName: 'Target',
       },
       {
         title: 'Total Leads',
         value: totalLeadCount,
-        growth: `${recentLeadCount} added in last 30 days`,
+        growth: getKpiHelperText('totalLeads', query, `${recentLeadCount} added in last 30 days`),
         trend: getTrend(recentLeadCount, previousRecentLeadCount),
         iconName: 'Users',
       },
       {
         title: 'Closed Leads',
         value: totalClosedLeadCount,
-        growth: `${closedThisWeekCount} closed this week`,
+        growth: getKpiHelperText('closedLeads', query, `${closedThisWeekCount} closed this week`),
         trend: getTrend(closedThisWeekCount, closedLastWeekCount),
         iconName: 'CheckCircle2',
       },
       {
         title: 'Expected Revenue',
         value: expectedRevenue.amount,
-        growth: `${formatNumber(expectedRevenue.positiveBalanceLeadCount)} active balances`,
+        growth: getKpiHelperText('expectedRevenue', query, `${formatNumber(expectedRevenue.positiveBalanceLeadCount)} active balances`),
         trend: 'up',
         iconName: 'IndianRupee',
         format: 'currency',
@@ -720,7 +879,7 @@ export const getDashboardSummary = async (
       {
         title: 'Revenue',
         value: revenue.sum,
-        growth: `${formatNumber(revenueThisWeek.count)} paid closings this week`,
+        growth: getKpiHelperText('revenue', query, `${formatNumber(revenueThisWeek.count)} paid closings this week`),
         trend: getTrend(revenueThisWeek.sum, revenueLastWeek.sum),
         iconName: 'IndianRupee',
         format: 'currency',
@@ -728,7 +887,7 @@ export const getDashboardSummary = async (
       {
         title: 'Total Advance',
         value: totalAdvance,
-        growth: 'Approved advances',
+        growth: getKpiHelperText('totalAdvance', query, 'Approved advances'),
         trend: 'up',
         iconName: 'IndianRupee',
         format: 'currency',
@@ -736,13 +895,15 @@ export const getDashboardSummary = async (
       {
         title: 'Active Users',
         value: activeUserCount,
-        growth: `${activeUsersJoinedThisWeek} joined this week`,
+        growth: getKpiHelperText('activeUsers', query, `${activeUsersJoinedThisWeek} joined this week`),
         trend: getTrend(activeUsersJoinedThisWeek, activeUsersJoinedLastWeek),
         iconName: 'TrendingUp',
       },
     ],
     leadGrowth: buildLeadGrowthSeries(leadGrowthTimestamps, query.range),
     pipeline: pipelineStages.map((stage) => ({
+      id: stage.id,
+      stageId: stage.id,
       name: stage.name,
       count: stage.count,
       percent: denominator > 0 ? Math.min(100, Math.round((stage.count / denominator) * 100)) : 0,
