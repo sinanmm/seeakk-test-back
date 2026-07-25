@@ -16,6 +16,11 @@ const SYSTEM_NEW_PERMISSIONS = [
   { key: 'DASHBOARD_VIEW_OWN_OFFICE', group: 'DASHBOARD', description: 'View Own Office Dashboard' },
   { key: 'DASHBOARD_VIEW_ASSIGNED_OFFICES', group: 'DASHBOARD', description: 'View Assigned Users Offices Dashboard' },
   { key: 'DASHBOARD_VIEW_ALL_OFFICES', group: 'DASHBOARD', description: 'View All Offices Dashboard' },
+
+  // ASSIGNED USERS MANAGEMENT
+  { key: 'ASSIGNED_USERS_VIEW', group: 'ASSIGNED_USERS', description: 'View assigned users and assignment details' },
+  { key: 'ASSIGNED_USERS_EDIT', group: 'ASSIGNED_USERS', description: 'Update, change, or reassign assigned users' },
+  { key: 'ASSIGNED_USERS_DELETE', group: 'ASSIGNED_USERS', description: 'Remove assigned users and delete user assignments' },
 ];
 
 export const ensureSystemPermissionsSeeded = async () => {
