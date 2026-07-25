@@ -48,11 +48,11 @@ router.get('/meta/supervisors', masterDataController.getSupervisors);
 // POST   /api/admin/users           — Create a user
 router.post('/', checkPermission('USERS_CREATE'), adminUserController.createUser);
 router.post('/invite', checkPermission('USERS_CREATE'), adminUserController.inviteUser);
-router.post('/invite/:id/resend', checkPermission('USERS_EDIT'), adminUserController.resendInvite);
-router.post('/invite/:id/revoke', checkPermission('USERS_EDIT'), adminUserController.revokeInvite);
+router.post('/invite/:id/resend', checkAnyPermission(['USERS_EDIT', 'ASSIGNED_USERS_EDIT']), adminUserController.resendInvite);
+router.post('/invite/:id/revoke', checkAnyPermission(['USERS_EDIT', 'ASSIGNED_USERS_EDIT']), adminUserController.revokeInvite);
 
 // GET    /api/admin/users           — List users (paginated + filterable)
-router.get('/', checkPermission('USERS_VIEW'), adminUserController.listUsers);
+router.get('/', checkAnyPermission(['USERS_VIEW', 'ASSIGNED_USERS_VIEW']), adminUserController.listUsers);
 
 // ─── Target Settings Routes (register before /:id to avoid param collisions) ─
 import * as targetController from '../../controllers/User/targetController';
@@ -61,7 +61,7 @@ router.get('/meta/target-types', targetController.getTargetTypes);
 
 router.put(
   '/:id/target-cycle',
-  checkAnyPermission(['assign_target_cycles', 'USERS_EDIT', 'SYSTEM_CONFIG']),
+  checkAnyPermission(['assign_target_cycles', 'USERS_EDIT', 'ASSIGNED_USERS_EDIT', 'SYSTEM_CONFIG']),
   targetController.assignTargetCycle,
 );
 
@@ -69,7 +69,7 @@ router.get('/:id/targets', targetController.getUserTargets);
 
 router.post(
   '/:id/unlock',
-  checkAnyPermission(['USERS_UNLOCK', 'USERS_EDIT', 'SYSTEM_CONFIG']),
+  checkAnyPermission(['USERS_UNLOCK', 'USERS_EDIT', 'ASSIGNED_USERS_EDIT', 'SYSTEM_CONFIG']),
   targetController.unlockUser,
 );
 
@@ -83,20 +83,20 @@ router.post('/:id/profile-image', profileImageUpload.single('image'), adminUserC
 router.delete('/:id/profile-image', adminUserController.removeUserProfileImage);
 
 // GET    /api/admin/users/:id       — Get single user
-router.get('/:id', checkPermission('USERS_VIEW'), adminUserController.getUserById);
+router.get('/:id', checkAnyPermission(['USERS_VIEW', 'ASSIGNED_USERS_VIEW']), adminUserController.getUserById);
 
 // PUT    /api/admin/users/:id       — Update user
-router.put('/:id', checkPermission('USERS_EDIT'), adminUserController.updateUser);
+router.put('/:id', checkAnyPermission(['USERS_EDIT', 'ASSIGNED_USERS_EDIT']), adminUserController.updateUser);
 
 // DELETE /api/admin/users/:id       — Soft-delete user
-router.delete('/:id', checkPermission('USERS_DELETE'), adminUserController.deleteUser);
+router.delete('/:id', checkAnyPermission(['USERS_DELETE', 'ASSIGNED_USERS_DELETE']), adminUserController.deleteUser);
 
 // PATCH  /api/admin/users/:id/status       — Activate / Deactivate
-router.patch('/:id/status', adminUserController.updateUserStatus);
+router.patch('/:id/status', checkAnyPermission(['USERS_EDIT', 'ASSIGNED_USERS_EDIT']), adminUserController.updateUserStatus);
 
 // POST   /api/admin/users/:id/reset-password  — Reset password
-router.post('/:id/reset-password', adminUserController.resetUserPassword);
-router.post('/:id/access-link', checkPermission('USERS_EDIT'), adminUserController.sendUserAccessLink);
-router.post('/:id/send-invite', checkPermission('USERS_EDIT'), adminUserController.sendInviteToUser);
+router.post('/:id/reset-password', checkAnyPermission(['USERS_EDIT', 'ASSIGNED_USERS_EDIT']), adminUserController.resetUserPassword);
+router.post('/:id/access-link', checkAnyPermission(['USERS_EDIT', 'ASSIGNED_USERS_EDIT']), adminUserController.sendUserAccessLink);
+router.post('/:id/send-invite', checkAnyPermission(['USERS_EDIT', 'ASSIGNED_USERS_EDIT']), adminUserController.sendInviteToUser);
 
 export default router;

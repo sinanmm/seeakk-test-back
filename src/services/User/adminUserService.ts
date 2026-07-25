@@ -422,16 +422,90 @@ export const createUser = async (
 };
 
 /**
+ * Recursively find all subordinate user IDs assigned to rootSupervisorId in the workspace.
+ */
+export const getAssignedSubordinateUserIds = async (
+  workspaceId: string,
+  rootSupervisorId: string,
+): Promise<string[]> => {
+  const collected = new Set<string>();
+  let frontier = [rootSupervisorId];
+
+  while (frontier.length > 0) {
+    const rows = await (prisma as any).user.findMany({
+      where: {
+        workspaceId,
+        deletedAt: null,
+        supervisorId: { in: frontier },
+      },
+      select: { id: true },
+    });
+
+    const next: string[] = [];
+    for (const row of rows) {
+      if (!collected.has(row.id)) {
+        collected.add(row.id);
+        next.push(row.id);
+      }
+    }
+    frontier = next;
+  }
+
+  return Array.from(collected);
+};
+
+export const getActorUserPermissions = async (actor: any): Promise<Set<string>> => {
+  if (!actor || !actor.roleId) return new Set();
+  const roleName = String(
+    typeof actor.role === 'object' && actor.role !== null ? actor.role.name || '' : actor.role || '',
+  )
+    .trim()
+    .toLowerCase();
+  if (roleName === 'superadmin') {
+    return new Set(['*']);
+  }
+  const rolePermissions = await (prisma as any).rolePermission.findMany({
+    where: { roleId: actor.roleId },
+    include: { permission: { select: { key: true } } },
+  });
+  return new Set(rolePermissions.map((rp: any) => rp.permission.key));
+};
+
+export const actorHasPermission = (perms: Set<string>, key: string): boolean => {
+  if (perms.has('*') || perms.has('SUPERADMIN')) return true;
+  return perms.has(key);
+};
+
+/**
  * List users in the workspace with pagination + filtering.
  * Always filters by workspaceId and excludes soft-deleted users.
+ * Scoped to assigned users when actor has ASSIGNED_USERS_VIEW without USERS_VIEW.
  */
-export const listUsers = async (query: ListUsersQuery, workspaceId: string) => {
+export const listUsers = async (query: ListUsersQuery, workspaceId: string, actor?: any) => {
   const { page, limit, search, roleId, isActive, email, officeId } = query;
   const skip = (page - 1) * limit;
+
+  let assignedUserIds: string[] | null = null;
+  if (actor) {
+    const perms = await getActorUserPermissions(actor);
+    const hasFullView = actorHasPermission(perms, 'USERS_VIEW');
+    const hasAssignedView = actorHasPermission(perms, 'ASSIGNED_USERS_VIEW');
+
+    if (!hasFullView && !hasAssignedView) {
+      const err: any = new Error('Forbidden: You do not have permission to view users.');
+      err.statusCode = 403;
+      throw err;
+    }
+
+    if (!hasFullView && hasAssignedView) {
+      assignedUserIds = await getAssignedSubordinateUserIds(workspaceId, actor.id);
+    }
+  }
 
   const where: any = {
     workspaceId,
     deletedAt: null,
+    ...(assignedUserIds !== null ? { id: { in: assignedUserIds } } : {}),
     ...(isActive !== undefined ? { isActive } : {}),
     ...(roleId ? { roleId } : {}),
     ...(officeId ? { officeId } : {}),
@@ -479,8 +553,30 @@ export const listUsers = async (query: ListUsersQuery, workspaceId: string) => {
 
 /**
  * Get a single user by ID, scoped to the workspace.
+ * Validates supervisor assignment tree if actor has only ASSIGNED_USERS_VIEW.
  */
-export const getUserById = async (id: string, workspaceId: string) => {
+export const getUserById = async (id: string, workspaceId: string, actor?: any) => {
+  if (actor) {
+    const perms = await getActorUserPermissions(actor);
+    const hasFullView = actorHasPermission(perms, 'USERS_VIEW');
+    const hasAssignedView = actorHasPermission(perms, 'ASSIGNED_USERS_VIEW');
+
+    if (!hasFullView && !hasAssignedView) {
+      const err: any = new Error('Forbidden: You do not have permission to view users.');
+      err.statusCode = 403;
+      throw err;
+    }
+
+    if (!hasFullView && hasAssignedView) {
+      const assignedUserIds = await getAssignedSubordinateUserIds(workspaceId, actor.id);
+      if (!assignedUserIds.includes(id)) {
+        const err: any = new Error('Forbidden: You can only view assigned users.');
+        err.statusCode = 403;
+        throw err;
+      }
+    }
+  }
+
   const user = await withInviteStatusFallback((selectShape) =>
     (prisma as any).user.findFirst({
       where: { id, workspaceId, deletedAt: null },
@@ -502,14 +598,36 @@ export const getUserById = async (id: string, workspaceId: string) => {
 
 /**
  * Update user fields (profile, role, department, supervisor).
+ * Validates supervisor assignment tree if actor has only ASSIGNED_USERS_EDIT.
  */
 export const updateUser = async (
   id: string,
   input: UpdateUserInput,
   workspaceId: string,
   assignedById: string,
+  actor?: any,
   auditContext?: { ipAddress?: string; userAgent?: string },
 ) => {
+  if (actor) {
+    const perms = await getActorUserPermissions(actor);
+    const hasFullEdit = actorHasPermission(perms, 'USERS_EDIT');
+    const hasAssignedEdit = actorHasPermission(perms, 'ASSIGNED_USERS_EDIT');
+
+    if (!hasFullEdit && !hasAssignedEdit) {
+      const err: any = new Error('Forbidden: You do not have permission to edit users.');
+      err.statusCode = 403;
+      throw err;
+    }
+
+    if (!hasFullEdit && hasAssignedEdit) {
+      const assignedUserIds = await getAssignedSubordinateUserIds(workspaceId, actor.id);
+      if (!assignedUserIds.includes(id)) {
+        const err: any = new Error('Forbidden: You can only edit assigned users.');
+        err.statusCode = 403;
+        throw err;
+      }
+    }
+  }
   const existing = await (prisma as any).user.findFirst({
     where: { id, workspaceId, deletedAt: null },
     select: { id: true, assignedTargetCycleId: true },
@@ -681,11 +799,32 @@ export const updateUser = async (
  * Soft-delete a user — sets deletedAt and deactivates the account.
  * Also invalidates all active sessions.
  */
-export const deleteUser = async (id: string, workspaceId: string, requestingUserId: string) => {
+export const deleteUser = async (id: string, workspaceId: string, requestingUserId: string, actor?: any) => {
   if (id === requestingUserId) {
     const err: any = new Error('Admins cannot delete their own account.');
     err.statusCode = 400;
     throw err;
+  }
+
+  if (actor) {
+    const perms = await getActorUserPermissions(actor);
+    const hasFullDelete = actorHasPermission(perms, 'USERS_DELETE');
+    const hasAssignedDelete = actorHasPermission(perms, 'ASSIGNED_USERS_DELETE');
+
+    if (!hasFullDelete && !hasAssignedDelete) {
+      const err: any = new Error('Forbidden: You do not have permission to delete users.');
+      err.statusCode = 403;
+      throw err;
+    }
+
+    if (!hasFullDelete && hasAssignedDelete) {
+      const assignedUserIds = await getAssignedSubordinateUserIds(workspaceId, actor.id);
+      if (!assignedUserIds.includes(id)) {
+        const err: any = new Error('Forbidden: You can only delete assigned users.');
+        err.statusCode = 403;
+        throw err;
+      }
+    }
   }
 
   const existing = await (prisma as any).user.findFirst({
@@ -728,11 +867,33 @@ export const updateUserStatus = async (
   input: UpdateStatusInput,
   workspaceId: string,
   requestingUserId: string,
+  actor?: any,
 ) => {
   if (id === requestingUserId && !input.isActive) {
     const err: any = new Error('Admins cannot deactivate their own account.');
     err.statusCode = 400;
     throw err;
+  }
+
+  if (actor) {
+    const perms = await getActorUserPermissions(actor);
+    const hasFullEdit = actorHasPermission(perms, 'USERS_EDIT');
+    const hasAssignedEdit = actorHasPermission(perms, 'ASSIGNED_USERS_EDIT');
+
+    if (!hasFullEdit && !hasAssignedEdit) {
+      const err: any = new Error('Forbidden: You do not have permission to edit users.');
+      err.statusCode = 403;
+      throw err;
+    }
+
+    if (!hasFullEdit && hasAssignedEdit) {
+      const assignedUserIds = await getAssignedSubordinateUserIds(workspaceId, actor.id);
+      if (!assignedUserIds.includes(id)) {
+        const err: any = new Error('Forbidden: You can only edit assigned users.');
+        err.statusCode = 403;
+        throw err;
+      }
+    }
   }
 
   const existing = await (prisma as any).user.findFirst({
@@ -769,7 +930,28 @@ export const resetUserPassword = async (
   id: string,
   input: ResetPasswordInput,
   workspaceId: string,
+  actor?: any,
 ) => {
+  if (actor) {
+    const perms = await getActorUserPermissions(actor);
+    const hasFullEdit = actorHasPermission(perms, 'USERS_EDIT');
+    const hasAssignedEdit = actorHasPermission(perms, 'ASSIGNED_USERS_EDIT');
+
+    if (!hasFullEdit && !hasAssignedEdit) {
+      const err: any = new Error('Forbidden: You do not have permission to edit users.');
+      err.statusCode = 403;
+      throw err;
+    }
+
+    if (!hasFullEdit && hasAssignedEdit) {
+      const assignedUserIds = await getAssignedSubordinateUserIds(workspaceId, actor.id);
+      if (!assignedUserIds.includes(id)) {
+        const err: any = new Error('Forbidden: You can only edit assigned users.');
+        err.statusCode = 403;
+        throw err;
+      }
+    }
+  }
   logger.info('Incoming request: Admin reset user password', { userId: id, workspaceId, hasNewPassword: !!input.newPassword });
 
   logger.info('User lookup: Finding user for password reset', { userId: id });
