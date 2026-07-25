@@ -161,11 +161,13 @@ export const findTodayFollowUps = async (
   endDate: Date,
   take: number,
   leadAccess: Prisma.LeadWhereInput = {},
+  userId?: string,
 ) =>
   prisma.followUp.findMany({
     where: {
       workspaceId,
       status: 'PENDING',
+      ...(userId ? { userId } : {}),
       scheduledAt: {
         gte: startDate,
         lte: endDate,

@@ -485,7 +485,7 @@ export const getWorkspaceTimeZone = async (workspaceId: string): Promise<string>
   return 'UTC';
 };
 
-const getDayRangeForWorkspace = async (workspaceId: string, date = new Date()) => {
+export const getDayRangeForWorkspace = async (workspaceId: string, date = new Date()) => {
   const timeZone = await getWorkspaceTimeZone(workspaceId);
   const zonedDate = moment.tz(date, timeZone);
   return {

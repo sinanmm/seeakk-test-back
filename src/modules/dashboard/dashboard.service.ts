@@ -3,6 +3,9 @@ import prisma from '../../config/prisma';
 import * as dashboardRepository from './dashboard.repository';
 import { getStageBreakdown as getLOBStageBreakdown } from '../leads/lobAnalysis.service';
 import { buildAccessWhere, buildActiveUsersScopedWhere, resolveVisibleLeadUserScope } from '../leads/leads.service';
+import { closedModuleLeadWhere } from '../leads/leadVisibility.util';
+import { mergeWorkspaceLeadFilters } from '../leads/leadQueryScope';
+import { getDayRangeForWorkspace } from '../../services/User/followupService';
 import type { DashboardSummaryQueryInput, RevenueAnalyticsQueryInput } from './dashboard.validation';
 import logger from '../../utils/logger';
 
@@ -235,80 +238,44 @@ const buildDashboardLeadFilters = (query: DashboardSummaryQueryInput | RevenueAn
   return where;
 };
 
-const getApprovedAdvanceByLead = async (workspaceId: string, leadIds: string[]): Promise<Map<string, number>> => {
-  if (leadIds.length === 0) return new Map();
-  const advanceGroups = await (prisma as any).advancePayment.groupBy({
-    by: ['leadId'],
-    where: {
-      workspaceId,
-      leadId: { in: leadIds },
-      status: 'APPROVED',
-    },
-    _sum: { amount: true },
-  });
-  return new Map(advanceGroups.map((item: any) => [item.leadId, Number(item._sum.amount || 0)]));
-};
-
-const findRevenueEligibleLeads = async (
-  workspaceId: string,
-  leadAccess: Prisma.LeadWhereInput,
-  dashboardFilters: Prisma.LeadWhereInput,
-) => {
-  return (prisma as any).lead.findMany({
-    where: {
-      workspaceId,
-      deletedAt: null,
-      AND: [
-        leadAccess,
-        dashboardFilters,
-        {
-          stage: {
-            is: {
-              isClosed: true,
-              isLOB: false,
-              deletedAt: null,
-            },
-          },
-          isLOB: false,
-          closureType: { notIn: ['LOST', 'CANCELLED'] },
-        },
-      ],
-    },
-    select: {
-      id: true,
-      totalAmount: true,
-      closedAt: true,
-      updatedAt: true,
-    },
-  });
-};
-
 const calculateDashboardRevenue = async (
   workspaceId: string,
   leadAccess: Prisma.LeadWhereInput,
   dashboardFilters: Prisma.LeadWhereInput,
   dateWindow?: { gte?: Date; lte?: Date },
 ): Promise<{ sum: number; count: number }> => {
-  const rows = await findRevenueEligibleLeads(workspaceId, leadAccess, dashboardFilters);
-  if (rows.length === 0) return { sum: 0, count: 0 };
-  const leadIds = rows.map((lead: any) => lead.id);
-  const approvedByLead = await getApprovedAdvanceByLead(workspaceId, leadIds);
+  const closedWhere = closedModuleLeadWhere();
+  const andConditions: Prisma.LeadWhereInput[] = [dashboardFilters, closedWhere];
 
-  return rows.reduce((acc: { sum: number; count: number }, lead: any) => {
-    const approved = Number(approvedByLead.get(lead.id) || 0);
-    const totalAmount = Number(lead.totalAmount || 0);
-    const balance = Math.max(0, totalAmount - approved);
-    const closedTime = (lead.closedAt || lead.updatedAt) as Date | null;
-    const inWindow = !dateWindow || !closedTime || (
-      (!dateWindow.gte || closedTime >= dateWindow.gte) &&
-      (!dateWindow.lte || closedTime <= dateWindow.lte)
-    );
-    if (balance === 0 && inWindow) {
-      acc.sum += totalAmount;
-      acc.count += 1;
-    }
-    return acc;
-  }, { sum: 0, count: 0 });
+  if (dateWindow) {
+    andConditions.push({
+      OR: [
+        { closedAt: { gte: dateWindow.gte, lte: dateWindow.lte } },
+        { closedAt: null, updatedAt: { gte: dateWindow.gte, lte: dateWindow.lte } },
+      ],
+    });
+  }
+
+  const extraWhere: Prisma.LeadWhereInput = {
+    AND: andConditions,
+  };
+
+  const where = mergeWorkspaceLeadFilters(workspaceId, leadAccess, extraWhere);
+
+  const [aggregateResult, count] = await Promise.all([
+    prisma.lead.aggregate({
+      _sum: {
+        totalAmount: true,
+      },
+      where,
+    }),
+    prisma.lead.count({
+      where,
+    }),
+  ]);
+
+  const sum = Number(aggregateResult._sum?.totalAmount || 0);
+  return { sum, count };
 };
 
 type ExpectedRevenueAggregate = {
@@ -645,6 +612,9 @@ export const getDashboardSummary = async (
     (activeUserWhere as Prisma.UserWhereInput).id = query.userId;
   }
 
+  const { start: scheduleTodayStart, end: scheduleTodayEnd } = await getDayRangeForWorkspace(workspaceId);
+  const scheduleUserId = query.userId || actor.id;
+
   const results = await Promise.allSettled([
     dashboardRepository.countLeads(workspaceId, { createdAt: { gte: todayStart, lte: todayEnd } }, scopedLeadAccess),
     dashboardRepository.countLeads(workspaceId, { createdAt: { gte: yesterdayStart, lte: yesterdayEnd } }, scopedLeadAccess),
@@ -691,7 +661,7 @@ export const getDashboardSummary = async (
     dashboardRepository.groupLeadsByStage(workspaceId, scopedLeadAccess, {}),
     dashboardRepository.findLeadStages(workspaceId),
     dashboardRepository.findRecentLeadAuditLogs(workspaceId, 60),
-    dashboardRepository.findTodayFollowUps(workspaceId, todayStart, todayEnd, 5, scopedLeadAccess),
+    dashboardRepository.findTodayFollowUps(workspaceId, scheduleTodayStart, scheduleTodayEnd, 10, scopedLeadAccess, scheduleUserId),
     getLOBStageBreakdown(workspaceId, actor, {}, scopedLeadAccess),
     dashboardRepository.countLeads(
       workspaceId,
@@ -933,8 +903,9 @@ export const getDashboardSummary = async (
       title: `${item.type} - ${item.lead?.name || 'Unknown Lead'}`,
       time: formatTime(item.scheduledAt),
       type: /video|meet|zoom/i.test(item.type) ? 'video' : 'call',
+      scheduledAt: item.scheduledAt ? item.scheduledAt.toISOString() : undefined,
     })),
-    scheduleDateLabel: formatScheduleLabel(now),
+    scheduleDateLabel: formatScheduleLabel(scheduleTodayStart),
     range: query.range,
     pendingApprovals,
     expectedRevenue: expectedRevenue.amount,
