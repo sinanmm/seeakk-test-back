@@ -2663,7 +2663,9 @@ export const updateLead = async (
         ...(input.expectedRevenue !== undefined
           ? { expectedRevenue: input.expectedRevenue === null ? null : input.expectedRevenue }
           : {}),
-        ...(resolvedTotalAmount !== undefined ? { totalAmount: resolvedTotalAmount } : {}),
+        ...(resolvedTotalAmount !== undefined
+          ? { totalAmount: resolvedTotalAmount, generatedRevenue: resolvedTotalAmount }
+          : {}),
         ...(input.assignedToId !== undefined ? { assignedToId } : {}),
         ...(input.stageId !== undefined ? { stageId: stage?.id || null } : {}),
         ...(input.lifecycleId !== undefined ? { lifecycleId: lifecycle?.id || null } : {}),

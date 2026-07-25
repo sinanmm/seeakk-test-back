@@ -448,6 +448,7 @@ export const updateClosedLead = async (
       closedAt: lead.closedAt || now,
       closedById: lead.closedById || actor.id,
       generatedRevenue: input.generatedRevenue,
+      totalAmount: input.generatedRevenue,
       closureType: input.closureType,
     };
 
