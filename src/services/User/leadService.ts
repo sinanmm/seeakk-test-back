@@ -2087,7 +2087,12 @@ export const createLead = async (
     const createdLeadId = await prisma.$transaction(async (tx: any) => {
       const productSnapshots = await resolveLeadProductSnapshots(tx, workspaceId, (input as any).products);
       const productTotal = sumProductSnapshots(productSnapshots);
-      const resolvedTotalAmount = productTotal !== undefined ? productTotal : input.totalAmount ?? 0;
+      const resolvedTotalAmount =
+        input.totalAmount !== undefined && input.totalAmount !== null
+          ? Number(input.totalAmount)
+          : productTotal !== undefined
+            ? productTotal
+            : 0;
       const outcomeFlags = stage
         ? buildLeadOutcomeFlagsFromStage(stage, actor.id)
         : buildClosureUpdateData(stage, actor.id);
@@ -2188,15 +2193,18 @@ export const createLead = async (
 
       // Save Payment Information
       if (resolvedTotalAmount > 0) {
+        const inputReason = (input as any).totalAmountReason || (input as any).reason;
         await (tx as any).leadTotalAmountHistory.create({
           data: {
             leadId: lead.id,
-            oldAmount: 0,
+            oldAmount: productTotal ?? 0,
             newAmount: resolvedTotalAmount,
             changedById: actor.id,
-            reason: productSnapshots !== undefined
+            reason: inputReason?.trim() || (productTotal !== undefined && Math.abs(resolvedTotalAmount - productTotal) > 0.01
+              ? 'Manual price adjustment applied on creation.'
+              : productSnapshots !== undefined
               ? 'Initial amount calculated from selected products.'
-              : 'Initial amount set on lead creation.',
+              : 'Initial amount set on lead creation.'),
           },
         });
         logger.info('[Diagnostic] Payment information saved', { leadId: lead.id, totalAmount: resolvedTotalAmount });
@@ -2635,10 +2643,10 @@ export const updateLead = async (
     const productSnapshots = await resolveLeadProductSnapshots(tx, workspaceId, (input as any).products);
     const productTotal = sumProductSnapshots(productSnapshots);
     const resolvedTotalAmount =
-      productTotal !== undefined
-        ? productTotal
-        : input.totalAmount !== undefined
-          ? input.totalAmount
+      input.totalAmount !== undefined && input.totalAmount !== null
+        ? Number(input.totalAmount)
+        : productTotal !== undefined
+          ? productTotal
           : undefined;
 
     await (tx as any).lead.update({
@@ -2710,6 +2718,21 @@ export const updateLead = async (
     }
     
     await trackFieldEdits(tx, workspaceId, id, actor.id, changesToTrack, input.remarks || undefined);
+
+    if (resolvedTotalAmount !== undefined && Math.abs(Number(resolvedTotalAmount) - Number(existing.totalAmount || 0)) > 0.01) {
+      const inputReason = (input as any).totalAmountReason || (input as any).reason;
+      await (tx as any).leadTotalAmountHistory.create({
+        data: {
+          leadId: id,
+          oldAmount: Number(existing.totalAmount || 0),
+          newAmount: Number(resolvedTotalAmount),
+          changedById: actor.id,
+          reason: inputReason?.trim() || (productTotal !== undefined && Math.abs(Number(resolvedTotalAmount) - productTotal) > 0.01
+            ? 'Manual price adjustment applied on lead update.'
+            : 'Total amount updated.'),
+        },
+      });
+    }
 
     const followUpOwnerId = assignedToId || existing.createdById;
 

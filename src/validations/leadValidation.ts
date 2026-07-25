@@ -133,6 +133,8 @@ export const createLeadSchema = z.object({
   products: z.array(leadProductEntrySchema).optional(),
   skipAutoStageAssignment: z.coerce.boolean().optional().default(false),
   totalAmount: z.coerce.number().nonnegative('Total amount must be a positive number').optional(),
+  totalAmountReason: z.string().trim().max(1000).optional(),
+  reason: z.string().trim().max(1000).optional(),
   advancePayments: z.array(
     z.object({
       amount: z.number().positive('Advance amount must be a positive number'),
@@ -168,6 +170,8 @@ export const updateLeadSchema = z.object({
   dynamicValues: z.array(leadDynamicValueEntrySchema).optional(),
   products: z.array(leadProductEntrySchema).optional(),
   totalAmount: z.coerce.number().nonnegative('Total amount must be a positive number').optional(),
+  totalAmountReason: z.string().trim().max(1000).optional(),
+  reason: z.string().trim().max(1000).optional(),
 });
 
 export type UpdateLeadInput = z.infer<typeof updateLeadSchema>;
