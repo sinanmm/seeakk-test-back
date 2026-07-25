@@ -146,6 +146,9 @@ model Workspace {
   bulkFollowUpExtensions         BulkFollowUpExtension[]
   advancePayments                AdvancePayment[]
   fieldHighlightConfigs          FieldHighlightConfig[]
+  salaryRecords                  SalaryRecord[]
+  salaryApprovalStages           SalaryApprovalStage[]
+  salarySetting                  SalarySetting?
   createdAt                      DateTime                       @default(now())
   updatedAt                      DateTime                       @updatedAt
   LeadRemark                     LeadRemark[]
@@ -1193,6 +1196,7 @@ model User {
   invitationToken          String?
   invitationExpires        DateTime?
   deletedAt                DateTime?
+  monthlySalary            Float?
 
   // Role relation
   role   Role?   @relation(fields: [roleId], references: [id])
@@ -1268,6 +1272,11 @@ model User {
   sheetsCreated               Sheet[]                    @relation("SheetCreatedBy")
   sheetsUpdated               Sheet[]                    @relation("SheetUpdatedBy")
   sheetVersionsCreated        SheetVersion[]             @relation("SheetVersionCreatedBy")
+  salaryRecords               SalaryRecord[]             @relation("UserSalaryRecords")
+  generatedSalaryRecords      SalaryRecord[]             @relation("GeneratedSalaryRecords")
+  salaryApprovalStages        SalaryApprovalStage[]
+  salaryApprovals             SalaryApproval[]
+  salaryHistories             SalaryHistory[]
   attendanceApplyType         String                    @default("FROM_ANYWHERE") // FROM_OFFICE, FROM_ANYWHERE
   attendanceOfficeLocationId  String?
   attendanceOfficeLocation    AttendanceOfficeLocation? @relation(fields: [attendanceOfficeLocationId], references: [id], onDelete: SetNull)
@@ -2273,3 +2282,129 @@ model SheetVersion {
   @@index([workspaceId, sheetId, createdAt])
   @@map("sheet_versions")
 }
+
+// ─── SALARY MANAGEMENT MODULE ────────────────────────────────────────────────
+
+enum SalaryRecordStatus {
+  DRAFT
+  PENDING_APPROVAL
+  APPROVED
+  REJECTED
+  RETURNED
+}
+
+enum SalaryApprovalAction {
+  APPROVED
+  REJECTED
+  RETURNED
+  EDITED
+}
+
+model SalaryRecord {
+  id                String             @id @default(uuid())
+  workspaceId       String
+  userId            String
+  month             Int                // 1 to 12
+  year              Int                // e.g. 2026
+  monthlySalary     Float              // Base monthly salary
+  workingDays       Int                // Total working days in month
+  attendanceDays    Float              // Days present
+  leaveDays         Float              // Paid leave days
+  lopDays           Float              // Loss of pay days
+  overtimeHours     Float              @default(0)
+  bonus             Float              @default(0)
+  deduction         Float              @default(0)
+  advanceAmount     Float              @default(0)
+  finalSalary       Float              // Calculated net salary
+  status            SalaryRecordStatus @default(DRAFT)
+  currentStageOrder Int                @default(1)
+  remarks           String?            @db.Text
+
+  generatedById     String
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  workspace   Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user        User             @relation("UserSalaryRecords", fields: [userId], references: [id], onDelete: Cascade)
+  generatedBy User             @relation("GeneratedSalaryRecords", fields: [generatedById], references: [id])
+  approvals   SalaryApproval[]
+  histories   SalaryHistory[]
+
+  @@unique([workspaceId, userId, month, year])
+  @@index([workspaceId])
+  @@index([userId])
+  @@index([status])
+  @@index([month, year])
+  @@map("salary_records")
+}
+
+model SalaryApprovalStage {
+  id             String    @id @default(uuid())
+  workspaceId    String
+  name           String
+  order          Int       // 1, 2, 3...
+  approverUserId String
+  designation    String?
+  isMandatory    Boolean   @default(true)
+  isActive       Boolean   @default(true)
+
+  createdBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  workspace    Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  approverUser User      @relation(fields: [approverUserId], references: [id])
+
+  @@unique([workspaceId, order])
+  @@index([workspaceId])
+  @@index([approverUserId])
+  @@map("salary_approval_stages")
+}
+
+model SalaryApproval {
+  id             String               @id @default(uuid())
+  salaryRecordId String
+  stageOrder     Int
+  approverUserId String
+  action         SalaryApprovalAction
+  remarks        String?              @db.Text
+  createdAt      DateTime             @default(now())
+
+  salaryRecord SalaryRecord @relation(fields: [salaryRecordId], references: [id], onDelete: Cascade)
+  approverUser User         @relation(fields: [approverUserId], references: [id])
+
+  @@index([salaryRecordId])
+  @@index([approverUserId])
+  @@map("salary_approvals")
+}
+
+model SalaryHistory {
+  id             String       @id @default(uuid())
+  salaryRecordId String
+  editedById     String
+  action         String
+  previousValue  Json?
+  newValue       Json?
+  reason         String?      @db.Text
+  createdAt      DateTime     @default(now())
+
+  salaryRecord SalaryRecord @relation(fields: [salaryRecordId], references: [id], onDelete: Cascade)
+  editedBy     User         @relation(fields: [editedById], references: [id])
+
+  @@index([salaryRecordId])
+  @@index([editedById])
+  @@map("salary_histories")
+}
+
+model SalarySetting {
+  id               String    @id @default(uuid())
+  workspaceId      String    @unique
+  salaryReleaseDay Int       @default(25) // e.g. 25th of month
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@map("salary_settings")
+}
+

@@ -1,0 +1,436 @@
+import prisma from '../../config/prisma';
+import { GenerateSalaryInput, UpdateSalaryCalculationInput } from './salary.types';
+import { SalaryRecordStatus } from '@prisma/client';
+
+/**
+ * Calculates working days in a given month and year excluding Sundays/Weekly off
+ */
+const getDefaultWorkingDays = (month: number, year: number): number => {
+  const totalDays = new Date(year, month, 0).getDate();
+  let workingDays = 0;
+  for (let day = 1; day <= totalDays; day++) {
+    const date = new Date(year, month - 1, day);
+    // Exclude Sundays (0) by default
+    if (date.getDay() !== 0) {
+      workingDays++;
+    }
+  }
+  return workingDays || 26;
+};
+
+/**
+ * Generate salary records for scoped employees
+ */
+export const generateSalary = async (
+  input: GenerateSalaryInput,
+  workspaceId: string,
+  generatedById: string,
+) => {
+  const { month, year, scope, targetId, workingDays: customWorkingDays } = input;
+  const numWorkingDays = customWorkingDays || getDefaultWorkingDays(month, year);
+
+  // 1. Resolve Target Users
+  let userWhereClause: any = {
+    workspaceId,
+    deletedAt: null,
+    isActive: true,
+  };
+
+  if (scope === 'SINGLE') {
+    if (!targetId) {
+      const err: any = new Error('Target user ID is required for SINGLE scope.');
+      err.statusCode = 400;
+      throw err;
+    }
+    userWhereClause.id = targetId;
+  } else if (scope === 'DEPARTMENT') {
+    if (!targetId) {
+      const err: any = new Error('Target department ID is required for DEPARTMENT scope.');
+      err.statusCode = 400;
+      throw err;
+    }
+    userWhereClause.departmentId = targetId;
+  } else if (scope === 'OFFICE') {
+    if (!targetId) {
+      const err: any = new Error('Target office ID is required for OFFICE scope.');
+      err.statusCode = 400;
+      throw err;
+    }
+    userWhereClause.officeId = targetId;
+  }
+
+  const users = await (prisma as any).user.findMany({
+    where: userWhereClause,
+    select: {
+      id: true,
+      name: true,
+      monthlySalary: true,
+      department: { select: { id: true, name: true } },
+      office: { select: { id: true, name: true } },
+    },
+  });
+
+  if (!users || users.length === 0) {
+    const err: any = new Error('No active employees found for the specified scope.');
+    err.statusCode = 404;
+    throw err;
+  }
+
+  const startDate = new Date(Date.UTC(year, month - 1, 1));
+  const endDate = new Date(Date.UTC(year, month, 0, 23, 59, 59, 999));
+
+  const results: any[] = [];
+  const skipped: any[] = [];
+
+  for (const user of users) {
+    const baseSalary = user.monthlySalary ?? 0;
+    if (!baseSalary || baseSalary <= 0) {
+      skipped.push({
+        userId: user.id,
+        name: user.name,
+        reason: 'Monthly salary not configured or non-positive',
+      });
+      continue;
+    }
+
+    // Check duplicate salary generation for same employee + month + year
+    const existing = await (prisma as any).salaryRecord.findUnique({
+      where: {
+        workspaceId_userId_month_year: {
+          workspaceId,
+          userId: user.id,
+          month,
+          year,
+        },
+      },
+    });
+
+    if (existing && existing.status !== SalaryRecordStatus.DRAFT && existing.status !== SalaryRecordStatus.RETURNED && existing.status !== SalaryRecordStatus.REJECTED) {
+      skipped.push({
+        userId: user.id,
+        name: user.name,
+        reason: `Salary already generated and in status ${existing.status}`,
+      });
+      continue;
+    }
+
+    // Fetch attendance records for the month
+    const attendanceRecords = await (prisma as any).attendanceRecord.findMany({
+      where: {
+        workspaceId,
+        userId: user.id,
+        date: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+    });
+
+    let attendanceDays = 0;
+    let leaveDays = 0;
+    let absentDays = 0;
+
+    for (const rec of attendanceRecords) {
+      if (rec.attendanceType === 'PRESENT' || rec.attendanceType === 'WORK_FROM_HOME') {
+        attendanceDays += 1;
+      } else if (rec.attendanceType === 'HALF_DAY') {
+        attendanceDays += 0.5;
+      } else if (rec.attendanceType === 'LEAVE' || rec.attendanceType === 'HOLIDAY' || rec.attendanceType === 'WEEKLY_OFF') {
+        leaveDays += 1;
+      } else if (rec.attendanceType === 'ABSENT') {
+        absentDays += 1;
+      }
+    }
+
+    // Calculate LOP days: days not present and not on paid leave out of total working days
+    const totalAccountedDays = attendanceDays + leaveDays;
+    const lopDays = Math.max(0, numWorkingDays - totalAccountedDays);
+
+    // Calculate Daily Salary and Net Salary
+    const dailySalary = baseSalary / numWorkingDays;
+    const lopDeduction = dailySalary * lopDays;
+    
+    // Fetch advance payments if any
+    const advancePayments = await (prisma as any).advancePayment.findMany({
+      where: {
+        workspaceId,
+        requestedById: user.id,
+        status: 'APPROVED',
+      },
+    });
+    const totalAdvance = advancePayments.reduce((sum: number, p: any) => sum + (p.amount || 0), 0);
+
+    const bonus = 0;
+    const deduction = Math.round(lopDeduction * 100) / 100;
+    const finalSalary = Math.max(0, Math.round((baseSalary - deduction + bonus) * 100) / 100);
+
+    let record: any;
+    if (existing) {
+      // Overwrite/re-calculate existing DRAFT / REJECTED / RETURNED record
+      record = await (prisma as any).salaryRecord.update({
+        where: { id: existing.id },
+        data: {
+          monthlySalary: baseSalary,
+          workingDays: numWorkingDays,
+          attendanceDays,
+          leaveDays,
+          lopDays,
+          bonus,
+          deduction,
+          advanceAmount: totalAdvance,
+          finalSalary,
+          status: SalaryRecordStatus.DRAFT,
+          currentStageOrder: 1,
+          generatedById,
+        },
+      });
+    } else {
+      record = await (prisma as any).salaryRecord.create({
+        data: {
+          workspaceId,
+          userId: user.id,
+          month,
+          year,
+          monthlySalary: baseSalary,
+          workingDays: numWorkingDays,
+          attendanceDays,
+          leaveDays,
+          lopDays,
+          bonus,
+          deduction,
+          advanceAmount: totalAdvance,
+          finalSalary,
+          status: SalaryRecordStatus.DRAFT,
+          currentStageOrder: 1,
+          generatedById,
+        },
+      });
+    }
+
+    // Log history entry
+    await (prisma as any).salaryHistory.create({
+      data: {
+        salaryRecordId: record.id,
+        editedById: generatedById,
+        action: 'GENERATED',
+        newValue: {
+          monthlySalary: baseSalary,
+          workingDays: numWorkingDays,
+          attendanceDays,
+          leaveDays,
+          lopDays,
+          finalSalary,
+        },
+        reason: 'Salary record generated automatically',
+      },
+    });
+
+    results.push(record);
+  }
+
+  return {
+    generatedCount: results.length,
+    skippedCount: skipped.length,
+    records: results,
+    skipped,
+  };
+};
+
+/**
+ * Submit salary records from DRAFT to PENDING_APPROVAL
+ */
+export const submitSalaryForApproval = async (salaryRecordIds: string[], workspaceId: string, actorId: string) => {
+  const records = await (prisma as any).salaryRecord.findMany({
+    where: {
+      id: { in: salaryRecordIds },
+      workspaceId,
+    },
+  });
+
+  if (!records || records.length === 0) {
+    const err: any = new Error('No matching salary records found.');
+    err.statusCode = 404;
+    throw err;
+  }
+
+  const updated = [];
+  for (const record of records) {
+    if (record.status !== SalaryRecordStatus.DRAFT && record.status !== SalaryRecordStatus.RETURNED) {
+      continue;
+    }
+
+    const updatedRec = await (prisma as any).salaryRecord.update({
+      where: { id: record.id },
+      data: {
+        status: SalaryRecordStatus.PENDING_APPROVAL,
+        currentStageOrder: 1,
+      },
+    });
+
+    await (prisma as any).salaryHistory.create({
+      data: {
+        salaryRecordId: record.id,
+        editedById: actorId,
+        action: 'SUBMITTED_FOR_APPROVAL',
+        reason: 'Submitted for multi-level approval process',
+      },
+    });
+
+    updated.push(updatedRec);
+  }
+
+  return { submittedCount: updated.length, records: updated };
+};
+
+/**
+ * List salary calculations with filters
+ */
+export const listSalaryCalculations = async (
+  query: { month?: number; year?: number; departmentId?: string; officeId?: string; status?: SalaryRecordStatus; page?: number; limit?: number; search?: string },
+  workspaceId: string,
+) => {
+  const page = Math.max(1, Number(query.page) || 1);
+  const limit = Math.min(100, Math.max(1, Number(query.limit) || 20));
+  const skip = (page - 1) * limit;
+
+  const where: any = { workspaceId };
+  if (query.month) where.month = Number(query.month);
+  if (query.year) where.year = Number(query.year);
+  if (query.status) where.status = query.status;
+
+  if (query.departmentId) {
+    where.user = { ...where.user, departmentId: query.departmentId };
+  }
+  if (query.officeId) {
+    where.user = { ...where.user, officeId: query.officeId };
+  }
+  if (query.search) {
+    const term = query.search.trim();
+    where.user = {
+      ...where.user,
+      OR: [
+        { name: { contains: term, mode: 'insensitive' } },
+        { email: { contains: term, mode: 'insensitive' } },
+        { username: { contains: term, mode: 'insensitive' } },
+      ],
+    };
+  }
+
+  const [total, records] = await Promise.all([
+    (prisma as any).salaryRecord.count({ where }),
+    (prisma as any).salaryRecord.findMany({
+      where,
+      skip,
+      take: limit,
+      orderBy: [{ year: 'desc' }, { month: 'desc' }, { createdAt: 'desc' }],
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            username: true,
+            profileImageUrl: true,
+            department: { select: { id: true, name: true } },
+            office: { select: { id: true, name: true } },
+          },
+        },
+        generatedBy: {
+          select: { id: true, name: true, email: true },
+        },
+      },
+    }),
+  ]);
+
+  return {
+    data: records,
+    meta: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
+};
+
+/**
+ * Update manual adjustments (bonus, deduction, advance) for a draft salary calculation
+ */
+export const updateSalaryCalculation = async (
+  id: string,
+  input: UpdateSalaryCalculationInput,
+  workspaceId: string,
+  actorId: string,
+) => {
+  const record = await (prisma as any).salaryRecord.findFirst({
+    where: { id, workspaceId },
+  });
+
+  if (!record) {
+    const err: any = new Error('Salary record not found.');
+    err.statusCode = 404;
+    throw err;
+  }
+
+  const bonus = input.bonus !== undefined ? input.bonus : record.bonus;
+  const deduction = input.deduction !== undefined ? input.deduction : record.deduction;
+  const advanceAmount = input.advanceAmount !== undefined ? input.advanceAmount : record.advanceAmount;
+  const remarks = input.remarks !== undefined ? input.remarks : record.remarks;
+
+  const finalSalary = Math.max(0, Math.round((record.monthlySalary - deduction - advanceAmount + bonus) * 100) / 100);
+
+  const previousValue = {
+    bonus: record.bonus,
+    deduction: record.deduction,
+    advanceAmount: record.advanceAmount,
+    finalSalary: record.finalSalary,
+  };
+
+  const updated = await (prisma as any).salaryRecord.update({
+    where: { id },
+    data: {
+      bonus,
+      deduction,
+      advanceAmount,
+      finalSalary,
+      remarks,
+    },
+  });
+
+  await (prisma as any).salaryHistory.create({
+    data: {
+      salaryRecordId: id,
+      editedById: actorId,
+      action: 'CALCULATION_UPDATED',
+      previousValue,
+      newValue: { bonus, deduction, advanceAmount, finalSalary },
+      reason: input.remarks || 'Manual salary calculation update',
+    },
+  });
+
+  return updated;
+};
+
+/**
+ * Delete a draft salary calculation
+ */
+export const deleteSalaryCalculation = async (id: string, workspaceId: string) => {
+  const record = await (prisma as any).salaryRecord.findFirst({
+    where: { id, workspaceId },
+  });
+
+  if (!record) {
+    const err: any = new Error('Salary record not found.');
+    err.statusCode = 404;
+    throw err;
+  }
+
+  if (record.status === SalaryRecordStatus.APPROVED) {
+    const err: any = new Error('Approved salary records cannot be deleted.');
+    err.statusCode = 400;
+    throw err;
+  }
+
+  await (prisma as any).salaryRecord.delete({ where: { id } });
+  return { message: 'Salary calculation deleted successfully.' };
+};

@@ -94,6 +94,7 @@ const USER_SELECT = {
   deletedAt: true,
   createdAt: true,
   updatedAt: true,
+  monthlySalary: true,
   role: { select: { id: true, name: true, description: true } },
   department: { select: { id: true, name: true, description: true } },
   supervisor: { select: { id: true, name: true, email: true } },
@@ -314,6 +315,7 @@ export const createUser = async (
     password: hashedPassword,
     phone: phone ?? null,
     profileImageUrl: profileImageUrl ?? null,
+    monthlySalary: input.monthlySalary ?? null,
     isEmailVerified: true,
     isActive: true,
     isOnboarded: true,
@@ -730,6 +732,7 @@ export const updateUser = async (
           ...(input.districtId !== undefined ? { districtId: input.districtId } : {}),
           ...(input.isEmailVerified !== undefined ? { isEmailVerified: input.isEmailVerified } : {}),
           ...(input.profileImageUrl !== undefined ? { profileImageUrl: input.profileImageUrl } : {}),
+          ...(input.monthlySalary !== undefined ? { monthlySalary: input.monthlySalary } : {}),
           ...(input.assignedLocationIds !== undefined && input.assignedLocationIds.length > 0
             ? {
                 assignedLocations: {

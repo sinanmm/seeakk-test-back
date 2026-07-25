@@ -6,6 +6,21 @@ dotenv.config();
 const prisma = new PrismaClient() as any;
 
 const permissions = [
+  // SALARY MANAGEMENT
+  { key: 'SALARY_CALCULATION_VIEW', group: 'SALARY_MANAGEMENT', description: 'View salary calculations' },
+  { key: 'SALARY_CALCULATION_GENERATE', group: 'SALARY_MANAGEMENT', description: 'Generate employee salary records' },
+  { key: 'SALARY_CALCULATION_EDIT', group: 'SALARY_MANAGEMENT', description: 'Edit salary calculations' },
+  { key: 'SALARY_CALCULATION_DELETE', group: 'SALARY_MANAGEMENT', description: 'Delete salary calculations' },
+  { key: 'SALARY_STAGES_VIEW', group: 'SALARY_MANAGEMENT', description: 'View approval stages' },
+  { key: 'SALARY_STAGES_CREATE', group: 'SALARY_MANAGEMENT', description: 'Create approval stages' },
+  { key: 'SALARY_STAGES_EDIT', group: 'SALARY_MANAGEMENT', description: 'Edit approval stages' },
+  { key: 'SALARY_STAGES_DELETE', group: 'SALARY_MANAGEMENT', description: 'Delete approval stages' },
+  { key: 'SALARY_APPROVALS_VIEW', group: 'SALARY_MANAGEMENT', description: 'View pending salary approvals' },
+  { key: 'SALARY_APPROVALS_APPROVE', group: 'SALARY_MANAGEMENT', description: 'Approve salary records' },
+  { key: 'SALARY_APPROVALS_REJECT', group: 'SALARY_MANAGEMENT', description: 'Reject salary records' },
+  { key: 'SALARY_APPROVALS_RETURN', group: 'SALARY_MANAGEMENT', description: 'Return salary records for correction' },
+  { key: 'SALARY_APPROVALS_EDIT', group: 'SALARY_MANAGEMENT', description: 'Edit salary before final approval' },
+
   // OFFICE LOCATION MANAGEMENT
   { key: 'OFFICE_LOCATION_VIEW', group: 'OFFICE_LOCATION', description: 'View office locations' },
   { key: 'OFFICE_LOCATION_CREATE', group: 'OFFICE_LOCATION', description: 'Create office locations' },

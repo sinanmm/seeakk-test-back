@@ -81,6 +81,10 @@ export const createUserSchema = z.object({
       z.null(),
     ]).optional(),
   ),
+  monthlySalary: z.preprocess(
+    (val) => (val === '' || val === null || val === undefined ? undefined : Number(val)),
+    z.number().min(0, 'Monthly salary must be a positive number').optional(),
+  ),
 });
 
 export type CreateUserInput = z.infer<typeof createUserSchema>;
@@ -105,6 +109,10 @@ export const updateUserSchema = z.object({
       z.string().trim().max(2048, 'Profile image URL is too long'),
       z.null(),
     ]).optional(),
+  ),
+  monthlySalary: z.preprocess(
+    (val) => (val === '' || val === null || val === undefined ? undefined : Number(val)),
+    z.number().min(0, 'Monthly salary must be a positive number').optional(),
   ),
 });
 

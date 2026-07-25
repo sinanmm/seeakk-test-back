@@ -47,6 +47,7 @@ import dashboardRoutes from './modules/dashboard/dashboard.routes';
 import attendanceRoutes from './modules/attendance/attendance.routes';
 import locationTrackingRoutes from './modules/location-tracking/locationTracking.routes';
 import sheetsRoutes from './modules/sheets/sheets.routes';
+import salaryRoutes from './modules/salary/salary.routes';
 import logger from './utils/logger';
 import prisma from './config/prisma';
 import { redisClient } from './config/redis';
@@ -283,6 +284,7 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/location-tracking', locationTrackingRoutes);
 app.use('/api/sheets', sheetsRoutes);
+app.use('/api/salary', salaryRoutes);
 
 // Health check
 app.get('/', (req: Request, res: Response) => {
