@@ -74,7 +74,13 @@ export const createUserSchema = z.object({
   districtId: optionalId('district'),
   assignedLocationIds: z.array(z.string().trim().min(1, 'Invalid location ID')).optional(),
   assignedTargetCycleId: nullableOptionalId('target cycle'),
-  profileImageUrl: optionalText(z.string().url('Invalid URL').max(2048)),
+  profileImageUrl: z.preprocess(
+    emptyStringOrNullToNull,
+    z.union([
+      z.string().trim().max(2048, 'Profile image URL is too long'),
+      z.null(),
+    ]).optional(),
+  ),
 });
 
 export type CreateUserInput = z.infer<typeof createUserSchema>;
@@ -93,7 +99,13 @@ export const updateUserSchema = z.object({
   assignedLocationIds: z.array(z.string().trim().min(1, 'Invalid location ID')).optional(),
   isEmailVerified: z.boolean().optional(),
   assignedTargetCycleId: nullableOptionalId('target cycle'),
-  profileImageUrl: optionalText(z.string().url('Invalid URL').max(2048)),
+  profileImageUrl: z.preprocess(
+    emptyStringOrNullToNull,
+    z.union([
+      z.string().trim().max(2048, 'Profile image URL is too long'),
+      z.null(),
+    ]).optional(),
+  ),
 });
 
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;
