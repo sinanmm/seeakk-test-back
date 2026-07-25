@@ -980,61 +980,62 @@ export const getRevenueAnalytics = async (
     }
   }
 
-  const baseWhere: any = {
-    workspaceId,
-  };
+  const dashboardLeadFilters = buildDashboardLeadFilters(query);
+  const andConditions: Prisma.LeadWhereInput[] = [
+    closedModuleLeadWhere(),
+    dashboardLeadFilters,
+  ];
 
-  if (userIds) {
-    baseWhere.userId = { in: userIds };
+  if (userIds && userIds.length > 0) {
+    andConditions.push({ assignedToId: { in: userIds } });
   }
 
   if (query.stageId) {
-    baseWhere.closedStageId = query.stageId;
-  }
-
-  const revenueLeadFilters = buildDashboardLeadFilters(query);
-  delete (revenueLeadFilters as any).stageId;
-  if (Object.keys(revenueLeadFilters).length > 0) {
-    baseWhere.lead = {
-      deletedAt: null,
-      ...revenueLeadFilters,
-      stage: {
-        is: {
-          isClosed: true,
-          isLOB: false,
-        },
-      },
-    };
-  } else {
-    baseWhere.lead = {
-      deletedAt: null,
-      stage: {
-        is: {
-          isClosed: true,
-          isLOB: false,
-        },
-      },
-    };
+    andConditions.push({ stageId: query.stageId });
   }
 
   if (query.dateFrom || query.dateTo) {
-    baseWhere.createdAt = {
-      ...(query.dateFrom ? { gte: new Date(query.dateFrom) } : {}),
-      ...(query.dateTo ? { lte: new Date(query.dateTo) } : {}),
-    };
+    andConditions.push({
+      OR: [
+        {
+          closedAt: {
+            ...(query.dateFrom ? { gte: new Date(query.dateFrom) } : {}),
+            ...(query.dateTo ? { lte: new Date(query.dateTo) } : {}),
+          },
+        },
+        {
+          closedAt: null,
+          createdAt: {
+            ...(query.dateFrom ? { gte: new Date(query.dateFrom) } : {}),
+            ...(query.dateTo ? { lte: new Date(query.dateTo) } : {}),
+          },
+        },
+      ],
+    });
   }
 
-  const transactions = await (prisma as any).revenueTransaction.findMany({
-    where: baseWhere,
-    include: {
-      user: {
+  const leadWhere = mergeWorkspaceLeadFilters(workspaceId, {}, { AND: andConditions });
+
+  const closedLeads = await prisma.lead.findMany({
+    where: leadWhere,
+    select: {
+      id: true,
+      totalAmount: true,
+      generatedRevenue: true,
+      closedAt: true,
+      createdAt: true,
+      updatedAt: true,
+      assignedToId: true,
+      assignedTo: {
         select: {
           id: true,
           name: true,
+          username: true,
           email: true,
         },
       },
-      closedStage: {
+      stageId: true,
+      stage: {
         select: {
           id: true,
           name: true,
@@ -1042,8 +1043,18 @@ export const getRevenueAnalytics = async (
         },
       },
     },
-    orderBy: { createdAt: 'asc' },
+    orderBy: [{ closedAt: 'asc' }, { createdAt: 'asc' }],
   });
+
+  const transactions = closedLeads.map((lead: any) => ({
+    leadId: lead.id,
+    userId: lead.assignedToId || 'unassigned',
+    user: lead.assignedTo || { id: 'unassigned', name: 'Unassigned', email: '' },
+    closedStageId: lead.stageId || 'closed',
+    closedStage: lead.stage || { id: 'closed', name: 'Closed Stage', color: '#10b981' },
+    amount: Number(lead.totalAmount ?? lead.generatedRevenue ?? 0),
+    createdAt: lead.closedAt || lead.updatedAt || lead.createdAt,
+  }));
 
   const now = new Date();
   const todayStart = startOfDay(now);

@@ -239,32 +239,37 @@ const resolveDisplayName = (user?: { name?: string | null; username?: string | n
   return user.email || null;
 };
 
-const mapClosedLead = (lead: any) => ({
-  ...lead,
-  revenueApprovedAt: lead.revenueApprovedAt ? lead.revenueApprovedAt.toISOString() : null,
-  closedAt: lead.closedAt ? lead.closedAt.toISOString() : null,
-  deletedAt: lead.deletedAt ? lead.deletedAt.toISOString() : null,
-  createdAt: lead.createdAt.toISOString(),
-  updatedAt: lead.updatedAt.toISOString(),
-  assignedTo: lead.assignedTo
-    ? {
-        ...lead.assignedTo,
-        displayName: resolveDisplayName(lead.assignedTo),
-      }
-    : null,
-  createdBy: lead.createdBy
-    ? {
-        ...lead.createdBy,
-        displayName: resolveDisplayName(lead.createdBy),
-      }
-    : null,
-  closedBy: lead.closedBy
-    ? {
-        ...lead.closedBy,
-        displayName: resolveDisplayName(lead.closedBy),
-      }
-    : null,
-});
+const mapClosedLead = (lead: any) => {
+  const resolvedRevenue = Number(lead.totalAmount ?? lead.generatedRevenue ?? 0);
+  return {
+    ...lead,
+    totalAmount: resolvedRevenue,
+    generatedRevenue: resolvedRevenue,
+    revenueApprovedAt: lead.revenueApprovedAt ? lead.revenueApprovedAt.toISOString() : null,
+    closedAt: lead.closedAt ? lead.closedAt.toISOString() : null,
+    deletedAt: lead.deletedAt ? lead.deletedAt.toISOString() : null,
+    createdAt: lead.createdAt.toISOString(),
+    updatedAt: lead.updatedAt.toISOString(),
+    assignedTo: lead.assignedTo
+      ? {
+          ...lead.assignedTo,
+          displayName: resolveDisplayName(lead.assignedTo),
+        }
+      : null,
+    createdBy: lead.createdBy
+      ? {
+          ...lead.createdBy,
+          displayName: resolveDisplayName(lead.createdBy),
+        }
+      : null,
+    closedBy: lead.closedBy
+      ? {
+          ...lead.closedBy,
+          displayName: resolveDisplayName(lead.closedBy),
+        }
+      : null,
+  };
+};
 
 const escapeCsv = (value: unknown): string => {
   if (value === null || value === undefined) return '';
@@ -378,10 +383,25 @@ const buildClosedWhere = async (workspaceId: string, actor: Actor, query: Closed
   if (query.source) where.sourceId = query.source;
   if (query.closureType) where.closureType = query.closureType;
   if (query.minRevenue !== undefined || query.maxRevenue !== undefined) {
-    where.generatedRevenue = {
-      ...(query.minRevenue !== undefined ? { gte: query.minRevenue } : {}),
-      ...(query.maxRevenue !== undefined ? { lte: query.maxRevenue } : {}),
-    };
+    where.AND = [
+      ...(Array.isArray(where.AND) ? where.AND : []),
+      {
+        OR: [
+          {
+            totalAmount: {
+              ...(query.minRevenue !== undefined ? { gte: query.minRevenue } : {}),
+              ...(query.maxRevenue !== undefined ? { lte: query.maxRevenue } : {}),
+            },
+          },
+          {
+            generatedRevenue: {
+              ...(query.minRevenue !== undefined ? { gte: query.minRevenue } : {}),
+              ...(query.maxRevenue !== undefined ? { lte: query.maxRevenue } : {}),
+            },
+          },
+        ],
+      },
+    ];
   }
   if (query.dateFrom || query.dateTo) {
     where.closedAt = {
@@ -584,7 +604,7 @@ export const exportClosedLeads = async (workspaceId: string, actor: Actor, query
     lead.source?.name || '',
     lead.closureType || '',
     lead.expectedRevenue ?? '',
-    lead.generatedRevenue ?? 0,
+    lead.totalAmount ?? lead.generatedRevenue ?? 0,
     lead.closedAt ? lead.closedAt.toISOString() : '',
     resolveDisplayName(lead.closedBy) || '',
     lead.createdAt.toISOString(),

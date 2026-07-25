@@ -9,6 +9,7 @@ export const closedLeadSelect = {
   companyName: true,
   address: true,
   expectedRevenue: true,
+  totalAmount: true,
   generatedRevenue: true,
   earnedRevenue: true,
   revenueApprovedById: true,
