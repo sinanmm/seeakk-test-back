@@ -50,9 +50,21 @@ export type LeadVisibilityMode = 'all' | 'team' | 'own' | 'none';
  */
 export const resolveLeadScopeFromPermissionKeys = (permissions: string[]): LeadVisibilityMode => {
   if (permissions.includes('*')) return 'all';
-  if (permissions.includes('LEADS_VIEW_ALL')) return 'all';
-  if (permissions.includes('LEADS_VIEW_TEAM')) return 'team';
-  if (permissions.includes('LEADS_VIEW_OWN')) return 'own';
+  if (
+    permissions.includes('LEADS_VIEW_ALL') ||
+    permissions.includes('DASHBOARD_VIEW_ALL') ||
+    permissions.includes('DASHBOARD_VIEW_ALL_OFFICES')
+  ) return 'all';
+  if (
+    permissions.includes('LEADS_VIEW_TEAM') ||
+    permissions.includes('DASHBOARD_VIEW_ASSIGNED') ||
+    permissions.includes('DASHBOARD_VIEW_ASSIGNED_OFFICES')
+  ) return 'team';
+  if (
+    permissions.includes('LEADS_VIEW_OWN') ||
+    permissions.includes('DASHBOARD_VIEW_OWN') ||
+    permissions.includes('DASHBOARD_VIEW_OWN_OFFICE')
+  ) return 'own';
   return 'none';
 };
 

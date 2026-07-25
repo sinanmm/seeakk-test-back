@@ -353,7 +353,14 @@ export const checkPermission = (permissionKey: string) => {
         (permissions.includes('SYSTEM_CONFIG') || permissions.includes('manage_attendance_locations'));
       const hasDashboardFallbackPermission =
         permissionKey.startsWith('DASHBOARD_') &&
-        (permissions.includes('SYSTEM_CONFIG') || permissions.includes('LEADS_VIEW_ALL'));
+        (permissions.includes('SYSTEM_CONFIG') ||
+         permissions.includes('LEADS_VIEW_ALL') ||
+         permissions.includes('DASHBOARD_VIEW_ALL') ||
+         permissions.includes('DASHBOARD_VIEW_ASSIGNED') ||
+         permissions.includes('DASHBOARD_VIEW_OWN') ||
+         permissions.includes('DASHBOARD_VIEW_ALL_OFFICES') ||
+         permissions.includes('DASHBOARD_VIEW_ASSIGNED_OFFICES') ||
+         permissions.includes('DASHBOARD_VIEW_OWN_OFFICE'));
       const hasHolidayFallbackPermission =
         permissionKey.startsWith('HOLIDAY_') && permissions.includes('SYSTEM_CONFIG');
       const hasAttendanceMarkFallback =

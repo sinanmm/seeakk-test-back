@@ -935,8 +935,18 @@ export const getRevenueAnalytics = async (
     permissions = rp.map((item: any) => item.permission.key);
   }
 
-  const hasTotalRevenue = isPrivileged || permissions.includes('VIEW_TOTAL_REVENUE');
-  const hasOwnRevenue = isPrivileged || permissions.includes('VIEW_OWN_REVENUE');
+  const hasTotalRevenue =
+    isPrivileged ||
+    permissions.includes('VIEW_TOTAL_REVENUE') ||
+    permissions.includes('DASHBOARD_VIEW_ALL') ||
+    permissions.includes('DASHBOARD_VIEW_ALL_OFFICES');
+  const hasOwnRevenue =
+    isPrivileged ||
+    permissions.includes('VIEW_OWN_REVENUE') ||
+    permissions.includes('DASHBOARD_VIEW_OWN') ||
+    permissions.includes('DASHBOARD_VIEW_OWN_OFFICE') ||
+    permissions.includes('DASHBOARD_VIEW_ASSIGNED') ||
+    permissions.includes('DASHBOARD_VIEW_ASSIGNED_OFFICES');
 
   if (!hasTotalRevenue && !hasOwnRevenue) {
     throw createServiceError('You do not have permission to view revenue analytics.', 403);
