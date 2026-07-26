@@ -1311,6 +1311,7 @@ model User {
   temporaryBulkExtensionAccesses TemporaryBulkExtensionAccess[] @relation("BulkExtensionUser")
   grantedBulkExtensionAccesses   TemporaryBulkExtensionAccess[] @relation("BulkExtensionGrantedBy")
   bulkFollowUpExtensions         BulkFollowUpExtension[]
+  currentApprovingSalaryRecords  SalaryRecord[]                 @relation("CurrentSalaryApprover")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -2316,37 +2317,43 @@ model SalaryRecord {
   deduction         Float              @default(0)
   advanceAmount     Float              @default(0)
   finalSalary       Float              // Calculated net salary
-  status            SalaryRecordStatus @default(DRAFT)
-  currentStageOrder Int                @default(1)
-  remarks           String?            @db.Text
+  status                 SalaryRecordStatus   @default(DRAFT)
+  currentStageOrder      Int                  @default(1)
+  currentApprovalStageId String?
+  currentApproverUserId  String?
+  remarks                String?              @db.Text
 
-  generatedById     String
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
+  generatedById String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
-  workspace   Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  user        User             @relation("UserSalaryRecords", fields: [userId], references: [id], onDelete: Cascade)
-  generatedBy User             @relation("GeneratedSalaryRecords", fields: [generatedById], references: [id])
-  approvals   SalaryApproval[]
-  histories   SalaryHistory[]
+  workspace            Workspace            @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user                 User                 @relation("UserSalaryRecords", fields: [userId], references: [id], onDelete: Cascade)
+  generatedBy          User                 @relation("GeneratedSalaryRecords", fields: [generatedById], references: [id])
+  currentApprovalStage SalaryApprovalStage? @relation("StageSalaryRecords", fields: [currentApprovalStageId], references: [id])
+  currentApproverUser  User?                @relation("CurrentSalaryApprover", fields: [currentApproverUserId], references: [id])
+  approvals            SalaryApproval[]
+  histories            SalaryHistory[]
 
   @@unique([workspaceId, userId, month, year])
   @@index([workspaceId])
   @@index([userId])
   @@index([status])
+  @@index([workspaceId, currentApproverUserId, status])
   @@index([month, year])
   @@map("salary_records")
 }
 
 model SalaryApprovalStage {
-  id             String    @id @default(uuid())
+  id             String         @id @default(uuid())
   workspaceId    String
   name           String
-  order          Int       // 1, 2, 3...
+  order          Int            // 1, 2, 3...
   approverUserId String
   designation    String?
-  isMandatory    Boolean   @default(true)
-  isActive       Boolean   @default(true)
+  isMandatory    Boolean        @default(true)
+  isActive       Boolean        @default(true)
+  salaryRecords  SalaryRecord[] @relation("StageSalaryRecords")
 
   createdBy String?
   createdAt DateTime @default(now())

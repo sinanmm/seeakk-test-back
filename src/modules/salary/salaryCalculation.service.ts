@@ -1,6 +1,7 @@
 import prisma from '../../config/prisma';
 import { GenerateSalaryInput, UpdateSalaryCalculationInput } from './salary.types';
 import { SalaryRecordStatus } from '@prisma/client';
+import { emitUserEvent } from '../../realtime/socket';
 
 /**
  * Calculates working days in a given month and year excluding Sundays/Weekly off
@@ -259,17 +260,31 @@ export const submitSalaryForApproval = async (salaryRecordIds: string[], workspa
     throw err;
   }
 
+  const stages = await (prisma as any).salaryApprovalStage.findMany({
+    where: { workspaceId, isActive: true },
+    orderBy: { order: 'asc' },
+  });
+
+  const firstStage = stages.length > 0 ? stages[0] : null;
+
   const updated = [];
   for (const record of records) {
     if (record.status !== SalaryRecordStatus.DRAFT && record.status !== SalaryRecordStatus.RETURNED) {
       continue;
     }
 
+    const targetStatus = firstStage ? SalaryRecordStatus.PENDING_APPROVAL : SalaryRecordStatus.APPROVED;
+    const targetOrder = firstStage ? firstStage.order : 1;
+    const targetStageId = firstStage ? firstStage.id : null;
+    const targetApproverId = firstStage ? firstStage.approverUserId : null;
+
     const updatedRec = await (prisma as any).salaryRecord.update({
       where: { id: record.id },
       data: {
-        status: SalaryRecordStatus.PENDING_APPROVAL,
-        currentStageOrder: 1,
+        status: targetStatus,
+        currentStageOrder: targetOrder,
+        currentApprovalStageId: targetStageId,
+        currentApproverUserId: targetApproverId,
       },
     });
 
@@ -278,9 +293,31 @@ export const submitSalaryForApproval = async (salaryRecordIds: string[], workspa
         salaryRecordId: record.id,
         editedById: actorId,
         action: 'SUBMITTED_FOR_APPROVAL',
+        stageOrder: targetOrder,
         reason: 'Submitted for multi-level approval process',
       },
     });
+
+    if (firstStage && targetApproverId) {
+      emitUserEvent(targetApproverId, 'salary_pending_approval' as any, {
+        salaryRecordId: record.id,
+        month: record.month,
+        year: record.year,
+        stageName: firstStage.name,
+      });
+
+      try {
+        await (prisma as any).attendanceNotification.create({
+          data: {
+            workspaceId,
+            userId: targetApproverId,
+            title: 'Salary Record Pending Approval',
+            message: `Salary calculation for ${record.month}/${record.year} is waiting for your stage (${firstStage.name}) approval.`,
+            type: 'SALARY_APPROVAL',
+          },
+        });
+      } catch (ignored) {}
+    }
 
     updated.push(updatedRec);
   }

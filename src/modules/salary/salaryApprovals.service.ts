@@ -20,33 +20,14 @@ export const listPendingApprovals = async (
   const limit = Math.min(100, Math.max(1, Number(query.limit) || 20));
   const skip = (page - 1) * limit;
 
-  // Find all active stages in this workspace where current user is approver
-  const userStages = await (prisma as any).salaryApprovalStage.findMany({
-    where: { workspaceId, approverUserId, isActive: true },
-    select: { order: true, name: true, designation: true },
-  });
-
-  const stageOrders = userStages.map((s: any) => s.order);
-
-  // If user has explicit SALARY_APPROVALS_VIEW or is superadmin, but is not mapped to a stage order,
-  // allow viewing all pending records if they hold admin level perms, or return records for their orders
-  const canViewAllPending = isSuperAdmin || userPermissions.includes('SALARY_APPROVALS_APPROVE');
-
+  // STRICT RULE: Pending approvals appear ONLY for currentApproverUserId (or SuperAdmin override)
   let where: any = {
     workspaceId,
     status: SalaryRecordStatus.PENDING_APPROVAL,
   };
 
-  if (!canViewAllPending || stageOrders.length > 0) {
-    if (stageOrders.length === 0 && !isSuperAdmin) {
-      return {
-        data: [],
-        meta: { total: 0, page, limit, totalPages: 0 },
-      };
-    }
-    if (stageOrders.length > 0) {
-      where.currentStageOrder = { in: stageOrders };
-    }
+  if (!isSuperAdmin) {
+    where.currentApproverUserId = approverUserId;
   }
 
   if (query.month) where.month = Number(query.month);
@@ -83,6 +64,8 @@ export const listPendingApprovals = async (
           },
         },
         generatedBy: { select: { id: true, name: true, email: true } },
+        currentApproverUser: { select: { id: true, name: true, email: true } },
+        currentApprovalStage: { select: { id: true, name: true, order: true } },
         approvals: {
           orderBy: { createdAt: 'asc' },
           include: {
@@ -91,9 +74,9 @@ export const listPendingApprovals = async (
         },
         histories: {
           orderBy: { createdAt: 'desc' },
-          take: 5,
+          take: 10,
           include: {
-            editedBy: { select: { id: true, name: true, email: true } },
+            editedBy: { select: { id: true, name: true, email: true, role: { select: { id: true, name: true } } } },
           },
         },
       },
@@ -119,6 +102,7 @@ export const processApproval = async (
   input: ProcessApprovalInput,
   workspaceId: string,
   approverUserId: string,
+  isSuperAdmin = false,
 ) => {
   const record = await (prisma as any).salaryRecord.findFirst({
     where: { id: salaryRecordId, workspaceId },
@@ -136,21 +120,19 @@ export const processApproval = async (
     throw err;
   }
 
+  // Strictly enforce that ONLY currentApproverUserId (or SuperAdmin) can process this approval
+  const isAuthorizedApprover = isSuperAdmin || (record.currentApproverUserId ? record.currentApproverUserId === approverUserId : true);
+  if (!isAuthorizedApprover) {
+    const err: any = new Error('You are not the designated approver for the current approval stage.');
+    err.statusCode = 403;
+    throw err;
+  }
+
   // Fetch all active approval stages in workspace ordered by order
   const allStages = await (prisma as any).salaryApprovalStage.findMany({
     where: { workspaceId, isActive: true },
     orderBy: { order: 'asc' },
   });
-
-  const currentStage = allStages.find((s: any) => s.order === record.currentStageOrder);
-  const userStages = allStages.filter((s: any) => s.approverUserId === approverUserId);
-
-  // Check if current user is an approver for another stage, but not for the currentStageOrder
-  if (userStages.length > 0 && !userStages.some((s: any) => s.order === record.currentStageOrder)) {
-    const err: any = new Error('Cannot process approval for this stage until earlier approval levels are completed.');
-    err.statusCode = 403;
-    throw err;
-  }
 
   const maxStageOrder = allStages.length > 0 ? Math.max(...allStages.map((s: any) => s.order)) : 1;
 
@@ -165,6 +147,8 @@ export const processApproval = async (
       where: { id: salaryRecordId },
       data: {
         status: SalaryRecordStatus.REJECTED,
+        currentApprovalStageId: null,
+        currentApproverUserId: null,
         remarks: input.remarks.trim(),
       },
     });
@@ -205,6 +189,8 @@ export const processApproval = async (
       where: { id: salaryRecordId },
       data: {
         status: SalaryRecordStatus.RETURNED,
+        currentApprovalStageId: null,
+        currentApproverUserId: null,
         remarks: input.remarks ? input.remarks.trim() : 'Returned for correction',
       },
     });
@@ -240,17 +226,22 @@ export const processApproval = async (
   }
 
   // Action is APPROVE
-  const isFinalStage = record.currentStageOrder >= maxStageOrder || allStages.length === 0;
+  const nextStage = allStages.find((s: any) => s.order > record.currentStageOrder);
+  const isFinalStage = !nextStage || record.currentStageOrder >= maxStageOrder || allStages.length === 0;
 
   let updatedStatus = record.status;
   let nextStageOrder = record.currentStageOrder;
+  let nextStageId: string | null = record.currentApprovalStageId;
+  let nextApproverUserId: string | null = record.currentApproverUserId;
 
   if (isFinalStage) {
     updatedStatus = SalaryRecordStatus.APPROVED;
-  } else {
-    // Find next stage in sequence
-    const nextStage = allStages.find((s: any) => s.order > record.currentStageOrder);
-    nextStageOrder = nextStage ? nextStage.order : record.currentStageOrder + 1;
+    nextStageId = null;
+    nextApproverUserId = null;
+  } else if (nextStage) {
+    nextStageOrder = nextStage.order;
+    nextStageId = nextStage.id;
+    nextApproverUserId = nextStage.approverUserId;
   }
 
   const updated = await (prisma as any).salaryRecord.update({
@@ -258,6 +249,8 @@ export const processApproval = async (
     data: {
       status: updatedStatus,
       currentStageOrder: nextStageOrder,
+      currentApprovalStageId: nextStageId,
+      currentApproverUserId: nextApproverUserId,
       remarks: input.remarks ? input.remarks.trim() : record.remarks,
     },
   });
@@ -298,29 +291,26 @@ export const processApproval = async (
         finalSalary: updated.finalSalary,
       });
     }
-  } else {
-    // Notify next stage approver
-    const nextStageConfig = allStages.find((s: any) => s.order === nextStageOrder);
-    if (nextStageConfig && nextStageConfig.approverUserId) {
-      emitUserEvent(nextStageConfig.approverUserId, 'salary_pending_approval' as any, {
-        salaryRecordId,
-        month: record.month,
-        year: record.year,
-        stageName: nextStageConfig.name,
-      });
+  } else if (nextStage && nextApproverUserId) {
+    // Notify ONLY the next stage approver
+    emitUserEvent(nextApproverUserId, 'salary_pending_approval' as any, {
+      salaryRecordId,
+      month: record.month,
+      year: record.year,
+      stageName: nextStage.name,
+    });
 
-      try {
-        await (prisma as any).attendanceNotification.create({
-          data: {
-            workspaceId,
-            userId: nextStageConfig.approverUserId,
-            title: 'Salary Record Pending Approval',
-            message: `Salary calculation for ${record.month}/${record.year} is waiting for your stage (${nextStageConfig.name}) approval.`,
-            type: 'SALARY_APPROVAL',
-          },
-        });
-      } catch (ignored) {}
-    }
+    try {
+      await (prisma as any).attendanceNotification.create({
+        data: {
+          workspaceId,
+          userId: nextApproverUserId,
+          title: 'Salary Record Pending Approval',
+          message: `Salary calculation for ${record.month}/${record.year} is waiting for your stage (${nextStage.name}) approval.`,
+          type: 'SALARY_APPROVAL',
+        },
+      });
+    } catch (ignored) {}
   }
 
   return updated;
@@ -334,6 +324,7 @@ export const editSalaryBeforeApproval = async (
   input: EditSalaryBeforeApprovalInput,
   workspaceId: string,
   editorUserId: string,
+  isSuperAdmin = false,
 ) => {
   const record = await (prisma as any).salaryRecord.findFirst({
     where: { id: salaryRecordId, workspaceId },
@@ -357,14 +348,10 @@ export const editSalaryBeforeApproval = async (
     throw err;
   }
 
-  // Verify sequential stage approval authorization
-  const allStages = await (prisma as any).salaryApprovalStage.findMany({
-    where: { workspaceId, isActive: true },
-    orderBy: { order: 'asc' },
-  });
-  const userStages = allStages.filter((s: any) => s.approverUserId === editorUserId);
-  if (userStages.length > 0 && !userStages.some((s: any) => s.order === record.currentStageOrder)) {
-    const err: any = new Error('Cannot process approval or edit salary for this stage until earlier approval levels are completed.');
+  // Strictly verify currentApproverUserId authorization
+  const isAuthorizedApprover = isSuperAdmin || (record.currentApproverUserId ? record.currentApproverUserId === editorUserId : true);
+  if (!isAuthorizedApprover) {
+    const err: any = new Error('You are not the designated approver for the current approval stage.');
     err.statusCode = 403;
     throw err;
   }

@@ -307,7 +307,8 @@ export const processApproval = async (req: Request, res: Response, next: NextFun
   if (!input) return;
 
   try {
-    const record = await approvalsService.processApproval(id as string, input, workspaceId, req.user!.id);
+    const isSuperAdmin = (req.user as any)?.role?.name?.toLowerCase().includes('super') || false;
+    const record = await approvalsService.processApproval(id as string, input, workspaceId, req.user!.id, isSuperAdmin);
     return res.status(200).json({
       success: true,
       message: `Salary approval action '${input.action}' processed successfully.`,
@@ -327,7 +328,8 @@ export const editSalaryBeforeApproval = async (req: Request, res: Response, next
   if (!input) return;
 
   try {
-    const record = await approvalsService.editSalaryBeforeApproval(id as string, input, workspaceId, req.user!.id);
+    const isSuperAdmin = (req.user as any)?.role?.name?.toLowerCase().includes('super') || false;
+    const record = await approvalsService.editSalaryBeforeApproval(id as string, input, workspaceId, req.user!.id, isSuperAdmin);
     return res.status(200).json({
       success: true,
       message: 'Salary amounts updated successfully with audit trail.',
