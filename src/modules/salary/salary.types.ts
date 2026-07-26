@@ -3,8 +3,11 @@ import { SalaryRecordStatus, SalaryApprovalAction } from '@prisma/client';
 export interface GenerateSalaryInput {
   month: number; // 1-12
   year: number;  // e.g. 2026
-  scope: 'SINGLE' | 'DEPARTMENT' | 'OFFICE' | 'COMPANY';
+  scope: 'SINGLE' | 'DEPARTMENT' | 'OFFICE' | 'COMPANY' | 'employee' | 'department' | 'office' | 'company';
   targetId?: string; // userId, departmentId, or officeId depending on scope
+  userId?: string;
+  departmentId?: string;
+  officeId?: string;
   workingDays?: number; // Total working days override (default 26 or calendar working days)
 }
 

@@ -13,6 +13,7 @@ import {
   editSalaryBeforeApprovalSchema,
 } from './salary.validation';
 import { getActorUserPermissions } from '../../services/User/adminUserService';
+import logger from '../../utils/logger';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -98,6 +99,12 @@ export const submitSalaryForApproval = async (req: Request, res: Response, next:
 export const listCalculations = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
   const workspaceId = requireWorkspace(req, res);
   if (!workspaceId) return;
+
+  logger.info('Salary Calculation Request Received', {
+    userId: req.user?.id,
+    workspaceId,
+    query: req.query,
+  });
 
   try {
     const result = await calculationService.listSalaryCalculations(req.query as any, workspaceId);

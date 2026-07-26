@@ -219,6 +219,13 @@ export const protect = async (req: Request, res: Response, next: NextFunction): 
 
     req.user = hydratedUser;
 
+    logger.info('AUTH -> Authenticated User', {
+      userId: hydratedUser.id,
+      workspaceId: hydratedUser.workspaceId,
+      roleId: hydratedUser.roleId,
+      roleName: hydratedUser.role?.name,
+    });
+
     if (isFollowUpLockResolutionPath(req)) {
       return next();
     }
@@ -451,6 +458,10 @@ export const checkAnyPermission = (permissionKeys: string[]) => {
           await redisClient.setEx(cacheKey, 3600, JSON.stringify(permissions));
         }
       }
+
+      logger.info(
+        `RBAC DEBUG: Checking permissions [${permissionKeys.join(', ')}] for role ${roleId}. Current perms count: ${permissions.length}`,
+      );
 
       const hasTemporaryBulkExtension = await userHasActiveTemporaryBulkExtensionAccess(
         req.user.id,

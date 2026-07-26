@@ -26,8 +26,11 @@ export const generateSalary = async (
   workspaceId: string,
   generatedById: string,
 ) => {
-  const { month, year, scope, targetId, workingDays: customWorkingDays } = input;
+  const { month, year, scope: rawScope, targetId: rawTargetId, userId, departmentId, officeId, workingDays: customWorkingDays } = input;
   const numWorkingDays = customWorkingDays || getDefaultWorkingDays(month, year);
+
+  const scopeUpper = (rawScope || '').toUpperCase();
+  const normalizedScope = scopeUpper === 'EMPLOYEE' ? 'SINGLE' : scopeUpper;
 
   // 1. Resolve Target Users
   let userWhereClause: any = {
@@ -36,27 +39,30 @@ export const generateSalary = async (
     isActive: true,
   };
 
-  if (scope === 'SINGLE') {
-    if (!targetId) {
-      const err: any = new Error('Target user ID is required for SINGLE scope.');
+  if (normalizedScope === 'SINGLE') {
+    const targetUserId = userId || rawTargetId;
+    if (!targetUserId) {
+      const err: any = new Error('Target user ID is required for Single Employee scope.');
       err.statusCode = 400;
       throw err;
     }
-    userWhereClause.id = targetId;
-  } else if (scope === 'DEPARTMENT') {
-    if (!targetId) {
-      const err: any = new Error('Target department ID is required for DEPARTMENT scope.');
+    userWhereClause.id = targetUserId;
+  } else if (normalizedScope === 'DEPARTMENT') {
+    const targetDeptId = departmentId || rawTargetId;
+    if (!targetDeptId) {
+      const err: any = new Error('Target department ID is required for Entire Department scope.');
       err.statusCode = 400;
       throw err;
     }
-    userWhereClause.departmentId = targetId;
-  } else if (scope === 'OFFICE') {
-    if (!targetId) {
-      const err: any = new Error('Target office ID is required for OFFICE scope.');
+    userWhereClause.departmentId = targetDeptId;
+  } else if (normalizedScope === 'OFFICE') {
+    const targetOfficeId = officeId || rawTargetId;
+    if (!targetOfficeId) {
+      const err: any = new Error('Target office ID is required for Entire Office scope.');
       err.statusCode = 400;
       throw err;
     }
-    userWhereClause.officeId = targetId;
+    userWhereClause.officeId = targetOfficeId;
   }
 
   const users = await (prisma as any).user.findMany({

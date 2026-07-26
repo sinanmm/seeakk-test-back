@@ -1,8 +1,12 @@
 import { Router } from 'express';
-import { checkPermission, checkAnyPermission } from '../../middlewares/authMiddleware';
+import { protect, checkPermission, checkAnyPermission } from '../../middlewares/authMiddleware';
 import * as controller from './salary.controller';
 
 const router = Router();
+
+// Protect all salary routes
+router.use(protect);
+
 
 // ─── SALARY CALCULATION ROUTES ───────────────────────────────────────────────
 router.get(

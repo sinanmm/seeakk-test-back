@@ -3,8 +3,11 @@ import { z } from 'zod';
 export const generateSalarySchema = z.object({
   month: z.number().int().min(1).max(12),
   year: z.number().int().min(2000).max(2100),
-  scope: z.enum(['SINGLE', 'DEPARTMENT', 'OFFICE', 'COMPANY']),
+  scope: z.enum(['SINGLE', 'DEPARTMENT', 'OFFICE', 'COMPANY', 'employee', 'department', 'office', 'company']),
   targetId: z.string().optional(),
+  userId: z.string().optional(),
+  departmentId: z.string().optional(),
+  officeId: z.string().optional(),
   workingDays: z.number().int().min(1).max(31).optional(),
 });
 
