@@ -56,28 +56,26 @@ export const createApprovalStage = async (
     throw err;
   }
 
-  // Count existing stages to determine next order if not specified
-  const existingCount = await (prisma as any).salaryApprovalStage.count({
-    where: { workspaceId },
-  });
-  const targetOrder = input.order || existingCount + 1;
+  let targetOrder: number;
 
-  // Check unique order constraint
-  const orderExists = await (prisma as any).salaryApprovalStage.findUnique({
-    where: { workspaceId_order: { workspaceId, order: targetOrder } },
-  });
-
-  if (orderExists) {
-    // Shift subsequent orders up by 1
-    await (prisma as any).salaryApprovalStage.updateMany({
-      where: {
-        workspaceId,
-        order: { gte: targetOrder },
-      },
-      data: {
-        order: { increment: 1 },
-      },
+  if (input.order !== undefined && input.order !== null && !isNaN(Number(input.order))) {
+    targetOrder = Number(input.order);
+    const orderExists = await (prisma as any).salaryApprovalStage.findUnique({
+      where: { workspaceId_order: { workspaceId, order: targetOrder } },
     });
+    if (orderExists) {
+      const err: any = new Error('Sort Order already exists.');
+      err.statusCode = 400;
+      throw err;
+    }
+  } else {
+    // Automatically place after highest existing sort order
+    const maxStage = await (prisma as any).salaryApprovalStage.findFirst({
+      where: { workspaceId },
+      orderBy: { order: 'desc' },
+      select: { order: true },
+    });
+    targetOrder = maxStage ? maxStage.order + 1 : 1;
   }
 
   const stage = await (prisma as any).salaryApprovalStage.create({
@@ -97,6 +95,10 @@ export const createApprovalStage = async (
           id: true,
           name: true,
           email: true,
+          username: true,
+          profileImageUrl: true,
+          department: { select: { id: true, name: true } },
+          office: { select: { id: true, name: true } },
           role: { select: { id: true, name: true } },
         },
       },
@@ -131,6 +133,17 @@ export const updateApprovalStage = async (
     if (!user) {
       const err: any = new Error('Approver user not found in workspace.');
       err.statusCode = 404;
+      throw err;
+    }
+  }
+
+  if (input.order !== undefined && input.order !== null && Number(input.order) !== existing.order) {
+    const orderExists = await (prisma as any).salaryApprovalStage.findFirst({
+      where: { workspaceId, order: Number(input.order), NOT: { id } },
+    });
+    if (orderExists) {
+      const err: any = new Error('Sort Order already exists.');
+      err.statusCode = 400;
       throw err;
     }
   }

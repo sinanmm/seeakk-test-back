@@ -2379,14 +2379,24 @@ model SalaryApproval {
 }
 
 model SalaryHistory {
-  id             String       @id @default(uuid())
-  salaryRecordId String
-  editedById     String
-  action         String
-  previousValue  Json?
-  newValue       Json?
-  reason         String?      @db.Text
-  createdAt      DateTime     @default(now())
+  id                String       @id @default(uuid())
+  salaryRecordId    String
+  editedById        String
+  action            String
+  previousSalary    Float?
+  updatedSalary     Float?
+  difference        Float?
+  previousBonus     Float?
+  updatedBonus      Float?
+  previousDeduction Float?
+  updatedDeduction  Float?
+  previousAdvance   Float?
+  updatedAdvance    Float?
+  stageOrder        Int?
+  previousValue     Json?
+  newValue          Json?
+  reason            String?      @db.Text
+  createdAt         DateTime     @default(now())
 
   salaryRecord SalaryRecord @relation(fields: [salaryRecordId], references: [id], onDelete: Cascade)
   editedBy     User         @relation(fields: [editedById], references: [id])

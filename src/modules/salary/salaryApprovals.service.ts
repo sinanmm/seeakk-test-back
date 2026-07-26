@@ -142,8 +142,17 @@ export const processApproval = async (
     orderBy: { order: 'asc' },
   });
 
-  const maxStageOrder = allStages.length > 0 ? Math.max(...allStages.map((s: any) => s.order)) : 1;
   const currentStage = allStages.find((s: any) => s.order === record.currentStageOrder);
+  const userStages = allStages.filter((s: any) => s.approverUserId === approverUserId);
+
+  // Check if current user is an approver for another stage, but not for the currentStageOrder
+  if (userStages.length > 0 && !userStages.some((s: any) => s.order === record.currentStageOrder)) {
+    const err: any = new Error('Cannot process approval for this stage until earlier approval levels are completed.');
+    err.statusCode = 403;
+    throw err;
+  }
+
+  const maxStageOrder = allStages.length > 0 ? Math.max(...allStages.map((s: any) => s.order)) : 1;
 
   if (input.action === 'REJECT') {
     if (!input.remarks || !input.remarks.trim()) {
@@ -175,6 +184,7 @@ export const processApproval = async (
         salaryRecordId,
         editedById: approverUserId,
         action: 'REJECTED',
+        stageOrder: record.currentStageOrder,
         reason: input.remarks.trim(),
       },
     });
@@ -214,6 +224,7 @@ export const processApproval = async (
         salaryRecordId,
         editedById: approverUserId,
         action: 'RETURNED_FOR_CORRECTION',
+        stageOrder: record.currentStageOrder,
         reason: input.remarks ? input.remarks.trim() : 'Returned for correction',
       },
     });
@@ -266,11 +277,28 @@ export const processApproval = async (
       salaryRecordId,
       editedById: approverUserId,
       action: isFinalStage ? 'FINAL_APPROVED' : `STAGE_${record.currentStageOrder}_APPROVED`,
+      stageOrder: record.currentStageOrder,
       reason: input.remarks ? input.remarks.trim() : 'Approved',
     },
   });
 
-  if (!isFinalStage) {
+  if (isFinalStage) {
+    // Notify employee & generator when final stage completes
+    emitUserEvent(record.userId, 'salary_finalized' as any, {
+      salaryRecordId,
+      month: record.month,
+      year: record.year,
+      finalSalary: updated.finalSalary,
+    });
+    if (record.generatedById !== record.userId) {
+      emitUserEvent(record.generatedById, 'salary_finalized' as any, {
+        salaryRecordId,
+        month: record.month,
+        year: record.year,
+        finalSalary: updated.finalSalary,
+      });
+    }
+  } else {
     // Notify next stage approver
     const nextStageConfig = allStages.find((s: any) => s.order === nextStageOrder);
     if (nextStageConfig && nextStageConfig.approverUserId) {
@@ -281,7 +309,6 @@ export const processApproval = async (
         stageName: nextStageConfig.name,
       });
 
-      // Create attendance notification record if model exists
       try {
         await (prisma as any).attendanceNotification.create({
           data: {
@@ -324,6 +351,24 @@ export const editSalaryBeforeApproval = async (
     throw err;
   }
 
+  if (!input.reason || !input.reason.trim()) {
+    const err: any = new Error('Reason for salary adjustment is mandatory.');
+    err.statusCode = 400;
+    throw err;
+  }
+
+  // Verify sequential stage approval authorization
+  const allStages = await (prisma as any).salaryApprovalStage.findMany({
+    where: { workspaceId, isActive: true },
+    orderBy: { order: 'asc' },
+  });
+  const userStages = allStages.filter((s: any) => s.approverUserId === editorUserId);
+  if (userStages.length > 0 && !userStages.some((s: any) => s.order === record.currentStageOrder)) {
+    const err: any = new Error('Cannot process approval or edit salary for this stage until earlier approval levels are completed.');
+    err.statusCode = 403;
+    throw err;
+  }
+
   const newBonus = input.bonus !== undefined ? input.bonus : record.bonus;
   const newDeduction = input.deduction !== undefined ? input.deduction : record.deduction;
   const newAdvance = input.advanceAmount !== undefined ? input.advanceAmount : record.advanceAmount;
@@ -331,6 +376,10 @@ export const editSalaryBeforeApproval = async (
   let newFinal = input.finalSalary !== undefined
     ? input.finalSalary
     : Math.max(0, Math.round((record.monthlySalary - newDeduction - newAdvance + newBonus) * 100) / 100);
+
+  const previousSalary = record.finalSalary;
+  const updatedSalary = newFinal;
+  const difference = Math.round((updatedSalary - previousSalary) * 100) / 100;
 
   const previousValue = {
     bonus: record.bonus,
@@ -361,9 +410,19 @@ export const editSalaryBeforeApproval = async (
       salaryRecordId,
       editedById: editorUserId,
       action: 'EDITED_BEFORE_APPROVAL',
+      previousSalary,
+      updatedSalary,
+      difference,
+      previousBonus: record.bonus,
+      updatedBonus: newBonus,
+      previousDeduction: record.deduction,
+      updatedDeduction: newDeduction,
+      previousAdvance: record.advanceAmount,
+      updatedAdvance: newAdvance,
+      stageOrder: record.currentStageOrder,
       previousValue,
       newValue,
-      reason: input.reason,
+      reason: input.reason.trim(),
     },
   });
 

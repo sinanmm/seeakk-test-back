@@ -20,7 +20,7 @@ export interface UpdateSalaryCalculationInput {
 
 export interface CreateApprovalStageInput {
   name: string;
-  order: number;
+  order?: number;
   approverUserId: string;
   designation?: string;
   isMandatory?: boolean;

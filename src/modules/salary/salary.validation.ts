@@ -20,7 +20,7 @@ export const updateSalaryCalculationSchema = z.object({
 
 export const createApprovalStageSchema = z.object({
   name: z.string().trim().min(2).max(100),
-  order: z.number().int().min(1),
+  order: z.number().int().min(1).optional(),
   approverUserId: z.string().min(1, 'Approver user is required'),
   designation: z.string().trim().max(100).optional(),
   isMandatory: z.boolean().optional(),
