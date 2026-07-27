@@ -95,8 +95,6 @@ export const FOLLOWUP_LOCK_RESOLUTION_PREFIXES = [
   '/api/auth/me',
   '/api/auth/logout',
   '/api/auth/refresh',
-  '/api/dashboard',
-  '/api/lead-dynamics',
   '/api/notifications',
   '/api/users/profile',
   '/api/followups/overdue-mandatory',
@@ -123,10 +121,6 @@ export const FOLLOWUP_LOCK_RESOLUTION_PREFIXES = [
 
 /** Stable suffixes used as a fallback when proxy/baseUrl combinations vary. */
 export const FOLLOWUP_LOCK_RESOLUTION_SUFFIXES = [
-  '/dashboard/summary',
-  '/dashboard/cards',
-  '/dashboard/widgets',
-  '/lead-dynamics/active',
   '/notifications',
   '/users/profile',
   '/followups/overdue-mandatory',

@@ -18,6 +18,7 @@ router.use(protect);
 router.post('/sessions/start', checkAnyPermission(['LOCATION_TRACKING_SHARE', 'mark_attendance']), controller.startSession);
 router.post('/sessions/stop', checkAnyPermission(['LOCATION_TRACKING_SHARE', 'mark_attendance']), controller.stopSession);
 router.post('/points', checkAnyPermission(['LOCATION_TRACKING_SHARE', 'mark_attendance']), controller.pushLocation);
+router.get('/points', checkAnyPermission(['LOCATION_TRACKING_SHARE', 'mark_attendance', ...viewPermissions]), controller.getPoints);
 router.get('/live', checkAnyPermission(viewPermissions), controller.getLiveLocations);
 router.get('/route', checkAnyPermission(viewPermissions), controller.getRoute);
 router.get('/visit-history', checkAnyPermission(viewPermissions), controller.getVisitHistoryController);

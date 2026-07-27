@@ -70,6 +70,27 @@ export const pushLocation = async (req: Request, res: Response, next: NextFuncti
   }
 };
 
+export const getPoints = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = workspaceIdFrom(req, res);
+  if (!workspaceId) return;
+  const rawQuery = {
+    userId: req.query.userId || req.user!.id,
+    date: req.query.date,
+    startDate: req.query.startDate,
+    endDate: req.query.endDate,
+  };
+  const parsed = routeQuerySchema.safeParse(rawQuery);
+  if (!parsed.success) {
+    return res.status(422).json({ success: false, message: 'Validation failed.', errors: parsed.error.flatten().fieldErrors });
+  }
+  try {
+    const data = await service.getRoute(workspaceId, req.user, parsed.data);
+    return res.status(200).json({ success: true, data });
+  } catch (error) {
+    return handleError(error, res, next);
+  }
+};
+
 export const getLiveLocations = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
   const workspaceId = workspaceIdFrom(req, res);
   if (!workspaceId) return;

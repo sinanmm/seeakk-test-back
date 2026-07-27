@@ -126,13 +126,18 @@ const maskAuthHeader = (authHeader?: string): string => {
  * Protect routes - Verifies JWT and injects User object (with role) into req
  */
 export const protect = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const isLocationTrackingRequest = req.originalUrl?.includes('/location-tracking') || req.path?.includes('/location-tracking');
+
   try {
     let token: string | null = null;
-
     const authHeader = req.headers.authorization || req.header('Authorization');
 
-    if (process.env.AUTH_DEBUG === 'true') {
-      logger.info('AUTH DEBUG -> AUTH HEADER:', { authString: maskAuthHeader(authHeader) });
+    if (isLocationTrackingRequest || process.env.AUTH_DEBUG === 'true') {
+      logger.info('Location Tracking Request -> Authorization Header Check', {
+        path: req.originalUrl || req.path,
+        method: req.method,
+        authString: maskAuthHeader(authHeader),
+      });
     }
 
     if (authHeader) {
@@ -152,18 +157,52 @@ export const protect = async (req: Request, res: Response, next: NextFunction): 
     }
 
     if (!token) {
-      logger.warn('Access denied. No token provided.', { action: 'auth_missing_token', ip: req.ip });
+      logger.warn('Access denied. Token missing from request header.', {
+        action: 'auth_missing_token',
+        path: req.originalUrl || req.path,
+        method: req.method,
+        ip: req.ip,
+        reason: 'Token missing',
+      });
       applyCorsHeadersIfAllowed(req, res);
       return res.status(401).json({
-        message: 'Not authorized to access this route. No token provided.',
+        message: 'Not authorized to access this route. Token missing.',
         diagnostic: "Send an 'Authorization: Bearer <token>' header.",
         rawHeaderReceived: maskAuthHeader(authHeader),
+        reason: 'Token missing',
       });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET as string, {
-      clockTolerance: 30,
-    }) as JwtPayload;
+    let decoded: JwtPayload;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET as string, {
+        clockTolerance: 30,
+      }) as JwtPayload;
+    } catch (jwtErr: any) {
+      const reason = jwtErr.name === 'TokenExpiredError' ? 'Token expired' : 'Invalid signature';
+      logger.warn(`Access denied. JWT validation failed: ${reason}`, {
+        action: 'auth_jwt_invalid',
+        path: req.originalUrl || req.path,
+        method: req.method,
+        ip: req.ip,
+        reason,
+        errorMessage: jwtErr.message,
+      });
+      applyCorsHeadersIfAllowed(req, res);
+      return res.status(401).json({
+        message: 'Not authorized. Token failed or expired.',
+        diagnosticReason: jwtErr.message,
+        reason,
+        solution: 'Please log in again to receive a fresh, valid token.',
+      });
+    }
+
+    if (isLocationTrackingRequest) {
+      logger.info('Location Tracking Request -> JWT Validation Success', {
+        userId: decoded.userId,
+        path: req.originalUrl || req.path,
+      });
+    }
 
     // Fetch user from PostgreSQL via Prisma with role included
     const user = await prisma.user.findUnique({
@@ -184,21 +223,22 @@ export const protect = async (req: Request, res: Response, next: NextFunction): 
       logger.warn('Access denied. Token user no longer exists or is deleted.', {
         userId: decoded.userId,
         action: 'auth_ghost_user',
+        reason: 'User deleted',
       });
       applyCorsHeadersIfAllowed(req, res);
-      return res.status(401).json({ message: 'The user belonging to this token no longer exists or has been deleted.' });
+      return res.status(401).json({ message: 'The user belonging to this token no longer exists or has been deleted.', reason: 'User deleted' });
     }
 
     if (!user.isActive) {
-      logger.warn('Access denied. User is inactive.', { userId: user.id, action: 'auth_inactive_user' });
+      logger.warn('Access denied. User is inactive/disabled.', { userId: user.id, action: 'auth_inactive_user', reason: 'User disabled' });
       applyCorsHeadersIfAllowed(req, res);
-      return res.status(403).json({ message: 'User account is suspended or inactive.' });
+      return res.status(403).json({ message: 'User account is suspended or inactive.', reason: 'User disabled' });
     }
 
     if (!user.workspaceId) {
-      logger.warn('Access denied. User workspace missing.', { userId: user.id, action: 'auth_missing_workspace' });
+      logger.warn('Access denied. User workspace missing.', { userId: user.id, action: 'auth_missing_workspace', reason: 'Workspace missing' });
       applyCorsHeadersIfAllowed(req, res);
-      return res.status(403).json({ message: 'User account is not associated with an active workspace.' });
+      return res.status(403).json({ message: 'User account is not associated with an active workspace.', reason: 'Workspace missing' });
     }
 
     const hydratedUser = await ensureWorkspaceOwnerSuperAdmin(user);
@@ -210,21 +250,25 @@ export const protect = async (req: Request, res: Response, next: NextFunction): 
         roleId: hydratedUser.roleId,
         roleWorkspaceId: hydratedUser.role?.workspaceId,
         action: 'auth_role_workspace_mismatch',
+        reason: 'Workspace role mismatch',
       });
       applyCorsHeadersIfAllowed(req, res);
       return res.status(403).json({
         message: 'Forbidden: The assigned role does not belong to this workspace.',
+        reason: 'Workspace role mismatch',
       });
     }
 
     req.user = hydratedUser;
 
-    logger.info('AUTH -> Authenticated User', {
-      userId: hydratedUser.id,
-      workspaceId: hydratedUser.workspaceId,
-      roleId: hydratedUser.roleId,
-      roleName: hydratedUser.role?.name,
-    });
+    if (isLocationTrackingRequest) {
+      logger.info('Location Tracking Request -> Authenticated User', {
+        userId: hydratedUser.id,
+        workspaceId: hydratedUser.workspaceId,
+        roleId: hydratedUser.roleId,
+        roleName: hydratedUser.role?.name,
+      });
+    }
 
     if (isFollowUpLockResolutionPath(req)) {
       return next();
@@ -239,6 +283,7 @@ export const protect = async (req: Request, res: Response, next: NextFunction): 
     return res.status(401).json({
       message: 'Not authorized. Token failed or expired.',
       diagnosticReason: error.message,
+      reason: 'Authentication error',
       solution: 'Please log in again to receive a fresh, valid token.',
     });
   }
