@@ -235,7 +235,15 @@ export const protect = async (req: Request, res: Response, next: NextFunction): 
       return res.status(403).json({ message: 'User account is suspended or inactive.', reason: 'User disabled' });
     }
 
-    if (!user.workspaceId) {
+    const isWorkspaceOnboardingPath =
+      req.originalUrl?.includes('/workspace/setup') ||
+      req.originalUrl?.includes('/workspace/config-meta') ||
+      req.path?.includes('/workspace/setup') ||
+      req.path?.includes('/workspace/config-meta') ||
+      req.path === '/setup' ||
+      req.path === '/config-meta';
+
+    if (!user.workspaceId && !isWorkspaceOnboardingPath) {
       logger.warn('Access denied. User workspace missing.', { userId: user.id, action: 'auth_missing_workspace', reason: 'Workspace missing' });
       applyCorsHeadersIfAllowed(req, res);
       return res.status(403).json({ message: 'User account is not associated with an active workspace.', reason: 'Workspace missing' });
@@ -270,7 +278,7 @@ export const protect = async (req: Request, res: Response, next: NextFunction): 
       });
     }
 
-    if (isFollowUpLockResolutionPath(req)) {
+    if (isWorkspaceOnboardingPath || isFollowUpLockResolutionPath(req)) {
       return next();
     }
 

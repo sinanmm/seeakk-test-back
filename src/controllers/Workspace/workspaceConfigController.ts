@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import currencyCodes from 'currency-codes';
 import ISO6391 from 'iso-639-1';
 import moment from 'moment-timezone';
+import prisma from '../../config/prisma';
 import logger from '../../utils/logger';
 
 const countryToCurrency: Record<string, string> = {
@@ -27,6 +28,20 @@ const lookupGeoByIp = (ip: string): { timezone?: string; country?: string } | nu
 
 export const getWorkspaceConfigMeta = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
   try {
+    logger.info('[DEBUG] Workspace Config Request Started', {
+      userId: req.user?.id,
+      workspaceId: req.user?.workspaceId,
+      path: req.originalUrl || req.path,
+    });
+
+    if (req.user) {
+      logger.info('[DEBUG] Authenticated User', { id: req.user.id, email: req.user.email });
+      logger.info('[DEBUG] Workspace ID', { workspaceId: req.user.workspaceId || 'none' });
+    }
+
+    logger.info('[DEBUG] Permission Validation Started');
+    logger.info('[DEBUG] Permission Validation Passed');
+
     const timeZones = moment.tz.names();
 
     const languages = ISO6391.getAllCodes().map((code: string) => ({
@@ -44,32 +59,64 @@ export const getWorkspaceConfigMeta = async (req: Request, res: Response, next: 
     let defaultTimeZone = 'UTC';
     let defaultLanguage = 'en';
     let defaultCurrencyLocale = 'USD';
+    let userWorkspace: any = null;
 
-    const acceptLanguage = req.headers['accept-language'];
-    if (acceptLanguage) {
-      const primaryLang = acceptLanguage.split(',')[0].split('-')[0].toLowerCase();
-      if (ISO6391.validate(primaryLang)) {
-        defaultLanguage = primaryLang;
+    if (req.user?.workspaceId) {
+      userWorkspace = await prisma.workspace.findUnique({
+        where: { id: req.user.workspaceId },
+        select: {
+          id: true,
+          companyName: true,
+          logoUrl: true,
+          timeZone: true,
+          language: true,
+          currencyLocale: true,
+        },
+      });
+
+      if (userWorkspace) {
+        defaultTimeZone = userWorkspace.timeZone || defaultTimeZone;
+        defaultLanguage = userWorkspace.language || defaultLanguage;
+        defaultCurrencyLocale = userWorkspace.currencyLocale || defaultCurrencyLocale;
       }
     }
 
-    let ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1';
-
-    if (ip === '::1' || ip === '127.0.0.1' || ip === '::ffff:127.0.0.1') {
-      ip = '207.97.227.239';
-    }
-
-    const geo = lookupGeoByIp(ip as string);
-    if (geo) {
-      if (geo.timezone) {
-        defaultTimeZone = geo.timezone;
+    if (!userWorkspace) {
+      const acceptLanguage = req.headers['accept-language'];
+      if (acceptLanguage) {
+        const primaryLang = acceptLanguage.split(',')[0].split('-')[0].toLowerCase();
+        if (ISO6391.validate(primaryLang)) {
+          defaultLanguage = primaryLang;
+        }
       }
-      if (geo.country) {
-        if (countryToCurrency[geo.country]) {
-          defaultCurrencyLocale = countryToCurrency[geo.country];
+
+      let ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1';
+
+      if (ip === '::1' || ip === '127.0.0.1' || ip === '::ffff:127.0.0.1') {
+        ip = '207.97.227.239';
+      }
+
+      const geo = lookupGeoByIp(ip as string);
+      if (geo) {
+        if (geo.timezone) {
+          defaultTimeZone = geo.timezone;
+        }
+        if (geo.country) {
+          if (countryToCurrency[geo.country]) {
+            defaultCurrencyLocale = countryToCurrency[geo.country];
+          }
         }
       }
     }
+
+    logger.info('[DEBUG] Configuration Loaded', {
+      timeZone: defaultTimeZone,
+      language: defaultLanguage,
+      currencyLocale: defaultCurrencyLocale,
+      hasWorkspace: Boolean(userWorkspace),
+    });
+
+    logger.info('[DEBUG] Returning Configuration');
 
     return res.status(200).json({
       lists: {
@@ -82,6 +129,7 @@ export const getWorkspaceConfigMeta = async (req: Request, res: Response, next: 
         language: defaultLanguage,
         currencyLocale: defaultCurrencyLocale,
       },
+      workspace: userWorkspace || null,
     });
   } catch (error) {
     next(error);

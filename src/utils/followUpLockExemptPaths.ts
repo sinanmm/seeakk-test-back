@@ -117,12 +117,18 @@ export const FOLLOWUP_LOCK_RESOLUTION_PREFIXES = [
   '/api/master',
   '/api/lob-reasons',
   '/api/admin/lead-life-cycles',
+  '/api/workspace',
+  '/api/workspace/config-meta',
+  '/api/workspace/setup',
 ] as const;
 
 /** Stable suffixes used as a fallback when proxy/baseUrl combinations vary. */
 export const FOLLOWUP_LOCK_RESOLUTION_SUFFIXES = [
   '/notifications',
   '/users/profile',
+  '/workspace/config-meta',
+  '/workspace/setup',
+  '/config-meta',
   '/followups/overdue-mandatory',
   '/overdue-mandatory',
   '/followups/mandatory-continuation',
@@ -147,6 +153,9 @@ export const FOLLOWUP_LOCK_RESOLUTION_SUFFIXES = [
 
 /** Raw URL markers for reverse-proxy / Render mount-relative paths. */
 const RAW_RESOLUTION_MARKERS = [
+  '/workspace/config-meta',
+  '/workspace/setup',
+  'config-meta',
   '/followups/overdue-mandatory',
   '/followups/mandatory-continuation',
   '/followups/lifecycle-extension-limit',
