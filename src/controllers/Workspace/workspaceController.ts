@@ -213,33 +213,74 @@ export const updateWorkspaceProfile = async (req: Request, res: Response, next: 
       return res.status(404).json({ message: 'Workspace not found for this user.' });
     }
 
-    const branding = normalizeWorkspaceBrandingInput(req.body ?? {});
-    if ('error' in branding) {
-      return res.status(400).json({ message: branding.error });
+    const existingWorkspace = await directPrisma.workspace.findUnique({
+      where: { id: req.user.workspaceId },
+    });
+
+    if (!existingWorkspace) {
+      return res.status(404).json({ message: 'Workspace not found.' });
+    }
+
+    const updateData: any = {};
+    const { companyName, logoUrl, employeeCount, timeZone, language, currencyLocale } = req.body ?? {};
+
+    if (companyName !== undefined) {
+      const branding = normalizeWorkspaceBrandingInput({ companyName, logoUrl: logoUrl ?? existingWorkspace.logoUrl });
+      if ('error' in branding) {
+        return res.status(400).json({ message: branding.error });
+      }
+      updateData.companyName = branding.companyName;
+    }
+
+    if (logoUrl !== undefined) {
+      const branding = normalizeWorkspaceBrandingInput({ companyName: companyName ?? existingWorkspace.companyName, logoUrl });
+      if ('error' in branding) {
+        return res.status(400).json({ message: branding.error });
+      }
+      updateData.logoUrl = branding.logoUrl;
+    }
+
+    if (employeeCount !== undefined) {
+      updateData.employeeCount = typeof employeeCount === 'string' ? employeeCount.trim() : String(employeeCount);
+    }
+
+    if (timeZone !== undefined) {
+      updateData.timeZone = typeof timeZone === 'string' ? timeZone.trim() : 'UTC';
+    }
+
+    if (language !== undefined) {
+      updateData.language = typeof language === 'string' ? language.trim() : 'en-US';
+    }
+
+    if (currencyLocale !== undefined) {
+      updateData.currencyLocale = typeof currencyLocale === 'string' ? currencyLocale.trim() : 'USD';
     }
 
     const workspace = await directPrisma.workspace.update({
       where: { id: req.user.workspaceId },
-      data: {
-        companyName: branding.companyName,
-        logoUrl: branding.logoUrl,
-      },
+      data: updateData,
       select: {
         id: true,
         companyName: true,
         logoUrl: true,
+        employeeCount: true,
+        timeZone: true,
+        language: true,
+        currencyLocale: true,
+        loadSampleData: true,
       },
     });
 
-    logger.info('Workspace branding updated', {
+    logger.info('Workspace settings updated', {
       workspaceId: workspace.id,
       userId: req.user.id,
-      action: 'workspace_branding_updated',
+      changedFields: Object.keys(updateData),
+      action: 'workspace_settings_updated',
     });
 
     return res.status(200).json({
       success: true,
-      message: 'Company branding updated successfully.',
+      message: 'Workspace settings updated successfully.',
       workspace,
     });
   } catch (error) {
