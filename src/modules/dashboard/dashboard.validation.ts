@@ -36,20 +36,3 @@ export const revenueAnalyticsQuerySchema = z.object({
 });
 
 export type RevenueAnalyticsQueryInput = z.infer<typeof revenueAnalyticsQuerySchema>;
-
-export const productAnalyticsQuerySchema = z.object({
-  range: z.enum(['7d', '30d', '12m']).optional().default('7d'),
-  dateFrom: optionalString,
-  dateTo: optionalString,
-  userId: optionalString,
-  supervisorId: optionalString,
-  officeId: optionalString,
-  stageId: optionalString,
-  sourceId: optionalString,
-  status: z.preprocess(
-    emptyStringToUndefined,
-    z.enum(['ACTIVE', 'OPEN', 'CLOSED', 'LOB', 'ARCHIVED']).optional(),
-  ).optional(),
-});
-
-export type ProductAnalyticsQueryInput = z.infer<typeof productAnalyticsQuerySchema>;
