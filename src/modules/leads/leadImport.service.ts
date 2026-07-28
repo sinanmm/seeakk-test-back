@@ -7,6 +7,7 @@ import { clearLeadCache } from '../../services/User/leadService';
 import { resolveOrCreateLeadSourceByName } from '../master/lead-source/leadSource.service';
 import { cleanAndParseImportedPhone } from '../../utils/phoneUtils';
 import { createFollowUp } from '../../services/User/followupService';
+import { createApprovalRequest } from './leadApprovals.repository';
 
 type LeadImportSchemaState = {
   presentColumns: Set<string>;
@@ -38,7 +39,6 @@ export const parseImportFollowUpDate = (rawDateStr: unknown): Date | null => {
   const str = String(rawDateStr).replace(/\u00A0/g, ' ').trim();
   if (!str) return null;
 
-  // Direct ISO/standard parse test if string contains hyphen or T
   if (str.includes('-') || str.includes('T')) {
     const directDate = new Date(str);
     if (!isNaN(directDate.getTime())) {
@@ -46,7 +46,6 @@ export const parseImportFollowUpDate = (rawDateStr: unknown): Date | null => {
     }
   }
 
-  // Regex for MM/DD/YY[YY] or DD/MM/YY[YY] optionally followed by hh:mm[:ss] [am/pm]
   const match = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(am|pm)?)?$/i);
 
   if (match) {
@@ -128,18 +127,132 @@ const ensureLeadImportSchemaReady = async (): Promise<LeadImportSchemaState> => 
   return { presentColumns };
 };
 
-export const processImportJob = async (jobId: string, fileBase64: string, workspaceId: string, userId: string) => {
+/**
+ * Pre-Import Validation Pass
+ * Inspects CSV rows before processing to generate a summary report.
+ */
+export const validateImportFile = async (fileBase64: string, workspaceId: string) => {
   const fileBuffer = Buffer.from(fileBase64, 'base64');
-  
   const rows: any[] = [];
   const stream = Readable.from(fileBuffer);
-  
+
+  await new Promise<void>((resolve, reject) => {
+    stream
+      .pipe(
+        csvParser({
+          mapHeaders: ({ header }) => header.replace(/^\uFEFF/, '').trim().toLowerCase(),
+        }),
+      )
+      .on('data', (data) => rows.push(data))
+      .on('end', () => resolve())
+      .on('error', (err) => reject(err));
+  });
+
+  const workspaceUsers = await prisma.user.findMany({
+    where: { workspaceId, deletedAt: null },
+    select: { name: true, email: true },
+  });
+  const userSet = new Set<string>();
+  for (const u of workspaceUsers) {
+    if (u.name) userSet.add(u.name.trim().toLowerCase());
+    if (u.email) userSet.add(u.email.trim().toLowerCase());
+  }
+
+  const allStages = await prisma.leadStage.findMany({
+    where: { deletedAt: null },
+    select: { name: true },
+  });
+  const stageSet = new Set<string>();
+  for (const s of allStages) {
+    stageSet.add(s.name.trim().toLowerCase());
+  }
+
+  let rowsFound = rows.length;
+  let readyToImport = 0;
+  let rowsWithIssues = 0;
+  const fieldIssuesMap = new Map<string, number>();
+
+  const addIssue = (field: string) => {
+    fieldIssuesMap.set(field, (fieldIssuesMap.get(field) || 0) + 1);
+  };
+
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i];
+    const rawName = row['lead name'] || row['name'] || row['leadname'] || row['first name'] || row['contact name'];
+    const rawPhone = row['mobile'] || row['phone'] || row['contact number'] || row['cell'];
+    const rawEmail = row['email'] || row['email address'];
+    const rawAddress = row['adress'] || row['address'] || row['street'] || row['location'];
+    const rawCompanyName = row['companyname'] || row['company name'] || row['company_name'] || row['company'];
+    const rawExpectedRevenue = row['expected revenue'] || row['expectedrevenue'] || row['revenue'];
+    const rawLeadStage = row['lead stage'] || row['leadstage'] || row['stage'];
+    const rawAssignedUser = row['assigned user'] || row['assigneduser'] || row['assigned to'] || row['assignee'];
+
+    const name = normalizeCell(rawName);
+    const phone = normalizeCell(rawPhone);
+    const email = normalizeCell(rawEmail);
+    const addressStr = normalizeCell(rawAddress);
+    const companyNameStr = normalizeCell(rawCompanyName);
+    const expectedRevenueStr = normalizeCell(rawExpectedRevenue);
+    const leadStageStr = normalizeCell(rawLeadStage);
+    const assignedUserStr = normalizeCell(rawAssignedUser);
+
+    const isEffectivelyEmptyRow = [name, phone, email, addressStr, companyNameStr, leadStageStr, assignedUserStr].every(
+      (v) => !v,
+    );
+    if (isEffectivelyEmptyRow) {
+      rowsFound--;
+      continue;
+    }
+
+    let rowHasIssues = false;
+
+    if (assignedUserStr && !userSet.has(assignedUserStr.toLowerCase())) {
+      addIssue('Assigned User');
+      rowHasIssues = true;
+    }
+
+    if (leadStageStr && !stageSet.has(leadStageStr.toLowerCase())) {
+      addIssue('Lead Stage');
+      rowHasIssues = true;
+    }
+
+    if (expectedRevenueStr) {
+      const cleaned = expectedRevenueStr.replace(/[^0-9.-]/g, '');
+      if (isNaN(parseFloat(cleaned))) {
+        addIssue('Expected Revenue');
+        rowHasIssues = true;
+      }
+    }
+
+    if (rowHasIssues) {
+      rowsWithIssues++;
+    } else {
+      readyToImport++;
+    }
+  }
+
+  const fieldIssuesSummary = Array.from(fieldIssuesMap.entries()).map(([field, count]) => ({ field, count }));
+
+  return {
+    rowsFound,
+    readyToImport,
+    rowsWithIssues,
+    fieldIssuesSummary,
+  };
+};
+
+export const processImportJob = async (jobId: string, fileBase64: string, workspaceId: string, userId: string) => {
+  const fileBuffer = Buffer.from(fileBase64, 'base64');
+
+  const rows: any[] = [];
+  const stream = Readable.from(fileBuffer);
+
   return new Promise<void>((resolve, reject) => {
     stream
       .pipe(
         csvParser({
           mapHeaders: ({ header }) => header.replace(/^\uFEFF/, '').trim().toLowerCase(),
-        })
+        }),
       )
       .on('data', (data) => rows.push(data))
       .on('end', async () => {
@@ -178,47 +291,46 @@ const processRows = async (jobId: string, rows: any[], workspaceId: string, user
 
   await prisma.importJob.update({
     where: { id: jobId },
-    data: { totalRows: rows.length, status: 'PROCESSING' }
+    data: { totalRows: rows.length, status: 'PROCESSING' },
   });
 
   logger.info('[DEBUG] Import Started', { jobId, totalRows: rows.length });
 
   // ------------------------------------------------------------------
-  // IN-MEMORY CACHING FOR BULK IMPORT PERFORMANCE (Avoinding N+1 Queries)
+  // IN-MEMORY CACHING FOR BULK IMPORT PERFORMANCE (O(1) Lookups)
   // ------------------------------------------------------------------
 
-  // 1. Pre-cache Workspace Users
   logger.info('[DEBUG] Pre-caching Workspace Users');
   const workspaceUsers = await prisma.user.findMany({
     where: { workspaceId, deletedAt: null },
     select: { id: true, name: true, email: true, supervisorId: true },
   });
 
-  const userCache = new Map<string, { id: string; supervisorId: string | null }>();
+  const userCache = new Map<string, { id: string; name: string | null; supervisorId: string | null }>();
   for (const u of workspaceUsers) {
+    const entry = { id: u.id, name: u.name, supervisorId: u.supervisorId };
+    userCache.set(u.id.toLowerCase(), entry);
     if (u.name) {
-      userCache.set(u.name.trim().toLowerCase(), { id: u.id, supervisorId: u.supervisorId });
+      userCache.set(u.name.trim().toLowerCase(), entry);
     }
     if (u.email) {
-      userCache.set(u.email.trim().toLowerCase(), { id: u.id, supervisorId: u.supervisorId });
+      userCache.set(u.email.trim().toLowerCase(), entry);
     }
   }
 
-  // 2. Pre-cache Lead Stages
   logger.info('[DEBUG] Pre-caching Lead Stages');
   const allStages = await prisma.leadStage.findMany({
     where: { deletedAt: null },
     orderBy: { order: 'asc' },
   });
 
-  const stageCache = new Map<string, typeof allStages[0]>();
+  const stageCache = new Map<string, (typeof allStages)[0]>();
   const defaultStage = allStages.find((s) => s.order === 1) || allStages[0] || null;
 
   for (const stage of allStages) {
     stageCache.set(stage.name.trim().toLowerCase(), stage);
   }
 
-  // 3. Pre-cache LOB Reasons
   logger.info('[DEBUG] Pre-caching LOB Reasons');
   const existingLOBReasons = await prisma.lOBReason.findMany({
     where: { workspaceId, deletedAt: null },
@@ -231,15 +343,22 @@ const processRows = async (jobId: string, rows: any[], workspaceId: string, user
   }
 
   const sourceCache = new Map<string, string>();
-  let success = 0;
-  let failed = 0;
-  const errors: any[] = [];
+  let successCount = 0;
+  let warningCount = 0;
+  let failedCount = 0;
+  let approvalRequestsCreatedCount = 0;
+  let totalRevenueImported = 0;
+  let pendingApprovalCount = 0;
+
+  const warnings: Array<{ row: number; field: string; value: string; reason: string }> = [];
+  const approvals: Array<{ row: number; leadName: string; stage: string; supervisor: string; status: string }> = [];
+  const errors: Array<{ row: number; error: string }> = [];
   let latestImportedLeadId: string | null = null;
 
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
+    let warningCountThisRow = 0;
     try {
-      // Standard & Aliased Header Extractor
       const rawName = row['lead name'] || row['name'] || row['leadname'] || row['first name'] || row['contact name'];
       const rawPhone = row['mobile'] || row['phone'] || row['contact number'] || row['cell'];
       const rawEmail = row['email'] || row['email address'];
@@ -254,10 +373,13 @@ const processRows = async (jobId: string, rows: any[], workspaceId: string, user
       const rawExpectedRevenue = row['expected revenue'] || row['expectedrevenue'] || row['revenue'];
       const rawSourceName = row['source'] || row['lead source'] || row['leadsource'];
 
-      // NEW Columns
       const rawRemarks = row['remarks'] || row['remark'] || row['notes'] || row['note'];
       const rawNextFollowUpAt =
-        row['next followup at'] || row['nextfollowupat'] || row['next_followup_at'] || row['next followup'] || row['followup date'];
+        row['next followup at'] ||
+        row['nextfollowupat'] ||
+        row['next_followup_at'] ||
+        row['next followup'] ||
+        row['followup date'];
       const rawFollowupNote = row['followup note'] || row['followupnote'] || row['followup_note'] || row['followup remark'];
       const rawLeadStage = row['lead stage'] || row['leadstage'] || row['stage'];
       const rawLOBReason = row['lob reason'] || row['lobreason'] || row['reason'];
@@ -309,18 +431,29 @@ const processRows = async (jobId: string, rows: any[], workspaceId: string, user
         resolvedName = companyNameStr || phone || email || `Imported Lead Row ${i + 2}`;
       }
 
-      // 1. User Resolution
-      let assignedToId: string | undefined = undefined;
+      // 1. User Resolution with Soft Fallback (Field-Level Failure Handling)
+      let assignedToId: string = userId;
+      let assignedUserObject: { id: string; name: string | null; supervisorId: string | null } | null = null;
       if (assignedUserStr) {
         logger.info(`[DEBUG] User Matching: '${assignedUserStr}'`);
         const matchedUser = userCache.get(assignedUserStr.toLowerCase());
         if (matchedUser) {
           assignedToId = matchedUser.id;
+          assignedUserObject = matchedUser;
         } else {
-          throw new Error(`Assigned user '${assignedUserStr}' not found.`);
+          // Soft failure: fallback to importer user & record warning
+          warnings.push({
+            row: i + 2,
+            field: 'Assigned User',
+            value: assignedUserStr,
+            reason: 'No matching user found. Assigned to importer.',
+          });
+          warningCountThisRow++;
         }
-      } else {
-        assignedToId = userId;
+      }
+
+      if (!assignedUserObject) {
+        assignedUserObject = userCache.get(assignedToId.toLowerCase()) || userCache.get(userId.toLowerCase()) || null;
       }
 
       // 2. Lead Source Resolution
@@ -338,7 +471,7 @@ const processRows = async (jobId: string, rows: any[], workspaceId: string, user
         }
       }
 
-      // 3. Lead Stage Resolution & Approval Check
+      // 3. Lead Stage Resolution & Supervisor Approval Check
       let targetStage = defaultStage;
       if (leadStageStr) {
         logger.info(`[DEBUG] Stage Matching: '${leadStageStr}'`);
@@ -346,12 +479,19 @@ const processRows = async (jobId: string, rows: any[], workspaceId: string, user
         if (matchedStage) {
           targetStage = matchedStage;
         } else {
-          throw new Error(`Lead stage '${leadStageStr}' not found.`);
+          warnings.push({
+            row: i + 2,
+            field: 'Lead Stage',
+            value: leadStageStr,
+            reason: 'No matching Lead Stage found. Default stage assigned.',
+          });
+          warningCountThisRow++;
         }
       }
 
       let requiresApproval = false;
       let supervisorId: string | null = null;
+      let supervisorName: string | null = null;
       let initialStageId = targetStage ? targetStage.id : null;
       let initialApprovalState: 'NONE' | 'PENDING' = 'NONE';
       let initialPendingApprovalToStageId: string | null = null;
@@ -363,10 +503,19 @@ const processRows = async (jobId: string, rows: any[], workspaceId: string, user
           requiresApproval = true;
           initialApprovalState = 'PENDING';
           initialPendingApprovalToStageId = targetStage.id;
+          // Keep current/default stage pending approval
           initialStageId = defaultStage ? defaultStage.id : targetStage.id;
 
-          const userToLookup = assignedUserStr ? userCache.get(assignedUserStr.toLowerCase()) : null;
-          supervisorId = userToLookup?.supervisorId || userCache.get(userId)?.supervisorId || null;
+          // Supervisor Hierarchy Resolution: Assigned User -> Supervisor -> Importer -> Supervisor
+          const assignedUserSupervisorId = assignedUserObject?.supervisorId;
+          const importerSupervisorId = userCache.get(userId.toLowerCase())?.supervisorId;
+          const targetSupervisorId = assignedUserSupervisorId || importerSupervisorId || null;
+
+          if (targetSupervisorId) {
+            const supUser = userCache.get(targetSupervisorId.toLowerCase());
+            supervisorId = targetSupervisorId;
+            supervisorName = supUser?.name || 'Supervisor';
+          }
         } else {
           initialStageId = targetStage.id;
           initialIsClosed = targetStage.isClosed;
@@ -396,22 +545,37 @@ const processRows = async (jobId: string, rows: any[], workspaceId: string, user
         }
       }
 
-      // 5. Next Followup Date Parsing
+      // 5. Next Followup Date Parsing & Validation
       let parsedFollowUpDate: Date | null = null;
       if (nextFollowUpAtStr) {
         parsedFollowUpDate = parseImportFollowUpDate(nextFollowUpAtStr);
         if (!parsedFollowUpDate) {
-          throw new Error(
-            `Invalid Next Followup At date format: '${nextFollowUpAtStr}'. Expected format: MM/DD/YY hh:mm am/pm.`,
-          );
+          warnings.push({
+            row: i + 2,
+            field: 'Next Followup At',
+            value: nextFollowUpAtStr,
+            reason: 'Invalid date format. Follow-up creation skipped.',
+          });
+          warningCountThisRow++;
         }
       }
 
+      // 6. Expected Revenue & Total Amount Population
       let expectedRevenue: number | undefined = undefined;
       if (expectedRevenueStr) {
-        const parsed = parseFloat(expectedRevenueStr);
-        if (!isNaN(parsed)) {
+        const cleanedRevenue = expectedRevenueStr.replace(/[^0-9.-]/g, '');
+        const parsed = parseFloat(cleanedRevenue);
+        if (!isNaN(parsed) && parsed >= 0) {
           expectedRevenue = parsed;
+          totalRevenueImported += parsed;
+        } else {
+          warnings.push({
+            row: i + 2,
+            field: 'Expected Revenue',
+            value: expectedRevenueStr,
+            reason: 'Invalid numeric value. Field skipped.',
+          });
+          warningCountThisRow++;
         }
       }
 
@@ -446,8 +610,14 @@ const processRows = async (jobId: string, rows: any[], workspaceId: string, user
       if (schemaState.presentColumns.has('remarks')) {
         insertData.remarks = remarksStr || null;
       }
-      if (schemaState.presentColumns.has('expectedrevenue')) {
-        insertData.expectedRevenue = expectedRevenue ?? null;
+      if (expectedRevenue !== undefined) {
+        if (schemaState.presentColumns.has('expectedrevenue')) {
+          insertData.expectedRevenue = expectedRevenue;
+        }
+        // ISSUE 1 FIX: Populate totalAmount on Lead model from Expected Revenue
+        if (schemaState.presentColumns.has('totalamount')) {
+          insertData.totalAmount = expectedRevenue;
+        }
       }
       if (schemaState.presentColumns.has('sourceid')) {
         insertData.sourceId = sourceId ?? null;
@@ -487,41 +657,40 @@ const processRows = async (jobId: string, rows: any[], workspaceId: string, user
 
       latestImportedLeadId = inserted.id || latestImportedLeadId;
 
-      // 6. Handle Stage Approval Request if isApprovalRequired = true
+      // 7. ISSUE 2 FIX: Trigger Supervisor Approval Workflow for Approval-Required Stages
       if (requiresApproval && targetStage) {
         logger.info(`[DEBUG] Approval Triggered for lead ${inserted.id} to stage ${targetStage.name}`);
-        await (prisma as any).leadStageApproval.create({
-          data: {
+        try {
+          await createApprovalRequest({
             workspaceId,
             leadId: inserted.id,
             fromStageId: defaultStage ? defaultStage.id : targetStage.id,
             toStageId: targetStage.id,
             requestedById: userId,
             assignedToId: supervisorId,
-            status: 'PENDING',
             requestData: targetStage.isLOB && resolvedLOBReasonId ? { reasonId: resolvedLOBReasonId } : {},
-          },
-        });
-
-        try {
-          await (prisma as any).leadActivity.create({
-            data: {
-              leadId: inserted.id,
-              performedById: userId,
-              workspaceId,
-              action: 'STAGE_APPROVAL_REQUESTED',
-              metadata: {
-                fromStageId: defaultStage ? defaultStage.id : targetStage.id,
-                toStageId: targetStage.id,
-                assignedToId: supervisorId,
-              },
-            },
           });
-        } catch {
-          // Non-blocking
+
+          approvalRequestsCreatedCount++;
+          pendingApprovalCount++;
+          approvals.push({
+            row: i + 2,
+            leadName: resolvedName,
+            stage: targetStage.name,
+            supervisor: supervisorName || 'Supervisor',
+            status: 'Approval Request Created Successfully',
+          });
+        } catch (approvalErr: any) {
+          logger.error(`Approval request creation failed for lead ${inserted.id}: ${approvalErr?.message || approvalErr}`);
+          warnings.push({
+            row: i + 2,
+            field: 'Lead Stage Approval',
+            value: targetStage.name,
+            reason: 'Approval Request Failed',
+          });
+          warningCountThisRow++;
         }
       } else if (!requiresApproval && targetStage?.isLOB && resolvedLOBReasonId) {
-        // Create LeadLOBLog for direct LOB stage import
         try {
           await prisma.leadLOBLog.create({
             data: {
@@ -539,7 +708,7 @@ const processRows = async (jobId: string, rows: any[], workspaceId: string, user
         }
       }
 
-      // 7. Create Follow-up using existing Follow-up Service
+      // 8. Follow-up Creation via createFollowUp service
       if (parsedFollowUpDate) {
         try {
           await createFollowUp(
@@ -557,7 +726,6 @@ const processRows = async (jobId: string, rows: any[], workspaceId: string, user
           logger.warn(
             `Follow-up creation warning during import for lead ${inserted.id}: ${followupErr?.message || followupErr}`,
           );
-          // Fallback: set nextFollowUpAt directly on lead record if follow-up service encounters secondary constraints
           await prisma.lead.update({
             where: { id: inserted.id },
             data: { nextFollowUpAt: parsedFollowUpDate },
@@ -565,10 +733,13 @@ const processRows = async (jobId: string, rows: any[], workspaceId: string, user
         }
       }
 
-      success++;
+      if (warningCountThisRow > 0) {
+        warningCount++;
+      }
+      successCount++;
     } catch (err: any) {
-      failed++;
-      errors.push({ row: i + 2, error: err.message });
+      failedCount++;
+      errors.push({ row: i + 2, error: err.message || 'Row import failed' });
     }
 
     if ((i + 1) % 50 === 0) {
@@ -576,32 +747,43 @@ const processRows = async (jobId: string, rows: any[], workspaceId: string, user
         where: { id: jobId },
         data: {
           processedRows: i + 1,
-          successCount: success,
-          failedCount: failed,
+          successCount,
+          failedCount,
         },
       });
     }
   }
 
-  let errorFileUrl = null;
-  if (errors.length > 0) {
-    errorFileUrl = JSON.stringify(errors);
-  }
+  // Save granular structured JSON summary in errorFileUrl
+  const fullSummaryData = {
+    summary: {
+      totalRows: rows.length,
+      successCount,
+      warningCount,
+      failedCount,
+      approvalRequestsCreatedCount,
+      totalRevenueImported,
+      pendingApprovalCount,
+    },
+    warnings,
+    approvals,
+    errors,
+  };
 
   await prisma.importJob.update({
     where: { id: jobId },
     data: {
       processedRows: rows.length,
-      successCount: success,
-      failedCount: failed,
-      status: failed === rows.length ? 'FAILED' : 'COMPLETED',
-      errorFileUrl,
+      successCount,
+      failedCount,
+      status: failedCount === rows.length ? 'FAILED' : 'COMPLETED',
+      errorFileUrl: JSON.stringify(fullSummaryData),
     },
   });
 
-  logger.info('[DEBUG] Import Completed', { jobId, totalRows: rows.length, success, failed });
+  logger.info('[DEBUG] Import Completed', { jobId, totalRows: rows.length, successCount, failedCount, warningCount });
 
-  // CRITICAL: Clear cache so user sees the new leads immediately
+  // Clear lead cache
   try {
     await clearLeadCache(workspaceId);
     logger.info(`Cleared lead cache for workspace ${workspaceId} after import job ${jobId}`);
@@ -609,7 +791,7 @@ const processRows = async (jobId: string, rows: any[], workspaceId: string, user
     logger.error(`Failed to clear cache after import: ${cacheError}`);
   }
 
-  // Add an activity log entry
+  // Audit activity log
   try {
     await (prisma as any).leadActivity.create({
       data: {
@@ -619,13 +801,16 @@ const processRows = async (jobId: string, rows: any[], workspaceId: string, user
         action: 'IMPORT_BULK',
         metadata: {
           jobId,
-          successCount: success,
-          failedCount: failed,
+          successCount,
+          failedCount,
+          warningCount,
+          approvalRequestsCreatedCount,
+          totalRevenueImported,
           total: rows.length,
         },
       },
     });
-  } catch (activityError) {
+  } catch {
     // Non-blocking
   }
 };
