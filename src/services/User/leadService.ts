@@ -2476,6 +2476,8 @@ export const updateLead = async (
 ): Promise<ReturnType<typeof mapLeadRecord> & { _approvalRequired?: boolean; _approval?: any }> => {
   await assertModuleReady();
 
+  logger.info('Lead Update Started', { workspaceId, leadId: id, actorId: actor.id });
+
   const existing = await getLeadScoped(workspaceId, id, actor);
   
   const existingDynamicValues = await (prisma as any).leadDynamicValue.findMany({
@@ -2860,6 +2862,7 @@ export const updateLead = async (
     (result as any)._approval = approvalResult.approval;
   }
   (result as any)._changes = changesToTrack;
+  logger.info('Lead Update Completed', { workspaceId, leadId: id });
   return result;
 };
 
