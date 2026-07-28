@@ -15,10 +15,10 @@ export const importLeads = async (req: Request, res: Response, next: NextFunctio
     }
 
     const fileExtension = path.extname(file.originalname || '').toLowerCase();
-    if (fileExtension !== '.csv' && fileExtension !== '.xlsx' && fileExtension !== '.xls') {
+    if (fileExtension !== '.csv') {
       return res.status(400).json({
         success: false,
-        message: 'Only CSV and Excel (.xlsx, .xls) files are supported for import.',
+        message: 'Only CSV files are supported for import. Export your template to .csv before upload.',
       });
     }
 
