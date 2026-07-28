@@ -111,3 +111,28 @@ export const getRevenueAnalytics = async (req: Request, res: Response, next: Nex
     handleServiceError(error, res, next, 'getRevenueAnalytics');
   }
 };
+
+export const getProductAnalytics = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = await requireWorkspace(req, res);
+  if (!workspaceId) return;
+
+  const query = validate<DashboardSummaryQueryInput>(dashboardSummaryQuerySchema, req.query, res);
+  if (!query) return;
+
+  try {
+    const data = await dashboardService.getProductPerformanceAnalytics(workspaceId, getActor(req), query);
+    return res.status(200).json({
+      success: true,
+      data,
+    });
+  } catch (error: any) {
+    logger.error('Product Analytics Error:', {
+      message: error.message,
+      stack: error.stack,
+      workspaceId,
+      userId: req.user?.id,
+    });
+    handleServiceError(error, res, next, 'getProductAnalytics');
+  }
+};
+

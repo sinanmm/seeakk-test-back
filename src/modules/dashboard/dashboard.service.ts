@@ -1212,3 +1212,320 @@ export const getRevenueAnalytics = async (
     },
   };
 };
+
+export const getProductPerformanceAnalytics = async (
+  workspaceId: string,
+  actor: { id: string; roleId?: string | null; role?: any },
+  query: DashboardSummaryQueryInput | RevenueAnalyticsQueryInput,
+) => {
+  logger.info('[Product Analytics] Started', { workspaceId, userId: actor.id });
+
+  const workspaceProducts = await prisma.product.findMany({
+    where: { workspaceId, status: 'ACTIVE', deletedAt: null },
+    select: { id: true, name: true, code: true, category: true, unitPrice: true },
+    orderBy: { name: 'asc' },
+  });
+
+  logger.info('[Product Analytics] Products Loaded', { count: workspaceProducts.length });
+
+  if (workspaceProducts.length === 0) {
+    return {
+      hasProducts: false,
+      hasProductActivity: false,
+      products: [],
+      stats: null,
+    };
+  }
+
+  let leadAccess: Prisma.LeadWhereInput = {};
+  if (actor.roleId) {
+    leadAccess = await buildAccessWhere(workspaceId, actor);
+  }
+
+  const dashboardLeadFilters = buildDashboardLeadFilters(query);
+
+  const leadWhere: Prisma.LeadWhereInput = {
+    workspaceId,
+    deletedAt: null,
+    ...leadAccess,
+    ...dashboardLeadFilters,
+  };
+
+  const leadProducts = await prisma.leadProduct.findMany({
+    where: {
+      workspaceId,
+      lead: leadWhere,
+    },
+    select: {
+      id: true,
+      productId: true,
+      productName: true,
+      productCode: true,
+      unitPrice: true,
+      quantity: true,
+      lineTotal: true,
+      lead: {
+        select: {
+          id: true,
+          name: true,
+          companyName: true,
+          phone: true,
+          email: true,
+          isClosed: true,
+          isLOB: true,
+          closureType: true,
+          totalAmount: true,
+          expectedRevenue: true,
+          createdAt: true,
+          assignedTo: {
+            select: { id: true, name: true, email: true, username: true },
+          },
+          stage: {
+            select: { id: true, name: true, color: true, isClosed: true, isLOB: true },
+          },
+        },
+      },
+    },
+  });
+
+  logger.info('[Product Analytics] Revenue Aggregated', { leadProductsCount: leadProducts.length });
+
+  const productMap = new Map<
+    string,
+    {
+      id: string;
+      name: string;
+      code: string | null;
+      category: string | null;
+      unitPrice: number;
+      leadsMap: Map<string, any>;
+      quantitySold: number;
+      closedRevenue: number;
+      expectedRevenue: number;
+      totalRevenue: number;
+      closedLeadCount: number;
+      openLeadCount: number;
+      userMap: Map<string, { id: string; name: string; email: string; productRevenue: number; closedRevenue: number; leadCount: Set<string> }>;
+      stageMap: Map<string, { id: string; name: string; color: string; count: number; revenue: number }>;
+    }
+  >();
+
+  for (const prod of workspaceProducts) {
+    productMap.set(prod.id, {
+      id: prod.id,
+      name: prod.name,
+      code: prod.code || null,
+      category: prod.category || null,
+      unitPrice: prod.unitPrice,
+      leadsMap: new Map(),
+      quantitySold: 0,
+      closedRevenue: 0,
+      expectedRevenue: 0,
+      totalRevenue: 0,
+      closedLeadCount: 0,
+      openLeadCount: 0,
+      userMap: new Map(),
+      stageMap: new Map(),
+    });
+  }
+
+  const nameToIdMap = new Map<string, string>();
+  for (const prod of workspaceProducts) {
+    nameToIdMap.set(prod.name.trim().toLowerCase(), prod.id);
+  }
+
+  for (const lp of leadProducts) {
+    let prodEntry = lp.productId ? productMap.get(lp.productId) : undefined;
+    if (!prodEntry && lp.productName) {
+      const matchedId = nameToIdMap.get(lp.productName.trim().toLowerCase());
+      if (matchedId) {
+        prodEntry = productMap.get(matchedId);
+      }
+    }
+
+    if (!prodEntry) continue;
+
+    const lead = lp.lead;
+    if (!lead) continue;
+
+    const isNewLeadForProduct = !prodEntry.leadsMap.has(lead.id);
+    if (isNewLeadForProduct) {
+      prodEntry.leadsMap.set(lead.id, lead);
+    }
+
+    prodEntry.quantitySold += lp.quantity || 1;
+
+    const revenueAmount = lp.lineTotal || (lp.unitPrice * (lp.quantity || 1)) || 0;
+    const isClosedWon = (lead.isClosed && lead.closureType === 'WON') || lead.stage?.isClosed;
+    const isLOB = lead.isLOB || lead.stage?.isLOB;
+
+    if (isClosedWon) {
+      prodEntry.closedRevenue += revenueAmount;
+      if (isNewLeadForProduct) prodEntry.closedLeadCount++;
+    } else if (!isLOB) {
+      prodEntry.expectedRevenue += revenueAmount;
+      if (isNewLeadForProduct) prodEntry.openLeadCount++;
+    }
+
+    prodEntry.totalRevenue = prodEntry.closedRevenue + prodEntry.expectedRevenue;
+
+    if (lead.assignedTo) {
+      const u = lead.assignedTo;
+      const userName = u.name || u.username || u.email || 'Unassigned';
+      if (!prodEntry.userMap.has(u.id)) {
+        prodEntry.userMap.set(u.id, {
+          id: u.id,
+          name: userName,
+          email: u.email || '',
+          productRevenue: 0,
+          closedRevenue: 0,
+          leadCount: new Set(),
+        });
+      }
+      const uEntry = prodEntry.userMap.get(u.id)!;
+      uEntry.productRevenue += revenueAmount;
+      if (isClosedWon) uEntry.closedRevenue += revenueAmount;
+      uEntry.leadCount.add(lead.id);
+    }
+
+    if (lead.stage) {
+      const s = lead.stage;
+      if (!prodEntry.stageMap.has(s.id)) {
+        prodEntry.stageMap.set(s.id, {
+          id: s.id,
+          name: s.name,
+          color: s.color || '#3b82f6',
+          count: 0,
+          revenue: 0,
+        });
+      }
+      const sEntry = prodEntry.stageMap.get(s.id)!;
+      if (isNewLeadForProduct) sEntry.count++;
+      sEntry.revenue += revenueAmount;
+    }
+  }
+
+  const productsResult: Array<{
+    id: string;
+    name: string;
+    code: string | null;
+    category: string | null;
+    unitPrice: number;
+    leadCount: number;
+    quantitySold: number;
+    closedRevenue: number;
+    expectedRevenue: number;
+    totalRevenue: number;
+    closedLeadCount: number;
+    openLeadCount: number;
+    conversionRate: number;
+    averageDealSize: number;
+    topAssignedUsers: Array<{ id: string; name: string; email: string; productRevenue: number; closedRevenue: number; leadCount: number }>;
+    pipelineDistribution: Array<{ id: string; name: string; color: string; count: number; revenue: number }>;
+    recentLeads: Array<{
+      id: string;
+      name: string;
+      companyName: string | null;
+      assignedUser: string;
+      stageName: string;
+      stageColor: string;
+      amount: number;
+      status: string;
+      createdAt: Date;
+    }>;
+  }> = [];
+
+  let totalActiveProductActivityCount = 0;
+  let aggregateTotalRevenue = 0;
+
+  for (const [, p] of productMap.entries()) {
+    const leadCount = p.leadsMap.size;
+    if (leadCount > 0) totalActiveProductActivityCount++;
+
+    aggregateTotalRevenue += p.totalRevenue;
+
+    const conversionRate = leadCount > 0 ? Math.round((p.closedLeadCount / leadCount) * 100) : 0;
+    const averageDealSize = leadCount > 0 ? Math.round(p.totalRevenue / leadCount) : 0;
+
+    const topAssignedUsers = Array.from(p.userMap.values())
+      .map((u) => ({
+        id: u.id,
+        name: u.name,
+        email: u.email,
+        productRevenue: u.productRevenue,
+        closedRevenue: u.closedRevenue,
+        leadCount: u.leadCount.size,
+      }))
+      .sort((a, b) => b.productRevenue - a.productRevenue)
+      .slice(0, 5);
+
+    const pipelineDistribution = Array.from(p.stageMap.values()).sort((a, b) => b.count - a.count);
+
+    const recentLeads = Array.from(p.leadsMap.values())
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .slice(0, 10)
+      .map((l) => ({
+        id: l.id,
+        name: l.name,
+        companyName: l.companyName || null,
+        assignedUser: l.assignedTo ? l.assignedTo.name || l.assignedTo.username || l.assignedTo.email : 'Unassigned',
+        stageName: l.stage ? l.stage.name : 'Default',
+        stageColor: l.stage ? l.stage.color || '#3b82f6' : '#3b82f6',
+        amount: l.totalAmount || l.expectedRevenue || 0,
+        status: l.isClosed ? (l.closureType === 'WON' ? 'Won' : 'Closed') : l.isLOB ? 'LOB' : 'Open',
+        createdAt: l.createdAt,
+      }));
+
+    productsResult.push({
+      id: p.id,
+      name: p.name,
+      code: p.code,
+      category: p.category,
+      unitPrice: p.unitPrice,
+      leadCount,
+      quantitySold: p.quantitySold,
+      closedRevenue: p.closedRevenue,
+      expectedRevenue: p.expectedRevenue,
+      totalRevenue: p.totalRevenue,
+      closedLeadCount: p.closedLeadCount,
+      openLeadCount: p.openLeadCount,
+      conversionRate,
+      averageDealSize,
+      topAssignedUsers,
+      pipelineDistribution,
+      recentLeads,
+    });
+  }
+
+  productsResult.sort((a, b) => b.totalRevenue - a.totalRevenue || b.leadCount - a.leadCount);
+
+  logger.info('[Product Analytics] Chart Generated', { productCount: productsResult.length });
+
+  const bestSeller = productsResult.length > 0 ? [...productsResult].sort((a, b) => b.leadCount - a.leadCount)[0] : null;
+  const highestRevenue = productsResult.length > 0 ? productsResult[0] : null;
+  const lowestPerformer =
+    productsResult.length > 0
+      ? [...productsResult].sort((a, b) => a.totalRevenue - b.totalRevenue || a.leadCount - b.leadCount)[0]
+      : null;
+  const avgProductRevenue =
+    productsResult.length > 0 ? Math.round(aggregateTotalRevenue / productsResult.length) : 0;
+
+  logger.info('[Product Analytics] Dashboard Updated');
+
+  return {
+    hasProducts: true,
+    hasProductActivity: totalActiveProductActivityCount > 0,
+    products: productsResult,
+    stats: {
+      totalProducts: workspaceProducts.length,
+      bestSellerName: bestSeller && bestSeller.leadCount > 0 ? bestSeller.name : 'N/A',
+      bestSellerLeadCount: bestSeller ? bestSeller.leadCount : 0,
+      highestRevenueName: highestRevenue && highestRevenue.totalRevenue > 0 ? highestRevenue.name : 'N/A',
+      highestRevenueAmount: highestRevenue ? highestRevenue.totalRevenue : 0,
+      lowestPerformerName: lowestPerformer ? lowestPerformer.name : 'N/A',
+      lowestPerformerRevenue: lowestPerformer ? lowestPerformer.totalRevenue : 0,
+      avgProductRevenue,
+    },
+  };
+};
+
