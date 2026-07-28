@@ -65,6 +65,9 @@ const getActor = (req: Request) => ({
 });
 
 export const getDashboardSummary = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  logger.info('Dashboard Summary Request Started', { userId: req.user?.id });
+  logger.info('Dashboard Summary Controller Entered', { userId: req.user?.id });
+
   const workspaceId = await requireWorkspace(req, res);
   if (!workspaceId) return;
 
@@ -72,7 +75,9 @@ export const getDashboardSummary = async (req: Request, res: Response, next: Nex
   if (!query) return;
 
   try {
+    logger.info('Dashboard Summary Service Started', { workspaceId, userId: req.user?.id });
     const data = await dashboardService.getDashboardSummary(workspaceId, getActor(req), query);
+    logger.info('Dashboard Summary Returned 200', { workspaceId, userId: req.user?.id });
     return res.status(200).json({
       success: true,
       data,
@@ -113,6 +118,9 @@ export const getRevenueAnalytics = async (req: Request, res: Response, next: Nex
 };
 
 export const getProductAnalytics = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  logger.info('Product Analytics Request Started', { userId: req.user?.id });
+  logger.info('Product Analytics Controller Entered', { userId: req.user?.id });
+
   const workspaceId = await requireWorkspace(req, res);
   if (!workspaceId) return;
 
@@ -120,7 +128,9 @@ export const getProductAnalytics = async (req: Request, res: Response, next: Nex
   if (!query) return;
 
   try {
+    logger.info('Product Analytics Service Started', { workspaceId, userId: req.user?.id });
     const data = await dashboardService.getProductPerformanceAnalytics(workspaceId, getActor(req), query);
+    logger.info('Product Analytics Returned 200', { workspaceId, userId: req.user?.id });
     return res.status(200).json({
       success: true,
       data,

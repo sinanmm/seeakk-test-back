@@ -122,6 +122,7 @@ export const FOLLOWUP_LOCK_RESOLUTION_PREFIXES = [
   '/api/location-tracking',
   '/api/lead-dynamics',
   '/api/admin/lead-dynamics',
+  '/api/dashboard',
   '/api/master',
   '/api/lob-reasons',
   '/api/admin/lead-life-cycles',
@@ -159,6 +160,7 @@ export const FOLLOWUP_LOCK_RESOLUTION_SUFFIXES = [
   '/weekly-off',
   '/location-tracking',
   '/lead-dynamics',
+  '/dashboard',
 ] as const;
 
 /** Raw URL markers for reverse-proxy / Render mount-relative paths. */
@@ -179,6 +181,7 @@ const RAW_RESOLUTION_MARKERS = [
   '/holidays/weekly-off',
   '/location-tracking',
   '/lead-dynamics',
+  '/dashboard',
 ] as const;
 
 type MethodPattern = {
