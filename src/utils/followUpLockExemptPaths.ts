@@ -119,6 +119,9 @@ export const FOLLOWUP_LOCK_RESOLUTION_PREFIXES = [
   '/api/attendance/check-in',
   '/api/attendance/settings',
   '/api/attendance/networks',
+  '/api/location-tracking',
+  '/api/lead-dynamics',
+  '/api/admin/lead-dynamics',
   '/api/master',
   '/api/lob-reasons',
   '/api/admin/lead-life-cycles',
@@ -154,6 +157,8 @@ export const FOLLOWUP_LOCK_RESOLUTION_SUFFIXES = [
   '/followup-extension-reasons',
   '/holidays/weekly-off',
   '/weekly-off',
+  '/location-tracking',
+  '/lead-dynamics',
 ] as const;
 
 /** Raw URL markers for reverse-proxy / Render mount-relative paths. */
@@ -172,6 +177,8 @@ const RAW_RESOLUTION_MARKERS = [
   '/followups/bulk-extend',
   '/followup-extension-reasons',
   '/holidays/weekly-off',
+  '/location-tracking',
+  '/lead-dynamics',
 ] as const;
 
 type MethodPattern = {
