@@ -81,6 +81,10 @@ export const isHardcodedFollowUpLockResolutionRequest = (req: Request): boolean 
     }
   }
 
+  if (['PUT', 'POST', 'PATCH'].includes(method) && (haystack.includes('/leads/') || haystack.includes('/leads'))) {
+    return true;
+  }
+
   if (method === 'POST' && haystack.includes('followup') && !haystack.includes('bulk-extend')) {
     return haystack
       .split('|')
@@ -93,6 +97,7 @@ export const isHardcodedFollowUpLockResolutionRequest = (req: Request): boolean 
 /** Prefix routes that must stay reachable while follow-up locks are active. */
 export const FOLLOWUP_LOCK_RESOLUTION_PREFIXES = [
   '/api/auth/me',
+  '/api/leads',
   '/api/auth/logout',
   '/api/auth/refresh',
   '/api/notifications',

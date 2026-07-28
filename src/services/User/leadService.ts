@@ -12,6 +12,7 @@ import * as leadApprovalService from '../../modules/leads/leadApprovals.service'
 import { validateLeadStageTransition } from '../../modules/master/lead-stages/leadStage.service';
 import { getActiveStageRulesForExecution } from '../../modules/master/stage-rules/stageRule.service';
 import { assertActiveLOBReason } from '../../modules/master/lob-reasons/lobReasons.service';
+import { invalidateOverdueFollowUpCache } from '../../middlewares/overdueFollowupMiddleware';
 import type {
   AssignLeadInput,
   ChangeStageInput,
@@ -2783,6 +2784,7 @@ export const updateLead = async (
         input.followUpDescription,
         normalizeFollowUpType(input.nextFollowUpType),
       );
+      logger.info('Follow-up Updated', { workspaceId, leadId: id, nextFollowUpAt: input.nextFollowUpAt });
     } else if (
       nextFollowUpAt &&
       (input.nextFollowUpType !== undefined || input.followUpDescription !== undefined)
@@ -2810,6 +2812,7 @@ export const updateLead = async (
               : {}),
           },
         });
+        logger.info('Follow-up Updated', { workspaceId, leadId: id, nextFollowUpAt });
       }
     }
 
@@ -2843,9 +2846,12 @@ export const updateLead = async (
 
     await syncLeadRevenueTransaction(tx, workspaceId, id, nextStageId || existing.stageId || stage?.id || null, actor.id);
 
+    logger.info('Transaction Commit', { workspaceId, leadId: id });
     return id;
   });
 
+  logger.info('Lead Saved', { workspaceId, leadId: id });
+  invalidateOverdueFollowUpCache(actor.id);
   await clearLeadCache(workspaceId);
   if (
     nextFollowUpAt &&
@@ -2863,6 +2869,7 @@ export const updateLead = async (
   }
   (result as any)._changes = changesToTrack;
   logger.info('Lead Update Completed', { workspaceId, leadId: id });
+  logger.info('Returning Response', { workspaceId, leadId: id });
   return result;
 };
 
