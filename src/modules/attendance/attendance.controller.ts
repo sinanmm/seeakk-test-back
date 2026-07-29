@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import * as attendanceService from './attendance.service';
+import { getAttendanceCalendarData } from './attendanceCalendar.service';
 import { emitWorkspaceEvent } from '../../realtime/socket';
 import { applyCorsHeadersIfAllowed } from '../../config/cors';
 import { sanitizeCsvRow } from '../../utils/excelSanitizer';
@@ -467,3 +468,35 @@ export const exportController = async (req: Request, res: Response, next: NextFu
     next(error);
   }
 };
+
+export const getAttendanceCalendarController = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const requestingUser = (req as any).user;
+  if (!requestingUser) {
+    return res.status(401).json({ success: false, message: 'Unauthorized' });
+  }
+
+  const now = new Date();
+  const month = req.query.month ? Number(req.query.month) : now.getMonth() + 1;
+  const year = req.query.year ? Number(req.query.year) : now.getFullYear();
+  const userId = (req.query.userId as string) || requestingUser.id;
+
+  try {
+    const data = await getAttendanceCalendarData(requestingUser, {
+      userId,
+      month,
+      year,
+      officeId: req.query.officeId as string,
+      departmentId: req.query.departmentId as string,
+      roleId: req.query.roleId as string,
+      status: req.query.status as string,
+    });
+
+    return res.status(200).json({
+      success: true,
+      data,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+

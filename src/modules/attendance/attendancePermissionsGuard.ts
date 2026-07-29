@@ -20,6 +20,9 @@ const ATTENDANCE_PERMISSIONS = [
   { key: 'edit_attendance_apply_type', group: 'ATTENDANCE_MANAGEMENT', description: 'Edit employee attendance apply type settings' },
   { key: 'view_attendance_network_logs', group: 'ATTENDANCE_MANAGEMENT', description: 'View attendance network audit logs (legacy)' },
   { key: 'view_attendance_location_logs', group: 'ATTENDANCE_MANAGEMENT', description: 'View attendance GPS location audit logs' },
+  { key: 'view_own_attendance_calendar', group: 'ATTENDANCE_MANAGEMENT', description: 'View own attendance calendar' },
+  { key: 'view_assigned_attendance_calendar', group: 'ATTENDANCE_MANAGEMENT', description: 'View assigned users attendance calendar' },
+  { key: 'view_all_attendance_calendar', group: 'ATTENDANCE_MANAGEMENT', description: 'View all users attendance calendar' },
 ];
 
 export const ensureAttendancePermissionsSeeded = async () => {
@@ -57,8 +60,8 @@ export const ensureAttendancePermissionsSeeded = async () => {
         // Admins and Superadmins get all attendance permissions
         permissionsToAssign.push(...ATTENDANCE_PERMISSIONS.map(p => p.key));
       } else {
-        // All other staff/agents get basic view and mark permissions
-        permissionsToAssign.push('view_attendance', 'mark_attendance', 'view_own_attendance');
+        // All other staff/agents get basic view and mark permissions including own calendar
+        permissionsToAssign.push('view_attendance', 'mark_attendance', 'view_own_attendance', 'view_own_attendance_calendar');
       }
 
       // Check existing permissions for this role to avoid redundant inserts

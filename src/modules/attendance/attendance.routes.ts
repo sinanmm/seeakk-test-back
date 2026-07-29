@@ -14,6 +14,17 @@ router.post('/checkout', controller.checkOutAttendanceController);
 router.post('/check-out', controller.checkOutAttendanceController);
 router.get('/history', checkPermission('view_attendance'), controller.getHistoryController);
 router.get('/stats', checkPermission('view_attendance'), controller.getStatsController);
+router.get(
+  '/calendar',
+  checkAnyPermission([
+    'view_own_attendance_calendar',
+    'view_assigned_attendance_calendar',
+    'view_all_attendance_calendar',
+    'view_attendance',
+    'view_all_attendance',
+  ]),
+  controller.getAttendanceCalendarController,
+);
 router.get('/notifications', checkAnyPermission(['view_attendance', 'mark_attendance']), controller.getNotificationsController);
 
 router.get(
