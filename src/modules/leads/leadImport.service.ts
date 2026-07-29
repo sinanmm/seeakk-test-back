@@ -1,6 +1,7 @@
 import { Readable } from 'stream';
 import { randomUUID } from 'crypto';
 import csvParser from 'csv-parser';
+import ExcelJS from 'exceljs';
 import prisma from '../../config/prisma';
 import logger from '../../utils/logger';
 import { clearLeadCache } from '../../services/User/leadService';
@@ -26,16 +27,155 @@ const normalizeCell = (value: unknown): string => {
   return normalized;
 };
 
+const extractCellValue = (val: any): string => {
+  if (val === null || val === undefined) return '';
+
+  if (typeof val === 'object') {
+    if (val instanceof Date) {
+      if (!isNaN(val.getTime())) {
+        return val.toISOString();
+      }
+      return '';
+    }
+    if (val.result !== undefined) {
+      return extractCellValue(val.result);
+    }
+    if (Array.isArray(val.richText)) {
+      return val.richText.map((rt: any) => rt.text || '').join('');
+    }
+    if (val.text !== undefined) {
+      return String(val.text);
+    }
+    if (val.hyperlink !== undefined) {
+      return String(val.hyperlink);
+    }
+    if (val.error) {
+      return '';
+    }
+  }
+
+  if (typeof val === 'number') {
+    if (Number.isInteger(val)) {
+      return val.toLocaleString('fullwide', { useGrouping: false });
+    }
+    return String(val);
+  }
+
+  return String(val);
+};
+
+const parseCsvRows = async (fileBuffer: Buffer): Promise<any[]> => {
+  const rows: any[] = [];
+  const stream = Readable.from(fileBuffer);
+
+  return new Promise<any[]>((resolve, reject) => {
+    stream
+      .pipe(
+        csvParser({
+          mapHeaders: ({ header }) => header.replace(/^\uFEFF/, '').trim().toLowerCase(),
+        }),
+      )
+      .on('data', (data) => rows.push(data))
+      .on('end', () => resolve(rows))
+      .on('error', (err) => reject(err));
+  });
+};
+
+const parseExcelRows = async (fileBuffer: Buffer): Promise<any[]> => {
+  const workbook = new ExcelJS.Workbook();
+  await workbook.xlsx.load(fileBuffer);
+
+  // Requirement: Read only the FIRST worksheet. Ignore additional / hidden sheets.
+  const worksheet = workbook.worksheets[0];
+  if (!worksheet) return [];
+
+  const rows: any[] = [];
+  let headers: string[] = [];
+
+  worksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
+    const rawValues = Array.isArray(row.values) ? row.values.slice(1) : [];
+
+    if (rowNumber === 1) {
+      headers = rawValues.map((h: any) =>
+        String(extractCellValue(h) || '')
+          .replace(/^\uFEFF/, '')
+          .trim()
+          .toLowerCase(),
+      );
+    } else {
+      if (!rawValues || rawValues.length === 0) return;
+
+      const rowObj: Record<string, any> = {};
+      let hasAnyValue = false;
+
+      headers.forEach((header, index) => {
+        if (header) {
+          const val = extractCellValue(rawValues[index]);
+          if (val !== '' && val !== null && val !== undefined) {
+            hasAnyValue = true;
+          }
+          rowObj[header] = val;
+        }
+      });
+
+      if (hasAnyValue) {
+        rows.push(rowObj);
+      }
+    }
+  });
+
+  return rows;
+};
+
+export const parseFileToRows = async (fileBuffer: Buffer, fileNameOrExt?: string): Promise<any[]> => {
+  const ext = (fileNameOrExt || '').toLowerCase();
+  const isExcel =
+    ext.endsWith('.xlsx') ||
+    (fileBuffer.length > 4 &&
+      fileBuffer[0] === 0x50 &&
+      fileBuffer[1] === 0x4b &&
+      fileBuffer[2] === 0x03 &&
+      fileBuffer[3] === 0x04);
+
+  try {
+    if (isExcel) {
+      return await parseExcelRows(fileBuffer);
+    } else {
+      return await parseCsvRows(fileBuffer);
+    }
+  } catch (err: any) {
+    if (isExcel) {
+      throw new Error('Unable to read the Excel file. Please verify the workbook format and try again.');
+    }
+    throw err;
+  }
+};
+
 /**
  * Normalizes and parses various date formats for Next Followup At:
  * - MM/DD/YY hh:mm am/pm (e.g. 02/27/25 10:00 am)
  * - MM/DD/YYYY hh:mm AM/PM (e.g. 02/27/2025 10:00 AM)
  * - 2/27/25 10:00 am
  * - MM/DD/YYYY (e.g. 02/27/2025)
+ * - Excel Serial Numbers (e.g. 45500.4375)
  * - ISO strings
  */
 export const parseImportFollowUpDate = (rawDateStr: unknown): Date | null => {
   if (!rawDateStr) return null;
+
+  if (rawDateStr instanceof Date) {
+    return !isNaN(rawDateStr.getTime()) ? rawDateStr : null;
+  }
+
+  if (typeof rawDateStr === 'number' || (typeof rawDateStr === 'string' && /^\d+(\.\d+)?$/.test(rawDateStr.trim()))) {
+    const num = Number(rawDateStr);
+    if (!isNaN(num) && num > 25569 && num < 2958465) {
+      const dateMs = Math.round((num - 25569) * 86400 * 1000);
+      const d = new Date(dateMs);
+      if (!isNaN(d.getTime())) return d;
+    }
+  }
+
   const str = String(rawDateStr).replace(/\u00A0/g, ' ').trim();
   if (!str) return null;
 
@@ -49,12 +189,20 @@ export const parseImportFollowUpDate = (rawDateStr: unknown): Date | null => {
   const match = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(am|pm)?)?$/i);
 
   if (match) {
-    let month = parseInt(match[1], 10);
-    let day = parseInt(match[2], 10);
+    let p1 = parseInt(match[1], 10);
+    let p2 = parseInt(match[2], 10);
     let year = parseInt(match[3], 10);
 
     if (year < 100) {
       year += 2000;
+    }
+
+    let month = p1;
+    let day = p2;
+
+    if (p1 > 12 && p2 <= 12) {
+      day = p1;
+      month = p2;
     }
 
     let hours = match[4] !== undefined ? parseInt(match[4], 10) : 9;
@@ -129,24 +277,11 @@ const ensureLeadImportSchemaReady = async (): Promise<LeadImportSchemaState> => 
 
 /**
  * Pre-Import Validation Pass
- * Inspects CSV rows before processing to generate a summary report.
+ * Inspects CSV / Excel rows before processing to generate a summary report.
  */
-export const validateImportFile = async (fileBase64: string, workspaceId: string) => {
+export const validateImportFile = async (fileBase64: string, workspaceId: string, fileName?: string) => {
   const fileBuffer = Buffer.from(fileBase64, 'base64');
-  const rows: any[] = [];
-  const stream = Readable.from(fileBuffer);
-
-  await new Promise<void>((resolve, reject) => {
-    stream
-      .pipe(
-        csvParser({
-          mapHeaders: ({ header }) => header.replace(/^\uFEFF/, '').trim().toLowerCase(),
-        }),
-      )
-      .on('data', (data) => rows.push(data))
-      .on('end', () => resolve())
-      .on('error', (err) => reject(err));
-  });
+  const rows = await parseFileToRows(fileBuffer, fileName);
 
   const workspaceUsers = await prisma.user.findMany({
     where: { workspaceId, deletedAt: null },
@@ -242,32 +377,29 @@ export const validateImportFile = async (fileBase64: string, workspaceId: string
 };
 
 export const processImportJob = async (jobId: string, fileBase64: string, workspaceId: string, userId: string) => {
+  const job = await prisma.importJob.findUnique({ where: { id: jobId }, select: { fileName: true } });
   const fileBuffer = Buffer.from(fileBase64, 'base64');
 
-  const rows: any[] = [];
-  const stream = Readable.from(fileBuffer);
+  let rows: any[] = [];
+  try {
+    rows = await parseFileToRows(fileBuffer, job?.fileName || undefined);
+  } catch (parseError: any) {
+    logger.error(`Import file parsing error for job ${jobId}: ${parseError.message}`);
+    await prisma.importJob.update({
+      where: { id: jobId },
+      data: {
+        totalRows: 0,
+        processedRows: 0,
+        successCount: 0,
+        failedCount: 0,
+        status: 'FAILED',
+        errorFileUrl: JSON.stringify([{ row: 0, error: parseError?.message || 'Unable to read the Excel file. Please verify the workbook format and try again.' }]),
+      },
+    });
+    return;
+  }
 
-  return new Promise<void>((resolve, reject) => {
-    stream
-      .pipe(
-        csvParser({
-          mapHeaders: ({ header }) => header.replace(/^\uFEFF/, '').trim().toLowerCase(),
-        }),
-      )
-      .on('data', (data) => rows.push(data))
-      .on('end', async () => {
-        try {
-          await processRows(jobId, rows, workspaceId, userId);
-          resolve();
-        } catch (error) {
-          reject(error);
-        }
-      })
-      .on('error', (err) => {
-        logger.error(`CSV parsing error for job ${jobId}: ${err.message}`);
-        reject(err);
-      });
-  });
+  await processRows(jobId, rows, workspaceId, userId);
 };
 
 const processRows = async (jobId: string, rows: any[], workspaceId: string, userId: string) => {

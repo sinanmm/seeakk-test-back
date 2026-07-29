@@ -16,10 +16,10 @@ export const importLeads = async (req: Request, res: Response, next: NextFunctio
     }
 
     const fileExtension = path.extname(file.originalname || '').toLowerCase();
-    if (fileExtension !== '.csv') {
+    if (fileExtension !== '.csv' && fileExtension !== '.xlsx') {
       return res.status(400).json({
         success: false,
-        message: 'Only CSV files are supported for import. Export your template to .csv before upload.',
+        message: 'Unsupported file format. Please upload a CSV or Excel (.xlsx) file.',
       });
     }
 
@@ -75,6 +75,14 @@ export const validateImport = async (req: Request, res: Response, next: NextFunc
       return res.status(400).json({ success: false, message: 'No file uploaded' });
     }
 
+    const fileExtension = path.extname(file.originalname || '').toLowerCase();
+    if (fileExtension !== '.csv' && fileExtension !== '.xlsx') {
+      return res.status(400).json({
+        success: false,
+        message: 'Unsupported file format. Please upload a CSV or Excel (.xlsx) file.',
+      });
+    }
+
     if (!userId) {
       return res.status(400).json({ success: false, message: 'User authentication required' });
     }
@@ -86,7 +94,7 @@ export const validateImport = async (req: Request, res: Response, next: NextFunc
     }
 
     const fileBase64 = file.buffer.toString('base64');
-    const report = await validateImportFile(fileBase64, workspaceId);
+    const report = await validateImportFile(fileBase64, workspaceId, file.originalname);
 
     return res.status(200).json({
       success: true,
@@ -94,7 +102,10 @@ export const validateImport = async (req: Request, res: Response, next: NextFunc
     });
   } catch (error: any) {
     logger.error(`Error validating import file: ${error.message}`);
-    return res.status(500).json({ success: false, message: 'Failed to validate file' });
+    return res.status(400).json({
+      success: false,
+      message: error?.message || 'Unable to read the Excel file. Please verify the workbook format and try again.',
+    });
   }
 };
 
