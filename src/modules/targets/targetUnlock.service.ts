@@ -9,15 +9,22 @@ const hasUnlockPermission = (permissions: string[] = []) =>
     ['USERS_UNLOCK', 'unlock_target_locked_users', 'SYSTEM_CONFIG', 'manage_target_cycles'].includes(key),
   );
 
-export const listLockedStaff = async (workspaceId: string) => {
+export const listLockedStaff = async (workspaceId: string, officeId?: string) => {
+  const where: any = { workspaceId, isLocked: true, deletedAt: null };
+  if (officeId && officeId !== 'ALL') {
+    where.officeId = officeId;
+  }
+
   const users = await db.user.findMany({
-    where: { workspaceId, isLocked: true, deletedAt: null },
+    where,
     select: {
       id: true,
       name: true,
       email: true,
       username: true,
       isLocked: true,
+      officeId: true,
+      office: { select: { id: true, name: true } },
       targetLockedAt: true,
       targetLockReason: true,
       supervisorId: true,
@@ -73,6 +80,8 @@ export const listLockedStaff = async (workspaceId: string) => {
       name: user.name,
       email: user.email,
       username: user.username,
+      officeId: user.officeId,
+      office: user.office,
       targetLockedAt: user.targetLockedAt,
       targetLockReason: user.targetLockReason,
       supervisor: user.supervisor,

@@ -37,8 +37,9 @@ export const getTargetReport = async (req: Request, res: Response, next: NextFun
 export const listLockedStaff = async (req: Request, res: Response, next: NextFunction) => {
   const workspaceId = requireWorkspace(req, res);
   if (!workspaceId) return;
+  const officeId = req.query.officeId ? String(req.query.officeId) : undefined;
   try {
-    const data = await targetUnlock.listLockedStaff(workspaceId);
+    const data = await targetUnlock.listLockedStaff(workspaceId, officeId);
     res.json({ success: true, data });
   } catch (error) {
     next(error);
