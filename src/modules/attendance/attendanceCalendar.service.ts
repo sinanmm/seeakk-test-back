@@ -94,6 +94,113 @@ const formatTimeString = (dateInput?: Date | string | null): string | null => {
   return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
 };
 
+/** Fetch permitted offices for attendance calendar filtering */
+export const getPermittedCalendarOffices = async (requestingUser: any) => {
+  logger.info(`[Attendance Calendar] Loading Offices for user: ${requestingUser.id}`);
+  const workspaceId = requestingUser.workspaceId;
+
+  const offices = await prisma.office.findMany({
+    where: { workspaceId, isActive: true },
+    select: { id: true, name: true },
+    orderBy: { name: 'asc' },
+  });
+
+  let attendanceOfficeLocations: any[] = [];
+  try {
+    attendanceOfficeLocations = await (prisma as any).attendanceOfficeLocation.findMany({
+      where: { workspaceId, isEnabled: true },
+      select: { id: true, officeName: true, name: true, branch: true },
+    });
+  } catch (e) {
+    // optional fallback
+  }
+
+  const officeList: Array<{ id: string; name: string }> = offices.map((o) => ({
+    id: o.id,
+    name: o.name,
+  }));
+
+  attendanceOfficeLocations.forEach((aol) => {
+    const name = aol.officeName || aol.name || aol.branch;
+    if (name && !officeList.some((x) => x.name.toLowerCase() === name.toLowerCase())) {
+      officeList.push({ id: aol.id, name });
+    }
+  });
+
+  logger.info(`[Attendance Calendar] Offices Loaded: count=${officeList.length}`);
+  return officeList;
+};
+
+/** Fetch permitted users for attendance calendar filtering (supports officeId dependency) */
+export const getPermittedCalendarUsers = async (requestingUser: any, officeId?: string) => {
+  logger.info(
+    `[Attendance Calendar] Loading Users for user: ${requestingUser.id}, officeFilter: ${officeId || 'ALL'}`,
+  );
+  const workspaceId = requestingUser.workspaceId;
+
+  const reqPermissions: string[] = requestingUser.permissions || [];
+  const reqRoleName = (requestingUser.role?.name || requestingUser.roleName || '').toUpperCase();
+  const isSuperOrAdmin = reqRoleName === 'SUPERADMIN' || reqRoleName === 'ADMIN';
+
+  const hasViewAll =
+    isSuperOrAdmin ||
+    reqPermissions.includes('view_all_attendance_calendar') ||
+    reqPermissions.includes('view_all_attendance');
+
+  const hasViewAssigned = reqPermissions.includes('view_assigned_attendance_calendar');
+
+  const whereClause: any = {
+    workspaceId,
+    deletedAt: null,
+    isActive: true,
+  };
+
+  if (officeId && officeId.trim() !== '') {
+    whereClause.OR = [{ officeId }, { attendanceOfficeLocationId: officeId }];
+  }
+
+  if (!hasViewAll) {
+    if (hasViewAssigned) {
+      const subordinates = await prisma.user.findMany({
+        where: {
+          workspaceId,
+          deletedAt: null,
+          isActive: true,
+          OR: [{ id: requestingUser.id }, { supervisorId: requestingUser.id }],
+        },
+        select: { id: true },
+      });
+
+      const allowedUserIds = subordinates.map((s) => s.id);
+      whereClause.id = { in: allowedUserIds };
+    } else {
+      whereClause.id = requestingUser.id;
+    }
+  }
+
+  const users = await prisma.user.findMany({
+    where: whereClause,
+    include: {
+      role: { select: { name: true } },
+      office: { select: { id: true, name: true } },
+    },
+    orderBy: { name: 'asc' },
+  });
+
+  const formattedUsers = users.map((u: any) => ({
+    id: u.id,
+    name: u.name || 'Unnamed Staff',
+    email: u.email || '',
+    profileImage: u.avatar || u.profileImage || null,
+    roleName: u.role?.name || 'Staff',
+    officeName: u.office?.name || 'HQ Office',
+    officeId: u.officeId || u.attendanceOfficeLocationId || null,
+  }));
+
+  logger.info(`[Attendance Calendar] Users Loaded: count=${formattedUsers.length}`);
+  return formattedUsers;
+};
+
 /** Check if targetUserId is within requestingUser's scope based on permissions & reporting hierarchy */
 export const resolveUserScopeAllowed = async (
   requestingUser: any,
@@ -122,12 +229,10 @@ export const resolveUserScopeAllowed = async (
 
     if (!targetUser) return false;
 
-    // Direct report check
     if (targetUser.supervisorId === requestingUser.id) {
       return true;
     }
 
-    // Recursive reporting chain (up to 5 levels)
     let currentSupervisorId = targetUser.supervisorId;
     let depth = 0;
     while (currentSupervisorId && depth < 5) {
@@ -140,7 +245,6 @@ export const resolveUserScopeAllowed = async (
       depth++;
     }
 
-    // Office match check
     if (requestingUser.officeId && targetUser.officeId === requestingUser.officeId) {
       return true;
     }
@@ -162,9 +266,10 @@ export const getAttendanceCalendarData = async (
     status?: string;
   },
 ): Promise<AttendanceCalendarResponse> => {
-  logger.info(
-    `[Attendance Calendar] Request Started for user: ${requestingUser.id}, target: ${params.userId || 'self'}, month: ${params.month}, year: ${params.year}`,
-  );
+  logger.info('[Attendance Calendar] Attendance Calendar Request');
+  if (params.officeId) logger.info(`[Attendance Calendar] Office Filter Applied: ${params.officeId}`);
+  if (params.userId) logger.info(`[Attendance Calendar] User Filter Applied: ${params.userId}`);
+  if (params.status) logger.info(`[Attendance Calendar] Status Filter Applied: ${params.status}`);
 
   const workspaceId = requestingUser.workspaceId;
   const targetUserId = params.userId || requestingUser.id;
@@ -177,7 +282,6 @@ export const getAttendanceCalendarData = async (
     error.statusCode = 403;
     throw error;
   }
-  logger.info(`[Attendance Calendar] Permission Validation Completed for targetUser: ${targetUserId}`);
 
   // Fetch Target User details
   const targetUser: any = await prisma.user.findFirst({
@@ -513,9 +617,7 @@ export const getAttendanceCalendarData = async (
     attendancePercentage: isNaN(attendancePercentage) ? 0 : attendancePercentage,
   };
 
-  logger.info(
-    `[Attendance Calendar] Attendance Loaded & Calculation Completed for user ${targetUserId}: ${days.length} days processed.`,
-  );
+  logger.info('[Attendance Calendar] Calendar Response Returned');
 
   return {
     user: {

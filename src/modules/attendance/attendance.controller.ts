@@ -1,6 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import * as attendanceService from './attendance.service';
-import { getAttendanceCalendarData } from './attendanceCalendar.service';
+import {
+  getAttendanceCalendarData,
+  getPermittedCalendarOffices,
+  getPermittedCalendarUsers,
+} from './attendanceCalendar.service';
 import { emitWorkspaceEvent } from '../../realtime/socket';
 import { applyCorsHeadersIfAllowed } from '../../config/cors';
 import { sanitizeCsvRow } from '../../utils/excelSanitizer';
@@ -494,6 +498,41 @@ export const getAttendanceCalendarController = async (req: Request, res: Respons
     return res.status(200).json({
       success: true,
       data,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getCalendarOfficesController = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const requestingUser = (req as any).user;
+  if (!requestingUser) {
+    return res.status(401).json({ success: false, message: 'Unauthorized' });
+  }
+
+  try {
+    const offices = await getPermittedCalendarOffices(requestingUser);
+    return res.status(200).json({
+      success: true,
+      data: offices,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getCalendarUsersController = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const requestingUser = (req as any).user;
+  if (!requestingUser) {
+    return res.status(401).json({ success: false, message: 'Unauthorized' });
+  }
+
+  try {
+    const officeId = req.query.officeId as string;
+    const users = await getPermittedCalendarUsers(requestingUser, officeId);
+    return res.status(200).json({
+      success: true,
+      data: users,
     });
   } catch (error) {
     next(error);

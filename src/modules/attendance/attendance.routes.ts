@@ -25,6 +25,28 @@ router.get(
   ]),
   controller.getAttendanceCalendarController,
 );
+router.get(
+  '/calendar/offices',
+  checkAnyPermission([
+    'view_own_attendance_calendar',
+    'view_assigned_attendance_calendar',
+    'view_all_attendance_calendar',
+    'view_attendance',
+    'view_all_attendance',
+  ]),
+  controller.getCalendarOfficesController,
+);
+router.get(
+  '/calendar/users',
+  checkAnyPermission([
+    'view_own_attendance_calendar',
+    'view_assigned_attendance_calendar',
+    'view_all_attendance_calendar',
+    'view_attendance',
+    'view_all_attendance',
+  ]),
+  controller.getCalendarUsersController,
+);
 router.get('/notifications', checkAnyPermission(['view_attendance', 'mark_attendance']), controller.getNotificationsController);
 
 router.get(
