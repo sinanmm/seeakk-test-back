@@ -644,15 +644,16 @@ model TargetPerformanceLog {
 model TargetPeriodMetric {
   id                   String   @id @default(cuid())
   periodId             String
-  metricType           String // "LEADS", "REVENUE", "FOLLOW_UP"
+  metricType           String // "LEADS", "REVENUE", "FOLLOW_UP", "PRODUCTS"
   targetValue          Float    @default(0)
   achievedValue        Float    @default(0)
   completionPercentage Float    @default(0)
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
 
-  period       TargetCyclePeriod   @relation(fields: [periodId], references: [id], onDelete: Cascade)
-  stageTargets TargetStageTarget[]
+  period         TargetCyclePeriod     @relation(fields: [periodId], references: [id], onDelete: Cascade)
+  stageTargets   TargetStageTarget[]
+  productTargets TargetProductTarget[]
 
   @@index([periodId])
   @@map("target_period_metrics")
@@ -674,6 +675,24 @@ model TargetStageTarget {
   @@index([periodMetricId])
   @@index([leadStageId])
   @@map("target_stage_targets")
+}
+
+model TargetProductTarget {
+  id                   String   @id @default(cuid())
+  periodMetricId       String
+  productId            String
+  targetValue          Int
+  achievedValue        Int      @default(0)
+  completionPercentage Float    @default(0)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  periodMetric TargetPeriodMetric @relation(fields: [periodMetricId], references: [id], onDelete: Cascade)
+  product      Product            @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([periodMetricId])
+  @@index([productId])
+  @@map("target_product_targets")
 }
 
 model TargetFollowupLog {
@@ -869,9 +888,10 @@ model Product {
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
-  workspace    Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  createdBy    User?         @relation("ProductCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
-  leadProducts LeadProduct[]
+  workspace            Workspace             @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdBy            User?                 @relation("ProductCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  leadProducts         LeadProduct[]
+  targetProductTargets TargetProductTarget[]
 
   @@unique([workspaceId, name])
   @@index([workspaceId, status, deletedAt])

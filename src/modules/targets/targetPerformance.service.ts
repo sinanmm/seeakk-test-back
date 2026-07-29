@@ -72,6 +72,29 @@ export const measureFollowupAchievement = async (
   });
 };
 
+export const measureProductAchievement = async (
+  userId: string,
+  workspaceId: string,
+  productId: string,
+  startDate: Date,
+  endDate: Date,
+): Promise<number> => {
+  const aggregate = await db.leadProduct.aggregate({
+    where: {
+      productId,
+      lead: {
+        workspaceId,
+        OR: [{ createdById: userId }, { assignedToId: userId }],
+        deletedAt: null,
+        isLOB: false,
+        createdAt: { gte: startDate, lte: endDate },
+      },
+    },
+    _sum: { quantity: true },
+  });
+  return aggregate._sum.quantity || 0;
+};
+
 export const evaluateAssignmentPeriod = async (
   assignmentId: string,
   periodId: string,
@@ -94,6 +117,7 @@ export const evaluateAssignmentPeriod = async (
       metrics: {
         include: {
           stageTargets: true,
+          productTargets: true,
         },
       },
     },
@@ -256,6 +280,40 @@ export const evaluateAssignmentPeriod = async (
         overallCompleted = false;
       }
       followupsAchieved = achieved;
+      totalPercentage += metricPercentage;
+    } else if (metric.metricType === 'PRODUCTS') {
+      let metricCompleted = true;
+      let metricPercentage = 0;
+
+      if (metric.productTargets && metric.productTargets.length > 0) {
+        let productsCompleted = true;
+        let productsPctSum = 0;
+        for (const productTarget of metric.productTargets) {
+          const achieved = await measureProductAchievement(
+            assignment.userId,
+            assignment.workspaceId,
+            productTarget.productId,
+            period.startDate,
+            period.endDate,
+          );
+          const target = productTarget.targetValue || 0;
+          const pct = target > 0 ? Math.min(100, (achieved / target) * 100) : 100;
+          productsPctSum += pct;
+          if (target > 0 && achieved < target) {
+            productsCompleted = false;
+          }
+        }
+        metricCompleted = productsCompleted;
+        metricPercentage = productsPctSum / metric.productTargets.length;
+      } else {
+        const target = metric.targetValue || 0;
+        metricCompleted = target <= 0;
+        metricPercentage = target > 0 ? 0 : 100;
+      }
+
+      if (!metricCompleted) {
+        overallCompleted = false;
+      }
       totalPercentage += metricPercentage;
     }
   }

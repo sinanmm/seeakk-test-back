@@ -1,12 +1,18 @@
 import { z } from 'zod';
 
+const productTargetSchema = z.object({
+  productId: z.string().trim().min(1),
+  targetValue: z.number().int().min(0),
+});
+
 const periodMetricSchema = z.object({
-  metricType: z.enum(['LEADS', 'REVENUE', 'FOLLOW_UP']),
+  metricType: z.enum(['LEADS', 'REVENUE', 'FOLLOW_UP', 'PRODUCTS']),
   targetValue: z.number().min(0),
   stageTargets: z.array(z.object({
     leadStageId: z.string().trim().min(1),
     targetValue: z.number().int().min(0),
   })).optional().nullable(),
+  productTargets: z.array(productTargetSchema).optional().nullable(),
 });
 
 const periodSchema = z.object({
@@ -24,7 +30,7 @@ export const createPerformanceTargetCycleSchema = z
     name: z.string().trim().min(1).max(100),
     description: z.string().trim().max(500).optional(),
     targetType: z.enum(['WEEKLY', 'MONTHLY', 'SEMI_ANNUAL', 'MANUAL']),
-    targetMetric: z.enum(['LEADS', 'REVENUE', 'FOLLOW_UP']).optional().nullable(),
+    targetMetric: z.enum(['LEADS', 'REVENUE', 'FOLLOW_UP', 'PRODUCTS']).optional().nullable(),
     leadStageId: z
       .string()
       .trim()

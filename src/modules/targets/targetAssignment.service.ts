@@ -277,9 +277,10 @@ export const persistTargetCycleWithPeriods = async (
       endDate: string | Date;
       lockingDate: string | Date;
       metrics?: Array<{
-        metricType: 'LEADS' | 'REVENUE' | 'FOLLOW_UP';
+        metricType: 'LEADS' | 'REVENUE' | 'FOLLOW_UP' | 'PRODUCTS';
         targetValue: number;
         stageTargets?: Array<{ leadStageId: string; targetValue: number }> | null;
+        productTargets?: Array<{ productId: string; targetValue: number }> | null;
       }> | null;
     }>;
   },
@@ -409,6 +410,18 @@ export const persistTargetCycleWithPeriods = async (
               });
             }
           }
+
+          if (metric.metricType === 'PRODUCTS' && metric.productTargets && metric.productTargets.length > 0) {
+            for (const productTarget of metric.productTargets) {
+              await tx.targetProductTarget.create({
+                data: {
+                  periodMetricId: pmRow.id,
+                  productId: productTarget.productId,
+                  targetValue: productTarget.targetValue,
+                },
+              });
+            }
+          }
         }
       } else if (payload.targetMetric) {
         // Fallback / backward compatibility for single-metric payloads
@@ -477,6 +490,11 @@ export const persistTargetCycleWithPeriods = async (
               stageTargets: {
                 include: {
                   leadStage: { select: { id: true, name: true, color: true } }
+                }
+              },
+              productTargets: {
+                include: {
+                  product: { select: { id: true, name: true, code: true, unitPrice: true } }
                 }
               }
             }

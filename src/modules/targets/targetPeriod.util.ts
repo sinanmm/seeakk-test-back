@@ -20,9 +20,10 @@ export type PeriodInput = {
   endDate: Date;
   lockingDate: Date;
   metrics?: Array<{
-    metricType: 'LEADS' | 'REVENUE' | 'FOLLOW_UP';
+    metricType: 'LEADS' | 'REVENUE' | 'FOLLOW_UP' | 'PRODUCTS';
     targetValue: number;
     stageTargets?: Array<{ leadStageId: string; targetValue: number }> | null;
+    productTargets?: Array<{ productId: string; targetValue: number }> | null;
   }> | null;
 };
 
@@ -39,9 +40,10 @@ export type BuildPeriodsInput = {
     endDate: string | Date;
     lockingDate: string | Date;
     metrics?: Array<{
-      metricType: 'LEADS' | 'REVENUE' | 'FOLLOW_UP';
+      metricType: 'LEADS' | 'REVENUE' | 'FOLLOW_UP' | 'PRODUCTS';
       targetValue: number;
       stageTargets?: Array<{ leadStageId: string; targetValue: number }> | null;
+      productTargets?: Array<{ productId: string; targetValue: number }> | null;
     }> | null;
   }>;
   /** Counts keyed by generated period index (same order as buildTargetCyclePeriods output). */
