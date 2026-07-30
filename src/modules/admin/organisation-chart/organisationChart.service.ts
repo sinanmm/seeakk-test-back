@@ -324,7 +324,13 @@ const buildSupervisorTree = (
     }
   });
 
-  sortTreeByName(rootSupervisorUsers);
+  rootSupervisorUsers.sort((a, b) => {
+    if (a.children.length > 0 && b.children.length === 0) return -1;
+    if (a.children.length === 0 && b.children.length > 0) return 1;
+    if (a.memberCount !== b.memberCount) return (b.memberCount ?? 0) - (a.memberCount ?? 0);
+    return a.name.localeCompare(b.name);
+  });
+  rootSupervisorUsers.forEach((root) => sortTreeByName(root.children));
   assignDepth(rootSupervisorUsers);
 
   return { roots: rootSupervisorUsers, orphanCount, cycleBreakCount };
