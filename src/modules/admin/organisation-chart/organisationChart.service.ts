@@ -22,25 +22,6 @@ type UserRow = {
   office?: { name: string } | null;
 };
 
-const sortTreeByName = (nodes: OrganisationChartNode[]): void => {
-  nodes.sort((a, b) => a.name.localeCompare(b.name));
-  nodes.forEach((node) => sortTreeByName(node.children));
-};
-
-const assignDepth = (roots: OrganisationChartNode[]): void => {
-  const queue: Array<{ node: OrganisationChartNode; depth: number }> = roots.map((root) => ({
-    node: root,
-    depth: 0,
-  }));
-
-  while (queue.length > 0) {
-    const next = queue.shift();
-    if (!next) break;
-    next.node.depth = next.depth;
-    next.node.children.forEach((child) => queue.push({ node: child, depth: next.depth + 1 }));
-  }
-};
-
 const buildOrganisationTree = (
   workspaceName: string,
   users: UserRow[],
@@ -49,7 +30,7 @@ const buildOrganisationTree = (
   let orphanCount = 0;
   let cycleBreakCount = 0;
 
-  // 1. Create User nodes
+  // 1. Create a USER node for every user
   users.forEach((user) => {
     nodeMap.set(user.id, {
       id: user.id,
@@ -83,22 +64,22 @@ const buildOrganisationTree = (
     return false;
   };
 
-  // 2. Link User nodes to Supervisors globally
-  const noSupervisorUsers: OrganisationChartNode[] = [];
+  // 2. Link User nodes directly to Supervisors (Supervisor-Subordinate Hierarchy)
+  const rootUsers: OrganisationChartNode[] = [];
 
   users.forEach((user) => {
     const node = nodeMap.get(user.id)!;
     const parentId = user.supervisorId;
 
     if (!parentId) {
-      noSupervisorUsers.push(node);
+      rootUsers.push(node);
       return;
     }
 
     if (parentId === user.id) {
       cycleBreakCount += 1;
       node.isOrphan = true;
-      noSupervisorUsers.push(node);
+      rootUsers.push(node);
       return;
     }
 
@@ -106,74 +87,56 @@ const buildOrganisationTree = (
     if (!parentNode) {
       orphanCount += 1;
       node.isOrphan = true;
-      noSupervisorUsers.push(node);
+      rootUsers.push(node);
       return;
     }
 
     if (createsCycle(user.id, parentId)) {
       cycleBreakCount += 1;
       node.isOrphan = true;
-      noSupervisorUsers.push(node);
+      rootUsers.push(node);
       return;
     }
 
+    // Attach subordinate directly beneath assigned supervisor
     parentNode.children.push(node);
   });
 
-  // Calculate team counts for supervisors
-  nodeMap.forEach((node) => {
-    if (node.children.length > 0) {
-      const countMembers = (n: OrganisationChartNode): { total: number; active: number } => {
-        let total = n.children.length;
-        let active = n.children.filter((c) => c.isActive).length;
-        n.children.forEach((c) => {
-          const nested = countMembers(c);
-          total += nested.total;
-          active += nested.active;
-        });
-        return { total, active };
-      };
-      const counts = countMembers(node);
-      node.memberCount = counts.total;
-      node.activeCount = counts.active;
-    }
-  });
+  // 3. Sort children recursively by name
+  const sortSubtreeByName = (nodes: OrganisationChartNode[]) => {
+    nodes.sort((a, b) => a.name.localeCompare(b.name));
+    nodes.forEach((n) => sortSubtreeByName(n.children));
+  };
+  sortSubtreeByName(rootUsers);
 
-  // 3. Group remaining top-level users by Department
-  const departmentNodes = new Map<string, OrganisationChartNode>();
+  // 4. Calculate member/active team counts recursively
+  const calculateTeamCounts = (n: OrganisationChartNode): { total: number; active: number } => {
+    let total = n.children.length;
+    let active = n.children.filter((c) => c.isActive).length;
 
-  noSupervisorUsers.forEach((userNode) => {
-    const userRow = users.find((u) => u.id === userNode.id);
-    const deptName = userRow?.department?.name || 'Unassigned';
+    n.children.forEach((c) => {
+      const nested = calculateTeamCounts(c);
+      total += nested.total;
+      active += nested.active;
+    });
 
-    if (!departmentNodes.has(deptName)) {
-      departmentNodes.set(deptName, {
-        id: `dept-${deptName}`,
-        name: deptName,
-        nodeType: 'DEPARTMENT',
-        depth: 0,
-        children: [],
-      });
-    }
-    departmentNodes.get(deptName)!.children.push(userNode);
-  });
-
-  const sortedDepts = Array.from(departmentNodes.values());
-  sortTreeByName(sortedDepts);
-
-  // 4. Create Workspace Root
-  const rootNode: OrganisationChartNode = {
-    id: 'root-workspace',
-    name: workspaceName || 'Company',
-    nodeType: 'WORKSPACE',
-    depth: 0,
-    children: sortedDepts,
+    n.memberCount = total;
+    n.activeCount = active;
+    return { total, active };
   };
 
-  const roots = [rootNode];
-  assignDepth(roots);
+  rootUsers.forEach((root) => calculateTeamCounts(root));
 
-  return { roots, orphanCount, cycleBreakCount };
+  // 5. Assign depth levels
+  const assignDepthLevels = (nodes: OrganisationChartNode[], currentDepth: number) => {
+    nodes.forEach((n) => {
+      n.depth = currentDepth;
+      assignDepthLevels(n.children, currentDepth + 1);
+    });
+  };
+  assignDepthLevels(rootUsers, 0);
+
+  return { roots: rootUsers, orphanCount, cycleBreakCount };
 };
 
 export const getOrganisationChart = async (
