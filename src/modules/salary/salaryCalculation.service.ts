@@ -130,6 +130,29 @@ export const generateSalary = async (
 
   logger.info(`Attendance Search Range: ${startIso} to ${endIso}`);
 
+  // Fetch active holidays for workspace in the month range
+  let monthHolidays: any[] = [];
+  try {
+    monthHolidays = await (prisma as any).holiday.findMany({
+      where: {
+        workspaceId,
+        status: 'ACTIVE',
+        holidayDate: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+      include: {
+        offices: {
+          select: { officeId: true },
+        },
+      },
+    });
+    logger.info(`Workspace Active Holidays Found in Period: ${monthHolidays.length}`);
+  } catch (e: any) {
+    logger.warn(`Holiday fetch query warning: ${e?.message}`);
+  }
+
   const results: any[] = [];
   const skipped: any[] = [];
 
@@ -187,6 +210,16 @@ export const generateSalary = async (
         logger.info(`  Existing Salary Record: None found for ${user.name || user.id}. New record will be created.`);
       }
 
+      // Determine office holidays applicable to this employee
+      const userOfficeId = user.office?.id || null;
+      const applicableOfficeHolidays = monthHolidays.filter((h: any) => {
+        if (!h.offices || h.offices.length === 0) return true;
+        if (!userOfficeId) return true;
+        return h.offices.some((ho: any) => ho.officeId === userOfficeId);
+      });
+
+      logger.info(`  Applicable Office Holidays for Employee: ${applicableOfficeHolidays.length}`);
+
       // Fetch attendance records for the month
       const attendanceRecords = await (prisma as any).attendanceRecord.findMany({
         where: {
@@ -205,7 +238,14 @@ export const generateSalary = async (
       let leaveDays = 0;
       let absentDays = 0;
 
+      const recordDates = new Set<string>();
+
       for (const rec of attendanceRecords) {
+        if (rec.date) {
+          const dStr = new Date(rec.date).toISOString().split('T')[0];
+          recordDates.add(dStr);
+        }
+
         if (rec.attendanceType === 'PRESENT' || rec.attendanceType === 'WORK_FROM_HOME') {
           attendanceDays += 1;
         } else if (rec.attendanceType === 'HALF_DAY') {
@@ -214,6 +254,17 @@ export const generateSalary = async (
           leaveDays += 1;
         } else if (rec.attendanceType === 'ABSENT') {
           absentDays += 1;
+        }
+      }
+
+      // Account for office holidays not already covered in attendance records
+      for (const hol of applicableOfficeHolidays) {
+        if (hol.holidayDate) {
+          const holDateStr = new Date(hol.holidayDate).toISOString().split('T')[0];
+          if (!recordDates.has(holDateStr)) {
+            leaveDays += 1;
+            recordDates.add(holDateStr);
+          }
         }
       }
 
