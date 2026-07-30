@@ -1,4 +1,5 @@
 import prisma from '../../../config/prisma';
+import logger from '../../../utils/logger';
 import { redisClient } from '../../../config/redis';
 import {
   OrganisationChartNode,
@@ -139,11 +140,11 @@ const buildOrganisationTree = (
 
   // 3. Group remaining top-level users by Department
   const departmentNodes = new Map<string, OrganisationChartNode>();
-  
+
   noSupervisorUsers.forEach((userNode) => {
     const userRow = users.find((u) => u.id === userNode.id);
     const deptName = userRow?.department?.name || 'Unassigned';
-    
+
     if (!departmentNodes.has(deptName)) {
       departmentNodes.set(deptName, {
         id: `dept-${deptName}`,
@@ -232,8 +233,11 @@ export const getOrganisationChart = async (
 };
 
 export const getUserDetails = async (workspaceId: string, userId: string) => {
-  const user = await (prisma as any).user.findFirst({
-    where: { id: userId, workspaceId },
+  logger.info(`[Organisation Chart] Details Service Started for userId: ${userId}, workspaceId: ${workspaceId}`);
+  logger.info(`[Organisation Chart] Prisma Query Started: User findFirst for ${userId}`);
+
+  const user = await prisma.user.findFirst({
+    where: { id: userId, workspaceId, deletedAt: null },
     select: {
       id: true,
       name: true,
@@ -241,48 +245,107 @@ export const getUserDetails = async (workspaceId: string, userId: string) => {
       phone: true,
       isActive: true,
       createdAt: true,
-      role: { select: { name: true, permissions: true } },
-      department: { select: { name: true } },
-      supervisor: { select: { name: true, id: true } },
-      subordinates: { select: { id: true, name: true, email: true, role: { select: { name: true } }, isActive: true } },
-      _count: {
+      role: {
         select: {
-          assignedLeads: { where: { isClosed: false } }
-        }
-      }
-    }
-  });
-
-  if (!user) throw new Error('User not found in workspace.');
-
-  // Attendance for today
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  const attendance = await (prisma as any).attendanceLog?.findFirst({
-    where: {
-      userId,
-      workspaceId,
-      date: today,
+          id: true,
+          name: true,
+          permissions: {
+            select: { permissionId: true },
+          },
+        },
+      },
+      department: { select: { id: true, name: true } },
+      office: { select: { id: true, name: true } },
+      supervisor: { select: { id: true, name: true, email: true } },
+      subordinates: {
+        where: { deletedAt: null },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          isActive: true,
+          role: { select: { name: true } },
+        },
+      },
     },
-    select: {
-      status: true,
-    }
   });
 
-  return {
+  logger.info(`[Organisation Chart] Prisma Query Completed: User query finished for ${userId}`);
+
+  if (!user) {
+    logger.warn(`[Organisation Chart] User not found in workspace: ${userId}`);
+    const error: any = new Error('User not found in workspace.');
+    error.statusCode = 404;
+    throw error;
+  }
+
+  // Count open leads for this user safely
+  let openLeadsCount = 0;
+  try {
+    openLeadsCount = await prisma.lead.count({
+      where: {
+        workspaceId,
+        assignedToId: userId,
+        isClosed: false,
+      },
+    });
+  } catch (e: any) {
+    logger.error(`[Organisation Chart] Failed to fetch open leads count for user ${userId}`, { error: e?.message });
+  }
+
+  // Fetch today's attendance record safely
+  let todayAttendanceStatus = 'NOT_MARKED';
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const attendanceRecord = await prisma.attendanceRecord.findFirst({
+      where: {
+        userId,
+        workspaceId,
+        date: today,
+      },
+      select: {
+        attendanceType: true,
+        status: true,
+      },
+    });
+
+    if (attendanceRecord) {
+      todayAttendanceStatus = attendanceRecord.attendanceType || attendanceRecord.status || 'PRESENT';
+    }
+  } catch (e: any) {
+    logger.error(`[Organisation Chart] Failed to fetch attendance record for user ${userId}`, { error: e?.message });
+  }
+
+  const result = {
     id: user.id,
-    name: user.name,
+    name: user.name || user.email.split('@')[0] || 'User',
     email: user.email,
-    phone: user.phone,
+    phone: user.phone || null,
     isActive: user.isActive,
     createdAt: user.createdAt,
     role: user.role?.name || null,
     department: user.department?.name || null,
-    supervisor: user.supervisor,
-    subordinates: user.subordinates || [],
+    office: user.office?.name || null,
+    supervisor: user.supervisor
+      ? {
+          id: user.supervisor.id,
+          name: user.supervisor.name || 'Supervisor',
+        }
+      : null,
+    subordinates: (user.subordinates || []).map((sub) => ({
+      id: sub.id,
+      name: sub.name || sub.email.split('@')[0] || 'Staff',
+      email: sub.email,
+      role: sub.role ? { name: sub.role.name } : null,
+      isActive: sub.isActive,
+    })),
     permissionsCount: user.role?.permissions?.length || 0,
-    openLeadsCount: user._count?.assignedLeads || 0,
-    todayAttendance: attendance?.status || 'NOT_MARKED',
+    openLeadsCount,
+    todayAttendance: todayAttendanceStatus,
   };
+
+  logger.info(`[Organisation Chart] Response Created for userId: ${userId}`);
+  return result;
 };

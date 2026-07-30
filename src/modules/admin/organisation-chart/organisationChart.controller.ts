@@ -71,8 +71,10 @@ export const getUserDetails = async (
   res: Response,
   next: NextFunction,
 ): Promise<any> => {
+  logger.info('[Organisation Chart] Details API Request Received');
   const workspaceId = req.user?.workspaceId ?? null;
   if (!workspaceId) {
+    logger.warn('[Organisation Chart] Forbidden: No workspace linked');
     return res.status(403).json({
       success: false,
       message: 'Forbidden: No workspace linked to your account.',
@@ -80,17 +82,25 @@ export const getUserDetails = async (
   }
 
   const userId = req.params.userId as string;
+  logger.info(`[Organisation Chart] User ID: ${userId}`);
+
   if (!userId) {
     return res.status(400).json({ success: false, message: 'User ID is required.' });
   }
 
+  logger.info('[Organisation Chart] Controller Started');
   try {
     const data = await organisationChartService.getUserDetails(workspaceId, userId);
+    logger.info(`[Organisation Chart] Response Returned for userId: ${userId}`);
     return res.status(200).json({
       success: true,
       data,
     });
-  } catch (error) {
+  } catch (error: any) {
+    logger.error(`[Organisation Chart] Error fetching details for userId: ${userId}`, {
+      message: error?.message,
+      stack: error?.stack,
+    });
     handleServiceError(error, res, next, 'getUserDetails');
   }
 };
