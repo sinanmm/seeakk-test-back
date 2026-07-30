@@ -66,35 +66,6 @@ export const getOrganisationChart = async (
   }
 };
 
-export const getSupervisorHierarchy = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-): Promise<any> => {
-  const workspaceId = req.user?.workspaceId ?? null;
-  if (!workspaceId) {
-    return res.status(403).json({
-      success: false,
-      message: 'Forbidden: No workspace linked to your account.',
-    });
-  }
-
-  const query = validate<OrganisationChartQuery>(organisationChartQuerySchema, req.query, res);
-  if (!query) return;
-
-  try {
-    const result = await organisationChartService.getSupervisorHierarchy(workspaceId, query);
-    return res.status(200).json({
-      success: true,
-      message: 'Supervisor hierarchy fetched successfully.',
-      data: result.data,
-      meta: result.meta,
-    });
-  } catch (error) {
-    handleServiceError(error, res, next, 'getSupervisorHierarchy');
-  }
-};
-
 export const getUserDetails = async (
   req: Request,
   res: Response,
@@ -133,4 +104,3 @@ export const getUserDetails = async (
     handleServiceError(error, res, next, 'getUserDetails');
   }
 };
-
