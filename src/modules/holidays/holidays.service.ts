@@ -1,5 +1,4 @@
 import { Prisma } from '@prisma/client';
-import crypto from 'crypto';
 import prisma from '../../config/prisma';
 import logger from '../../utils/logger';
 import { eachDayOfInterval, format } from 'date-fns';
@@ -8,8 +7,8 @@ import {
   getWorkspaceWeeklyOffSettings,
   isHolidayOnDate,
   isWeeklyOffDate,
-  normalizeWeeklyOffColor,
   normalizeWeeklyOffDays,
+  normalizeWeeklyOffColor,
   updateWorkspaceWeeklyOffSettings,
 } from './weeklyOff.util';
 import { redisClient } from '../../config/redis';
@@ -21,7 +20,6 @@ const createHolidayServiceError = (message: string, statusCode = 400): Error & {
 };
 
 const DEFAULT_HOLIDAY_COLOR = '#fda4af';
-let holidayColorColumnExistsCache: boolean | null = null;
 
 const normalizeHolidayDate = (value: unknown): Date => {
   if (value instanceof Date && !Number.isNaN(value.getTime())) {
@@ -47,12 +45,6 @@ const normalizeHolidayDate = (value: unknown): Date => {
   return parsedDate;
 };
 
-const normalizeHolidayPayload = <T extends Record<string, any>>(data: T): T => ({
-  ...data,
-  holidayDate: normalizeHolidayDate(data.holidayDate),
-  color: normalizeHolidayColor(data.color),
-});
-
 const normalizeHolidayColor = (value: unknown): string => {
   if (typeof value !== 'string' || !value.trim()) {
     return DEFAULT_HOLIDAY_COLOR;
@@ -67,155 +59,110 @@ const normalizeHolidayColor = (value: unknown): string => {
   return normalizedValue.toLowerCase();
 };
 
-const withHolidayColor = <T extends Record<string, any>>(holiday: T): T & { color: string } => ({
-  ...holiday,
-  color: typeof holiday.color === 'string' && holiday.color.trim() ? holiday.color : DEFAULT_HOLIDAY_COLOR,
-});
-
-const hasHolidayColorColumn = async (): Promise<boolean> => {
-  if (holidayColorColumnExistsCache !== null) {
-    return holidayColorColumnExistsCache;
-  }
-
-  const rows = await prisma.$queryRaw<Array<{ column_name: string }>>(Prisma.sql`
-    SELECT column_name
-    FROM information_schema.columns
-    WHERE table_schema = current_schema()
-      AND table_name = 'holidays'
-      AND column_name = 'color'
-  `);
-
-  holidayColorColumnExistsCache = rows.length > 0;
-  return holidayColorColumnExistsCache;
+const normalizeHolidayPayload = <T extends Record<string, any>>(data: T): T => {
+  const payload: any = {
+    ...data,
+    holidayDate: normalizeHolidayDate(data.holidayDate),
+    color: normalizeHolidayColor(data.color),
+  };
+  delete payload.countryId;
+  delete payload.stateId;
+  delete payload.districtId;
+  return payload;
 };
 
-const selectHolidayByIdLegacy = async (id: string) => {
-  const rows = await prisma.$queryRaw<Array<Record<string, any>>>(Prisma.sql`
-    SELECT
-      id,
-      "workspaceId",
-      name,
-      "holidayDate",
-      "countryId",
-      "stateId",
-      "districtId",
-      "isRecurring",
-      "recurrenceRule",
-      source::text AS source,
-      status::text AS status,
-      "createdById",
-      "updatedById",
-      "createdAt",
-      "updatedAt"
-    FROM "holidays"
-    WHERE id = ${id}
-    LIMIT 1
-  `);
+export const getWorkspaceHolidays = async (
+  workspaceId: string,
+  options?: { activeOnly?: boolean; officeIds?: string[] },
+) => {
+  const officeFilter =
+    options?.officeIds && options.officeIds.length > 0
+      ? {
+          offices: {
+            some: {
+              officeId: { in: options.officeIds },
+            },
+          },
+        }
+      : {};
 
-  return rows[0] ? withHolidayColor(rows[0]) : null;
-};
-
-export const getWorkspaceHolidays = async (workspaceId: string, options?: { activeOnly?: boolean }) => {
-  if (!(await hasHolidayColorColumn())) {
-    const activeOnlyClause = options?.activeOnly ? Prisma.sql`AND status = 'ACTIVE'::"HolidayStatus"` : Prisma.empty;
-    const rows = await prisma.$queryRaw<Array<Record<string, any>>>(Prisma.sql`
-      SELECT
-        id,
-        "workspaceId",
-        name,
-        "holidayDate",
-        "countryId",
-        "stateId",
-        "districtId",
-        "isRecurring",
-        "recurrenceRule",
-        source::text AS source,
-        status::text AS status,
-        "createdById",
-        "updatedById",
-        "createdAt",
-        "updatedAt"
-      FROM "holidays"
-      WHERE "workspaceId" = ${workspaceId}
-      ${activeOnlyClause}
-      ORDER BY "holidayDate" ASC, name ASC
-    `);
-
-    return rows.map(withHolidayColor);
-  }
-
-  return prisma.holiday.findMany({
+  const holidays = await prisma.holiday.findMany({
     where: {
       workspaceId,
       ...(options?.activeOnly ? { status: 'ACTIVE' } : {}),
+      ...officeFilter,
+    },
+    include: {
+      offices: {
+        include: {
+          office: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      },
     },
     orderBy: [{ holidayDate: 'asc' }, { name: 'asc' }],
   });
+
+  return holidays.map((h) => ({
+    ...h,
+    offices: (h.offices || []).map((o) => ({
+      id: o.office.id,
+      name: o.office.name,
+    })),
+  }));
 };
 
 export const getApplicableHolidays = async (workspaceId: string, user: any) => {
   const allHolidays = await getWorkspaceHolidays(workspaceId, { activeOnly: true });
+  const userOfficeId = typeof user === 'object' && user ? user.officeId : null;
 
-  // Location logic Priority: District > State > Country > Global
-  return allHolidays.filter(h =>
-    h.districtId === user.districtId ||
-    h.stateId === user.stateId ||
-    h.countryId === user.countryId ||
-    (!h.countryId && !h.stateId && !h.districtId)
-  );
+  if (!userOfficeId) {
+    return allHolidays;
+  }
+
+  return allHolidays.filter((h) => {
+    if (!h.offices || h.offices.length === 0) return true; // Applicable to all if unassigned
+    return h.offices.some((o: any) => o.id === userOfficeId);
+  });
 };
 
 export const createHoliday = async (data: any) => {
-  const normalizedData = normalizeHolidayPayload(data);
+  const { officeIds = [], ...restData } = data;
+  if (!Array.isArray(officeIds) || officeIds.length === 0) {
+    throw createHolidayServiceError('At least one office must be selected for the holiday.', 422);
+  }
 
-  // Clear cache mapped to workspace
+  const normalizedData = normalizeHolidayPayload(restData);
+
   if (redisClient.isOpen) {
     await redisClient.del(`holidays:calendar:${normalizedData.workspaceId}`);
     await redisClient.del(`holidays:calendar:${normalizedData.workspaceId}:workspace`);
   }
-  let holiday: any;
-  if (await hasHolidayColorColumn()) {
-    holiday = await prisma.holiday.create({ data: normalizedData });
-  } else {
-    const id = crypto.randomUUID();
-    await prisma.$executeRaw(Prisma.sql`
-      INSERT INTO "holidays" (
-        "id",
-        "workspaceId",
-        "name",
-        "holidayDate",
-        "countryId",
-        "stateId",
-        "districtId",
-        "isRecurring",
-        "recurrenceRule",
-        "source",
-        "status",
-        "createdById",
-        "updatedById",
-        "createdAt",
-        "updatedAt"
-      ) VALUES (
-        ${id},
-        ${normalizedData.workspaceId},
-        ${normalizedData.name},
-        ${normalizedData.holidayDate},
-        ${normalizedData.countryId ?? null},
-        ${normalizedData.stateId ?? null},
-        ${normalizedData.districtId ?? null},
-        ${normalizedData.isRecurring ?? false},
-        ${normalizedData.recurrenceRule ?? null},
-        ${'MANUAL'}::"HolidaySource",
-        ${(normalizedData.status ?? 'ACTIVE')}::"HolidayStatus",
-        ${normalizedData.createdById ?? null},
-        ${normalizedData.updatedById ?? null},
-        NOW(),
-        NOW()
-      )
-    `);
-    holiday = await selectHolidayByIdLegacy(id);
-  }
-  
+
+  const holiday = await prisma.holiday.create({
+    data: {
+      ...normalizedData,
+      offices: {
+        create: officeIds.map((officeId: string) => ({
+          office: { connect: { id: officeId } },
+        })),
+      },
+    },
+    include: {
+      offices: {
+        include: {
+          office: {
+            select: { id: true, name: true },
+          },
+        },
+      },
+    },
+  });
+
   await prisma.auditLog.create({
     data: {
       action: 'CREATE_HOLIDAY',
@@ -227,116 +174,114 @@ export const createHoliday = async (data: any) => {
         color: holiday.color,
         source: holiday.source,
         holidayDate: holiday.holidayDate,
-        name: holiday.name
-      }
-    }
+        name: holiday.name,
+        officeIds,
+      },
+    },
   });
-  
-  return holiday;
+
+  return {
+    ...holiday,
+    offices: (holiday.offices || []).map((o) => ({ id: o.office.id, name: o.office.name })),
+  };
 };
 
 export const updateHoliday = async (id: string, data: any) => {
-  const normalizedData = normalizeHolidayPayload(data);
-  const holiday = await (await hasHolidayColorColumn() ? prisma.holiday.findUnique({ where: { id } }) : selectHolidayByIdLegacy(id));
-  if (holiday && redisClient.isOpen) {
-    await redisClient.del(`holidays:calendar:${holiday.workspaceId}`);
-    await redisClient.del(`holidays:calendar:${holiday.workspaceId}:workspace`);
+  const { officeIds, ...restData } = data;
+  const normalizedData = normalizeHolidayPayload(restData);
+
+  const existingHoliday = await prisma.holiday.findUnique({ where: { id } });
+  if (existingHoliday && redisClient.isOpen) {
+    await redisClient.del(`holidays:calendar:${existingHoliday.workspaceId}`);
+    await redisClient.del(`holidays:calendar:${existingHoliday.workspaceId}:workspace`);
   }
-  let updatedHoliday: any;
-  if (await hasHolidayColorColumn()) {
-    updatedHoliday = await prisma.holiday.update({ where: { id }, data: normalizedData });
-  } else {
-    await prisma.$executeRaw(Prisma.sql`
-      UPDATE "holidays"
-      SET
-        "name" = ${normalizedData.name},
-        "holidayDate" = ${normalizedData.holidayDate},
-        "countryId" = ${normalizedData.countryId ?? null},
-        "stateId" = ${normalizedData.stateId ?? null},
-        "districtId" = ${normalizedData.districtId ?? null},
-        "isRecurring" = ${normalizedData.isRecurring ?? false},
-        "recurrenceRule" = ${normalizedData.recurrenceRule ?? null},
-        "status" = ${(normalizedData.status ?? 'ACTIVE')}::"HolidayStatus",
-        "updatedById" = ${normalizedData.updatedById ?? null},
-        "updatedAt" = NOW()
-      WHERE id = ${id}
-    `);
-    updatedHoliday = await selectHolidayByIdLegacy(id);
+
+  if (Array.isArray(officeIds)) {
+    if (officeIds.length === 0) {
+      throw createHolidayServiceError('At least one office must be selected for the holiday.', 422);
+    }
+
+    await prisma.holidayOffice.deleteMany({
+      where: { holidayId: id },
+    });
+
+    await prisma.holidayOffice.createMany({
+      data: officeIds.map((officeId: string) => ({
+        holidayId: id,
+        officeId,
+      })),
+    });
   }
-  
-  if (holiday) {
+
+  const updatedHoliday = await prisma.holiday.update({
+    where: { id },
+    data: normalizedData,
+    include: {
+      offices: {
+        include: {
+          office: {
+            select: { id: true, name: true },
+          },
+        },
+      },
+    },
+  });
+
+  if (existingHoliday) {
     await prisma.auditLog.create({
       data: {
         action: 'UPDATE_HOLIDAY',
         entityType: 'Holiday',
         entityId: id,
         userId: normalizedData.updatedById,
-        workspaceId: holiday.workspaceId,
-        details: { oldVal: holiday, newVal: normalizedData }
-      }
+        workspaceId: existingHoliday.workspaceId,
+        details: { oldVal: existingHoliday, newVal: normalizedData, officeIds },
+      },
     });
   }
-  
-  return updatedHoliday;
+
+  return {
+    ...updatedHoliday,
+    offices: (updatedHoliday.offices || []).map((o) => ({ id: o.office.id, name: o.office.name })),
+  };
 };
 
 export const deleteHoliday = async (id: string) => {
-  const holiday = await (await hasHolidayColorColumn() ? prisma.holiday.findUnique({ where: { id } }) : selectHolidayByIdLegacy(id));
+  const holiday = await prisma.holiday.findUnique({ where: { id } });
   if (holiday && redisClient.isOpen) {
     await redisClient.del(`holidays:calendar:${holiday.workspaceId}`);
     await redisClient.del(`holidays:calendar:${holiday.workspaceId}:workspace`);
   }
-  let deleted: any;
-  if (await hasHolidayColorColumn()) {
-    deleted = await prisma.holiday.update({ where: { id }, data: { status: 'INACTIVE' } });
-  } else {
-    await prisma.$executeRaw(Prisma.sql`
-      UPDATE "holidays"
-      SET "status" = ${'INACTIVE'}::"HolidayStatus", "updatedAt" = NOW()
-      WHERE id = ${id}
-    `);
-    deleted = await selectHolidayByIdLegacy(id);
-  }
-  
+
+  const deleted = await prisma.holiday.update({
+    where: { id },
+    data: { status: 'INACTIVE' },
+  });
+
   if (holiday) {
     await prisma.auditLog.create({
       data: {
         action: 'DELETE_HOLIDAY',
         entityType: 'Holiday',
         entityId: id,
-        userId: holiday.createdById, // We don't track deletedById currently
+        userId: holiday.createdById,
         workspaceId: holiday.workspaceId,
-      }
+      },
     });
   }
-  
+
   return deleted;
 };
 
 export const getCalendarView = async (workspaceId: string, user: any, month: string) => {
-  let applicableHolidays = [];
+  const holidaysFromDb = await getApplicableHolidays(workspaceId, user);
 
-  const cacheKey = `holidays:calendar:${workspaceId}`;
-  if (redisClient.isOpen) {
-    const cached = await redisClient.get(cacheKey);
-    if (cached) {
-       applicableHolidays = JSON.parse(cached);
-    }
-  }
+  const views = holidaysFromDb.map((h: any) => {
+    let dateStr =
+      typeof h.holidayDate === 'string'
+        ? h.holidayDate.split('T')[0]
+        : new Date(h.holidayDate).toISOString().split('T')[0];
 
-  if (applicableHolidays.length === 0) {
-    const holidaysFromDb = await getApplicableHolidays(workspaceId, user);
-    // Caching
-    if (redisClient.isOpen) {
-       await redisClient.setEx(cacheKey, 3600, JSON.stringify(holidaysFromDb));
-    }
-    applicableHolidays = holidaysFromDb;
-  }
-  
-  // Format dates correctly from strings or Dates
-  const views = applicableHolidays.map((h: any) => {
-    let dateStr = typeof h.holidayDate === 'string' ? h.holidayDate.split('T')[0] : (new Date(h.holidayDate)).toISOString().split('T')[0];
-    
     if (h.isRecurring && month) {
       const [y, m, d] = dateStr.split('-');
       const [reqY, reqM] = month.split('-');
@@ -344,16 +289,17 @@ export const getCalendarView = async (workspaceId: string, user: any, month: str
         dateStr = `${reqY}-${m}-${d}`;
       }
     }
-    
+
     return {
       date: dateStr,
       color: h.color || DEFAULT_HOLIDAY_COLOR,
       title: h.name,
       type: 'HOLIDAY',
-      source: h.source
+      source: h.source,
+      offices: h.offices,
     };
   });
-  
+
   const weeklyOffSettings = await getWorkspaceWeeklyOffSettings(workspaceId);
   const weeklyOffViews = appendWeeklyOffCalendarItems(
     month,
@@ -368,23 +314,8 @@ export const getCalendarView = async (workspaceId: string, user: any, month: str
   return merged;
 };
 
-export const getWorkspaceCalendarView = async (workspaceId: string, month: string) => {
-  let holidays = [];
-
-  const cacheKey = `holidays:calendar:${workspaceId}:workspace`;
-  if (redisClient.isOpen) {
-    const cached = await redisClient.get(cacheKey);
-    if (cached) {
-      holidays = JSON.parse(cached);
-    }
-  }
-
-  if (holidays.length === 0) {
-    holidays = await getWorkspaceHolidays(workspaceId, { activeOnly: true });
-    if (redisClient.isOpen) {
-      await redisClient.setEx(cacheKey, 3600, JSON.stringify(holidays));
-    }
-  }
+export const getWorkspaceCalendarView = async (workspaceId: string, month?: string, officeIds?: string[]) => {
+  const holidays = await getWorkspaceHolidays(workspaceId, { activeOnly: true, officeIds });
 
   const views = holidays.map((h: any) => {
     let dateStr =
@@ -406,12 +337,13 @@ export const getWorkspaceCalendarView = async (workspaceId: string, month: strin
       title: h.name,
       type: 'HOLIDAY',
       source: h.source,
+      offices: h.offices,
     };
   });
 
   const weeklyOffSettings = await getWorkspaceWeeklyOffSettings(workspaceId);
   const weeklyOffViews = appendWeeklyOffCalendarItems(
-    month,
+    month || format(new Date(), 'yyyy-MM'),
     weeklyOffSettings.weeklyOffDays,
     weeklyOffSettings.weeklyOffColor,
   );
@@ -456,7 +388,6 @@ export const saveWeeklyOffSettings = async (
   };
 };
 
-// SLA-Aware Engine
 export const getWorkingDays = async (workspaceId: string, user: any, start: Date, end: Date) => {
   const holidays = await getApplicableHolidays(workspaceId, user);
   const { weeklyOffDays } = await getWorkspaceWeeklyOffSettings(workspaceId);
@@ -467,4 +398,3 @@ export const getWorkingDays = async (workspaceId: string, user: any, start: Date
     return !isHolidayOnDate(holidays, formatted) && !isWeeklyOffDate(day, weeklyOffDays);
   });
 };
-

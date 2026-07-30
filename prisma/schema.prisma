@@ -396,6 +396,7 @@ model Office {
   createdBy   String?
   workspaceId String
   users       User[]
+  holidays    HolidayOffice[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -1568,10 +1569,25 @@ model Holiday {
   createdBy User? @relation("HolidayCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
   updatedBy User? @relation("HolidayUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
 
+  offices HolidayOffice[]
+
   @@index([workspaceId])
   @@index([countryId, stateId, districtId])
   @@index([holidayDate])
   @@map("holidays")
+}
+
+model HolidayOffice {
+  holidayId String
+  officeId  String
+
+  holiday Holiday @relation(fields: [holidayId], references: [id], onDelete: Cascade)
+  office  Office  @relation(fields: [officeId], references: [id], onDelete: Cascade)
+
+  @@id([holidayId, officeId])
+  @@index([officeId])
+  @@index([holidayId])
+  @@map("holiday_offices")
 }
 
 model HolidaySyncLog {

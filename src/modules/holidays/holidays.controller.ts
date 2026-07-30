@@ -66,7 +66,15 @@ export const getCalendarView = async (req: Request, res: Response, next: NextFun
 
   try {
     const month = req.query.month as string;
-    const view = await holidayService.getWorkspaceCalendarView(workspaceId, month);
+    let officeIds: string[] | undefined;
+    if (req.query.officeIds) {
+      if (Array.isArray(req.query.officeIds)) {
+        officeIds = req.query.officeIds as string[];
+      } else if (typeof req.query.officeIds === 'string') {
+        officeIds = (req.query.officeIds as string).split(',').map((s) => s.trim()).filter(Boolean);
+      }
+    }
+    const view = await holidayService.getWorkspaceCalendarView(workspaceId, month, officeIds);
     res.status(200).json({ success: true, data: view });
   } catch (error) {
     next(error);
