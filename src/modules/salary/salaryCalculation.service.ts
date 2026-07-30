@@ -1,4 +1,5 @@
 import prisma from '../../config/prisma';
+import logger from '../../utils/logger';
 import { GenerateSalaryInput, UpdateSalaryCalculationInput } from './salary.types';
 import { SalaryRecordStatus } from '@prisma/client';
 import { emitUserEvent } from '../../realtime/socket';
@@ -31,7 +32,22 @@ export const generateSalary = async (
   const numWorkingDays = customWorkingDays || getDefaultWorkingDays(month, year);
 
   const scopeUpper = (rawScope || '').toUpperCase();
-  const normalizedScope = scopeUpper === 'EMPLOYEE' ? 'SINGLE' : scopeUpper;
+  let normalizedScope = 'COMPANY';
+  if (scopeUpper === 'EMPLOYEE' || scopeUpper === 'SINGLE' || scopeUpper === 'USER') {
+    normalizedScope = 'SINGLE';
+  } else if (scopeUpper === 'DEPARTMENT') {
+    normalizedScope = 'DEPARTMENT';
+  } else if (scopeUpper === 'OFFICE') {
+    normalizedScope = 'OFFICE';
+  }
+
+  logger.info(`=================== Salary Generation Started ===================`);
+  logger.info(`Selected Month: ${month}`);
+  logger.info(`Selected Year: ${year}`);
+  logger.info(`Raw Scope: ${rawScope}, Normalized Scope: ${normalizedScope}`);
+  logger.info(`Target ID: ${rawTargetId || 'N/A'}, userId: ${userId || 'N/A'}, departmentId: ${departmentId || 'N/A'}, officeId: ${officeId || 'N/A'}`);
+  logger.info(`Workspace ID: ${workspaceId}`);
+  logger.info(`Configured Working Days: ${numWorkingDays}`);
 
   // 1. Resolve Target Users
   let userWhereClause: any = {
@@ -43,6 +59,7 @@ export const generateSalary = async (
   if (normalizedScope === 'SINGLE') {
     const targetUserId = userId || rawTargetId;
     if (!targetUserId) {
+      logger.error('Salary Generation Error: Target user ID is required for Single Employee scope.');
       const err: any = new Error('Target user ID is required for Single Employee scope.');
       err.statusCode = 400;
       throw err;
@@ -51,6 +68,7 @@ export const generateSalary = async (
   } else if (normalizedScope === 'DEPARTMENT') {
     const targetDeptId = departmentId || rawTargetId;
     if (!targetDeptId) {
+      logger.error('Salary Generation Error: Target department ID is required for Entire Department scope.');
       const err: any = new Error('Target department ID is required for Entire Department scope.');
       err.statusCode = 400;
       throw err;
@@ -59,12 +77,26 @@ export const generateSalary = async (
   } else if (normalizedScope === 'OFFICE') {
     const targetOfficeId = officeId || rawTargetId;
     if (!targetOfficeId) {
+      logger.error('Salary Generation Error: Target office ID is required for Entire Office scope.');
       const err: any = new Error('Target office ID is required for Entire Office scope.');
       err.statusCode = 400;
       throw err;
     }
     userWhereClause.officeId = targetOfficeId;
+  } else if (normalizedScope === 'COMPANY') {
+    // Optional filters if passed alongside COMPANY scope
+    if (departmentId) {
+      userWhereClause.departmentId = departmentId;
+    }
+    if (officeId) {
+      userWhereClause.officeId = officeId;
+    }
+    if (userId) {
+      userWhereClause.id = userId;
+    }
   }
+
+  logger.info(`Executing User Find Query with clause: ${JSON.stringify(userWhereClause)}`);
 
   const users = await (prisma as any).user.findMany({
     where: userWhereClause,
@@ -72,167 +104,231 @@ export const generateSalary = async (
       id: true,
       name: true,
       monthlySalary: true,
+      isActive: true,
       department: { select: { id: true, name: true } },
       office: { select: { id: true, name: true } },
     },
   });
 
+  logger.info(`Employees Found: ${users ? users.length : 0}`);
+
   if (!users || users.length === 0) {
+    logger.warn(`No active employees found matching scope ${normalizedScope} in workspace ${workspaceId}.`);
     const err: any = new Error('No active employees found for the specified scope.');
     err.statusCode = 404;
     throw err;
   }
 
-  const startDate = new Date(Date.UTC(year, month - 1, 1));
-  const endDate = new Date(Date.UTC(year, month, 0, 23, 59, 59, 999));
+  // Construct month boundaries in UTC
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const daysInMonth = new Date(year, month, 0).getDate();
+  const startIso = `${year}-${pad(month)}-01T00:00:00.000Z`;
+  const endIso = `${year}-${pad(month)}-${pad(daysInMonth)}T23:59:59.999Z`;
+
+  const startDate = new Date(startIso);
+  const endDate = new Date(endIso);
+
+  logger.info(`Attendance Search Range: ${startIso} to ${endIso}`);
 
   const results: any[] = [];
   const skipped: any[] = [];
 
   for (const user of users) {
-    const baseSalary = user.monthlySalary ?? 0;
-    if (!baseSalary || baseSalary <= 0) {
-      skipped.push({
-        userId: user.id,
-        name: user.name,
-        reason: 'Monthly salary not configured or non-positive',
-      });
-      continue;
-    }
+    logger.info(`--------------------------------------------------`);
+    logger.info(`Checking Employee: ID=${user.id}, Name="${user.name || 'Unnamed'}", Dept="${user.department?.name || 'None'}", Office="${user.office?.name || 'None'}"`);
 
-    // Check duplicate salary generation for same employee + month + year
-    const existing = await (prisma as any).salaryRecord.findUnique({
-      where: {
-        workspaceId_userId_month_year: {
-          workspaceId,
+    try {
+      const baseSalary = user.monthlySalary ?? 0;
+      logger.info(`  Configured Monthly Salary: ${baseSalary}`);
+
+      if (!baseSalary || baseSalary <= 0) {
+        const reason = 'Monthly salary not configured or non-positive (set monthly salary in User Management)';
+        logger.warn(`  [SKIP REASON] Employee "${user.name || user.id}": ${reason}`);
+        skipped.push({
           userId: user.id,
-          month,
-          year,
-        },
-      },
-    });
-
-    if (existing && existing.status !== SalaryRecordStatus.DRAFT && existing.status !== SalaryRecordStatus.RETURNED && existing.status !== SalaryRecordStatus.REJECTED) {
-      skipped.push({
-        userId: user.id,
-        name: user.name,
-        reason: `Salary already generated and in status ${existing.status}`,
-      });
-      continue;
-    }
-
-    // Fetch attendance records for the month
-    const attendanceRecords = await (prisma as any).attendanceRecord.findMany({
-      where: {
-        workspaceId,
-        userId: user.id,
-        date: {
-          gte: startDate,
-          lte: endDate,
-        },
-      },
-    });
-
-    let attendanceDays = 0;
-    let leaveDays = 0;
-    let absentDays = 0;
-
-    for (const rec of attendanceRecords) {
-      if (rec.attendanceType === 'PRESENT' || rec.attendanceType === 'WORK_FROM_HOME') {
-        attendanceDays += 1;
-      } else if (rec.attendanceType === 'HALF_DAY') {
-        attendanceDays += 0.5;
-      } else if (rec.attendanceType === 'LEAVE' || rec.attendanceType === 'HOLIDAY' || rec.attendanceType === 'WEEKLY_OFF') {
-        leaveDays += 1;
-      } else if (rec.attendanceType === 'ABSENT') {
-        absentDays += 1;
+          name: user.name || 'User',
+          reason,
+        });
+        continue;
       }
-    }
 
-    // Calculate LOP days: days not present and not on paid leave out of total working days
-    const totalAccountedDays = attendanceDays + leaveDays;
-    const lopDays = Math.max(0, numWorkingDays - totalAccountedDays);
-
-    // Calculate Daily Salary and Net Salary
-    const dailySalary = baseSalary / numWorkingDays;
-    const lopDeduction = dailySalary * lopDays;
-    
-    // Fetch advance payments if any
-    const advancePayments = await (prisma as any).advancePayment.findMany({
-      where: {
-        workspaceId,
-        requestedById: user.id,
-        status: 'APPROVED',
-      },
-    });
-    const totalAdvance = advancePayments.reduce((sum: number, p: any) => sum + (p.amount || 0), 0);
-
-    const bonus = 0;
-    const deduction = Math.round(lopDeduction * 100) / 100;
-    const finalSalary = Math.max(0, Math.round((baseSalary - deduction + bonus) * 100) / 100);
-
-    let record: any;
-    if (existing) {
-      // Overwrite/re-calculate existing DRAFT / REJECTED / RETURNED record
-      record = await (prisma as any).salaryRecord.update({
-        where: { id: existing.id },
-        data: {
-          monthlySalary: baseSalary,
-          workingDays: numWorkingDays,
-          attendanceDays,
-          leaveDays,
-          lopDays,
-          bonus,
-          deduction,
-          advanceAmount: totalAdvance,
-          finalSalary,
-          status: SalaryRecordStatus.DRAFT,
-          currentStageOrder: 1,
-          generatedById,
+      // Check duplicate salary generation for same employee + month + year
+      const existing = await (prisma as any).salaryRecord.findUnique({
+        where: {
+          workspaceId_userId_month_year: {
+            workspaceId,
+            userId: user.id,
+            month,
+            year,
+          },
         },
       });
-    } else {
-      record = await (prisma as any).salaryRecord.create({
-        data: {
+
+      if (existing) {
+        logger.info(`  Existing Salary Record Found: ID=${existing.id}, Status=${existing.status}`);
+
+        if (
+          existing.status !== SalaryRecordStatus.DRAFT &&
+          existing.status !== SalaryRecordStatus.RETURNED &&
+          existing.status !== SalaryRecordStatus.REJECTED
+        ) {
+          const reason = `Skipped because salary already generated and in status "${existing.status}"`;
+          logger.warn(`  [SKIP REASON] Employee "${user.name || user.id}": ${reason}`);
+          skipped.push({
+            userId: user.id,
+            name: user.name || 'User',
+            reason,
+          });
+          continue;
+        } else {
+          logger.info(`  Existing salary record is in editable status (${existing.status}). Re-calculating and updating record.`);
+        }
+      } else {
+        logger.info(`  Existing Salary Record: None found for ${user.name || user.id}. New record will be created.`);
+      }
+
+      // Fetch attendance records for the month
+      const attendanceRecords = await (prisma as any).attendanceRecord.findMany({
+        where: {
           workspaceId,
           userId: user.id,
-          month,
-          year,
-          monthlySalary: baseSalary,
-          workingDays: numWorkingDays,
-          attendanceDays,
-          leaveDays,
-          lopDays,
-          bonus,
-          deduction,
-          advanceAmount: totalAdvance,
-          finalSalary,
-          status: SalaryRecordStatus.DRAFT,
-          currentStageOrder: 1,
-          generatedById,
+          date: {
+            gte: startDate,
+            lte: endDate,
+          },
         },
       });
-    }
 
-    // Log history entry
-    await (prisma as any).salaryHistory.create({
-      data: {
-        salaryRecordId: record.id,
-        editedById: generatedById,
-        action: 'GENERATED',
-        newValue: {
-          monthlySalary: baseSalary,
-          workingDays: numWorkingDays,
-          attendanceDays,
-          leaveDays,
-          lopDays,
-          finalSalary,
+      logger.info(`  Attendance Records Count: ${attendanceRecords.length} found between ${startIso} and ${endIso}`);
+
+      let attendanceDays = 0;
+      let leaveDays = 0;
+      let absentDays = 0;
+
+      for (const rec of attendanceRecords) {
+        if (rec.attendanceType === 'PRESENT' || rec.attendanceType === 'WORK_FROM_HOME') {
+          attendanceDays += 1;
+        } else if (rec.attendanceType === 'HALF_DAY') {
+          attendanceDays += 0.5;
+        } else if (rec.attendanceType === 'LEAVE' || rec.attendanceType === 'HOLIDAY' || rec.attendanceType === 'WEEKLY_OFF') {
+          leaveDays += 1;
+        } else if (rec.attendanceType === 'ABSENT') {
+          absentDays += 1;
+        }
+      }
+
+      const totalAccountedDays = attendanceDays + leaveDays;
+      const lopDays = Math.max(0, numWorkingDays - totalAccountedDays);
+
+      logger.info(`  Attendance Summary: Present=${attendanceDays}, Paid Leave/Holiday/Off=${leaveDays}, Absent=${absentDays}, Total Accounted=${totalAccountedDays}, Calculated LOP Days=${lopDays}`);
+
+      // Calculate Daily Salary and Net Salary
+      const dailySalary = baseSalary / numWorkingDays;
+      const lopDeduction = dailySalary * lopDays;
+
+      // Fetch advance payments if any
+      let totalAdvance = 0;
+      try {
+        const advancePayments = await (prisma as any).advancePayment.findMany({
+          where: {
+            workspaceId,
+            requestedById: user.id,
+            status: 'APPROVED',
+          },
+        });
+        totalAdvance = advancePayments.reduce((sum: number, p: any) => sum + (p.amount || 0), 0);
+      } catch (e: any) {
+        logger.warn(`  Advance Payment query note: ${e?.message}`);
+      }
+
+      const bonus = 0;
+      const deduction = Math.round(lopDeduction * 100) / 100;
+      const finalSalary = Math.max(0, Math.round((baseSalary - deduction + bonus) * 100) / 100);
+
+      logger.info(`  Calculation Result: BaseSalary=${baseSalary}, DailyRate=${dailySalary.toFixed(2)}, Deduction=${deduction}, Advance=${totalAdvance}, FinalSalary=${finalSalary}`);
+
+      let record: any;
+      if (existing) {
+        // Overwrite/re-calculate existing DRAFT / REJECTED / RETURNED record
+        record = await (prisma as any).salaryRecord.update({
+          where: { id: existing.id },
+          data: {
+            monthlySalary: baseSalary,
+            workingDays: numWorkingDays,
+            attendanceDays,
+            leaveDays,
+            lopDays,
+            bonus,
+            deduction,
+            advanceAmount: totalAdvance,
+            finalSalary,
+            status: SalaryRecordStatus.DRAFT,
+            currentStageOrder: 1,
+            generatedById,
+          },
+        });
+        logger.info(`  Salary Record Updated: ID=${record.id}`);
+      } else {
+        record = await (prisma as any).salaryRecord.create({
+          data: {
+            workspaceId,
+            userId: user.id,
+            month,
+            year,
+            monthlySalary: baseSalary,
+            workingDays: numWorkingDays,
+            attendanceDays,
+            leaveDays,
+            lopDays,
+            bonus,
+            deduction,
+            advanceAmount: totalAdvance,
+            finalSalary,
+            status: SalaryRecordStatus.DRAFT,
+            currentStageOrder: 1,
+            generatedById,
+          },
+        });
+        logger.info(`  Salary Record Created: ID=${record.id}`);
+      }
+
+      // Log history entry
+      await (prisma as any).salaryHistory.create({
+        data: {
+          salaryRecordId: record.id,
+          editedById: generatedById,
+          action: 'GENERATED',
+          newValue: {
+            monthlySalary: baseSalary,
+            workingDays: numWorkingDays,
+            attendanceDays,
+            leaveDays,
+            lopDays,
+            finalSalary,
+          },
+          reason: 'Salary record generated automatically',
         },
-        reason: 'Salary record generated automatically',
-      },
-    });
+      });
 
-    results.push(record);
+      results.push(record);
+      logger.info(`  [SUCCESS] Salary Saved for ${user.name || user.id}`);
+    } catch (err: any) {
+      logger.error(`  [ERROR] Calculation failed for employee "${user.name || user.id}": ${err?.message}`, {
+        stack: err?.stack,
+      });
+      skipped.push({
+        userId: user.id,
+        name: user.name || 'User',
+        reason: `Skipped due to error: ${err?.message || 'Unknown calculation error'}`,
+      });
+    }
+  }
+
+  logger.info(`=================== Salary Generation Completed ===================`);
+  logger.info(`Generated Count: ${results.length}`);
+  logger.info(`Skipped Count: ${skipped.length}`);
+  if (skipped.length > 0) {
+    logger.info(`Skipped Summary: ${JSON.stringify(skipped, null, 2)}`);
   }
 
   return {
