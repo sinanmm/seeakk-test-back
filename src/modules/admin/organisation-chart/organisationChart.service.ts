@@ -19,6 +19,7 @@ type UserRow = {
   phone: string | null;
   role: { name: string } | null;
   department: { name: string } | null;
+  office?: { name: string } | null;
 };
 
 const sortTreeByName = (nodes: OrganisationChartNode[]): void => {
@@ -243,6 +244,7 @@ const buildSupervisorTree = (
       phone: user.phone,
       role: user.role?.name ?? null,
       department: user.department?.name ?? null,
+      status: user.office?.name ?? null,
       reportingTo: user.supervisorId,
       nodeType: 'USER',
       depth: 0,
@@ -357,6 +359,7 @@ export const getSupervisorHierarchy = async (
       phone: true,
       role: { select: { name: true } },
       department: { select: { name: true } },
+      office: { select: { name: true } },
     },
     orderBy: [{ name: 'asc' }],
   });
