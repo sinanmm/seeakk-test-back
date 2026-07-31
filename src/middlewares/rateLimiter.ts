@@ -92,3 +92,46 @@ export const authLimiter = rateLimit({
     });
   },
 });
+
+export const attendanceApprovalLimiter = rateLimit({
+  windowMs: Number(process.env.ATTENDANCE_APPROVAL_RATE_LIMIT_WINDOW_MS || 15 * 60 * 1000),
+  max: Number(process.env.ATTENDANCE_APPROVAL_RATE_LIMIT_MAX || 3000),
+  standardHeaders: true,
+  legacyHeaders: false,
+  store: getStore('rl:att_approval:'),
+  skip: (req: Request) => req.method === 'OPTIONS',
+  keyGenerator: (req: Request) => {
+    const userId = (req as any).user?.id;
+    if (userId) return `usr:${userId}`;
+    const deviceId = (req.headers['x-device-id'] as string | undefined)?.trim();
+    if (deviceId) return `dev:${deviceId}`;
+    return `ip:${ipKeyGenerator(req.ip || '')}`;
+  },
+  handler: (req: Request, res: Response, next: NextFunction, options: any) => {
+    const requestId = (req as any).id || (req.headers['x-request-id'] as string | undefined) || 'unknown';
+    const userId = (req as any).user?.id || 'unauthenticated';
+    const route = req.originalUrl || req.path;
+    const retryAfter = Math.max(1, Math.ceil((options.windowMs || 0) / 1000));
+
+    logger.warn('Attendance approval rate limit exceeded', {
+      action: 'rate_limit_attendance_approval',
+      requestId,
+      userId,
+      route,
+      timestamp: new Date().toISOString(),
+      ip: req.ip,
+      limit: options.max,
+      windowMs: options.windowMs,
+      retryAfterSeconds: retryAfter,
+      reason: 'Exceeded attendance approval bulk processing limit',
+    });
+
+    applyCorsHeadersIfAllowed(req, res);
+    res.status(options.statusCode).json({
+      success: false,
+      code: 'ATTENDANCE_APPROVAL_RATE_LIMITED',
+      message: "You're processing requests very quickly. Please wait a few seconds and try again.",
+      retryAfterSeconds: retryAfter,
+    });
+  },
+});

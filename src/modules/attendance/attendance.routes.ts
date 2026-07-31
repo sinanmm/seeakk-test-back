@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { protect, checkPermission, checkAnyPermission } from '../../middlewares/authMiddleware';
 import { resolveAttendanceWorkspace } from './attendance.middleware';
+import { attendanceApprovalLimiter } from '../../middlewares/rateLimiter';
 import * as controller from './attendance.controller';
 
 const router = Router();
@@ -56,21 +57,25 @@ router.get(
 );
 router.post(
   '/review/:recordId',
+  attendanceApprovalLimiter,
   checkAnyPermission(['approve_attendance', 'ATTENDANCE_APPROVE']),
   controller.reviewAttendanceController,
 );
 router.post(
   '/approve/:recordId',
+  attendanceApprovalLimiter,
   checkAnyPermission(['approve_attendance', 'ATTENDANCE_APPROVE']),
   controller.approveAttendanceController,
 );
 router.post(
   '/reject/:recordId',
+  attendanceApprovalLimiter,
   checkAnyPermission(['approve_attendance', 'ATTENDANCE_APPROVE']),
   controller.rejectAttendanceController,
 );
 router.post(
   '/clarification/:recordId',
+  attendanceApprovalLimiter,
   checkAnyPermission(['approve_attendance', 'ATTENDANCE_APPROVE']),
   controller.requestClarificationController,
 );
