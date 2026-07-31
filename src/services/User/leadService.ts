@@ -348,7 +348,7 @@ const leadRelationSelect = {
   lobLogs: {
     orderBy: { changedAt: 'desc' as const },
     take: 1,
-    select: { reason: { select: { name: true } }, remarks: true, changedAt: true },
+    select: { id: true, reasonId: true, reason: { select: { name: true } }, remarks: true, previousStageId: true, previousStageName: true, changedById: true, changedAt: true },
   },
   products: {
     orderBy: { createdAt: 'asc' as const },
@@ -2600,6 +2600,17 @@ export const updateLead = async (
   const lobRemarks = resolveLobRemarks(input, stage);
   const reasonId = input.reasonId === null ? null : input.reasonId ?? null;
   const isStageUpdateRequested = input.stageId !== undefined && input.stageId !== existing.stageId;
+  const isCurrentlyLob = Boolean(existing.isLOB || stage?.isLOB);
+  const isLobUpdateRequested = isCurrentlyLob && (input.reasonId !== undefined || input.lobRemarks !== undefined);
+
+  if (isLobUpdateRequested && reasonId) {
+    await assertActiveLOBReason(workspaceId, reasonId);
+  }
+
+  logger.info('LOB Validation', { workspaceId, leadId: id, reasonId, isLOB: isCurrentlyLob });
+  logger.info('Closed Validation', { workspaceId, leadId: id, isClosed: Boolean(existing.isClosed || stage?.isClosed) });
+  logger.info('Approval Validation', { workspaceId, leadId: id, approvalRequired: Boolean(approvalResult) });
+
   if (isStageUpdateRequested && isLobStage(stage) && !existing.isLOB) {
     ensureLOBPayload(stage, reasonId, lobRemarks);
     await ensureValidLOBReasonForStage(workspaceId, stage, reasonId);
@@ -2828,6 +2839,34 @@ export const updateLead = async (
           workspaceId,
         },
       });
+    } else if (isCurrentlyLob && isLobUpdateRequested) {
+      const existingLog = await (tx as any).leadLOBLog.findFirst({
+        where: { leadId: id, workspaceId },
+        orderBy: { changedAt: 'desc' },
+      });
+      if (existingLog) {
+        await (tx as any).leadLOBLog.update({
+          where: { id: existingLog.id },
+          data: {
+            ...(reasonId ? { reasonId } : {}),
+            ...(lobRemarks !== undefined ? { remarks: lobRemarks } : {}),
+            changedById: actor.id,
+            changedAt: new Date(),
+          },
+        });
+      } else if (reasonId) {
+        await (tx as any).leadLOBLog.create({
+          data: {
+            leadId: id,
+            reasonId,
+            remarks: lobRemarks,
+            previousStageId: existing.stageId,
+            previousStageName: existing.stage?.name?.trim() || null,
+            changedById: actor.id,
+            workspaceId,
+          },
+        });
+      }
     }
 
     if (stage && existing.stageId !== stage.id) {

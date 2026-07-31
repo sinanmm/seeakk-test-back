@@ -1,5 +1,6 @@
 import prisma from '../../config/prisma';
 import { redisClient } from '../../config/redis';
+import logger from '../../utils/logger';
 import { assertActiveLOBReason } from '../master/lob-reasons/lobReasons.service';
 import * as repository from './leadApprovals.repository';
 import type {
@@ -194,116 +195,122 @@ export const createLeadApproval = async (
 ) => {
   await ensureModuleReady();
 
-  const lead = await repository.findLeadScoped(workspaceId, input.leadId);
-  if (!lead) {
-    throw createServiceError('Lead not found in this workspace.', 404);
-  }
+  try {
+    logger.info('Approval Validation', { workspaceId, leadId: input.leadId, fromStageId: input.fromStageId, toStageId: input.toStageId });
 
-  const targetStage = await repository.findStageById(workspaceId, input.toStageId);
-  if (!targetStage) {
-    throw createServiceError('Target lead stage was not found.', 404);
-  }
-
-  if (lead.isClosed || lead.isLOB) {
-    throw createServiceError('Closed or LOB leads cannot request a stage approval.', 409);
-  }
-
-  if (!lead.stageId) {
-    throw createServiceError('Lead does not have a current stage to approve from.', 409);
-  }
-
-  const existingPending = await repository.findPendingApprovalForLead(workspaceId, input.leadId);
-
-  if (lead.approvalState === 'PENDING' && !existingPending) {
-    await repository.clearLeadPendingApprovalState(input.leadId);
-    lead.approvalState = 'NONE';
-    lead.pendingApprovalToStageId = null;
-    lead.pendingApprovalRequestedAt = null;
-  }
-
-  if (lead.approvalState === 'PENDING') {
-    throw createServiceError('This lead already has a pending stage approval request.', 409);
-  }
-
-  if (input.fromStageId !== lead.stageId) {
-    throw createServiceError('The requested approval does not match the lead’s current stage.', 409);
-  }
-
-  if (input.fromStageId === targetStage.id) {
-    throw createServiceError('Lead is already in the requested stage.', 409);
-  }
-
-  if (!targetStage.isApprovalRequired) {
-    throw createServiceError('This stage does not require approval.', 409);
-  }
-
-  let requestData = normalizeRequestData(input.requestData);
-  if (targetStage.isLOB && lead.stageId) {
-    const prevId =
-      typeof requestData.previousStageId === 'string' && requestData.previousStageId.trim()
-        ? requestData.previousStageId.trim()
-        : lead.stageId;
-    const prevName =
-      typeof requestData.previousStageName === 'string' && requestData.previousStageName.trim()
-        ? requestData.previousStageName.trim()
-        : lead.stage?.name?.trim() || null;
-    requestData = { ...requestData, previousStageId: prevId, previousStageName: prevName };
-  }
-
-  if (targetStage.isLOB) {
-    const reasonId = typeof requestData.reasonId === 'string' ? requestData.reasonId.trim() : '';
-    if (!reasonId) {
-      throw createServiceError('LOB approval requests require a reason.', 422);
+    const lead = await repository.findLeadScoped(workspaceId, input.leadId);
+    if (!lead) {
+      throw createServiceError('Lead not found in this workspace.', 404);
     }
 
-    await assertActiveLOBReason(workspaceId, reasonId);
-  }
-
-  if (existingPending) {
-    if (existingPending.fromStageId === input.fromStageId && existingPending.toStageId === input.toStageId) {
-      throw createServiceError('An approval request for this lead stage transition is already pending.', 409);
+    const targetStage = await repository.findStageById(workspaceId, input.toStageId);
+    if (!targetStage) {
+      throw createServiceError('Target lead stage was not found.', 404);
     }
 
-    throw createServiceError('This lead already has a pending stage approval request.', 409);
+    if (!lead.stageId) {
+      throw createServiceError('Lead does not have a current stage to approve from.', 409);
+    }
+
+    const existingPending = await repository.findPendingApprovalForLead(workspaceId, input.leadId);
+
+    if (lead.approvalState === 'PENDING' && !existingPending) {
+      await repository.clearLeadPendingApprovalState(input.leadId);
+      lead.approvalState = 'NONE';
+      lead.pendingApprovalToStageId = null;
+      lead.pendingApprovalRequestedAt = null;
+    }
+
+    if (lead.approvalState === 'PENDING') {
+      throw createServiceError('This lead already has a pending stage approval request.', 409);
+    }
+
+    if (input.fromStageId !== lead.stageId) {
+      throw createServiceError('The requested approval does not match the lead’s current stage.', 409);
+    }
+
+    if (input.fromStageId === targetStage.id) {
+      throw createServiceError('Lead is already in the requested stage.', 409);
+    }
+
+    if (!targetStage.isApprovalRequired) {
+      throw createServiceError('This stage does not require approval.', 409);
+    }
+
+    let requestData = normalizeRequestData(input.requestData);
+    if (targetStage.isLOB && lead.stageId) {
+      const prevId =
+        typeof requestData.previousStageId === 'string' && requestData.previousStageId.trim()
+          ? requestData.previousStageId.trim()
+          : lead.stageId;
+      const prevName =
+        typeof requestData.previousStageName === 'string' && requestData.previousStageName.trim()
+          ? requestData.previousStageName.trim()
+          : lead.stage?.name?.trim() || null;
+      requestData = { ...requestData, previousStageId: prevId, previousStageName: prevName };
+    }
+
+    if (targetStage.isLOB) {
+      const reasonId = typeof requestData.reasonId === 'string' ? requestData.reasonId.trim() : '';
+      if (!reasonId) {
+        throw createServiceError('LOB approval requests require a reason.', 422);
+      }
+
+      await assertActiveLOBReason(workspaceId, reasonId);
+    }
+
+    if (existingPending) {
+      if (existingPending.fromStageId === input.fromStageId && existingPending.toStageId === input.toStageId) {
+        throw createServiceError('An approval request for this lead stage transition is already pending.', 409);
+      }
+
+      throw createServiceError('This lead already has a pending stage approval request.', 409);
+    }
+
+    const requestingUser = await repository.findActiveUserById(workspaceId, actor.id);
+    const selectedSupervisorId = requestingUser?.supervisorId || null;
+
+    if (!selectedSupervisorId) {
+      throw createServiceError(
+        'You must have a supervisor assigned to your account before you can request a stage change that requires approval. Please contact your administrator.',
+        409,
+      );
+    }
+
+    const assignedSupervisor = await repository.findActiveUserById(workspaceId, selectedSupervisorId);
+    if (!assignedSupervisor) {
+      throw createServiceError('The selected supervisor is inactive or unavailable.', 409);
+    }
+
+    const assignedToId = assignedSupervisor.id;
+
+    logger.info('Supervisor Resolved', { workspaceId, leadId: input.leadId, requestedById: actor.id, assignedToId });
+
+    const approval = await repository.createApprovalRequest({
+      workspaceId,
+      leadId: input.leadId,
+      fromStageId: input.fromStageId,
+      toStageId: input.toStageId,
+      requestedById: actor.id,
+      assignedToId,
+      requestData,
+      ipAddress: context?.ipAddress,
+      userAgent: context?.userAgent,
+    });
+
+    logger.info('Approval Created', { workspaceId, leadId: input.leadId, approvalId: approval.id });
+    logger.info('Notification Created', { workspaceId, leadId: input.leadId, approvalId: approval.id, assignedToId });
+
+    const refreshedLead = await repository.findLeadScoped(workspaceId, input.leadId);
+
+    return {
+      approval: buildApprovalResponse(approval),
+      lead: refreshedLead,
+    };
+  } catch (err: any) {
+    logger.error('Approval Request Rejected', { workspaceId, leadId: input.leadId, reason: err?.message || err });
+    throw err;
   }
-
-  const requestingUser = await repository.findActiveUserById(workspaceId, actor.id);
-  const selectedSupervisorId = requestingUser?.supervisorId || null;
-
-  if (!selectedSupervisorId) {
-    throw createServiceError(
-      'You must have a supervisor assigned to your account before you can request a stage change that requires approval. Please contact your administrator.',
-      409,
-    );
-  }
-
-  // Users are now allowed to be their own supervisor.
-
-  const assignedSupervisor = await repository.findActiveUserById(workspaceId, selectedSupervisorId);
-  if (!assignedSupervisor) {
-    throw createServiceError('The selected supervisor is inactive or unavailable.', 409);
-  }
-
-  const assignedToId = assignedSupervisor.id;
-
-  const approval = await repository.createApprovalRequest({
-    workspaceId,
-    leadId: input.leadId,
-    fromStageId: input.fromStageId,
-    toStageId: input.toStageId,
-    requestedById: actor.id,
-    assignedToId,
-    requestData,
-    ipAddress: context?.ipAddress,
-    userAgent: context?.userAgent,
-  });
-
-  const refreshedLead = await repository.findLeadScoped(workspaceId, input.leadId);
-
-  return {
-    approval: buildApprovalResponse(approval),
-    lead: refreshedLead,
-  };
 };
 
 export const listApprovals = async (workspaceId: string, actor: Actor, query: ListLeadApprovalsQueryInput) => {
