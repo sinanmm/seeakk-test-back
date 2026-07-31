@@ -30,7 +30,12 @@ const withOfficeLeadAccess = (
     ...leadAccess,
     AND: [
       ...(Array.isArray(leadAccess.AND) ? leadAccess.AND : leadAccess.AND ? [leadAccess.AND as Prisma.LeadWhereInput] : []),
-      { assignedTo: { officeId } },
+      {
+        OR: [
+          { assignedTo: { officeId } },
+          { assignedToId: null },
+        ],
+      },
     ],
   };
 };
@@ -42,7 +47,9 @@ type NormalizedLOBEvent = {
   leadEmail: string | null;
   leadPhone: string | null;
   companyName: string | null;
+  assignedToId: string | null;
   assignedToName: string;
+  currentStageId: string | null;
   currentStageName: string | null;
   createdByName: string;
   fromStageId: string | null;
@@ -179,10 +186,12 @@ const matchesNormalizedSearch = (item: NormalizedLOBEvent, search: string): bool
 };
 
 const matchesLocation = (user: LocationAwareUser, locationId?: string, officeId?: string) => {
-  if (officeId && user?.officeId !== officeId) return false;
+  if (officeId) {
+    if (user && user.officeId !== officeId) return false;
+  }
   
   if (!locationId) return true;
-  if (!user) return false;
+  if (!user) return true;
 
   return (
     user.officeId === locationId ||
@@ -382,7 +391,9 @@ const normalizeLOBEvents = async (
         leadEmail: item.lead?.email || null,
         leadPhone: item.lead?.phone || null,
         companyName: item.lead?.companyName || null,
+        assignedToId: item.lead?.assignedToId || null,
         assignedToName: resolveDisplayName(item.lead?.assignedTo),
+        currentStageId: item.lead?.stage?.id || null,
         currentStageName: item.lead?.stage?.name || null,
         createdByName: resolveDisplayName(item.lead?.createdBy),
         fromStageId: fromStage.id,
@@ -397,8 +408,18 @@ const normalizeLOBEvents = async (
       };
     })
     .filter((item: NormalizedLOBEvent) => (filters.reason_id ? item.reasonId === filters.reason_id : true))
-    .filter((item: NormalizedLOBEvent) => (filters.user_id ? item.changedById === filters.user_id : true))
-    .filter((item: NormalizedLOBEvent) => (filters.stage ? item.fromStageId === filters.stage : true))
+    .filter((item: NormalizedLOBEvent) =>
+      filters.user_id
+        ? item.changedById === filters.user_id || item.assignedToId === filters.user_id
+        : true,
+    )
+    .filter((item: NormalizedLOBEvent) =>
+      filters.stage
+        ? item.fromStageId === filters.stage ||
+          item.fromStageName === filters.stage ||
+          item.currentStageId === filters.stage
+        : true,
+    )
     .filter((item: NormalizedLOBEvent) => matchesNormalizedSearch(item, search));
 };
 
@@ -418,7 +439,7 @@ const countReferenceLeads = async (
             },
           }
         : {}),
-      ...(filters.user_id ? { assignedToId: filters.user_id } : {}),
+      ...(filters.user_id ? { OR: [{ assignedToId: filters.user_id }, { createdById: filters.user_id }] } : {}),
     },
     withOfficeLeadAccess(leadAccess, filters),
   );
