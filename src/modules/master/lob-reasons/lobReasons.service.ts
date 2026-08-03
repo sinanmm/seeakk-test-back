@@ -279,6 +279,20 @@ export const toggleLOBReasonStatus = async (
   return mapLOBReason(updated);
 };
 
+const canDeleteLOBReasons = async (actor: Actor): Promise<boolean> => {
+  const permissions = await getPermissionKeys(actor);
+  return (
+    permissions.includes('*') ||
+    permissions.includes('LOB_REASONS_DELETE') ||
+    permissions.includes('SYSTEM_CONFIG')
+  );
+};
+
+const assertCanDeleteLOBReasons = async (actor: Actor): Promise<void> => {
+  if (await canDeleteLOBReasons(actor)) return;
+  throw createServiceError('You do not have permission to delete LOB Reasons.', 403);
+};
+
 export const deleteLOBReason = async (
   workspaceId: string,
   actor: Actor,
@@ -286,7 +300,7 @@ export const deleteLOBReason = async (
   context?: { ipAddress?: string; userAgent?: string },
 ) => {
   await ensureModuleReady();
-  await assertManageLOBReasons(actor);
+  await assertCanDeleteLOBReasons(actor);
 
   const existing = await repository.findById(workspaceId, id);
   if (!existing) {
@@ -295,7 +309,10 @@ export const deleteLOBReason = async (
 
   const activeUsageCount = await repository.countActiveLeadUsage(workspaceId, id);
   if (activeUsageCount > 0) {
-    throw createServiceError('LOB reason is used in active leads and cannot be deactivated.', 409);
+    throw createServiceError(
+      'This LOB Reason is already used by existing leads and cannot be deleted. You can deactivate it instead.',
+      409,
+    );
   }
 
   const deleted = await repository.softDeleteLOBReason(id, actor.id);
@@ -303,12 +320,12 @@ export const deleteLOBReason = async (
   await auditService.log({
     userId: actor.id,
     workspaceId,
-    action: 'LOB_REASON_DEACTIVATED',
+    action: 'LOB_REASON_DELETED',
     entityType: 'LOBReason',
     entityId: deleted.id,
     details: {
       name: deleted.name,
-      status: deleted.status,
+      previousStatus: existing.status,
       softDeleted: true,
     },
     ipAddress: context?.ipAddress,
