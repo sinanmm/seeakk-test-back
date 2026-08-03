@@ -42,4 +42,8 @@ router.put(
   targetController.assignUserTargetCycle,
 );
 
+router.post('/self-unlock', targetController.selfUnlock);
+router.post('/self-unlock/:lockId', targetController.selfUnlock);
+router.post('/target-locks/:lockId/self-unlock', targetController.selfUnlock);
+
 export default router;

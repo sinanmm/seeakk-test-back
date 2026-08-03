@@ -129,3 +129,28 @@ export const assignUserTargetCycle = async (req: Request, res: Response, next: N
     next(error);
   }
 };
+
+export const selfUnlock = async (req: Request, res: Response, next: NextFunction) => {
+  const workspaceId = requireWorkspace(req, res);
+  if (!workspaceId) return;
+  try {
+    const { performUserSelfUnlock } = await import('./targetSelfUnlock.service');
+    const lockId = req.params.lockId || req.body?.lockId;
+    const result = await performUserSelfUnlock(
+      workspaceId,
+      req.user!.id,
+      lockId,
+      { ipAddress: req.ip, userAgent: req.get('user-agent') },
+    );
+    res.json(result);
+  } catch (error: any) {
+    if (error?.statusCode) {
+      return res.status(error.statusCode).json({
+        success: false,
+        message: error.message,
+        errorCode: error.errorCode,
+      });
+    }
+    next(error);
+  }
+};

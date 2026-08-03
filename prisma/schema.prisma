@@ -572,6 +572,11 @@ model TargetCyclePeriod {
   endDate       DateTime
   lockingDate   DateTime
 
+  allowSelfUnlock           Boolean @default(false)
+  selfUnlockGraceDays       Int?
+  lockSupervisorOnRefailure Boolean @default(false)
+  enableSupervisorLockChain Boolean @default(false)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -724,12 +729,29 @@ model TargetLockLog {
   isInvalidLock  Boolean   @default(false)
   invalidatedAt  DateTime?
 
+  selfUnlockAllowed         Boolean   @default(false)
+  selfUnlockUsed            Boolean   @default(false)
+  selfUnlockedAt            DateTime?
+  selfUnlockGraceDays       Int?
+  reEvaluationAt            DateTime?
+  reEvaluatedAt             DateTime?
+  reEvaluationPassed        Boolean?
+  originalLockId            String?
+  reLockCount               Int       @default(0)
+  escalationLevel           Int       @default(0)
+  originatingUserId         String?
+  originatingLockId         String?
+  lockSupervisorOnRefailure Boolean   @default(false)
+  enableSupervisorLockChain Boolean   @default(false)
+
   user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   assignment TargetAssignment? @relation(fields: [assignmentId], references: [id], onDelete: SetNull)
 
   @@index([userId, lockedAt])
   @@index([workspaceId])
   @@index([lockPeriodId])
+  @@index([reEvaluationAt])
+  @@index([workspaceId, reEvaluationAt])
   @@map("target_lock_logs")
 }
 
@@ -743,6 +765,10 @@ model TargetUnlockLog {
   exemptPeriodId       String?
   exemptUntilPeriodEnd DateTime?
   unlockedAt           DateTime  @default(now())
+
+  isSelfUnlock    Boolean   @default(false)
+  graceUntil      DateTime?
+  targetLockLogId String?
 
   user       User              @relation("TargetUnlockUser", fields: [userId], references: [id], onDelete: Cascade)
   unlockedBy User              @relation("TargetUnlockActor", fields: [unlockedById], references: [id], onDelete: Cascade)

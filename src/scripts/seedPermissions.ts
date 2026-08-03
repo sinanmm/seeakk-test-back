@@ -90,6 +90,12 @@ const permissions = [
   { key: 'lock_users_by_target', group: 'ADMIN_MANAGEMENT', description: 'Lock users when targets are incomplete' },
   { key: 'unlock_target_locked_users', group: 'ADMIN_MANAGEMENT', description: 'Unlock target-locked staff accounts' },
   { key: 'extend_target_grace_period', group: 'ADMIN_MANAGEMENT', description: 'Extend target grace periods' },
+  { key: 'TARGET_CYCLES_CONFIGURE_SELF_UNLOCK', group: 'MASTER_CONFIGURATION', description: 'Configure target self-unlock rules' },
+  { key: 'TARGET_LOCKS_SELF_UNLOCK', group: 'ADMIN_MANAGEMENT', description: 'Self-unlock account on target lock' },
+  { key: 'TARGET_CYCLES_CONFIGURE_SUPERVISOR_ESCALATION', group: 'MASTER_CONFIGURATION', description: 'Configure supervisor lock escalation rules' },
+  { key: 'target_cycles.configure_self_unlock', group: 'MASTER_CONFIGURATION', description: 'Configure target self-unlock rules (alias)' },
+  { key: 'target_locks.self_unlock', group: 'ADMIN_MANAGEMENT', description: 'Self-unlock account on target lock (alias)' },
+  { key: 'target_cycles.configure_supervisor_escalation', group: 'MASTER_CONFIGURATION', description: 'Configure supervisor lock escalation rules (alias)' },
 
   // MASTER LEAD DYNAMICS
   { key: 'LEAD_DYNAMICS_VIEW', group: 'MASTER_CONFIGURATION', description: 'View lead dynamic fields' },

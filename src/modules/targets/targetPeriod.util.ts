@@ -19,6 +19,10 @@ export type PeriodInput = {
   startDate: Date;
   endDate: Date;
   lockingDate: Date;
+  allowSelfUnlock?: boolean;
+  selfUnlockGraceDays?: number | null;
+  lockSupervisorOnRefailure?: boolean;
+  enableSupervisorLockChain?: boolean;
   metrics?: Array<{
     metricType: 'LEADS' | 'REVENUE' | 'FOLLOW_UP' | 'PRODUCTS';
     targetValue: number;
@@ -39,6 +43,10 @@ export type BuildPeriodsInput = {
     startDate: string | Date;
     endDate: string | Date;
     lockingDate: string | Date;
+    allowSelfUnlock?: boolean;
+    selfUnlockGraceDays?: number | null;
+    lockSupervisorOnRefailure?: boolean;
+    enableSupervisorLockChain?: boolean;
     metrics?: Array<{
       metricType: 'LEADS' | 'REVENUE' | 'FOLLOW_UP' | 'PRODUCTS';
       targetValue: number;
@@ -172,6 +180,10 @@ export const buildTargetCyclePeriods = (input: BuildPeriodsInput): PeriodInput[]
       startDate: startOfDay(new Date(period.startDate)),
       endDate: toEndOfDay(new Date(period.endDate)),
       lockingDate: toEndOfDay(new Date(period.lockingDate)),
+      allowSelfUnlock: Boolean(period.allowSelfUnlock),
+      selfUnlockGraceDays: period.allowSelfUnlock && period.selfUnlockGraceDays ? Number(period.selfUnlockGraceDays) : null,
+      lockSupervisorOnRefailure: period.allowSelfUnlock ? Boolean(period.lockSupervisorOnRefailure) : false,
+      enableSupervisorLockChain: period.allowSelfUnlock && period.lockSupervisorOnRefailure ? Boolean(period.enableSupervisorLockChain) : false,
       metrics: period.metrics ?? null,
     }));
     if (input.targetType === 'MANUAL') {

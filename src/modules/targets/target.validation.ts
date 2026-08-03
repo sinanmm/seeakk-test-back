@@ -15,15 +15,37 @@ const periodMetricSchema = z.object({
   productTargets: z.array(productTargetSchema).optional().nullable(),
 });
 
-const periodSchema = z.object({
-  label: z.string().trim().min(1),
-  periodIndex: z.number().int().min(0),
-  targetCount: z.number().int().min(0).optional(),
-  startDate: z.union([z.string(), z.date()]),
-  endDate: z.union([z.string(), z.date()]),
-  lockingDate: z.union([z.string(), z.date()]),
-  metrics: z.array(periodMetricSchema).optional().nullable(),
-});
+const periodSchema = z
+  .object({
+    label: z.string().trim().min(1),
+    periodIndex: z.number().int().min(0),
+    targetCount: z.number().int().min(0).optional(),
+    startDate: z.union([z.string(), z.date()]),
+    endDate: z.union([z.string(), z.date()]),
+    lockingDate: z.union([z.string(), z.date()]),
+    metrics: z.array(periodMetricSchema).optional().nullable(),
+    allowSelfUnlock: z.boolean().optional().default(false),
+    selfUnlockGraceDays: z
+      .number()
+      .int('Days Allowed After Self-Unlock must be a whole number')
+      .min(1, 'Days Allowed After Self-Unlock must be at least 1')
+      .max(365, 'Days Allowed After Self-Unlock cannot exceed 365')
+      .optional()
+      .nullable(),
+    lockSupervisorOnRefailure: z.boolean().optional().default(false),
+    enableSupervisorLockChain: z.boolean().optional().default(false),
+  })
+  .superRefine((val, ctx) => {
+    if (val.allowSelfUnlock) {
+      if (val.selfUnlockGraceDays === undefined || val.selfUnlockGraceDays === null || val.selfUnlockGraceDays < 1) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Days allowed after self-unlock is required when self-unlock is enabled.',
+          path: ['selfUnlockGraceDays'],
+        });
+      }
+    }
+  });
 
 export const createPerformanceTargetCycleSchema = z
   .object({

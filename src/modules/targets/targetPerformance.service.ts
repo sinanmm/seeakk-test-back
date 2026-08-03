@@ -8,6 +8,8 @@ import {
   isUserActingAsSupervisorOrStakeholder,
 } from './targetLockEvaluation.service';
 
+export { TARGET_LOCK_REASON_CODE };
+
 const db = prisma as any;
 
 export const measureLeadAchievement = async (
@@ -384,7 +386,16 @@ export const lockUserForTargetFailure = async (
 
   const period = await db.targetCyclePeriod.findUnique({
     where: { id: periodId },
-    select: { id: true, periodIndex: true, endDate: true, label: true },
+    select: {
+      id: true,
+      periodIndex: true,
+      endDate: true,
+      label: true,
+      allowSelfUnlock: true,
+      selfUnlockGraceDays: true,
+      lockSupervisorOnRefailure: true,
+      enableSupervisorLockChain: true,
+    },
   });
 
   if (!period) {
@@ -404,63 +415,6 @@ export const lockUserForTargetFailure = async (
 
   const lockReason = reason?.trim() || `Target incomplete: ${period.label} goals not met.`;
   const standardizedReason = `${TARGET_LOCK_REASON_CODE}: ${lockReason}`;
-
-  // Level 2 Escalation Check
-  const hasUsedSelfUnlock = await db.targetUnlockLog.findFirst({
-    where: {
-      userId: assignedUserId,
-      unlockedById: assignedUserId,
-      exemptPeriodId: periodId,
-    },
-  });
-
-  if (hasUsedSelfUnlock) {
-    // If self unlock was already used for this period and they failed again, escalate.
-    const userWithSupervisor = await db.user.findUnique({
-      where: { id: assignedUserId },
-      select: { supervisorId: true, name: true },
-    });
-
-    if (
-      userWithSupervisor?.supervisorId &&
-      userWithSupervisor.supervisorId !== assignedUserId
-    ) {
-      // Check if supervisor is root (Superadmin)
-      const supervisor = await db.user.findUnique({
-        where: { id: userWithSupervisor.supervisorId },
-        select: { role: { select: { name: true } } },
-      });
-
-      if (supervisor?.role?.name?.toUpperCase() !== 'SUPERADMIN') {
-        const supervisorLockReason = `${TARGET_LOCK_REASON_CODE}: Escalated lock due to subordinate (${userWithSupervisor.name || 'Unknown'}) failing target after self-unlock.`;
-        await lockUser(userWithSupervisor.supervisorId, workspaceId, supervisorLockReason);
-        await db.user.update({
-          where: { id: userWithSupervisor.supervisorId },
-          data: {
-            targetLockedAt: new Date(),
-            targetLockReason: supervisorLockReason,
-          },
-        });
-        await db.targetLockLog.create({
-          data: {
-            userId: userWithSupervisor.supervisorId,
-            workspaceId,
-            assignmentId: null,
-            periodId: null,
-            lockPeriodId: periodId,
-            reason: supervisorLockReason,
-            lockedBySystem: true,
-            isInvalidLock: false,
-          },
-        });
-        logger.warn('Supervisor locked due to subordinate escalation', {
-          supervisorId: userWithSupervisor.supervisorId,
-          subordinateId: assignedUserId,
-          periodId,
-        });
-      }
-    }
-  }
 
   await lockUser(assignedUserId, workspaceId, standardizedReason);
 
@@ -482,6 +436,10 @@ export const lockUserForTargetFailure = async (
       reason: standardizedReason,
       lockedBySystem: true,
       isInvalidLock: false,
+      selfUnlockAllowed: period.allowSelfUnlock ?? false,
+      selfUnlockGraceDays: period.selfUnlockGraceDays ?? null,
+      lockSupervisorOnRefailure: period.lockSupervisorOnRefailure ?? false,
+      enableSupervisorLockChain: period.enableSupervisorLockChain ?? false,
     },
   });
 

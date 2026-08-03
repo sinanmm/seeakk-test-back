@@ -385,6 +385,10 @@ export const persistTargetCycleWithPeriods = async (
           startDate: period.startDate,
           endDate: period.endDate,
           lockingDate: period.lockingDate,
+          allowSelfUnlock: Boolean(period.allowSelfUnlock),
+          selfUnlockGraceDays: period.allowSelfUnlock && period.selfUnlockGraceDays ? Number(period.selfUnlockGraceDays) : null,
+          lockSupervisorOnRefailure: period.allowSelfUnlock ? Boolean(period.lockSupervisorOnRefailure) : false,
+          enableSupervisorLockChain: period.allowSelfUnlock && period.lockSupervisorOnRefailure ? Boolean(period.enableSupervisorLockChain) : false,
         },
       });
 

@@ -263,6 +263,7 @@ app.use('/api/admin/organization-chart', organisationChartRoutes);
 app.use('/api/admin/roster', rosterRoutes);
 app.use('/api/admin/target-cycles', targetCycleRoutes);
 app.use('/api/targets', targetRoutes);
+app.use('/api/target-locks', targetRoutes);
 app.use('/api/admin/lead-dynamics', leadDynamicsAdminRoutes);
 app.use('/api/master/target-cycles', targetCycleRoutes);
 app.use('/api/admin/field-highlights', fieldHighlightRoutes);

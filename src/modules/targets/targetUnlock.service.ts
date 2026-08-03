@@ -65,15 +65,22 @@ export const listLockedStaff = async (workspaceId: string, officeId?: string) =>
       orderBy: { unlockedAt: 'desc' },
     });
 
-    const isEscalatedLock = latestLock?.reason?.includes('Escalated lock') ?? false;
-    const hasUsedSelfUnlock = await db.targetUnlockLog.findFirst({
+    const isEscalatedLock = (latestLock?.escalationLevel ?? 0) > 0 || (latestLock?.reason?.includes('Supervisor accountability') ?? false) || (latestLock?.reason?.includes('Escalated lock') ?? false);
+    const hasUsedSelfUnlock = Boolean(latestLock?.selfUnlockUsed) || await db.targetUnlockLog.findFirst({
       where: {
         userId: user.id,
         unlockedById: user.id,
         exemptPeriodId: latestLock?.lockPeriodId || latestLock?.periodId,
       },
     }).then(Boolean);
-    const unlockedBySystem = latestUnlock?.unlockedById === 'system';
+
+    let originatingUser: any = null;
+    if (latestLock?.originatingUserId) {
+      originatingUser = await db.user.findUnique({
+        where: { id: latestLock.originatingUserId },
+        select: { id: true, name: true, email: true },
+      });
+    }
 
     return {
       id: user.id,
@@ -92,8 +99,13 @@ export const listLockedStaff = async (workspaceId: string, officeId?: string) =>
         : 0,
       lastPeriodLabel: latestPerf?.period?.label || null,
       isEscalatedLock,
+      escalationLevel: latestLock?.escalationLevel ?? 0,
+      originatingUser,
+      selfUnlockAllowed: Boolean(latestLock?.selfUnlockAllowed),
       hasUsedSelfUnlock,
-      unlockedBySystem,
+      selfUnlockedAt: latestLock?.selfUnlockedAt ?? null,
+      reEvaluationAt: latestLock?.reEvaluationAt ?? null,
+      unlockedBySystem: latestUnlock?.unlockedById === 'system',
       lastUnlockType: latestUnlock?.reason === 'SELF_UNLOCK' ? 'SELF_UNLOCK' : (latestUnlock ? 'ADMIN' : null),
     };
   }));
