@@ -8,6 +8,7 @@ export interface StageRuleResponse {
   options: string[];
   sortOrder: number;
   required: boolean;
+  minCharacters?: number | null;
   status: RuleStatusValue;
   stageId?: string | null;
   createdBy?: string | null;

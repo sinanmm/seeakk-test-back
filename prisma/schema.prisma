@@ -341,6 +341,7 @@ model StageRule {
   options           Json?
   sortOrder         Int        @default(1)
   required          Boolean    @default(false)
+  minCharacters     Int?
   // Legacy columns kept for backward compatibility to avoid destructive schema pushes.
   legacyField       String?    @map("field")
   legacyCondition   String?    @map("condition")

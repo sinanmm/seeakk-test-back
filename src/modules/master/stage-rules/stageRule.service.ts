@@ -243,6 +243,7 @@ export const createStageRule = async (
           inputType: input.inputType,
           sortOrder: input.sortOrder,
           required: input.required,
+          minCharacters: input.inputType === 'TEXTAREA' ? (input.minCharacters ?? null) : null,
           status: input.status,
           stageId: scopedStageId,
           createdBy,
@@ -257,6 +258,7 @@ export const createStageRule = async (
           options: true,
           sortOrder: true,
           required: true,
+          minCharacters: true,
           status: true,
           stageId: true,
           createdBy: true,
@@ -328,6 +330,7 @@ export const listStageRules = async (
         options: true,
         sortOrder: true,
         required: true,
+        minCharacters: true,
         status: true,
         stageId: true,
         createdBy: true,
@@ -375,6 +378,7 @@ export const getActiveStageRules = async (workspaceId: string): Promise<StageRul
       options: true,
       sortOrder: true,
       required: true,
+      minCharacters: true,
       status: true,
       stageId: true,
       createdBy: true,
@@ -409,6 +413,7 @@ export const updateStageRule = async (
       options: true,
       sortOrder: true,
       required: true,
+      minCharacters: true,
       status: true,
       stageId: true,
       createdBy: true,
@@ -506,6 +511,9 @@ export const updateStageRule = async (
         ...(input.inputType !== undefined ? { inputType: input.inputType } : {}),
         ...(input.sortOrder !== undefined ? { sortOrder: input.sortOrder } : {}),
         ...(input.required !== undefined ? { required: input.required } : {}),
+        ...(mergedInputType === 'TEXTAREA'
+          ? { minCharacters: input.minCharacters !== undefined ? input.minCharacters : (existing as any).minCharacters }
+          : { minCharacters: null }),
         ...(input.status !== undefined ? { status: input.status } : {}),
         ...(input.stageId !== undefined ? { stageId: input.stageId } : {}),
         ...(input.options !== undefined && (mergedInputType === 'RADIO' || mergedInputType === 'SELECT')
@@ -523,6 +531,7 @@ export const updateStageRule = async (
         options: true,
         sortOrder: true,
         required: true,
+        minCharacters: true,
         status: true,
         stageId: true,
         createdBy: true,
@@ -602,6 +611,7 @@ export const getActiveStageRulesForExecution = async (
       options: true,
       sortOrder: true,
       required: true,
+      minCharacters: true,
       status: true,
       stageId: true,
       createdBy: true,
@@ -633,6 +643,21 @@ export const validateLeadStageTransitionInputs = async (
     if (rule.required && !value) {
       missingFields.push(rule.name);
       continue;
+    }
+
+    if (rule.inputType === 'TEXTAREA' && rule.minCharacters && rule.minCharacters > 0) {
+      if (rule.required && value.length < rule.minCharacters) {
+        invalidFields.push(
+          `Please enter at least ${rule.minCharacters} characters for "${rule.name}". You have entered ${value.length}.`,
+        );
+        continue;
+      }
+      if (!rule.required && value.length > 0 && value.length < rule.minCharacters) {
+        invalidFields.push(
+          `Please enter at least ${rule.minCharacters} characters for "${rule.name}". You have entered ${value.length}.`,
+        );
+        continue;
+      }
     }
 
     if (!value) continue;

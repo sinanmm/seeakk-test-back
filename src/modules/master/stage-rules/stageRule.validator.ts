@@ -15,12 +15,21 @@ const optionsSchema = z
   .optional()
   .default([]);
 
+const minCharactersSchema = z
+  .number()
+  .int('Minimum Characters must be a whole number')
+  .min(1, 'Minimum Characters must be at least 1')
+  .max(10000, 'Minimum Characters cannot exceed 10000')
+  .optional()
+  .nullable();
+
 export const createStageRuleSchema = z
   .object({
     name: stageRuleNameSchema,
     inputType: inputTypeSchema,
     sortOrder: z.number().int().min(1, 'Sort order must be greater than or equal to 1'),
     required: z.boolean().default(false),
+    minCharacters: minCharactersSchema,
     status: ruleStatusSchema.default('ACTIVE'),
     stageId: z.string().trim().min(1, 'Stage id must be valid').optional(),
     options: optionsSchema,
@@ -35,6 +44,13 @@ export const createStageRuleSchema = z
         });
       }
     }
+    if (data.inputType !== 'TEXTAREA' && data.minCharacters && data.minCharacters > 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Minimum Characters can only be configured for Text Area fields.',
+        path: ['minCharacters'],
+      });
+    }
   });
 
 export type CreateStageRuleInput = z.infer<typeof createStageRuleSchema>;
@@ -45,6 +61,7 @@ export const updateStageRuleSchema = z
     inputType: inputTypeSchema.optional(),
     sortOrder: z.number().int().min(1, 'Sort order must be greater than or equal to 1').optional(),
     required: z.boolean().optional(),
+    minCharacters: minCharactersSchema,
     status: ruleStatusSchema.optional(),
     stageId: z.string().trim().min(1, 'Stage id must be valid').nullable().optional(),
     options: z.array(z.string().trim().min(1, 'Option cannot be empty')).max(50, 'Too many options').optional(),
@@ -55,6 +72,7 @@ export const updateStageRuleSchema = z
       value.inputType !== undefined ||
       value.sortOrder !== undefined ||
       value.required !== undefined ||
+      value.minCharacters !== undefined ||
       value.status !== undefined ||
       value.stageId !== undefined ||
       value.options !== undefined,
@@ -70,6 +88,13 @@ export const updateStageRuleSchema = z
           path: ['options'],
         });
       }
+    }
+    if (type !== undefined && type !== 'TEXTAREA' && data.minCharacters && data.minCharacters > 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Minimum Characters can only be configured for Text Area fields.',
+        path: ['minCharacters'],
+      });
     }
   });
 
