@@ -92,12 +92,25 @@ export const initRealtimeServer = (httpServer: HttpServer): SocketIOServer => {
   console.log('[Socket.io] Allowed origins:', getAllowedOrigins());
 
   io.use(async (socket, next) => {
+    const transport = socket.conn.transport.name;
+    const socketId = socket.id;
+    const query = socket.handshake.query;
+    
+    logger.info('Socket connection handshake attempt', {
+      socketId,
+      transport,
+      querySid: query?.sid,
+      queryEio: query?.EIO,
+      action: 'socket_handshake_attempt',
+    });
+
     try {
       const token =
         (socket.handshake.auth?.token as string | undefined) ||
         (socket.handshake.headers.authorization as string | undefined)?.replace(/^Bearer\s+/i, '');
 
       if (!token) {
+        logger.warn('Socket handshake rejected - Token is missing', { socketId, transport, action: 'socket_handshake_auth_failed', reason: 'token_missing' });
         return next(new Error('AUTH_ERROR: Token is missing'));
       }
 
@@ -107,6 +120,13 @@ export const initRealtimeServer = (httpServer: HttpServer): SocketIOServer => {
           clockTolerance: 30,
         }) as { userId: string };
       } catch (err: any) {
+        logger.warn('Socket handshake rejected - JWT verification failed', {
+          socketId,
+          transport,
+          error: err.message,
+          action: 'socket_handshake_auth_failed',
+          reason: 'jwt_verify_failed',
+        });
         return next(new Error(`AUTH_ERROR: ${err.message || 'JWT verification failed'}`));
       }
 
@@ -116,14 +136,17 @@ export const initRealtimeServer = (httpServer: HttpServer): SocketIOServer => {
       });
 
       if (!user) {
+        logger.warn('Socket handshake rejected - User not found', { socketId, transport, userId: decoded.userId, action: 'socket_handshake_auth_failed', reason: 'user_not_found' });
         return next(new Error('AUTH_ERROR: User not found'));
       }
       if (!user.isActive) {
+        logger.warn('Socket handshake rejected - User is inactive', { socketId, transport, userId: user.id, action: 'socket_handshake_auth_failed', reason: 'user_inactive' });
         return next(new Error('AUTH_ERROR: User is inactive'));
       }
 
       const workspaceId = await resolveWorkspaceIdForUser(user.id, user.workspaceId ?? null);
       if (!workspaceId) {
+        logger.warn('Socket handshake rejected - Workspace resolution failed', { socketId, transport, userId: user.id, action: 'socket_handshake_auth_failed', reason: 'workspace_failed' });
         return next(new Error('AUTH_ERROR: Workspace resolution failed'));
       }
 
@@ -131,28 +154,41 @@ export const initRealtimeServer = (httpServer: HttpServer): SocketIOServer => {
       (socket.data as any).workspaceId = workspaceId;
       socket.join(toUserRoom(user.id));
       socket.join(toWorkspaceRoom(workspaceId));
-      logger.info('Socket Handshake Completed', { userId: user.id });
+      logger.info('Socket Handshake Completed', { userId: user.id, socketId, transport });
       next();
     } catch (error: any) {
-      logger.error('Socket middleware unexpected error', { error: error.message });
+      logger.error('Socket middleware unexpected error', { socketId, transport, error: error.message, action: 'socket_handshake_unexpected_error' });
       next(new Error(`AUTH_ERROR: ${error?.message || 'Socket authentication failed'}`));
     }
   });
 
   io.on('connection', (socket) => {
-    logger.info('Socket Connected');
-    logger.info('Realtime socket connected', {
+    const transport = socket.conn.transport.name;
+    logger.info('Realtime socket connection established', {
       socketId: socket.id,
       userId: (socket.data as any)?.userId,
       workspaceId: (socket.data as any)?.workspaceId,
+      transport,
+      action: 'socket_connection_established',
+    });
+
+    socket.conn.on('upgrade', (upgradedTransport) => {
+      logger.info('Socket transport upgraded', {
+        socketId: socket.id,
+        userId: (socket.data as any)?.userId,
+        oldTransport: transport,
+        newTransport: upgradedTransport.name,
+        action: 'socket_transport_upgrade',
+      });
     });
     
     socket.on('disconnect', (reason) => {
-      logger.info('Socket Disconnected', {
+      logger.info('Socket connection disconnected', {
         socketId: socket.id,
         userId: (socket.data as any)?.userId,
         workspaceId: (socket.data as any)?.workspaceId,
         reason,
+        action: 'socket_connection_disconnected',
       });
     });
   });

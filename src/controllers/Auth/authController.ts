@@ -876,29 +876,60 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
 };
 
 export const refreshToken = async (req: Request, res: Response): Promise<any> => {
+  const requestId = req.headers['x-request-id'] || crypto.randomUUID();
+  const hasRefreshCookie = !!req.cookies?.refreshToken;
+  const hasRefreshBody = !!req.body?.refreshToken;
+  const origin = req.headers.origin;
+  const userAgent = req.headers['user-agent'];
+
+  logger.info('Refresh request received', {
+    requestId,
+    hasRefreshCookie,
+    hasRefreshBody,
+    origin,
+    userAgent,
+    action: 'refresh_token_start',
+  });
+
   try {
     const refreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
 
     if (!refreshToken) {
+      logger.warn('Refresh token missing from request', { requestId, action: 'refresh_token_missing' });
       return res.status(400).json({ message: 'Refresh token is required' });
     }
 
     let decoded: any;
     try {
       decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET as string);
-    } catch (error) {
+    } catch (error: any) {
+      logger.warn('Refresh token verification failed', {
+        requestId,
+        error: error.message,
+        action: 'refresh_token_verify_failed',
+      });
       return res.status(401).json({ message: 'Invalid or expired refresh token' });
     }
 
     const { userId, tokenId } = decoded;
+    const exp = decoded.exp ? new Date(decoded.exp * 1000).toISOString() : null;
+
+    logger.info('Refresh token verified successfully', {
+      requestId,
+      userId,
+      tokenId,
+      tokenExpiration: exp,
+      action: 'refresh_token_verified',
+    });
 
     const replayPayload = await getRefreshReplay(tokenId);
     if (replayPayload) {
+      logger.info('Refresh request handled via replay cache', { requestId, userId, tokenId, action: 'refresh_token_replay' });
       return res.status(200).json(JSON.parse(replayPayload));
     }
 
     if (!(await waitForRedisReady(3000))) {
-      logger.warn('Refresh token rejected - Redis session store not ready', { userId, tokenId, action: 'refresh_redis_unready' });
+      logger.warn('Refresh token rejected - Redis session store not ready', { requestId, userId, tokenId, action: 'refresh_redis_unready' });
       return res.status(503).json({ message: 'Session service temporarily unavailable. Please try again shortly.' });
     }
 
@@ -907,22 +938,23 @@ export const refreshToken = async (req: Request, res: Response): Promise<any> =>
 
     if (usedUserId) {
       if (usedUserId !== userId) {
-        logger.warn('Refresh token rejected - used token user mismatch', { userId, tokenId, action: 'refresh_token_rejected' });
+        logger.warn('Refresh token rejected - used token user mismatch', { requestId, userId, tokenId, action: 'refresh_token_rejected', reason: 'user_mismatch' });
         return res.status(401).json({ message: 'Invalid refresh token or already consumed' });
       }
-      logger.warn('Refresh token rejected - already rotated', { userId, tokenId, action: 'refresh_token_rejected' });
+      logger.warn('Refresh token rejected - already rotated', { requestId, userId, tokenId, action: 'refresh_token_rejected', reason: 'already_rotated' });
       return res.status(401).json({ message: 'Invalid refresh token or already consumed' });
     }
 
     if (storedUserId) {
       if (storedUserId !== userId) {
-        logger.warn('Refresh token rejected - stolen or mismatched session', { userId, tokenId, action: 'refresh_token_rejected' });
+        logger.warn('Refresh token rejected - stolen or mismatched session', { requestId, userId, tokenId, action: 'refresh_token_rejected', reason: 'stolen_or_mismatch' });
         return res.status(401).json({ message: 'Invalid refresh token or already consumed' });
       }
       await revokeRefreshSession(tokenId);
       await markRefreshTokenUsed(tokenId, userId);
     } else {
       logger.warn('Refresh session missing from Redis — re-establishing from valid JWT', {
+        requestId,
         userId,
         tokenId,
         action: 'refresh_redis_session_restore',
@@ -937,6 +969,7 @@ export const refreshToken = async (req: Request, res: Response): Promise<any> =>
     });
 
     if (!user || !user.isActive) {
+      logger.warn('Refresh token rejected - user not found or inactive', { requestId, userId, tokenId, action: 'refresh_user_inactive' });
       return res.status(403).json({ message: 'User not found or inactive' });
     }
 
@@ -944,6 +977,7 @@ export const refreshToken = async (req: Request, res: Response): Promise<any> =>
       user = await ensureWorkspaceOwnerSuperAdmin(user);
     } catch (error: any) {
       logger.error('Failed to sync workspace owner superadmin role during token refresh', {
+        requestId,
         userId: user?.id,
         error: error?.message,
         action: 'refresh_owner_role_sync_failed',
@@ -958,11 +992,13 @@ export const refreshToken = async (req: Request, res: Response): Promise<any> =>
     }
 
     if (!user) {
+      logger.warn('Refresh token rejected - user not found or inactive post sync', { requestId, userId, tokenId, action: 'refresh_user_inactive' });
       return res.status(403).json({ message: 'User not found or inactive' });
     }
     user = await hydrateAuthenticatedUser(user);
 
     if (!isRoleScopedToUserWorkspace(user)) {
+      logger.warn('Refresh token rejected - user role not valid for workspace', { requestId, userId, tokenId, action: 'refresh_workspace_invalid' });
       return res.status(403).json({
         message: 'Account role is not valid for this workspace. Please contact support or your administrator.',
       });
@@ -972,6 +1008,7 @@ export const refreshToken = async (req: Request, res: Response): Promise<any> =>
     try {
       tokens = generateTokens(user as any);
     } catch (error: any) {
+      logger.error('Generate tokens failed', { requestId, userId, error: error.message, action: 'refresh_generate_tokens_failed' });
       if (error?.statusCode) {
         return res.status(error.statusCode).json({
           message: error.message,
@@ -1000,8 +1037,21 @@ export const refreshToken = async (req: Request, res: Response): Promise<any> =>
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
+    logger.info('Refresh token rotated successfully', {
+      requestId,
+      userId,
+      tokenId,
+      action: 'refresh_token_rotated_success',
+    });
+
     return res.status(200).json(responseBody);
-  } catch (error) {
+  } catch (error: any) {
+    logger.error('Unexpected error during token refresh', {
+      requestId,
+      error: error.message,
+      stack: error.stack,
+      action: 'refresh_token_unexpected_error',
+    });
     const err: any = error;
     if (isTransientDatabaseError(err)) {
       return res.status(503).json({
