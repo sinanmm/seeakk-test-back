@@ -28,7 +28,7 @@ const optionalStringArray = z.preprocess((value) => {
   return value;
 }, z.array(z.string().trim().min(1).max(191)).optional());
 
-const assignmentTypeSchema = z.enum(['SINGLE', 'ROUND_ROBIN']).default('SINGLE');
+const assignmentTypeSchema = z.enum(['SINGLE', 'ROUND_ROBIN']);
 
 const bulkAssignFiltersRawSchema = z.object({
   stage_id: optionalId,
@@ -129,7 +129,7 @@ export const bulkAssignSchema = z.object({
   if (value.assignmentType === 'SINGLE' && !value.assignTo) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: 'Assignee required',
+      message: 'Select an assignee before bulk assigning leads.',
       path: ['assign_to'],
     });
   }
@@ -137,7 +137,7 @@ export const bulkAssignSchema = z.object({
   if (value.assignmentType === 'ROUND_ROBIN' && value.assignToIds.length < 2) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: 'Select at least two assignees for round robin distribution',
+      message: 'Select at least two assignees for round robin distribution.',
       path: ['assign_to_ids'],
     });
   }

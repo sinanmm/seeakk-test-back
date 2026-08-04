@@ -24,10 +24,16 @@ function validate<T>(
 ): T | null {
   const result = schema.safeParse(data);
   if (!result.success) {
+    const fieldErrors = result.error.flatten().fieldErrors;
+    const firstMessage =
+      (Object.values(fieldErrors).flat()[0] as string | undefined) ||
+      result.error.issues?.[0]?.message ||
+      'Validation failed.';
+
     res.status(422).json({
       success: false,
-      message: 'Validation failed.',
-      errors: result.error.flatten().fieldErrors,
+      message: firstMessage,
+      errors: fieldErrors,
     });
     return null;
   }

@@ -221,14 +221,19 @@ export const bulkAssignLeads = async (
       throw createServiceError('One or more selected assignees are invalid or inactive.', 404);
     }
 
-    assigneeLabelMap = assignees.reduce<Record<string, string>>((accumulator, assignee) => {
+    const assigneeMap = new Map(assignees.map((a) => [a.id, a]));
+    const orderedAssignees = input.assignToIds
+      .map((id) => assigneeMap.get(id))
+      .filter((a): a is NonNullable<typeof a> => Boolean(a));
+
+    assigneeLabelMap = orderedAssignees.reduce<Record<string, string>>((accumulator, assignee) => {
       accumulator[assignee.id] = resolveDisplayName(assignee);
       return accumulator;
     }, {});
 
     assignments = leadIds.map((leadId, index) => ({
       leadId,
-      assignTo: assignees[index % assignees.length].id,
+      assignTo: orderedAssignees[index % orderedAssignees.length].id,
     }));
   } else {
     if (!input.assignTo) {

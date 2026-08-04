@@ -91,7 +91,7 @@ export const findMatchingLeadIds = async (where: any, limit: number): Promise<st
     where,
     take: limit,
     select: { id: true },
-    orderBy: [{ createdAt: 'desc' }],
+    orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
   });
 
   return rows.map((row: { id: string }) => row.id);
