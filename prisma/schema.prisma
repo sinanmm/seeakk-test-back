@@ -1870,6 +1870,7 @@ model AttendanceRecord {
   additionalNotes          String?   @db.Text
   rejectedBy               String?
   rejectedAt               DateTime?
+  isPaidLeave              Boolean?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   locationSessions LocationSession[]

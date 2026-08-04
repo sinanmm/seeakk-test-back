@@ -11,6 +11,7 @@ export type AttendanceCalendarDayStatus =
   | 'ABSENT'
   | 'HOLIDAY'
   | 'LEAVE'
+  | 'WORK_FROM_HOME'
   | 'WEEKEND'
   | 'NO_ATTENDANCE';
 
@@ -509,10 +510,28 @@ export const getAttendanceCalendarData = async (
 
       // Determine Status Classification
       const typeUpper = (rec.attendanceType || '').toUpperCase();
-      if (typeUpper === 'HALF_DAY') {
+      if (rec.approvalStatus === 'REJECTED') {
+        status = 'ABSENT';
+        statusLabel = 'Absent';
+        totalAbsentCount++;
+      } else if (typeUpper === 'LEAVE') {
+        status = 'LEAVE';
+        statusLabel = rec.approvalStatus === 'APPROVED'
+          ? (rec.isPaidLeave ? 'Leave (Paid)' : 'Leave (Unpaid)')
+          : 'Leave (Pending)';
+        totalLeaveCount++;
+      } else if (typeUpper === 'WORK_FROM_HOME') {
+        status = 'WORK_FROM_HOME';
+        statusLabel = rec.approvalStatus === 'APPROVED' ? 'Work From Home' : 'Work From Home (Pending)';
+        totalPresentCount++;
+      } else if (typeUpper === 'HALF_DAY') {
         status = 'HALF_DAY';
         statusLabel = 'Half Day';
         totalHalfDayCount++;
+      } else if (typeUpper === 'ABSENT') {
+        status = 'ABSENT';
+        statusLabel = 'Absent';
+        totalAbsentCount++;
       } else if (lateMinutes > 0) {
         status = 'LATE';
         statusLabel = `Late Check-In (${lateMinutes}m)`;
@@ -522,10 +541,6 @@ export const getAttendanceCalendarData = async (
         status = 'EARLY_CHECKOUT';
         statusLabel = `Early Check-Out (${earlyCheckoutMinutes}m)`;
         totalPresentCount++;
-      } else if (typeUpper === 'ABSENT' || rec.approvalStatus === 'REJECTED') {
-        status = 'ABSENT';
-        statusLabel = 'Absent';
-        totalAbsentCount++;
       } else {
         status = 'PRESENT';
         statusLabel = 'Present';

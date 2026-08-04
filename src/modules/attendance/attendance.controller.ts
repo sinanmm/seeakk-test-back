@@ -301,12 +301,12 @@ export const reviewAttendanceController = async (req: Request, res: Response, ne
   const workspaceId = getAttendanceWorkspaceId(req as AttendanceRequest, res);
   if (!workspaceId) return;
   const { recordId } = req.params;
-  const { action, reason } = req.body;
+  const { action, reason, isPaidLeave } = req.body;
   if (!action || !['APPROVE', 'REJECT'].includes(action)) {
     return res.status(400).json({ success: false, message: 'Valid action (APPROVE/REJECT) is required.' });
   }
   try {
-    const record = await attendanceService.reviewAttendance(workspaceId, recordId as string, req.user!.id, action, reason);
+    const record = await attendanceService.reviewAttendance(workspaceId, recordId as string, req.user!.id, action, reason, isPaidLeave);
     emitWorkspaceEvent(workspaceId, 'attendance_updated', {
       recordId: record.id,
       userId: record.userId,

@@ -880,6 +880,7 @@ export const reviewAttendance = async (
   actorId: string,
   action: 'APPROVE' | 'REJECT',
   reason?: string,
+  isPaidLeave?: boolean,
 ) => {
   const record = await prisma.attendanceRecord.findFirst({
     where: { id: recordId, workspaceId },
@@ -942,6 +943,7 @@ export const reviewAttendance = async (
       rejectedReason: action === 'REJECT' ? trimmedReason : null,
       rejectedBy: action === 'REJECT' ? actorId : null,
       rejectedAt: action === 'REJECT' ? reviewedAt : null,
+      isPaidLeave: action === 'APPROVE' && record.attendanceType === 'LEAVE' ? (isPaidLeave ?? false) : null,
     } as any,
   }) as any;
 

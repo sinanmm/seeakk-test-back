@@ -250,7 +250,13 @@ export const generateSalary = async (
           attendanceDays += 1;
         } else if (rec.attendanceType === 'HALF_DAY') {
           attendanceDays += 0.5;
-        } else if (rec.attendanceType === 'LEAVE' || rec.attendanceType === 'HOLIDAY' || rec.attendanceType === 'WEEKLY_OFF') {
+        } else if (rec.attendanceType === 'LEAVE') {
+          if (rec.approvalStatus === 'APPROVED' && rec.isPaidLeave === true) {
+            leaveDays += 1;
+          } else {
+            absentDays += 1;
+          }
+        } else if (rec.attendanceType === 'HOLIDAY' || rec.attendanceType === 'WEEKLY_OFF') {
           leaveDays += 1;
         } else if (rec.attendanceType === 'ABSENT') {
           absentDays += 1;
