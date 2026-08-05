@@ -143,6 +143,29 @@ const permissions = [
   { key: 'LEADS_EXPORT', group: 'LEADS_MANAGEMENT', description: 'Export leads data' },
   { key: 'LEADS_IMPORT', group: 'LEADS_MANAGEMENT', description: 'Import leads from external files' },
 
+  // LEAD SUBSTAGES MANAGEMENT
+  { key: 'LEAD_SUBSTAGES_VIEW', group: 'MASTER_CONFIGURATION', description: 'View Lead Substages' },
+  { key: 'LEAD_SUBSTAGES_CREATE', group: 'MASTER_CONFIGURATION', description: 'Create Lead Substages' },
+  { key: 'LEAD_SUBSTAGES_EDIT', group: 'MASTER_CONFIGURATION', description: 'Edit Lead Substages' },
+  { key: 'LEAD_SUBSTAGES_DELETE', group: 'MASTER_CONFIGURATION', description: 'Delete Lead Substages' },
+  { key: 'LEAD_SUBSTAGES_TOGGLE', group: 'MASTER_CONFIGURATION', description: 'Activate/Deactivate Lead Substages' },
+  { key: 'LEAD_SUBSTAGES_USE', group: 'LEADS_MANAGEMENT', description: 'Use Lead Substages' },
+
+  // CALL OUTCOMES & TRACKING
+  { key: 'CALL_OUTCOMES_VIEW', group: 'LEADS_MANAGEMENT', description: 'View Call Outcomes' },
+  { key: 'CALL_OUTCOMES_CREATE', group: 'LEADS_MANAGEMENT', description: 'Create Call Outcomes' },
+  { key: 'CALL_OUTCOMES_EDIT_OWN', group: 'LEADS_MANAGEMENT', description: 'Edit Own Call Outcomes' },
+
+  // CALL REPORTS & ANALYTICS
+  { key: 'CALL_REPORTS_VIEW_OWN', group: 'REPORTS_ANALYTICS', description: 'View Own Call Reports' },
+  { key: 'CALL_REPORTS_VIEW_ASSIGNED', group: 'REPORTS_ANALYTICS', description: 'View Assigned Users Call Reports' },
+  { key: 'CALL_REPORTS_VIEW_ALL', group: 'REPORTS_ANALYTICS', description: 'View All Call Reports' },
+  { key: 'CALL_REPORTS_EXPORT', group: 'REPORTS_ANALYTICS', description: 'Export Call Reports' },
+  { key: 'CALL_SUMMARY_VIEW', group: 'REPORTS_ANALYTICS', description: 'View Call Summary' },
+  { key: 'CALL_DETAILS_VIEW', group: 'REPORTS_ANALYTICS', description: 'View Call Details' },
+  { key: 'CALL_OUTCOME_NOTES_VIEW', group: 'REPORTS_ANALYTICS', description: 'View Call Outcome Notes' },
+  { key: 'SUBSTAGE_HISTORY_VIEW', group: 'REPORTS_ANALYTICS', description: 'View Substage Change History' },
+
   // SHEETS MODULE
   { key: 'SHEETS_VIEW', group: 'SHEETS', description: 'View Sheets module and sheet files' },
   { key: 'SHEETS_CREATE', group: 'SHEETS', description: 'Create blank sheets and duplicate sheets' },

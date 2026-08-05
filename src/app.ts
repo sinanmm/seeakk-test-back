@@ -35,6 +35,9 @@ import leadSourceRoutes from './modules/master/lead-source/leadSource.routes';
 import productRoutes from './modules/master/products/product.routes';
 
 import leadStageRoutes from './modules/master/lead-stages/leadStage.routes';
+import leadSubstageRoutes from './modules/master/substage/substage.routes';
+import callTrackingRoutes from './modules/calls/callTracking.routes';
+import callReportsRoutes from './modules/reports/callReports.routes';
 import lobReasonRoutes from './modules/master/lob-reasons/lobReasons.routes';
 import followupExtensionReasonRoutes from './modules/master/followup-extension-reasons/followUpExtensionReasons.routes';
 import followupSettingsRoutes from './modules/followup-settings/followupSettings.routes';
@@ -273,6 +276,9 @@ app.use('/api/master/lead-sources', leadSourceRoutes);
 app.use('/api/master/products', productRoutes);
 
 app.use('/api/master/lead-stages', leadStageRoutes);
+app.use('/api/master/lead-substages', leadSubstageRoutes);
+app.use('/api/leads', callTrackingRoutes);
+app.use('/api/reports/calls', callReportsRoutes);
 app.use('/api/lob-reasons', lobReasonRoutes);
 app.use('/api/followup-extension-reasons', followupExtensionReasonRoutes);
 app.use('/api/followup-settings', followupSettingsRoutes);

@@ -149,6 +149,9 @@ model Workspace {
   salaryRecords                  SalaryRecord[]
   salaryApprovalStages           SalaryApprovalStage[]
   salarySetting                  SalarySetting?
+  substages                      LeadSubstage[]
+  callSessions                   LeadCallSession[]
+  callOutcomes                   LeadCallOutcome[]
   createdAt                      DateTime                       @default(now())
   updatedAt                      DateTime                       @updatedAt
   LeadRemark                     LeadRemark[]
@@ -321,6 +324,9 @@ model LeadStage {
   approvalsTo         LeadStageApproval[]  @relation("LeadStageApprovalToStage")
   revenueTransactions RevenueTransaction[]
   stageTargets        TargetStageTarget[]
+  substages           LeadSubstage[]
+  callOutcomesFrom    LeadCallOutcome[]    @relation("CallOutcomePrevStage")
+  callOutcomesTo      LeadCallOutcome[]    @relation("CallOutcomeTargetStage")
 
   @@unique([workspaceId, name])
   @@unique([workspaceId, stageShortForm])
@@ -855,8 +861,10 @@ model Lead {
   createdAt                  DateTime          @default(now())
   updatedAt                  DateTime          @updatedAt
 
+  substageId                 String?
   assignedTo          User?                @relation("LeadAssignedTo", fields: [assignedToId], references: [id], onDelete: SetNull)
   stage               LeadStage?           @relation(fields: [stageId], references: [id], onDelete: SetNull)
+  substage            LeadSubstage?        @relation(fields: [substageId], references: [id], onDelete: SetNull)
   lifecycle           LeadLifeCycle?       @relation(fields: [lifecycleId], references: [id], onDelete: SetNull)
   source              LeadSource?          @relation(fields: [sourceId], references: [id], onDelete: SetNull)
   createdBy           User                 @relation("LeadCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
@@ -877,6 +885,8 @@ model Lead {
   advancePayments    AdvancePayment[]
   fieldEditSummaries LeadFieldEditSummary[]
   fieldEditHistories LeadFieldEditHistory[]
+  callSessions       LeadCallSession[]
+  callOutcomes       LeadCallOutcome[]
   remarksList        LeadRemark[]
 
   @@index([workspaceId, assignedToId, stageId])
@@ -1333,6 +1343,9 @@ model User {
   snoozedActivities           FollowupActivityLog[]
   createdLeads                Lead[]                    @relation("LeadCreatedBy")
   assignedLeads               Lead[]                    @relation("LeadAssignedTo")
+  createdSubstages            LeadSubstage[]            @relation("SubstageCreatedBy")
+  initiatedCallSessions       LeadCallSession[]         @relation("CallSessionInitiatedBy")
+  callOutcomes                LeadCallOutcome[]
   closedLeads                 Lead[]                    @relation("LeadClosedBy")
   approvedLeadsRevenue        Lead[]                    @relation("LeadRevenueApprovedBy")
   createdProducts             Product[]                 @relation("ProductCreatedBy")
@@ -1448,6 +1461,7 @@ model FollowUp {
   lead         Lead                  @relation(fields: [leadId], references: [id], onDelete: Cascade)
   images       FollowUpImage[]
   activityLogs FollowupActivityLog[]
+  callSessions LeadCallSession[]
 
   @@index([workspaceId, userId, scheduledAt])
   @@index([workspaceId, status, scheduledAt])
@@ -2488,4 +2502,103 @@ model SalarySetting {
 
   @@map("salary_settings")
 }
+
+model LeadSubstage {
+  id                          String      @id @default(cuid())
+  workspaceId                 String
+  leadStageId                 String
+  name                        String
+  description                 String?     @db.Text
+  sortOrder                   Int         @default(0)
+  status                      StageStatus @default(ACTIVE)
+  connectionStatusRestriction String?     // "CONNECTED", "NOT_CONNECTED", or null
+  outcomeCategory             String?     // "POSITIVE", "FOLLOW_UP", "NEGATIVE", "NEUTRAL"
+  createdById                 String?
+  createdAt                   DateTime    @default(now())
+  updatedAt                   DateTime    @updatedAt
+  deletedAt                   DateTime?
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  leadStage LeadStage @relation(fields: [leadStageId], references: [id], onDelete: Cascade)
+  createdBy User?     @relation("SubstageCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  leads            Lead[]
+  leadCallOutcomes LeadCallOutcome[]
+
+  @@unique([workspaceId, leadStageId, name])
+  @@index([workspaceId])
+  @@index([leadStageId])
+  @@index([status])
+  @@index([sortOrder])
+  @@map("lead_substages")
+}
+
+model LeadCallSession {
+  id                  String    @id @default(cuid())
+  workspaceId         String
+  leadId              String
+  initiatedById       String
+  assignedUserId      String?
+  phoneNumberSnapshot String
+  sourceContext       String    @default("ALL_LEADS") // ALL_LEADS, LEAD_DETAILS, FOLLOW_UP_POPUP
+  followUpId          String?
+  initiatedAt         DateTime  @default(now())
+  returnedAt          DateTime?
+  localCallDate       String    // YYYY-MM-DD
+  status              String    @default("INITIATED") // INITIATED, COMPLETED, CANCELLED
+  provider            String    @default("DEVICE_DIALER") // DEVICE_DIALER, EXOTEL, etc.
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  workspace   Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  lead        Lead              @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  initiatedBy User              @relation("CallSessionInitiatedBy", fields: [initiatedById], references: [id], onDelete: Restrict)
+  followUp    FollowUp?         @relation(fields: [followUpId], references: [id], onDelete: SetNull)
+  outcomes    LeadCallOutcome[]
+
+  @@index([workspaceId])
+  @@index([leadId])
+  @@index([initiatedById])
+  @@index([workspaceId, initiatedById, leadId, localCallDate])
+  @@index([workspaceId, status, createdAt(sort: Desc)])
+  @@map("lead_call_sessions")
+}
+
+model LeadCallOutcome {
+  id                    String   @id @default(cuid())
+  callSessionId         String
+  workspaceId           String
+  leadId                String
+  userId                String
+  connectionStatus      String   // CONNECTED, NOT_CONNECTED
+  outcomeNotes          String?  @db.Text
+  substageId            String?
+  previousStageId       String?
+  targetStageId         String?
+  previousSubstageId    String?
+  approvalRequestId     String?
+  stageRuleSubmissionId String?
+  followUpId            String?
+  callPriority          String?  @default("MEDIUM") // HIGH, MEDIUM, LOW
+  submittedAt           DateTime @default(now())
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  callSession   LeadCallSession @relation(fields: [callSessionId], references: [id], onDelete: Cascade)
+  workspace     Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  lead          Lead            @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  user          User            @relation(fields: [userId], references: [id], onDelete: Restrict)
+  substage      LeadSubstage?   @relation(fields: [substageId], references: [id], onDelete: SetNull)
+  previousStage LeadStage?      @relation("CallOutcomePrevStage", fields: [previousStageId], references: [id], onDelete: SetNull)
+  targetStage   LeadStage?      @relation("CallOutcomeTargetStage", fields: [targetStageId], references: [id], onDelete: SetNull)
+
+  @@index([callSessionId])
+  @@index([workspaceId])
+  @@index([leadId])
+  @@index([userId])
+  @@index([substageId])
+  @@index([workspaceId, userId, connectionStatus, submittedAt(sort: Desc)])
+  @@map("lead_call_outcomes")
+}
+
 
