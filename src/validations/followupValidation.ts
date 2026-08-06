@@ -123,10 +123,10 @@ export const reminderAlertsQuerySchema = z.object({
     .string()
     .optional()
     .transform((value) => {
-      if (!value) return 1440;
+      if (!value) return 5;
       const parsed = parseInt(value, 10);
-      if (Number.isNaN(parsed)) return 1440;
-      return Math.min(1440, Math.max(0, parsed));
+      if (Number.isNaN(parsed)) return 5;
+      return Math.min(60, Math.max(0, parsed));
     }),
 });
 

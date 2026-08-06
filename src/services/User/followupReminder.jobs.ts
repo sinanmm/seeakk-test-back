@@ -2,7 +2,6 @@ import prisma from '../../config/prisma';
 import { redisClient } from '../../config/redis';
 import logger from '../../utils/logger';
 import { sendFollowUpReminderEmail } from '../Email/emailService';
-import { emitUserEvent, emitWorkspaceEvent } from '../../realtime/socket';
 
 const isEnabled = (): boolean => process.env.FOLLOWUP_REMINDER_ENABLED === 'true';
 
@@ -89,20 +88,6 @@ const loopOnce = async (): Promise<void> => {
       const ttlSeconds = Math.max(300, Math.ceil((item.scheduledAt.getTime() - Date.now()) / 1000) + 3600);
       const alreadySent = await isAlreadyMarked(item.id, ttlSeconds);
       if (alreadySent) continue;
-
-      // Realtime in-app notification emission
-      emitUserEvent(item.user.id, 'followup_reminder_due' as any, {
-        followUpId: item.id,
-        leadId: item.lead?.id,
-        workspaceId: item.workspaceId,
-        scheduledAt: item.scheduledAt.toISOString(),
-      });
-      emitWorkspaceEvent(item.workspaceId, 'followup_reminder_due' as any, {
-        followUpId: item.id,
-        leadId: item.lead?.id,
-        workspaceId: item.workspaceId,
-        scheduledAt: item.scheduledAt.toISOString(),
-      });
 
       const dispatch = await sendFollowUpReminderEmail(item.user.email, {
         userDisplayName: formatDisplayName(item.user),
