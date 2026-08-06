@@ -362,6 +362,15 @@ export const saveCallOutcome = async (
       },
     });
 
+    // Fetch fresh authoritative lead state
+    const updatedLead = await tx.lead.findUnique({
+      where: { id: leadId },
+      include: {
+        stage: true,
+        substage: true,
+      },
+    });
+
     return {
       success: true,
       outcomeId: outcome.id,
@@ -372,6 +381,7 @@ export const saveCallOutcome = async (
       isStageChanged,
       isApprovalTriggered,
       createdFollowUpId,
+      lead: updatedLead,
       message: isApprovalTriggered
         ? 'Call outcome saved. Stage change submitted for supervisor approval.'
         : 'Call outcome saved successfully.',

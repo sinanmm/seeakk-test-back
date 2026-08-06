@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import * as service from './callTracking.service';
 import { initiateCallSchema, saveCallOutcomeSchema } from './callTracking.validation';
+import { emitWorkspaceEvent } from '../../realtime/socket';
 
 const getWorkspaceId = (req: Request, res: Response): string | null => {
   const workspaceId = req.user?.workspaceId;
@@ -64,6 +65,16 @@ export const saveCallOutcome = async (req: Request, res: Response, next: NextFun
   try {
     const leadId = Array.isArray(req.params.leadId) ? req.params.leadId[0] : req.params.leadId;
     const result = await service.saveCallOutcome(workspaceId, leadId, req.user!.id, input);
+
+    emitWorkspaceEvent(workspaceId, 'lead_updated', {
+      leadId,
+      action: 'call_outcome_saved',
+      isStageChanged: result.isStageChanged,
+      isApprovalTriggered: result.isApprovalTriggered,
+      stageId: (result as any).lead?.stageId,
+      substageId: (result as any).lead?.substageId,
+    });
+
     return res.status(200).json(result);
   } catch (error: any) {
     console.error('[saveCallOutcome Error]:', error);
