@@ -66,9 +66,9 @@ export const saveCallOutcome = async (req: Request, res: Response, next: NextFun
     const result = await service.saveCallOutcome(workspaceId, leadId, req.user!.id, input);
     return res.status(200).json(result);
   } catch (error: any) {
-    if (error?.statusCode) {
-      return res.status(error.statusCode).json({ success: false, message: error.message });
-    }
-    next(error);
+    console.error('[saveCallOutcome Error]:', error);
+    const statusCode = error?.statusCode || 400;
+    const message = error?.message || 'Failed to save call outcome. Please try again.';
+    return res.status(statusCode).json({ success: false, message });
   }
 };

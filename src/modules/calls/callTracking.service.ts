@@ -171,11 +171,27 @@ export const saveCallOutcome = async (
 
     const effectiveReasonId = input.lobReasonId || input.reasonId;
     const effectiveRemarks = input.lobRemarks;
+    const effectiveExitRemarks = input.lobExitReason || input.lobReturnRemarks || input.lobRemarks;
+    const isCurrentLOB = Boolean(lead.stage?.isLOB || lead.isLOB);
 
     // Check if stage transition is needed
     if (targetStage && targetStage.id !== lead.stageId) {
-      if (targetStage.isLOB && !effectiveReasonId) {
-        throw createError('LOB reason is required when moving to an LOB stage', 400);
+      if (targetStage.isLOB) {
+        if (!effectiveReasonId) {
+          throw createError('LOB reason is required when moving to an LOB stage', 400);
+        }
+        const validReason = await (prisma as any).lOBReason.findFirst({
+          where: { id: effectiveReasonId, workspaceId, status: 'ACTIVE' },
+        });
+        if (!validReason) {
+          throw createError('Selected LOB reason is invalid or inactive', 400);
+        }
+      }
+
+      if (isCurrentLOB && !targetStage.isLOB) {
+        if (!effectiveExitRemarks || !effectiveExitRemarks.trim()) {
+          throw createError('LOB return remark is required when returning a lead from LOB', 400);
+        }
       }
 
       // Check if target stage requires approval
@@ -188,7 +204,7 @@ export const saveCallOutcome = async (
             fromStageId: lead.stageId || targetStage.id,
             toStageId: targetStage.id,
             requestedById: userId,
-            assignedToId: lead.assignedToId,
+            assignedToId: lead.assignedToId || userId,
             status: 'PENDING',
             comment: input.outcomeNotes || `Requested via Call Outcome (${selectedSubstage.name})`,
             requestData: {
@@ -197,6 +213,7 @@ export const saveCallOutcome = async (
               callSessionId: callSession.id,
               lobReasonId: effectiveReasonId || null,
               lobRemarks: effectiveRemarks || null,
+              lobExitReason: effectiveExitRemarks || null,
             },
           },
         });
@@ -258,7 +275,10 @@ export const saveCallOutcome = async (
             fromStageId: lead.stageId,
             toStageId: targetStage.id,
             changedById: userId,
-            reason: input.outcomeNotes || `Call Outcome: ${selectedSubstage.name}`,
+            reason:
+              isCurrentLOB && !targetStage.isLOB
+                ? `LOB Return (${effectiveExitRemarks}): Call Outcome: ${selectedSubstage.name}`
+                : input.outcomeNotes || `Call Outcome: ${selectedSubstage.name}`,
           },
         });
 
