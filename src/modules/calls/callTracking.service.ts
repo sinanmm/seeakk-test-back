@@ -124,256 +124,257 @@ export const saveCallOutcome = async (
   userId: string,
   input: SaveCallOutcomeInput,
 ) => {
-  const callSession = await (prisma as any).leadCallSession.findFirst({
-    where: {
-      id: input.callSessionId,
-      workspaceId,
-      leadId,
-    },
-  });
-
-  if (!callSession) {
-    throw createError('Call session not found', 404);
-  }
-
-  const lead = await (prisma as any).lead.findFirst({
-    where: { id: leadId, workspaceId, deletedAt: null },
-    include: {
-      stage: true,
-      substage: true,
-    },
-  });
-
-  if (!lead) {
-    throw createError('Lead not found', 404);
-  }
-
-  let selectedSubstage: any = null;
-  let targetStage: any = null;
-  let approvalRequestId: string | null = null;
-  let stageRuleSubmissionId: string | null = null;
-  let isStageChanged = false;
-  let isApprovalTriggered = false;
-
-  if (input.substageId) {
-    selectedSubstage = await (prisma as any).leadSubstage.findFirst({
-      where: { id: input.substageId, workspaceId, deletedAt: null },
-      include: {
-        leadStage: true,
+  return await (prisma as any).$transaction(async (tx: any) => {
+    const callSession = await tx.leadCallSession.findFirst({
+      where: {
+        id: input.callSessionId,
+        workspaceId,
+        leadId,
       },
     });
 
-    if (!selectedSubstage) {
-      throw createError('Selected substage not found or inactive', 400);
+    if (!callSession) {
+      throw createError('Call session not found', 404);
     }
 
-    targetStage = selectedSubstage.leadStage;
+    const lead = await tx.lead.findFirst({
+      where: { id: leadId, workspaceId, deletedAt: null },
+      include: {
+        stage: true,
+        substage: true,
+      },
+    });
 
-    const effectiveReasonId = input.lobReasonId || input.reasonId;
-    const effectiveRemarks = input.lobRemarks;
-    const effectiveExitRemarks = input.lobExitReason || input.lobReturnRemarks || input.lobRemarks;
-    const isCurrentLOB = Boolean(lead.stage?.isLOB || lead.isLOB);
+    if (!lead) {
+      throw createError('Lead not found', 404);
+    }
 
-    // Check if stage transition is needed
-    if (targetStage && targetStage.id !== lead.stageId) {
-      if (targetStage.isLOB) {
-        if (!effectiveReasonId) {
-          throw createError('LOB reason is required when moving to an LOB stage', 400);
-        }
-        const validReason = await (prisma as any).lOBReason.findFirst({
-          where: { id: effectiveReasonId, workspaceId, status: 'ACTIVE' },
-        });
-        if (!validReason) {
-          throw createError('Selected LOB reason is invalid or inactive', 400);
-        }
+    let selectedSubstage: any = null;
+    let targetStage: any = null;
+    let approvalRequestId: string | null = null;
+    let stageRuleSubmissionId: string | null = null;
+    let isStageChanged = false;
+    let isApprovalTriggered = false;
+
+    if (input.substageId) {
+      selectedSubstage = await tx.leadSubstage.findFirst({
+        where: { id: input.substageId, workspaceId, deletedAt: null },
+        include: {
+          leadStage: true,
+        },
+      });
+
+      if (!selectedSubstage) {
+        throw createError('Selected substage not found or inactive', 400);
       }
 
-      if (isCurrentLOB && !targetStage.isLOB) {
-        if (!effectiveExitRemarks || !effectiveExitRemarks.trim()) {
-          throw createError('LOB return remark is required when returning a lead from LOB', 400);
-        }
-      }
+      targetStage = selectedSubstage.leadStage;
 
-      // Check if target stage requires approval
-      if (targetStage.isApprovalRequired) {
-        // Create approval request
-        const approval = await (prisma as any).leadStageApproval.create({
-          data: {
-            workspaceId,
-            leadId,
-            fromStageId: lead.stageId || targetStage.id,
-            toStageId: targetStage.id,
-            requestedById: userId,
-            assignedToId: lead.assignedToId || userId,
-            status: 'PENDING',
-            comment: input.outcomeNotes || `Requested via Call Outcome (${selectedSubstage.name})`,
-            requestData: {
-              substageId: selectedSubstage.id,
-              substageName: selectedSubstage.name,
-              callSessionId: callSession.id,
-              lobReasonId: effectiveReasonId || null,
-              lobRemarks: effectiveRemarks || null,
-              lobExitReason: effectiveExitRemarks || null,
+      const effectiveReasonId = input.lobReasonId || input.reasonId;
+      const effectiveRemarks = input.lobRemarks;
+      const effectiveExitRemarks = input.lobExitReason || input.lobReturnRemarks || input.lobRemarks;
+      const isCurrentLOB = Boolean(lead.stage?.isLOB || lead.isLOB);
+
+      // Check if stage transition is needed
+      if (targetStage && targetStage.id !== lead.stageId) {
+        if (targetStage.isLOB) {
+          if (!effectiveReasonId) {
+            throw createError('LOB reason is required when moving to an LOB stage', 400);
+          }
+          const validReason = await tx.lOBReason.findFirst({
+            where: { id: effectiveReasonId, workspaceId, status: 'ACTIVE' },
+          });
+          if (!validReason) {
+            throw createError('Selected LOB reason is invalid or inactive', 400);
+          }
+        }
+
+        if (isCurrentLOB && !targetStage.isLOB) {
+          if (!effectiveExitRemarks || !effectiveExitRemarks.trim()) {
+            throw createError('LOB return remark is required when returning a lead from LOB', 400);
+          }
+        }
+
+        // Check if target stage requires approval
+        if (targetStage.isApprovalRequired) {
+          // Create approval request
+          const approval = await tx.leadStageApproval.create({
+            data: {
+              workspaceId,
+              leadId,
+              fromStageId: lead.stageId || targetStage.id,
+              toStageId: targetStage.id,
+              requestedById: userId,
+              assignedToId: lead.assignedToId || userId,
+              status: 'PENDING',
+              comment: input.outcomeNotes || `Requested via Call Outcome (${selectedSubstage.name})`,
+              requestData: {
+                substageId: selectedSubstage.id,
+                substageName: selectedSubstage.name,
+                callSessionId: callSession.id,
+                lobReasonId: effectiveReasonId || null,
+                lobRemarks: effectiveRemarks || null,
+                lobExitReason: effectiveExitRemarks || null,
+              },
             },
-          },
-        });
+          });
 
-        await (prisma as any).lead.update({
-          where: { id: leadId },
-          data: {
-            approvalState: 'PENDING',
-            pendingApprovalToStageId: targetStage.id,
-            pendingApprovalRequestedAt: new Date(),
-          },
-        });
+          await tx.lead.update({
+            where: { id: leadId },
+            data: {
+              approvalState: 'PENDING',
+              pendingApprovalToStageId: targetStage.id,
+              pendingApprovalRequestedAt: new Date(),
+            },
+          });
 
-        approvalRequestId = approval.id;
-        isApprovalTriggered = true;
-      } else {
-        // Handle stage rules if present
-        if (input.stageRuleValues && input.stageRuleValues.length > 0) {
-          const inputsToSave = input.stageRuleValues.map((v) => ({
-            leadId,
-            ruleId: v.ruleId,
-            value: v.value,
-          }));
-          await (prisma as any).leadStageInput.createMany({ data: inputsToSave });
-          stageRuleSubmissionId = `submission-${Date.now()}`;
-        }
+          approvalRequestId = approval.id;
+          isApprovalTriggered = true;
+        } else {
+          // Handle stage rules if present
+          if (input.stageRuleValues && input.stageRuleValues.length > 0) {
+            const inputsToSave = input.stageRuleValues.map((v) => ({
+              leadId,
+              ruleId: v.ruleId,
+              value: v.value,
+            }));
+            await tx.leadStageInput.createMany({ data: inputsToSave });
+            stageRuleSubmissionId = `submission-${Date.now()}`;
+          }
 
-        // Direct Stage & Substage Update
-        await (prisma as any).lead.update({
-          where: { id: leadId },
-          data: {
-            stageId: targetStage.id,
-            substageId: selectedSubstage.id,
-            stageEnteredAt: new Date(),
-            isClosed: targetStage.isClosed,
-            isLOB: targetStage.isLOB,
-          },
-        });
+          // Direct Stage & Substage Update
+          await tx.lead.update({
+            where: { id: leadId },
+            data: {
+              stageId: targetStage.id,
+              substageId: selectedSubstage.id,
+              stageEnteredAt: new Date(),
+              isClosed: targetStage.isClosed,
+              isLOB: targetStage.isLOB,
+            },
+          });
 
-        // Create LOB Log if target stage is LOB
-        if (targetStage.isLOB && effectiveReasonId) {
-          await (prisma as any).leadLOBLog.create({
+          // Create LOB Log if target stage is LOB
+          if (targetStage.isLOB && effectiveReasonId) {
+            await tx.leadLOBLog.create({
+              data: {
+                leadId,
+                workspaceId,
+                reasonId: effectiveReasonId,
+                remarks: effectiveRemarks || input.outcomeNotes || null,
+                previousStageId: lead.stageId || null,
+                previousStageName: lead.stage?.name || null,
+                changedById: userId,
+              },
+            });
+          }
+
+          // Record Stage History with valid model fields (no unsupported 'reason' field)
+          await tx.leadStageHistory.create({
             data: {
               leadId,
               workspaceId,
-              reasonId: effectiveReasonId,
-              remarks: effectiveRemarks || input.outcomeNotes || null,
-              previousStageId: lead.stageId || null,
-              previousStageName: lead.stage?.name || null,
+              fromStageId: lead.stageId || null,
+              fromStageName: lead.stage?.name || null,
+              toStageId: targetStage.id,
+              toStageName: targetStage.name || null,
               changedById: userId,
             },
           });
+
+          isStageChanged = true;
         }
-
-        await (prisma as any).leadStageHistory.create({
-          data: {
-            leadId,
-            workspaceId,
-            fromStageId: lead.stageId,
-            toStageId: targetStage.id,
-            changedById: userId,
-            reason:
-              isCurrentLOB && !targetStage.isLOB
-                ? `LOB Return (${effectiveExitRemarks}): Call Outcome: ${selectedSubstage.name}`
-                : input.outcomeNotes || `Call Outcome: ${selectedSubstage.name}`,
-          },
+      } else {
+        // Stage remains same, just update substage
+        await tx.lead.update({
+          where: { id: leadId },
+          data: { substageId: selectedSubstage.id },
         });
-
-        isStageChanged = true;
       }
-    } else {
-      // Stage remains same, just update substage
-      await (prisma as any).lead.update({
-        where: { id: leadId },
-        data: { substageId: selectedSubstage.id },
-      });
     }
-  }
 
-  // Create Call Outcome record
-  const outcome = await (prisma as any).leadCallOutcome.create({
-    data: {
-      callSessionId: callSession.id,
-      workspaceId,
-      leadId,
-      userId,
-      connectionStatus: input.connectionStatus,
-      outcomeNotes: input.outcomeNotes || null,
-      substageId: selectedSubstage?.id || null,
-      previousStageId: lead.stageId,
-      targetStageId: targetStage?.id || lead.stageId,
-      previousSubstageId: lead.substageId,
-      approvalRequestId,
-      stageRuleSubmissionId,
-      followUpId: callSession.followUpId,
-      callPriority: input.callPriority || 'MEDIUM',
-      submittedAt: new Date(),
-    },
-  });
-
-  // Mark Call Session as COMPLETED
-  await (prisma as any).leadCallSession.update({
-    where: { id: callSession.id },
-    data: {
-      status: 'COMPLETED',
-      returnedAt: new Date(),
-    },
-  });
-
-  // Create FollowUp if requested
-  let createdFollowUpId: string | null = null;
-  if (input.followUpRequired && input.nextFollowUpDate) {
-    const scheduledAt = new Date(`${input.nextFollowUpDate}T${input.nextFollowUpTime || '10:00'}:00`);
-    const newFollowUp = await (prisma as any).followUp.create({
+    // Create Call Outcome record
+    const outcome = await tx.leadCallOutcome.create({
       data: {
+        callSessionId: callSession.id,
         workspaceId,
         leadId,
-        userId: lead.assignedToId || userId,
-        type: input.followUpType || 'CALL',
-        description: input.followUpDescription || input.outcomeNotes || 'Follow-up after call',
-        scheduledAt: isNaN(scheduledAt.getTime()) ? new Date(Date.now() + 24 * 60 * 60 * 1000) : scheduledAt,
-        status: 'PENDING',
+        userId,
+        connectionStatus: input.connectionStatus,
+        outcomeNotes: input.outcomeNotes || null,
+        substageId: selectedSubstage?.id || null,
+        previousStageId: lead.stageId,
+        targetStageId: targetStage?.id || lead.stageId,
+        previousSubstageId: lead.substageId,
+        approvalRequestId,
+        stageRuleSubmissionId,
+        followUpId: callSession.followUpId,
+        callPriority: input.callPriority || 'MEDIUM',
+        submittedAt: new Date(),
       },
     });
-    createdFollowUpId = newFollowUp.id;
-  }
 
-  // Log Lead Activity
-  await (prisma as any).leadActivity.create({
-    data: {
-      leadId,
-      performedById: userId,
-      workspaceId,
-      action: 'CALL_OUTCOME_SUBMITTED',
-      metadata: {
-        callSessionId: callSession.id,
-        outcomeId: outcome.id,
-        connectionStatus: input.connectionStatus,
-        substageName: selectedSubstage?.name,
-        targetStageName: targetStage?.name,
-        isStageChanged,
-        isApprovalTriggered,
-        callPriority: input.callPriority,
-        followUpCreated: Boolean(createdFollowUpId),
+    // Mark Call Session as COMPLETED
+    await tx.leadCallSession.update({
+      where: { id: callSession.id },
+      data: {
+        status: 'COMPLETED',
+        returnedAt: new Date(),
       },
-    },
-  });
+    });
 
-  return {
-    success: true,
-    outcomeId: outcome.id,
-    callSessionId: callSession.id,
-    connectionStatus: input.connectionStatus,
-    substageName: selectedSubstage?.name || null,
-    targetStageName: targetStage?.name || lead.stage?.name || null,
-    isStageChanged,
-    isApprovalTriggered,
-    createdFollowUpId,
-    message: isApprovalTriggered
-      ? 'Call outcome saved. Stage change submitted for supervisor approval.'
-      : 'Call outcome saved successfully.',
-  };
+    // Create FollowUp if requested
+    let createdFollowUpId: string | null = null;
+    if (input.followUpRequired && input.nextFollowUpDate) {
+      const scheduledAt = new Date(`${input.nextFollowUpDate}T${input.nextFollowUpTime || '10:00'}:00`);
+      const newFollowUp = await tx.followUp.create({
+        data: {
+          workspaceId,
+          leadId,
+          userId: lead.assignedToId || userId,
+          type: input.followUpType || 'CALL',
+          description: input.followUpDescription || input.outcomeNotes || 'Follow-up after call',
+          scheduledAt: isNaN(scheduledAt.getTime()) ? new Date(Date.now() + 24 * 60 * 60 * 1000) : scheduledAt,
+          status: 'PENDING',
+        },
+      });
+      createdFollowUpId = newFollowUp.id;
+    }
+
+    // Log Lead Activity
+    await tx.leadActivity.create({
+      data: {
+        leadId,
+        performedById: userId,
+        workspaceId,
+        action: 'CALL_OUTCOME_SUBMITTED',
+        metadata: {
+          callSessionId: callSession.id,
+          outcomeId: outcome.id,
+          connectionStatus: input.connectionStatus,
+          substageName: selectedSubstage?.name,
+          targetStageName: targetStage?.name,
+          isStageChanged,
+          isApprovalTriggered,
+          callPriority: input.callPriority,
+          followUpCreated: Boolean(createdFollowUpId),
+        },
+      },
+    });
+
+    return {
+      success: true,
+      outcomeId: outcome.id,
+      callSessionId: callSession.id,
+      connectionStatus: input.connectionStatus,
+      substageName: selectedSubstage?.name || null,
+      targetStageName: targetStage?.name || lead.stage?.name || null,
+      isStageChanged,
+      isApprovalTriggered,
+      createdFollowUpId,
+      message: isApprovalTriggered
+        ? 'Call outcome saved. Stage change submitted for supervisor approval.'
+        : 'Call outcome saved successfully.',
+    };
+  });
 };

@@ -68,7 +68,12 @@ export const saveCallOutcome = async (req: Request, res: Response, next: NextFun
   } catch (error: any) {
     console.error('[saveCallOutcome Error]:', error);
     const statusCode = error?.statusCode || 400;
-    const message = error?.message || 'Failed to save call outcome. Please try again.';
+    let message = error?.message || 'Failed to save call outcome. Please try again.';
+
+    if (error?.name?.includes('Prisma') || message.includes('prisma') || message.includes('Unknown argument')) {
+      message = 'Unable to update lead stage. Please try again.';
+    }
+
     return res.status(statusCode).json({ success: false, message });
   }
 };
