@@ -26,6 +26,8 @@ export const saveCallOutcomeSchema = z.object({
     )
     .optional(),
   reasonId: z.string().optional(), // For LOB if selected
+  lobReasonId: z.string().optional(), // Alias for reasonId
+  lobRemarks: z.string().optional(),
 });
 
 export type InitiateCallInput = z.infer<typeof initiateCallSchema>;

@@ -169,8 +169,15 @@ export const saveCallOutcome = async (
 
     targetStage = selectedSubstage.leadStage;
 
+    const effectiveReasonId = input.lobReasonId || input.reasonId;
+    const effectiveRemarks = input.lobRemarks;
+
     // Check if stage transition is needed
     if (targetStage && targetStage.id !== lead.stageId) {
+      if (targetStage.isLOB && !effectiveReasonId) {
+        throw createError('LOB reason is required when moving to an LOB stage', 400);
+      }
+
       // Check if target stage requires approval
       if (targetStage.isApprovalRequired) {
         // Create approval request
@@ -188,6 +195,8 @@ export const saveCallOutcome = async (
               substageId: selectedSubstage.id,
               substageName: selectedSubstage.name,
               callSessionId: callSession.id,
+              lobReasonId: effectiveReasonId || null,
+              lobRemarks: effectiveRemarks || null,
             },
           },
         });
@@ -226,6 +235,21 @@ export const saveCallOutcome = async (
             isLOB: targetStage.isLOB,
           },
         });
+
+        // Create LOB Log if target stage is LOB
+        if (targetStage.isLOB && effectiveReasonId) {
+          await (prisma as any).leadLOBLog.create({
+            data: {
+              leadId,
+              workspaceId,
+              reasonId: effectiveReasonId,
+              remarks: effectiveRemarks || input.outcomeNotes || null,
+              previousStageId: lead.stageId || null,
+              previousStageName: lead.stage?.name || null,
+              changedById: userId,
+            },
+          });
+        }
 
         await (prisma as any).leadStageHistory.create({
           data: {
