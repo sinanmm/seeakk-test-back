@@ -82,6 +82,13 @@ export const exportCallReport = async (req: Request, res: Response, next: NextFu
       limit: 5000,
     });
 
+    const formattedUserSummary = summaryReport.userSummaryList.map((u: any) => ({
+      ...u,
+      selectedSubstagesText: u.selectedSubstages
+        ? u.selectedSubstages.map((s: any) => `${s.name} (${s.count})`).join(' | ')
+        : 'None',
+    }));
+
     const summaryColumns: Array<{ header: string; key: string; type?: 'text' | 'number' | 'percentage' | 'date' }> = [
       { header: 'User Name', key: 'userName' },
       { header: 'Office', key: 'officeName' },
@@ -91,7 +98,7 @@ export const exportCallReport = async (req: Request, res: Response, next: NextFu
       { header: 'Connected Calls', key: 'connectedCalls', type: 'number' },
       { header: 'Not Connected', key: 'notConnectedCalls', type: 'number' },
       { header: 'Connection Rate', key: 'connectionRate', type: 'percentage' },
-      { header: 'Positive Outcomes', key: 'positiveOutcomes', type: 'number' },
+      { header: 'Selected Substages', key: 'selectedSubstagesText' },
       { header: 'Follow-ups Created', key: 'followUpsCreated', type: 'number' },
       { header: 'Leads Stage Moved', key: 'leadsMoved', type: 'number' },
     ];
@@ -106,7 +113,6 @@ export const exportCallReport = async (req: Request, res: Response, next: NextFu
       { header: 'Connection Status', key: 'connectionStatus' },
       { header: 'Main Stage', key: 'mainStage' },
       { header: 'Substage', key: 'substage' },
-      { header: 'Priority', key: 'callPriority' },
       { header: 'Outcome Notes', key: 'outcomeNotes' },
     ];
 
@@ -117,17 +123,16 @@ export const exportCallReport = async (req: Request, res: Response, next: NextFu
       departmentName: r.user?.department?.name || 'N/A',
       leadName: r.lead?.name || '',
       phone: r.lead?.phone || '',
-      connectionStatus: r.connectionStatus,
+      connectionStatus: r.connectionStatus === 'CONNECTED' ? 'Attended' : 'Not Attended',
       mainStage: r.targetStage?.name || r.substage?.leadStage?.name || '',
       substage: r.substage?.name || 'N/A',
-      callPriority: r.callPriority || 'MEDIUM',
       outcomeNotes: r.outcomeNotes || '',
     }));
 
     if (format === 'csv') {
-      const csvStr = generateCsvString(detailedColumns, detailedRows);
+      const csvStr = generateCsvString(summaryColumns, formattedUserSummary);
       res.setHeader('Content-Type', 'text/csv');
-      res.setHeader('Content-Disposition', `attachment; filename="call_performance_report_${Date.now()}.csv"`);
+      res.setHeader('Content-Disposition', `attachment; filename="call_performance_summary_${Date.now()}.csv"`);
       return res.status(200).send(csvStr);
     }
 
@@ -139,12 +144,13 @@ export const exportCallReport = async (req: Request, res: Response, next: NextFu
       summaryMetrics: [
         { label: 'Total Call Attempts', value: summaryReport.metrics.totalCalls },
         { label: 'Unique Calls', value: summaryReport.metrics.uniqueCalls },
-        { label: 'Connected Calls', value: summaryReport.metrics.connectedCalls },
+        { label: 'Attended Calls', value: summaryReport.metrics.connectedCalls },
+        { label: 'Not Attended Calls', value: summaryReport.metrics.notConnectedCalls },
         { label: 'Connection Rate', value: `${summaryReport.metrics.connectionRate}%` },
         { label: 'Leads Stage Moved', value: summaryReport.metrics.leadsMoved },
       ],
       summaryColumns,
-      summaryData: summaryReport.userSummaryList,
+      summaryData: formattedUserSummary,
       detailedColumns,
       detailedData: detailedRows,
     });

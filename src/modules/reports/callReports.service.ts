@@ -147,8 +147,9 @@ export const getCallSummaryReport = async (
     if (o.previousStageId && o.targetStageId && o.previousStageId !== o.targetStageId) leadsMoved += 1;
   });
 
-  // 5. Group by User for User-Wise Table
+  // 5. Group by User & Substage for User-Wise Table and Substage Breakdown
   const userMap = new Map<string, any>();
+  const substageGlobalMap = new Map<string, any>();
 
   outcomes.forEach((o: any) => {
     const uid = o.userId;
@@ -167,6 +168,7 @@ export const getCallSummaryReport = async (
         negativeOutcomes: 0,
         followUpsCreated: 0,
         leadsMoved: 0,
+        substageCounts: new Map<string, any>(),
       });
     }
 
@@ -182,11 +184,47 @@ export const getCallSummaryReport = async (
     if (o.substage?.outcomeCategory === 'NEGATIVE') item.negativeOutcomes += 1;
     if (o.followUpId) item.followUpsCreated += 1;
     if (o.previousStageId && o.targetStageId && o.previousStageId !== o.targetStageId) item.leadsMoved += 1;
+
+    if (o.substage) {
+      const subId = o.substage.id;
+      if (!item.substageCounts.has(subId)) {
+        item.substageCounts.set(subId, {
+          substageId: subId,
+          name: o.substage.name,
+          stageName: o.substage.leadStage?.name || 'General',
+          color: o.substage.leadStage?.color || '#3b82f6',
+          count: 0,
+        });
+      }
+      item.substageCounts.get(subId).count += 1;
+
+      if (!substageGlobalMap.has(subId)) {
+        substageGlobalMap.set(subId, {
+          substageId: subId,
+          name: o.substage.name,
+          stageName: o.substage.leadStage?.name || 'General',
+          color: o.substage.leadStage?.color || '#3b82f6',
+          outcomeCategory: o.substage.outcomeCategory || 'NEUTRAL',
+          selectedCount: 0,
+          uniqueLeadsSet: new Set<string>(),
+          usersSet: new Set<string>(),
+          connectedCalls: 0,
+          notConnectedCalls: 0,
+        });
+      }
+      const gItem = substageGlobalMap.get(subId);
+      gItem.selectedCount += 1;
+      gItem.uniqueLeadsSet.add(o.leadId);
+      gItem.usersSet.add(o.userId);
+      if (o.connectionStatus === 'CONNECTED') gItem.connectedCalls += 1;
+      if (o.connectionStatus === 'NOT_CONNECTED') gItem.notConnectedCalls += 1;
+    }
   });
 
   const userSummaryList = Array.from(userMap.values()).map((u) => {
     const uniqueCalls = u.uniqueCallsSet.size;
     const connectionRate = u.totalAttempts > 0 ? Number(((u.connectedCalls / u.totalAttempts) * 100).toFixed(1)) : 0;
+    const selectedSubstages = Array.from(u.substageCounts.values()).sort((a: any, b: any) => b.count - a.count);
     return {
       userId: u.userId,
       userName: u.userName,
@@ -202,8 +240,22 @@ export const getCallSummaryReport = async (
       negativeOutcomes: u.negativeOutcomes,
       followUpsCreated: u.followUpsCreated,
       leadsMoved: u.leadsMoved,
+      selectedSubstages,
     };
   });
+
+  const substageBreakdown = Array.from(substageGlobalMap.values()).map((s: any) => ({
+    substageId: s.substageId,
+    name: s.name,
+    stageName: s.stageName,
+    color: s.color,
+    outcomeCategory: s.outcomeCategory,
+    selectedCount: s.selectedCount,
+    uniqueLeads: s.uniqueLeadsSet.size,
+    usersCount: s.usersSet.size,
+    connectedCalls: s.connectedCalls,
+    notConnectedCalls: s.notConnectedCalls,
+  })).sort((a, b) => b.selectedCount - a.selectedCount);
 
   // Calculate max values for in-cell data bar scaling
   const maxValues = {
@@ -228,6 +280,7 @@ export const getCallSummaryReport = async (
       leadsMoved,
     },
     userSummaryList,
+    substageBreakdown,
     maxValues,
   };
 };
