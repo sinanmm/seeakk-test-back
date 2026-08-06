@@ -1,0 +1,258 @@
+import { Prisma } from '@prisma/client';
+
+export interface FilterCondition {
+  field: string;
+  operator: string;
+  value?: any;
+}
+
+const buildSingleConditionWhere = (condition: FilterCondition): Prisma.LeadWhereInput | null => {
+  const { field, operator, value } = condition;
+  if (!field || !operator) return null;
+
+  // 1. Dynamic Lead Fields (e.g. "dynamic_clx123...")
+  if (field.startsWith('dynamic_')) {
+    const fieldId = field.replace('dynamic_', '');
+    const stringVal = value !== undefined && value !== null ? String(value) : '';
+
+    if (operator === 'EQUALS') {
+      return { dynamicValues: { some: { fieldId, value: stringVal } } };
+    }
+    if (operator === 'NOT_EQUALS') {
+      return { NOT: { dynamicValues: { some: { fieldId, value: stringVal } } } };
+    }
+    if (operator === 'CONTAINS') {
+      return { dynamicValues: { some: { fieldId, value: { contains: stringVal, mode: 'insensitive' } } } };
+    }
+    if (operator === 'IS_EMPTY') {
+      return { NOT: { dynamicValues: { some: { fieldId } } } };
+    }
+    if (operator === 'IS_NOT_EMPTY') {
+      return { dynamicValues: { some: { fieldId } } };
+    }
+    return { dynamicValues: { some: { fieldId, value: stringVal } } };
+  }
+
+  // 2. Date Fields
+  const isDateField = [
+    'createdAt',
+    'updatedAt',
+    'closedAt',
+    'nextFollowUpAt',
+    'stageEnteredAt',
+    'stageExpiresAt',
+    'pendingApprovalRequestedAt',
+  ].includes(field);
+
+  if (isDateField) {
+    const dateWhere = buildDateConditionWhere(operator, value);
+    if (!dateWhere) return null;
+    return { [field]: dateWhere };
+  }
+
+  // 3. Status Presets
+  if (field === 'leadStatus') {
+    if (value === 'OPEN') return { isClosed: false };
+    if (value === 'CLOSED') return { isClosed: true, isLOB: false };
+    if (value === 'LOB') return { isLOB: true };
+    if (value === 'ACTIVE') return { isClosed: false, isLOB: false };
+    if (value === 'ARCHIVED') return { deletedAt: { not: null } };
+  }
+
+  // 4. Boolean Fields
+  if (field === 'isClosed' || field === 'isLOB') {
+    const boolVal = operator === 'YES' || value === true || value === 'true';
+    return { [field]: boolVal };
+  }
+
+  // 5. Office & Department Scoping via Assigned User
+  if (field === 'officeId') {
+    if (operator === 'IS_ANY_OF' && Array.isArray(value)) {
+      return { assignedTo: { officeId: { in: value } } };
+    }
+    if (operator === 'NOT_EQUALS') {
+      return { assignedTo: { officeId: { not: value } } };
+    }
+    return { assignedTo: { officeId: value } };
+  }
+
+  if (field === 'departmentId') {
+    if (operator === 'IS_ANY_OF' && Array.isArray(value)) {
+      return { assignedTo: { departmentId: { in: value } } };
+    }
+    if (operator === 'NOT_EQUALS') {
+      return { assignedTo: { departmentId: { not: value } } };
+    }
+    return { assignedTo: { departmentId: value } };
+  }
+
+  if (field === 'supervisorId') {
+    return { assignedTo: { supervisorId: value } };
+  }
+
+  // 6. Number & Currency Fields
+  const isNumberField = ['expectedRevenue', 'generatedRevenue', 'totalAmount', 'earnedRevenue'].includes(field);
+  if (isNumberField) {
+    const numVal = Number(value);
+    if (operator === 'EQUALS') return { [field]: numVal };
+    if (operator === 'NOT_EQUALS') return { [field]: { not: numVal } };
+    if (operator === 'GREATER_THAN') return { [field]: { gt: numVal } };
+    if (operator === 'GREATER_THAN_OR_EQUAL') return { [field]: { gte: numVal } };
+    if (operator === 'LESS_THAN') return { [field]: { lt: numVal } };
+    if (operator === 'LESS_THAN_OR_EQUAL') return { [field]: { lte: numVal } };
+    if (operator === 'IN_RANGE' && typeof value === 'object' && value !== null) {
+      return { [field]: { gte: Number(value.min || 0), lte: Number(value.max || 999999999) } };
+    }
+    if (operator === 'IS_EMPTY') return { [field]: null };
+    if (operator === 'IS_NOT_EMPTY') return { [field]: { not: null } };
+  }
+
+  // 7. Select & ID Fields (e.g. stageId, substageId, sourceId, lifecycleId, assignedToId)
+  if (['stageId', 'substageId', 'sourceId', 'lifecycleId', 'assignedToId', 'createdById'].includes(field)) {
+    if (operator === 'EQUALS') return { [field]: value };
+    if (operator === 'NOT_EQUALS') return { [field]: { not: value } };
+    if (operator === 'IS_ANY_OF' && Array.isArray(value)) return { [field]: { in: value } };
+    if (operator === 'IS_NONE_OF' && Array.isArray(value)) return { [field]: { notIn: value } };
+    if (operator === 'IS_EMPTY') return { [field]: null };
+    if (operator === 'IS_NOT_EMPTY') return { [field]: { not: null } };
+  }
+
+  // 8. Text Fields (name, phone, email, companyName, address)
+  const strVal = String(value || '').trim();
+  if (operator === 'EQUALS') return { [field]: { equals: strVal, mode: 'insensitive' } };
+  if (operator === 'NOT_EQUALS') return { NOT: { [field]: { equals: strVal, mode: 'insensitive' } } };
+  if (operator === 'CONTAINS') return { [field]: { contains: strVal, mode: 'insensitive' } };
+  if (operator === 'NOT_CONTAINS') return { NOT: { [field]: { contains: strVal, mode: 'insensitive' } } };
+  if (operator === 'STARTS_WITH') return { [field]: { startsWith: strVal, mode: 'insensitive' } };
+  if (operator === 'ENDS_WITH') return { [field]: { endsWith: strVal, mode: 'insensitive' } };
+  if (operator === 'IS_EMPTY') return { OR: [{ [field]: null }, { [field]: '' }] };
+  if (operator === 'IS_NOT_EMPTY') return { AND: [{ [field]: { not: null } }, { [field]: { not: '' } }] };
+
+  return null;
+};
+
+const buildDateConditionWhere = (operator: string, value: any): Prisma.DateTimeFilter | null => {
+  const now = new Date();
+
+  const getDayRange = (d: Date) => {
+    const start = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
+    const end = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999);
+    return { start, end };
+  };
+
+  if (operator === 'TODAY') {
+    const { start, end } = getDayRange(now);
+    return { gte: start, lte: end };
+  }
+
+  if (operator === 'YESTERDAY') {
+    const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const { start, end } = getDayRange(yesterday);
+    return { gte: start, lte: end };
+  }
+
+  if (operator === 'TOMORROW') {
+    const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    const { start, end } = getDayRange(tomorrow);
+    return { gte: start, lte: end };
+  }
+
+  if (operator === 'THIS_WEEK') {
+    const dayOfWeek = now.getDay();
+    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek, 0, 0, 0);
+    const end = new Date(start.getTime() + 7 * 24 * 60 * 60 * 1000 - 1);
+    return { gte: start, lte: end };
+  }
+
+  if (operator === 'LAST_WEEK') {
+    const dayOfWeek = now.getDay();
+    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek - 7, 0, 0, 0);
+    const end = new Date(start.getTime() + 7 * 24 * 60 * 60 * 1000 - 1);
+    return { gte: start, lte: end };
+  }
+
+  if (operator === 'THIS_MONTH') {
+    const start = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0);
+    const end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+    return { gte: start, lte: end };
+  }
+
+  if (operator === 'LAST_MONTH') {
+    const start = new Date(now.getFullYear(), now.getMonth() - 1, 1, 0, 0, 0);
+    const end = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
+    return { gte: start, lte: end };
+  }
+
+  if (operator === 'LAST_N_DAYS') {
+    const days = Number(value || 7);
+    const start = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+    return { gte: start, lte: now };
+  }
+
+  if (operator === 'NEXT_N_DAYS') {
+    const days = Number(value || 7);
+    const end = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
+    return { gte: now, lte: end };
+  }
+
+  if (operator === 'GREATER_THAN' || operator === 'AFTER') {
+    return { gt: new Date(value) };
+  }
+
+  if (operator === 'LESS_THAN' || operator === 'BEFORE') {
+    return { lt: new Date(value) };
+  }
+
+  if (operator === 'EQUALS') {
+    const d = new Date(value);
+    const { start, end } = getDayRange(d);
+    return { gte: start, lte: end };
+  }
+
+  if (operator === 'IN_RANGE' || operator === 'BETWEEN') {
+    let fromDate: Date | undefined = undefined;
+    let toDate: Date | undefined = undefined;
+
+    if (typeof value === 'object' && value !== null) {
+      if (value.from) fromDate = new Date(`${value.from}T00:00:00.000Z`);
+      if (value.to) toDate = new Date(`${value.to}T23:59:59.999Z`);
+    }
+
+    if (fromDate || toDate) return { gte: fromDate, lte: toDate };
+  }
+
+  if (operator === 'IS_EMPTY') return { equals: null as any };
+  if (operator === 'IS_NOT_EMPTY') return { not: null as any };
+
+  return null;
+};
+
+export const buildCustomPipelineWhere = (
+  filtersJson: FilterCondition[],
+  filterLogic: 'AND' | 'OR' = 'AND',
+  leadAccessScope?: Prisma.LeadWhereInput,
+): Prisma.LeadWhereInput => {
+  const conditionWheres: Prisma.LeadWhereInput[] = [];
+
+  for (const cond of filtersJson) {
+    const singleWhere = buildSingleConditionWhere(cond);
+    if (singleWhere) {
+      conditionWheres.push(singleWhere);
+    }
+  }
+
+  let combinedFilter: Prisma.LeadWhereInput = {};
+  if (conditionWheres.length > 0) {
+    if (filterLogic === 'OR') {
+      combinedFilter = { OR: conditionWheres };
+    } else {
+      combinedFilter = { AND: conditionWheres };
+    }
+  }
+
+  if (leadAccessScope && Object.keys(leadAccessScope).length > 0) {
+    return { AND: [leadAccessScope, combinedFilter] };
+  }
+
+  return combinedFilter;
+};

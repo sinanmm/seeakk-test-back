@@ -64,9 +64,10 @@ model Role {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  workspace   Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  permissions RolePermission[]
-  users       User[]
+  workspace               Workspace                @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  permissions             RolePermission[]
+  users                   User[]
+  dashboardPipelineShares DashboardPipelineShare[]
 
   @@unique([workspaceId, name])
   @@index([workspaceId])
@@ -152,6 +153,10 @@ model Workspace {
   substages                      LeadSubstage[]
   callSessions                   LeadCallSession[]
   callOutcomes                   LeadCallOutcome[]
+  dashboardPipelineSections      DashboardPipelineSection[]
+  dashboardPipelines             DashboardPipeline[]
+  dashboardPipelineShares        DashboardPipelineShare[]
+  dashboardPipelineAudits        DashboardPipelineAudit[]
   createdAt                      DateTime                       @default(now())
   updatedAt                      DateTime                       @updatedAt
   LeadRemark                     LeadRemark[]
@@ -269,7 +274,8 @@ model Department {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  users User[]
+  users                   User[]
+  dashboardPipelineShares DashboardPipelineShare[]
 
   @@unique([name, workspaceId])
   @@index([workspaceId])
@@ -402,9 +408,10 @@ model Office {
   isActive    Boolean  @default(true)
   createdBy   String?
   workspaceId String
-  users       User[]
-  holidays    HolidayOffice[]
-  createdAt   DateTime @default(now())
+  users                   User[]
+  holidays                HolidayOffice[]
+  dashboardPipelineShares DashboardPipelineShare[]
+  createdAt               DateTime                 @default(now())
   updatedAt   DateTime @updatedAt
 
   @@index([workspaceId])
@@ -888,6 +895,7 @@ model Lead {
   callSessions       LeadCallSession[]
   callOutcomes       LeadCallOutcome[]
   remarksList        LeadRemark[]
+  dynamicValues      LeadDynamicValue[]
 
   @@index([workspaceId, assignedToId, stageId])
   @@index([workspaceId, sourceId, createdAt])
@@ -1147,6 +1155,7 @@ model LeadDynamicValue {
   createdAt DateTime @default(now())
 
   field LeadDynamicField @relation(fields: [fieldId], references: [id], onDelete: Restrict)
+  lead  Lead?            @relation(fields: [leadId], references: [id], onDelete: Cascade)
 
   @@index([leadId])
   @@index([fieldId])
@@ -1353,6 +1362,12 @@ model User {
   revenueTransactions         RevenueTransaction[]      @relation("RevenueTransactionUser")
   approvedRevenueTransactions RevenueTransaction[]      @relation("RevenueTransactionApprovedBy")
   leadFieldEditHistories      LeadFieldEditHistory[]
+  ownedPipelineSections       DashboardPipelineSection[] @relation("SectionOwnerUser")
+  createdPipelineSections     DashboardPipelineSection[] @relation("SectionCreatedBy")
+  ownedPipelines              DashboardPipeline[]        @relation("PipelineOwnerUser")
+  createdPipelines            DashboardPipeline[]        @relation("PipelineCreatedBy")
+  dashboardPipelineShares     DashboardPipelineShare[]
+  dashboardPipelineAudits     DashboardPipelineAudit[]
 
   createdHolidays                Holiday[]                      @relation("HolidayCreatedBy")
   updatedHolidays                Holiday[]                      @relation("HolidayUpdatedBy")
@@ -2600,5 +2615,122 @@ model LeadCallOutcome {
   @@index([workspaceId, userId, connectionStatus, submittedAt(sort: Desc)])
   @@map("lead_call_outcomes")
 }
+
+model DashboardPipelineSection {
+  id             String    @id @default(cuid())
+  workspaceId    String
+  name           String
+  description    String?   @db.Text
+  visibilityType String    @default("PRIVATE") // PRIVATE, SHARED, WORKSPACE
+  ownerUserId    String
+  layoutType     String    @default("AUTO") // FULL, TWO_COL, THREE_COL, FOUR_COL, AUTO
+  sortOrder      Int       @default(0)
+  status         String    @default("ACTIVE") // ACTIVE, INACTIVE
+  createdById    String
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  deletedAt      DateTime?
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  ownerUser User      @relation("SectionOwnerUser", fields: [ownerUserId], references: [id], onDelete: Cascade)
+  createdBy User      @relation("SectionCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+
+  pipelines DashboardPipeline[]
+  shares    DashboardPipelineShare[]
+
+  @@index([workspaceId])
+  @@index([ownerUserId])
+  @@index([status])
+  @@index([sortOrder])
+  @@map("dashboard_pipeline_sections")
+}
+
+model DashboardPipeline {
+  id             String    @id @default(cuid())
+  workspaceId    String
+  sectionId      String
+  name           String
+  description    String?   @db.Text
+  metricType     String    @default("LEAD_COUNT") // LEAD_COUNT, TOTAL_EXPECTED_REVENUE, TOTAL_CLOSED_REVENUE, AVERAGE_REVENUE, CONVERSION_RATE, LOB_COUNT, FOLLOWUP_COUNT, OVERDUE_FOLLOWUP_COUNT, STAGE_DISTRIBUTION
+  displayType    String    @default("COMPACT_CARD") // COMPACT_CARD, HORIZONTAL_BAR, PROGRESS_BAR, STATUS_CARD, MINI_TABLE, STAGE_BAR, PERCENTAGE_CARD, REVENUE_CARD
+  filtersJson    Json      // Array of normalized conditions
+  filterLogic    String    @default("AND") // AND, OR
+  visibilityType String    @default("PRIVATE") // PRIVATE, SHARED, WORKSPACE
+  ownerUserId    String
+  sortOrder      Int       @default(0)
+  status         String    @default("ACTIVE") // ACTIVE, INACTIVE
+  clickAction    String    @default("OPEN_LEADS") // OPEN_LEADS, OPEN_DRAWER
+  createdById    String
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  deletedAt      DateTime?
+
+  workspace Workspace                @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  section   DashboardPipelineSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  ownerUser User                     @relation("PipelineOwnerUser", fields: [ownerUserId], references: [id], onDelete: Cascade)
+  createdBy User                     @relation("PipelineCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+
+  shares DashboardPipelineShare[]
+  audits DashboardPipelineAudit[]
+
+  @@index([workspaceId])
+  @@index([sectionId])
+  @@index([ownerUserId])
+  @@index([status])
+  @@index([sortOrder])
+  @@map("dashboard_pipelines")
+}
+
+model DashboardPipelineShare {
+  id                 String   @id @default(cuid())
+  workspaceId        String
+  sectionId          String?
+  pipelineId         String?
+  shareType          String   // USER, ROLE, OFFICE, DEPARTMENT
+  targetUserId       String?
+  targetRoleId       String?
+  targetOfficeId     String?
+  targetDepartmentId String?
+  createdAt          DateTime @default(now())
+
+  workspace        Workspace                 @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  section          DashboardPipelineSection? @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  pipeline         DashboardPipeline?        @relation(fields: [pipelineId], references: [id], onDelete: Cascade)
+  targetUser       User?                     @relation(fields: [targetUserId], references: [id], onDelete: Cascade)
+  targetRole       Role?                     @relation(fields: [targetRoleId], references: [id], onDelete: Cascade)
+  targetOffice     Office?                   @relation(fields: [targetOfficeId], references: [id], onDelete: Cascade)
+  targetDepartment Department?               @relation(fields: [targetDepartmentId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@index([sectionId])
+  @@index([pipelineId])
+  @@index([targetUserId])
+  @@index([targetRoleId])
+  @@index([targetOfficeId])
+  @@index([targetDepartmentId])
+  @@map("dashboard_pipeline_shares")
+}
+
+model DashboardPipelineAudit {
+  id            String   @id @default(cuid())
+  workspaceId   String
+  pipelineId    String?
+  sectionId     String?
+  action        String   // SECTION_CREATED, SECTION_UPDATED, SECTION_DELETED, PIPELINE_CREATED, PIPELINE_UPDATED, PIPELINE_DELETED, PIPELINE_SHARED, PIPELINE_DUPLICATED, PIPELINE_ACTIVATED, PIPELINE_DEACTIVATED, PIPELINE_REORDERED
+  previousValue Json?
+  newValue      Json?
+  performedById String
+  createdAt     DateTime @default(now())
+
+  workspace Workspace          @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  pipeline  DashboardPipeline? @relation(fields: [pipelineId], references: [id], onDelete: SetNull)
+  performedBy User             @relation(fields: [performedById], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@index([pipelineId])
+  @@index([performedById])
+  @@map("dashboard_pipeline_audits")
+}
+
 
 

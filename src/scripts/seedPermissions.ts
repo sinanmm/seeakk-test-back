@@ -34,6 +34,18 @@ const permissions = [
   { key: 'DASHBOARD_VIEW_OWN_OFFICE', group: 'DASHBOARD', description: 'View Own Office Dashboard' },
   { key: 'DASHBOARD_VIEW_ASSIGNED_OFFICES', group: 'DASHBOARD', description: 'View Assigned Users Offices Dashboard' },
   { key: 'DASHBOARD_VIEW_ALL_OFFICES', group: 'DASHBOARD', description: 'View All Offices Dashboard' },
+  { key: 'DASHBOARD_CUSTOM_VIEW', group: 'DASHBOARD', description: 'View Custom Dashboard Pipelines' },
+  { key: 'DASHBOARD_CUSTOM_CREATE_OWN', group: 'DASHBOARD', description: 'Create Own Dashboard Pipelines' },
+  { key: 'DASHBOARD_CUSTOM_EDIT_OWN', group: 'DASHBOARD', description: 'Edit Own Dashboard Pipelines' },
+  { key: 'DASHBOARD_CUSTOM_DELETE_OWN', group: 'DASHBOARD', description: 'Delete Own Dashboard Pipelines' },
+  { key: 'DASHBOARD_CUSTOM_CREATE_SHARED', group: 'DASHBOARD', description: 'Create Shared Dashboard Pipelines' },
+  { key: 'DASHBOARD_CUSTOM_EDIT_SHARED', group: 'DASHBOARD', description: 'Edit Shared Dashboard Pipelines' },
+  { key: 'DASHBOARD_CUSTOM_DELETE_SHARED', group: 'DASHBOARD', description: 'Delete Shared Dashboard Pipelines' },
+  { key: 'DASHBOARD_CUSTOM_CREATE_WORKSPACE', group: 'DASHBOARD', description: 'Create Workspace Dashboard Pipelines' },
+  { key: 'DASHBOARD_CUSTOM_MANAGE_SECTIONS', group: 'DASHBOARD', description: 'Manage Dashboard Pipeline Sections' },
+  { key: 'DASHBOARD_CUSTOM_SHARE', group: 'DASHBOARD', description: 'Share Dashboard Pipelines' },
+  { key: 'DASHBOARD_CUSTOM_EXPORT', group: 'DASHBOARD', description: 'Export Custom Pipeline Results' },
+  { key: 'DASHBOARD_CUSTOM_VIEW_ALL', group: 'DASHBOARD', description: 'View All Custom Pipelines' },
 
   // ASSIGNED USERS MANAGEMENT
   { key: 'ASSIGNED_USERS_VIEW', group: 'ASSIGNED_USERS', description: 'View assigned users and assignment details' },
