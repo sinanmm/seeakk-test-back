@@ -46,6 +46,10 @@ const LEAD_STAGE_WITH_RULES_INCLUDE = {
   rules: {
     select: STAGE_RULE_SAFE_SELECT,
   },
+  substages: {
+    where: { deletedAt: null },
+    orderBy: { createdAt: 'asc' as const },
+  },
 } as const;
 
 const resolveCreatorDisplayName = (user: { name: string | null; username: string | null; email: string }): string => {
@@ -265,6 +269,21 @@ export const createLeadStage = async (
         await applyStageRuleAssignments(tx, stage.id, normalizedInput.ruleAssignments);
       }
 
+      if ((normalizedInput as any).substages && (normalizedInput as any).substages.length > 0) {
+        for (const sub of (normalizedInput as any).substages) {
+          if (!sub.name || !sub.name.trim()) continue;
+          await tx.leadSubstage.create({
+            data: {
+              workspaceId,
+              leadStageId: stage.id,
+              name: sub.name.trim(),
+              status: sub.status || 'ACTIVE',
+              createdById: createdBy,
+            },
+          });
+        }
+      }
+
       return tx.leadStage.findUniqueOrThrow({
         where: { id: stage.id },
         include: LEAD_STAGE_WITH_RULES_INCLUDE,
@@ -459,6 +478,78 @@ export const updateLeadStage = async (
 
         if (normalizedInput.ruleAssignments.length > 0) {
           await applyStageRuleAssignments(tx, id, normalizedInput.ruleAssignments);
+        }
+      }
+
+      if ((normalizedInput as any).substages !== undefined) {
+        const rawSubstages = (normalizedInput as any).substages;
+        let createList: Array<{ id?: string; name: string; status?: any }> = [];
+        let updateList: Array<{ id: string; name: string; status?: any }> = [];
+        let removeList: string[] = [];
+
+        if (Array.isArray(rawSubstages)) {
+          const existingSubstages = await tx.leadSubstage.findMany({
+            where: { workspaceId, leadStageId: id, deletedAt: null },
+          });
+          const existingMap = new Map(existingSubstages.map((s: any) => [s.id, s]));
+          const inputIds = new Set(rawSubstages.map((s: any) => s.id).filter(Boolean));
+
+          for (const sub of rawSubstages) {
+            if (sub.id && existingMap.has(sub.id)) {
+              updateList.push({ id: sub.id, name: sub.name, status: sub.status });
+            } else if (sub.name && sub.name.trim()) {
+              createList.push({ name: sub.name, status: sub.status });
+            }
+          }
+
+          for (const existingSub of existingSubstages) {
+            if (!inputIds.has(existingSub.id)) {
+              removeList.push(existingSub.id);
+            }
+          }
+        } else if (typeof rawSubstages === 'object' && rawSubstages !== null) {
+          createList = rawSubstages.create || [];
+          updateList = rawSubstages.update || [];
+          removeList = rawSubstages.remove || [];
+        }
+
+        for (const sub of createList) {
+          if (!sub.name || !sub.name.trim()) continue;
+          await tx.leadSubstage.create({
+            data: {
+              workspaceId,
+              leadStageId: id,
+              name: sub.name.trim(),
+              status: sub.status || 'ACTIVE',
+            },
+          });
+        }
+
+        for (const sub of updateList) {
+          if (!sub.id || !sub.name || !sub.name.trim()) continue;
+          await tx.leadSubstage.updateMany({
+            where: { id: sub.id, workspaceId, leadStageId: id },
+            data: {
+              name: sub.name.trim(),
+              ...(sub.status ? { status: sub.status } : {}),
+            },
+          });
+        }
+
+        for (const subId of removeList) {
+          const outcomeCount = await tx.leadCallOutcome.count({ where: { substageId: subId } });
+          const leadCount = await tx.lead.count({ where: { substageId: subId } });
+
+          if (outcomeCount > 0 || leadCount > 0) {
+            await tx.leadSubstage.updateMany({
+              where: { id: subId, workspaceId, leadStageId: id },
+              data: { status: 'INACTIVE', deletedAt: new Date() },
+            });
+          } else {
+            await tx.leadSubstage.deleteMany({
+              where: { id: subId, workspaceId, leadStageId: id },
+            });
+          }
         }
       }
 

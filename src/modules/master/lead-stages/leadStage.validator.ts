@@ -57,6 +57,22 @@ const normalizeRuleAssignments = (
   }));
 };
 
+const substageItemSchema = z.object({
+  id: z.string().optional(),
+  name: z.string().trim().min(1, 'Substage name is required').max(100, 'Substage name must not exceed 100 characters'),
+  status: stageStatusSchema.optional().default('ACTIVE'),
+});
+
+const substageUpdateSchema = z.object({
+  create: z.array(substageItemSchema).optional().default([]),
+  update: z.array(z.object({
+    id: z.string().trim().min(1, 'Substage id is required'),
+    name: z.string().trim().min(1, 'Substage name is required').max(100),
+    status: stageStatusSchema.optional(),
+  })).optional().default([]),
+  remove: z.array(z.string().trim().min(1)).optional().default([]),
+});
+
 export const createLeadStageSchema = z.object({
   name: leadStageNameSchema,
   stageShortForm: stageShortFormFieldSchema,
@@ -69,6 +85,7 @@ export const createLeadStageSchema = z.object({
   status: stageStatusSchema.default('ACTIVE'),
   ruleIds: z.array(z.string().trim().min(1, 'Rule id is required')).optional().default([]),
   ruleAssignments: z.array(stageRuleAssignmentSchema).optional().default([]),
+  substages: z.array(substageItemSchema).optional().default([]),
 })
 .transform((value) => ({
   ...value,
@@ -99,6 +116,7 @@ export const updateLeadStageSchema = z
     status: stageStatusSchema.optional(),
     ruleIds: z.array(z.string().trim().min(1, 'Rule id is required')).optional(),
     ruleAssignments: z.array(stageRuleAssignmentSchema).optional(),
+    substages: z.union([z.array(substageItemSchema), substageUpdateSchema]).optional(),
   })
   .transform((value) => ({
     ...value,
@@ -122,7 +140,8 @@ export const updateLeadStageSchema = z
       value.order !== undefined ||
       value.status !== undefined ||
       value.ruleAssignments !== undefined ||
-      value.ruleIds !== undefined,
+      value.ruleIds !== undefined ||
+      value.substages !== undefined,
     { message: 'At least one field is required for update.' },
   )
   .refine(
