@@ -16,6 +16,26 @@ export interface CallReportFilters {
   limit?: number;
 }
 
+export const parseDateFilter = (val: string | undefined, isEnd: boolean): Date | undefined => {
+  if (!val) return undefined;
+  const str = String(val).trim();
+  if (!str) return undefined;
+
+  if (str.includes('T')) {
+    const parsed = new Date(str);
+    return Number.isNaN(parsed.getTime()) ? undefined : parsed;
+  }
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
+    const formatted = `${str}${isEnd ? 'T23:59:59.999Z' : 'T00:00:00.000Z'}`;
+    const parsed = new Date(formatted);
+    return Number.isNaN(parsed.getTime()) ? undefined : parsed;
+  }
+
+  const fallback = new Date(str);
+  return Number.isNaN(fallback.getTime()) ? undefined : fallback;
+};
+
 export const getCallSummaryReport = async (
   workspaceId: string,
   requestingUserId: string,
@@ -80,10 +100,12 @@ export const getCallSummaryReport = async (
   }
 
   // Date Filter
-  if (filters.startDate || filters.endDate) {
+  const gteDate = parseDateFilter(filters.startDate, false);
+  const lteDate = parseDateFilter(filters.endDate, true);
+  if (gteDate || lteDate) {
     const dateFilter: any = {};
-    if (filters.startDate) dateFilter.gte = new Date(`${filters.startDate}T00:00:00.000Z`);
-    if (filters.endDate) dateFilter.lte = new Date(`${filters.endDate}T23:59:59.999Z`);
+    if (gteDate) dateFilter.gte = gteDate;
+    if (lteDate) dateFilter.lte = lteDate;
     sessionWhere.initiatedAt = dateFilter;
     outcomeWhere.submittedAt = dateFilter;
   }
@@ -315,10 +337,12 @@ export const getCallDetailedReport = async (
     outcomeWhere.userId = { in: allowedUserIds };
   }
 
-  if (filters.startDate || filters.endDate) {
+  const gteDate = parseDateFilter(filters.startDate, false);
+  const lteDate = parseDateFilter(filters.endDate, true);
+  if (gteDate || lteDate) {
     const dateFilter: any = {};
-    if (filters.startDate) dateFilter.gte = new Date(`${filters.startDate}T00:00:00.000Z`);
-    if (filters.endDate) dateFilter.lte = new Date(`${filters.endDate}T23:59:59.999Z`);
+    if (gteDate) dateFilter.gte = gteDate;
+    if (lteDate) dateFilter.lte = lteDate;
     outcomeWhere.submittedAt = dateFilter;
   }
 

@@ -12,6 +12,18 @@ const getPermissions = (req: Request) => {
   };
 };
 
+const parseUserIdsQuery = (rawQuery: any): string[] | undefined => {
+  if (!rawQuery) return undefined;
+  if (Array.isArray(rawQuery)) {
+    const list = rawQuery.map((item) => String(item).trim()).filter(Boolean);
+    return list.length > 0 ? list : undefined;
+  }
+  const str = String(rawQuery).trim();
+  if (!str) return undefined;
+  const list = str.split(',').map((item) => item.trim()).filter(Boolean);
+  return list.length > 0 ? list : undefined;
+};
+
 export const getCallSummaryReport = async (req: Request, res: Response, next: NextFunction) => {
   const workspaceId = req.user?.workspaceId;
   if (!workspaceId) return res.status(403).json({ success: false, message: 'Forbidden: Workspace missing' });
@@ -21,7 +33,7 @@ export const getCallSummaryReport = async (req: Request, res: Response, next: Ne
     const filters: service.CallReportFilters = {
       startDate: req.query.startDate as string,
       endDate: req.query.endDate as string,
-      userIds: req.query.userIds ? String(req.query.userIds).split(',') : undefined,
+      userIds: parseUserIdsQuery(req.query.userIds || req.query['userIds[]']),
       supervisorId: req.query.supervisorId as string,
       officeId: req.query.officeId as string,
       departmentId: req.query.departmentId as string,
@@ -44,10 +56,13 @@ export const getCallDetailedReport = async (req: Request, res: Response, next: N
 
   try {
     const permissions = getPermissions(req);
+    const parsedPage = req.query.page ? parseInt(req.query.page as string, 10) : 1;
+    const parsedLimit = req.query.limit ? parseInt(req.query.limit as string, 10) : 20;
+
     const filters: service.CallReportFilters = {
       startDate: req.query.startDate as string,
       endDate: req.query.endDate as string,
-      userIds: req.query.userIds ? String(req.query.userIds).split(',') : undefined,
+      userIds: parseUserIdsQuery(req.query.userIds || req.query['userIds[]']),
       supervisorId: req.query.supervisorId as string,
       officeId: req.query.officeId as string,
       departmentId: req.query.departmentId as string,
@@ -56,8 +71,8 @@ export const getCallDetailedReport = async (req: Request, res: Response, next: N
       connectionStatus: req.query.connectionStatus as any,
       sourceContext: req.query.sourceContext as string,
       search: req.query.search as string,
-      page: req.query.page ? parseInt(req.query.page as string, 10) : 1,
-      limit: req.query.limit ? parseInt(req.query.limit as string, 10) : 20,
+      page: Number.isFinite(parsedPage) && parsedPage >= 1 ? parsedPage : 1,
+      limit: Number.isFinite(parsedLimit) && parsedLimit >= 1 && parsedLimit <= 100 ? parsedLimit : 20,
     };
 
     const data = await service.getCallDetailedReport(workspaceId, req.user!.id, permissions, filters);
@@ -74,7 +89,11 @@ export const exportCallReport = async (req: Request, res: Response, next: NextFu
   try {
     const permissions = getPermissions(req);
     const format = (req.body.format || 'xlsx').toLowerCase();
-    const filters: service.CallReportFilters = req.body.filters || {};
+    const rawFilters = req.body.filters || {};
+    const filters: service.CallReportFilters = {
+      ...rawFilters,
+      userIds: parseUserIdsQuery(rawFilters.userIds || rawFilters['userIds[]']),
+    };
 
     const summaryReport = await service.getCallSummaryReport(workspaceId, req.user!.id, permissions, filters);
     const detailedReport = await service.getCallDetailedReport(workspaceId, req.user!.id, permissions, {
