@@ -12,7 +12,7 @@ const getPermissions = (req: Request) => {
   };
 };
 
-const parseUserIdsQuery = (rawQuery: any): string[] | undefined => {
+const parseArrayQuery = (rawQuery: any): string[] | undefined => {
   if (!rawQuery) return undefined;
   if (Array.isArray(rawQuery)) {
     const list = rawQuery.map((item) => String(item).trim()).filter(Boolean);
@@ -33,12 +33,13 @@ export const getCallSummaryReport = async (req: Request, res: Response, next: Ne
     const filters: service.CallReportFilters = {
       startDate: req.query.startDate as string,
       endDate: req.query.endDate as string,
-      userIds: parseUserIdsQuery(req.query.userIds || req.query['userIds[]']),
+      userIds: parseArrayQuery(req.query.userIds || req.query['userIds[]']),
       supervisorId: req.query.supervisorId as string,
       officeId: req.query.officeId as string,
       departmentId: req.query.departmentId as string,
       leadStageId: req.query.leadStageId as string,
       substageId: req.query.substageId as string,
+      substageIds: parseArrayQuery(req.query.substageIds || req.query['substageIds[]']),
       connectionStatus: req.query.connectionStatus as any,
       sourceContext: req.query.sourceContext as string,
     };
@@ -62,12 +63,13 @@ export const getCallDetailedReport = async (req: Request, res: Response, next: N
     const filters: service.CallReportFilters = {
       startDate: req.query.startDate as string,
       endDate: req.query.endDate as string,
-      userIds: parseUserIdsQuery(req.query.userIds || req.query['userIds[]']),
+      userIds: parseArrayQuery(req.query.userIds || req.query['userIds[]']),
       supervisorId: req.query.supervisorId as string,
       officeId: req.query.officeId as string,
       departmentId: req.query.departmentId as string,
       leadStageId: req.query.leadStageId as string,
       substageId: req.query.substageId as string,
+      substageIds: parseArrayQuery(req.query.substageIds || req.query['substageIds[]']),
       connectionStatus: req.query.connectionStatus as any,
       sourceContext: req.query.sourceContext as string,
       search: req.query.search as string,
@@ -92,7 +94,8 @@ export const exportCallReport = async (req: Request, res: Response, next: NextFu
     const rawFilters = req.body.filters || {};
     const filters: service.CallReportFilters = {
       ...rawFilters,
-      userIds: parseUserIdsQuery(rawFilters.userIds || rawFilters['userIds[]']),
+      userIds: parseArrayQuery(rawFilters.userIds || rawFilters['userIds[]']),
+      substageIds: parseArrayQuery(rawFilters.substageIds || rawFilters['substageIds[]']),
     };
 
     const summaryReport = await service.getCallSummaryReport(workspaceId, req.user!.id, permissions, filters);
@@ -101,12 +104,7 @@ export const exportCallReport = async (req: Request, res: Response, next: NextFu
       limit: 5000,
     });
 
-    const formattedUserSummary = summaryReport.userSummaryList.map((u: any) => ({
-      ...u,
-      selectedSubstagesText: u.selectedSubstages
-        ? u.selectedSubstages.map((s: any) => `${s.name} (${s.count})`).join(' | ')
-        : 'None',
-    }));
+    const dynamicSubstages = summaryReport.selectedSubstages || [];
 
     const summaryColumns: Array<{ header: string; key: string; type?: 'text' | 'number' | 'percentage' | 'date' }> = [
       { header: 'User Name', key: 'userName' },
@@ -117,10 +115,22 @@ export const exportCallReport = async (req: Request, res: Response, next: NextFu
       { header: 'Connected Calls', key: 'connectedCalls', type: 'number' },
       { header: 'Not Connected', key: 'notConnectedCalls', type: 'number' },
       { header: 'Connection Rate', key: 'connectionRate', type: 'percentage' },
-      { header: 'Selected Substages', key: 'selectedSubstagesText' },
+      ...dynamicSubstages.map((sub: any) => ({
+        header: sub.parentStageName ? `${sub.name} (${sub.parentStageName})` : sub.name,
+        key: `sub_${sub.id}`,
+        type: 'number' as const,
+      })),
       { header: 'Follow-ups Created', key: 'followUpsCreated', type: 'number' },
       { header: 'Leads Stage Moved', key: 'leadsMoved', type: 'number' },
     ];
+
+    const formattedUserSummary = summaryReport.userSummaryList.map((u: any) => {
+      const row: any = { ...u };
+      dynamicSubstages.forEach((sub: any) => {
+        row[`sub_${sub.id}`] = u.substageCounts?.[sub.id] || 0;
+      });
+      return row;
+    });
 
     const detailedColumns: Array<{ header: string; key: string; type?: 'text' | 'number' | 'percentage' | 'date' }> = [
       { header: 'Date & Time', key: 'dateTime' },

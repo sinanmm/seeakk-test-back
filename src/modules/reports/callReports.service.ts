@@ -9,6 +9,7 @@ export interface CallReportFilters {
   departmentId?: string;
   leadStageId?: string;
   substageId?: string;
+  substageIds?: string[];
   connectionStatus?: 'CONNECTED' | 'NOT_CONNECTED';
   sourceContext?: string;
   search?: string;
@@ -112,7 +113,11 @@ export const getCallSummaryReport = async (
 
   // Connection Status / Substage / LeadStage Filters
   if (filters.connectionStatus) outcomeWhere.connectionStatus = filters.connectionStatus;
-  if (filters.substageId) outcomeWhere.substageId = filters.substageId;
+  if (filters.substageIds && filters.substageIds.length > 0) {
+    outcomeWhere.substageId = { in: filters.substageIds };
+  } else if (filters.substageId) {
+    outcomeWhere.substageId = filters.substageId;
+  }
   if (filters.leadStageId) outcomeWhere.targetStageId = filters.leadStageId;
   if (filters.sourceContext) sessionWhere.sourceContext = filters.sourceContext;
 
@@ -129,7 +134,14 @@ export const getCallSummaryReport = async (
           department: { select: { id: true, name: true } },
         },
       },
-      substage: { select: { id: true, name: true, outcomeCategory: true } },
+      substage: {
+        select: {
+          id: true,
+          name: true,
+          outcomeCategory: true,
+          leadStage: { select: { id: true, name: true, color: true } },
+        },
+      },
       callSession: { select: { localCallDate: true } },
     },
   });
@@ -172,6 +184,7 @@ export const getCallSummaryReport = async (
   // 5. Group by User & Substage for User-Wise Table and Substage Breakdown
   const userMap = new Map<string, any>();
   const substageGlobalMap = new Map<string, any>();
+  const selectedSubstageInfoMap = new Map<string, any>();
 
   outcomes.forEach((o: any) => {
     const uid = o.userId;
@@ -190,7 +203,8 @@ export const getCallSummaryReport = async (
         negativeOutcomes: 0,
         followUpsCreated: 0,
         leadsMoved: 0,
-        substageCounts: new Map<string, any>(),
+        substageCounts: {} as Record<string, number>,
+        substageList: new Map<string, any>(),
       });
     }
 
@@ -209,16 +223,17 @@ export const getCallSummaryReport = async (
 
     if (o.substage) {
       const subId = o.substage.id;
-      if (!item.substageCounts.has(subId)) {
-        item.substageCounts.set(subId, {
-          substageId: subId,
+      item.substageCounts[subId] = (item.substageCounts[subId] || 0) + 1;
+
+      if (!selectedSubstageInfoMap.has(subId)) {
+        selectedSubstageInfoMap.set(subId, {
+          id: subId,
           name: o.substage.name,
-          stageName: o.substage.leadStage?.name || 'General',
+          parentStageId: o.substage.leadStage?.id || undefined,
+          parentStageName: o.substage.leadStage?.name || 'General',
           color: o.substage.leadStage?.color || '#3b82f6',
-          count: 0,
         });
       }
-      item.substageCounts.get(subId).count += 1;
 
       if (!substageGlobalMap.has(subId)) {
         substageGlobalMap.set(subId, {
@@ -243,10 +258,11 @@ export const getCallSummaryReport = async (
     }
   });
 
+  const selectedSubstages = Array.from(selectedSubstageInfoMap.values());
+
   const userSummaryList = Array.from(userMap.values()).map((u) => {
     const uniqueCalls = u.uniqueCallsSet.size;
     const connectionRate = u.totalAttempts > 0 ? Number(((u.connectedCalls / u.totalAttempts) * 100).toFixed(1)) : 0;
-    const selectedSubstages = Array.from(u.substageCounts.values()).sort((a: any, b: any) => b.count - a.count);
     return {
       userId: u.userId,
       userName: u.userName,
@@ -262,7 +278,7 @@ export const getCallSummaryReport = async (
       negativeOutcomes: u.negativeOutcomes,
       followUpsCreated: u.followUpsCreated,
       leadsMoved: u.leadsMoved,
-      selectedSubstages,
+      substageCounts: u.substageCounts,
     };
   });
 
@@ -280,6 +296,12 @@ export const getCallSummaryReport = async (
   })).sort((a, b) => b.selectedCount - a.selectedCount);
 
   // Calculate max values for in-cell data bar scaling
+  const maxSubstageCounts: Record<string, number> = {};
+  selectedSubstages.forEach((sub) => {
+    const counts = userSummaryList.map((u) => u.substageCounts[sub.id] || 0);
+    maxSubstageCounts[sub.id] = Math.max(...counts, 1);
+  });
+
   const maxValues = {
     totalAttempts: Math.max(...userSummaryList.map((u) => u.totalAttempts), 1),
     uniqueCalls: Math.max(...userSummaryList.map((u) => u.uniqueCalls), 1),
@@ -287,6 +309,7 @@ export const getCallSummaryReport = async (
     notConnectedCalls: Math.max(...userSummaryList.map((u) => u.notConnectedCalls), 1),
     followUpsCreated: Math.max(...userSummaryList.map((u) => u.followUpsCreated), 1),
     leadsMoved: Math.max(...userSummaryList.map((u) => u.leadsMoved), 1),
+    substageCounts: maxSubstageCounts,
   };
 
   return {
@@ -301,6 +324,7 @@ export const getCallSummaryReport = async (
       followUpsCreated,
       leadsMoved,
     },
+    selectedSubstages,
     userSummaryList,
     substageBreakdown,
     maxValues,
