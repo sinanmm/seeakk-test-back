@@ -547,7 +547,15 @@ const computePipelineMetrics = async (
   leadAccessScope: Prisma.LeadWhereInput,
 ) => {
   const finalWhere = buildCustomPipelineWhere(filtersJson, filterLogic, leadAccessScope);
-  const baseWhere: Prisma.LeadWhereInput = { workspaceId, ...finalWhere };
+  const baseWhere: Prisma.LeadWhereInput = { workspaceId, deletedAt: null, ...finalWhere };
+
+  logger.info('[Dashboard Preview Request]', {
+    workspaceId,
+    metricType,
+    filterLogic,
+    rawFiltersCount: filtersJson?.length || 0,
+    baseWhere: JSON.stringify(baseWhere),
+  });
 
   const [leadCount, revenueAggregate] = await Promise.all([
     prisma.lead.count({ where: baseWhere }),
@@ -557,6 +565,13 @@ const computePipelineMetrics = async (
       _avg: { expectedRevenue: true },
     }),
   ]);
+
+  logger.info('[Dashboard Preview Result]', {
+    workspaceId,
+    metricType,
+    matchedRecordCount: leadCount,
+    totalExpectedRevenue: revenueAggregate._sum.expectedRevenue || 0,
+  });
 
   let secondaryMetric = 0;
   let stageBreakdown: Array<{ stageId: string; name: string; color: string; count: number }> = [];

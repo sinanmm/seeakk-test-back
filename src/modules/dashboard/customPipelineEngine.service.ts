@@ -10,6 +10,28 @@ const buildSingleConditionWhere = (condition: FilterCondition): Prisma.LeadWhere
   const { field, operator, value } = condition;
   if (!field || !operator) return null;
 
+  // Unary operators that do not require a value
+  const isUnaryOperator = [
+    'IS_EMPTY',
+    'IS_NOT_EMPTY',
+    'TODAY',
+    'YESTERDAY',
+    'TOMORROW',
+    'THIS_WEEK',
+    'LAST_WEEK',
+    'THIS_MONTH',
+    'LAST_MONTH',
+    'THIS_QUARTER',
+    'THIS_YEAR',
+  ].includes(operator);
+
+  // Skip non-unary filters with blank / empty values to avoid matching 0 records
+  if (!isUnaryOperator) {
+    if (value === undefined || value === null || value === '' || (Array.isArray(value) && value.length === 0)) {
+      return null;
+    }
+  }
+
   // 1. Dynamic Lead Fields (e.g. "dynamic_clx123...")
   if (field.startsWith('dynamic_')) {
     const fieldId = field.replace('dynamic_', '');
@@ -183,6 +205,19 @@ const buildDateConditionWhere = (operator: string, value: any): Prisma.DateTimeF
     return { gte: start, lte: end };
   }
 
+  if (operator === 'THIS_QUARTER') {
+    const currentQuarter = Math.floor(now.getMonth() / 3);
+    const start = new Date(now.getFullYear(), currentQuarter * 3, 1, 0, 0, 0);
+    const end = new Date(now.getFullYear(), (currentQuarter + 1) * 3, 0, 23, 59, 59, 999);
+    return { gte: start, lte: end };
+  }
+
+  if (operator === 'THIS_YEAR') {
+    const start = new Date(now.getFullYear(), 0, 1, 0, 0, 0);
+    const end = new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999);
+    return { gte: start, lte: end };
+  }
+
   if (operator === 'LAST_N_DAYS') {
     const days = Number(value || 7);
     const start = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
@@ -196,15 +231,20 @@ const buildDateConditionWhere = (operator: string, value: any): Prisma.DateTimeF
   }
 
   if (operator === 'GREATER_THAN' || operator === 'AFTER') {
-    return { gt: new Date(value) };
+    const parsed = new Date(value);
+    if (isNaN(parsed.getTime())) return null;
+    return { gt: parsed };
   }
 
   if (operator === 'LESS_THAN' || operator === 'BEFORE') {
-    return { lt: new Date(value) };
+    const parsed = new Date(value);
+    if (isNaN(parsed.getTime())) return null;
+    return { lt: parsed };
   }
 
   if (operator === 'EQUALS') {
     const d = new Date(value);
+    if (isNaN(d.getTime())) return null;
     const { start, end } = getDayRange(d);
     return { gte: start, lte: end };
   }
@@ -214,8 +254,24 @@ const buildDateConditionWhere = (operator: string, value: any): Prisma.DateTimeF
     let toDate: Date | undefined = undefined;
 
     if (typeof value === 'object' && value !== null) {
-      if (value.from) fromDate = new Date(`${value.from}T00:00:00.000Z`);
-      if (value.to) toDate = new Date(`${value.to}T23:59:59.999Z`);
+      if (value.from) {
+        const f = new Date(`${value.from}T00:00:00.000Z`);
+        if (!isNaN(f.getTime())) fromDate = f;
+      }
+      if (value.to) {
+        const t = new Date(`${value.to}T23:59:59.999Z`);
+        if (!isNaN(t.getTime())) toDate = t;
+      }
+    } else if (typeof value === 'string' && value.includes(',')) {
+      const parts = value.split(',');
+      if (parts[0]) {
+        const f = new Date(parts[0].trim());
+        if (!isNaN(f.getTime())) fromDate = f;
+      }
+      if (parts[1]) {
+        const t = new Date(parts[1].trim());
+        if (!isNaN(t.getTime())) toDate = t;
+      }
     }
 
     if (fromDate || toDate) return { gte: fromDate, lte: toDate };
