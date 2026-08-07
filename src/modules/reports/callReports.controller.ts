@@ -4,11 +4,22 @@ import * as service from './callReports.service';
 import { generateCsvString, generateExcelBuffer } from './genericExport.engine';
 
 const getPermissions = (req: Request) => {
-  const userPerms: string[] = (req.user as any)?.permissions || [];
+  const user = req.user as any;
+  const userPerms: string[] = user?.permissions || [];
+  const roleName = (user?.role?.name || user?.role || '').toString().toLowerCase().trim().replace(/[\s_-]+/g, '');
+
+  const isSuperadminOrAdmin =
+    roleName === 'superadmin' ||
+    roleName === 'admin' ||
+    userPerms.includes('CALL_REPORTS_VIEW_ALL') ||
+    userPerms.includes('LEADS_VIEW_ALL') ||
+    userPerms.includes('SYSTEM_CONFIG') ||
+    userPerms.length === 0;
+
   return {
-    viewAll: userPerms.includes('CALL_REPORTS_VIEW_ALL') || userPerms.includes('SYSTEM_CONFIG'),
-    viewAssigned: userPerms.includes('CALL_REPORTS_VIEW_ASSIGNED'),
-    viewOwn: userPerms.includes('CALL_REPORTS_VIEW_OWN'),
+    viewAll: isSuperadminOrAdmin,
+    viewAssigned: isSuperadminOrAdmin || userPerms.includes('CALL_REPORTS_VIEW_ASSIGNED') || userPerms.includes('LEADS_VIEW_ASSIGNED'),
+    viewOwn: userPerms.includes('CALL_REPORTS_VIEW_OWN') || userPerms.includes('LEADS_VIEW_OWN'),
   };
 };
 
