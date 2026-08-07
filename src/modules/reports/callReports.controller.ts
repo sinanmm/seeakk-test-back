@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 
 import * as service from './callReports.service';
 import { generateCsvString, generateExcelBuffer } from './genericExport.engine';
+import { generateCallPerformanceHtmlReport, generateCallPerformancePdfReport } from './callReportExport.engine';
 
 const getPermissions = (req: Request) => {
   const user = req.user as any;
@@ -174,6 +175,44 @@ export const exportCallReport = async (req: Request, res: Response, next: NextFu
       res.setHeader('Content-Type', 'text/csv');
       res.setHeader('Content-Disposition', `attachment; filename="call_performance_summary_${Date.now()}.csv"`);
       return res.status(200).send(csvStr);
+    }
+
+    if (format === 'html') {
+      const htmlStr = generateCallPerformanceHtmlReport({
+        title: 'Call Performance Analytics Report',
+        workspaceName: (req.user as any)?.workspaceName || 'Seeakk Workspace',
+        generatedBy: req.user?.name || req.user?.email,
+        generatedAt: new Date().toLocaleString(),
+        periodText: `${filters.startDate ? new Date(filters.startDate).toLocaleDateString() : 'Start'} — ${filters.endDate ? new Date(filters.endDate).toLocaleDateString() : 'End'}`,
+        filtersText: `Users: ${filters.userIds ? filters.userIds.length + ' selected' : 'All Users'}`,
+        metrics: summaryReport.metrics,
+        selectedSubstages: summaryReport.selectedSubstages || [],
+        userSummaryList: summaryReport.userSummaryList || [],
+        substageBreakdown: summaryReport.substageBreakdown || [],
+      });
+
+      res.setHeader('Content-Type', 'text/html');
+      res.setHeader('Content-Disposition', `attachment; filename="Seeakk_Call_Performance_Interactive_${Date.now()}.html"`);
+      return res.status(200).send(htmlStr);
+    }
+
+    if (format === 'pdf') {
+      const pdfHtmlStr = generateCallPerformancePdfReport({
+        title: 'Call Performance Analytics Report',
+        workspaceName: (req.user as any)?.workspaceName || 'Seeakk Workspace',
+        generatedBy: req.user?.name || req.user?.email,
+        generatedAt: new Date().toLocaleString(),
+        periodText: `${filters.startDate ? new Date(filters.startDate).toLocaleDateString() : 'Start'} — ${filters.endDate ? new Date(filters.endDate).toLocaleDateString() : 'End'}`,
+        filtersText: `Users: ${filters.userIds ? filters.userIds.length + ' selected' : 'All Users'}`,
+        metrics: summaryReport.metrics,
+        selectedSubstages: summaryReport.selectedSubstages || [],
+        userSummaryList: summaryReport.userSummaryList || [],
+        substageBreakdown: summaryReport.substageBreakdown || [],
+      });
+
+      res.setHeader('Content-Type', 'text/html');
+      res.setHeader('Content-Disposition', `attachment; filename="Seeakk_Call_Performance_${Date.now()}.html"`);
+      return res.status(200).send(pdfHtmlStr);
     }
 
     const excelBuffer = await generateExcelBuffer({
