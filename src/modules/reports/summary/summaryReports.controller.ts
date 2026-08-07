@@ -146,11 +146,43 @@ export const getFollowupsPerformanceReportController = async (req: Request, res:
   }
 };
 
+import { generateSummaryReportPdfReport } from './summaryExport.engine';
+
 export const getFollowupsLatestNotesReportController = async (req: Request, res: Response) => {
   try {
     const filters = { workspaceId: req.user?.workspaceId as string, ...req.query };
     const data = await getFollowupsLatestNotesReport(filters);
     res.json({ success: true, data });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const exportSummaryReportController = async (req: Request, res: Response) => {
+  try {
+    const rawFilters = { ...req.query, ...req.body };
+    const filters = { workspaceId: req.user?.workspaceId as string, ...rawFilters };
+    const summaryData = await getCompanySummary(filters);
+    const userStats = summaryData.userStats || [];
+
+    const totalRevenue = userStats.reduce((sum: number, u: any) => sum + (u.revenueGenerated || 0), 0);
+    const totalLeads = userStats.reduce((sum: number, u: any) => sum + (u.leadsCreated || 0), 0);
+
+    const pdfHtmlStr = generateSummaryReportPdfReport({
+      title: 'Company-Wide Activity & Performance Report',
+      workspaceName: (req.user as any)?.workspaceName || 'Seeakk Workspace',
+      generatedBy: req.user?.name || req.user?.email,
+      generatedAt: new Date().toLocaleString(),
+      periodText: `${filters.startDate ? new Date(filters.startDate as string).toLocaleDateString() : 'Start'} — ${filters.endDate ? new Date(filters.endDate as string).toLocaleDateString() : 'End'}`,
+      filtersText: `Users: ${filters.userId ? (Array.isArray(filters.userId) ? filters.userId.length + ' selected' : '1 selected') : 'All Users'}`,
+      totalRevenue,
+      totalLeads,
+      userStats,
+    });
+
+    res.setHeader('Content-Type', 'text/html');
+    res.setHeader('Content-Disposition', `attachment; filename="Seeakk_Summary_Report_${Date.now()}.html"`);
+    return res.status(200).send(pdfHtmlStr);
   } catch (error: any) {
     res.status(500).json({ success: false, message: error.message });
   }
