@@ -82,7 +82,7 @@ export const generateSummaryReportPdfReport = (options: SummaryExportOptions): s
     .card-emerald { border-color: #a7f3d0; background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%); }
     .card-label { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: #047857; }
     .card-val { font-size: 26px; font-weight: 900; color: #065f46; margin-top: 4px; }
-    .table-container { width: 100%; border: 1px solid #e2e8f0; border-radius: 14px; overflow-x: auto; margin-bottom: 24px; max-height: 70vh; overflow-y: auto; }
+    .table-container { width: 100%; border: 1px solid #e2e8f0; border-radius: 14px; overflow-x: auto; margin-bottom: 24px; }
     table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; text-align: left; }
     thead th { position: sticky; top: 0; background-color: #f8fafc; border-bottom: 2px solid #e2e8f0; padding: 12px 14px; font-size: 11px; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; z-index: 10; }
     footer { text-align: center; margin-top: 28px; font-size: 11px; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 16px; }
@@ -90,7 +90,7 @@ export const generateSummaryReportPdfReport = (options: SummaryExportOptions): s
       body { background-color: #ffffff; padding: 0; }
       .container { border: none; box-shadow: none; max-width: 100%; }
       .no-print { display: none !important; }
-      .table-container { max-height: none; overflow: visible; }
+      .table-container { overflow: visible; }
     }
   </style>
 </head>
@@ -98,14 +98,14 @@ export const generateSummaryReportPdfReport = (options: SummaryExportOptions): s
 <body>
   <div class="container">
     <div class="action-bar no-print">
-      <button class="btn-print" onclick="window.print()">🖨️ Print Report</button>
+      <button class="btn-print" onclick="window.print()">🖨️ Print / Save as PDF</button>
     </div>
 
     <div class="header">
       <div class="logo-title">
         <div class="badge-logo">S</div>
         <div>
-          <div class="title">SEEAKK — ${title}</div>
+          <div class="title">SEEAKK — Interactive Summary Report</div>
           <div class="subtitle">Company-Wide Performance, Revenue & User Activity Summary Report</div>
         </div>
       </div>
