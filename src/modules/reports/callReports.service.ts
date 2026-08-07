@@ -43,7 +43,7 @@ export const getCallSummaryReport = async (
   permissions: { viewAll: boolean; viewAssigned: boolean; viewOwn: boolean },
   filters: CallReportFilters,
 ) => {
-  // 1. Determine user scope
+  // 1. Determine user scope & resolve target user list
   let allowedUserIds: string[] | null = null;
 
   if (!permissions.viewAll) {
@@ -58,47 +58,69 @@ export const getCallSummaryReport = async (
     }
   }
 
-  // 2. Build where clause for Call Sessions & Outcomes
-  const sessionWhere: any = {
-    workspaceId,
-  };
-
-  const outcomeWhere: any = {
-    workspaceId,
-  };
-
-  // User Filter
+  const userQueryWhere: any = { workspaceId, deletedAt: null };
+  if (allowedUserIds) {
+    userQueryWhere.id = { in: allowedUserIds };
+  }
   if (filters.userIds && filters.userIds.length > 0) {
     const requested = allowedUserIds
       ? filters.userIds.filter((id) => allowedUserIds!.includes(id))
       : filters.userIds;
-    sessionWhere.initiatedById = { in: requested };
-    outcomeWhere.userId = { in: requested };
-  } else if (allowedUserIds) {
-    sessionWhere.initiatedById = { in: allowedUserIds };
-    outcomeWhere.userId = { in: allowedUserIds };
+    userQueryWhere.id = { in: requested };
   }
+  if (filters.supervisorId) userQueryWhere.supervisorId = filters.supervisorId;
+  if (filters.departmentId) userQueryWhere.departmentId = filters.departmentId;
+  if (filters.officeId) userQueryWhere.officeId = filters.officeId;
 
-  // Supervisor / Department / Office Filter on User
-  if (filters.supervisorId || filters.departmentId || filters.officeId) {
-    const userWhere: any = { workspaceId, deletedAt: null };
-    if (filters.supervisorId) userWhere.supervisorId = filters.supervisorId;
-    if (filters.departmentId) userWhere.departmentId = filters.departmentId;
-    if (filters.officeId) userWhere.officeId = filters.officeId;
+  const targetUsers = await (prisma as any).user.findMany({
+    where: userQueryWhere,
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      office: { select: { id: true, name: true } },
+      department: { select: { id: true, name: true } },
+    },
+    orderBy: { name: 'asc' },
+  });
 
-    const matchingUsers = await (prisma as any).user.findMany({
-      where: userWhere,
-      select: { id: true },
+  const targetUserIds = targetUsers.map((u: any) => u.id);
+
+  // 2. Resolve requested filter substages metadata
+  let selectedSubstages: Array<{ id: string; name: string; parentStageId?: string; parentStageName?: string; color: string }> = [];
+  if (filters.substageIds && filters.substageIds.length > 0) {
+    const dbSubstages = await (prisma as any).leadSubstage.findMany({
+      where: {
+        id: { in: filters.substageIds },
+        workspaceId,
+      },
+      include: {
+        leadStage: { select: { id: true, name: true, color: true } },
+      },
     });
-    const matchedIds = matchingUsers.map((u: any) => u.id);
 
-    sessionWhere.initiatedById = sessionWhere.initiatedById
-      ? { in: (sessionWhere.initiatedById.in || []).filter((id: string) => matchedIds.includes(id)) }
-      : { in: matchedIds };
-    outcomeWhere.userId = outcomeWhere.userId
-      ? { in: (outcomeWhere.userId.in || []).filter((id: string) => matchedIds.includes(id)) }
-      : { in: matchedIds };
+    selectedSubstages = filters.substageIds
+      .map((id) => dbSubstages.find((s: any) => s.id === id))
+      .filter(Boolean)
+      .map((s: any) => ({
+        id: s.id,
+        name: s.name,
+        parentStageId: s.leadStage?.id || undefined,
+        parentStageName: s.leadStage?.name || 'General',
+        color: s.leadStage?.color || '#3b82f6',
+      }));
   }
+
+  // 3. Build where clause for Call Sessions & Outcomes
+  const sessionWhere: any = {
+    workspaceId,
+    initiatedById: { in: targetUserIds },
+  };
+
+  const outcomeWhere: any = {
+    workspaceId,
+    userId: { in: targetUserIds },
+  };
 
   // Date Filter
   const gteDate = parseDateFilter(filters.startDate, false);
@@ -121,7 +143,7 @@ export const getCallSummaryReport = async (
   if (filters.leadStageId) outcomeWhere.targetStageId = filters.leadStageId;
   if (filters.sourceContext) sessionWhere.sourceContext = filters.sourceContext;
 
-  // 3. Query Call Outcomes & Sessions
+  // 4. Query Call Outcomes & Sessions
   const outcomes = await (prisma as any).leadCallOutcome.findMany({
     where: outcomeWhere,
     include: {
@@ -148,26 +170,11 @@ export const getCallSummaryReport = async (
 
   const totalSessions = await (prisma as any).leadCallSession.count({ where: sessionWhere });
 
-  // 4. Calculate Aggregate Metrics
+  // 5. Calculate Aggregate Metrics
   const totalCalls = outcomes.length || totalSessions;
   const connectedCalls = outcomes.filter((o: any) => o.connectionStatus === 'CONNECTED').length;
   const notConnectedCalls = outcomes.filter((o: any) => o.connectionStatus === 'NOT_CONNECTED').length;
   const connectionRate = totalCalls > 0 ? Number(((connectedCalls / totalCalls) * 100).toFixed(1)) : 0;
-
-  // Calculate Unique Calls: unique combination of (userId + leadId + localCallDate)
-  const uniqueKeySet = new Set<string>();
-  const leadAttemptCountMap = new Map<string, number>();
-
-  outcomes.forEach((o: any) => {
-    const dateStr = o.callSession?.localCallDate || getLocalDateStr(new Date(o.submittedAt));
-    const uniqueKey = `${o.userId}_${o.leadId}_${dateStr}`;
-    uniqueKeySet.add(uniqueKey);
-
-    const leadKey = `${o.userId}_${o.leadId}`;
-    leadAttemptCountMap.set(leadKey, (leadAttemptCountMap.get(leadKey) || 0) + 1);
-  });
-
-  const uniqueCalls = uniqueKeySet.size;
 
   let positiveOutcomes = 0;
   let negativeOutcomes = 0;
@@ -181,15 +188,53 @@ export const getCallSummaryReport = async (
     if (o.previousStageId && o.targetStageId && o.previousStageId !== o.targetStageId) leadsMoved += 1;
   });
 
-  // 5. Group by User & Substage for User-Wise Table and Substage Breakdown
+  // Calculate Unique Calls: unique combination of (userId + leadId + localCallDate)
+  const uniqueKeySet = new Set<string>();
+  outcomes.forEach((o: any) => {
+    const dateStr = o.callSession?.localCallDate || getLocalDateStr(new Date(o.submittedAt));
+    uniqueKeySet.add(`${o.userId}_${o.leadId}_${dateStr}`);
+  });
+  const uniqueCalls = uniqueKeySet.size;
+
+  // 6. Build User Performance Matrix initialized with ALL target users (including 0-call users)
   const userMap = new Map<string, any>();
+  targetUsers.forEach((u: any) => {
+    const initialSubstageCounts: Record<string, number> = {};
+    selectedSubstages.forEach((sub) => {
+      initialSubstageCounts[sub.id] = 0;
+    });
+
+    userMap.set(u.id, {
+      userId: u.id,
+      userName: u.name || u.email || 'Unknown User',
+      userEmail: u.email || '',
+      officeName: u.office?.name || 'N/A',
+      departmentName: u.department?.name || 'N/A',
+      totalAttempts: 0,
+      uniqueCallsSet: new Set<string>(),
+      connectedCalls: 0,
+      notConnectedCalls: 0,
+      positiveOutcomes: 0,
+      negativeOutcomes: 0,
+      followUpsCreated: 0,
+      leadsMoved: 0,
+      substageCounts: initialSubstageCounts,
+    });
+  });
+
   const substageGlobalMap = new Map<string, any>();
-  const selectedSubstageInfoMap = new Map<string, any>();
 
   outcomes.forEach((o: any) => {
     const uid = o.userId;
-    if (!userMap.has(uid)) {
-      userMap.set(uid, {
+    let item = userMap.get(uid);
+
+    if (!item) {
+      // Fallback for historical deleted user record
+      const initialSubstageCounts: Record<string, number> = {};
+      selectedSubstages.forEach((sub) => {
+        initialSubstageCounts[sub.id] = 0;
+      });
+      item = {
         userId: uid,
         userName: o.user?.name || o.user?.email || 'Unknown User',
         userEmail: o.user?.email || '',
@@ -203,12 +248,11 @@ export const getCallSummaryReport = async (
         negativeOutcomes: 0,
         followUpsCreated: 0,
         leadsMoved: 0,
-        substageCounts: {} as Record<string, number>,
-        substageList: new Map<string, any>(),
-      });
+        substageCounts: initialSubstageCounts,
+      };
+      userMap.set(uid, item);
     }
 
-    const item = userMap.get(uid);
     item.totalAttempts += 1;
 
     const dateStr = o.callSession?.localCallDate || getLocalDateStr(new Date(o.submittedAt));
@@ -224,16 +268,6 @@ export const getCallSummaryReport = async (
     if (o.substage) {
       const subId = o.substage.id;
       item.substageCounts[subId] = (item.substageCounts[subId] || 0) + 1;
-
-      if (!selectedSubstageInfoMap.has(subId)) {
-        selectedSubstageInfoMap.set(subId, {
-          id: subId,
-          name: o.substage.name,
-          parentStageId: o.substage.leadStage?.id || undefined,
-          parentStageName: o.substage.leadStage?.name || 'General',
-          color: o.substage.leadStage?.color || '#3b82f6',
-        });
-      }
 
       if (!substageGlobalMap.has(subId)) {
         substageGlobalMap.set(subId, {
@@ -257,8 +291,6 @@ export const getCallSummaryReport = async (
       if (o.connectionStatus === 'NOT_CONNECTED') gItem.notConnectedCalls += 1;
     }
   });
-
-  const selectedSubstages = Array.from(selectedSubstageInfoMap.values());
 
   const userSummaryList = Array.from(userMap.values()).map((u) => {
     const uniqueCalls = u.uniqueCallsSet.size;
