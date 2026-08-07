@@ -133,13 +133,8 @@ export const getCallSummaryReport = async (
     outcomeWhere.submittedAt = dateFilter;
   }
 
-  // Connection Status / Substage / LeadStage Filters
+  // Connection Status / LeadStage Filters
   if (filters.connectionStatus) outcomeWhere.connectionStatus = filters.connectionStatus;
-  if (filters.substageIds && filters.substageIds.length > 0) {
-    outcomeWhere.substageId = { in: filters.substageIds };
-  } else if (filters.substageId) {
-    outcomeWhere.substageId = filters.substageId;
-  }
   if (filters.leadStageId) outcomeWhere.targetStageId = filters.leadStageId;
   if (filters.sourceContext) sessionWhere.sourceContext = filters.sourceContext;
 

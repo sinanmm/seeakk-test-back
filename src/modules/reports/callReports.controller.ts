@@ -33,13 +33,13 @@ export const getCallSummaryReport = async (req: Request, res: Response, next: Ne
     const filters: service.CallReportFilters = {
       startDate: req.query.startDate as string,
       endDate: req.query.endDate as string,
-      userIds: parseArrayQuery(req.query.userIds || req.query['userIds[]']),
+      userIds: parseArrayQuery(req.query.userIds || req.query['userIds[]'] || req.query.userId),
       supervisorId: req.query.supervisorId as string,
       officeId: req.query.officeId as string,
       departmentId: req.query.departmentId as string,
       leadStageId: req.query.leadStageId as string,
       substageId: req.query.substageId as string,
-      substageIds: parseArrayQuery(req.query.substageIds || req.query['substageIds[]']),
+      substageIds: parseArrayQuery(req.query.substageIds || req.query['substageIds[]'] || req.query.substageId),
       connectionStatus: req.query.connectionStatus as any,
       sourceContext: req.query.sourceContext as string,
     };
@@ -63,13 +63,13 @@ export const getCallDetailedReport = async (req: Request, res: Response, next: N
     const filters: service.CallReportFilters = {
       startDate: req.query.startDate as string,
       endDate: req.query.endDate as string,
-      userIds: parseArrayQuery(req.query.userIds || req.query['userIds[]']),
+      userIds: parseArrayQuery(req.query.userIds || req.query['userIds[]'] || req.query.userId),
       supervisorId: req.query.supervisorId as string,
       officeId: req.query.officeId as string,
       departmentId: req.query.departmentId as string,
       leadStageId: req.query.leadStageId as string,
       substageId: req.query.substageId as string,
-      substageIds: parseArrayQuery(req.query.substageIds || req.query['substageIds[]']),
+      substageIds: parseArrayQuery(req.query.substageIds || req.query['substageIds[]'] || req.query.substageId),
       connectionStatus: req.query.connectionStatus as any,
       sourceContext: req.query.sourceContext as string,
       search: req.query.search as string,
@@ -94,8 +94,8 @@ export const exportCallReport = async (req: Request, res: Response, next: NextFu
     const rawFilters = req.body.filters || {};
     const filters: service.CallReportFilters = {
       ...rawFilters,
-      userIds: parseArrayQuery(rawFilters.userIds || rawFilters['userIds[]']),
-      substageIds: parseArrayQuery(rawFilters.substageIds || rawFilters['substageIds[]']),
+      userIds: parseArrayQuery(rawFilters.userIds || rawFilters['userIds[]'] || rawFilters.userId),
+      substageIds: parseArrayQuery(rawFilters.substageIds || rawFilters['substageIds[]'] || rawFilters.substageId),
     };
 
     const summaryReport = await service.getCallSummaryReport(workspaceId, req.user!.id, permissions, filters);
