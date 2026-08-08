@@ -159,10 +159,13 @@ export const createPipeline = async (req: Request, res: Response): Promise<void>
       userId: req.user?.id,
       body: req.body,
     });
+    const rawMsg = String(err?.message || '');
+    const isInternalPrisma = rawMsg.includes('prisma.') || rawMsg.includes('invocation') || rawMsg.includes('does not exist');
+    const userMsg = isInternalPrisma ? 'Unable to create custom pipeline widget. Please try again.' : (rawMsg || 'Failed to create pipeline');
     res.status(400).json({
       success: false,
-      error: err.message || 'Failed to create pipeline',
-      message: err.message || 'Failed to create pipeline',
+      error: userMsg,
+      message: userMsg,
     });
   }
 };
@@ -185,10 +188,13 @@ export const updatePipeline = async (req: Request, res: Response): Promise<void>
       pipelineId: req.params.id,
       body: req.body,
     });
+    const rawMsg = String(err?.message || '');
+    const isInternalPrisma = rawMsg.includes('prisma.') || rawMsg.includes('invocation') || rawMsg.includes('does not exist');
+    const userMsg = isInternalPrisma ? 'Unable to update custom pipeline widget. Please try again.' : (rawMsg || 'Failed to update pipeline');
     res.status(400).json({
       success: false,
-      error: err.message || 'Failed to update pipeline',
-      message: err.message || 'Failed to update pipeline',
+      error: userMsg,
+      message: userMsg,
     });
   }
 };
