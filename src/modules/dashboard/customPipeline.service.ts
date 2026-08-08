@@ -601,8 +601,7 @@ const computePipelineMetrics = async (
         ],
       },
     });
-  } else if (metricType === 'STAGE_DISTRIBUTION' || true) {
-    // Always compute stageBreakdown breakdown for PIE_CHART, STAGE_BAR, or STAGE_DISTRIBUTION
+  } else if (metricType === 'STAGE_DISTRIBUTION') {
     const stageGroups = await prisma.lead.groupBy({
       by: ['stageId'],
       where: baseWhere,
