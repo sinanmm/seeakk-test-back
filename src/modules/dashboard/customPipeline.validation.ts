@@ -48,6 +48,15 @@ export const reorderSectionsSchema = z.object({
   ),
 });
 
+export const pipelineSegmentSchema = z.object({
+  id: z.string().optional(),
+  label: z.string().trim().min(1, 'Segment label is required'),
+  metricType: z.string().optional(),
+  filtersJson: z.array(filterConditionSchema).default([]),
+  filterLogic: z.enum(['AND', 'OR']).default('AND'),
+  color: z.string().optional(),
+});
+
 export const createPipelineSchema = z.object({
   sectionId: z.string().min(1, 'Section ID is required'),
   name: z.string().trim().min(1, 'Pipeline name is required').max(150),
@@ -75,9 +84,11 @@ export const createPipelineSchema = z.object({
       'STAGE_BAR',
       'PERCENTAGE_CARD',
       'REVENUE_CARD',
+      'PIE_CHART',
     ])
     .default('COMPACT_CARD'),
   filtersJson: z.array(filterConditionSchema).default([]),
+  segmentsJson: z.array(pipelineSegmentSchema).optional(),
   filterLogic: z.enum(['AND', 'OR']).default('AND'),
   visibilityType: z.enum(['PRIVATE', 'SHARED', 'WORKSPACE']).default('PRIVATE'),
   clickAction: z.enum(['OPEN_LEADS', 'OPEN_DRAWER']).default('OPEN_LEADS'),
@@ -99,6 +110,7 @@ export const updatePipelineSchema = z.object({
   metricType: z.string().optional(),
   displayType: z.string().optional(),
   filtersJson: z.array(filterConditionSchema).optional(),
+  segmentsJson: z.array(pipelineSegmentSchema).optional(),
   filterLogic: z.enum(['AND', 'OR']).optional(),
   visibilityType: z.enum(['PRIVATE', 'SHARED', 'WORKSPACE']).optional(),
   status: z.enum(['ACTIVE', 'INACTIVE']).optional(),
@@ -126,6 +138,8 @@ export const reorderPipelinesSchema = z.object({
 
 export const previewPipelineSchema = z.object({
   filtersJson: z.array(filterConditionSchema).default([]),
+  segmentsJson: z.array(pipelineSegmentSchema).optional(),
+  displayType: z.string().optional(),
   filterLogic: z.enum(['AND', 'OR']).default('AND'),
   metricType: z.string().default('LEAD_COUNT'),
 });

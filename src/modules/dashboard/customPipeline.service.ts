@@ -92,6 +92,8 @@ export const getPipelineSections = async (workspaceId: string, actor: RequestAct
             pipeline.filterLogic as 'AND' | 'OR',
             pipeline.metricType,
             scopedLeadAccess,
+            pipeline.displayType,
+            pipeline.segmentsJson as any,
           );
 
           return {
@@ -291,6 +293,7 @@ export const createPipeline = async (workspaceId: string, actor: RequestActor, i
       metricType: input.metricType,
       displayType: input.displayType,
       filtersJson: input.filtersJson as any,
+      segmentsJson: input.segmentsJson ? (input.segmentsJson as any) : undefined,
       filterLogic: input.filterLogic,
       visibilityType: input.visibilityType,
       clickAction: input.clickAction,
@@ -353,6 +356,7 @@ export const updatePipeline = async (
       metricType: input.metricType,
       displayType: input.displayType,
       filtersJson: input.filtersJson ? (input.filtersJson as any) : undefined,
+      segmentsJson: input.segmentsJson ? (input.segmentsJson as any) : undefined,
       filterLogic: input.filterLogic,
       visibilityType: input.visibilityType,
       status: input.status,
@@ -455,6 +459,8 @@ export const previewPipeline = async (workspaceId: string, actor: RequestActor, 
     input.filterLogic as 'AND' | 'OR',
     input.metricType,
     scopedLeadAccess,
+    (input as any).displayType,
+    (input as any).segmentsJson,
   );
 
   const finalWhere = buildCustomPipelineWhere(
@@ -545,7 +551,55 @@ const computePipelineMetrics = async (
   filterLogic: 'AND' | 'OR',
   metricType: string,
   leadAccessScope: Prisma.LeadWhereInput,
+  displayType?: string,
+  segmentsJson?: any[],
 ) => {
+  if (displayType === 'PIE_CHART' && Array.isArray(segmentsJson) && segmentsJson.length > 0) {
+    const DEFAULT_COLORS = ['#10B981', '#3B82F6', '#8B5CF6', '#F59E0B', '#EF4444', '#EC4899', '#06B6D4', '#6366F1', '#14B8A6'];
+    const segments = await Promise.all(
+      segmentsJson.map(async (seg: any, idx: number) => {
+        const segFilters = seg.filtersJson || [];
+        const segLogic = seg.filterLogic || 'AND';
+        const segMetric = seg.metricType || 'LEAD_COUNT';
+        const segWhere = buildCustomPipelineWhere(segFilters, segLogic, leadAccessScope);
+        const segBaseWhere: Prisma.LeadWhereInput = { workspaceId, deletedAt: null, ...segWhere };
+
+        let val = 0;
+        if (segMetric === 'TOTAL_EXPECTED_REVENUE') {
+          const agg = await prisma.lead.aggregate({ where: segBaseWhere, _sum: { expectedRevenue: true } });
+          val = Number(agg._sum.expectedRevenue || 0);
+        } else if (segMetric === 'TOTAL_CLOSED_REVENUE') {
+          const agg = await prisma.lead.aggregate({ where: segBaseWhere, _sum: { generatedRevenue: true } });
+          val = Number(agg._sum.generatedRevenue || 0);
+        } else if (segMetric === 'AVERAGE_REVENUE') {
+          const agg = await prisma.lead.aggregate({ where: segBaseWhere, _avg: { expectedRevenue: true } });
+          val = Math.round(Number(agg._avg.expectedRevenue || 0));
+        } else {
+          val = await prisma.lead.count({ where: segBaseWhere });
+        }
+
+        return {
+          label: seg.label || `Segment ${idx + 1}`,
+          value: val,
+          color: seg.color || DEFAULT_COLORS[idx % DEFAULT_COLORS.length],
+          metricType: segMetric,
+        };
+      }),
+    );
+
+    const totalVal = segments.reduce((acc, s) => acc + s.value, 0);
+
+    return {
+      count: totalVal,
+      totalExpectedRevenue: 0,
+      totalClosedRevenue: 0,
+      averageRevenue: 0,
+      secondaryMetric: 0,
+      stageBreakdown: [],
+      segments,
+      lastRefreshedAt: new Date().toISOString(),
+    };
+  }
   const finalWhere = buildCustomPipelineWhere(filtersJson, filterLogic, leadAccessScope);
   const baseWhere: Prisma.LeadWhereInput = { workspaceId, deletedAt: null, ...finalWhere };
 

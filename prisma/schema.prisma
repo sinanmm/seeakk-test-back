@@ -2654,6 +2654,7 @@ model DashboardPipeline {
   metricType     String    @default("LEAD_COUNT") // LEAD_COUNT, TOTAL_EXPECTED_REVENUE, TOTAL_CLOSED_REVENUE, AVERAGE_REVENUE, CONVERSION_RATE, LOB_COUNT, FOLLOWUP_COUNT, OVERDUE_FOLLOWUP_COUNT, STAGE_DISTRIBUTION
   displayType    String    @default("COMPACT_CARD") // COMPACT_CARD, HORIZONTAL_BAR, PROGRESS_BAR, STATUS_CARD, MINI_TABLE, STAGE_BAR, PERCENTAGE_CARD, REVENUE_CARD
   filtersJson    Json      // Array of normalized conditions
+  segmentsJson   Json?     // Array of data segment definitions for PIE_CHART (label, metricType, filtersJson, filterLogic, color)
   filterLogic    String    @default("AND") // AND, OR
   visibilityType String    @default("PRIVATE") // PRIVATE, SHARED, WORKSPACE
   ownerUserId    String
