@@ -125,6 +125,9 @@ const buildSingleConditionWhere = (condition: FilterCondition): Prisma.LeadWhere
     if (operator === 'IN_RANGE' && typeof value === 'object' && value !== null) {
       return { [field]: { gte: Number(value.min || 0), lte: Number(value.max || 999999999) } };
     }
+    if ((operator === 'NOT_IN_RANGE' || operator === 'NOT_BETWEEN') && typeof value === 'object' && value !== null) {
+      return { OR: [{ [field]: { lt: Number(value.min || 0) } }, { [field]: { gt: Number(value.max || 999999999) } }] };
+    }
     if (operator === 'IS_EMPTY') return { [field]: null };
     if (operator === 'IS_NOT_EMPTY') return { [field]: { not: null } };
   }
@@ -224,9 +227,39 @@ const buildDateConditionWhere = (operator: string, value: any): Prisma.DateTimeF
     return { gte: start, lte: now };
   }
 
-  if (operator === 'NEXT_N_DAYS') {
+  if (operator === 'NEXT_N_DAYS' || operator === 'WITHIN_NEXT_N_DAYS') {
     const days = Number(value || 7);
     const end = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
+    return { gte: now, lte: end };
+  }
+
+  if (operator === 'OLDER_THAN_N_DAYS') {
+    const days = Number(value || 30);
+    const cutoff = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+    return { lt: cutoff };
+  }
+
+  if (operator === 'LAST_N_WEEKS') {
+    const weeks = Number(value || 1);
+    const start = new Date(now.getTime() - weeks * 7 * 24 * 60 * 60 * 1000);
+    return { gte: start, lte: now };
+  }
+
+  if (operator === 'NEXT_N_WEEKS') {
+    const weeks = Number(value || 1);
+    const end = new Date(now.getTime() + weeks * 7 * 24 * 60 * 60 * 1000);
+    return { gte: now, lte: end };
+  }
+
+  if (operator === 'LAST_N_MONTHS') {
+    const months = Number(value || 1);
+    const start = new Date(now.getFullYear(), now.getMonth() - months, now.getDate());
+    return { gte: start, lte: now };
+  }
+
+  if (operator === 'NEXT_N_MONTHS') {
+    const months = Number(value || 1);
+    const end = new Date(now.getFullYear(), now.getMonth() + months, now.getDate());
     return { gte: now, lte: end };
   }
 
