@@ -71,6 +71,9 @@ export const serializeAuthenticatedUser = (
     id: user.id,
     name: user.name,
     email: user.email,
+    username: user.username || null,
+    phone: user.phone || null,
+    profileImageUrl: user.profileImageUrl || null,
     role: user.role
       ? {
           id: user.role.id,
