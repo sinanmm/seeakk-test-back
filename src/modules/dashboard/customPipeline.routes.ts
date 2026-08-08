@@ -9,7 +9,19 @@ router.use(protect);
 // Sections
 router.get(
   '/pipeline-sections',
-  checkAnyPermission(['DASHBOARD_CUSTOM_VIEW', 'DASHBOARD_VIEW_OWN', 'DASHBOARD_VIEW_ALL', 'SYSTEM_CONFIG']),
+  checkAnyPermission([
+    'DASHBOARD_CUSTOM_VIEW',
+    'DASHBOARD_VIEW_OWN',
+    'DASHBOARD_VIEW_ALL',
+    'DASHBOARD_VIEW_ASSIGNED',
+    'DASHBOARD_VIEW_OWN_OFFICE',
+    'DASHBOARD_VIEW_ASSIGNED_OFFICES',
+    'DASHBOARD_VIEW_ALL_OFFICES',
+    'LEADS_VIEW_OWN',
+    'LEADS_VIEW_TEAM',
+    'LEADS_VIEW_ALL',
+    'SYSTEM_CONFIG',
+  ]),
   customPipelineController.getSections,
 );
 

@@ -56,28 +56,38 @@ const buildVisibilityWhere = (actor: RequestActor): Prisma.DashboardPipelineSect
 export const getPipelineSections = async (workspaceId: string, actor: RequestActor) => {
   const visibilityWhere = buildVisibilityWhere(actor);
 
-  const sections = await prisma.dashboardPipelineSection.findMany({
-    where: {
-      workspaceId,
-      deletedAt: null,
-      status: 'ACTIVE',
-      ...visibilityWhere,
-    },
-    include: {
-      pipelines: {
-        where: {
-          deletedAt: null,
-          status: 'ACTIVE',
-        },
-        orderBy: { sortOrder: 'asc' },
-        include: {
-          shares: true,
-        },
+  let sections: any[] = [];
+  try {
+    sections = await prisma.dashboardPipelineSection.findMany({
+      where: {
+        workspaceId,
+        deletedAt: null,
+        status: 'ACTIVE',
+        ...visibilityWhere,
       },
-      shares: true,
-    },
-    orderBy: { sortOrder: 'asc' },
-  });
+      include: {
+        pipelines: {
+          where: {
+            deletedAt: null,
+            status: 'ACTIVE',
+          },
+          orderBy: { sortOrder: 'asc' },
+          include: {
+            shares: true,
+          },
+        },
+        shares: true,
+      },
+      orderBy: { sortOrder: 'asc' },
+    });
+  } catch (err: any) {
+    logger.warn('[Custom Pipeline] Failed to query pipeline sections table from database', {
+      error: err?.message,
+      workspaceId,
+      userId: actor.id,
+    });
+    return [];
+  }
 
   // Calculate live metrics for each pipeline
   let scopedLeadAccess: Prisma.LeadWhereInput = {};
