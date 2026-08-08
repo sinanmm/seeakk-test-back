@@ -29,6 +29,11 @@ const buildVisibilityWhere = (actor: RequestActor): Prisma.DashboardPipelineSect
     return {};
   }
 
+  const shareTargets: Prisma.DashboardPipelineShareWhereInput[] = [{ targetUserId: actor.id }];
+  if (actor.roleId) shareTargets.push({ targetRoleId: actor.roleId });
+  if (actor.officeId) shareTargets.push({ targetOfficeId: actor.officeId });
+  if (actor.departmentId) shareTargets.push({ targetDepartmentId: actor.departmentId });
+
   const orConditions: Prisma.DashboardPipelineSectionWhereInput[] = [
     { ownerUserId: actor.id },
     { visibilityType: 'WORKSPACE' },
@@ -36,12 +41,7 @@ const buildVisibilityWhere = (actor: RequestActor): Prisma.DashboardPipelineSect
       visibilityType: 'SHARED',
       shares: {
         some: {
-          OR: [
-            { targetUserId: actor.id },
-            actor.roleId ? { targetRoleId: actor.roleId } : {},
-            actor.officeId ? { targetOfficeId: actor.officeId } : {},
-            actor.departmentId ? { targetDepartmentId: actor.departmentId } : {},
-          ].filter((cond) => Object.keys(cond).length > 0),
+          OR: shareTargets,
         },
       },
     },
@@ -80,21 +80,46 @@ export const getPipelineSections = async (workspaceId: string, actor: RequestAct
   });
 
   // Calculate live metrics for each pipeline
-  const scopedLeadAccess = await buildAccessWhere(workspaceId, actor);
+  let scopedLeadAccess: Prisma.LeadWhereInput = {};
+  try {
+    scopedLeadAccess = await buildAccessWhere(workspaceId, actor);
+  } catch (err) {
+    logger.warn('[Custom Pipeline] Lead access scope empty or access restricted', { userId: actor.id });
+    scopedLeadAccess = { id: { in: [] } };
+  }
 
   const populatedSections = await Promise.all(
     sections.map(async (section: any) => {
       const populatedPipelines = await Promise.all(
         section.pipelines.map(async (pipeline: any) => {
-          const metrics = await computePipelineMetrics(
-            workspaceId,
-            pipeline.filtersJson as unknown as FilterCondition[],
-            pipeline.filterLogic as 'AND' | 'OR',
-            pipeline.metricType,
-            scopedLeadAccess,
-            pipeline.displayType,
-            pipeline.segmentsJson as any,
-          );
+          let metrics: any = {
+            count: 0,
+            totalExpectedRevenue: 0,
+            totalClosedRevenue: 0,
+            averageRevenue: 0,
+            secondaryMetric: 0,
+            stageBreakdown: [],
+            lastRefreshedAt: new Date().toISOString(),
+          };
+
+          try {
+            metrics = await computePipelineMetrics(
+              workspaceId,
+              pipeline.filtersJson as unknown as FilterCondition[],
+              pipeline.filterLogic as 'AND' | 'OR',
+              pipeline.metricType,
+              scopedLeadAccess,
+              pipeline.displayType,
+              pipeline.segmentsJson as any,
+            );
+          } catch (err: any) {
+            logger.error('[Custom Pipeline Metrics Compute Failed]', {
+              pipelineId: pipeline.id,
+              pipelineName: pipeline.name,
+              error: err?.message,
+              stack: err?.stack,
+            });
+          }
 
           return {
             ...pipeline,

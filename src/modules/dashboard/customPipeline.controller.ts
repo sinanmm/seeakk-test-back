@@ -73,6 +73,12 @@ export const getSections = async (req: Request, res: Response): Promise<void> =>
     const sections = await customPipelineService.getPipelineSections(workspaceId, actor);
     res.json({ success: true, data: sections });
   } catch (err: any) {
+    logger.error('[Custom Pipeline GET /sections Error]', {
+      error: err?.message,
+      stack: err?.stack,
+      userId: req.user?.id,
+      workspaceId: req.user?.workspaceId,
+    });
     res.status(500).json({ success: false, error: err.message || 'Failed to fetch pipeline sections' });
   }
 };

@@ -130,6 +130,7 @@ const buildSingleConditionWhere = (condition: FilterCondition): Prisma.LeadWhere
     }
     if (operator === 'IS_EMPTY') return { [field]: null };
     if (operator === 'IS_NOT_EMPTY') return { [field]: { not: null } };
+    return null;
   }
 
   // 7. Select & ID Fields (e.g. stageId, substageId, sourceId, lifecycleId, assignedToId)
@@ -140,6 +141,7 @@ const buildSingleConditionWhere = (condition: FilterCondition): Prisma.LeadWhere
     if (operator === 'IS_NONE_OF' && Array.isArray(value)) return { [field]: { notIn: value } };
     if (operator === 'IS_EMPTY') return { [field]: null };
     if (operator === 'IS_NOT_EMPTY') return { [field]: { not: null } };
+    return null;
   }
 
   // 8. Text Fields (name, phone, email, companyName, address)
@@ -183,16 +185,22 @@ const buildDateConditionWhere = (operator: string, value: any): Prisma.DateTimeF
   }
 
   if (operator === 'THIS_WEEK') {
-    const dayOfWeek = now.getDay();
-    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek, 0, 0, 0);
-    const end = new Date(start.getTime() + 7 * 24 * 60 * 60 * 1000 - 1);
+    const day = now.getDay();
+    const diffToMonday = now.getDate() - day + (day === 0 ? -6 : 1);
+    const monday = new Date(now.setDate(diffToMonday));
+    const start = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate(), 0, 0, 0);
+    const sunday = new Date(monday.getTime() + 6 * 24 * 60 * 60 * 1000);
+    const end = new Date(sunday.getFullYear(), sunday.getMonth(), sunday.getDate(), 23, 59, 59, 999);
     return { gte: start, lte: end };
   }
 
   if (operator === 'LAST_WEEK') {
-    const dayOfWeek = now.getDay();
-    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek - 7, 0, 0, 0);
-    const end = new Date(start.getTime() + 7 * 24 * 60 * 60 * 1000 - 1);
+    const day = now.getDay();
+    const diffToLastMonday = now.getDate() - day + (day === 0 ? -6 : 1) - 7;
+    const monday = new Date(now.setDate(diffToLastMonday));
+    const start = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate(), 0, 0, 0);
+    const sunday = new Date(monday.getTime() + 6 * 24 * 60 * 60 * 1000);
+    const end = new Date(sunday.getFullYear(), sunday.getMonth(), sunday.getDate(), 23, 59, 59, 999);
     return { gte: start, lte: end };
   }
 
@@ -211,7 +219,7 @@ const buildDateConditionWhere = (operator: string, value: any): Prisma.DateTimeF
   if (operator === 'THIS_QUARTER') {
     const currentQuarter = Math.floor(now.getMonth() / 3);
     const start = new Date(now.getFullYear(), currentQuarter * 3, 1, 0, 0, 0);
-    const end = new Date(now.getFullYear(), (currentQuarter + 1) * 3, 0, 23, 59, 59, 999);
+    const end = new Date(now.getFullYear(), currentQuarter * 3 + 3, 0, 23, 59, 59, 999);
     return { gte: start, lte: end };
   }
 
@@ -321,12 +329,17 @@ export const buildCustomPipelineWhere = (
   filterLogic: 'AND' | 'OR' = 'AND',
   leadAccessScope?: Prisma.LeadWhereInput,
 ): Prisma.LeadWhereInput => {
+  const safeFilters = Array.isArray(filtersJson) ? filtersJson : [];
   const conditionWheres: Prisma.LeadWhereInput[] = [];
 
-  for (const cond of filtersJson) {
-    const singleWhere = buildSingleConditionWhere(cond);
-    if (singleWhere) {
-      conditionWheres.push(singleWhere);
+  for (const cond of safeFilters) {
+    try {
+      const singleWhere = buildSingleConditionWhere(cond);
+      if (singleWhere) {
+        conditionWheres.push(singleWhere);
+      }
+    } catch (err) {
+      // Safe fallback for malformed condition
     }
   }
 
