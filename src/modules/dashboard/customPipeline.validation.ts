@@ -58,7 +58,7 @@ export const pipelineSegmentSchema = z.object({
 });
 
 export const createPipelineSchema = z.object({
-  sectionId: z.string().min(1, 'Section ID is required'),
+  sectionId: z.string().trim().optional(),
   name: z.string().trim().min(1, 'Pipeline name is required').max(150),
   description: z.string().trim().max(1000).optional(),
   metricType: z

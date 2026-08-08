@@ -312,8 +312,44 @@ export const reorderPipelineSections = async (
 // Pipeline Services
 // ----------------------------------------------------
 export const createPipeline = async (workspaceId: string, actor: RequestActor, input: CreatePipelineInput) => {
+  let targetSectionId = input.sectionId?.trim();
+
+  // Self-healing: Verify if provided sectionId exists and belongs to workspace
+  if (targetSectionId) {
+    const existingSection = await prisma.dashboardPipelineSection.findFirst({
+      where: { id: targetSectionId, workspaceId, deletedAt: null },
+    });
+    if (!existingSection) {
+      targetSectionId = undefined;
+    }
+  }
+
+  // Fallback: If sectionId missing or invalid, resolve or create default workspace section
+  if (!targetSectionId) {
+    let defaultSection = await prisma.dashboardPipelineSection.findFirst({
+      where: { workspaceId, deletedAt: null, status: 'ACTIVE' },
+      orderBy: { sortOrder: 'asc' },
+    });
+
+    if (!defaultSection) {
+      defaultSection = await prisma.dashboardPipelineSection.create({
+        data: {
+          workspaceId,
+          name: 'Main Dashboard Section',
+          description: 'Default section for custom dashboard pipeline cards',
+          layoutType: 'AUTO',
+          visibilityType: 'WORKSPACE',
+          sortOrder: 1,
+          ownerUserId: actor.id,
+          createdById: actor.id,
+        },
+      });
+    }
+    targetSectionId = defaultSection.id;
+  }
+
   const maxOrder = await prisma.dashboardPipeline.aggregate({
-    where: { sectionId: input.sectionId, workspaceId, deletedAt: null },
+    where: { sectionId: targetSectionId, workspaceId, deletedAt: null },
     _max: { sortOrder: true },
   });
 
@@ -322,7 +358,7 @@ export const createPipeline = async (workspaceId: string, actor: RequestActor, i
   const pipeline = await prisma.dashboardPipeline.create({
     data: {
       workspaceId,
-      sectionId: input.sectionId,
+      sectionId: targetSectionId,
       name: input.name,
       description: input.description,
       metricType: input.metricType,

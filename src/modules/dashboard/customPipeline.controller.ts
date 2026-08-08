@@ -153,7 +153,17 @@ export const createPipeline = async (req: Request, res: Response): Promise<void>
     const pipeline = await customPipelineService.createPipeline(workspaceId, actor, body);
     res.status(201).json({ success: true, data: pipeline });
   } catch (err: any) {
-    res.status(400).json({ success: false, error: err.message || 'Failed to create pipeline' });
+    logger.error('[Custom Pipeline POST /pipelines Error]', {
+      error: err?.message,
+      stack: err?.stack,
+      userId: req.user?.id,
+      body: req.body,
+    });
+    res.status(400).json({
+      success: false,
+      error: err.message || 'Failed to create pipeline',
+      message: err.message || 'Failed to create pipeline',
+    });
   }
 };
 
@@ -168,7 +178,18 @@ export const updatePipeline = async (req: Request, res: Response): Promise<void>
     const updated = await customPipelineService.updatePipeline(workspaceId, pipelineId, actor, body);
     res.json({ success: true, data: updated });
   } catch (err: any) {
-    res.status(400).json({ success: false, error: err.message || 'Failed to update pipeline' });
+    logger.error('[Custom Pipeline PATCH /pipelines Error]', {
+      error: err?.message,
+      stack: err?.stack,
+      userId: req.user?.id,
+      pipelineId: req.params.id,
+      body: req.body,
+    });
+    res.status(400).json({
+      success: false,
+      error: err.message || 'Failed to update pipeline',
+      message: err.message || 'Failed to update pipeline',
+    });
   }
 };
 
