@@ -417,13 +417,18 @@ export const persistTargetCycleWithPeriods = async (
 
           if (metric.metricType === 'PRODUCTS' && metric.productTargets && metric.productTargets.length > 0) {
             for (const productTarget of metric.productTargets) {
-              await tx.targetProductTarget.create({
-                data: {
-                  periodMetricId: pmRow.id,
-                  productId: productTarget.productId,
-                  targetValue: productTarget.targetValue,
-                },
+              const validProduct = await tx.product.findFirst({
+                where: { id: productTarget.productId, workspaceId, deletedAt: null },
               });
+              if (validProduct) {
+                await tx.targetProductTarget.create({
+                  data: {
+                    periodMetricId: pmRow.id,
+                    productId: productTarget.productId,
+                    targetValue: productTarget.targetValue,
+                  },
+                });
+              }
             }
           }
         }

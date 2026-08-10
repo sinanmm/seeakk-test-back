@@ -53,6 +53,15 @@ const handleServiceError = (error: any, res: Response, next: NextFunction, actio
     return;
   }
 
+  if (error?.code === 'P2003') {
+    res.status(400).json({
+      success: false,
+      code: 'INVALID_REFERENCE',
+      message: 'Invalid product or lead stage referenced in target cycle.',
+    });
+    return;
+  }
+
   if (error?.code === 'P2021' || error?.code === 'P2022') {
     res.status(503).json({
       success: false,
@@ -71,8 +80,11 @@ const handleServiceError = (error: any, res: Response, next: NextFunction, actio
     return;
   }
 
-  logger.error(`Target cycle error during ${action}`, { error: error?.message });
-  next(error);
+  logger.error(`Target cycle error during ${action}`, { error: error?.message, stack: error?.stack });
+  res.status(400).json({
+    success: false,
+    message: error?.message || 'Failed to process target cycle request.',
+  });
 };
 
 export const createTargetCycle = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
