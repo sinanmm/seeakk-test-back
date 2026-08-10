@@ -1,0 +1,2 @@
+-- AlterEnum
+ALTER TYPE "TargetMetricType" ADD VALUE IF NOT EXISTS 'PRODUCTS';
