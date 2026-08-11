@@ -2766,20 +2766,27 @@ export const updateLead = async (
 
     const followUpOwnerId = assignedToId || existing.createdById;
 
-    const isEnteringLOB = stage?.isLOB && !existing.isLOB;
+    const isEnteringLOB = Boolean(stage?.isLOB && (existing.stageId !== stage.id || !existing.isLOB));
 
     if (isEnteringLOB) {
       await (tx as any).followUp.updateMany({
         where: {
           leadId: id,
           workspaceId,
-          status: 'PENDING',
+          status: { in: ['PENDING', 'MISSED'] },
         },
         data: {
           status: 'CANCELLED',
           completionDescription: 'Superseded by LOB Workflow',
         },
       });
+
+      if (input.nextFollowUpAt === undefined) {
+        await (tx as any).lead.update({
+          where: { id },
+          data: { nextFollowUpAt: null },
+        });
+      }
     }
 
     if (input.assignedToId !== undefined && existing.assignedToId !== assignedToId) {

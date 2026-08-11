@@ -483,12 +483,17 @@ export const processApproval = async (input: {
           where: {
             leadId: approval.leadId,
             workspaceId: input.workspaceId,
-            status: 'PENDING',
+            status: { in: ['PENDING', 'MISSED'] },
           },
           data: {
             status: 'CANCELLED',
             completionDescription: 'Superseded by LOB Workflow',
           },
+        });
+
+        await (tx as any).lead.update({
+          where: { id: approval.leadId },
+          data: { nextFollowUpAt: null },
         });
 
         const snapshotPrevId =

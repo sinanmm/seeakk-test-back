@@ -269,18 +269,39 @@ export const saveCallOutcome = async (
           });
 
           // Create LOB Log if target stage is LOB
-          if (targetStage.isLOB && effectiveReasonId) {
-            await tx.leadLOBLog.create({
-              data: {
+          if (targetStage.isLOB) {
+            await tx.followUp.updateMany({
+              where: {
                 leadId,
                 workspaceId,
-                reasonId: effectiveReasonId,
-                remarks: effectiveRemarks || input.outcomeNotes || null,
-                previousStageId: lead.stageId || null,
-                previousStageName: lead.stage?.name || null,
-                changedById: userId,
+                status: { in: ['PENDING', 'MISSED'] },
+              },
+              data: {
+                status: 'CANCELLED',
+                completionDescription: 'Superseded by LOB Workflow',
               },
             });
+
+            if (!input.followUpRequired) {
+              await tx.lead.update({
+                where: { id: leadId },
+                data: { nextFollowUpAt: null },
+              });
+            }
+
+            if (effectiveReasonId) {
+              await tx.leadLOBLog.create({
+                data: {
+                  leadId,
+                  workspaceId,
+                  reasonId: effectiveReasonId,
+                  remarks: effectiveRemarks || input.outcomeNotes || null,
+                  previousStageId: lead.stageId || null,
+                  previousStageName: lead.stage?.name || null,
+                  changedById: userId,
+                },
+              });
+            }
           }
 
           // Record Stage History with valid model fields (no unsupported 'reason' field)
