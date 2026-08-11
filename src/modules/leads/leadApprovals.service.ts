@@ -123,21 +123,55 @@ const buildLeadSlaSnapshot = (
   };
 };
 
-const buildApprovalResponse = (approval: any) => ({
-  ...approval,
-  approvedAt: approval.approvedAt ? approval.approvedAt.toISOString() : null,
-  createdAt: approval.createdAt.toISOString(),
-  updatedAt: approval.updatedAt.toISOString(),
-  requestedBy: approval.requestedBy
-    ? { ...approval.requestedBy, displayName: resolveDisplayName(approval.requestedBy) }
-    : null,
-  assignedTo: approval.assignedTo
-    ? { ...approval.assignedTo, displayName: resolveDisplayName(approval.assignedTo) }
-    : null,
-  approvedBy: approval.approvedBy
-    ? { ...approval.approvedBy, displayName: resolveDisplayName(approval.approvedBy) }
-    : null,
-});
+const buildApprovalResponse = async (approval: any) => {
+  const reqData = normalizeRequestData(approval.requestData);
+  const reasonId = reqData.lobReasonId || reqData.reasonId || null;
+  let lobReasonName = reqData.lobReason || reqData.lobReasonName || null;
+  const lobDescription = reqData.lobDescription || reqData.lobRemarks || reqData.remarks || null;
+
+  if (!lobReasonName && reasonId) {
+    try {
+      const dbReason = await prisma.lOBReason.findUnique({
+        where: { id: reasonId },
+        select: { name: true },
+      });
+      lobReasonName = dbReason?.name || null;
+    } catch {
+      lobReasonName = null;
+    }
+  }
+
+  const lobData = (reasonId || lobReasonName || lobDescription)
+    ? {
+        reasonId,
+        reason: lobReasonName || 'Not specified',
+        lobReason: lobReasonName || 'Not specified',
+        description: lobDescription || '',
+        lobDescription: lobDescription || '',
+      }
+    : null;
+
+  return {
+    ...approval,
+    requestData: {
+      ...reqData,
+      ...(lobData ? { lobReason: lobData.reason, lobDescription: lobData.description } : {}),
+    },
+    lob: lobData,
+    approvedAt: approval.approvedAt ? approval.approvedAt.toISOString() : null,
+    createdAt: approval.createdAt.toISOString(),
+    updatedAt: approval.updatedAt.toISOString(),
+    requestedBy: approval.requestedBy
+      ? { ...approval.requestedBy, displayName: resolveDisplayName(approval.requestedBy) }
+      : null,
+    assignedTo: approval.assignedTo
+      ? { ...approval.assignedTo, displayName: resolveDisplayName(approval.assignedTo) }
+      : null,
+    approvedBy: approval.approvedBy
+      ? { ...approval.approvedBy, displayName: resolveDisplayName(approval.approvedBy) }
+      : null,
+  };
+};
 
 const normalizeRequestData = (requestData: unknown): Record<string, any> => {
   if (!requestData || typeof requestData !== 'object' || Array.isArray(requestData)) {
@@ -304,7 +338,7 @@ export const createLeadApproval = async (
     const refreshedLead = await repository.findLeadScoped(workspaceId, input.leadId);
 
     return {
-      approval: buildApprovalResponse(approval),
+      approval: await buildApprovalResponse(approval),
       lead: refreshedLead,
     };
   } catch (err: any) {
@@ -401,7 +435,7 @@ export const listApprovals = async (workspaceId: string, actor: Actor, query: Li
   const { total, rows } = await repository.listApprovals(where, skip, query.limit);
 
   return {
-    approvals: rows.map(buildApprovalResponse),
+    approvals: await Promise.all(rows.map(buildApprovalResponse)),
     pagination: {
       page: query.page,
       limit: query.limit,
@@ -497,7 +531,7 @@ export const processLeadApproval = async (
 
   return {
     lead: refreshedLead,
-    approval: buildApprovalResponse(result),
+    approval: await buildApprovalResponse(result),
     message: 'Approval processed successfully',
   };
 };

@@ -197,6 +197,15 @@ export const saveCallOutcome = async (
 
         // Check if target stage requires approval
         if (targetStage.isApprovalRequired) {
+          let lobReasonName: string | null = null;
+          if (effectiveReasonId) {
+            const reasonRec = await tx.lOBReason.findFirst({
+              where: { id: effectiveReasonId, workspaceId },
+              select: { name: true },
+            });
+            lobReasonName = reasonRec?.name || null;
+          }
+
           // Create approval request
           const approval = await tx.leadStageApproval.create({
             data: {
@@ -212,8 +221,13 @@ export const saveCallOutcome = async (
                 substageId: selectedSubstage.id,
                 substageName: selectedSubstage.name,
                 callSessionId: callSession.id,
+                reasonId: effectiveReasonId || null,
                 lobReasonId: effectiveReasonId || null,
-                lobRemarks: effectiveRemarks || null,
+                lobReason: lobReasonName,
+                lobReasonName,
+                remarks: effectiveRemarks || input.outcomeNotes || null,
+                lobRemarks: effectiveRemarks || input.outcomeNotes || null,
+                lobDescription: effectiveRemarks || input.outcomeNotes || null,
                 lobExitReason: effectiveExitRemarks || null,
               },
             },

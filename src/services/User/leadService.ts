@@ -2557,6 +2557,15 @@ export const updateLead = async (
       const executionRules = await getActiveStageRulesForExecution(workspaceId, stage.id);
       const ruleNameById = new Map(executionRules.map((rule) => [rule.id, rule.name]));
       
+      let lobReasonName: string | null = null;
+      if (input.reasonId) {
+        const lobReasonRecord = await (prisma as any).lOBReason.findFirst({
+          where: { id: input.reasonId, workspaceId },
+          select: { name: true },
+        });
+        lobReasonName = lobReasonRecord?.name || null;
+      }
+
       approvalResult = await leadApprovalService.createLeadApproval(
         workspaceId,
         { id: actor.id, roleId: actor.roleId ?? null, role: actor.role },
@@ -2566,7 +2575,12 @@ export const updateLead = async (
           toStageId: stage.id,
           requestData: {
             reasonId: input.reasonId ?? null,
+            lobReasonId: input.reasonId ?? null,
+            lobReason: lobReasonName,
+            lobReasonName,
             remarks: input.lobRemarks ?? input.remarks ?? null,
+            lobRemarks: input.lobRemarks ?? input.remarks ?? null,
+            lobDescription: input.lobRemarks ?? input.remarks ?? null,
             nextFollowUpAt: input.nextFollowUpAt ? input.nextFollowUpAt.toISOString() : null,
             nextFollowUpType: input.nextFollowUpType ?? null,
             followUpDescription: input.followUpDescription ?? null,
