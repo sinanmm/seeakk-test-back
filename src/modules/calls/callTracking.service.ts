@@ -362,6 +362,79 @@ export const saveCallOutcome = async (
       },
     });
 
+    // Check & log specific property change events for complete audit history
+    if (selectedSubstage && lead.substageId !== selectedSubstage.id) {
+      await tx.leadActivity.create({
+        data: {
+          leadId,
+          performedById: userId,
+          workspaceId,
+          action: 'SUBSTAGE_UPDATED',
+          metadata: {
+            previousSubstageName: lead.substage?.name || 'None',
+            newSubstageName: selectedSubstage.name,
+            previousSubstageId: lead.substageId || null,
+            newSubstageId: selectedSubstage.id,
+          },
+        },
+      });
+    }
+
+    if (input.connectionStatus) {
+      const prevOutcome = await tx.leadCallOutcome.findFirst({
+        where: { leadId, workspaceId, NOT: { id: outcome.id } },
+        orderBy: { submittedAt: 'desc' },
+      });
+      if (!prevOutcome || prevOutcome.connectionStatus !== input.connectionStatus) {
+        await tx.leadActivity.create({
+          data: {
+            leadId,
+            performedById: userId,
+            workspaceId,
+            action: 'CONNECTION_STATUS_UPDATED',
+            metadata: {
+              previousStatus: prevOutcome?.connectionStatus || 'None',
+              newStatus: input.connectionStatus,
+            },
+          },
+        });
+      }
+      if (input.callPriority && (!prevOutcome || prevOutcome.callPriority !== input.callPriority)) {
+        await tx.leadActivity.create({
+          data: {
+            leadId,
+            performedById: userId,
+            workspaceId,
+            action: 'PRIORITY_UPDATED',
+            metadata: {
+              previousPriority: prevOutcome?.callPriority || 'None',
+              newPriority: input.callPriority,
+            },
+          },
+        });
+      }
+    }
+
+    if (createdFollowUpId && input.nextFollowUpDate) {
+      const prevDateIso = lead.nextFollowUpAt ? lead.nextFollowUpAt.toISOString() : null;
+      if (prevDateIso && prevDateIso.slice(0, 10) !== input.nextFollowUpDate) {
+        await tx.leadActivity.create({
+          data: {
+            leadId,
+            performedById: userId,
+            workspaceId,
+            action: 'FOLLOWUP_EXTENDED',
+            metadata: {
+              previousDate: prevDateIso,
+              newDate: input.nextFollowUpDate,
+              reason: input.outcomeNotes || input.followUpDescription || null,
+              followUpId: createdFollowUpId,
+            },
+          },
+        });
+      }
+    }
+
     // Fetch fresh authoritative lead state
     const updatedLead = await tx.lead.findUnique({
       where: { id: leadId },

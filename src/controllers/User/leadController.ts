@@ -814,6 +814,7 @@ export const getLeadHistory = async (req: Request, res: Response, next: NextFunc
       amountHistories,
       advancePayments,
       lobLogs,
+      dynamicFields,
     ] = await Promise.all([
       prisma.auditLog.findMany({ where: { entityType: 'Lead', entityId: id, workspaceId } }),
       prisma.leadActivity.findMany({ where: { leadId: id, workspaceId }, include: { performedBy: { select: { name: true, email: true } } } }),
@@ -821,7 +822,37 @@ export const getLeadHistory = async (req: Request, res: Response, next: NextFunc
       (prisma as any).leadTotalAmountHistory.findMany({ where: { leadId: id }, include: { changedBy: { select: { name: true, email: true } } } }),
       (prisma as any).advancePayment.findMany({ where: { leadId: id, workspaceId }, include: { requestedBy: { select: { name: true } }, approvedBy: { select: { name: true } }, rejectedBy: { select: { name: true } } } }),
       prisma.leadLOBLog.findMany({ where: { leadId: id, workspaceId } }),
+      prisma.leadDynamicField.findMany({ where: { workspaceId } }),
     ]);
+
+    // Build dynamic field CUID -> label map
+    const dynamicFieldLabelMap: Record<string, string> = {};
+    dynamicFields.forEach((field: any) => {
+      dynamicFieldLabelMap[field.id] = field.label || field.name || field.id;
+    });
+
+    const standardFieldLabelMap: Record<string, string> = {
+      name: 'Name',
+      email: 'Email',
+      phone: 'Phone',
+      companyName: 'Company Name',
+      address: 'Address',
+      remarks: 'Remarks',
+      expectedRevenue: 'Expected Revenue',
+      assignedToId: 'Assigned User',
+      stageId: 'Stage',
+      substageId: 'Substage',
+      sourceId: 'Source',
+      nextFollowUpAt: 'Follow-up Date',
+      totalAmount: 'Total Amount',
+      isClosed: 'Closure Status',
+    };
+
+    const resolveFieldLabel = (key: string): string => {
+      if (standardFieldLabelMap[key]) return standardFieldLabelMap[key];
+      if (dynamicFieldLabelMap[key]) return dynamicFieldLabelMap[key];
+      return key;
+    };
 
     // Collect user IDs that need mapping
     const userIdsToFetch = new Set<string>();
@@ -843,32 +874,114 @@ export const getLeadHistory = async (req: Request, res: Response, next: NextFunc
     auditLogs.forEach(log => {
       const isFieldUpdate = log.action === 'LEAD_UPDATED';
       const metadataDetails = log.details as any;
-      const changes = metadataDetails?.changes;
+      const rawChanges = metadataDetails?.changes || [];
+      const resolvedChanges = rawChanges.map((c: any) => ({
+        fieldKey: resolveFieldLabel(c.fieldKey),
+        oldValue: c.oldValue,
+        newValue: c.newValue,
+      }));
       
       timeline.push({
         id: log.id,
         eventType: isFieldUpdate ? 'FIELD_UPDATE' : 'AUDIT',
         title: isFieldUpdate ? 'Lead Fields Updated' : log.action,
-        description: isFieldUpdate && changes?.length 
-          ? `Updated ${changes.length} field(s)`
+        description: isFieldUpdate && resolvedChanges?.length 
+          ? `Updated ${resolvedChanges.length} field(s)`
           : `Lead audited: ${log.action}`,
         timestamp: log.createdAt,
         user: log.userId ? { name: usersMap[log.userId] || 'System' } : null,
         metadata: log.details,
-        changes: isFieldUpdate ? changes : undefined,
+        changes: isFieldUpdate ? resolvedChanges : undefined,
       });
     });
 
     leadActivities.forEach((log: any) => {
-      timeline.push({
-        id: log.id,
-        eventType: 'ACTIVITY',
-        title: log.action.replace(/_/g, ' '),
-        description: `Activity recorded: ${log.action}`,
-        timestamp: log.createdAt,
-        user: log.performedBy,
-        metadata: log.metadata,
-      });
+      if (log.action === 'SUBSTAGE_UPDATED') {
+        timeline.push({
+          id: log.id,
+          eventType: 'SUBSTAGE_CHANGE',
+          title: 'SUBSTAGE UPDATED',
+          description: 'Substage changed',
+          timestamp: log.createdAt,
+          user: log.performedBy,
+          metadata: log.metadata,
+          changes: [
+            {
+              fieldKey: 'Substage',
+              oldValue: log.metadata?.previousSubstageName || 'None',
+              newValue: log.metadata?.newSubstageName || 'None',
+            },
+          ],
+        });
+      } else if (log.action === 'CONNECTION_STATUS_UPDATED') {
+        timeline.push({
+          id: log.id,
+          eventType: 'CONNECTION_STATUS_CHANGE',
+          title: 'CONNECTION STATUS UPDATED',
+          description: 'Connection status changed',
+          timestamp: log.createdAt,
+          user: log.performedBy,
+          metadata: log.metadata,
+          changes: [
+            {
+              fieldKey: 'Connection Status',
+              oldValue: log.metadata?.previousStatus || 'None',
+              newValue: log.metadata?.newStatus || 'None',
+            },
+          ],
+        });
+      } else if (log.action === 'PRIORITY_UPDATED') {
+        timeline.push({
+          id: log.id,
+          eventType: 'PRIORITY_CHANGE',
+          title: 'PRIORITY UPDATED',
+          description: 'Priority changed',
+          timestamp: log.createdAt,
+          user: log.performedBy,
+          metadata: log.metadata,
+          changes: [
+            {
+              fieldKey: 'Priority',
+              oldValue: log.metadata?.previousPriority || 'None',
+              newValue: log.metadata?.newPriority || 'None',
+            },
+          ],
+        });
+      } else if (log.action === 'FOLLOWUP_EXTENDED') {
+        const prevDateStr = log.metadata?.previousDate
+          ? new Date(log.metadata.previousDate).toLocaleDateString()
+          : 'None';
+        const newDateStr = log.metadata?.newDate
+          ? new Date(log.metadata.newDate).toLocaleDateString()
+          : 'None';
+        timeline.push({
+          id: log.id,
+          eventType: 'FOLLOWUP_EXTENDED',
+          title: 'FOLLOW-UP EXTENDED',
+          description: 'Follow-up date extended',
+          timestamp: log.createdAt,
+          user: log.performedBy,
+          reason: log.metadata?.reason || undefined,
+          metadata: log.metadata,
+          changes: [
+            {
+              fieldKey: 'Follow-up Date',
+              oldValue: prevDateStr,
+              newValue: newDateStr,
+            },
+          ],
+        });
+      } else {
+        timeline.push({
+          id: log.id,
+          eventType: 'ACTIVITY',
+          title: log.action.replace(/_/g, ' '),
+          description: `Activity recorded: ${log.action}`,
+          timestamp: log.createdAt,
+          user: log.performedBy,
+          metadata: log.metadata,
+        });
+      }
     });
 
     stageHistories.forEach((log: any) => {
