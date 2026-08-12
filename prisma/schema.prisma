@@ -162,6 +162,8 @@ model Workspace {
   metaPageConnections            MetaPageConnection[]
   metaLeadForms                  MetaLeadForm[]
   metaLeadImports                MetaLeadImport[]
+  telephonySetting               TelephonySetting?
+  telephonyProviderConfigs       TelephonyProviderConfig[]
   createdAt                      DateTime                       @default(now())
   updatedAt                      DateTime                       @updatedAt
   LeadRemark                     LeadRemark[]
@@ -2570,8 +2572,20 @@ model LeadCallSession {
   initiatedAt         DateTime  @default(now())
   returnedAt          DateTime?
   localCallDate       String    // YYYY-MM-DD
-  status              String    @default("INITIATED") // INITIATED, COMPLETED, CANCELLED
-  provider            String    @default("DEVICE_DIALER") // DEVICE_DIALER, EXOTEL, etc.
+  status              String    @default("INITIATED") // INITIATED, COMPLETED, CANCELLED, FAILED, ANSWERED
+  provider            String    @default("DEVICE_DIALER") // DEVICE_DIALER, KNOWLARITY, PLIVO, EXOTEL
+  providerCallId      String?
+  direction           String?   @default("OUTBOUND") // OUTBOUND, INBOUND
+  fromNumber          String?
+  toNumber            String?
+  duration            Int?      // Duration in seconds
+  answeredAt          DateTime?
+  endedAt             DateTime?
+  recordingAvailable  Boolean   @default(false)
+  recordingUrl        String?   @db.Text
+  recordingDuration   Int?
+  recordingStatus     String?   // PENDING, READY, FAILED, UNAVAILABLE
+  recordingDownloadedAt DateTime?
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
 
@@ -2584,6 +2598,7 @@ model LeadCallSession {
   @@index([workspaceId])
   @@index([leadId])
   @@index([initiatedById])
+  @@index([providerCallId])
   @@index([workspaceId, initiatedById, leadId, localCallDate])
   @@index([workspaceId, status, createdAt(sort: Desc)])
   @@map("lead_call_sessions")
@@ -2857,6 +2872,50 @@ model MetaLeadImport {
   @@index([metaFormId])
   @@map("meta_lead_imports")
 }
+
+model TelephonySetting {
+  id               String   @id @default(cuid())
+  workspaceId      String   @unique
+  activeProvider   String   @default("DEVICE_DIALER") // DEVICE_DIALER, KNOWLARITY, PLIVO, EXOTEL
+  recordingEnabled Boolean  @default(false)
+  recordOutbound   Boolean  @default(true)
+  recordInbound    Boolean  @default(true)
+  recordingStorage String   @default("PROVIDER_STORAGE") // PROVIDER_STORAGE, SEEAKK_STORAGE
+  retentionMonths  Int      @default(12)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  workspace        Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@map("telephony_settings")
+}
+
+model TelephonyProviderConfig {
+  id                    String    @id @default(cuid())
+  workspaceId           String
+  providerKey           String    // DEVICE_DIALER, KNOWLARITY, PLIVO, EXOTEL
+  providerName          String
+  enabled               Boolean   @default(true)
+  apiKeyEncrypted       String?   @db.Text
+  apiSecretEncrypted    String?   @db.Text
+  accountIdEncrypted    String?   @db.Text
+  authTokenEncrypted    String?   @db.Text
+  virtualNumber         String?
+  callerId              String?
+  webhookSecretEncrypted String?  @db.Text
+  customSettingsJson    String?   @db.Text
+  lastHealthCheckAt     DateTime?
+  lastError             String?   @db.Text
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  workspace             Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, providerKey])
+  @@index([workspaceId])
+  @@map("telephony_provider_configs")
+}
+
 
 
 

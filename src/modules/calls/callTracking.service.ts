@@ -45,6 +45,28 @@ export const initiateCallSession = async (
   const cleanPhone = rawPhone.replace(/[^\d+]/g, '');
   const localCallDate = getLocalDateStr(new Date());
 
+  let activeProvider = 'DEVICE_DIALER';
+  let providerCallId: string | undefined;
+  let resultTelUrl = `tel:${cleanPhone}`;
+
+  try {
+    const { initiateProviderCall } = await import('../telephony/telephony.service');
+    const { activeProvider: pKey, callResult } = await initiateProviderCall(
+      workspaceId,
+      leadId,
+      userId,
+      cleanPhone,
+      input.sourceContext,
+    );
+    activeProvider = pKey;
+    providerCallId = callResult.providerCallId;
+    if (callResult.telUrl) {
+      resultTelUrl = callResult.telUrl;
+    }
+  } catch (err) {
+    // Fallback to built-in device dialer if telephony integration initialization encounters non-fatal notice
+  }
+
   const callSession = await (prisma as any).leadCallSession.create({
     data: {
       workspaceId,
@@ -56,7 +78,9 @@ export const initiateCallSession = async (
       followUpId: input.followUpId || null,
       localCallDate,
       status: 'INITIATED',
-      provider: 'DEVICE_DIALER',
+      provider: activeProvider,
+      providerCallId: providerCallId || null,
+      toNumber: cleanPhone,
     },
   });
 
@@ -71,6 +95,7 @@ export const initiateCallSession = async (
         phone: rawPhone,
         sourceContext: input.sourceContext,
         followUpId: input.followUpId,
+        provider: activeProvider,
       },
     },
   });
@@ -81,7 +106,8 @@ export const initiateCallSession = async (
     leadName: lead.name,
     phone: rawPhone,
     cleanPhone,
-    telUrl: `tel:${cleanPhone}`,
+    telUrl: resultTelUrl,
+    activeProvider,
     initiatedAt: callSession.initiatedAt,
   };
 };
