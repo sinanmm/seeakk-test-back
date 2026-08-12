@@ -23,6 +23,7 @@ import rolesRoutes from './modules/admin/roles/roles.routes';
 import departmentsRoutes from './modules/admin/departments/departments.routes';
 import organisationChartRoutes from './modules/admin/organisation-chart/organisationChart.routes';
 import rosterRoutes from './modules/admin/roster/roster.routes';
+import metaIntegrationRoutes from './modules/integrations/meta/metaIntegration.routes';
 import targetCycleRoutes from './modules/admin/targetCycle/targetCycle.routes';
 import targetRoutes from './modules/targets/target.routes';
 import {
@@ -248,6 +249,7 @@ app.use('/api', (_req, res, next) => {
 app.use('/api/', globalLimiter);
 app.use('/api/auth', authRoutes);
 app.use('/api/workspace', workspaceRoutes);
+app.use('/api/integrations/meta', metaIntegrationRoutes);
 app.use('/api/admin/users', adminUserRoutes);
 app.use('/api/admin/offices', officeRoutes);
 app.use('/api/admin/lead-life-cycles', leadLifeCycleRoutes);

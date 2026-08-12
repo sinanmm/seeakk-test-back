@@ -158,6 +158,10 @@ model Workspace {
   dashboardPipelines             DashboardPipeline[]
   dashboardPipelineShares        DashboardPipelineShare[]
   dashboardPipelineAudits        DashboardPipelineAudit[]
+  metaConnections                MetaConnection[]
+  metaPageConnections            MetaPageConnection[]
+  metaLeadForms                  MetaLeadForm[]
+  metaLeadImports                MetaLeadImport[]
   createdAt                      DateTime                       @default(now())
   updatedAt                      DateTime                       @updatedAt
   LeadRemark                     LeadRemark[]
@@ -298,6 +302,7 @@ model LeadSource {
   deletedAt   DateTime?
   workspace   Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   leads       Lead[]
+  metaLeadForms MetaLeadForm[]
 
   // Duplicate stage names are allowed by product requirement.
   @@index([workspaceId])
@@ -334,6 +339,7 @@ model LeadStage {
   substages           LeadSubstage[]
   callOutcomesFrom    LeadCallOutcome[]    @relation("CallOutcomePrevStage")
   callOutcomesTo      LeadCallOutcome[]    @relation("CallOutcomeTargetStage")
+  metaLeadForms       MetaLeadForm[]
 
   @@unique([workspaceId, name])
   @@unique([workspaceId, stageShortForm])
@@ -897,6 +903,7 @@ model Lead {
   callOutcomes       LeadCallOutcome[]
   remarksList        LeadRemark[]
   dynamicValues      LeadDynamicValue[]
+  metaLeadImports    MetaLeadImport[]
 
   @@index([workspaceId, assignedToId, stageId])
   @@index([workspaceId, sourceId, createdAt])
@@ -1316,6 +1323,8 @@ model User {
 
   // Password reset tokens (self-service forgot password)
   passwordResetTokens PasswordResetToken[]
+  metaConnections     MetaConnection[]
+  metaLeadForms       MetaLeadForm[]
 
   // Audit logs relation
   auditLogs                   AuditLog[]
@@ -2733,6 +2742,122 @@ model DashboardPipelineAudit {
   @@index([performedById])
   @@map("dashboard_pipeline_audits")
 }
+
+model MetaConnection {
+  id                   String               @id @default(cuid())
+  workspaceId          String
+  metaUserId           String?
+  metaUserName         String?
+  metaBusinessId       String?
+  status               String               @default("CONNECTED") // CONNECTED, DISCONNECTED, REAUTH_REQUIRED, ERROR
+  accessTokenEncrypted String               @db.Text
+  tokenExpiresAt       DateTime?
+  connectedByUserId    String
+  lastHealthCheckAt    DateTime?
+  lastError            String?              @db.Text
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+
+  workspace            Workspace            @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  connectedByUser      User                 @relation(fields: [connectedByUserId], references: [id], onDelete: Cascade)
+  pages                MetaPageConnection[]
+
+  @@index([workspaceId])
+  @@index([status])
+  @@map("meta_connections")
+}
+
+model MetaPageConnection {
+  id                       String          @id @default(cuid())
+  workspaceId              String
+  metaConnectionId         String
+  metaPageId               String
+  pageName                 String
+  pageAccessTokenEncrypted String          @db.Text
+  status                   String          @default("ACTIVE")
+  subscribedToLeadgen      Boolean         @default(false)
+  createdAt                DateTime        @default(now())
+  updatedAt                DateTime        @updatedAt
+
+  workspace                Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  metaConnection           MetaConnection  @relation(fields: [metaConnectionId], references: [id], onDelete: Cascade)
+  forms                    MetaLeadForm[]
+
+  @@index([workspaceId, metaPageId])
+  @@map("meta_page_connections")
+}
+
+model MetaLeadForm {
+  id                   String               @id @default(cuid())
+  workspaceId          String
+  metaPageConnectionId String
+  metaFormId           String
+  formName             String
+  enabled              Boolean              @default(false)
+  leadSourceId         String?
+  defaultLeadStageId   String?
+  assignmentType       String               @default("UNASSIGNED") // UNASSIGNED, SPECIFIC_USER, ROUND_ROBIN
+  assignmentUserId     String?
+  roundRobinUserIds    String?              @db.Text // JSON string of user IDs array
+  duplicatePolicy      String               @default("SEEAKK_RULES")
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+
+  workspace            Workspace            @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  metaPageConnection   MetaPageConnection   @relation(fields: [metaPageConnectionId], references: [id], onDelete: Cascade)
+  leadSource           LeadSource?          @relation(fields: [leadSourceId], references: [id], onDelete: SetNull)
+  defaultLeadStage     LeadStage?           @relation(fields: [defaultLeadStageId], references: [id], onDelete: SetNull)
+  assignmentUser       User?                @relation(fields: [assignmentUserId], references: [id], onDelete: SetNull)
+  fieldMappings        MetaFieldMapping[]
+
+  @@index([workspaceId, metaFormId])
+  @@map("meta_lead_forms")
+}
+
+model MetaFieldMapping {
+  id                  String       @id @default(cuid())
+  metaLeadFormId      String
+  metaFieldName       String
+  metaFieldLabel      String?
+  seeakkFieldKey      String       // e.g. "name", "phone", "email", "totalAmount", "address", "remarks", or "dynamic:<id>"
+  seeakkCustomFieldId String?
+  transformType       String?      @default("NONE")
+  required            Boolean      @default(false)
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+
+  metaLeadForm        MetaLeadForm @relation(fields: [metaLeadFormId], references: [id], onDelete: Cascade)
+
+  @@index([metaLeadFormId])
+  @@map("meta_field_mappings")
+}
+
+model MetaLeadImport {
+  id             String    @id @default(cuid())
+  workspaceId    String
+  metaLeadId     String
+  metaPageId     String
+  metaFormId     String
+  leadId         String?
+  status         String    @default("RECEIVED") // RECEIVED, PROCESSING, IMPORTED, DUPLICATE, FAILED_RETRYABLE, FAILED_PERMANENT
+  receivedAt     DateTime  @default(now())
+  processedAt    DateTime?
+  attemptCount   Int       @default(0)
+  errorCode      String?
+  errorMessage   String?   @db.Text
+  rawPayloadJson String?   @db.Text
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  workspace      Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  lead           Lead?     @relation(fields: [leadId], references: [id], onDelete: SetNull)
+
+  @@unique([workspaceId, metaLeadId])
+  @@index([workspaceId, status])
+  @@index([metaFormId])
+  @@map("meta_lead_imports")
+}
+
 
 
 
