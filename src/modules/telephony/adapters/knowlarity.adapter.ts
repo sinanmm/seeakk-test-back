@@ -174,4 +174,30 @@ export class KnowlarityAdapter extends BaseTelephonyProviderAdapter {
       message: 'Knowlarity API credentials verified successfully.',
     };
   }
+
+  async getAgents(
+    config: TelephonyProviderConfigData,
+  ): Promise<Array<{ id: string; name: string; extension?: string; phone?: string }>> {
+    if (!config.apiKey || KNOWLARITY_CONFIG.apiBaseUrl === 'TODO_KNOWLARITY_OFFICIAL_VALUE') {
+      return [];
+    }
+
+    try {
+      // TODO: Replace with official Knowlarity agent listing endpoint after receiving API documentation.
+      const url = `${KNOWLARITY_CONFIG.apiBaseUrl.replace(/\/+$/, '')}/agent`;
+      const response = await fetch(url, {
+        headers: { 'x-api-key': config.apiKey },
+      });
+      const data = (await response.json()) as any;
+      const agents = Array.isArray(data.agents) ? data.agents : Array.isArray(data.data) ? data.data : [];
+      return agents.map((a: any) => ({
+        id: String(a.id || a.agent_id || a.number || ''),
+        name: String(a.name || a.agent_name || `Agent ${a.id}`),
+        extension: a.extension ? String(a.extension) : undefined,
+        phone: a.phone ? String(a.phone) : undefined,
+      }));
+    } catch (err) {
+      return [];
+    }
+  }
 }

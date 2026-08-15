@@ -14,6 +14,7 @@ router.put('/settings', protect, telephonyController.updateSettings);
 router.get('/providers', protect, telephonyController.getProviders);
 router.put('/providers/:providerKey', protect, telephonyController.saveProviderConfig);
 router.post('/providers/:providerKey/test', protect, telephonyController.testConnection);
+router.get('/providers/:providerKey/agents', protect, telephonyController.getProviderAgents);
 router.get('/user-mappings', protect, telephonyController.getUserMappings);
 router.put('/user-mappings', protect, telephonyController.saveUserMapping);
 

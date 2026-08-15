@@ -86,6 +86,17 @@ export const saveUserMapping = async (req: Request, res: Response, next: NextFun
   }
 };
 
+export const getProviderAgents = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  try {
+    const workspaceId = getWorkspaceId(req);
+    const providerKey = String(req.params.providerKey || req.query.providerKey || 'KNOWLARITY');
+    const data = await telephonyService.getProviderAgents(workspaceId, providerKey);
+    return res.json({ success: true, data });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const handleWebhook = async (req: Request, res: Response): Promise<any> => {
   try {
     const providerKey = String(req.params.providerKey || '');

@@ -37,4 +37,10 @@ export abstract class BaseTelephonyProviderAdapter {
   abstract testConnection(
     config: TelephonyProviderConfigData,
   ): Promise<{ success: boolean; message: string }>;
+
+  async getAgents(
+    config: TelephonyProviderConfigData,
+  ): Promise<Array<{ id: string; name: string; extension?: string; phone?: string }>> {
+    return [];
+  }
 }

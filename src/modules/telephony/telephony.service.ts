@@ -223,7 +223,7 @@ export const getTelephonyUserMappings = async (
   providerKey: string,
 ): Promise<any[]> => {
   const users = await (prisma as any).user.findMany({
-    where: { workspaceId, status: 'ACTIVE' },
+    where: { workspaceId, isActive: true },
     select: { id: true, name: true, email: true, phone: true },
     orderBy: { name: 'asc' },
   });
@@ -247,6 +247,15 @@ export const getTelephonyUserMappings = async (
       enabled: existing ? existing.enabled : true,
     };
   });
+};
+
+export const getProviderAgents = async (
+  workspaceId: string,
+  providerKey: string,
+): Promise<any[]> => {
+  const config = await getDecryptedProviderConfig(workspaceId, providerKey);
+  const adapter = getTelephonyAdapter(providerKey);
+  return adapter.getAgents(config);
 };
 
 export const saveTelephonyUserMapping = async (
