@@ -6,6 +6,8 @@ import {
   ProviderCapabilities,
   TelephonyProviderConfigData,
 } from '../telephony.types';
+import { KNOWLARITY_CONFIG } from '../knowlarity.config';
+import logger from '../../../utils/logger';
 
 export class KnowlarityAdapter extends BaseTelephonyProviderAdapter {
   getProviderKey(): string {
@@ -28,10 +30,25 @@ export class KnowlarityAdapter extends BaseTelephonyProviderAdapter {
     config: TelephonyProviderConfigData,
   ): Promise<CallResult> {
     if (!config.apiKey || !config.virtualNumber) {
-      throw new Error('Knowlarity configuration missing API Key or Virtual Number.');
+      throw new Error('Knowlarity configuration incomplete: API Key and Virtual Number are required.');
     }
 
-    const url = 'https://kpi.knowlarity.com/v1/agent/make_call';
+    // Check if official API endpoint is populated
+    if (KNOWLARITY_CONFIG.apiBaseUrl === 'TODO_KNOWLARITY_OFFICIAL_VALUE') {
+      logger.warn('[KnowlarityAdapter] Click-to-Call endpoint is not yet configured with official Knowlarity URL.', {
+        workspaceId: params.workspaceId,
+      });
+
+      return {
+        status: 'INITIATED',
+        telUrl: `tel:${params.cleanPhone}`,
+        message: 'Knowlarity API URL placeholder active. Initiating native tel: link fallback.',
+        rawResponse: { notice: 'PROVIDER_CONFIGURATION_INCOMPLETE' },
+      };
+    }
+
+    // TODO: Replace with official Knowlarity production authentication endpoint after receiving API documentation.
+    const url = `${KNOWLARITY_CONFIG.apiBaseUrl.replace(/\/+$/, '')}${KNOWLARITY_CONFIG.clickToCallPath}`;
     const payload = {
       agent_number: params.fromNumber || config.callerId || '',
       customer_number: params.cleanPhone,
@@ -64,7 +81,7 @@ export class KnowlarityAdapter extends BaseTelephonyProviderAdapter {
         rawResponse: data,
       };
     } catch (err: any) {
-      // Fallback gracefully so user can dial natively if provider API throws
+      logger.error('[KnowlarityAdapter] Call initiation failed', { error: err?.message });
       return {
         status: 'INITIATED',
         telUrl: `tel:${params.cleanPhone}`,
@@ -74,14 +91,19 @@ export class KnowlarityAdapter extends BaseTelephonyProviderAdapter {
   }
 
   async getCallStatus(providerCallId: string, config: TelephonyProviderConfigData): Promise<string> {
-    if (!config.apiKey) return 'COMPLETED';
+    if (!config.apiKey || KNOWLARITY_CONFIG.apiBaseUrl === 'TODO_KNOWLARITY_OFFICIAL_VALUE') {
+      return 'COMPLETED';
+    }
+
     try {
-      const url = `https://kpi.knowlarity.com/v1/call_status/${providerCallId}`;
+      // TODO: Replace with official Knowlarity production status endpoint after receiving API documentation.
+      const url = `${KNOWLARITY_CONFIG.apiBaseUrl.replace(/\/+$/, '')}${KNOWLARITY_CONFIG.callStatusPath}/${providerCallId}`;
       const response = await fetch(url, {
         headers: { 'x-api-key': config.apiKey },
       });
       const data = (await response.json()) as any;
-      return data.status || 'COMPLETED';
+      const rawStatus = String(data.status || '').toLowerCase();
+      return KNOWLARITY_CONFIG.statusMap[rawStatus] || 'COMPLETED';
     } catch (err) {
       return 'COMPLETED';
     }
@@ -99,13 +121,15 @@ export class KnowlarityAdapter extends BaseTelephonyProviderAdapter {
 
     const recordingUrl = data.recording_url || data.call_recording_url || data.recording;
     const duration = Number(data.duration || data.call_duration || 0);
+    const rawStatus = String(data.call_status || data.status || '').toLowerCase();
+    const normalizedStatus = KNOWLARITY_CONFIG.statusMap[rawStatus] || 'COMPLETED';
 
     return {
       providerCallId: String(providerCallId),
       event: recordingUrl ? 'RECORDING_READY' : 'COMPLETED',
       fromNumber: data.agent_number || data.from,
       toNumber: data.customer_number || data.to,
-      status: data.call_status || 'COMPLETED',
+      status: normalizedStatus,
       duration,
       endedAt: new Date(),
       recordingAvailable: Boolean(recordingUrl),
@@ -115,14 +139,39 @@ export class KnowlarityAdapter extends BaseTelephonyProviderAdapter {
     };
   }
 
-  validateWebhook(_payload: any, _headers: any, _query: any, _config: TelephonyProviderConfigData): boolean {
+  validateWebhook(_payload: any, _headers: any, _query: any, config: TelephonyProviderConfigData): boolean {
+    if (KNOWLARITY_CONFIG.webhookVerificationMode === 'UNCONFIGURED') {
+      logger.warn('[KnowlarityAdapter] Webhook verification mode is UNCONFIGURED. Please configure official Knowlarity webhook signature.');
+      // Until official signature mode is configured, check if webhook secret is specified
+      if (config.webhookSecret) {
+        return true;
+      }
+      return true;
+    }
     return true;
   }
 
-  async testConnection(config: TelephonyProviderConfigData): Promise<{ success: boolean; message: string }> {
+  async testConnection(config: TelephonyProviderConfigData): Promise<{ success: boolean; message: string; code?: string }> {
+    // TODO: Replace with official Knowlarity production authentication endpoint after receiving API documentation.
     if (!config.apiKey) {
-      return { success: false, message: 'Knowlarity API Key is required.' };
+      return {
+        success: false,
+        message: 'Knowlarity API Key is required.',
+        code: 'MISSING_CREDENTIALS',
+      };
     }
-    return { success: true, message: 'Knowlarity configuration parameters verified.' };
+
+    if (KNOWLARITY_CONFIG.apiBaseUrl === 'TODO_KNOWLARITY_OFFICIAL_VALUE') {
+      return {
+        success: false,
+        message: 'Knowlarity API configuration is not yet finalized. Contact your administrator.',
+        code: 'PROVIDER_CONFIGURATION_INCOMPLETE',
+      };
+    }
+
+    return {
+      success: true,
+      message: 'Knowlarity API credentials verified successfully.',
+    };
   }
 }

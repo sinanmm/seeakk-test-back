@@ -547,3 +547,66 @@ export const disconnectMeta = async (workspaceId: string): Promise<any> => {
 
   return { success: true, message: 'Meta account disconnected safely.' };
 };
+
+export const parseAndVerifyMetaSignedRequest = (signedRequest: string): { userId: string; algorithm: string; issuedAt: number } => {
+  const parts = signedRequest.split('.');
+  if (parts.length !== 2) {
+    throw new Error('Invalid signed_request format.');
+  }
+
+  const [encodedSig, payloadStr] = parts;
+  const sig = Buffer.from(encodedSig, 'base64url');
+  const payloadJson = Buffer.from(payloadStr, 'base64url').toString('utf8');
+  const data = JSON.parse(payloadJson);
+
+  if (!data || data.algorithm !== 'HMAC-SHA256') {
+    throw new Error('Unsupported signature algorithm in signed_request.');
+  }
+
+  const expectedSig = crypto
+    .createHmac('sha256', META_APP_SECRET || 'seeakk-meta-secret')
+    .update(payloadStr)
+    .digest();
+
+  if (sig.length !== expectedSig.length || !crypto.timingSafeEqual(sig, expectedSig)) {
+    throw new Error('Invalid signature verification failed for Meta signed_request.');
+  }
+
+  return {
+    userId: String(data.user_id || data.user_id || ''),
+    algorithm: data.algorithm,
+    issuedAt: Number(data.issued_at || 0),
+  };
+};
+
+export const processMetaSignedDataDeletion = async (signedRequest: string): Promise<{ url: string; confirmation_code: string }> => {
+  const verified = parseAndVerifyMetaSignedRequest(signedRequest);
+  const metaUserId = verified.userId;
+
+  const confirmationCode = crypto.createHash('sha256').update(`${metaUserId}:${Date.now()}`).digest('hex').substring(0, 16);
+
+  if (metaUserId) {
+    const connections = await (prisma as any).metaConnection.findMany({
+      where: { metaUserId },
+      select: { id: true, workspaceId: true },
+    });
+
+    for (const conn of connections) {
+      await (prisma as any).metaConnection.deleteMany({
+        where: { id: conn.id },
+      });
+      logger.info('[MetaIntegration] Successfully processed Meta Data Deletion callback for workspace', {
+        workspaceId: conn.workspaceId,
+        metaUserId,
+      });
+    }
+  }
+
+  const baseUrl = process.env.FRONTEND_URL || process.env.BACKEND_URL || 'https://www.seeakk.com';
+  const trackingUrl = `${baseUrl.replace(/\/+$/, '')}/data-deletion?code=${confirmationCode}`;
+
+  return {
+    url: trackingUrl,
+    confirmation_code: confirmationCode,
+  };
+};

@@ -14,6 +14,8 @@ router.put('/settings', protect, telephonyController.updateSettings);
 router.get('/providers', protect, telephonyController.getProviders);
 router.put('/providers/:providerKey', protect, telephonyController.saveProviderConfig);
 router.post('/providers/:providerKey/test', protect, telephonyController.testConnection);
+router.get('/user-mappings', protect, telephonyController.getUserMappings);
+router.put('/user-mappings', protect, telephonyController.saveUserMapping);
 
 // Protected Audio Playback & Streaming Endpoint
 router.get('/recordings/:sessionId/play', protect, telephonyController.getRecordingPlayback);

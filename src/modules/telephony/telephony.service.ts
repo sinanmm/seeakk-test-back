@@ -180,18 +180,30 @@ export const initiateProviderCall = async (
   leadId: string,
   userId: string,
   cleanPhone: string,
-  sourceContext?: string,
-) => {
+  sourceContext = 'LEAD_DETAILS',
+): Promise<{ activeProvider: string; callResult: any }> => {
   const settings = await getTelephonySettings(workspaceId);
-  const activeProviderKey = settings.activeProvider || 'DEVICE_DIALER';
-  const adapter = getTelephonyAdapter(activeProviderKey);
+  const activeProviderKey = settings.activeProvider;
+
   const config = await getDecryptedProviderConfig(workspaceId, activeProviderKey);
+  const adapter = getTelephonyAdapter(activeProviderKey);
+
+  // Resolve specific user mapping for agent number / extension if configured
+  const userMapping = await (prisma as any).telephonyUserMapping.findFirst({
+    where: { workspaceId, userId, providerKey: activeProviderKey, enabled: true },
+  });
+
+  let fromNumber = config.callerId || config.virtualNumber || undefined;
+  if (userMapping?.providerPhoneNumber || userMapping?.providerAgentId) {
+    fromNumber = userMapping.providerPhoneNumber || userMapping.providerAgentId || fromNumber;
+  }
 
   const callResult = await adapter.initiateCall(
     {
       workspaceId,
       leadId,
       userId,
+      fromNumber,
       toNumber: cleanPhone,
       cleanPhone,
       sourceContext,
@@ -204,6 +216,70 @@ export const initiateProviderCall = async (
     activeProvider: activeProviderKey,
     callResult,
   };
+};
+
+export const getTelephonyUserMappings = async (
+  workspaceId: string,
+  providerKey: string,
+): Promise<any[]> => {
+  const users = await (prisma as any).user.findMany({
+    where: { workspaceId, status: 'ACTIVE' },
+    select: { id: true, name: true, email: true, phone: true },
+    orderBy: { name: 'asc' },
+  });
+
+  const mappings = await (prisma as any).telephonyUserMapping.findMany({
+    where: { workspaceId, providerKey },
+  });
+
+  const mappingMap = new Map(mappings.map((m: any) => [m.userId, m]));
+
+  return users.map((u: any) => {
+    const existing: any = mappingMap.get(u.id);
+    return {
+      userId: u.id,
+      userName: u.name,
+      userEmail: u.email,
+      userPhone: u.phone || '',
+      providerKey,
+      providerAgentId: existing?.providerAgentId || '',
+      providerPhoneNumber: existing?.providerPhoneNumber || u.phone || '',
+      enabled: existing ? existing.enabled : true,
+    };
+  });
+};
+
+export const saveTelephonyUserMapping = async (
+  workspaceId: string,
+  providerKey: string,
+  userId: string,
+  data: { providerAgentId?: string; providerPhoneNumber?: string; enabled?: boolean },
+): Promise<any> => {
+  const existing = await (prisma as any).telephonyUserMapping.findFirst({
+    where: { workspaceId, userId, providerKey },
+  });
+
+  if (existing) {
+    return (prisma as any).telephonyUserMapping.update({
+      where: { id: existing.id },
+      data: {
+        providerAgentId: data.providerAgentId !== undefined ? data.providerAgentId : existing.providerAgentId,
+        providerPhoneNumber: data.providerPhoneNumber !== undefined ? data.providerPhoneNumber : existing.providerPhoneNumber,
+        enabled: data.enabled !== undefined ? data.enabled : existing.enabled,
+      },
+    });
+  } else {
+    return (prisma as any).telephonyUserMapping.create({
+      data: {
+        workspaceId,
+        userId,
+        providerKey,
+        providerAgentId: data.providerAgentId || null,
+        providerPhoneNumber: data.providerPhoneNumber || null,
+        enabled: data.enabled !== undefined ? data.enabled : true,
+      },
+    });
+  }
 };
 
 export const processWebhook = async (

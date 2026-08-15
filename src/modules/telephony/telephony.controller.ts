@@ -63,6 +63,29 @@ export const testConnection = async (req: Request, res: Response, next: NextFunc
   }
 };
 
+export const getUserMappings = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  try {
+    const workspaceId = getWorkspaceId(req);
+    const providerKey = String(req.query.providerKey || 'KNOWLARITY');
+    const data = await telephonyService.getTelephonyUserMappings(workspaceId, providerKey);
+    return res.json({ success: true, data });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const saveUserMapping = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  try {
+    const workspaceId = getWorkspaceId(req);
+    const providerKey = String(req.body.providerKey || 'KNOWLARITY');
+    const userId = String(req.body.userId || '');
+    const data = await telephonyService.saveTelephonyUserMapping(workspaceId, providerKey, userId, req.body);
+    return res.json({ success: true, data });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const handleWebhook = async (req: Request, res: Response): Promise<any> => {
   try {
     const providerKey = String(req.params.providerKey || '');

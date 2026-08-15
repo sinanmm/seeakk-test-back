@@ -164,6 +164,7 @@ model Workspace {
   metaLeadImports                MetaLeadImport[]
   telephonySetting               TelephonySetting?
   telephonyProviderConfigs       TelephonyProviderConfig[]
+  telephonyUserMappings          TelephonyUserMapping[]
   createdAt                      DateTime                       @default(now())
   updatedAt                      DateTime                       @updatedAt
   LeadRemark                     LeadRemark[]
@@ -1378,6 +1379,7 @@ model User {
   createdPipelineSections     DashboardPipelineSection[] @relation("SectionCreatedBy")
   ownedPipelines              DashboardPipeline[]        @relation("PipelineOwnerUser")
   createdPipelines            DashboardPipeline[]        @relation("PipelineCreatedBy")
+  telephonyUserMappings       TelephonyUserMapping[]
   dashboardPipelineShares     DashboardPipelineShare[]
   dashboardPipelineAudits     DashboardPipelineAudit[]
 
@@ -2914,6 +2916,25 @@ model TelephonyProviderConfig {
   @@unique([workspaceId, providerKey])
   @@index([workspaceId])
   @@map("telephony_provider_configs")
+}
+
+model TelephonyUserMapping {
+  id                  String   @id @default(cuid())
+  workspaceId         String
+  userId              String
+  providerKey         String   // KNOWLARITY, PLIVO, EXOTEL
+  providerAgentId     String?  // Knowlarity Agent ID or Extension
+  providerPhoneNumber String?  // Agent Phone Number
+  enabled             Boolean  @default(true)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  workspace           Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, userId, providerKey])
+  @@index([workspaceId])
+  @@map("telephony_user_mappings")
 }
 
 

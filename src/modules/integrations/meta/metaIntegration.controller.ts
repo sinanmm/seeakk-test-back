@@ -138,3 +138,17 @@ export const disconnectMeta = async (req: Request, res: Response, next: NextFunc
     next(error);
   }
 };
+
+export const handleDataDeletionCallback = async (req: Request, res: Response): Promise<any> => {
+  try {
+    const signedRequest = req.body?.signed_request || req.body?.signedRequest;
+    if (!signedRequest || typeof signedRequest !== 'string') {
+      return res.status(400).json({ success: false, error: { message: 'Missing signed_request parameter.' } });
+    }
+
+    const result = await metaService.processMetaSignedDataDeletion(signedRequest);
+    return res.status(200).json(result);
+  } catch (error: any) {
+    return res.status(400).json({ success: false, error: { message: error?.message || 'Invalid signed request verification failed.' } });
+  }
+};
