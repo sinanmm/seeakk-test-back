@@ -8,8 +8,10 @@ const normalizeOrigin = (origin: string): string =>
 const BUILTIN_ALLOWED_ORIGINS = [
   ...PRODUCTION_FRONTEND_ORIGINS,
   'http://localhost:5173',
+  'http://localhost:5174',
   'http://localhost:3000',
   'http://127.0.0.1:5173',
+  'http://127.0.0.1:5174',
 ];
 
 export const CORS_ALLOWED_METHODS = 'GET,POST,PUT,PATCH,DELETE,OPTIONS';

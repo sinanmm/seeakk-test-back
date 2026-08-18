@@ -128,6 +128,10 @@ const permissions = [
     description: 'Bypass lifecycle limits when extending follow-ups (logged)',
   },
   { key: 'grant_bulk_extension_access', group: 'ADMIN_MANAGEMENT', description: 'Grant temporary bulk extension access' },
+  { key: 'WHATSAPP_TEMPLATES_VIEW', group: 'SYSTEM_SETTINGS', description: 'View WhatsApp message templates' },
+  { key: 'WHATSAPP_TEMPLATES_CREATE', group: 'SYSTEM_SETTINGS', description: 'Create WhatsApp message templates' },
+  { key: 'WHATSAPP_TEMPLATES_EDIT', group: 'SYSTEM_SETTINGS', description: 'Edit WhatsApp message templates' },
+  { key: 'WHATSAPP_TEMPLATES_DELETE', group: 'SYSTEM_SETTINGS', description: 'Delete WhatsApp message templates' },
   { key: 'view_followup_capacity', group: 'ADMIN_MANAGEMENT', description: 'View follow-up capacity settings and reports' },
   // HOLIDAY LIST
   { key: 'HOLIDAY_VIEW', group: 'MASTER_CONFIGURATION', description: 'View holidays and weekly-off settings' },

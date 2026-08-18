@@ -165,6 +165,7 @@ model Workspace {
   telephonySetting               TelephonySetting?
   telephonyProviderConfigs       TelephonyProviderConfig[]
   telephonyUserMappings          TelephonyUserMapping[]
+  whatsAppTemplates              WhatsAppTemplate[]
   createdAt                      DateTime                       @default(now())
   updatedAt                      DateTime                       @updatedAt
   LeadRemark                     LeadRemark[]
@@ -1342,6 +1343,7 @@ model User {
   advancePaymentsApproved  AdvancePayment[]         @relation("AdvanceApprovedBy")
   advancePaymentsRejected  AdvancePayment[]         @relation("AdvanceRejectedBy")
   leadRemarks              LeadRemark[]
+  createdWhatsAppTemplates WhatsAppTemplate[]       @relation("WhatsAppTemplateCreatedBy")
 
   rosterEntries               RosterEntry[]
   attendanceRecords           AttendanceRecord[]
@@ -1483,20 +1485,49 @@ model FollowUp {
   extensionReasonId    String?
   extensionReasonName  String?
 
+  // WhatsApp Reminder fields
+  whatsappTemplateId          String?
+  whatsappTemplateSnapshot    String?            @db.Text
+  whatsappReminderEnabled     Boolean            @default(false)
+  whatsappReminderStatus      String?
+  whatsappReminderSnoozedUntil DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user         User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  lead         Lead                  @relation(fields: [leadId], references: [id], onDelete: Cascade)
-  images       FollowUpImage[]
-  activityLogs FollowupActivityLog[]
-  callSessions LeadCallSession[]
+  user             User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lead             Lead                  @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  whatsappTemplate WhatsAppTemplate?     @relation(fields: [whatsappTemplateId], references: [id], onDelete: SetNull)
+  images           FollowUpImage[]
+  activityLogs     FollowupActivityLog[]
+  callSessions     LeadCallSession[]
 
   @@index([workspaceId, userId, scheduledAt])
   @@index([workspaceId, status, scheduledAt])
   @@index([leadId])
   @@index([workspaceId, userId, status, scheduledAt(sort: Desc)])
+  @@index([whatsappTemplateId])
   @@map("follow_ups")
+}
+
+model WhatsAppTemplate {
+  id              String   @id @default(cuid())
+  workspaceId     String
+  name            String
+  category        String
+  message         String   @db.Text
+  status          String   @default("ACTIVE")
+  createdByUserId String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdBy User?     @relation("WhatsAppTemplateCreatedBy", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  followUps FollowUp[]
+
+  @@index([workspaceId])
+  @@index([workspaceId, status])
+  @@map("whatsapp_templates")
 }
 
 model FollowupActivityLog {

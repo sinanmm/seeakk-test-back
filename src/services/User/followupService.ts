@@ -8,6 +8,8 @@ import {
   resolveManageableFollowUpUserScope,
   resolveVisibleLeadUserScope,
 } from '../../modules/leads/leads.service';
+import { renderWhatsAppTemplate } from '../../utils/whatsappTemplateRenderer';
+import { buildWhatsAppClickToChatUrl, normalizePhoneForWhatsApp } from '../../utils/phoneNormalization';
 import {
   buildCompletionOverdueUpdate,
   buildExtensionOverdueUpdate,
@@ -299,6 +301,14 @@ export const mapFollowUpRecord = (record: FollowUpRecord) => ({
   reminderActionType: record.reminderActionType || null,
   extensionReasonId: record.extensionReasonId || null,
   extensionReasonName: record.extensionReasonName || null,
+  whatsappTemplateId: (record as any).whatsappTemplateId || null,
+  whatsappTemplateSnapshot: (record as any).whatsappTemplateSnapshot || null,
+  whatsappReminderEnabled: Boolean((record as any).whatsappReminderEnabled),
+  whatsappReminderStatus: (record as any).whatsappReminderStatus || null,
+  whatsappReminderSnoozedUntil: (record as any).whatsappReminderSnoozedUntil
+    ? (record as any).whatsappReminderSnoozedUntil.toISOString()
+    : null,
+  whatsappTemplate: (record as any).whatsappTemplate || null,
   isOverdue: Boolean(record.isOverdue),
   overdueAt: record.overdueAt ? record.overdueAt.toISOString() : null,
   completedAfterOverdue: Boolean(record.completedAfterOverdue),
@@ -339,37 +349,77 @@ export const resolveLeadFollowUpOwnerId = (lead: {
   createdById: string;
 }): string => lead.assignedToId || lead.createdById;
 
-const mapReminderFollowUpRecord = (record: ReminderFollowUpRecord) => ({
-  id: record.id,
-  leadId: record.leadId,
-  leadName: record.lead?.name || 'Lead',
-  leadEmail: record.lead?.email || null,
-  leadCompanyName: record.lead?.companyName || null,
-  leadProfileImage: record.lead?.profileImageUrl || null,
-  leadPhone: record.lead?.phone || null,
-  leadStage: record.lead?.stage ? {
-    name: record.lead.stage.name,
-    color: record.lead.stage.color || '#6b7280',
-  } : null,
-  assignedUserName: resolveDisplayName(record.lead?.assignedTo) || resolveDisplayName(record.user),
-  officeName: record.user?.office?.name || null,
-  userId: record.userId,
-  type: normalizeFollowUpType(record.type),
-  description: record.description,
-  latestFollowupNote: record.recentDescription || null,
-  originalScheduledDate: record.previousFollowupDate ? record.previousFollowupDate.toISOString() : record.scheduledAt.toISOString(),
-  extendedDate: record.newFollowupDate ? record.newFollowupDate.toISOString() : null,
-  scheduledAt: record.scheduledAt.toISOString(),
-  minutesUntil: Math.ceil((record.scheduledAt.getTime() - Date.now()) / 60_000),
-  priority: record.priority || null,
-  status: record.status,
-  user: {
-    ...record.user,
-    displayName: resolveDisplayName(record.user),
-  },
-});
+const mapReminderFollowUpRecord = (record: any, timeZone = 'UTC', companyName = '') => {
+  const scheduledDateObj = new Date(record.scheduledAt);
+  const formattedDate = moment.tz(scheduledDateObj, timeZone).format('DD MMM YYYY');
+  const formattedTime = moment.tz(scheduledDateObj, timeZone).format('hh:mm A');
+
+  const templateMessage = record.whatsappTemplateSnapshot || record.whatsappTemplate?.message || null;
+  const renderedWhatsAppMessage = record.whatsappReminderEnabled && templateMessage
+    ? renderWhatsAppTemplate(templateMessage, {
+        leadName: record.lead?.name || '',
+        mobile: record.lead?.phone || '',
+        assignedUser: resolveDisplayName(record.lead?.assignedTo) || resolveDisplayName(record.user),
+        companyName: companyName || record.lead?.companyName || '',
+        followupDate: formattedDate,
+        followupTime: formattedTime,
+        leadStage: record.lead?.stage?.name || '',
+      })
+    : null;
+
+  const clickToChatUrl = renderedWhatsAppMessage
+    ? buildWhatsAppClickToChatUrl(record.lead?.phone, renderedWhatsAppMessage)
+    : null;
+
+  return {
+    id: record.id,
+    leadId: record.leadId,
+    leadName: record.lead?.name || 'Lead',
+    leadEmail: record.lead?.email || null,
+    leadCompanyName: record.lead?.companyName || null,
+    leadProfileImage: record.lead?.profileImageUrl || null,
+    leadPhone: record.lead?.phone || null,
+    normalizedPhone: normalizePhoneForWhatsApp(record.lead?.phone),
+    leadStage: record.lead?.stage ? {
+      name: record.lead.stage.name,
+      color: record.lead.stage.color || '#6b7280',
+    } : null,
+    assignedUserName: resolveDisplayName(record.lead?.assignedTo) || resolveDisplayName(record.user),
+    officeName: record.user?.office?.name || null,
+    userId: record.userId,
+    type: normalizeFollowUpType(record.type),
+    description: record.description,
+    latestFollowupNote: record.recentDescription || null,
+    originalScheduledDate: record.previousFollowupDate ? record.previousFollowupDate.toISOString() : record.scheduledAt.toISOString(),
+    extendedDate: record.newFollowupDate ? record.newFollowupDate.toISOString() : null,
+    scheduledAt: record.scheduledAt.toISOString(),
+    minutesUntil: Math.ceil((record.scheduledAt.getTime() - Date.now()) / 60_000),
+    priority: record.priority || null,
+    status: record.status,
+    whatsappTemplateId: record.whatsappTemplateId || null,
+    whatsappTemplateSnapshot: record.whatsappTemplateSnapshot || null,
+    whatsappReminderEnabled: Boolean(record.whatsappReminderEnabled),
+    whatsappReminderStatus: record.whatsappReminderStatus || null,
+    whatsappTemplate: record.whatsappTemplate || null,
+    renderedWhatsAppMessage,
+    clickToChatUrl,
+    user: {
+      ...record.user,
+      displayName: resolveDisplayName(record.user),
+    },
+  };
+};
 
 const buildFollowUpInclude = {
+  whatsappTemplate: {
+    select: {
+      id: true,
+      name: true,
+      category: true,
+      message: true,
+      status: true,
+    },
+  },
   lead: {
     select: {
       id: true,
@@ -424,6 +474,15 @@ const buildFollowUpInclude = {
 } as const;
 
 const buildReminderInclude = {
+  whatsappTemplate: {
+    select: {
+      id: true,
+      name: true,
+      category: true,
+      message: true,
+      status: true,
+    },
+  },
   user: {
     select: {
       id: true,
@@ -814,6 +873,20 @@ export const createFollowUp = async (
     throw createServiceError('You have reached your daily follow-up limit for today.', 422);
   }
 
+  let whatsappTemplateId: string | null = null;
+  let whatsappTemplateSnapshot: string | null = null;
+  let whatsappReminderEnabled = Boolean(input.whatsappReminderEnabled);
+
+  if (input.whatsappTemplateId) {
+    const template = await prisma.whatsAppTemplate.findFirst({
+      where: { id: input.whatsappTemplateId.trim(), workspaceId, status: 'ACTIVE' },
+    });
+    if (template) {
+      whatsappTemplateId = template.id;
+      whatsappTemplateSnapshot = template.message;
+    }
+  }
+
   const created = await (prisma as any).followUp.create({
     data: {
       leadId: input.leadId.trim(),
@@ -823,6 +896,10 @@ export const createFollowUp = async (
       description: input.description?.trim() || null,
       status: FOLLOWUP_PENDING,
       scheduledAt: input.scheduledAt,
+      whatsappTemplateId,
+      whatsappTemplateSnapshot,
+      whatsappReminderEnabled,
+      whatsappReminderStatus: whatsappReminderEnabled ? 'PENDING' : null,
     },
     include: buildFollowUpInclude,
   });
@@ -1510,7 +1587,13 @@ export const getReminderAlerts = async (
     take: 50,
   });
 
-  const items = (records as ReminderFollowUpRecord[]).map(mapReminderFollowUpRecord);
+  const workspace = await prisma.workspace.findUnique({
+    where: { id: workspaceId },
+    select: { companyName: true },
+  });
+  const companyName = workspace?.companyName || '';
+
+  const items = (records as any[]).map((rec) => mapReminderFollowUpRecord(rec, timeZone, companyName));
 
   return {
     timeZone,
@@ -1794,6 +1877,25 @@ export const snoozeFollowUp = async (
       },
     });
 
+    let whatsappTemplateId: string | null = existing.whatsappTemplateId;
+    let whatsappTemplateSnapshot: string | null = existing.whatsappTemplateSnapshot;
+    let whatsappReminderEnabled = input.whatsappReminderEnabled !== undefined
+      ? Boolean(input.whatsappReminderEnabled)
+      : existing.whatsappReminderEnabled;
+
+    if (input.whatsappTemplateId) {
+      const template = await prisma.whatsAppTemplate.findFirst({
+        where: { id: input.whatsappTemplateId.trim(), workspaceId, status: 'ACTIVE' },
+      });
+      if (template) {
+        whatsappTemplateId = template.id;
+        whatsappTemplateSnapshot = template.message;
+      }
+    } else if (input.whatsappTemplateId === null || input.whatsappTemplateId === '') {
+      whatsappTemplateId = null;
+      whatsappTemplateSnapshot = null;
+    }
+
     return await (tx as any).followUp.update({
       where: { id: existing.id },
       data: {
@@ -1807,6 +1909,10 @@ export const snoozeFollowUp = async (
         reminderActionType: input.reminderActionType,
         extensionReasonId: input.extensionReasonId || null,
         extensionReasonName,
+        whatsappTemplateId,
+        whatsappTemplateSnapshot,
+        whatsappReminderEnabled,
+        whatsappReminderStatus: whatsappReminderEnabled ? 'PENDING' : null,
         ...overdueUpdate,
       },
       include: buildFollowUpInclude,

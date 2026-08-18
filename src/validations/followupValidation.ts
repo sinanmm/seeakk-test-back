@@ -50,6 +50,8 @@ export const createFollowUpSchema = z.object({
   type: followUpTypeSchema,
   scheduledAt: parseDateField('scheduledAt'),
   description: z.preprocess(emptyStringToUndefined, z.string().trim().max(1000).optional()).optional(),
+  whatsappTemplateId: z.preprocess(emptyStringToUndefined, z.string().trim().max(191).optional().nullable()).optional(),
+  whatsappReminderEnabled: z.boolean().optional(),
 });
 
 export type CreateFollowUpInput = z.infer<typeof createFollowUpSchema>;
@@ -67,6 +69,8 @@ export const snoozeFollowUpSchema = z
     recentDescription: z.string().trim().max(3000, 'Description is too long').optional().nullable(),
     extensionReasonId: z.string().trim().max(191, 'Invalid extension reason id').optional().nullable(),
     reminderActionType: z.enum(['SNOOZE', 'REMIND_LATER']),
+    whatsappTemplateId: z.preprocess(emptyStringToUndefined, z.string().trim().max(191).optional().nullable()).optional(),
+    whatsappReminderEnabled: z.boolean().optional(),
   })
   .refine(
     (data) => {
