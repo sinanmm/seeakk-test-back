@@ -204,52 +204,53 @@ export const recordWhatsAppOpened = async (req: Request, res: Response, next: Ne
   const workspaceId = requireWorkspace(req, res);
   if (!workspaceId) return;
 
-  const { followUpId } = req.body;
-  if (!followUpId) {
+  const { followUpId, leadId, mode, templateName, source } = req.body;
+  if (!followUpId && !leadId) {
     return res.status(400).json({
       success: false,
-      message: 'followUpId is required',
+      message: 'Either followUpId or leadId is required',
     });
   }
 
   try {
-    const followUp = await prisma.followUp.findFirst({
-      where: { id: followUpId, workspaceId },
-      include: {
-        lead: true,
-        whatsappTemplate: true,
-      },
-    });
+    let targetLeadId: string | null = leadId || null;
+    let followUpRecord: any = null;
 
-    if (!followUp) {
-      return res.status(404).json({
-        success: false,
-        message: 'Follow-up not found',
+    if (followUpId) {
+      followUpRecord = await prisma.followUp.findFirst({
+        where: { id: followUpId, workspaceId },
+        include: {
+          lead: true,
+          whatsappTemplate: true,
+        },
       });
+
+      if (followUpRecord) {
+        targetLeadId = followUpRecord.leadId;
+        await prisma.followUp.update({
+          where: { id: followUpId },
+          data: {
+            whatsappReminderStatus: 'OPENED_WHATSAPP',
+          },
+        });
+      }
     }
 
-    // Update reminder status to OPENED_WHATSAPP (NOT SENT)
-    const updatedFollowUp = await prisma.followUp.update({
-      where: { id: followUpId },
-      data: {
-        whatsappReminderStatus: 'OPENED_WHATSAPP',
-      },
-    });
-
-    // Record lead activity
-    if (followUp.leadId) {
+    if (targetLeadId) {
       try {
         await (prisma as any).leadActivity.create({
           data: {
-            leadId: followUp.leadId,
+            leadId: targetLeadId,
             performedById: req.user!.id,
             workspaceId,
             action: 'WHATSAPP_OPENED',
             metadata: {
-              followUpId: followUp.id,
-              templateName: followUp.whatsappTemplate?.name || 'Custom',
+              followUpId: followUpRecord?.id || null,
+              mode: mode || (followUpRecord ? 'TEMPLATE' : 'DIRECT'),
+              templateName: templateName || followUpRecord?.whatsappTemplate?.name || null,
+              source: source || (followUpRecord ? 'Follow-up Popup' : 'Lead List'),
               status: 'OPENED_WHATSAPP',
-              description: 'WhatsApp opened from follow-up',
+              description: 'WhatsApp opened with prefilled message',
             },
           },
         });
@@ -261,12 +262,15 @@ export const recordWhatsAppOpened = async (req: Request, res: Response, next: Ne
     await auditService.log({
       userId: req.user?.id,
       workspaceId,
-      action: 'WHATSAPP_REMINDER_OPENED',
-      entityType: 'FollowUp',
-      entityId: followUp.id,
+      action: 'WHATSAPP_OPENED',
+      entityType: followUpRecord ? 'FollowUp' : 'Lead',
+      entityId: followUpRecord?.id || targetLeadId || '',
       details: {
-        leadId: followUp.leadId,
-        templateId: followUp.whatsappTemplateId,
+        leadId: targetLeadId,
+        followUpId: followUpRecord?.id || null,
+        mode: mode || (followUpRecord ? 'TEMPLATE' : 'DIRECT'),
+        templateName: templateName || followUpRecord?.whatsappTemplate?.name || null,
+        source: source || (followUpRecord ? 'Follow-up Popup' : 'Lead List'),
         status: 'OPENED_WHATSAPP',
       },
       ipAddress: req.ip,
@@ -276,7 +280,6 @@ export const recordWhatsAppOpened = async (req: Request, res: Response, next: Ne
     return res.status(200).json({
       success: true,
       message: 'WhatsApp click logged successfully',
-      data: updatedFollowUp,
     });
   } catch (error) {
     next(error);
