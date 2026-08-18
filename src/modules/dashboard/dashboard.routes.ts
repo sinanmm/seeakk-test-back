@@ -58,5 +58,15 @@ router.get(
   dashboardController.getProductAnalytics,
 );
 
+import {
+  getDashboardPreferences,
+  updateDashboardPreferences,
+  resetDashboardPreferences,
+} from './dashboardPreferences.controller';
+
+router.get('/preferences', protect, getDashboardPreferences);
+router.put('/preferences', protect, updateDashboardPreferences);
+router.post('/preferences/reset', protect, resetDashboardPreferences);
+
 export default router;
 

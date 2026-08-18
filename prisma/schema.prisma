@@ -166,6 +166,7 @@ model Workspace {
   telephonyProviderConfigs       TelephonyProviderConfig[]
   telephonyUserMappings          TelephonyUserMapping[]
   whatsAppTemplates              WhatsAppTemplate[]
+  dashboardLayoutPreferences     DashboardLayoutPreference[]
   createdAt                      DateTime                       @default(now())
   updatedAt                      DateTime                       @updatedAt
   LeadRemark                     LeadRemark[]
@@ -1404,6 +1405,7 @@ model User {
   grantedBulkExtensionAccesses   TemporaryBulkExtensionAccess[] @relation("BulkExtensionGrantedBy")
   bulkFollowUpExtensions         BulkFollowUpExtension[]
   currentApprovingSalaryRecords  SalaryRecord[]                 @relation("CurrentSalaryApprover")
+  updatedDashboardPreferences    DashboardLayoutPreference[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -2967,6 +2969,33 @@ model TelephonyUserMapping {
   @@index([workspaceId])
   @@map("telephony_user_mappings")
 }
+
+enum DashboardItemType {
+  CARD
+  SECTION
+}
+
+model DashboardLayoutPreference {
+  id              String            @id @default(uuid())
+  workspaceId     String
+  itemKey         String
+  itemType        DashboardItemType
+  isVisible       Boolean           @default(true)
+  displayOrder    Int               @default(0)
+  customTitle     String?
+  updatedByUserId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  updatedBy User?     @relation(fields: [updatedByUserId], references: [id], onDelete: SetNull)
+
+  @@unique([workspaceId, itemKey])
+  @@index([workspaceId])
+  @@map("dashboard_layout_preferences")
+}
+
 
 
 
