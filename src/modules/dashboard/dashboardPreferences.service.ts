@@ -13,20 +13,30 @@ import type {
 
 export const checkActorPermissions = (actor: any) => {
   const permissions: string[] = actor?.permissions || [];
-  const roleName = typeof actor?.role === 'string' ? actor.role : actor?.role?.name || '';
-  const isSuperadmin = permissions.includes('SUPERADMIN') || roleName === 'SUPERADMIN';
+  const roleName = typeof actor?.role === 'string' ? actor.role : actor?.role?.name || actor?.roleName || '';
+  const isSuperadmin =
+    Boolean(actor?.isSuperadmin) ||
+    permissions.includes('SUPERADMIN') ||
+    roleName.toUpperCase() === 'SUPERADMIN';
 
   const CUSTOMIZE_PERMISSIONS = [
     'DASHBOARD_CUSTOMIZE',
     'DASHBOARD_CUSTOM_MANAGE_SECTIONS',
     'DASHBOARD_CUSTOM_CREATE_OWN',
+    'DASHBOARD_CUSTOM_VIEW',
     'SYSTEM_CONFIG',
+    'manage_followup_settings',
+    'LEADS_VIEW_ALL',
+    'DASHBOARD_VIEW_ALL',
   ];
 
   const RENAME_PERMISSIONS = [
     'DASHBOARD_RENAME',
     'DASHBOARD_CUSTOM_MANAGE_SECTIONS',
     'SYSTEM_CONFIG',
+    'manage_followup_settings',
+    'LEADS_VIEW_ALL',
+    'DASHBOARD_VIEW_ALL',
   ];
 
   const canCustomize = isSuperadmin || CUSTOMIZE_PERMISSIONS.some((p) => permissions.includes(p));

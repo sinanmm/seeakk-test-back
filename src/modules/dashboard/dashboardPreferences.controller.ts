@@ -13,6 +13,7 @@ const getActorFromReq = (req: Request) => {
     permissions: user?.permissions || [],
     role: user?.role,
     roleId: user?.roleId,
+    isSuperadmin: user?.isSuperadmin,
   };
 };
 
