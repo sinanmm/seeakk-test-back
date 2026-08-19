@@ -1,7 +1,7 @@
 import prisma from '../../config/prisma';
 import { redisClient } from '../../config/redis';
 import logger from '../../utils/logger';
-import { formatPhoneStr } from '../../utils/phoneUtils';
+import { formatPhoneStr, cleanAndParseImportedPhone } from '../../utils/phoneUtils';
 import ExcelJS from 'exceljs';
 import moment from 'moment-timezone';
 import { getWorkspaceTimeZone } from './followupService';
@@ -1833,6 +1833,125 @@ const findDuplicateLead = async (
   }
 };
 
+const normalizeNameForDup = (val?: string | null): string => {
+  if (!val) return '';
+  return val.trim().toLowerCase().replace(/\s+/g, ' ');
+};
+
+const normalizeEmailForDup = (val?: string | null): string => {
+  if (!val) return '';
+  return val.trim().toLowerCase();
+};
+
+const normalizePhoneForDup = (val?: string | null): string => {
+  if (!val) return '';
+  const clean = val.trim().replace(/[\s-()]/g, '');
+  if (!clean) return '';
+  try {
+    return cleanAndParseImportedPhone(clean) || clean;
+  } catch (e) {
+    return clean;
+  }
+};
+
+const findDuplicateLeadIds = async (
+  baseWhere: any,
+): Promise<string[]> => {
+  const candidateLeads: Array<{ id: string; name: string | null; phone: string | null; email: string | null }> =
+    await (prisma as any).lead.findMany({
+      where: baseWhere,
+      select: {
+        id: true,
+        name: true,
+        phone: true,
+        email: true,
+      },
+    });
+
+  if (!candidateLeads || candidateLeads.length < 2) {
+    return [];
+  }
+
+  const processed = candidateLeads.map((l) => {
+    const normName = normalizeNameForDup(l.name);
+    const normPhone = normalizePhoneForDup(l.phone);
+    const normEmail = normalizeEmailForDup(l.email);
+    return {
+      id: l.id,
+      normName: normName || null,
+      normPhone: normPhone || null,
+      normEmail: normEmail || null,
+    };
+  });
+
+  const byPhone = new Map<string, typeof processed>();
+  const byEmail = new Map<string, typeof processed>();
+  const byName = new Map<string, typeof processed>();
+
+  for (const item of processed) {
+    if (item.normPhone) {
+      const list = byPhone.get(item.normPhone) || [];
+      list.push(item);
+      byPhone.set(item.normPhone, list);
+    }
+    if (item.normEmail) {
+      const list = byEmail.get(item.normEmail) || [];
+      list.push(item);
+      byEmail.set(item.normEmail, list);
+    }
+    if (item.normName) {
+      const list = byName.get(item.normName) || [];
+      list.push(item);
+      byName.set(item.normName, list);
+    }
+  }
+
+  const duplicateIdsSet = new Set<string>();
+
+  for (const item of processed) {
+    const candidateIds = new Set<string>();
+
+    if (item.normPhone) {
+      (byPhone.get(item.normPhone) || []).forEach((c) => candidateIds.add(c.id));
+    }
+    if (item.normEmail) {
+      (byEmail.get(item.normEmail) || []).forEach((c) => candidateIds.add(c.id));
+    }
+    if (item.normName) {
+      (byName.get(item.normName) || []).forEach((c) => candidateIds.add(c.id));
+    }
+
+    candidateIds.delete(item.id);
+    if (candidateIds.size === 0) continue;
+
+    for (const otherId of candidateIds) {
+      const other = processed.find((p) => p.id === otherId);
+      if (!other) continue;
+
+      const nameMatch = Boolean(item.normName && other.normName && item.normName === other.normName);
+      const mobileMatch = Boolean(item.normPhone && other.normPhone && item.normPhone === other.normPhone);
+      const emailMatch = Boolean(item.normEmail && other.normEmail && item.normEmail === other.normEmail);
+
+      const matchingFieldCount = (nameMatch ? 1 : 0) + (mobileMatch ? 1 : 0) + (emailMatch ? 1 : 0);
+      const normalDuplicate = matchingFieldCount >= 2;
+
+      const nameOnlyDuplicate =
+        nameMatch &&
+        !item.normPhone &&
+        !item.normEmail &&
+        !other.normPhone &&
+        !other.normEmail;
+
+      if (normalDuplicate || nameOnlyDuplicate) {
+        duplicateIdsSet.add(item.id);
+        duplicateIdsSet.add(other.id);
+      }
+    }
+  }
+
+  return Array.from(duplicateIdsSet);
+};
+
 const buildListWhere = async (
   workspaceId: string,
   query: ListLeadsQueryInput | ExportLeadsQueryInput,
@@ -1977,6 +2096,11 @@ const buildListWhere = async (
       followupFilter.lte = toDate;
     }
     where.nextFollowUpAt = followupFilter;
+  }
+
+  if (query.starred === 'DUPLICATES') {
+    const duplicateLeadIds = await findDuplicateLeadIds(where);
+    where.id = { in: duplicateLeadIds };
   }
 
   return where;

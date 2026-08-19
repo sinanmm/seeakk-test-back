@@ -233,7 +233,7 @@ export const listLeadsQuerySchema = z.object({
   stage: z.preprocess(emptyStringToUndefined, z.string().trim().optional()).optional(),
   source: z.preprocess(emptyStringToUndefined, z.string().trim().optional()).optional(),
   status: z.preprocess(emptyStringToUndefined, z.enum(['OPEN', 'CLOSED', 'LOB', 'ACTIVE', 'ARCHIVED']).optional()).optional(),
-  starred: z.preprocess(emptyStringToUndefined, z.enum(['ALL', 'STARRED']).optional()).optional(),
+  starred: z.preprocess(emptyStringToUndefined, z.enum(['ALL', 'STARRED', 'DUPLICATES']).optional()).optional(),
   officeId: z.preprocess(emptyStringToUndefined, z.string().trim().optional()).optional(),
   createdFrom: z.preprocess(emptyStringToUndefined, z.string().trim().optional()).optional(),
   createdTo: z.preprocess(emptyStringToUndefined, z.string().trim().optional()).optional(),
