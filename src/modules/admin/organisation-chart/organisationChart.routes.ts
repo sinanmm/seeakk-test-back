@@ -20,4 +20,12 @@ router.get(
   organisationChartController.getUserDetails,
 );
 
+// PATCH /api/admin/organisation-chart/move
+router.patch(
+  '/move',
+  protect,
+  checkAnyPermission(['ORGANISATION_CHART_MANAGE', 'SYSTEM_CONFIG']),
+  organisationChartController.moveNode,
+);
+
 export default router;

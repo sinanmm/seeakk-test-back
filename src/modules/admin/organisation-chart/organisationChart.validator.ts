@@ -12,3 +12,10 @@ export const organisationChartQuerySchema = z.object({
 
 export type OrganisationChartQuery = z.infer<typeof organisationChartQuerySchema>;
 
+export const moveNodeSchema = z.object({
+  userId: z.string(),
+  supervisorId: z.string().nullable(),
+});
+
+export type MoveNodeInput = z.infer<typeof moveNodeSchema>;
+

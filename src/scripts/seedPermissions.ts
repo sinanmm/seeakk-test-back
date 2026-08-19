@@ -51,6 +51,7 @@ const permissions = [
   { key: 'ASSIGNED_USERS_VIEW', group: 'ASSIGNED_USERS', description: 'View assigned users and assignment details' },
   { key: 'ASSIGNED_USERS_EDIT', group: 'ASSIGNED_USERS', description: 'Update, change, or reassign assigned users' },
   { key: 'ASSIGNED_USERS_DELETE', group: 'ASSIGNED_USERS', description: 'Remove assigned users and delete user assignments' },
+  { key: 'ORGANISATION_CHART_MANAGE', group: 'ORGANISATION_CHART', description: 'Manage the organization chart reporting structure' },
 
   // USERS MANAGEMENT
   { key: 'USERS_VIEW', group: 'ADMIN_MANAGEMENT', description: 'View users list' },

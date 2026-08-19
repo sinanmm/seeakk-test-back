@@ -1,6 +1,7 @@
 import prisma from '../../../config/prisma';
 import logger from '../../../utils/logger';
 import { redisClient } from '../../../config/redis';
+import auditService from '../../../services/Audit/auditService';
 import {
   OrganisationChartNode,
   OrganisationChartResponse,
@@ -349,3 +350,93 @@ export const getUserDetails = async (workspaceId: string, userId: string) => {
   logger.info(`[Organisation Chart] Response Created for userId: ${userId}`);
   return result;
 };
+
+export const moveUserNode = async (
+  workspaceId: string,
+  userId: string,
+  supervisorId: string | null,
+  actorId: string,
+): Promise<void> => {
+  logger.info(`[Organisation Chart] Moving node userId: ${userId} under supervisorId: ${supervisorId}`);
+
+  // 1. Verify target user exists and belongs to the same workspace
+  const user = await prisma.user.findFirst({
+    where: { id: userId, workspaceId, deletedAt: null },
+  });
+  if (!user) {
+    const error: any = new Error('Target user not found or does not belong to your workspace.');
+    error.statusCode = 404;
+    throw error;
+  }
+
+  // 2. If supervisorId is provided, verify they exist and belong to the same workspace
+  if (supervisorId) {
+    if (userId === supervisorId) {
+      const error: any = new Error('A user cannot report to themselves.');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const supervisor = await prisma.user.findFirst({
+      where: { id: supervisorId, workspaceId, deletedAt: null },
+    });
+    if (!supervisor) {
+      const error: any = new Error('Supervisor not found or does not belong to your workspace.');
+      error.statusCode = 404;
+      throw error;
+    }
+
+    // 3. Cycle prevention check: make sure the supervisor is not a descendant of the user
+    let currentSupervisorId: string | null = supervisorId;
+    const visited = new Set<string>();
+    while (currentSupervisorId) {
+      if (currentSupervisorId === userId) {
+        const error: any = new Error('Circular reporting structure detected. You cannot assign a user under their own subordinate.');
+        error.statusCode = 400;
+        throw error;
+      }
+      if (visited.has(currentSupervisorId)) {
+        break; // Guard against existing DB loops
+      }
+      visited.add(currentSupervisorId);
+      
+      const parentUser: { supervisorId: string | null } | null = await (prisma as any).user.findUnique({
+        where: { id: currentSupervisorId },
+        select: { supervisorId: true },
+      });
+      currentSupervisorId = parentUser?.supervisorId ?? null;
+    }
+  }
+
+  // 4. Perform the update
+  const previousSupervisorId = user.supervisorId;
+  await prisma.user.update({
+    where: { id: userId },
+    data: { supervisorId },
+  });
+
+  // 5. Invalidate the Redis cache for this workspace's organization chart
+  if (redisClient.isOpen) {
+    const cacheKeyAll = `organisation_chart:${workspaceId}:all`;
+    const cacheKeyActive = `organisation_chart:${workspaceId}:active`;
+    await Promise.all([
+      redisClient.del(cacheKeyAll).catch(() => {}),
+      redisClient.del(cacheKeyActive).catch(() => {}),
+    ]);
+  }
+
+  // 6. Log the change in the Audit Log
+  await auditService.log({
+    userId: actorId,
+    workspaceId,
+    action: 'ORGANISATION_CHART_MOVE',
+    entityType: 'User',
+    entityId: userId,
+    details: {
+      movedUserId: userId,
+      previousSupervisorId,
+      newSupervisorId: supervisorId,
+    },
+  });
+};
+

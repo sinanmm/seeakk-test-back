@@ -4,6 +4,8 @@ import * as organisationChartService from './organisationChart.service';
 import {
   OrganisationChartQuery,
   organisationChartQuerySchema,
+  MoveNodeInput,
+  moveNodeSchema,
 } from './organisationChart.validator';
 
 function validate<T>(
@@ -104,3 +106,39 @@ export const getUserDetails = async (
     handleServiceError(error, res, next, 'getUserDetails');
   }
 };
+
+export const moveNode = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<any> => {
+  const workspaceId = req.user?.workspaceId ?? null;
+  if (!workspaceId) {
+    return res.status(403).json({
+      success: false,
+      message: 'Forbidden: No workspace linked to your account.',
+    });
+  }
+
+  const payload = validate<MoveNodeInput>(moveNodeSchema, req.body, res);
+  if (!payload) return;
+
+  const actorId = req.user!.id;
+
+  try {
+    await organisationChartService.moveUserNode(
+      workspaceId,
+      payload.userId,
+      payload.supervisorId,
+      actorId,
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: 'Organisation chart node moved successfully.',
+    });
+  } catch (error) {
+    handleServiceError(error, res, next, 'moveNode');
+  }
+};
+
