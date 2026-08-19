@@ -2438,10 +2438,22 @@ export const createLead = async (
     logger.info('[Diagnostic] Database transaction committed', { leadId: createdLeadId });
 
     await clearLeadCache(workspaceId);
+    const created = await getLeadScoped(workspaceId, createdLeadId, actor);
+    try {
+      const { eventDispatcher } = await import('../../modules/automation/eventDispatcher');
+      void eventDispatcher.dispatch('lead.created', {
+        workspaceId,
+        recordId: createdLeadId,
+        recordType: 'Lead',
+        actorId: actor.id,
+        newData: created,
+      });
+    } catch (e: any) {
+      logger.error('Failed to dispatch lead.created event', { error: e.message });
+    }
     if (input.nextFollowUpAt) {
       await touchFollowUpTodayCachesAfterLeadMutation(workspaceId, followUpOwnerId, input.nextFollowUpAt);
     }
-    const created = await getLeadScoped(workspaceId, createdLeadId, actor);
     const dynamicValueMap = await fetchLeadDynamicValueMap([createdLeadId]);
     const starredLeadIds = await fetchStarredLeadIds(workspaceId, actor.id, [createdLeadId]);
     logger.info('[Diagnostic] API response returned', { leadId: createdLeadId });
@@ -3044,6 +3056,46 @@ export const updateLead = async (
     await touchFollowUpTodayCachesAfterLeadMutation(workspaceId, assignedToId || existing.createdById, nextFollowUpAt);
   }
   const updated = await getLeadScoped(workspaceId, updatedLeadId, actor);
+  try {
+    const { eventDispatcher } = await import('../../modules/automation/eventDispatcher');
+    const previousStageId = existing.stageId;
+    const newStageId = updated.stageId;
+    const previousAssignedToId = existing.assignedToId;
+    const newAssignedToId = updated.assignedToId;
+
+    void eventDispatcher.dispatch('lead.updated', {
+      workspaceId,
+      recordId: updatedLeadId,
+      recordType: 'Lead',
+      actorId: actor.id,
+      previousData: existing,
+      newData: updated,
+    });
+
+    if (previousStageId !== newStageId) {
+      void eventDispatcher.dispatch('lead.stage_changed', {
+        workspaceId,
+        recordId: updatedLeadId,
+        recordType: 'Lead',
+        actorId: actor.id,
+        previousData: existing,
+        newData: updated,
+      });
+    }
+
+    if (previousAssignedToId !== newAssignedToId) {
+      void eventDispatcher.dispatch('lead.assigned', {
+        workspaceId,
+        recordId: updatedLeadId,
+        recordType: 'Lead',
+        actorId: actor.id,
+        previousData: existing,
+        newData: updated,
+      });
+    }
+  } catch (e: any) {
+    logger.error('Failed to dispatch update events', { error: e.message });
+  }
   const dynamicValueMap = await fetchLeadDynamicValueMap([updatedLeadId]);
   const starredLeadIds = await fetchStarredLeadIds(workspaceId, actor.id, [updatedLeadId]);
   const result = mapLeadRecordWithDynamicValues(updated, dynamicValueMap, starredLeadIds);
@@ -3237,6 +3289,16 @@ export const deleteLead = async (workspaceId: string, id: string): Promise<void>
   });
 
   await clearLeadCache(workspaceId);
+  try {
+    const { eventDispatcher } = await import('../../modules/automation/eventDispatcher');
+    void eventDispatcher.dispatch('lead.deleted', {
+      workspaceId,
+      recordId: id,
+      recordType: 'Lead',
+    });
+  } catch (e: any) {
+    logger.error('Failed to dispatch lead.deleted event', { error: e.message });
+  }
 };
 
 export const permanentlyDeleteLead = async (workspaceId: string, id: string): Promise<void> => {

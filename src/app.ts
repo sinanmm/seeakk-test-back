@@ -46,6 +46,7 @@ import followupSettingsRoutes from './modules/followup-settings/followupSettings
 import whatsappTemplateRoutes from './routes/User/whatsappTemplateRoutes';
 import stageRuleRoutes from './modules/master/stage-rules/stageRule.routes';
 import auditRoutes from './routes/Audit/auditRoutes';
+import automationRoutes from './modules/automation/automation.routes';
 import holidayRoutes from './modules/holidays/holidays.routes';
 import reportTypeRoutes from './modules/reports/reportTypes.routes';
 import reportRoutes from './modules/reports/reports.routes';
@@ -278,6 +279,7 @@ app.use('/api/master/target-cycles', targetCycleRoutes);
 app.use('/api/admin/field-highlights', fieldHighlightRoutes);
 app.use('/api/lead-dynamics', leadDynamicsRouter);
 app.use('/api/leads', leadValuesRouter);
+app.use('/api/settings/automations', automationRoutes);
 app.use('/api/master/lead-sources', leadSourceRoutes);
 app.use('/api/master/products', productRoutes);
 

@@ -908,6 +908,18 @@ export const createFollowUp = async (
   const todayRange = await getDayRangeForWorkspace(workspaceId);
   await invalidateTodayCache(workspaceId, ownerUserId, [scheduleDateKey, todayRange.cacheDateKey]);
   await syncLeadNextFollowUpPointer(input.leadId.trim(), workspaceId);
+  try {
+    const { eventDispatcher } = await import('../../modules/automation/eventDispatcher');
+    void eventDispatcher.dispatch('followup.created', {
+      workspaceId,
+      recordId: input.leadId.trim(),
+      recordType: 'Lead',
+      actorId: actor.id,
+      newData: created,
+    });
+  } catch (e: any) {
+    logger.error('Failed to dispatch followup.created event', { error: e.message });
+  }
 
   logger.info('Follow-up created', {
     module: 'follow-up',
@@ -1705,6 +1717,19 @@ export const completeFollowUp = async (
     workspaceId,
     userId: existing.userId,
   });
+
+  try {
+    const { eventDispatcher } = await import('../../modules/automation/eventDispatcher');
+    void eventDispatcher.dispatch('followup.completed', {
+      workspaceId,
+      recordId: existing.leadId,
+      recordType: 'Lead',
+      actorId: actor.id,
+      newData: completed,
+    });
+  } catch (e: any) {
+    logger.error('Failed to dispatch followup.completed event', { error: e.message });
+  }
 
   return mapFollowUpRecord(completed as FollowUpRecord);
 };

@@ -79,6 +79,7 @@ const startServer = async () => {
       { initRealtimeServer },
       { startAttendanceJobs },
       { startTargetPerformanceJobs },
+      _automationJobs,
     ] = await Promise.all([
       import('./app'),
       import('./config/prisma'),
@@ -88,6 +89,7 @@ const startServer = async () => {
       import('./realtime/socket'),
       import('./modules/attendance/attendance.jobs'),
       import('./modules/targets/targetCron.jobs'),
+      import('./modules/automation/automation.jobs'),
     ]);
 
     // Connect Redis
