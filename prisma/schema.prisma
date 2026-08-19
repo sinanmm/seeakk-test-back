@@ -167,6 +167,8 @@ model Workspace {
   telephonyUserMappings          TelephonyUserMapping[]
   whatsAppTemplates              WhatsAppTemplate[]
   dashboardLayoutPreferences     DashboardLayoutPreference[]
+  automationWorkflows            AutomationWorkflow[]
+  automationExecutions           AutomationExecution[]
   createdAt                      DateTime                       @default(now())
   updatedAt                      DateTime                       @updatedAt
   LeadRemark                     LeadRemark[]
@@ -1345,6 +1347,8 @@ model User {
   advancePaymentsRejected  AdvancePayment[]         @relation("AdvanceRejectedBy")
   leadRemarks              LeadRemark[]
   createdWhatsAppTemplates WhatsAppTemplate[]       @relation("WhatsAppTemplateCreatedBy")
+  workflowsCreated            AutomationWorkflow[]     @relation("WorkflowCreatedBy")
+  workflowsUpdated            AutomationWorkflow[]     @relation("WorkflowUpdatedBy")
 
   rosterEntries               RosterEntry[]
   attendanceRecords           AttendanceRecord[]
@@ -2994,6 +2998,95 @@ model DashboardLayoutPreference {
   @@unique([workspaceId, itemKey])
   @@index([workspaceId])
   @@map("dashboard_layout_preferences")
+}
+
+model AutomationWorkflow {
+  id              String             @id @default(cuid())
+  workspaceId     String
+  name            String
+  description     String?
+  triggerType     String             // e.g. "lead.created", "lead.stage_changed"
+  triggerConfig   String             @db.Text
+  conditionConfig String             @db.Text
+  active          Boolean            @default(false)
+  version         Int                @default(1)
+  createdById     String
+  updatedById     String
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  workspace       Workspace          @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdBy       User               @relation("WorkflowCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  updatedBy       User               @relation("WorkflowUpdatedBy", fields: [updatedById], references: [id], onDelete: Restrict)
+  actions         AutomationAction[]
+  executions      AutomationExecution[]
+
+  @@index([workspaceId])
+  @@map("automation_workflows")
+}
+
+model AutomationAction {
+  id              String             @id @default(cuid())
+  workflowId      String
+  position        Int
+  actionType      String             // e.g. "assign_user", "change_stage", etc.
+  actionConfig    String             @db.Text
+  delaySeconds    Int                @default(0)
+  runIfConfig     String?            @db.Text
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  workflow        AutomationWorkflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  actionExecutions AutomationActionExecution[]
+
+  @@index([workflowId])
+  @@map("automation_actions")
+}
+
+model AutomationExecution {
+  id              String             @id @default(cuid())
+  workspaceId     String
+  workflowId      String
+  workflowVersion Int
+  workflowSnapshot String            @db.Text
+  eventId         String
+  recordType      String             // e.g. "Lead"
+  recordId        String
+  status          String             // PENDING, RUNNING, COMPLETED, FAILED, PARTIALLY_FAILED, SKIPPED, CANCELLED
+  startedAt       DateTime           @default(now())
+  completedAt     DateTime?
+  error           String?            @db.Text
+  createdAt       DateTime           @default(now())
+
+  workspace       Workspace          @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workflow        AutomationWorkflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  actionExecutions AutomationActionExecution[]
+
+  @@index([workspaceId])
+  @@index([workflowId])
+  @@index([recordType, recordId])
+  @@map("automation_executions")
+}
+
+model AutomationActionExecution {
+  id                   String              @id @default(cuid())
+  workflowExecutionId  String
+  actionId             String
+  position             Int
+  status               String              // PENDING, RUNNING, WAITING, COMPLETED, FAILED, SKIPPED
+  scheduledAt          DateTime
+  startedAt            DateTime?
+  completedAt          DateTime?
+  attemptCount         Int                 @default(0)
+  error                String?             @db.Text
+  createdAt            DateTime            @default(now())
+
+  workflowExecution    AutomationExecution @relation(fields: [workflowExecutionId], references: [id], onDelete: Cascade)
+  action               AutomationAction    @relation(fields: [actionId], references: [id], onDelete: Cascade)
+
+  @@index([workflowExecutionId])
+  @@index([actionId])
+  @@map("automation_action_executions")
 }
 
 

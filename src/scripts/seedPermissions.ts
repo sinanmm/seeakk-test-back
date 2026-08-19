@@ -52,6 +52,12 @@ const permissions = [
   { key: 'ASSIGNED_USERS_EDIT', group: 'ASSIGNED_USERS', description: 'Update, change, or reassign assigned users' },
   { key: 'ASSIGNED_USERS_DELETE', group: 'ASSIGNED_USERS', description: 'Remove assigned users and delete user assignments' },
   { key: 'ORGANISATION_CHART_MANAGE', group: 'ORGANISATION_CHART', description: 'Manage the organization chart reporting structure' },
+  { key: 'AUTOMATION_VIEW', group: 'AUTOMATION', description: 'View workflow automations and execution runs' },
+  { key: 'AUTOMATION_CREATE', group: 'AUTOMATION', description: 'Create new workflow automations' },
+  { key: 'AUTOMATION_EDIT', group: 'AUTOMATION', description: 'Edit existing workflow automations' },
+  { key: 'AUTOMATION_ACTIVATE', group: 'AUTOMATION', description: 'Activate or deactivate workflow automations' },
+  { key: 'AUTOMATION_DELETE', group: 'AUTOMATION', description: 'Delete workflow automations' },
+  { key: 'AUTOMATION_VIEW_RUNS', group: 'AUTOMATION', description: 'View workflow automation execution logs' },
 
   // USERS MANAGEMENT
   { key: 'USERS_VIEW', group: 'ADMIN_MANAGEMENT', description: 'View users list' },
