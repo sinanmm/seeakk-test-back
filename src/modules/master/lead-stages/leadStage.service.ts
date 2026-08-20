@@ -1,6 +1,7 @@
 import prisma from '../../../config/prisma';
 import { redisClient } from '../../../config/redis';
 import { Prisma } from '@prisma/client';
+import logger from '../../../utils/logger';
 import {
   ListLeadStagesResponse,
   LeadStageResponse,
@@ -44,6 +45,7 @@ const STAGE_RULE_SAFE_SELECT = {
 
 const LEAD_STAGE_WITH_RULES_INCLUDE = {
   rules: {
+    where: { deletedAt: null },
     select: STAGE_RULE_SAFE_SELECT,
   },
   substages: {
@@ -393,8 +395,62 @@ export const updateLeadStage = async (
 
   const nextName = input.name !== undefined ? normalizeLeadStageName(input.name) : undefined;
 
-  if (input.ruleAssignments !== undefined) {
-    await assertRuleAssignmentsIfProvided(workspaceId, input.ruleAssignments);
+  const nextApprovalRequired =
+    input.isApprovalRequired !== undefined ? input.isApprovalRequired : existing.isApprovalRequired;
+
+  logger.info('[LeadStage Update] Lead Stage Update Started', {
+    stageId: id,
+    previousApprovalRequired: existing.isApprovalRequired,
+    newApprovalRequired: nextApprovalRequired,
+    existingRuleIds: existing.rules.map((r: any) => r.id),
+    incomingRuleIds: input.ruleAssignments?.map((r: any) => r.ruleId) || [],
+  });
+
+  let normalizedRuleAssignments = input.ruleAssignments;
+
+  if (normalizedRuleAssignments !== undefined) {
+    const uniqueRuleIds = Array.from(new Set(normalizedRuleAssignments.map((rule) => rule.ruleId)));
+    const activeRules = await stageRuleDelegate.findMany({
+      where: {
+        workspaceId,
+        id: { in: uniqueRuleIds },
+        deletedAt: null,
+      },
+      select: { id: true },
+    });
+    const activeRuleIds = new Set(activeRules.map((r: any) => r.id));
+
+    if (nextApprovalRequired) {
+      if (activeRuleIds.size !== uniqueRuleIds.length) {
+        const missingIds = uniqueRuleIds.filter((ruleId) => !activeRuleIds.has(ruleId));
+        for (const ruleId of missingIds) {
+          const ruleDetail = await stageRuleDelegate.findFirst({
+            where: { id: ruleId },
+            select: { id: true, name: true, inputType: true, required: true },
+          });
+          logger.warn('[LeadStage Update] Validation Failed: Stage Rule Not Found', {
+            stageId: id,
+            ruleId,
+            ruleName: ruleDetail?.name || 'Unknown',
+            ruleType: ruleDetail?.inputType || 'Unknown',
+            isRequiredForCurrentConfiguration: true,
+          });
+        }
+
+        const error: any = new Error('One or more stage rules were not found.');
+        error.statusCode = 404;
+        throw error;
+      }
+    } else {
+      const previousCount = normalizedRuleAssignments.length;
+      normalizedRuleAssignments = normalizedRuleAssignments.filter((assignment) => activeRuleIds.has(assignment.ruleId));
+      logger.info('[LeadStage Update] Approval Disabled: Stale/Deleted Stage Rules Ignored', {
+        stageId: id,
+        skippedRuleIds: uniqueRuleIds.filter((ruleId) => !activeRuleIds.has(ruleId)),
+        previousCount,
+        newCount: normalizedRuleAssignments.length,
+      });
+    }
   }
 
   const nextShowInCalendar =
@@ -418,6 +474,7 @@ export const updateLeadStage = async (
     ...(nextName !== undefined ? { name: nextName } : {}),
     stageShortForm: nextStageShortForm,
     showInCalendar: nextShowInCalendar,
+    ...(normalizedRuleAssignments !== undefined ? { ruleAssignments: normalizedRuleAssignments } : {}),
   };
 
   const updated = await prisma.$transaction(
@@ -562,6 +619,7 @@ export const updateLeadStage = async (
   );
 
   await clearPipelineCache(workspaceId);
+  logger.info('[LeadStage Update] Lead Stage Update Completed Successfully', { stageId: id });
   return remapSingleStage(updated);
 };
 
