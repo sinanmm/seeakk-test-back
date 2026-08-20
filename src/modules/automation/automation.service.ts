@@ -199,8 +199,9 @@ const executeActionStep = async (
   const actor = {
     id: actorId,
     email: 'system@automation.seeakk.com',
-    role: 'system',
-    permissions: ['LEADS_CREATE', 'LEADS_EDIT', 'LEADS_ASSIGN'],
+    role: { id: 'system_role', name: 'system_admin' },
+    roleId: 'system_role',
+    permissions: ['*'],
   };
 
   switch (actionType) {
@@ -583,7 +584,11 @@ export const executeDelayedAction = async (
       });
     } else {
       // 4. Run executor
-      await executeActionStep(workspaceId, lead, actionDef.actionType, actionDef.actionConfig, execution.workflow.createdById);
+      const parsedConfig = typeof actionDef.actionConfig === 'string'
+        ? JSON.parse(actionDef.actionConfig)
+        : actionDef.actionConfig;
+
+      await executeActionStep(workspaceId, lead, actionDef.actionType, parsedConfig, execution.workflow.createdById);
       await prisma.automationActionExecution.update({
         where: { id: actionExecutionId },
         data: { status: 'COMPLETED', completedAt: new Date() },

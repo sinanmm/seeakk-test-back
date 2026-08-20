@@ -86,7 +86,7 @@ export const createWorkflow = async (req: Request, res: Response, next: NextFunc
             actionType: act.actionType,
             actionConfig: JSON.stringify(act.actionConfig),
             delaySeconds: act.delaySeconds,
-            runIfConfig: act.runIfConfig ? JSON.stringify(act.runIfConfig) : null,
+            runIfConfig: act.runIfConfig || null,
           })),
         });
       }
@@ -159,7 +159,7 @@ export const updateWorkflow = async (req: Request, res: Response, next: NextFunc
               actionType: act.actionType,
               actionConfig: JSON.stringify(act.actionConfig),
               delaySeconds: act.delaySeconds,
-              runIfConfig: act.runIfConfig ? JSON.stringify(act.runIfConfig) : null,
+              runIfConfig: act.runIfConfig || null,
             })),
           });
         }
