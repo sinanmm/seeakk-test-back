@@ -469,6 +469,18 @@ export const processLeadGenWebhook = async (payload: any): Promise<void> => {
           const systemActor = { id: formConfig.metaPageConnection?.metaConnection?.connectedByUserId || 'system', role: { name: 'SYSTEM' } };
           const { lead } = await createLead(workspaceId, systemActor as any, leadInput);
 
+          try {
+            const { eventDispatcher } = await import('../../automation/eventDispatcher');
+            void eventDispatcher.dispatch('meta.lead_resolved', {
+              workspaceId,
+              recordId: lead.id,
+              recordType: 'Lead',
+              newData: lead,
+            });
+          } catch (e: any) {
+            logger.error('Failed to dispatch meta.lead_resolved event', { error: e.message });
+          }
+
           // Update MetaLeadImport record
           await (prisma as any).metaLeadImport.update({
             where: { id: importRecord.id },

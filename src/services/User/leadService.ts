@@ -3093,6 +3093,17 @@ export const updateLead = async (
         newData: updated,
       });
     }
+
+    if (existing.sourceId !== updated.sourceId) {
+      void eventDispatcher.dispatch('lead.source_changed', {
+        workspaceId,
+        recordId: updatedLeadId,
+        recordType: 'Lead',
+        actorId: actor.id,
+        previousData: existing,
+        newData: updated,
+      });
+    }
   } catch (e: any) {
     logger.error('Failed to dispatch update events', { error: e.message });
   }

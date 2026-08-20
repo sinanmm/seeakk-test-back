@@ -11,25 +11,31 @@ import { automationQueue } from './automation.jobs';
 
 export const triggersRegistry = [
   { id: 'lead.created', label: 'When a lead is created', module: 'Lead' },
-  { id: 'lead.updated', label: 'When a lead is updated', module: 'Lead' },
-  { id: 'lead.stage_changed', label: 'When lead stage changes', module: 'Lead' },
-  { id: 'lead.assigned', label: 'When a lead is assigned or reassigned', module: 'Lead' },
-  { id: 'followup.created', label: 'When a follow-up is created', module: 'FollowUp' },
-  { id: 'followup.completed', label: 'When a follow-up is completed', module: 'FollowUp' },
+  { id: 'lead.stage_changed', label: 'When lead stage is changed', module: 'Lead' },
+  { id: 'lead.source_changed', label: 'When lead source is changed', module: 'Lead' },
+  { id: 'meta.lead_resolved', label: 'When a Meta Lead submission is resolved to a CRM lead', module: 'Lead' },
+  { id: 'telephony.incoming_received', label: 'When an incoming call is received', module: 'Telephony' },
+  { id: 'telephony.incoming_missed', label: 'When an incoming call is missed', module: 'Telephony' },
 ];
 
 export const conditionFieldsRegistry = [
   { id: 'name', label: 'Lead Name', data_type: 'STRING' },
-  { id: 'phone', label: 'Mobile/Phone', data_type: 'STRING' },
+  { id: 'phone', label: 'Mobile', data_type: 'STRING' },
   { id: 'email', label: 'Email', data_type: 'STRING' },
-  { id: 'stageId', label: 'Stage', data_type: 'SELECT', options_provider: 'stages' },
-  { id: 'sourceId', label: 'Source', data_type: 'SELECT', options_provider: 'sources' },
+  { id: 'stageId', label: 'Lead Stage', data_type: 'SELECT', options_provider: 'stages' },
+  { id: 'previousStageId', label: 'Previous Stage', data_type: 'SELECT', options_provider: 'stages' },
+  { id: 'newStageId', label: 'New Stage', data_type: 'SELECT', options_provider: 'stages' },
+  { id: 'sourceId', label: 'Lead Source', data_type: 'SELECT', options_provider: 'sources' },
   { id: 'expectedRevenue', label: 'Expected Revenue', data_type: 'NUMBER' },
   { id: 'isClosed', label: 'Is Closed', data_type: 'BOOLEAN' },
   { id: 'isLOB', label: 'Is LOB', data_type: 'BOOLEAN' },
-  { id: 'approvalState', label: 'Approval Status', data_type: 'SELECT', options_provider: 'approvalStates' },
+  { id: 'assignedToId', label: 'Assigned To', data_type: 'SELECT', options_provider: 'users' },
+  { id: 'createdById', label: 'Created By', data_type: 'SELECT', options_provider: 'users' },
   { id: 'createdAt', label: 'Created Date', data_type: 'DATE' },
   { id: 'updatedAt', label: 'Updated Date', data_type: 'DATE' },
+  { id: 'nextFollowUpAt', label: 'Next Follow-Up', data_type: 'DATE' },
+  { id: 'lastRemark', label: 'Last Remark', data_type: 'STRING' },
+  { id: 'hoursSinceLastActivity', label: 'Hours Since Last Activity', data_type: 'NUMBER' },
 ];
 
 export const actionsRegistry = [
@@ -46,7 +52,8 @@ export const actionsRegistry = [
 
 export const evaluateConditionRule = (record: any, rule: any): boolean => {
   const { field, operator, value } = rule;
-  const rawValue = record[field];
+  const targetField = (field === 'phone' || field === 'mobile') ? 'phone' : field;
+  const rawValue = record[targetField];
 
   if (rawValue === undefined || rawValue === null) {
     if (operator === 'Is Empty') return true;
@@ -95,6 +102,13 @@ export const evaluateConditionRule = (record: any, rule: any): boolean => {
       return Number(rawValue) < Number(value);
     case 'Less Than or Equal':
       return Number(rawValue) <= Number(value);
+    case 'Between': {
+      const parts = Array.isArray(value) ? value : String(value).split(',');
+      const valNum = Number(rawValue);
+      const min = Number(parts[0]);
+      const max = Number(parts[1]);
+      return valNum >= min && valNum <= max;
+    }
 
     // Booleans
     case 'Is True':
@@ -104,9 +118,42 @@ export const evaluateConditionRule = (record: any, rule: any): boolean => {
 
     // Dates
     case 'Before':
+    case 'Is Before':
       return new Date(rawValue).getTime() < new Date(value).getTime();
     case 'After':
+    case 'Is After':
       return new Date(rawValue).getTime() > new Date(value).getTime();
+    case 'Is On or Before':
+      return new Date(rawValue).getTime() <= new Date(value).getTime();
+    case 'Is On or After':
+      return new Date(rawValue).getTime() >= new Date(value).getTime();
+    case 'Is Today': {
+      const today = new Date();
+      const d = new Date(rawValue);
+      return d.getDate() === today.getDate() && d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear();
+    }
+    case 'Is Yesterday': {
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const d = new Date(rawValue);
+      return d.getDate() === yesterday.getDate() && d.getMonth() === yesterday.getMonth() && d.getFullYear() === yesterday.getFullYear();
+    }
+    case 'Is Tomorrow': {
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const d = new Date(rawValue);
+      return d.getDate() === tomorrow.getDate() && d.getMonth() === tomorrow.getMonth() && d.getFullYear() === tomorrow.getFullYear();
+    }
+    case 'Within Last X Days': {
+      const days = Number(value);
+      const diff = Date.now() - new Date(rawValue).getTime();
+      return diff >= 0 && diff <= days * 86400000;
+    }
+    case 'Within Next X Days': {
+      const days = Number(value);
+      const diff = new Date(rawValue).getTime() - Date.now();
+      return diff >= 0 && diff <= days * 86400000;
+    }
 
     default:
       return false;
@@ -169,9 +216,63 @@ const executeActionStep = async (
     }
 
     case 'assign_user': {
-      if (!config.assignedToId) throw new Error('Missing assignedToId in assign_user action config.');
+      let targetUserId: string | null = null;
+      const strategy = config.strategy || 'specific';
+
+      if (strategy === 'specific') {
+        targetUserId = config.assignedToId || null;
+      } else if (strategy === 'round_robin') {
+        const pool = config.userIds || [];
+        if (pool.length > 0) {
+          let index = 0;
+          try {
+            const { getBullMQConnection } = await import('../../config/bullmq');
+            const redis = getBullMQConnection();
+            if (redis) {
+              const counterKey = `workspace:${workspaceId}:workflow:roundrobin:count`;
+              const count = await (redis as any).incr(counterKey);
+              index = count % pool.length;
+            } else {
+              index = Math.floor(Math.random() * pool.length);
+            }
+          } catch (e) {
+            index = Math.floor(Math.random() * pool.length);
+          }
+          targetUserId = pool[index];
+        }
+      } else if (strategy === 'least_assigned') {
+        const pool = config.userIds || [];
+        if (pool.length > 0) {
+          const counts = await Promise.all(
+            pool.map(async (uid: string) => {
+              const count = await prisma.lead.count({
+                where: {
+                  assignedToId: uid,
+                  isClosed: false,
+                  workspaceId,
+                  deletedAt: null,
+                },
+              });
+              return { uid, count };
+            })
+          );
+          counts.sort((a, b) => a.count - b.count);
+          targetUserId = counts[0].uid;
+        }
+      } else if (strategy === 'random') {
+        const pool = config.userIds || [];
+        if (pool.length > 0) {
+          const index = Math.floor(Math.random() * pool.length);
+          targetUserId = pool[index];
+        }
+      }
+
+      if (!targetUserId) {
+        throw new Error(`Assignment strategy ${strategy} failed to resolve a target user.`);
+      }
+
       await updateLead(workspaceId, actor as any, lead.id, {
-        assignedToId: config.assignedToId,
+        assignedToId: targetUserId,
       });
       break;
     }
@@ -225,6 +326,54 @@ const executeActionStep = async (
   }
 };
 
+const enrichLead = async (lead: any, payload: { previousData?: any; newData?: any }) => {
+  const enriched = { ...lead };
+
+  // Calculate hoursSinceLastActivity
+  try {
+    const latestActivity = await prisma.leadActivity.findFirst({
+      where: { leadId: lead.id },
+      orderBy: { createdAt: 'desc' },
+    });
+    const lastActivityTime = latestActivity ? latestActivity.createdAt.getTime() : lead.createdAt.getTime();
+    enriched.hoursSinceLastActivity = (Date.now() - lastActivityTime) / 3600000;
+  } catch (e) {
+    enriched.hoursSinceLastActivity = 0;
+  }
+
+  // Calculate lastRemark
+  try {
+    const latestRemarkObj = await prisma.leadRemark.findFirst({
+      where: { leadId: lead.id },
+      orderBy: { createdAt: 'desc' },
+    });
+    enriched.lastRemark = latestRemarkObj ? latestRemarkObj.text : (lead.remarks || '');
+  } catch (e) {
+    enriched.lastRemark = lead.remarks || '';
+  }
+
+  // Support previousStageId and newStageId
+  enriched.previousStageId = payload.previousData?.stageId || null;
+  enriched.newStageId = payload.newData?.stageId || lead.stageId;
+
+  // Resolve user office
+  if (lead.assignedToId) {
+    try {
+      const assignedUser = await prisma.user.findFirst({
+        where: { id: lead.assignedToId },
+        select: { officeId: true },
+      });
+      enriched.officeId = assignedUser?.officeId || null;
+    } catch (e) {
+      enriched.officeId = null;
+    }
+  } else {
+    enriched.officeId = null;
+  }
+
+  return enriched;
+};
+
 // ----------------------------------------------------
 // 5. WORKFLOW LIFECYCLE HANDLERS
 // ----------------------------------------------------
@@ -245,7 +394,7 @@ export const executeWorkflow = async (
 
   if (!execution || execution.status !== 'PENDING') return;
 
-  const { parentExecutionId, executionDepth } = payload;
+  const { parentExecutionId, executionDepth, previousData, newData } = payload;
   const { workspaceId, recordId, workflowSnapshot } = execution;
 
   logger.info(`[Automation Service] Starting execution: ${executionId} for workflow: ${execution.workflow.name}`);
@@ -257,11 +406,11 @@ export const executeWorkflow = async (
     });
 
     // 1. Fetch latest Lead record
-    const lead = await prisma.lead.findFirst({
+    const rawLead = await prisma.lead.findFirst({
       where: { id: recordId, workspaceId, deletedAt: null },
     });
 
-    if (!lead) {
+    if (!rawLead) {
       await prisma.automationExecution.update({
         where: { id: executionId },
         data: {
@@ -271,6 +420,8 @@ export const executeWorkflow = async (
       });
       return;
     }
+
+    const lead = await enrichLead(rawLead, { previousData, newData });
 
     // 2. Parse Snapshot Workflow Configuration
     const snap = JSON.parse(workflowSnapshot);
@@ -392,11 +543,11 @@ export const executeDelayedAction = async (
     });
 
     // 1. Fetch latest lead record (re-check state dynamically)
-    const lead = await prisma.lead.findFirst({
+    const rawLead = await prisma.lead.findFirst({
       where: { id: leadId, workspaceId, deletedAt: null },
     });
 
-    if (!lead) {
+    if (!rawLead) {
       await prisma.automationActionExecution.update({
         where: { id: actionExecutionId },
         data: {
@@ -407,6 +558,8 @@ export const executeDelayedAction = async (
       });
       return;
     }
+
+    const lead = await enrichLead(rawLead, {});
 
     // 2. Parse Snapshot Workflow action def
     const snap = JSON.parse(execution.workflowSnapshot);

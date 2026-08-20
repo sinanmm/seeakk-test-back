@@ -370,6 +370,33 @@ export const processWebhook = async (
     });
   }
 
+  if (callSession.direction === 'INBOUND') {
+    const isCompleted = event.event === 'COMPLETED' || event.event === 'ANSWERED';
+    const isFailed = event.event === 'FAILED';
+    
+    if (isCompleted || isFailed) {
+      try {
+        const { eventDispatcher } = await import('../automation/eventDispatcher');
+        const trigger = isCompleted ? 'telephony.incoming_received' : 'telephony.incoming_missed';
+        
+        const lead = await prisma.lead.findFirst({
+          where: { id: callSession.leadId, workspaceId: callSession.workspaceId, deletedAt: null },
+        });
+        
+        if (lead) {
+          void eventDispatcher.dispatch(trigger, {
+            workspaceId: callSession.workspaceId,
+            recordId: lead.id,
+            recordType: 'Lead',
+            newData: lead,
+          });
+        }
+      } catch (e: any) {
+        logger.error('Failed to dispatch telephony automation trigger', { error: e.message });
+      }
+    }
+  }
+
   return { success: true, message: 'Call event processed idempotently.' };
 };
 
