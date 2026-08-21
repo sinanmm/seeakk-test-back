@@ -25,35 +25,67 @@ export const getAuthUrl = async (req: Request, res: Response, next: NextFunction
 };
 
 export const handleCallback = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  const { code, state, error, error_description } = req.query;
+
+  if (error) {
+    logger.error('[MetaOAuth] Meta returned error during authorization', { error, error_description });
+    return res.redirect(`${frontendUrl}/admin/meta-ads?meta_connection=failed`);
+  }
+
+  if (!code || typeof code !== 'string') {
+    logger.warn('[MetaOAuth] Missing authorization code.');
+    return res.redirect(`${frontendUrl}/admin/meta-ads?meta_connection=failed`);
+  }
+
+  let workspaceId = '';
+  let userId = '';
+
+  if (!state || typeof state !== 'string') {
+    logger.warn('[MetaOAuth] Missing state parameter.');
+    return res.redirect(`${frontendUrl}/admin/meta-ads?meta_connection=failed`);
+  }
+
   try {
-    const { code, state } = req.query;
-    if (!code || typeof code !== 'string') {
-      return res.status(400).json({ success: false, error: { message: 'Missing authorization code.' } });
+    const decoded = JSON.parse(Buffer.from(state, 'base64url').toString('utf8'));
+    const stateData = decoded.data;
+    const signature = decoded.hmac;
+
+    const appSecret = process.env.META_APP_SECRET || '';
+    const expectedHmac = crypto.createHmac('sha256', appSecret).update(stateData).digest('hex');
+
+    if (signature !== expectedHmac) {
+      logger.warn('[MetaOAuth] State signature mismatch.');
+      return res.redirect(`${frontendUrl}/admin/meta-ads?meta_connection=failed`);
     }
 
-    let workspaceId = (req as any).workspaceId || (req as any).user?.workspaceId;
-    let userId = (req as any).user?.id || 'system';
-
-    if (state && typeof state === 'string') {
-      try {
-        const decoded = JSON.parse(Buffer.from(state, 'base64url').toString('utf8'));
-        const parsed = JSON.parse(decoded.data);
-        if (parsed.workspaceId) workspaceId = parsed.workspaceId;
-        if (parsed.userId) userId = parsed.userId;
-      } catch (err) {}
+    const parsed = JSON.parse(stateData);
+    
+    // Check expiry: 10 minutes (600,000 ms)
+    const tenMinutes = 10 * 60 * 1000;
+    if (Date.now() - parsed.timestamp > tenMinutes) {
+      logger.warn('[MetaOAuth] State has expired.');
+      return res.redirect(`${frontendUrl}/admin/meta-ads?meta_connection=failed`);
     }
 
-    if (!workspaceId) {
-      return res.status(403).json({ success: false, error: { message: 'Invalid state context.' } });
-    }
+    workspaceId = parsed.workspaceId;
+    userId = parsed.userId;
+  } catch (err: any) {
+    logger.error('[MetaOAuth] Failed to parse or validate state', { error: err.message });
+    return res.redirect(`${frontendUrl}/admin/meta-ads?meta_connection=failed`);
+  }
 
+  if (!workspaceId) {
+    logger.warn('[MetaOAuth] Invalid workspaceId in state.');
+    return res.redirect(`${frontendUrl}/admin/meta-ads?meta_connection=failed`);
+  }
+
+  try {
     await metaService.handleMetaOAuthCallback(workspaceId, userId, code);
-
-    // Redirect to frontend Settings -> Meta Ads page
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
     return res.redirect(`${frontendUrl}/admin/meta-ads?connected=true`);
-  } catch (error) {
-    next(error);
+  } catch (err: any) {
+    logger.error('[MetaOAuth] handleMetaOAuthCallback failed', { error: err.message });
+    return res.redirect(`${frontendUrl}/admin/meta-ads?meta_connection=failed`);
   }
 };
 

@@ -12,7 +12,7 @@ const META_WEBHOOK_VERIFY_TOKEN = process.env.META_WEBHOOK_VERIFY_TOKEN || 'seea
 const getRedirectUri = (): string => {
   if (process.env.META_OAUTH_REDIRECT_URI) return process.env.META_OAUTH_REDIRECT_URI;
   const baseUrl = process.env.BACKEND_URL || 'http://localhost:5000';
-  return `${baseUrl}/api/integrations/meta/callback`;
+  return `${baseUrl}/api/integrations/meta/oauth/callback`;
 };
 
 export const getMetaAuthUrl = (workspaceId: string, userId: string): string => {

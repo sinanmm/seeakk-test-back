@@ -10,6 +10,7 @@ router.post('/webhook', metaController.handleWebhookEvent);
 
 // Public OAuth Callback endpoint (Meta redirects browser here)
 router.get('/callback', metaController.handleCallback);
+router.get('/oauth/callback', metaController.handleCallback);
 
 // Public Meta Data Deletion Callback (Called by Meta servers on user data deletion)
 router.post('/data-deletion', metaController.handleDataDeletionCallback);
