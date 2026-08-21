@@ -350,6 +350,12 @@ export const processLeadGenWebhook = async (payload: any): Promise<void> => {
       const metaFormId = String(value.form_id || '');
       const metaPageId = String(value.page_id || '');
 
+      logger.info('[MetaWebhook] meta.webhook.leadgen.received', {
+        leadgen_id: metaLeadId,
+        page_id: metaPageId,
+        form_id: metaFormId,
+      });
+
       // Locate corresponding MetaLeadForm across workspaces
       const forms = await (prisma as any).metaLeadForm.findMany({
         where: { metaFormId, enabled: true },
@@ -367,6 +373,16 @@ export const processLeadGenWebhook = async (payload: any): Promise<void> => {
       for (const formConfig of forms) {
         const workspaceId = formConfig.workspaceId;
 
+        logger.info('[MetaWebhook] meta.webhook.page.resolved', {
+          page_id: metaPageId,
+          workspace_id: workspaceId,
+        });
+
+        logger.info('[MetaWebhook] meta.webhook.tenant.resolved', {
+          workspace_id: workspaceId,
+          meta_lead_id: metaLeadId,
+        });
+
         // Idempotency check: Database Unique Constraint on (workspaceId, metaLeadId)
         let importRecord: any;
         try {
@@ -381,8 +397,10 @@ export const processLeadGenWebhook = async (payload: any): Promise<void> => {
             },
           });
         } catch (err: any) {
-          // P2002 Unique constraint failed: Already received and processed this Meta lead!
-          logger.info('[MetaWebhook] Duplicate Meta Lead ID ignored', { workspaceId, metaLeadId });
+          logger.info('[MetaWebhook] meta.lead.duplicate_skipped', {
+            workspace_id: workspaceId,
+            leadgen_id: metaLeadId,
+          });
           continue;
         }
 
@@ -395,12 +413,22 @@ export const processLeadGenWebhook = async (payload: any): Promise<void> => {
             throw new Error('Page access token unavailable or decryption failed.');
           }
 
+          logger.info('[MetaWebhook] meta.lead.fetch.started', {
+            leadgen_id: metaLeadId,
+            page_id: metaPageId,
+          });
+
           const leadRes = await fetch(`https://graph.facebook.com/${META_GRAPH_API_VERSION}/${metaLeadId}?access_token=${encodeURIComponent(pageAccessToken)}`);
           const leadData = (await leadRes.json()) as any;
 
           if (!leadRes.ok || leadData.error) {
             throw new Error(leadData.error?.message || 'Failed to retrieve lead data from Meta Graph API.');
           }
+
+          logger.info('[MetaWebhook] meta.lead.fetch.completed', {
+            leadgen_id: metaLeadId,
+            page_id: metaPageId,
+          });
 
           const fieldData: Array<{ name: string; values: string[] }> = leadData.field_data || [];
           const fieldMap = new Map<string, string>();
@@ -465,9 +493,21 @@ export const processLeadGenWebhook = async (payload: any): Promise<void> => {
             } catch (err) {}
           }
 
-          // Execute Seeakk system lead creation
-          const systemActor = { id: formConfig.metaPageConnection?.metaConnection?.connectedByUserId || 'system', role: { name: 'SYSTEM' } };
+          // Execute Seeakk system lead creation with escalated privileges
+          const systemActor = {
+            id: formConfig.metaPageConnection?.metaConnection?.connectedByUserId || 'system',
+            email: 'system@automation.seeakk.com',
+            role: { id: 'system_role', name: 'superadmin' },
+            roleId: 'system_role',
+            permissions: ['*'],
+          };
           const { lead } = await createLead(workspaceId, systemActor as any, leadInput);
+
+          logger.info('[MetaWebhook] meta.lead.created', {
+            workspace_id: workspaceId,
+            lead_id: lead.id,
+            leadgen_id: metaLeadId,
+          });
 
           try {
             const { eventDispatcher } = await import('../../automation/eventDispatcher');
@@ -493,7 +533,11 @@ export const processLeadGenWebhook = async (payload: any): Promise<void> => {
 
           logger.info('[MetaWebhook] Successfully imported lead from Meta Ads', { workspaceId, leadId: lead.id, metaLeadId });
         } catch (err: any) {
-          logger.error('[MetaWebhook] Failed to process Meta lead import', { error: err?.message, importId: importRecord.id });
+          logger.error('[MetaWebhook] meta.webhook.failed', {
+            error: err?.message,
+            leadgen_id: metaLeadId,
+          });
+          
           await (prisma as any).metaLeadImport.update({
             where: { id: importRecord.id },
             data: {

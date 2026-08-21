@@ -1,4 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
+import crypto from 'crypto';
+import logger from '../../../utils/logger';
 import * as metaService from './metaIntegration.service';
 
 const getWorkspaceId = (req: Request): string => {
@@ -91,20 +93,74 @@ export const verifyWebhook = (req: Request, res: Response): any => {
   const token = String(req.query['hub.verify_token'] || '');
   const challenge = String(req.query['hub.challenge'] || '');
 
+  logger.info('[MetaWebhook] meta.webhook.verification.received', {
+    mode,
+    hasToken: !!token,
+    challenge,
+  });
+
   try {
     const result = metaService.handleWebhookVerification(mode, token, challenge);
-    return res.status(200).send(result);
+    logger.info('[MetaWebhook] meta.webhook.verification.success');
+    return res.status(200).set('Content-Type', 'text/plain').send(result);
   } catch (error: any) {
-    return res.status(403).send(error?.message || 'Verification failed');
+    logger.error('[MetaWebhook] meta.webhook.verification.failed', { error: error.message });
+    return res.status(403).set('Content-Type', 'text/plain').send(error?.message || 'Verification failed');
   }
 };
 
 export const handleWebhookEvent = async (req: Request, res: Response): Promise<any> => {
+  const rawBody = (req as any).rawBody;
+  const signatureHeader = req.headers['x-hub-signature-256'] || req.headers['x-hub-signature'];
+  const appSecret = process.env.META_APP_SECRET || '';
+
+  logger.info('[MetaWebhook] meta.webhook.received', {
+    method: req.method,
+    url: req.originalUrl,
+    hasSignature: !!signatureHeader,
+  });
+
+  if (signatureHeader && rawBody) {
+    try {
+      const parts = String(signatureHeader).split('=');
+      if (parts.length === 2) {
+        const algorithm = parts[0]; // e.g. 'sha256' or 'sha1'
+        const signature = parts[1];
+
+        const hmac = crypto.createHmac(algorithm, appSecret);
+        hmac.update(rawBody);
+        const expectedSignature = hmac.digest('hex');
+
+        const signatureBuffer = Buffer.from(signature, 'hex');
+        const expectedBuffer = Buffer.from(expectedSignature, 'hex');
+
+        if (signatureBuffer.length === expectedBuffer.length && crypto.timingSafeEqual(signatureBuffer, expectedBuffer)) {
+          logger.info('[MetaWebhook] meta.webhook.signature.valid');
+        } else {
+          logger.warn('[MetaWebhook] meta.webhook.signature.invalid');
+          return res.status(401).send('Invalid signature');
+        }
+      } else {
+        logger.warn('[MetaWebhook] meta.webhook.signature.invalid');
+        return res.status(401).send('Invalid signature format');
+      }
+    } catch (e: any) {
+      logger.error('[MetaWebhook] Signature verification error', { error: e.message });
+      return res.status(401).send('Signature verification failed');
+    }
+  } else {
+    logger.warn('[MetaWebhook] meta.webhook.signature.invalid - Missing signature or rawBody');
+    return res.status(401).send('Missing signature or payload');
+  }
+
   try {
-    await metaService.processLeadGenWebhook(req.body);
+    // Process asynchronously in background
+    void metaService.processLeadGenWebhook(req.body).catch((err) => {
+      logger.error('[MetaWebhook] meta.webhook.failed', { error: err?.message });
+    });
     return res.status(200).send('EVENT_RECEIVED');
   } catch (error) {
-    return res.status(200).send('EVENT_RECEIVED'); // Meta expects 200 OK fast
+    return res.status(200).send('EVENT_RECEIVED');
   }
 };
 

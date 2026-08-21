@@ -65,9 +65,11 @@ export const evaluateConditionRule = (record: any, rule: any): boolean => {
   const ruleVal = value !== undefined && value !== null ? String(value).toLowerCase() : '';
 
   switch (operator) {
-    // Strings
+    // Strings & Selects
+    case 'Is':
     case 'Equals':
       return recordVal === ruleVal;
+    case 'Is Not':
     case 'Does Not Equal':
       return recordVal !== ruleVal;
     case 'Contains':
@@ -104,6 +106,15 @@ export const evaluateConditionRule = (record: any, rule: any): boolean => {
       return Number(rawValue) <= Number(value);
     case 'Between': {
       const parts = Array.isArray(value) ? value : String(value).split(',');
+      if (parts.length < 2) return false;
+      const valTime = new Date(rawValue).getTime();
+      if (!isNaN(valTime)) {
+        const minTime = new Date(parts[0]).getTime();
+        const maxTime = new Date(parts[1]).getTime();
+        if (!isNaN(minTime) && !isNaN(maxTime)) {
+          return valTime >= minTime && valTime <= maxTime;
+        }
+      }
       const valNum = Number(rawValue);
       const min = Number(parts[0]);
       const max = Number(parts[1]);
@@ -171,7 +182,86 @@ export const evaluateConditionGroups = (record: any, groups: any[]): boolean => 
   });
 };
 
-// ----------------------------------------------------
+const enrichLead = async (lead: any, payload: { previousData?: any; newData?: any }) => {
+  const enriched = { ...lead };
+
+  // Resolve stageName, sourceName, assignedToName
+  if (lead.stageId) {
+    try {
+      const stage = await prisma.leadStage.findUnique({
+        where: { id: lead.stageId },
+        select: { name: true },
+      });
+      enriched.stage = stage?.name || '';
+      enriched.stageName = stage?.name || '';
+    } catch (e) {}
+  }
+  if (lead.sourceId) {
+    try {
+      const source = await prisma.leadSource.findUnique({
+        where: { id: lead.sourceId },
+        select: { name: true },
+      });
+      enriched.source = source?.name || '';
+      enriched.sourceName = source?.name || '';
+    } catch (e) {}
+  }
+  if (lead.assignedToId) {
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id: lead.assignedToId },
+        select: { name: true },
+      });
+      enriched.assignedTo = user?.name || '';
+      enriched.assignedToName = user?.name || '';
+    } catch (e) {}
+  }
+  enriched.mobile = lead.phone || '';
+
+  // Calculate hoursSinceLastActivity
+  try {
+    const latestActivity = await prisma.leadActivity.findFirst({
+      where: { leadId: lead.id },
+      orderBy: { createdAt: 'desc' },
+    });
+    const lastActivityTime = latestActivity ? latestActivity.createdAt.getTime() : lead.createdAt.getTime();
+    enriched.hoursSinceLastActivity = Math.floor((Date.now() - lastActivityTime) / 3600000);
+  } catch (e) {
+    enriched.hoursSinceLastActivity = 0;
+  }
+
+  // Calculate lastRemark
+  try {
+    const latestRemarkObj = await prisma.leadRemark.findFirst({
+      where: { leadId: lead.id },
+      orderBy: { createdAt: 'desc' },
+    });
+    enriched.lastRemark = latestRemarkObj ? latestRemarkObj.text : (lead.remarks || '');
+  } catch (e) {
+    enriched.lastRemark = lead.remarks || '';
+  }
+
+  // Support previousStageId and newStageId
+  enriched.previousStageId = payload.previousData?.stageId || null;
+  enriched.newStageId = payload.newData?.stageId || lead.stageId;
+
+  // Resolve user office
+  if (lead.assignedToId) {
+    try {
+      const assignedUser = await prisma.user.findFirst({
+        where: { id: lead.assignedToId },
+        select: { officeId: true },
+      });
+      enriched.officeId = assignedUser?.officeId || null;
+    } catch (e) {
+      enriched.officeId = null;
+    }
+  } else {
+    enriched.officeId = null;
+  }
+
+  return enriched;
+};// ----------------------------------------------------
 // 3. VARIABLE REPLACEMENT SYSTEM
 // ----------------------------------------------------
 
@@ -194,14 +284,20 @@ const executeActionStep = async (
   lead: any,
   actionType: string,
   config: any,
-  actorId: string
+  actorId: string,
+  parentExecutionId?: string | null,
+  executionDepth?: number
 ): Promise<void> => {
   const actor = {
     id: actorId,
     email: 'system@automation.seeakk.com',
-    role: { id: 'system_role', name: 'system_admin' },
+    role: { id: 'system_role', name: 'superadmin' },
     roleId: 'system_role',
     permissions: ['*'],
+    automationContext: {
+      parentExecutionId,
+      executionDepth,
+    },
   };
 
   switch (actionType) {
@@ -221,57 +317,80 @@ const executeActionStep = async (
       const strategy = config.strategy || 'specific';
 
       if (strategy === 'specific') {
-        targetUserId = config.assignedToId || null;
-      } else if (strategy === 'round_robin') {
-        const pool = config.userIds || [];
-        if (pool.length > 0) {
-          let index = 0;
-          try {
-            const { getBullMQConnection } = await import('../../config/bullmq');
-            const redis = getBullMQConnection();
-            if (redis) {
-              const counterKey = `workspace:${workspaceId}:workflow:roundrobin:count`;
-              const count = await (redis as any).incr(counterKey);
-              index = count % pool.length;
-            } else {
-              index = Math.floor(Math.random() * pool.length);
-            }
-          } catch (e) {
-            index = Math.floor(Math.random() * pool.length);
+        const targetId = config.assignedToId || null;
+        if (targetId) {
+          const user = await prisma.user.findFirst({
+            where: {
+              id: targetId,
+              workspaceId,
+              isActive: true,
+              deletedAt: null,
+            },
+          });
+          if (user) {
+            targetUserId = user.id;
           }
-          targetUserId = pool[index];
         }
-      } else if (strategy === 'least_assigned') {
+      } else {
         const pool = config.userIds || [];
         if (pool.length > 0) {
-          const counts = await Promise.all(
-            pool.map(async (uid: string) => {
-              const count = await prisma.lead.count({
-                where: {
-                  assignedToId: uid,
-                  isClosed: false,
-                  workspaceId,
-                  deletedAt: null,
-                },
-              });
-              return { uid, count };
-            })
-          );
-          counts.sort((a, b) => a.count - b.count);
-          targetUserId = counts[0].uid;
-        }
-      } else if (strategy === 'random') {
-        const pool = config.userIds || [];
-        if (pool.length > 0) {
-          const index = Math.floor(Math.random() * pool.length);
-          targetUserId = pool[index];
+          const activeUsers = await prisma.user.findMany({
+            where: {
+              id: { in: pool },
+              workspaceId,
+              isActive: true,
+              deletedAt: null,
+            },
+            select: { id: true },
+          });
+          const validPool = activeUsers.map((u: any) => u.id);
+
+          if (validPool.length > 0) {
+            if (strategy === 'round_robin') {
+              let index = 0;
+              try {
+                const { getBullMQConnection } = await import('../../config/bullmq');
+                const redis = getBullMQConnection();
+                if (redis) {
+                  const counterKey = `workspace:${workspaceId}:workflow:roundrobin:count`;
+                  const count = await (redis as any).incr(counterKey);
+                  index = count % validPool.length;
+                } else {
+                  index = Math.floor(Math.random() * validPool.length);
+                }
+              } catch (e) {
+                index = Math.floor(Math.random() * validPool.length);
+              }
+              targetUserId = validPool[index];
+            } else if (strategy === 'least_assigned') {
+              const counts = await Promise.all(
+                validPool.map(async (uid: string) => {
+                  const count = await prisma.lead.count({
+                    where: {
+                      assignedToId: uid,
+                      isClosed: false,
+                      workspaceId,
+                      deletedAt: null,
+                    },
+                  });
+                  return { uid, count };
+                })
+              );
+              counts.sort((a, b) => a.count - b.count);
+              targetUserId = counts[0].uid;
+            } else if (strategy === 'random') {
+              const index = Math.floor(Math.random() * validPool.length);
+              targetUserId = validPool[index];
+            }
+          }
         }
       }
 
       if (!targetUserId) {
-        throw new Error(`Assignment strategy ${strategy} failed to resolve a target user.`);
+        throw new Error(`Assignment strategy ${strategy} failed to resolve a target active tenant user.`);
       }
 
+      const { updateLead } = await import('../../services/User/leadService');
       await updateLead(workspaceId, actor as any, lead.id, {
         assignedToId: targetUserId,
       });
@@ -309,6 +428,17 @@ const executeActionStep = async (
       const msgText = replaceVariables(config.message, lead);
       const title = replaceVariables(config.title || 'Workflow Automation Alert', lead);
       
+      // Persist notification to database
+      await prisma.attendanceNotification.create({
+        data: {
+          workspaceId,
+          userId: config.recipientId,
+          title,
+          message: msgText,
+          isRead: false,
+        },
+      });
+
       // Broadcast real-time user notification
       emitUserEvent(config.recipientId, 'lead_updated', {
         leadId: lead.id,
@@ -327,53 +457,7 @@ const executeActionStep = async (
   }
 };
 
-const enrichLead = async (lead: any, payload: { previousData?: any; newData?: any }) => {
-  const enriched = { ...lead };
 
-  // Calculate hoursSinceLastActivity
-  try {
-    const latestActivity = await prisma.leadActivity.findFirst({
-      where: { leadId: lead.id },
-      orderBy: { createdAt: 'desc' },
-    });
-    const lastActivityTime = latestActivity ? latestActivity.createdAt.getTime() : lead.createdAt.getTime();
-    enriched.hoursSinceLastActivity = (Date.now() - lastActivityTime) / 3600000;
-  } catch (e) {
-    enriched.hoursSinceLastActivity = 0;
-  }
-
-  // Calculate lastRemark
-  try {
-    const latestRemarkObj = await prisma.leadRemark.findFirst({
-      where: { leadId: lead.id },
-      orderBy: { createdAt: 'desc' },
-    });
-    enriched.lastRemark = latestRemarkObj ? latestRemarkObj.text : (lead.remarks || '');
-  } catch (e) {
-    enriched.lastRemark = lead.remarks || '';
-  }
-
-  // Support previousStageId and newStageId
-  enriched.previousStageId = payload.previousData?.stageId || null;
-  enriched.newStageId = payload.newData?.stageId || lead.stageId;
-
-  // Resolve user office
-  if (lead.assignedToId) {
-    try {
-      const assignedUser = await prisma.user.findFirst({
-        where: { id: lead.assignedToId },
-        select: { officeId: true },
-      });
-      enriched.officeId = assignedUser?.officeId || null;
-    } catch (e) {
-      enriched.officeId = null;
-    }
-  } else {
-    enriched.officeId = null;
-  }
-
-  return enriched;
-};
 
 // ----------------------------------------------------
 // 5. WORKFLOW LIFECYCLE HANDLERS
@@ -588,11 +672,23 @@ export const executeDelayedAction = async (
         ? JSON.parse(actionDef.actionConfig)
         : actionDef.actionConfig;
 
-      await executeActionStep(workspaceId, lead, actionDef.actionType, parsedConfig, execution.workflow.createdById);
+      await executeActionStep(
+        workspaceId,
+        lead,
+        actionDef.actionType,
+        parsedConfig,
+        execution.workflow.createdById,
+        parentExecutionId,
+        executionDepth
+      );
       await prisma.automationActionExecution.update({
         where: { id: actionExecutionId },
         data: { status: 'COMPLETED', completedAt: new Date() },
       });
+      try {
+        const { emitWorkspaceEvent } = await import('../../realtime/socket');
+        emitWorkspaceEvent(workspaceId, 'lead_updated', { leadId });
+      } catch (e) {}
     }
 
     // 5. Look for next action in sequence

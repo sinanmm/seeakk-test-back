@@ -183,7 +183,12 @@ app.use((req, res, next) => {
   if (req.path === SOCKET_IO_PATH || req.path.startsWith(`${SOCKET_IO_PATH}/`)) {
     return next();
   }
-  return express.json({ limit: requestBodyLimit })(req, res, next);
+  return express.json({
+    limit: requestBodyLimit,
+    verify: (req: any, res, buf) => {
+      req.rawBody = buf;
+    },
+  })(req, res, next);
 });
 
 app.use((req, res, next) => {

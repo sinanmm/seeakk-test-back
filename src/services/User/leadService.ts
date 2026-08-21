@@ -2447,6 +2447,8 @@ export const createLead = async (
         recordType: 'Lead',
         actorId: actor.id,
         newData: created,
+        parentExecutionId: (actor as any).automationContext?.parentExecutionId,
+        executionDepth: (actor as any).automationContext?.executionDepth,
       });
     } catch (e: any) {
       logger.error('Failed to dispatch lead.created event', { error: e.message });
@@ -3063,6 +3065,9 @@ export const updateLead = async (
     const previousAssignedToId = existing.assignedToId;
     const newAssignedToId = updated.assignedToId;
 
+    const parentExecId = (actor as any).automationContext?.parentExecutionId;
+    const execDepth = (actor as any).automationContext?.executionDepth;
+
     void eventDispatcher.dispatch('lead.updated', {
       workspaceId,
       recordId: updatedLeadId,
@@ -3070,6 +3075,8 @@ export const updateLead = async (
       actorId: actor.id,
       previousData: existing,
       newData: updated,
+      parentExecutionId: parentExecId,
+      executionDepth: execDepth,
     });
 
     if (previousStageId !== newStageId) {
@@ -3080,6 +3087,8 @@ export const updateLead = async (
         actorId: actor.id,
         previousData: existing,
         newData: updated,
+        parentExecutionId: parentExecId,
+        executionDepth: execDepth,
       });
     }
 
@@ -3091,6 +3100,8 @@ export const updateLead = async (
         actorId: actor.id,
         previousData: existing,
         newData: updated,
+        parentExecutionId: parentExecId,
+        executionDepth: execDepth,
       });
     }
 
@@ -3102,6 +3113,8 @@ export const updateLead = async (
         actorId: actor.id,
         previousData: existing,
         newData: updated,
+        parentExecutionId: parentExecId,
+        executionDepth: execDepth,
       });
     }
   } catch (e: any) {
@@ -3156,18 +3169,24 @@ export const changeStage = async (
   }
 
   if (existing.stageId !== targetStage.id && shouldRequireApprovalForStage(targetStage)) {
-    const requestingUser = await prisma.user.findUnique({
-      where: { id: actor.id },
-      select: { supervisorId: true },
-    });
-
-    if (!requestingUser?.supervisorId && isManagerialRole(actor.role?.name)) {
-      logger.info('Bypassing lead stage approval for managerial user without supervisor', {
-        userId: actor.id,
-        role: actor.role?.name,
+    if (actor.roleId === 'system_role' || (actor as any).email === 'system@automation.seeakk.com' || actor.role?.name === 'system_admin') {
+      logger.info('Bypassing lead stage approval for system automation actor', {
+        stageId: targetStage.id,
         targetStage: targetStage.name,
       });
     } else {
+      const requestingUser = await prisma.user.findUnique({
+        where: { id: actor.id },
+        select: { supervisorId: true },
+      });
+
+      if (!requestingUser?.supervisorId && isManagerialRole(actor.role?.name)) {
+        logger.info('Bypassing lead stage approval for managerial user without supervisor', {
+          userId: actor.id,
+          role: actor.role?.name,
+          targetStage: targetStage.name,
+        });
+      } else {
       const executionRules = await getActiveStageRulesForExecution(workspaceId, targetStage.id);
       const ruleNameById = new Map(executionRules.map((rule) => [rule.id, rule.name]));
       const stageRuleValuesForRequest = (input.stageRuleValues ?? []).map((entry) => ({
@@ -3207,6 +3226,7 @@ export const changeStage = async (
       };
     }
   }
+}
 
   const updatedLead = await updateLead(workspaceId, actor, id, {
     stageId: input.stageId,
