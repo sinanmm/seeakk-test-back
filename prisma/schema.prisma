@@ -162,8 +162,6 @@ model Workspace {
   metaPageConnections            MetaPageConnection[]
   metaLeadForms                  MetaLeadForm[]
   metaLeadImports                MetaLeadImport[]
-  metaAutomations                MetaAutomation[]
-  metaAutomationRuns             MetaAutomationRun[]
   telephonySetting               TelephonySetting?
   telephonyProviderConfigs       TelephonyProviderConfig[]
   telephonyUserMappings          TelephonyUserMapping[]
@@ -913,7 +911,6 @@ model Lead {
   remarksList        LeadRemark[]
   dynamicValues      LeadDynamicValue[]
   metaLeadImports    MetaLeadImport[]
-  metaAutomationRuns MetaAutomationRun[]
 
   @@index([workspaceId, assignedToId, stageId])
   @@index([workspaceId, sourceId, createdAt])
@@ -1335,7 +1332,6 @@ model User {
   passwordResetTokens PasswordResetToken[]
   metaConnections     MetaConnection[]
   metaLeadForms       MetaLeadForm[]
-  metaAutomations     MetaAutomation[]
 
   // Audit logs relation
   auditLogs                   AuditLog[]
@@ -2804,17 +2800,14 @@ model DashboardPipelineAudit {
 model MetaConnection {
   id                   String               @id @default(cuid())
   workspaceId          String
-  name                 String?              @default("Meta Connection")
   metaUserId           String?
   metaUserName         String?
   metaBusinessId       String?
-  status               String               @default("CONNECTED") // CONNECTED, EXPIRED, RECONNECT_REQUIRED, ERROR, DISCONNECTED
+  status               String               @default("CONNECTED") // CONNECTED, DISCONNECTED, REAUTH_REQUIRED, ERROR
   accessTokenEncrypted String               @db.Text
   tokenExpiresAt       DateTime?
-  scopes               String?              @db.Text
   connectedByUserId    String
   lastHealthCheckAt    DateTime?
-  lastSyncAt           DateTime?
   lastError            String?              @db.Text
   createdAt            DateTime             @default(now())
   updatedAt            DateTime             @updatedAt
@@ -2822,9 +2815,7 @@ model MetaConnection {
   workspace            Workspace            @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   connectedByUser      User                 @relation(fields: [connectedByUserId], references: [id], onDelete: Cascade)
   pages                MetaPageConnection[]
-  automations          MetaAutomation[]
 
-  @@unique([workspaceId, metaUserId])
   @@index([workspaceId])
   @@index([status])
   @@map("meta_connections")
@@ -2836,20 +2827,16 @@ model MetaPageConnection {
   metaConnectionId         String
   metaPageId               String
   pageName                 String
-  pictureUrl               String?         @db.Text
   pageAccessTokenEncrypted String          @db.Text
   status                   String          @default("ACTIVE")
   subscribedToLeadgen      Boolean         @default(false)
-  lastSyncedAt             DateTime?
   createdAt                DateTime        @default(now())
   updatedAt                DateTime        @updatedAt
 
   workspace                Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   metaConnection           MetaConnection  @relation(fields: [metaConnectionId], references: [id], onDelete: Cascade)
   forms                    MetaLeadForm[]
-  automations              MetaAutomation[]
 
-  @@unique([metaConnectionId, metaPageId])
   @@index([workspaceId, metaPageId])
   @@map("meta_page_connections")
 }
@@ -2897,97 +2884,6 @@ model MetaFieldMapping {
 
   @@index([metaLeadFormId])
   @@map("meta_field_mappings")
-}
-
-model MetaAutomation {
-  id                  String                  @id @default(cuid())
-  workspaceId         String
-  createdById         String
-  name                String
-  connectionId        String
-  pageId              String
-  metaFormId          String
-  metaFormName        String
-  isActive            Boolean                 @default(true)
-  leadsReceivedCount  Int                     @default(0)
-  lastLeadAt          DateTime?
-  lastSuccessAt       DateTime?
-  lastErrorAt         DateTime?
-  lastError           String?                 @db.Text
-  createdAt           DateTime                @default(now())
-  updatedAt           DateTime                @updatedAt
-  deletedAt           DateTime?
-
-  workspace           Workspace               @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  createdBy           User                    @relation(fields: [createdById], references: [id], onDelete: Cascade)
-  connection          MetaConnection          @relation(fields: [connectionId], references: [id], onDelete: Cascade)
-  page                MetaPageConnection      @relation(fields: [pageId], references: [id], onDelete: Cascade)
-  mappings            MetaAutomationMapping[]
-  runs                MetaAutomationRun[]
-
-  @@index([workspaceId, pageId, metaFormId, isActive])
-  @@index([workspaceId, deletedAt])
-  @@map("meta_automations")
-}
-
-model MetaAutomationMapping {
-  id               String         @id @default(cuid())
-  automationId     String
-  destinationKey   String         // e.g. "name", "phone", "email", "companyName", "address", "remarks", "sourceId", "stageId", or "dynamic:<id>"
-  sourceType       String         @default("FIELD") // FIELD, STATIC, SYSTEM
-  sourceKey        String?        // Meta field name or System value key
-  staticValue      String?        @db.Text
-  sortOrder        Int            @default(0)
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
-
-  automation       MetaAutomation @relation(fields: [automationId], references: [id], onDelete: Cascade)
-
-  @@index([automationId])
-  @@map("meta_automation_mappings")
-}
-
-model MetaWebhookEvent {
-  id                String    @id @default(cuid())
-  metaEventId       String?
-  pageId            String?
-  formId            String?
-  leadgenId         String?
-  payloadJson       String    @db.Text
-  receivedAt        DateTime  @default(now())
-  signatureValid    Boolean   @default(true)
-  processingStatus  String    @default("PENDING") // PENDING, PROCESSED, FAILED, IGNORED
-  attempts          Int       @default(0)
-  lastError         String?   @db.Text
-  processedAt       DateTime?
-
-  @@index([pageId, formId])
-  @@index([leadgenId])
-  @@index([processingStatus])
-  @@map("meta_webhook_events")
-}
-
-model MetaAutomationRun {
-  id              String         @id @default(cuid())
-  workspaceId     String
-  automationId    String
-  leadgenId       String
-  webhookEventId  String?
-  crmLeadId       String?
-  status          String         @default("PROCESSING") // RECEIVED, PROCESSING, SUCCESS, DUPLICATE, IGNORED, RETRY, FAILED
-  attempts        Int            @default(0)
-  errorMessage    String?        @db.Text
-  startedAt       DateTime       @default(now())
-  completedAt     DateTime?
-
-  workspace       Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  automation      MetaAutomation @relation(fields: [automationId], references: [id], onDelete: Cascade)
-  crmLead         Lead?          @relation(fields: [crmLeadId], references: [id], onDelete: SetNull)
-
-  @@unique([automationId, leadgenId])
-  @@index([workspaceId, status])
-  @@index([automationId])
-  @@map("meta_automation_runs")
 }
 
 model MetaLeadImport {

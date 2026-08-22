@@ -13,10 +13,6 @@ const getWorkspaceId = (req: Request): string => {
   return workspaceId;
 };
 
-// -----------------------------------------------------------------------------
-// 1. OAUTH ENDPOINTS
-// -----------------------------------------------------------------------------
-
 export const getAuthUrl = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
   try {
     const workspaceId = getWorkspaceId(req);
@@ -28,7 +24,7 @@ export const getAuthUrl = async (req: Request, res: Response, next: NextFunction
   }
 };
 
-export const handleCallback = async (req: Request, res: Response): Promise<any> => {
+export const handleCallback = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
   const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
   const { code, state, error, error_description } = req.query;
 
@@ -64,6 +60,8 @@ export const handleCallback = async (req: Request, res: Response): Promise<any> 
     }
 
     const parsed = JSON.parse(stateData);
+    
+    // Check expiry: 10 minutes (600,000 ms)
     const tenMinutes = 10 * 60 * 1000;
     if (Date.now() - parsed.timestamp > tenMinutes) {
       logger.warn('[MetaOAuth] State has expired.');
@@ -73,7 +71,12 @@ export const handleCallback = async (req: Request, res: Response): Promise<any> 
     workspaceId = parsed.workspaceId;
     userId = parsed.userId;
   } catch (err: any) {
-    logger.error('[MetaOAuth] Failed to parse state', { error: err.message });
+    logger.error('[MetaOAuth] Failed to parse or validate state', { error: err.message });
+    return res.redirect(`${frontendUrl}/admin/meta-ads?meta_connection=failed`);
+  }
+
+  if (!workspaceId) {
+    logger.warn('[MetaOAuth] Invalid workspaceId in state.');
     return res.redirect(`${frontendUrl}/admin/meta-ads?meta_connection=failed`);
   }
 
@@ -81,211 +84,59 @@ export const handleCallback = async (req: Request, res: Response): Promise<any> 
     await metaService.handleMetaOAuthCallback(workspaceId, userId, code);
     return res.redirect(`${frontendUrl}/admin/meta-ads?connected=true`);
   } catch (err: any) {
-    logger.error('[MetaOAuth] Callback processing failed', { error: err.message });
+    logger.error('[MetaOAuth] handleMetaOAuthCallback failed', { error: err.message });
     return res.redirect(`${frontendUrl}/admin/meta-ads?meta_connection=failed`);
   }
 };
 
-// -----------------------------------------------------------------------------
-// 2. CONNECTIONS ENDPOINTS
-// -----------------------------------------------------------------------------
-
-export const getConnections = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+export const getStatus = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
   try {
     const workspaceId = getWorkspaceId(req);
-    const data = await metaService.getMetaConnections(workspaceId);
+    const data = await metaService.getMetaStatus(workspaceId);
     return res.json({ success: true, data });
   } catch (error) {
     next(error);
   }
 };
 
-export const disconnectConnection = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+export const getPagesAndForms = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
   try {
     const workspaceId = getWorkspaceId(req);
-    const connectionId = Array.isArray(req.params.id) ? req.params.id[0] : String(req.params.id || '');
-    const data = await metaService.disconnectMetaConnection(workspaceId, connectionId);
+    const data = await metaService.getPagesAndForms(workspaceId);
     return res.json({ success: true, data });
   } catch (error) {
     next(error);
   }
 };
 
-// -----------------------------------------------------------------------------
-// 3. PAGES & FORMS DISCOVERY ENDPOINTS
-// -----------------------------------------------------------------------------
-
-export const getPages = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+export const saveFormConfig = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
   try {
     const workspaceId = getWorkspaceId(req);
-    const connectionId = Array.isArray(req.params.connectionId)
-      ? req.params.connectionId[0]
-      : String(req.params.connectionId || '');
-    const forceRefresh = req.query.refresh === 'true';
-
-    const data = await metaService.getPagesForConnection(workspaceId, connectionId, forceRefresh);
-    return res.json({ success: true, data });
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const getForms = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
-  try {
-    const workspaceId = getWorkspaceId(req);
-    const pageId = Array.isArray(req.params.pageId) ? req.params.pageId[0] : String(req.params.pageId || '');
-    const forceRefresh = req.query.refresh === 'true';
-
-    const data = await metaService.getFormsForPage(workspaceId, pageId, forceRefresh);
-    return res.json({ success: true, data });
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const getFormFields = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
-  try {
-    const workspaceId = getWorkspaceId(req);
-    const pageId = Array.isArray(req.params.pageId) ? req.params.pageId[0] : String(req.params.pageId || '');
     const formId = Array.isArray(req.params.formId) ? req.params.formId[0] : String(req.params.formId || '');
-
-    const data = await metaService.getFormFields(workspaceId, pageId, formId);
+    const data = await metaService.saveFormConfig(workspaceId, formId, req.body);
     return res.json({ success: true, data });
   } catch (error) {
     next(error);
   }
 };
-
-// -----------------------------------------------------------------------------
-// 4. AUTOMATIONS ENDPOINTS
-// -----------------------------------------------------------------------------
-
-export const getAutomations = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
-  try {
-    const workspaceId = getWorkspaceId(req);
-    const data = await metaService.getAutomations(workspaceId);
-    return res.json({ success: true, data });
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const getAutomationById = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
-  try {
-    const workspaceId = getWorkspaceId(req);
-    const id = Array.isArray(req.params.id) ? req.params.id[0] : String(req.params.id || '');
-    const data = await metaService.getAutomationById(workspaceId, id);
-    return res.json({ success: true, data });
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const createAutomation = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
-  try {
-    const workspaceId = getWorkspaceId(req);
-    const userId = (req as any).user?.id || 'system';
-    const data = await metaService.createAutomation(workspaceId, userId, req.body);
-    return res.json({ success: true, data });
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const updateAutomation = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
-  try {
-    const workspaceId = getWorkspaceId(req);
-    const id = Array.isArray(req.params.id) ? req.params.id[0] : String(req.params.id || '');
-    const data = await metaService.updateAutomation(workspaceId, id, req.body);
-    return res.json({ success: true, data });
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const deleteAutomation = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
-  try {
-    const workspaceId = getWorkspaceId(req);
-    const id = Array.isArray(req.params.id) ? req.params.id[0] : String(req.params.id || '');
-    const data = await metaService.deleteAutomation(workspaceId, id);
-    return res.json({ success: true, data });
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const duplicateAutomation = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
-  try {
-    const workspaceId = getWorkspaceId(req);
-    const userId = (req as any).user?.id || 'system';
-    const id = Array.isArray(req.params.id) ? req.params.id[0] : String(req.params.id || '');
-    const data = await metaService.duplicateAutomation(workspaceId, userId, id);
-    return res.json({ success: true, data });
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const toggleAutomation = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
-  try {
-    const workspaceId = getWorkspaceId(req);
-    const id = Array.isArray(req.params.id) ? req.params.id[0] : String(req.params.id || '');
-    const isActive = Boolean(req.body.isActive);
-    const data = await metaService.toggleAutomationStatus(workspaceId, id, isActive);
-    return res.json({ success: true, data });
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const testAutomation = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
-  try {
-    const workspaceId = getWorkspaceId(req);
-    const id = Array.isArray(req.params.id) ? req.params.id[0] : String(req.params.id || '');
-    const data = await metaService.testAutomation(workspaceId, id);
-    return res.json({ success: true, data });
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const getAutomationLogs = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
-  try {
-    const workspaceId = getWorkspaceId(req);
-    const data = await metaService.getAutomationLogs(workspaceId);
-    return res.json({ success: true, data });
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const retryAutomationRun = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
-  try {
-    const workspaceId = getWorkspaceId(req);
-    const runId = Array.isArray(req.params.runId) ? req.params.runId[0] : String(req.params.runId || '');
-    const data = await metaService.retryAutomationRun(workspaceId, runId);
-    return res.json({ success: true, data });
-  } catch (error) {
-    next(error);
-  }
-};
-
-// -----------------------------------------------------------------------------
-// 5. WEBHOOK & COMPLIANCE ENDPOINTS
-// -----------------------------------------------------------------------------
 
 export const verifyWebhook = (req: Request, res: Response): any => {
   const mode = String(req.query['hub.mode'] || '');
   const token = String(req.query['hub.verify_token'] || '');
   const challenge = String(req.query['hub.challenge'] || '');
 
-  logger.info('[MetaWebhook] Verification request received', { mode, challenge });
+  logger.info('[MetaWebhook] meta.webhook.verification.received', {
+    mode,
+    hasToken: !!token,
+    challenge,
+  });
 
   try {
     const result = metaService.handleWebhookVerification(mode, token, challenge);
+    logger.info('[MetaWebhook] meta.webhook.verification.success');
     return res.status(200).set('Content-Type', 'text/plain').send(result);
   } catch (error: any) {
-    logger.error('[MetaWebhook] Verification failed', { error: error.message });
+    logger.error('[MetaWebhook] meta.webhook.verification.failed', { error: error.message });
     return res.status(403).set('Content-Type', 'text/plain').send(error?.message || 'Verification failed');
   }
 };
@@ -295,11 +146,17 @@ export const handleWebhookEvent = async (req: Request, res: Response): Promise<a
   const signatureHeader = req.headers['x-hub-signature-256'] || req.headers['x-hub-signature'];
   const appSecret = process.env.META_APP_SECRET || '';
 
+  logger.info('[MetaWebhook] meta.webhook.received', {
+    method: req.method,
+    url: req.originalUrl,
+    hasSignature: !!signatureHeader,
+  });
+
   if (signatureHeader && rawBody) {
     try {
       const parts = String(signatureHeader).split('=');
       if (parts.length === 2) {
-        const algorithm = parts[0];
+        const algorithm = parts[0]; // e.g. 'sha256' or 'sha1'
         const signature = parts[1];
 
         const hmac = crypto.createHmac(algorithm, appSecret);
@@ -309,24 +166,64 @@ export const handleWebhookEvent = async (req: Request, res: Response): Promise<a
         const signatureBuffer = Buffer.from(signature, 'hex');
         const expectedBuffer = Buffer.from(expectedSignature, 'hex');
 
-        if (!crypto.timingSafeEqual(signatureBuffer, expectedBuffer)) {
-          logger.warn('[MetaWebhook] Signature verification failed');
+        if (signatureBuffer.length === expectedBuffer.length && crypto.timingSafeEqual(signatureBuffer, expectedBuffer)) {
+          logger.info('[MetaWebhook] meta.webhook.signature.valid');
+        } else {
+          logger.warn('[MetaWebhook] meta.webhook.signature.invalid');
           return res.status(401).send('Invalid signature');
         }
+      } else {
+        logger.warn('[MetaWebhook] meta.webhook.signature.invalid');
+        return res.status(401).send('Invalid signature format');
       }
     } catch (e: any) {
-      logger.error('[MetaWebhook] Signature error', { error: e.message });
+      logger.error('[MetaWebhook] Signature verification error', { error: e.message });
       return res.status(401).send('Signature verification failed');
     }
+  } else {
+    logger.warn('[MetaWebhook] meta.webhook.signature.invalid - Missing signature or rawBody');
+    return res.status(401).send('Missing signature or payload');
   }
 
   try {
+    // Process asynchronously in background
     void metaService.processLeadGenWebhook(req.body).catch((err) => {
-      logger.error('[MetaWebhook] Leadgen processing error', { error: err?.message });
+      logger.error('[MetaWebhook] meta.webhook.failed', { error: err?.message });
     });
     return res.status(200).send('EVENT_RECEIVED');
   } catch (error) {
     return res.status(200).send('EVENT_RECEIVED');
+  }
+};
+
+export const getSyncActivity = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  try {
+    const workspaceId = getWorkspaceId(req);
+    const data = await metaService.getSyncActivity(workspaceId);
+    return res.json({ success: true, data });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const retryFailedImport = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  try {
+    const workspaceId = getWorkspaceId(req);
+    const importId = Array.isArray(req.params.importId) ? req.params.importId[0] : String(req.params.importId || '');
+    const data = await metaService.retryFailedImport(workspaceId, importId);
+    return res.json({ success: true, data });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const disconnectMeta = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  try {
+    const workspaceId = getWorkspaceId(req);
+    const data = await metaService.disconnectMeta(workspaceId);
+    return res.json({ success: true, data });
+  } catch (error) {
+    next(error);
   }
 };
 
@@ -340,6 +237,6 @@ export const handleDataDeletionCallback = async (req: Request, res: Response): P
     const result = await metaService.processMetaSignedDataDeletion(signedRequest);
     return res.status(200).json(result);
   } catch (error: any) {
-    return res.status(400).json({ success: false, error: { message: error?.message || 'Invalid signature' } });
+    return res.status(400).json({ success: false, error: { message: error?.message || 'Invalid signed request verification failed.' } });
   }
 };
