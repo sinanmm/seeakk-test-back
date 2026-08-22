@@ -327,6 +327,496 @@ export const saveFormConfig = async (
   return updatedForm;
 };
 
+export const getMetaConnections = async (workspaceId: string): Promise<any[]> => {
+  const connections = await (prisma as any).metaConnection.findMany({
+    where: { workspaceId },
+    select: {
+      id: true,
+      metaUserId: true,
+      metaUserName: true,
+      status: true,
+      lastHealthCheckAt: true,
+      updatedAt: true,
+      pages: {
+        select: {
+          id: true,
+          metaPageId: true,
+          pageName: true,
+          status: true,
+        },
+      },
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  return connections;
+};
+
+export const getMetaPagesForConnection = async (workspaceId: string, metaConnectionId: string): Promise<any[]> => {
+  const pages = await (prisma as any).metaPageConnection.findMany({
+    where: { workspaceId, metaConnectionId },
+    select: {
+      id: true,
+      metaConnectionId: true,
+      metaPageId: true,
+      pageName: true,
+      status: true,
+      subscribedToLeadgen: true,
+    },
+    orderBy: { pageName: 'asc' },
+  });
+
+  return pages;
+};
+
+export const fetchPageLeadFormsFromMeta = async (workspaceId: string, pageConnectionId: string): Promise<any[]> => {
+  const pageConn = await (prisma as any).metaPageConnection.findFirst({
+    where: { id: pageConnectionId, workspaceId },
+  });
+
+  if (!pageConn) {
+    throw new Error('Facebook Page connection not found.');
+  }
+
+  const pageAccessTokenEncrypted = pageConn.pageAccessTokenEncrypted;
+  const pageAccessToken = pageAccessTokenEncrypted ? decryptToken(pageAccessTokenEncrypted) : null;
+
+  if (!pageAccessToken) {
+    throw new Error('Page access token unavailable or invalid.');
+  }
+
+  try {
+    const url = `https://graph.facebook.com/${META_GRAPH_API_VERSION}/${pageConn.metaPageId}/leadgen_forms?fields=id,name,status,created_time,questions&access_token=${encodeURIComponent(
+      pageAccessToken,
+    )}`;
+    const res = await fetch(url);
+    const data = (await res.json()) as any;
+
+    if (!res.ok || data.error) {
+      logger.warn('[MetaIntegration] Graph API leadgen_forms fetch failed', { error: data.error });
+      const savedForms = await (prisma as any).metaLeadForm.findMany({
+        where: { workspaceId, metaPageConnectionId: pageConnectionId },
+      });
+      return savedForms.map((f: any) => ({
+        id: f.metaFormId,
+        metaFormId: f.metaFormId,
+        name: f.formName,
+        status: 'ACTIVE',
+      }));
+    }
+
+    const liveForms = data.data || [];
+    return liveForms.map((f: any) => ({
+      id: f.id,
+      metaFormId: f.id,
+      name: f.name || 'Unnamed Form',
+      status: f.status || 'ACTIVE',
+      createdTime: f.created_time,
+      questions: f.questions || [],
+    }));
+  } catch (err: any) {
+    logger.error('[MetaIntegration] Error fetching lead forms from Meta Graph API', { error: err.message });
+    const savedForms = await (prisma as any).metaLeadForm.findMany({
+      where: { workspaceId, metaPageConnectionId: pageConnectionId },
+    });
+    return savedForms.map((f: any) => ({
+      id: f.metaFormId,
+      metaFormId: f.metaFormId,
+      name: f.formName,
+      status: 'ACTIVE',
+    }));
+  }
+};
+
+export const fetchFormFieldsFromMeta = async (
+  workspaceId: string,
+  pageConnectionId: string,
+  metaFormId: string,
+): Promise<any[]> => {
+  const pageConn = await (prisma as any).metaPageConnection.findFirst({
+    where: { id: pageConnectionId, workspaceId },
+  });
+
+  if (!pageConn) {
+    throw new Error('Facebook Page connection not found.');
+  }
+
+  const pageAccessToken = pageConn.pageAccessTokenEncrypted ? decryptToken(pageConn.pageAccessTokenEncrypted) : null;
+
+  if (!pageAccessToken) {
+    throw new Error('Page access token unavailable.');
+  }
+
+  try {
+    const url = `https://graph.facebook.com/${META_GRAPH_API_VERSION}/${metaFormId}?fields=id,name,questions,qualifiers&access_token=${encodeURIComponent(
+      pageAccessToken,
+    )}`;
+    const res = await fetch(url);
+    const data = (await res.json()) as any;
+
+    const fields: Array<{ key: string; label: string; type: string }> = [];
+
+    if (data && Array.isArray(data.questions)) {
+      for (const q of data.questions) {
+        const key = String(q.key || q.id || q.type || '').toLowerCase();
+        const label = String(q.label || q.key || q.type || 'Question').trim();
+        const type = String(q.type || 'CUSTOM').toUpperCase();
+        if (key && !fields.some((f) => f.key === key)) {
+          fields.push({ key, label, type });
+        }
+      }
+    }
+
+    if (fields.length === 0) {
+      return [
+        { key: 'full_name', label: 'Full Name', type: 'FULL_NAME' },
+        { key: 'phone_number', label: 'Phone Number', type: 'PHONE' },
+        { key: 'email', label: 'Email Address', type: 'EMAIL' },
+        { key: 'city', label: 'City / Location', type: 'LOCATION' },
+        { key: 'budget', label: 'Budget / Amount', type: 'NUMBER' },
+        { key: 'requirement', label: 'Requirement / Notes', type: 'TEXT' },
+      ];
+    }
+
+    return fields;
+  } catch (err: any) {
+    logger.error('[MetaIntegration] Error fetching form fields from Graph API', { error: err.message });
+    return [
+      { key: 'full_name', label: 'Full Name', type: 'FULL_NAME' },
+      { key: 'phone_number', label: 'Phone Number', type: 'PHONE' },
+      { key: 'email', label: 'Email Address', type: 'EMAIL' },
+      { key: 'budget', label: 'Budget / Amount', type: 'NUMBER' },
+      { key: 'requirement', label: 'Requirement / Notes', type: 'TEXT' },
+    ];
+  }
+};
+
+export const getSeeakkLeadFields = async (workspaceId: string): Promise<any[]> => {
+  const standardFields = [
+    { key: 'name', label: 'Lead Name', type: 'text', isRequired: true, isDynamic: false },
+    { key: 'phone', label: 'Mobile / Phone Number', type: 'phone', isRequired: false, isDynamic: false },
+    { key: 'email', label: 'Email Address', type: 'email', isRequired: false, isDynamic: false },
+    { key: 'companyName', label: 'Company Name', type: 'text', isRequired: false, isDynamic: false },
+    { key: 'address', label: 'Address / Location', type: 'text', isRequired: false, isDynamic: false },
+    { key: 'remarks', label: 'Remarks / Notes', type: 'textarea', isRequired: false, isDynamic: false },
+    { key: 'totalAmount', label: 'Total Amount / Budget', type: 'number', isRequired: false, isDynamic: false },
+  ];
+
+  const dynamicFields = await (prisma as any).leadDynamicField.findMany({
+    where: { workspaceId, isActive: true },
+    orderBy: { sortOrder: 'asc' },
+    select: { id: true, name: true, inputType: true, isRequired: true },
+  });
+
+  const formattedDynamicFields = dynamicFields.map((f: any) => ({
+    key: `dynamic:${f.id}`,
+    label: `${f.name} (Custom Field)`,
+    type: f.inputType,
+    isRequired: Boolean(f.isRequired),
+    isDynamic: true,
+    dynamicFieldId: f.id,
+  }));
+
+  return [...standardFields, ...formattedDynamicFields];
+};
+
+export const listAutomations = async (workspaceId: string): Promise<any[]> => {
+  const forms = await (prisma as any).metaLeadForm.findMany({
+    where: { workspaceId },
+    include: {
+      metaPageConnection: {
+        include: {
+          metaConnection: {
+            select: {
+              id: true,
+              metaUserName: true,
+              status: true,
+            },
+          },
+        },
+      },
+      fieldMappings: true,
+      defaultLeadStage: { select: { id: true, name: true } },
+      leadSource: { select: { id: true, name: true } },
+      assignmentUser: { select: { id: true, name: true, username: true, email: true } },
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  return forms.map((f: any) => ({
+    id: f.id,
+    name: f.name || f.formName || 'Meta Lead Automation',
+    formName: f.formName,
+    metaFormId: f.metaFormId,
+    enabled: f.enabled,
+    metaConnectionId: f.metaPageConnection?.metaConnection?.id || null,
+    metaConnectionName: f.metaPageConnection?.metaConnection?.metaUserName || 'Connected Account',
+    metaPageConnectionId: f.metaPageConnectionId,
+    metaPageId: f.metaPageConnection?.metaPageId,
+    pageName: f.metaPageConnection?.pageName || 'Facebook Page',
+    defaultLeadStage: f.defaultLeadStage,
+    leadSource: f.leadSource,
+    assignmentType: f.assignmentType,
+    assignmentUser: f.assignmentUser,
+    roundRobinUserIds: f.roundRobinUserIds ? JSON.parse(f.roundRobinUserIds) : [],
+    fieldMappings: f.fieldMappings,
+    createdAt: f.createdAt,
+    updatedAt: f.updatedAt,
+  }));
+};
+
+export const createAutomation = async (
+  workspaceId: string,
+  input: {
+    name: string;
+    metaPageConnectionId: string;
+    metaFormId: string;
+    formName?: string;
+    enabled?: boolean;
+    defaultLeadStageId?: string | null;
+    leadSourceId?: string | null;
+    assignmentType: 'UNASSIGNED' | 'SPECIFIC_USER' | 'ROUND_ROBIN';
+    assignmentUserId?: string | null;
+    roundRobinUserIds?: string[];
+    fieldMappings: Array<{
+      metaFieldName: string;
+      metaFieldLabel?: string;
+      seeakkFieldKey: string;
+    }>;
+  },
+): Promise<any> => {
+  const pageConn = await (prisma as any).metaPageConnection.findFirst({
+    where: { id: input.metaPageConnectionId, workspaceId },
+  });
+
+  if (!pageConn) {
+    throw new Error('Selected Facebook Page connection is invalid.');
+  }
+
+  let leadSourceId = input.leadSourceId;
+  if (!leadSourceId) {
+    const defaultSource = await (prisma as any).leadSource.findFirst({
+      where: { workspaceId, name: { contains: 'Meta', mode: 'insensitive' } },
+      select: { id: true },
+    });
+    if (defaultSource) {
+      leadSourceId = defaultSource.id;
+    } else {
+      const createdSource = await (prisma as any).leadSource.create({
+        data: {
+          workspaceId,
+          name: 'Meta Ads',
+          status: 'ACTIVE',
+        },
+      });
+      leadSourceId = createdSource.id;
+    }
+  }
+
+  const automationName = input.name.trim();
+  const formName = input.formName?.trim() || automationName;
+
+  const newAutomation = await (prisma as any).metaLeadForm.create({
+    data: {
+      workspaceId,
+      metaPageConnectionId: input.metaPageConnectionId,
+      metaFormId: input.metaFormId,
+      formName,
+      name: automationName,
+      enabled: input.enabled ?? true,
+      defaultLeadStageId: input.defaultLeadStageId || null,
+      leadSourceId,
+      assignmentType: input.assignmentType || 'UNASSIGNED',
+      assignmentUserId: input.assignmentType === 'SPECIFIC_USER' ? input.assignmentUserId || null : null,
+      roundRobinUserIds: input.assignmentType === 'ROUND_ROBIN' && input.roundRobinUserIds ? JSON.stringify(input.roundRobinUserIds) : null,
+    },
+  });
+
+  if (input.fieldMappings && input.fieldMappings.length > 0) {
+    await (prisma as any).metaFieldMapping.createMany({
+      data: input.fieldMappings.map((m) => ({
+        metaLeadFormId: newAutomation.id,
+        metaFieldName: m.metaFieldName,
+        metaFieldLabel: m.metaFieldLabel || m.metaFieldName,
+        seeakkFieldKey: m.seeakkFieldKey,
+      })),
+    });
+  }
+
+  return newAutomation;
+};
+
+export const getAutomationById = async (workspaceId: string, automationId: string): Promise<any> => {
+  const form = await (prisma as any).metaLeadForm.findFirst({
+    where: { id: automationId, workspaceId },
+    include: {
+      metaPageConnection: {
+        include: {
+          metaConnection: {
+            select: {
+              id: true,
+              metaUserName: true,
+              status: true,
+            },
+          },
+        },
+      },
+      fieldMappings: true,
+      defaultLeadStage: { select: { id: true, name: true } },
+      leadSource: { select: { id: true, name: true } },
+      assignmentUser: { select: { id: true, name: true, username: true, email: true } },
+    },
+  });
+
+  if (!form) throw new Error('Automation configuration not found.');
+
+  return {
+    id: form.id,
+    name: form.name || form.formName || 'Meta Lead Automation',
+    formName: form.formName,
+    metaFormId: form.metaFormId,
+    enabled: form.enabled,
+    metaConnectionId: form.metaPageConnection?.metaConnection?.id || null,
+    metaConnectionName: form.metaPageConnection?.metaConnection?.metaUserName || 'Connected Account',
+    metaPageConnectionId: form.metaPageConnectionId,
+    metaPageId: form.metaPageConnection?.metaPageId,
+    pageName: form.metaPageConnection?.pageName || 'Facebook Page',
+    defaultLeadStage: form.defaultLeadStage,
+    leadSource: form.leadSource,
+    assignmentType: form.assignmentType,
+    assignmentUser: form.assignmentUser,
+    roundRobinUserIds: form.roundRobinUserIds ? JSON.parse(form.roundRobinUserIds) : [],
+    fieldMappings: form.fieldMappings,
+  };
+};
+
+export const updateAutomation = async (
+  workspaceId: string,
+  automationId: string,
+  input: any,
+): Promise<any> => {
+  const existing = await (prisma as any).metaLeadForm.findFirst({
+    where: { id: automationId, workspaceId },
+  });
+
+  if (!existing) {
+    throw new Error('Automation configuration not found.');
+  }
+
+  const updateData: any = {};
+  if (input.name !== undefined) updateData.name = input.name.trim();
+  if (input.formName !== undefined) updateData.formName = input.formName.trim();
+  if (input.enabled !== undefined) updateData.enabled = Boolean(input.enabled);
+  if (input.defaultLeadStageId !== undefined) updateData.defaultLeadStageId = input.defaultLeadStageId || null;
+  if (input.leadSourceId !== undefined) updateData.leadSourceId = input.leadSourceId || null;
+  if (input.assignmentType !== undefined) updateData.assignmentType = input.assignmentType;
+  if (input.assignmentUserId !== undefined) updateData.assignmentUserId = input.assignmentType === 'SPECIFIC_USER' ? input.assignmentUserId || null : null;
+  if (input.roundRobinUserIds !== undefined) updateData.roundRobinUserIds = input.assignmentType === 'ROUND_ROBIN' && input.roundRobinUserIds ? JSON.stringify(input.roundRobinUserIds) : null;
+  if (input.metaPageConnectionId) updateData.metaPageConnectionId = input.metaPageConnectionId;
+  if (input.metaFormId) updateData.metaFormId = input.metaFormId;
+
+  const updated = await (prisma as any).metaLeadForm.update({
+    where: { id: automationId },
+    data: updateData,
+  });
+
+  if (input.fieldMappings !== undefined) {
+    await (prisma as any).metaFieldMapping.deleteMany({
+      where: { metaLeadFormId: automationId },
+    });
+
+    if (Array.isArray(input.fieldMappings) && input.fieldMappings.length > 0) {
+      await (prisma as any).metaFieldMapping.createMany({
+        data: input.fieldMappings.map((m: any) => ({
+          metaLeadFormId: automationId,
+          metaFieldName: m.metaFieldName,
+          metaFieldLabel: m.metaFieldLabel || m.metaFieldName,
+          seeakkFieldKey: m.seeakkFieldKey,
+        })),
+      });
+    }
+  }
+
+  return updated;
+};
+
+export const toggleAutomation = async (
+  workspaceId: string,
+  automationId: string,
+  enabled: boolean,
+): Promise<any> => {
+  const existing = await (prisma as any).metaLeadForm.findFirst({
+    where: { id: automationId, workspaceId },
+  });
+
+  if (!existing) throw new Error('Automation configuration not found.');
+
+  return await (prisma as any).metaLeadForm.update({
+    where: { id: automationId },
+    data: { enabled },
+  });
+};
+
+export const duplicateAutomation = async (
+  workspaceId: string,
+  automationId: string,
+): Promise<any> => {
+  const existing = await (prisma as any).metaLeadForm.findFirst({
+    where: { id: automationId, workspaceId },
+    include: { fieldMappings: true },
+  });
+
+  if (!existing) throw new Error('Automation configuration not found.');
+
+  const dupName = `${existing.name || existing.formName} (Copy)`;
+
+  const duplicated = await (prisma as any).metaLeadForm.create({
+    data: {
+      workspaceId,
+      metaPageConnectionId: existing.metaPageConnectionId,
+      metaFormId: existing.metaFormId,
+      formName: existing.formName,
+      name: dupName,
+      enabled: false,
+      defaultLeadStageId: existing.defaultLeadStageId,
+      leadSourceId: existing.leadSourceId,
+      assignmentType: existing.assignmentType,
+      assignmentUserId: existing.assignmentUserId,
+      roundRobinUserIds: existing.roundRobinUserIds,
+    },
+  });
+
+  if (existing.fieldMappings && existing.fieldMappings.length > 0) {
+    await (prisma as any).metaFieldMapping.createMany({
+      data: existing.fieldMappings.map((m: any) => ({
+        metaLeadFormId: duplicated.id,
+        metaFieldName: m.metaFieldName,
+        metaFieldLabel: m.metaFieldLabel,
+        seeakkFieldKey: m.seeakkFieldKey,
+      })),
+    });
+  }
+
+  return duplicated;
+};
+
+export const deleteAutomation = async (
+  workspaceId: string,
+  automationId: string,
+): Promise<any> => {
+  const existing = await (prisma as any).metaLeadForm.findFirst({
+    where: { id: automationId, workspaceId },
+  });
+
+  if (!existing) throw new Error('Automation configuration not found.');
+
+  await (prisma as any).metaLeadForm.delete({
+    where: { id: automationId },
+  });
+
+  return { success: true, message: 'Automation deleted successfully.' };
+};
+
 export const handleWebhookVerification = (mode: string, verifyToken: string, challenge: string): string => {
   if (mode === 'subscribe' && verifyToken === META_WEBHOOK_VERIFY_TOKEN) {
     return challenge;

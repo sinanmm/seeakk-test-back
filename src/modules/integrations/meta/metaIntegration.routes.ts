@@ -24,4 +24,19 @@ router.get('/sync-activity', protect, metaController.getSyncActivity);
 router.post('/sync-activity/:importId/retry', protect, metaController.retryFailedImport);
 router.post('/disconnect', protect, metaController.disconnectMeta);
 
+// Multi-Automation System Endpoints
+router.get('/connections', protect, metaController.getConnections);
+router.get('/connections/:connectionId/pages', protect, metaController.getPagesForConnection);
+router.get('/pages/:pageConnectionId/forms', protect, metaController.fetchPageLeadForms);
+router.get('/pages/:pageConnectionId/forms/:metaFormId/fields', protect, metaController.fetchFormFields);
+router.get('/seeakk-lead-fields', protect, metaController.getSeeakkLeadFields);
+
+router.get('/automations', protect, metaController.listAutomations);
+router.post('/automations', protect, metaController.createAutomation);
+router.get('/automations/:id', protect, metaController.getAutomationById);
+router.put('/automations/:id', protect, metaController.updateAutomation);
+router.patch('/automations/:id/toggle', protect, metaController.toggleAutomation);
+router.post('/automations/:id/duplicate', protect, metaController.duplicateAutomation);
+router.delete('/automations/:id', protect, metaController.deleteAutomation);
+
 export default router;

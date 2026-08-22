@@ -2847,6 +2847,7 @@ model MetaLeadForm {
   metaPageConnectionId String
   metaFormId           String
   formName             String
+  name                 String?              // Automation / Workflow name
   enabled              Boolean              @default(false)
   leadSourceId         String?
   defaultLeadStageId   String?

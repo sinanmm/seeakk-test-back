@@ -227,6 +227,136 @@ export const disconnectMeta = async (req: Request, res: Response, next: NextFunc
   }
 };
 
+export const getConnections = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  try {
+    const workspaceId = getWorkspaceId(req);
+    const data = await metaService.getMetaConnections(workspaceId);
+    return res.json({ success: true, data });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getPagesForConnection = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  try {
+    const workspaceId = getWorkspaceId(req);
+    const connectionId = Array.isArray(req.params.connectionId) ? req.params.connectionId[0] : String(req.params.connectionId || '');
+    const data = await metaService.getMetaPagesForConnection(workspaceId, connectionId);
+    return res.json({ success: true, data });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const fetchPageLeadForms = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  try {
+    const workspaceId = getWorkspaceId(req);
+    const pageConnectionId = Array.isArray(req.params.pageConnectionId) ? req.params.pageConnectionId[0] : String(req.params.pageConnectionId || '');
+    const data = await metaService.fetchPageLeadFormsFromMeta(workspaceId, pageConnectionId);
+    return res.json({ success: true, data });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const fetchFormFields = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  try {
+    const workspaceId = getWorkspaceId(req);
+    const pageConnectionId = Array.isArray(req.params.pageConnectionId) ? req.params.pageConnectionId[0] : String(req.params.pageConnectionId || '');
+    const metaFormId = Array.isArray(req.params.metaFormId) ? req.params.metaFormId[0] : String(req.params.metaFormId || '');
+    const data = await metaService.fetchFormFieldsFromMeta(workspaceId, pageConnectionId, metaFormId);
+    return res.json({ success: true, data });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getSeeakkLeadFields = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  try {
+    const workspaceId = getWorkspaceId(req);
+    const data = await metaService.getSeeakkLeadFields(workspaceId);
+    return res.json({ success: true, data });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const listAutomations = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  try {
+    const workspaceId = getWorkspaceId(req);
+    const data = await metaService.listAutomations(workspaceId);
+    return res.json({ success: true, data });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const createAutomation = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  try {
+    const workspaceId = getWorkspaceId(req);
+    const data = await metaService.createAutomation(workspaceId, req.body);
+    return res.json({ success: true, data });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getAutomationById = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  try {
+    const workspaceId = getWorkspaceId(req);
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : String(req.params.id || '');
+    const data = await metaService.getAutomationById(workspaceId, id);
+    return res.json({ success: true, data });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateAutomation = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  try {
+    const workspaceId = getWorkspaceId(req);
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : String(req.params.id || '');
+    const data = await metaService.updateAutomation(workspaceId, id, req.body);
+    return res.json({ success: true, data });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const toggleAutomation = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  try {
+    const workspaceId = getWorkspaceId(req);
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : String(req.params.id || '');
+    const enabled = Boolean(req.body?.enabled);
+    const data = await metaService.toggleAutomation(workspaceId, id, enabled);
+    return res.json({ success: true, data });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const duplicateAutomation = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  try {
+    const workspaceId = getWorkspaceId(req);
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : String(req.params.id || '');
+    const data = await metaService.duplicateAutomation(workspaceId, id);
+    return res.json({ success: true, data });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteAutomation = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  try {
+    const workspaceId = getWorkspaceId(req);
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : String(req.params.id || '');
+    const data = await metaService.deleteAutomation(workspaceId, id);
+    return res.json({ success: true, data });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const handleDataDeletionCallback = async (req: Request, res: Response): Promise<any> => {
   try {
     const signedRequest = req.body?.signed_request || req.body?.signedRequest;
