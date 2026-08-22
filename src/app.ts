@@ -258,6 +258,7 @@ app.use('/api/', globalLimiter);
 app.use('/api/auth', authRoutes);
 app.use('/api/workspace', workspaceRoutes);
 app.use('/api/integrations/meta', metaIntegrationRoutes);
+app.use('/api/webhooks/meta', metaIntegrationRoutes);
 app.use('/api/telephony', telephonyRoutes);
 app.use('/api/admin/users', adminUserRoutes);
 app.use('/api/admin/offices', officeRoutes);
