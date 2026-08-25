@@ -7,6 +7,7 @@ import cors from 'cors';
 import morgan from 'morgan';
 import authRoutes from './routes/Auth/authRoutes';
 import workspaceRoutes from './routes/Workspace/workspaceRoutes';
+import subscriptionRoutes from './routes/Workspace/subscriptionRoutes';
 import adminUserRoutes from './routes/User/adminUserRoutes';
 import officeRoutes from './routes/User/officeRoutes';
 import leadLifeCycleRoutes from './routes/User/leadLifeCycleRoutes';
@@ -257,6 +258,7 @@ app.use('/api', (_req, res, next) => {
 app.use('/api/', globalLimiter);
 app.use('/api/auth', authRoutes);
 app.use('/api/workspace', workspaceRoutes);
+app.use('/api/subscription', subscriptionRoutes);
 app.use('/api/integrations/meta', metaIntegrationRoutes);
 app.use('/api/telephony', telephonyRoutes);
 app.use('/api/admin/users', adminUserRoutes);

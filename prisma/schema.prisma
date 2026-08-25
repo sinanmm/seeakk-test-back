@@ -178,6 +178,7 @@ model Workspace {
   lockedAt                       DateTime?
   lockReason                     String?
   paymentRequests                PaymentRequest[]
+  paymentSubmissions             PaymentSubmission[]
 
   createdAt                      DateTime                       @default(now())
   updatedAt                      DateTime                       @updatedAt
@@ -1422,6 +1423,7 @@ model User {
   updatedDashboardPreferences    DashboardLayoutPreference[]
 
   paymentRequests                PaymentRequest[]
+  paymentSubmissions             PaymentSubmission[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -3132,8 +3134,32 @@ model PaymentRequest {
 
   workspace          Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   user               User      @relation(fields: [createdBy], references: [id])
+  paymentSubmissions PaymentSubmission[]
 
   @@index([workspaceId])
   @@index([createdBy])
   @@map("payment_requests")
+}
+
+model PaymentSubmission {
+  id                 String   @id @default(cuid())
+  paymentRequestId   String
+  workspaceId        String
+  paymentMethod      String
+  utrNumber          String
+  paymentDate        DateTime
+  proofStorageKey    String
+  remarks            String?   @db.Text
+
+  submittedBy        String
+  submittedAt        DateTime @default(now())
+  status             String   @default("PENDING_VERIFICATION")
+
+  paymentRequest     PaymentRequest @relation(fields: [paymentRequestId], references: [id], onDelete: Cascade)
+  workspace          Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user               User           @relation(fields: [submittedBy], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@index([paymentRequestId])
+  @@map("payment_submissions")
 }

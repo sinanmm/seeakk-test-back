@@ -98,6 +98,7 @@ const ensureWorkspaceOwnerSuperAdmin = async (user: any): Promise<any> => {
           id: true,
           companyName: true,
           logoUrl: true,
+          billingStatus: true,
         },
       },
     },
@@ -280,6 +281,28 @@ export const protect = async (req: Request, res: Response, next: NextFunction): 
 
     if (isWorkspaceOnboardingPath || isFollowUpLockResolutionPath(req)) {
       return next();
+    }
+
+    const isSubscriptionPath = req.originalUrl?.includes('/api/subscription') || req.path?.includes('/subscription');
+    
+    // Billing Access Guard
+    if (
+      !isSubscriptionPath &&
+      hydratedUser.workspace &&
+      ['PAYMENT_REQUIRED', 'PAYMENT_PENDING'].includes(hydratedUser.workspace.billingStatus as string)
+    ) {
+      logger.warn('Access denied. Workspace billing requires attention.', {
+        userId: hydratedUser.id,
+        workspaceId: hydratedUser.workspaceId,
+        billingStatus: hydratedUser.workspace.billingStatus,
+        action: 'auth_billing_blocked',
+      });
+      applyCorsHeadersIfAllowed(req, res);
+      return res.status(402).json({
+        message: 'Payment is required to access this workspace.',
+        billingStatus: hydratedUser.workspace.billingStatus,
+        reason: 'Payment required',
+      });
     }
 
     return enforceOverdueFollowUp(req, res, () =>
