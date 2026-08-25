@@ -1,3 +1,4 @@
+import moment from 'moment-timezone';
 import prisma from '../../config/prisma';
 import logger from '../../utils/logger';
 import { getApplicableHolidays } from '../holidays/holidays.service';
@@ -23,6 +24,8 @@ export interface CalendarDayDetail {
   statusLabel: string;
   checkInTime: string | null;
   checkOutTime: string | null;
+  checkInTimestamp?: string | null;
+  checkOutTimestamp?: string | null;
   workingHours: number;
   breakTimeMinutes: number;
   lateMinutes: number;
@@ -74,6 +77,7 @@ export interface AttendanceCalendarResponse {
   };
   month: number;
   year: number;
+  timeZone?: string;
   summary: CalendarSummaryMetrics;
   days: CalendarDayDetail[];
 }
@@ -88,57 +92,12 @@ const formatDateStr = (date: Date | string): string => {
 };
 
 /** Helper to format ISO time or Date to hh:mm AM/PM in target timezone */
-export const formatTimeStringInTimeZone = (
-  dateInput?: Date | string | null,
-  timeZone?: string,
-): string | null => {
+const formatTimeString = (dateInput?: Date | string | null, timeZone = 'UTC'): string | null => {
   if (!dateInput) return null;
   const d = new Date(dateInput);
   if (isNaN(d.getTime())) return null;
-  const tz = timeZone || 'Asia/Kolkata';
-  try {
-    return d.toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true,
-      timeZone: tz,
-    });
-  } catch {
-    return d.toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true,
-    });
-  }
-};
-
-/** Helper to extract local minutes from midnight in target timezone */
-export const getLocalMinutesFromMidnight = (
-  dateInput: Date | string | null | undefined,
-  timeZone?: string,
-): number | null => {
-  if (!dateInput) return null;
-  const d = new Date(dateInput);
-  if (isNaN(d.getTime())) return null;
-  const tz = timeZone || 'Asia/Kolkata';
-  try {
-    const formatter = new Intl.DateTimeFormat('en-US', {
-      timeZone: tz,
-      hour: 'numeric',
-      minute: 'numeric',
-      hour12: false,
-    });
-    const parts = formatter.formatToParts(d);
-    let hour = 0;
-    let minute = 0;
-    for (const part of parts) {
-      if (part.type === 'hour') hour = parseInt(part.value, 10) % 24;
-      if (part.type === 'minute') minute = parseInt(part.value, 10);
-    }
-    return hour * 60 + minute;
-  } catch {
-    return d.getHours() * 60 + d.getMinutes();
-  }
+  const tz = moment.tz.zone(timeZone) ? timeZone : 'UTC';
+  return moment.tz(d, tz).format('hh:mm A');
 };
 
 /** Fetch permitted offices for attendance calendar filtering */
@@ -321,6 +280,12 @@ export const getAttendanceCalendarData = async (
   const workspaceId = requestingUser.workspaceId;
   const targetUserId = params.userId || requestingUser.id;
 
+  const workspaceObj = await prisma.workspace.findUnique({
+    where: { id: workspaceId },
+    select: { timeZone: true },
+  });
+  const workspaceTimeZone = workspaceObj?.timeZone && moment.tz.zone(workspaceObj.timeZone) ? workspaceObj.timeZone : 'UTC';
+
   // Validate permission scope
   const isAllowed = await resolveUserScopeAllowed(requestingUser, targetUserId, workspaceId);
   if (!isAllowed) {
@@ -357,13 +322,6 @@ export const getAttendanceCalendarData = async (
       // ignore if table varies
     }
   }
-
-  // Fetch Workspace Timezone for accurate event time conversion
-  const workspaceObj = await prisma.workspace.findUnique({
-    where: { id: workspaceId },
-    select: { timeZone: true },
-  });
-  const workspaceTimeZone = workspaceObj?.timeZone || 'Asia/Kolkata';
 
   // Calculate Date Boundaries
   const year = Number(params.year);
@@ -503,8 +461,8 @@ export const getAttendanceCalendarData = async (
 
     if (rec) {
       recordId = rec.id;
-      checkInFormatted = formatTimeStringInTimeZone(rec.checkInTime, workspaceTimeZone);
-      checkOutFormatted = formatTimeStringInTimeZone(rec.checkOutTime, workspaceTimeZone);
+      checkInFormatted = formatTimeString(rec.checkInTime, workspaceTimeZone);
+      checkOutFormatted = formatTimeString(rec.checkOutTime, workspaceTimeZone);
       workingHours = Number(rec.workingHours || 0);
       breakTimeMinutes = Number(rec.breakTimeMinutes || 0);
       approvalStatus = rec.approvalStatus || 'APPROVED';
@@ -532,33 +490,31 @@ export const getAttendanceCalendarData = async (
         ipStatus = 'N/A';
       }
 
-      // Calculate late & early checkout minutes if applicable using workspace timezone
+      // Calculate late & early checkout minutes if applicable
       if (rec.checkInTime) {
-        const actualCheckInMins = getLocalMinutesFromMidnight(rec.checkInTime, workspaceTimeZone);
+        const cIn = new Date(rec.checkInTime);
         const [schH, schM] = scheduleCheckInTime.split(':').map(Number);
-        const expectedCheckInMins = schH * 60 + schM;
-        if (actualCheckInMins != null) {
-          const diffMins = actualCheckInMins - expectedCheckInMins;
-          if (diffMins > scheduleGracePeriod) {
-            lateMinutes = diffMins;
-          }
-          checkInMinutesSum += actualCheckInMins;
-          checkInCount++;
+        const expectedCheckIn = new Date(cIn.getFullYear(), cIn.getMonth(), cIn.getDate(), schH, schM, 0);
+        const diffMins = Math.floor((cIn.getTime() - expectedCheckIn.getTime()) / (1000 * 60));
+        if (diffMins > scheduleGracePeriod) {
+          lateMinutes = diffMins;
         }
+
+        checkInMinutesSum += cIn.getHours() * 60 + cIn.getMinutes();
+        checkInCount++;
       }
 
       if (rec.checkOutTime) {
-        const actualCheckOutMins = getLocalMinutesFromMidnight(rec.checkOutTime, workspaceTimeZone);
+        const cOut = new Date(rec.checkOutTime);
         const [schOutH, schOutM] = scheduleCheckOutTime.split(':').map(Number);
-        const expectedCheckOutMins = schOutH * 60 + schOutM;
-        if (actualCheckOutMins != null) {
-          const diffOutMins = expectedCheckOutMins - actualCheckOutMins;
-          if (diffOutMins > 0) {
-            earlyCheckoutMinutes = diffOutMins;
-          }
-          checkOutMinutesSum += actualCheckOutMins;
-          checkOutCount++;
+        const expectedCheckOut = new Date(cOut.getFullYear(), cOut.getMonth(), cOut.getDate(), schOutH, schOutM, 0);
+        const diffOutMins = Math.floor((expectedCheckOut.getTime() - cOut.getTime()) / (1000 * 60));
+        if (diffOutMins > 0) {
+          earlyCheckoutMinutes = diffOutMins;
         }
+
+        checkOutMinutesSum += cOut.getHours() * 60 + cOut.getMinutes();
+        checkOutCount++;
       }
 
       sumWorkingHours += workingHours;
@@ -628,6 +584,8 @@ export const getAttendanceCalendarData = async (
       statusLabel,
       checkInTime: checkInFormatted,
       checkOutTime: checkOutFormatted,
+      checkInTimestamp: rec?.checkInTime ? new Date(rec.checkInTime).toISOString() : null,
+      checkOutTimestamp: rec?.checkOutTime ? new Date(rec.checkOutTime).toISOString() : null,
       workingHours: Math.round(workingHours * 100) / 100,
       breakTimeMinutes,
       lateMinutes,
@@ -701,6 +659,7 @@ export const getAttendanceCalendarData = async (
     },
     month,
     year,
+    timeZone: workspaceTimeZone,
     summary,
     days,
   };

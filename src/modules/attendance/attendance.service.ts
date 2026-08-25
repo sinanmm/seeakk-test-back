@@ -204,58 +204,9 @@ const timeStringToMinutes = (value?: string | null): number | null => {
   return hours * 60 + minutes;
 };
 
-const getLocalMinutesFromMidnight = (
-  dateInput: Date | string | null | undefined,
-  timeZone?: string,
-): number | null => {
-  if (!dateInput) return null;
-  const d = new Date(dateInput);
-  if (isNaN(d.getTime())) return null;
-  const tz = timeZone || 'Asia/Kolkata';
-  try {
-    const formatter = new Intl.DateTimeFormat('en-US', {
-      timeZone: tz,
-      hour: 'numeric',
-      minute: 'numeric',
-      hour12: false,
-    });
-    const parts = formatter.formatToParts(d);
-    let hour = 0;
-    let minute = 0;
-    for (const part of parts) {
-      if (part.type === 'hour') hour = parseInt(part.value, 10) % 24;
-      if (part.type === 'minute') minute = parseInt(part.value, 10);
-    }
-    return hour * 60 + minute;
-  } catch {
-    return d.getHours() * 60 + d.getMinutes();
-  }
-};
-
-const formatTimeHHMMInTimeZone = (
-  dateInput: Date | string | null | undefined,
-  timeZone?: string,
-): string => {
-  if (!dateInput) return '';
-  const d = new Date(dateInput);
-  if (isNaN(d.getTime())) return '';
-  const tz = timeZone || 'Asia/Kolkata';
-  try {
-    const formatter = new Intl.DateTimeFormat('en-US', {
-      timeZone: tz,
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-    });
-    return formatter.format(d);
-  } catch {
-    return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-  }
-};
-
-const dateToMinutes = (value?: Date | null, timeZone?: string): number | null => {
+const dateToMinutes = (value?: Date | null): number | null => {
   if (!value) return null;
-  return getLocalMinutesFromMidnight(value, timeZone);
+  return value.getHours() * 60 + value.getMinutes();
 };
 
 const roundWorkingHours = (checkInTime?: Date | null, checkOutTime?: Date | null): number | null => {
@@ -472,15 +423,9 @@ export const markAttendance = async (userId: string, workspaceId: string, payloa
     isInsideOfficeRadius = true;
   }
 
-  const workspaceObj = await prisma.workspace.findUnique({
-    where: { id: workspaceId },
-    select: { timeZone: true },
-  });
-  const workspaceTimeZone = workspaceObj?.timeZone || 'Asia/Kolkata';
-
   const locationFields = buildLocationRecordFields(payload, locationValidationResult, isInsideOfficeRadius);
   const checkInTime = payload.checkInTime ? new Date(payload.checkInTime) : new Date();
-  const actualCheckInMinutes = dateToMinutes(checkInTime, workspaceTimeZone);
+  const actualCheckInMinutes = dateToMinutes(checkInTime);
   const expectedCheckInMinutes = timeStringToMinutes(expectedTiming.expectedCheckInTime);
   const lateMinutes =
     !isHoliday &&
@@ -495,7 +440,7 @@ export const markAttendance = async (userId: string, workspaceId: string, payloa
 
   if (!isHoliday && !isWeeklyOff && ['PRESENT', 'HALF_DAY', 'WORK_FROM_HOME'].includes(attendanceType)) {
     if (settings.enableWarning && lateMinutes > 0) {
-      const checkInHHMM = formatTimeHHMMInTimeZone(checkInTime, workspaceTimeZone);
+      const checkInHHMM = `${String(checkInTime.getHours()).padStart(2, '0')}:${String(checkInTime.getMinutes()).padStart(2, '0')}`;
       warningCount = 1;
       await prisma.attendanceWarning.create({
         data: {
