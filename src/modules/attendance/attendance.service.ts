@@ -21,6 +21,12 @@ import {
   startSessionForAttendance,
   stopSessionForAttendance,
 } from '../location-tracking/locationTracking.service';
+import {
+  resolveWorkspaceTimezone,
+  formatDateInTimezone,
+  dateToMinutesInTimezone,
+  formatTimeInTimezone,
+} from '../../utils/timezoneContext';
 
 const createAttendanceServiceError = (message: string, statusCode = 400): Error & { statusCode: number } => {
   const error = new Error(message) as Error & { statusCode: number };
@@ -28,9 +34,8 @@ const createAttendanceServiceError = (message: string, statusCode = 400): Error 
   return error;
 };
 
-const getLocalDateString = (date?: Date | string): string => {
-  const d = date ? new Date(date) : new Date();
-  return d.toISOString().split('T')[0];
+const getLocalDateString = (date?: Date | string | null, timeZone = 'Asia/Kolkata'): string => {
+  return formatDateInTimezone(date, timeZone);
 };
 
 const checkIsHoliday = (applicableHolidays: any[], dateStr: string) => {
@@ -204,9 +209,8 @@ const timeStringToMinutes = (value?: string | null): number | null => {
   return hours * 60 + minutes;
 };
 
-const dateToMinutes = (value?: Date | null): number | null => {
-  if (!value) return null;
-  return value.getHours() * 60 + value.getMinutes();
+const dateToMinutes = (value?: Date | string | null, timeZone = 'Asia/Kolkata'): number | null => {
+  return dateToMinutesInTimezone(value, timeZone);
 };
 
 const roundWorkingHours = (checkInTime?: Date | null, checkOutTime?: Date | null): number | null => {
@@ -222,11 +226,11 @@ const shouldRequireCheckout = (record: any): boolean => {
   return ['PRESENT', 'HALF_DAY', 'WORK_FROM_HOME'].includes(record.attendanceType);
 };
 
-const resolveCheckoutPopupRequirement = (record: any, expectedCheckOutTime?: string | null): boolean => {
+const resolveCheckoutPopupRequirement = (record: any, expectedCheckOutTime?: string | null, timeZone = 'Asia/Kolkata'): boolean => {
   if (!shouldRequireCheckout(record)) return false;
   const expectedMinutes = timeStringToMinutes(expectedCheckOutTime);
   if (expectedMinutes == null) return false;
-  const currentMinutes = dateToMinutes(new Date());
+  const currentMinutes = dateToMinutes(new Date(), timeZone);
   return currentMinutes != null && currentMinutes >= expectedMinutes;
 };
 
@@ -261,7 +265,8 @@ export const getTodayStatus = async (userId: string, workspaceId: string) => {
     throw createAttendanceServiceError('You do not belong to this workspace.', 403);
   }
 
-  const todayStr = getLocalDateString();
+  const timeZone = await resolveWorkspaceTimezone(workspaceId, userId);
+  const todayStr = getLocalDateString(null, timeZone);
   const applicableHolidays = await getApplicableHolidays(workspaceId, user);
   const holidayCheck = checkIsHoliday(applicableHolidays, todayStr);
   const { weeklyOffDays } = await getWorkspaceWeeklyOffSettings(workspaceId);
@@ -292,6 +297,7 @@ export const getTodayStatus = async (userId: string, workspaceId: string) => {
   const requiresMandatoryCheckoutPopup = resolveCheckoutPopupRequirement(
     existingRecord,
     expectedTiming.expectedCheckOutTime,
+    timeZone,
   );
 
   let targetLock: Awaited<ReturnType<typeof import('../targets/targetLockEvaluation.service').getTargetLockDisplayForUser>> = null;
@@ -338,12 +344,13 @@ export const getTodayStatus = async (userId: string, workspaceId: string) => {
 export const markAttendance = async (userId: string, workspaceId: string, payload: any) => {
   const user = await assertUserInWorkspace(userId, workspaceId);
   const attendanceApplyType = normalizeAttendanceApplyType(user.attendanceApplyType);
+  const timeZone = await resolveWorkspaceTimezone(workspaceId, userId);
 
   if (user.isLocked) {
     throw createAttendanceServiceError('Your account is temporarily locked due to incomplete targets.', 423);
   }
 
-  const dateStr = payload.date || getLocalDateString();
+  const dateStr = payload.date || getLocalDateString(null, timeZone);
   const dateObj = new Date(dateStr);
 
   const existingRecord = await prisma.attendanceRecord.findUnique({
@@ -425,7 +432,7 @@ export const markAttendance = async (userId: string, workspaceId: string, payloa
 
   const locationFields = buildLocationRecordFields(payload, locationValidationResult, isInsideOfficeRadius);
   const checkInTime = payload.checkInTime ? new Date(payload.checkInTime) : new Date();
-  const actualCheckInMinutes = dateToMinutes(checkInTime);
+  const actualCheckInMinutes = dateToMinutes(checkInTime, timeZone);
   const expectedCheckInMinutes = timeStringToMinutes(expectedTiming.expectedCheckInTime);
   const lateMinutes =
     !isHoliday &&
@@ -440,7 +447,7 @@ export const markAttendance = async (userId: string, workspaceId: string, payloa
 
   if (!isHoliday && !isWeeklyOff && ['PRESENT', 'HALF_DAY', 'WORK_FROM_HOME'].includes(attendanceType)) {
     if (settings.enableWarning && lateMinutes > 0) {
-      const checkInHHMM = `${String(checkInTime.getHours()).padStart(2, '0')}:${String(checkInTime.getMinutes()).padStart(2, '0')}`;
+      const checkInHHMM = formatTimeInTimezone(checkInTime, timeZone) || '00:00';
       warningCount = 1;
       await prisma.attendanceWarning.create({
         data: {

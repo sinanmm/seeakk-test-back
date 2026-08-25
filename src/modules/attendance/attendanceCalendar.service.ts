@@ -78,6 +78,8 @@ export interface AttendanceCalendarResponse {
   days: CalendarDayDetail[];
 }
 
+import { resolveWorkspaceTimezone, formatTimeInTimezone } from '../../utils/timezoneContext';
+
 /** Helper to convert JS Date / string to YYYY-MM-DD */
 const formatDateStr = (date: Date | string): string => {
   const d = new Date(date);
@@ -87,12 +89,10 @@ const formatDateStr = (date: Date | string): string => {
   return `${year}-${month}-${day}`;
 };
 
-/** Helper to format ISO time or Date to hh:mm AM/PM */
-const formatTimeString = (dateInput?: Date | string | null): string | null => {
+/** Helper to format ISO time or Date to hh:mm AM/PM in target timezone */
+const formatTimeString = (dateInput?: Date | string | null, timeZone = 'Asia/Kolkata'): string | null => {
   if (!dateInput) return null;
-  const d = new Date(dateInput);
-  if (isNaN(d.getTime())) return null;
-  return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+  return formatTimeInTimezone(dateInput, timeZone);
 };
 
 /** Fetch permitted offices for attendance calendar filtering */
@@ -274,6 +274,7 @@ export const getAttendanceCalendarData = async (
 
   const workspaceId = requestingUser.workspaceId;
   const targetUserId = params.userId || requestingUser.id;
+  const timeZone = await resolveWorkspaceTimezone(workspaceId, targetUserId);
 
   // Validate permission scope
   const isAllowed = await resolveUserScopeAllowed(requestingUser, targetUserId, workspaceId);
@@ -450,8 +451,8 @@ export const getAttendanceCalendarData = async (
 
     if (rec) {
       recordId = rec.id;
-      checkInFormatted = formatTimeString(rec.checkInTime);
-      checkOutFormatted = formatTimeString(rec.checkOutTime);
+      checkInFormatted = formatTimeString(rec.checkInTime, timeZone);
+      checkOutFormatted = formatTimeString(rec.checkOutTime, timeZone);
       workingHours = Number(rec.workingHours || 0);
       breakTimeMinutes = Number(rec.breakTimeMinutes || 0);
       approvalStatus = rec.approvalStatus || 'APPROVED';
