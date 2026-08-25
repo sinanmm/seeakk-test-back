@@ -73,7 +73,7 @@ export const setupWorkspace = async (req: Request, res: Response, next: NextFunc
       return res.status(401).json({ message: 'Not authorized' });
     }
 
-    const { companyName, employeeCount, timeZone, language, currencyLocale, loadSampleData, logoUrl } = req.body;
+    const { companyName, employeeCount, timeZone, language, currencyLocale, loadSampleData, logoUrl, requestedUsers, requestedMonths } = req.body;
 
     if (user.isOnboarded) {
       return res.status(400).json({ message: 'Workspace is already set up for this user.' });
@@ -81,6 +81,10 @@ export const setupWorkspace = async (req: Request, res: Response, next: NextFunc
 
     if (!companyName || !employeeCount) {
       return res.status(400).json({ message: 'Company Name and Employee Count are required.' });
+    }
+
+    if (!requestedUsers || !requestedMonths || isNaN(Number(requestedUsers)) || isNaN(Number(requestedMonths)) || Number(requestedUsers) <= 0 || Number(requestedMonths) <= 0) {
+      return res.status(400).json({ message: 'Valid requested users and months are required.' });
     }
 
     const branding = normalizeWorkspaceBrandingInput({ companyName, logoUrl });
@@ -158,10 +162,35 @@ export const setupWorkspace = async (req: Request, res: Response, next: NextFunc
     // 4. Seed default master data for the new workspace
     await seedDefaultMasterData(newWorkspace.id, user.id);
 
+    // 5. Create Payment Request
+    let platformBilling = await prisma.platformBillingSetting.findFirst();
+    const unitPrice = platformBilling ? platformBilling.pricePerUserPerMonth : 499;
+    const currency = platformBilling ? platformBilling.currency : 'INR';
+    const prefix = platformBilling ? platformBilling.paymentReferencePrefix : 'SEEAKK-PAY';
+    const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+    const paymentReference = `${prefix}-${dateStr}-${randomSuffix}`;
+    const calculatedAmount = Number(requestedUsers) * Number(requestedMonths) * unitPrice;
+
+    const paymentRequest = await prisma.paymentRequest.create({
+      data: {
+        workspaceId: newWorkspace.id,
+        requestedUsers: Number(requestedUsers),
+        requestedMonths: Number(requestedMonths),
+        unitPrice,
+        currency,
+        calculatedAmount,
+        paymentReference,
+        status: 'PAYMENT_REQUIRED',
+        createdBy: user.id
+      }
+    });
+
     logger.info('Workspace successfully configured', {
       workspaceId: newWorkspace.id,
       userId: user.id,
       action: 'workspace_setup',
+      paymentRequestId: paymentRequest.id
     });
 
     return res.status(201).json({
@@ -176,6 +205,7 @@ export const setupWorkspace = async (req: Request, res: Response, next: NextFunc
         isOnboarded: updatedUser.isOnboarded,
         workspaceId: updatedUser.workspaceId,
       },
+      paymentRequest,
     });
   } catch (error: any) {
     logger.error('Workspace setup failed', {

@@ -169,6 +169,16 @@ model Workspace {
   dashboardLayoutPreferences     DashboardLayoutPreference[]
   automationWorkflows            AutomationWorkflow[]
   automationExecutions           AutomationExecution[]
+
+  // Billing & Subscription Foundation
+  billingStatus                  String?
+  approvedUserLimit              Int?
+  accessFrom                     DateTime?
+  accessUntil                    DateTime?
+  lockedAt                       DateTime?
+  lockReason                     String?
+  paymentRequests                PaymentRequest[]
+
   createdAt                      DateTime                       @default(now())
   updatedAt                      DateTime                       @updatedAt
   LeadRemark                     LeadRemark[]
@@ -1410,6 +1420,8 @@ model User {
   bulkFollowUpExtensions         BulkFollowUpExtension[]
   currentApprovingSalaryRecords  SalaryRecord[]                 @relation("CurrentSalaryApprover")
   updatedDashboardPreferences    DashboardLayoutPreference[]
+
+  paymentRequests                PaymentRequest[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -3090,8 +3102,38 @@ model AutomationActionExecution {
   @@map("automation_action_executions")
 }
 
+model PlatformBillingSetting {
+  id                     String   @id @default(cuid())
+  pricePerUserPerMonth   Int      @default(499)
+  currency               String   @default("INR")
+  upiId                  String   @default("yourupi@bank")
+  upiPayeeName           String   @default("SEEAKK")
+  paymentReferencePrefix String   @default("SEEAKK-PAY")
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
 
+  @@map("platform_billing_settings")
+}
 
+model PaymentRequest {
+  id                 String   @id @default(cuid())
+  workspaceId        String
+  requestedUsers     Int
+  requestedMonths    Int
+  unitPrice          Int
+  currency           String
+  calculatedAmount   Int
+  paymentReference   String   @unique
+  status             String   @default("PAYMENT_REQUIRED")
+  
+  createdBy          String
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 
+  workspace          Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user               User      @relation(fields: [createdBy], references: [id])
 
-
+  @@index([workspaceId])
+  @@index([createdBy])
+  @@map("payment_requests")
+}

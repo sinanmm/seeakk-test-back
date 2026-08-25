@@ -116,6 +116,8 @@ export const getWorkspaceConfigMeta = async (req: Request, res: Response, next: 
       hasWorkspace: Boolean(userWorkspace),
     });
 
+    let platformBilling = await prisma.platformBillingSetting.findFirst();
+    
     logger.info('[DEBUG] Returning Configuration');
 
     return res.status(200).json({
@@ -130,6 +132,13 @@ export const getWorkspaceConfigMeta = async (req: Request, res: Response, next: 
         currencyLocale: defaultCurrencyLocale,
       },
       workspace: userWorkspace || null,
+      billing: platformBilling ? {
+        pricePerUserPerMonth: platformBilling.pricePerUserPerMonth,
+        currency: platformBilling.currency,
+      } : {
+        pricePerUserPerMonth: 499,
+        currency: 'INR',
+      }
     });
   } catch (error) {
     next(error);

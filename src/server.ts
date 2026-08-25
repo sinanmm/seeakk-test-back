@@ -169,6 +169,12 @@ const startServer = async () => {
         } catch (guardError) {
           console.error('[Guard] Failed to run target lock remediation:', guardError);
         }
+        try {
+          const { ensureBillingFoundationSeeded } = await import('./modules/billing/billingFoundationGuard');
+          await ensureBillingFoundationSeeded();
+        } catch (guardError) {
+          console.error('[Guard] Failed to run billing foundation guard:', guardError);
+        }
         // Start background jobs
         if (process.env.WORKER_ONLY === 'true') {
           console.log('[Server] Running as WORKER ONLY.');
