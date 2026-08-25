@@ -543,6 +543,16 @@ export const listAutomations = async (workspaceId: string): Promise<any[]> => {
     orderBy: { createdAt: 'desc' },
   });
 
+  const safeParseArray = (str: string | null | undefined): any[] => {
+    if (!str) return [];
+    try {
+      const parsed = JSON.parse(str);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  };
+
   return forms.map((f: any) => ({
     id: f.id,
     name: f.name || f.formName || 'Meta Lead Automation',
@@ -558,8 +568,8 @@ export const listAutomations = async (workspaceId: string): Promise<any[]> => {
     leadSource: f.leadSource,
     assignmentType: f.assignmentType,
     assignmentUser: f.assignmentUser,
-    roundRobinUserIds: f.roundRobinUserIds ? JSON.parse(f.roundRobinUserIds) : [],
-    fieldMappings: f.fieldMappings,
+    roundRobinUserIds: safeParseArray(f.roundRobinUserIds),
+    fieldMappings: f.fieldMappings || [],
     createdAt: f.createdAt,
     updatedAt: f.updatedAt,
   }));
@@ -670,6 +680,16 @@ export const getAutomationById = async (workspaceId: string, automationId: strin
 
   if (!form) throw new Error('Automation configuration not found.');
 
+  let roundRobinUserIds: any[] = [];
+  if (form.roundRobinUserIds) {
+    try {
+      const parsed = JSON.parse(form.roundRobinUserIds);
+      if (Array.isArray(parsed)) roundRobinUserIds = parsed;
+    } catch {
+      roundRobinUserIds = [];
+    }
+  }
+
   return {
     id: form.id,
     name: form.name || form.formName || 'Meta Lead Automation',
@@ -685,8 +705,8 @@ export const getAutomationById = async (workspaceId: string, automationId: strin
     leadSource: form.leadSource,
     assignmentType: form.assignmentType,
     assignmentUser: form.assignmentUser,
-    roundRobinUserIds: form.roundRobinUserIds ? JSON.parse(form.roundRobinUserIds) : [],
-    fieldMappings: form.fieldMappings,
+    roundRobinUserIds,
+    fieldMappings: form.fieldMappings || [],
   };
 };
 
