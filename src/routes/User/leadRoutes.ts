@@ -44,6 +44,7 @@ router.get('/:id', leadController.getLeadById);
 router.get('/:id/history', leadController.getLeadHistory);
 router.get('/:id/remarks', leadController.getLeadRemarks);
 router.get('/:id/field-edits', fieldHighlightController.getLeadEdits.bind(fieldHighlightController));
+router.patch('/bulk', leadController.bulkUpdateLeads);
 router.put('/:id', leadController.updateLead);
 router.patch('/:id/star', leadController.toggleLeadStar);
 router.patch('/:id/stage', leadController.changeStage);

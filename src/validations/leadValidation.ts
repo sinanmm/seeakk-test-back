@@ -176,6 +176,13 @@ export const updateLeadSchema = z.object({
 
 export type UpdateLeadInput = z.infer<typeof updateLeadSchema>;
 
+export const bulkUpdateLeadsSchema = z.object({
+  leadIds: z.array(z.string().trim().min(1)).min(1, 'At least one lead must be selected.'),
+  updates: updateLeadSchema,
+});
+
+export type BulkUpdateLeadsInput = z.infer<typeof bulkUpdateLeadsSchema>;
+
 const stageRuleValueEntrySchema = z.object({
   ruleId: requiredId('ruleId'),
   value: z.string(),

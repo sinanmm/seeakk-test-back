@@ -18,6 +18,7 @@ import type {
   ListLeadsQueryInput,
   ToggleLeadStarInput,
   UpdateLeadInput,
+  BulkUpdateLeadsInput,
 } from '../../validations/leadValidation';
 import {
   assignLeadSchema,
@@ -30,6 +31,7 @@ import {
   listLeadsQuerySchema,
   toggleLeadStarSchema,
   updateLeadSchema,
+  bulkUpdateLeadsSchema,
 } from '../../validations/leadValidation';
 
 const normalizeStageKey = (value?: string | null): string =>
@@ -608,6 +610,72 @@ export const bulkDeleteLeads = async (req: Request, res: Response, next: NextFun
     });
   } catch (error) {
     handleServiceError(error, res, next, 'bulkDeleteLeads');
+  }
+};
+
+export const bulkUpdateLeads = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const workspaceId = requireWorkspace(req, res);
+  if (!workspaceId) return;
+
+  const input = validate<BulkUpdateLeadsInput>(bulkUpdateLeadsSchema, req.body, res, 'bulkUpdateLeads.body');
+  if (!input) return;
+
+  const { leadIds, updates } = input;
+  const actor = getActor(req);
+
+  try {
+    const results = [];
+    let successCount = 0;
+    let failedCount = 0;
+
+    for (const id of leadIds) {
+      try {
+        const result = await leadService.updateLead(workspaceId, actor, id, updates);
+        
+        if ((result as any)._approvalRequired) {
+          results.push({ id, status: 'success', message: 'Approval required for stage change', lead: result });
+          successCount++;
+        } else {
+          results.push({ id, status: 'success', lead: result });
+          successCount++;
+          
+          const changesToTrack = (result as any)._changes || [];
+          if (changesToTrack.length > 0) {
+            await auditService.log({
+              userId: req.user?.id,
+              workspaceId,
+              action: 'LEAD_UPDATED',
+              entityType: 'Lead',
+              entityId: result.id,
+              details: {
+                changes: changesToTrack,
+                assignedToId: result.assignedToId,
+                stageId: result.stageId,
+                nextFollowUpAt: result.nextFollowUpAt,
+              },
+              ipAddress: req.ip,
+              userAgent: req.headers['user-agent'],
+            });
+          }
+        }
+      } catch (error: any) {
+        results.push({ id, status: 'failed', reason: error.message });
+        failedCount++;
+      }
+    }
+
+    const successIds = results.filter(r => r.status === 'success').map(r => r.id);
+    if (successIds.length > 0) {
+      emitWorkspaceEvent(workspaceId, 'lead_updated', { leadIds: successIds, action: 'bulk_updated' });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: `Successfully updated ${successCount} leads. Failed: ${failedCount} leads.`,
+      data: { results, successCount, failedCount }
+    });
+  } catch (error) {
+    handleServiceError(error, res, next, 'bulkUpdateLeads');
   }
 };
 
