@@ -1,10 +1,12 @@
 import { Request, Response, NextFunction } from 'express';
 import * as attendanceService from './attendance.service';
 import {
+  formatTimeStringInTimeZone,
   getAttendanceCalendarData,
   getPermittedCalendarOffices,
   getPermittedCalendarUsers,
 } from './attendanceCalendar.service';
+import prisma from '../../config/prisma';
 import { emitWorkspaceEvent } from '../../realtime/socket';
 import { applyCorsHeadersIfAllowed } from '../../config/cors';
 import { sanitizeCsvRow } from '../../utils/excelSanitizer';
@@ -441,6 +443,9 @@ export const exportController = async (req: Request, res: Response, next: NextFu
     return res.status(422).json({ success: false, message: 'Validation failed.', errors: parsed.error.flatten().fieldErrors });
   }
   try {
+    const workspaceObj = await prisma.workspace.findUnique({ where: { id: workspaceId }, select: { timeZone: true } });
+    const workspaceTimeZone = workspaceObj?.timeZone || 'Asia/Kolkata';
+
     const result = await attendanceService.getAdminOverview(workspaceId, { ...parsed.data, limit: 1000 });
     const records: any[] = result.records || [];
     const headers = ['Employee Name','Employee Email','Role','Date','Check-In Time','Check-Out Time','Working Hours','Attendance Type','Approval Status','Work Summary','Rejected Reason'];
@@ -450,9 +455,9 @@ export const exportController = async (req: Request, res: Response, next: NextFu
         record.user?.name || '',
         record.user?.email || '',
         record.user?.role?.name || '',
-        record.date ? new Date(record.date).toLocaleDateString() : '',
-        record.checkInTime ? new Date(record.checkInTime).toLocaleString() : '',
-        record.checkOutTime ? new Date(record.checkOutTime).toLocaleString() : '',
+        record.date ? new Date(record.date).toISOString().split('T')[0] : '',
+        formatTimeStringInTimeZone(record.checkInTime, workspaceTimeZone) || '',
+        formatTimeStringInTimeZone(record.checkOutTime, workspaceTimeZone) || '',
         record.workingHours != null ? String(record.workingHours) : '',
         record.attendanceType || '',
         record.approvalStatus || '',

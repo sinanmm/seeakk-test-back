@@ -87,12 +87,58 @@ const formatDateStr = (date: Date | string): string => {
   return `${year}-${month}-${day}`;
 };
 
-/** Helper to format ISO time or Date to hh:mm AM/PM */
-const formatTimeString = (dateInput?: Date | string | null): string | null => {
+/** Helper to format ISO time or Date to hh:mm AM/PM in target timezone */
+export const formatTimeStringInTimeZone = (
+  dateInput?: Date | string | null,
+  timeZone?: string,
+): string | null => {
   if (!dateInput) return null;
   const d = new Date(dateInput);
   if (isNaN(d.getTime())) return null;
-  return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+  const tz = timeZone || 'Asia/Kolkata';
+  try {
+    return d.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+      timeZone: tz,
+    });
+  } catch {
+    return d.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+    });
+  }
+};
+
+/** Helper to extract local minutes from midnight in target timezone */
+export const getLocalMinutesFromMidnight = (
+  dateInput: Date | string | null | undefined,
+  timeZone?: string,
+): number | null => {
+  if (!dateInput) return null;
+  const d = new Date(dateInput);
+  if (isNaN(d.getTime())) return null;
+  const tz = timeZone || 'Asia/Kolkata';
+  try {
+    const formatter = new Intl.DateTimeFormat('en-US', {
+      timeZone: tz,
+      hour: 'numeric',
+      minute: 'numeric',
+      hour12: false,
+    });
+    const parts = formatter.formatToParts(d);
+    let hour = 0;
+    let minute = 0;
+    for (const part of parts) {
+      if (part.type === 'hour') hour = parseInt(part.value, 10) % 24;
+      if (part.type === 'minute') minute = parseInt(part.value, 10);
+    }
+    return hour * 60 + minute;
+  } catch {
+    return d.getHours() * 60 + d.getMinutes();
+  }
 };
 
 /** Fetch permitted offices for attendance calendar filtering */
@@ -312,6 +358,13 @@ export const getAttendanceCalendarData = async (
     }
   }
 
+  // Fetch Workspace Timezone for accurate event time conversion
+  const workspaceObj = await prisma.workspace.findUnique({
+    where: { id: workspaceId },
+    select: { timeZone: true },
+  });
+  const workspaceTimeZone = workspaceObj?.timeZone || 'Asia/Kolkata';
+
   // Calculate Date Boundaries
   const year = Number(params.year);
   const month = Number(params.month); // 1-indexed (1 to 12)
@@ -450,8 +503,8 @@ export const getAttendanceCalendarData = async (
 
     if (rec) {
       recordId = rec.id;
-      checkInFormatted = formatTimeString(rec.checkInTime);
-      checkOutFormatted = formatTimeString(rec.checkOutTime);
+      checkInFormatted = formatTimeStringInTimeZone(rec.checkInTime, workspaceTimeZone);
+      checkOutFormatted = formatTimeStringInTimeZone(rec.checkOutTime, workspaceTimeZone);
       workingHours = Number(rec.workingHours || 0);
       breakTimeMinutes = Number(rec.breakTimeMinutes || 0);
       approvalStatus = rec.approvalStatus || 'APPROVED';
@@ -479,31 +532,33 @@ export const getAttendanceCalendarData = async (
         ipStatus = 'N/A';
       }
 
-      // Calculate late & early checkout minutes if applicable
+      // Calculate late & early checkout minutes if applicable using workspace timezone
       if (rec.checkInTime) {
-        const cIn = new Date(rec.checkInTime);
+        const actualCheckInMins = getLocalMinutesFromMidnight(rec.checkInTime, workspaceTimeZone);
         const [schH, schM] = scheduleCheckInTime.split(':').map(Number);
-        const expectedCheckIn = new Date(cIn.getFullYear(), cIn.getMonth(), cIn.getDate(), schH, schM, 0);
-        const diffMins = Math.floor((cIn.getTime() - expectedCheckIn.getTime()) / (1000 * 60));
-        if (diffMins > scheduleGracePeriod) {
-          lateMinutes = diffMins;
+        const expectedCheckInMins = schH * 60 + schM;
+        if (actualCheckInMins != null) {
+          const diffMins = actualCheckInMins - expectedCheckInMins;
+          if (diffMins > scheduleGracePeriod) {
+            lateMinutes = diffMins;
+          }
+          checkInMinutesSum += actualCheckInMins;
+          checkInCount++;
         }
-
-        checkInMinutesSum += cIn.getHours() * 60 + cIn.getMinutes();
-        checkInCount++;
       }
 
       if (rec.checkOutTime) {
-        const cOut = new Date(rec.checkOutTime);
+        const actualCheckOutMins = getLocalMinutesFromMidnight(rec.checkOutTime, workspaceTimeZone);
         const [schOutH, schOutM] = scheduleCheckOutTime.split(':').map(Number);
-        const expectedCheckOut = new Date(cOut.getFullYear(), cOut.getMonth(), cOut.getDate(), schOutH, schOutM, 0);
-        const diffOutMins = Math.floor((expectedCheckOut.getTime() - cOut.getTime()) / (1000 * 60));
-        if (diffOutMins > 0) {
-          earlyCheckoutMinutes = diffOutMins;
+        const expectedCheckOutMins = schOutH * 60 + schOutM;
+        if (actualCheckOutMins != null) {
+          const diffOutMins = expectedCheckOutMins - actualCheckOutMins;
+          if (diffOutMins > 0) {
+            earlyCheckoutMinutes = diffOutMins;
+          }
+          checkOutMinutesSum += actualCheckOutMins;
+          checkOutCount++;
         }
-
-        checkOutMinutesSum += cOut.getHours() * 60 + cOut.getMinutes();
-        checkOutCount++;
       }
 
       sumWorkingHours += workingHours;
