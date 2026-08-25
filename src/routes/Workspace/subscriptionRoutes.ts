@@ -1,6 +1,10 @@
 import { Router } from 'express';
 import { protect } from '../../middlewares/authMiddleware';
-import * as subscriptionController from '../../controllers/Workspace/subscription.controller';
+import { 
+  getPendingPaymentRequest,
+  submitPaymentProof,
+  createRenewalRequest
+} from '../../controllers/Workspace/subscription.controller';
 
 const router = Router();
 
@@ -9,7 +13,8 @@ const router = Router();
 // so that a user whose workspace is blocked can still view and submit the payment form.
 router.use(protect);
 
-router.get('/request', subscriptionController.getPendingPaymentRequest);
-router.post('/submit', subscriptionController.submitPaymentProof);
+router.get('/request', getPendingPaymentRequest);
+router.post('/submit', submitPaymentProof);
+router.post('/renew', createRenewalRequest);
 
 export default router;

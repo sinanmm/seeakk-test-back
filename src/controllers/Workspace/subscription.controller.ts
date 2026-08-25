@@ -109,3 +109,57 @@ export const submitPaymentProof = async (
     next(error);
   }
 };
+
+export const createRenewalRequest = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    const workspaceId = req.user?.workspaceId;
+    const userId = req.user?.id;
+
+    if (!workspaceId || !userId) {
+      res.status(400).json({ success: false, message: 'Unauthorized' });
+      return;
+    }
+
+    const { requestedUsers, requestedMonths } = req.body;
+    if (!requestedUsers || !requestedMonths) {
+      res.status(400).json({ success: false, message: 'Missing fields' });
+      return;
+    }
+
+    const billingSettings = await prisma.platformBillingSetting.findFirst({
+      orderBy: { createdAt: 'desc' },
+    });
+    
+    if (!billingSettings) {
+      res.status(500).json({ success: false, message: 'Platform billing not configured' });
+      return;
+    }
+
+    const unitPrice = billingSettings.pricePerUserPerMonth;
+    const calculatedAmount = requestedUsers * requestedMonths * unitPrice;
+    const paymentReference = `${billingSettings.paymentReferencePrefix}-${Date.now()}`;
+
+    const paymentRequest = await prisma.paymentRequest.create({
+      data: {
+        workspaceId,
+        requestedUsers,
+        requestedMonths,
+        unitPrice,
+        currency: billingSettings.currency,
+        calculatedAmount,
+        paymentReference,
+        status: 'PAYMENT_REQUIRED',
+        createdBy: userId,
+      }
+    });
+
+    res.status(201).json({ success: true, paymentRequest });
+  } catch(error: any) {
+    logger.error('Error creating renewal request:', { error: error.message });
+    next(error);
+  }
+};

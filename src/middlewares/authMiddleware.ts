@@ -99,6 +99,9 @@ const ensureWorkspaceOwnerSuperAdmin = async (user: any): Promise<any> => {
           companyName: true,
           logoUrl: true,
           billingStatus: true,
+          accessUntil: true,
+          lockedAt: true,
+          suspendReason: true,
         },
       },
     },
@@ -285,24 +288,61 @@ export const protect = async (req: Request, res: Response, next: NextFunction): 
 
     const isSubscriptionPath = req.originalUrl?.includes('/api/subscription') || req.path?.includes('/subscription');
     
-    // Billing Access Guard
-    if (
-      !isSubscriptionPath &&
-      hydratedUser.workspace &&
-      ['PAYMENT_REQUIRED', 'PAYMENT_PENDING'].includes(hydratedUser.workspace.billingStatus as string)
-    ) {
-      logger.warn('Access denied. Workspace billing requires attention.', {
-        userId: hydratedUser.id,
-        workspaceId: hydratedUser.workspaceId,
-        billingStatus: hydratedUser.workspace.billingStatus,
-        action: 'auth_billing_blocked',
-      });
-      applyCorsHeadersIfAllowed(req, res);
-      return res.status(402).json({
-        message: 'Payment is required to access this workspace.',
-        billingStatus: hydratedUser.workspace.billingStatus,
-        reason: 'Payment required',
-      });
+    // Centralized Access Priority Guard (Phase 3)
+    if (!isSubscriptionPath && hydratedUser.workspace) {
+      const workspace = hydratedUser.workspace;
+      const now = new Date();
+
+      if (workspace.suspendReason) {
+        applyCorsHeadersIfAllowed(req, res);
+        return res.status(403).json({ message: 'Workspace is suspended.', reason: 'Suspended' });
+      }
+
+      if (workspace.lockedAt) {
+        applyCorsHeadersIfAllowed(req, res);
+        return res.status(403).json({ message: 'Workspace is locked by administration.', reason: 'Locked' });
+      }
+
+      const hasPaidAccess = workspace.accessUntil && workspace.accessUntil > now;
+      let hasGraceAccess = false;
+
+      // Check Grace only if not paid and enrolled in new billing
+      if (!hasPaidAccess && workspace.billingStatus) {
+        const grace = await (prisma as any).graceRecord.findFirst({
+          where: { workspaceId: workspace.id, status: 'ACTIVE', graceUntil: { gt: now } }
+        });
+        if (grace) {
+          hasGraceAccess = true;
+        }
+      }
+
+      if (!hasPaidAccess && !hasGraceAccess && workspace.billingStatus) {
+        // Enforce expiration
+        if (workspace.accessUntil && workspace.accessUntil <= now && workspace.billingStatus === 'ACTIVE') {
+          // Fire-and-forget DB update to sync status for transparency
+          (prisma as any).workspace.update({
+            where: { id: workspace.id },
+            data: { billingStatus: 'EXPIRED' }
+          }).catch(console.error);
+          workspace.billingStatus = 'EXPIRED'; // Reflect in memory
+        }
+
+        const billingStatus = workspace.billingStatus;
+        if (['PAYMENT_REQUIRED', 'PAYMENT_PENDING', 'EXPIRED'].includes(billingStatus)) {
+          logger.warn('Access denied. Workspace billing requires attention.', {
+            userId: hydratedUser.id,
+            workspaceId: hydratedUser.workspaceId,
+            billingStatus,
+            action: 'auth_billing_blocked',
+          });
+          applyCorsHeadersIfAllowed(req, res);
+          return res.status(402).json({
+            message: 'Payment is required to access this workspace.',
+            billingStatus,
+            reason: 'Payment required',
+          });
+        }
+      }
     }
 
     return enforceOverdueFollowUp(req, res, () =>

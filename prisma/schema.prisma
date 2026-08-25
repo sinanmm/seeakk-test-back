@@ -177,8 +177,11 @@ model Workspace {
   accessUntil                    DateTime?
   lockedAt                       DateTime?
   lockReason                     String?
+  suspendReason                  String?
   paymentRequests                PaymentRequest[]
   paymentSubmissions             PaymentSubmission[]
+  verifiedPayments               VerifiedPayment[]
+  graceRecords                   GraceRecord[]
 
   createdAt                      DateTime                       @default(now())
   updatedAt                      DateTime                       @updatedAt
@@ -1424,6 +1427,8 @@ model User {
 
   paymentRequests                PaymentRequest[]
   paymentSubmissions             PaymentSubmission[]
+  verifiedPayments               VerifiedPayment[]
+  graceRecords                   GraceRecord[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -3135,6 +3140,7 @@ model PaymentRequest {
   workspace          Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   user               User      @relation(fields: [createdBy], references: [id])
   paymentSubmissions PaymentSubmission[]
+  verifiedPayments   VerifiedPayment[]
 
   @@index([workspaceId])
   @@index([createdBy])
@@ -3158,8 +3164,70 @@ model PaymentSubmission {
   paymentRequest     PaymentRequest @relation(fields: [paymentRequestId], references: [id], onDelete: Cascade)
   workspace          Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   user               User           @relation(fields: [submittedBy], references: [id], onDelete: Cascade)
+  verifiedPayments   VerifiedPayment[]
 
   @@index([workspaceId])
   @@index([paymentRequestId])
   @@map("payment_submissions")
+}
+
+model VerifiedPayment {
+  id                 String   @id @default(cuid())
+  workspaceId        String
+  paymentRequestId   String
+  paymentSubmissionId String?
+  
+  amount             Int
+  currency           String
+  unitPriceSnapshot  Int
+  requestedUsers     Int
+  requestedMonths    Int
+  approvedUserLimit  Int
+
+  paymentMethod      String
+  utrNumber          String?
+  paymentDate        DateTime?
+
+  accessFrom         DateTime?
+  accessUntil        DateTime?
+
+  status             String   @default("VERIFIED")
+  remarks            String?  @db.Text
+
+  approvedBy         String
+  approvedAt         DateTime @default(now())
+
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  workspace          Workspace          @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  paymentRequest     PaymentRequest     @relation(fields: [paymentRequestId], references: [id], onDelete: Cascade)
+  paymentSubmission  PaymentSubmission? @relation(fields: [paymentSubmissionId], references: [id], onDelete: Cascade)
+  user               User               @relation(fields: [approvedBy], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@index([paymentRequestId])
+  @@map("verified_payments")
+}
+
+model GraceRecord {
+  id                 String   @id @default(cuid())
+  workspaceId        String
+  
+  graceFrom          DateTime @default(now())
+  graceUntil         DateTime
+  allowedUserLimit   Int
+
+  reason             String   @db.Text
+  status             String   @default("ACTIVE")
+  
+  grantedBy          String
+  grantedAt          DateTime @default(now())
+  revokedAt          DateTime?
+
+  workspace          Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user               User      @relation(fields: [grantedBy], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@map("grace_records")
 }

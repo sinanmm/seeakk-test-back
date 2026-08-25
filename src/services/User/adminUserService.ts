@@ -19,6 +19,7 @@ import type {
   ResetPasswordInput,
   ListUsersQuery,
 } from '../../validations/adminUserValidation';
+import { verifySeatLimit } from '../../modules/billing/seatUsage.service';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -248,10 +249,11 @@ export const createUser = async (
 
   const canRestoreSoftDeletedByEmail = Boolean(existingEmail && existingEmail.deletedAt);
   if (existingEmail && !canRestoreSoftDeletedByEmail) {
-    const err: any = new Error('A user with this email already exists.');
-    err.statusCode = 409;
-    throw err;
+    throw new Error('Email is already registered.');
   }
+
+  // 1b. Verify Seat Limit before allowing user creation (only active users consume seats)
+  await verifySeatLimit(workspaceId, 1);
 
   if (username) {
     const existingUsername = await (prisma as any).user.findUnique({ where: { username } });
@@ -630,17 +632,16 @@ export const updateUser = async (
       }
     }
   }
-  const existing = await (prisma as any).user.findFirst({
+  const user = await (prisma as any).user.findFirst({
     where: { id, workspaceId, deletedAt: null },
-    select: { id: true, assignedTargetCycleId: true },
   });
-  if (!existing) {
+  if (!user) {
     const err: any = new Error('User not found in this workspace.');
     err.statusCode = 404;
     throw err;
   }
 
-  const previousTargetCycleId = existing.assignedTargetCycleId as string | null;
+  const previousTargetCycleId = user.assignedTargetCycleId as string | null;
 
   const normalizedRoleId =
     input.roleId !== undefined
@@ -686,7 +687,7 @@ export const updateUser = async (
     }
   }
 
-  if (input.username) {
+  if (input.username && input.username !== user.username) {
     const existingUsername = await (prisma as any).user.findFirst({
       where: { username: input.username, NOT: { id } },
     });
@@ -772,7 +773,7 @@ export const updateUser = async (
     return { user: updated, assignmentAudit };
   });
 
-  const user = txResult.user;
+  const userRes = txResult.user;
   const assignmentAudit = txResult.assignmentAudit;
 
   if (input.assignedTargetCycleId !== undefined && assignmentAudit) {
@@ -795,7 +796,7 @@ export const updateUser = async (
 
   logger.info('Admin updated user', { id, workspaceId, changes: Object.keys(input) });
 
-  return toAdminUserResponse(user);
+  return toAdminUserResponse(userRes);
 };
 
 /**
@@ -899,16 +900,21 @@ export const updateUserStatus = async (
     }
   }
 
-  const existing = await (prisma as any).user.findFirst({
+  const user = await (prisma as any).user.findFirst({
     where: { id, workspaceId, deletedAt: null },
   });
-  if (!existing) {
+  if (!user) {
     const err: any = new Error('User not found in this workspace.');
     err.statusCode = 404;
     throw err;
   }
 
-  const user = await (prisma as any).user.update({
+  // If reactivating the user, check seat limits
+  if (input.isActive === true && !user.isActive) {
+    await verifySeatLimit(workspaceId, 1);
+  }
+
+  const updatedUser = await (prisma as any).user.update({
     where: { id },
     data: { isActive: input.isActive },
     select: { id: true, name: true, email: true, isActive: true, updatedAt: true },
