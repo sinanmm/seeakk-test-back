@@ -1,4 +1,3 @@
-import moment from 'moment-timezone';
 import prisma from '../../config/prisma';
 import logger from '../../utils/logger';
 import { getApplicableHolidays } from '../holidays/holidays.service';
@@ -24,8 +23,6 @@ export interface CalendarDayDetail {
   statusLabel: string;
   checkInTime: string | null;
   checkOutTime: string | null;
-  checkInTimestamp?: string | null;
-  checkOutTimestamp?: string | null;
   workingHours: number;
   breakTimeMinutes: number;
   lateMinutes: number;
@@ -77,7 +74,6 @@ export interface AttendanceCalendarResponse {
   };
   month: number;
   year: number;
-  timeZone?: string;
   summary: CalendarSummaryMetrics;
   days: CalendarDayDetail[];
 }
@@ -91,13 +87,12 @@ const formatDateStr = (date: Date | string): string => {
   return `${year}-${month}-${day}`;
 };
 
-/** Helper to format ISO time or Date to hh:mm AM/PM in target timezone */
-const formatTimeString = (dateInput?: Date | string | null, timeZone = 'UTC'): string | null => {
+/** Helper to format ISO time or Date to hh:mm AM/PM */
+const formatTimeString = (dateInput?: Date | string | null): string | null => {
   if (!dateInput) return null;
   const d = new Date(dateInput);
   if (isNaN(d.getTime())) return null;
-  const tz = moment.tz.zone(timeZone) ? timeZone : 'UTC';
-  return moment.tz(d, tz).format('hh:mm A');
+  return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
 };
 
 /** Fetch permitted offices for attendance calendar filtering */
@@ -280,12 +275,6 @@ export const getAttendanceCalendarData = async (
   const workspaceId = requestingUser.workspaceId;
   const targetUserId = params.userId || requestingUser.id;
 
-  const workspaceObj = await prisma.workspace.findUnique({
-    where: { id: workspaceId },
-    select: { timeZone: true },
-  });
-  const workspaceTimeZone = workspaceObj?.timeZone && moment.tz.zone(workspaceObj.timeZone) ? workspaceObj.timeZone : 'UTC';
-
   // Validate permission scope
   const isAllowed = await resolveUserScopeAllowed(requestingUser, targetUserId, workspaceId);
   if (!isAllowed) {
@@ -461,8 +450,8 @@ export const getAttendanceCalendarData = async (
 
     if (rec) {
       recordId = rec.id;
-      checkInFormatted = formatTimeString(rec.checkInTime, workspaceTimeZone);
-      checkOutFormatted = formatTimeString(rec.checkOutTime, workspaceTimeZone);
+      checkInFormatted = formatTimeString(rec.checkInTime);
+      checkOutFormatted = formatTimeString(rec.checkOutTime);
       workingHours = Number(rec.workingHours || 0);
       breakTimeMinutes = Number(rec.breakTimeMinutes || 0);
       approvalStatus = rec.approvalStatus || 'APPROVED';
@@ -584,8 +573,6 @@ export const getAttendanceCalendarData = async (
       statusLabel,
       checkInTime: checkInFormatted,
       checkOutTime: checkOutFormatted,
-      checkInTimestamp: rec?.checkInTime ? new Date(rec.checkInTime).toISOString() : null,
-      checkOutTimestamp: rec?.checkOutTime ? new Date(rec.checkOutTime).toISOString() : null,
       workingHours: Math.round(workingHours * 100) / 100,
       breakTimeMinutes,
       lateMinutes,
@@ -659,7 +646,6 @@ export const getAttendanceCalendarData = async (
     },
     month,
     year,
-    timeZone: workspaceTimeZone,
     summary,
     days,
   };
