@@ -218,6 +218,13 @@ export const protect = async (req: Request, res: Response, next: NextFunction): 
             id: true,
             companyName: true,
             logoUrl: true,
+            billingStatus: true,
+            approvedUserLimit: true,
+            accessFrom: true,
+            accessUntil: true,
+            lockedAt: true,
+            lockReason: true,
+            suspendReason: true,
           },
         },
       },
@@ -282,11 +289,19 @@ export const protect = async (req: Request, res: Response, next: NextFunction): 
       });
     }
 
-    if (isWorkspaceOnboardingPath || isFollowUpLockResolutionPath(req)) {
+    if (isWorkspaceOnboardingPath) {
       return next();
     }
 
-    const isSubscriptionPath = req.originalUrl?.includes('/api/subscription') || req.path?.includes('/subscription') || req.originalUrl?.includes('/api/upload') || req.path?.includes('/upload');
+    const isSubscriptionPath =
+      req.originalUrl?.includes('/api/subscription') ||
+      req.path?.includes('/subscription') ||
+      req.originalUrl?.includes('/api/upload') ||
+      req.path?.includes('/upload') ||
+      req.originalUrl?.includes('/api/auth/me') ||
+      req.path?.includes('/auth/me') ||
+      req.originalUrl?.includes('/api/auth/logout') ||
+      req.path?.includes('/auth/logout');
     
     // Centralized Access Priority Guard (Phase 3)
     if (!isSubscriptionPath && hydratedUser.workspace) {

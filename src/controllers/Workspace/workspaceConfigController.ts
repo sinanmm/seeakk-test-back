@@ -71,6 +71,9 @@ export const getWorkspaceConfigMeta = async (req: Request, res: Response, next: 
           timeZone: true,
           language: true,
           currencyLocale: true,
+          billingStatus: true,
+          approvedUserLimit: true,
+          accessUntil: true,
         },
       });
 

@@ -61,16 +61,24 @@ export const hydrateAuthenticatedUser = async (user: any): Promise<any> => {
     hydrated.devices = [];
   }
 
-  if (hydrated.workspaceId) {
-    try {
-      hydrated.workspace = await prisma.workspace.findUnique({
-        where: { id: hydrated.workspaceId },
-        select: { id: true, companyName: true, logoUrl: true },
-      });
-    } catch {
-      hydrated.workspace = null;
-    }
-  } else {
+    if (hydrated.workspaceId) {
+      try {
+        hydrated.workspace = await prisma.workspace.findUnique({
+          where: { id: hydrated.workspaceId },
+          select: {
+            id: true,
+            companyName: true,
+            logoUrl: true,
+            billingStatus: true,
+            approvedUserLimit: true,
+            accessFrom: true,
+            accessUntil: true,
+          },
+        });
+      } catch {
+        hydrated.workspace = null;
+      }
+    } else {
     hydrated.workspace = null;
   }
 

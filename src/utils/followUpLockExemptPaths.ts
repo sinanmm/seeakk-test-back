@@ -97,7 +97,6 @@ export const isHardcodedFollowUpLockResolutionRequest = (req: Request): boolean 
 /** Prefix routes that must stay reachable while follow-up locks are active. */
 export const FOLLOWUP_LOCK_RESOLUTION_PREFIXES = [
   '/api/auth/me',
-  '/api/leads',
   '/api/auth/logout',
   '/api/auth/refresh',
   '/api/notifications',
@@ -120,13 +119,6 @@ export const FOLLOWUP_LOCK_RESOLUTION_PREFIXES = [
   '/api/attendance/settings',
   '/api/attendance/networks',
   '/api/location-tracking',
-  '/api/lead-dynamics',
-  '/api/admin/lead-dynamics',
-  '/api/dashboard',
-  '/api/master',
-  '/api/lob-reasons',
-  '/api/admin/lead-life-cycles',
-  '/api/workspace',
   '/api/workspace/config-meta',
   '/api/workspace/setup',
 ] as const;
@@ -159,8 +151,6 @@ export const FOLLOWUP_LOCK_RESOLUTION_SUFFIXES = [
   '/holidays/weekly-off',
   '/weekly-off',
   '/location-tracking',
-  '/lead-dynamics',
-  '/dashboard',
 ] as const;
 
 /** Raw URL markers for reverse-proxy / Render mount-relative paths. */
@@ -180,8 +170,6 @@ const RAW_RESOLUTION_MARKERS = [
   '/followup-extension-reasons',
   '/holidays/weekly-off',
   '/location-tracking',
-  '/lead-dynamics',
-  '/dashboard',
 ] as const;
 
 type MethodPattern = {
