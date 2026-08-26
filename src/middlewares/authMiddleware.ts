@@ -286,7 +286,7 @@ export const protect = async (req: Request, res: Response, next: NextFunction): 
       return next();
     }
 
-    const isSubscriptionPath = req.originalUrl?.includes('/api/subscription') || req.path?.includes('/subscription');
+    const isSubscriptionPath = req.originalUrl?.includes('/api/subscription') || req.path?.includes('/subscription') || req.originalUrl?.includes('/api/upload') || req.path?.includes('/upload');
     
     // Centralized Access Priority Guard (Phase 3)
     if (!isSubscriptionPath && hydratedUser.workspace) {

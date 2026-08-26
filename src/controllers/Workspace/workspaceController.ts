@@ -105,6 +105,7 @@ export const setupWorkspace = async (req: Request, res: Response, next: NextFunc
           currencyLocale: currencyLocale || 'USD',
           loadSampleData: loadSampleData || false,
           ownerId: user.id,
+          billingStatus: 'PAYMENT_REQUIRED',
         },
       });
     } catch (error: any) {
@@ -126,6 +127,7 @@ export const setupWorkspace = async (req: Request, res: Response, next: NextFunc
             currencyLocale: currencyLocale || 'USD',
             loadSampleData: loadSampleData || false,
             ownerId: user.id,
+            billingStatus: 'PAYMENT_REQUIRED',
           },
         });
       } else {
