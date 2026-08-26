@@ -3113,7 +3113,7 @@ model PlatformBillingSetting {
   id                     String   @id @default(cuid())
   pricePerUserPerMonth   Int      @default(499)
   currency               String   @default("INR")
-  upiId                  String   @default("yourupi@bank")
+  upiId                  String   @default("")
   upiPayeeName           String   @default("SEEAKK")
   paymentReferencePrefix String   @default("SEEAKK-PAY")
   createdAt              DateTime @default(now())

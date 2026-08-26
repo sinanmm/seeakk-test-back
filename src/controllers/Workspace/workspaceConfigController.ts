@@ -4,6 +4,7 @@ import ISO6391 from 'iso-639-1';
 import moment from 'moment-timezone';
 import prisma from '../../config/prisma';
 import logger from '../../utils/logger';
+import { getPaymentConfig } from '../../config/paymentConfig';
 
 const countryToCurrency: Record<string, string> = {
   US: 'USD', GB: 'GBP', IN: 'INR', AU: 'AUD', CA: 'CAD', DE: 'EUR', FR: 'EUR', ES: 'EUR', IT: 'EUR',
@@ -119,6 +120,7 @@ export const getWorkspaceConfigMeta = async (req: Request, res: Response, next: 
       hasWorkspace: Boolean(userWorkspace),
     });
 
+    const paymentConfig = getPaymentConfig();
     let platformBilling = await prisma.platformBillingSetting.findFirst();
     
     logger.info('[DEBUG] Returning Configuration');
@@ -135,12 +137,9 @@ export const getWorkspaceConfigMeta = async (req: Request, res: Response, next: 
         currencyLocale: defaultCurrencyLocale,
       },
       workspace: userWorkspace || null,
-      billing: platformBilling ? {
-        pricePerUserPerMonth: platformBilling.pricePerUserPerMonth,
-        currency: platformBilling.currency,
-      } : {
-        pricePerUserPerMonth: 499,
-        currency: 'INR',
+      billing: {
+        pricePerUserPerMonth: platformBilling?.pricePerUserPerMonth || paymentConfig.pricePerUserPerMonth,
+        currency: platformBilling?.currency || paymentConfig.currency,
       }
     });
   } catch (error) {

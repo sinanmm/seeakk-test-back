@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import prisma from '../../config/prisma';
 import logger from '../../utils/logger';
+import { getPaymentConfig } from '../../config/paymentConfig';
 
 export const getPendingPaymentRequest = async (
   req: Request,
@@ -24,9 +25,20 @@ export const getPendingPaymentRequest = async (
       return;
     }
 
-    const billingSettings = await prisma.platformBillingSetting.findFirst({
+    const dbSettings = await prisma.platformBillingSetting.findFirst({
       orderBy: { createdAt: 'desc' },
     });
+
+    const paymentConfig = getPaymentConfig();
+
+    const billingSettings = {
+      pricePerUserPerMonth: dbSettings?.pricePerUserPerMonth || paymentConfig.pricePerUserPerMonth,
+      currency: dbSettings?.currency || paymentConfig.currency,
+      paymentReferencePrefix: dbSettings?.paymentReferencePrefix || paymentConfig.paymentReferencePrefix,
+      upiId: paymentConfig.upiId, // Derived strictly from backend ENV (null if not configured)
+      upiPayeeName: paymentConfig.upiPayeeName, // Derived strictly from backend ENV
+      isConfigured: paymentConfig.isConfigured,
+    };
 
     res.status(200).json({
       success: true,
@@ -50,6 +62,15 @@ export const submitPaymentProof = async (
 
     if (!workspaceId || !userId) {
       res.status(400).json({ success: false, message: 'Unauthorized' });
+      return;
+    }
+
+    const paymentConfig = getPaymentConfig();
+    if (!paymentConfig.isConfigured) {
+      res.status(400).json({
+        success: false,
+        message: 'Payment receiving account is not configured. Submissions are temporarily unavailable.',
+      });
       return;
     }
 
@@ -130,26 +151,24 @@ export const createRenewalRequest = async (
       return;
     }
 
+    const paymentConfig = getPaymentConfig();
     const billingSettings = await prisma.platformBillingSetting.findFirst({
       orderBy: { createdAt: 'desc' },
     });
-    
-    if (!billingSettings) {
-      res.status(500).json({ success: false, message: 'Platform billing not configured' });
-      return;
-    }
 
-    const unitPrice = billingSettings.pricePerUserPerMonth;
-    const calculatedAmount = requestedUsers * requestedMonths * unitPrice;
-    const paymentReference = `${billingSettings.paymentReferencePrefix}-${Date.now()}`;
+    const unitPrice = billingSettings?.pricePerUserPerMonth || paymentConfig.pricePerUserPerMonth;
+    const currency = billingSettings?.currency || paymentConfig.currency;
+    const prefix = billingSettings?.paymentReferencePrefix || paymentConfig.paymentReferencePrefix;
+    const calculatedAmount = Number(requestedUsers) * Number(requestedMonths) * unitPrice;
+    const paymentReference = `${prefix}-${Date.now()}`;
 
     const paymentRequest = await prisma.paymentRequest.create({
       data: {
         workspaceId,
-        requestedUsers,
-        requestedMonths,
+        requestedUsers: Number(requestedUsers),
+        requestedMonths: Number(requestedMonths),
         unitPrice,
-        currency: billingSettings.currency,
+        currency,
         calculatedAmount,
         paymentReference,
         status: 'PAYMENT_REQUIRED',

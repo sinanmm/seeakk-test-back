@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import prisma, { directPrisma } from '../../config/prisma';
 import logger from '../../utils/logger';
 import { seedDefaultMasterData } from '../../services/Seeding/seedingService';
+import { getPaymentConfig } from '../../config/paymentConfig';
 
 const SUPERADMIN_ROLE_NAME = 'superadmin';
 const MAX_LOGO_DATA_URL_LENGTH = 2_000_000;
@@ -165,10 +166,11 @@ export const setupWorkspace = async (req: Request, res: Response, next: NextFunc
     await seedDefaultMasterData(newWorkspace.id, user.id);
 
     // 5. Create Payment Request
+    const paymentConfig = getPaymentConfig();
     let platformBilling = await prisma.platformBillingSetting.findFirst();
-    const unitPrice = platformBilling ? platformBilling.pricePerUserPerMonth : 499;
-    const currency = platformBilling ? platformBilling.currency : 'INR';
-    const prefix = platformBilling ? platformBilling.paymentReferencePrefix : 'SEEAKK-PAY';
+    const unitPrice = platformBilling ? platformBilling.pricePerUserPerMonth : paymentConfig.pricePerUserPerMonth;
+    const currency = platformBilling ? platformBilling.currency : paymentConfig.currency;
+    const prefix = platformBilling ? platformBilling.paymentReferencePrefix : paymentConfig.paymentReferencePrefix;
     const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
     const randomSuffix = Math.floor(1000 + Math.random() * 9000);
     const paymentReference = `${prefix}-${dateStr}-${randomSuffix}`;
