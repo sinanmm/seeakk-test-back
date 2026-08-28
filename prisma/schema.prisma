@@ -1427,8 +1427,6 @@ model User {
 
   paymentRequests                PaymentRequest[]
   paymentSubmissions             PaymentSubmission[]
-  verifiedPayments               VerifiedPayment[]
-  graceRecords                   GraceRecord[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -3203,7 +3201,6 @@ model VerifiedPayment {
   workspace          Workspace          @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   paymentRequest     PaymentRequest     @relation(fields: [paymentRequestId], references: [id], onDelete: Cascade)
   paymentSubmission  PaymentSubmission? @relation(fields: [paymentSubmissionId], references: [id], onDelete: Cascade)
-  user               User               @relation(fields: [approvedBy], references: [id], onDelete: Cascade)
 
   @@index([workspaceId])
   @@index([paymentRequestId])
@@ -3226,7 +3223,6 @@ model GraceRecord {
   revokedAt          DateTime?
 
   workspace          Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  user               User      @relation(fields: [grantedBy], references: [id], onDelete: Cascade)
 
   @@index([workspaceId])
   @@map("grace_records")

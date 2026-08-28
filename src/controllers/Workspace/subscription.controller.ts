@@ -146,8 +146,35 @@ export const createRenewalRequest = async (
     }
 
     const { requestedUsers, requestedMonths } = req.body;
-    if (!requestedUsers || !requestedMonths) {
-      res.status(400).json({ success: false, message: 'Missing fields' });
+    const numUsers = parseInt(requestedUsers);
+    const numMonths = parseInt(requestedMonths);
+
+    if (!numUsers || numUsers <= 0 || !numMonths || numMonths <= 0) {
+      res.status(400).json({ success: false, message: 'Number of users and months must be positive integers.' });
+      return;
+    }
+
+    const workspace = await prisma.workspace.findUnique({
+      where: { id: workspaceId },
+      include: {
+        _count: {
+          select: { users: { where: { isActive: true, deletedAt: null } } },
+        },
+      },
+    });
+
+    if (!workspace) {
+      res.status(404).json({ success: false, message: 'Workspace not found.' });
+      return;
+    }
+
+    // Enforce requested user count cannot be lower than current active users (Part 29)
+    const activeCount = workspace._count.users;
+    if (numUsers < activeCount) {
+      res.status(400).json({
+        success: false,
+        message: `Renewal user count (${numUsers}) cannot be lower than your current ${activeCount} active users.`,
+      });
       return;
     }
 
@@ -159,25 +186,36 @@ export const createRenewalRequest = async (
     const unitPrice = billingSettings?.pricePerUserPerMonth || paymentConfig.pricePerUserPerMonth;
     const currency = billingSettings?.currency || paymentConfig.currency;
     const prefix = billingSettings?.paymentReferencePrefix || paymentConfig.paymentReferencePrefix;
-    const calculatedAmount = Number(requestedUsers) * Number(requestedMonths) * unitPrice;
-    const paymentReference = `${prefix}-${Date.now()}`;
+    const calculatedAmount = numUsers * numMonths * unitPrice;
+    const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+    const paymentReference = `${prefix}-${dateStr}-${randomSuffix}`;
 
     const paymentRequest = await prisma.paymentRequest.create({
       data: {
         workspaceId,
-        requestedUsers: Number(requestedUsers),
-        requestedMonths: Number(requestedMonths),
+        requestedUsers: numUsers,
+        requestedMonths: numMonths,
         unitPrice,
         currency,
         calculatedAmount,
         paymentReference,
         status: 'PAYMENT_REQUIRED',
         createdBy: userId,
-      }
+      },
     });
 
+    // If company was expired or payment required, set status to PAYMENT_REQUIRED for the new request.
+    // If company is currently ACTIVE (early renewal), do NOT disrupt active status! (Part 30)
+    if (workspace.billingStatus !== 'ACTIVE' && workspace.billingStatus !== 'GRACE') {
+      await prisma.workspace.update({
+        where: { id: workspaceId },
+        data: { billingStatus: 'PAYMENT_REQUIRED' },
+      });
+    }
+
     res.status(201).json({ success: true, paymentRequest });
-  } catch(error: any) {
+  } catch (error: any) {
     logger.error('Error creating renewal request:', { error: error.message });
     next(error);
   }

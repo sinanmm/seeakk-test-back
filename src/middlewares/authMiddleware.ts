@@ -9,6 +9,7 @@ import { isFollowUpLockResolutionPath } from '../utils/followUpLockExemptPaths';
 import { userHasActiveTemporaryBulkExtensionAccess } from '../modules/followup-settings/temporaryBulkAccess.util';
 import { BULK_EXTEND_FOLLOWUPS_PERMISSION } from '../utils/authSerializers';
 import { applyCorsHeadersIfAllowed } from '../config/cors';
+import { evaluateCompanyAccess } from '../modules/billing/companyAccess.service';
 
 interface JwtPayload {
   userId: string;
@@ -305,58 +306,41 @@ export const protect = async (req: Request, res: Response, next: NextFunction): 
     
     // Centralized Access Priority Guard (Phase 3)
     if (!isSubscriptionPath && hydratedUser.workspace) {
-      const workspace = hydratedUser.workspace;
-      const now = new Date();
-
-      if (workspace.suspendReason) {
-        applyCorsHeadersIfAllowed(req, res);
-        return res.status(403).json({ message: 'Workspace is suspended.', reason: 'Suspended' });
-      }
-
-      if (workspace.lockedAt) {
-        applyCorsHeadersIfAllowed(req, res);
-        return res.status(403).json({ message: 'Workspace is locked by administration.', reason: 'Locked' });
-      }
-
-      const hasPaidAccess = workspace.accessUntil && workspace.accessUntil > now;
-      let hasGraceAccess = false;
-
-      // Check Grace only if not paid and enrolled in new billing
-      if (!hasPaidAccess && workspace.billingStatus) {
-        const grace = await (prisma as any).graceRecord.findFirst({
-          where: { workspaceId: workspace.id, status: 'ACTIVE', graceUntil: { gt: now } }
-        });
-        if (grace) {
-          hasGraceAccess = true;
-        }
-      }
-
-      if (!hasPaidAccess && !hasGraceAccess && workspace.billingStatus) {
-        // Enforce expiration
-        if (workspace.accessUntil && workspace.accessUntil <= now && workspace.billingStatus === 'ACTIVE') {
-          // Fire-and-forget DB update to sync status for transparency
-          (prisma as any).workspace.update({
-            where: { id: workspace.id },
-            data: { billingStatus: 'EXPIRED' }
-          }).catch(console.error);
-          workspace.billingStatus = 'EXPIRED'; // Reflect in memory
-        }
-
-        const billingStatus = workspace.billingStatus;
-        if (['PAYMENT_REQUIRED', 'PAYMENT_PENDING', 'EXPIRED'].includes(billingStatus)) {
-          logger.warn('Access denied. Workspace billing requires attention.', {
-            userId: hydratedUser.id,
-            workspaceId: hydratedUser.workspaceId,
-            billingStatus,
-            action: 'auth_billing_blocked',
-          });
+      const decision = await evaluateCompanyAccess(hydratedUser.workspace);
+      if (!decision.isAllowed) {
+        if (decision.reason === 'COMPANY_SUSPENDED' || decision.reason === 'COMPANY_LOCKED') {
           applyCorsHeadersIfAllowed(req, res);
-          return res.status(402).json({
-            message: 'Payment is required to access this workspace.',
-            billingStatus,
-            reason: 'Payment required',
+          return res.status(403).json({
+            success: false,
+            errorCode: decision.reason,
+            message: decision.message,
+            reason: decision.reason,
           });
         }
+
+        // Synchronize in-memory and DB if expired
+        if (decision.reason === 'SUBSCRIPTION_EXPIRED' && hydratedUser.workspace.billingStatus === 'ACTIVE') {
+          prisma.workspace.update({
+            where: { id: hydratedUser.workspace.id },
+            data: { billingStatus: 'EXPIRED' },
+          }).catch(console.error);
+          hydratedUser.workspace.billingStatus = 'EXPIRED';
+        }
+
+        logger.warn('Access denied. Workspace billing/entitlement requires attention.', {
+          userId: hydratedUser.id,
+          workspaceId: hydratedUser.workspaceId,
+          reason: decision.reason,
+          action: 'auth_billing_blocked',
+        });
+        applyCorsHeadersIfAllowed(req, res);
+        return res.status(402).json({
+          success: false,
+          errorCode: decision.reason,
+          message: decision.message,
+          billingStatus: hydratedUser.workspace.billingStatus || decision.reason,
+          reason: decision.reason,
+        });
       }
     }
 
