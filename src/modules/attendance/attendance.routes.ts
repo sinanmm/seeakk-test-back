@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { protect, checkPermission, checkAnyPermission } from '../../middlewares/authMiddleware';
+import { requireModule } from '../../middlewares/moduleGuard';
 import { resolveAttendanceWorkspace } from './attendance.middleware';
 import { attendanceApprovalLimiter } from '../../middlewares/rateLimiter';
 import * as controller from './attendance.controller';
@@ -7,6 +8,7 @@ import * as controller from './attendance.controller';
 const router = Router();
 
 router.use(protect);
+router.use(requireModule('ATTENDANCE'));
 router.use(resolveAttendanceWorkspace);
 
 router.get('/today', controller.getTodayStatusController);

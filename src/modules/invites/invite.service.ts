@@ -8,6 +8,7 @@ import { InviteError } from './invite.errors';
 import { getInviteSendBlockReason, toInviteEligibilityUser, userHasActivatedAccount } from './inviteEligibility';
 import * as repository from './invite.repository';
 import type { AcceptInviteInput, CreateInviteInput, ValidateInviteQueryInput } from './invite.validation';
+import { verifySeatLimit } from '../billing/seatUsage.service';
 
 type Actor = {
   id: string;
@@ -24,6 +25,7 @@ type InviteServiceDependencies = {
   audit: typeof auditService;
   generateTokens: (user: any) => { accessToken: string; refreshToken: string; tokenId: string };
   now: () => Date;
+  verifySeatLimit?: typeof verifySeatLimit;
 };
 
 const INVITE_TTL_MS = 24 * 60 * 60 * 1000;
@@ -295,6 +297,12 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
 
     async acceptInvite(input: AcceptInviteInput, context?: InviteActionContext) {
       const invite = await getValidatedInvite(input.token);
+
+      const workspaceId = invite.user?.workspaceId || invite.user?.workspace?.id;
+      if (workspaceId && deps.verifySeatLimit) {
+        await deps.verifySeatLimit(workspaceId, 1);
+      }
+
       const passwordHash = await deps.hashPassword(input.password, 12);
       const acceptedAt = deps.now();
 
@@ -528,4 +536,5 @@ export const inviteService = createInviteService({
     return { accessToken, refreshToken, tokenId };
   },
   now: () => new Date(),
+  verifySeatLimit,
 });

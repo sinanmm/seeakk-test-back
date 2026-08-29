@@ -1,10 +1,12 @@
 import { Router } from 'express';
 import { checkAnyPermission, checkPermission, protect } from '../../middlewares/authMiddleware';
+import { requireModule } from '../../middlewares/moduleGuard';
 import * as controller from './callReports.controller';
 
 const router = Router();
 
 router.use(protect);
+router.use(requireModule('REPORTS'));
 
 router.get(
   '/summary',

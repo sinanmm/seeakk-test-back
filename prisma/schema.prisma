@@ -171,6 +171,8 @@ model Workspace {
   automationExecutions           AutomationExecution[]
 
   // Billing & Subscription Foundation
+  activePlanId                   String?
+  activePlan                     Plan?                          @relation(fields: [activePlanId], references: [id])
   billingStatus                  String?
   approvedUserLimit              Int?
   accessFrom                     DateTime?
@@ -187,6 +189,7 @@ model Workspace {
   updatedAt                      DateTime                       @updatedAt
   LeadRemark                     LeadRemark[]
 
+  @@index([activePlanId])
   @@map("workspaces")
 }
 
@@ -3123,6 +3126,9 @@ model PlatformBillingSetting {
 model PaymentRequest {
   id                 String   @id @default(cuid())
   workspaceId        String
+  requestedPlanId    String?
+  planCodeSnapshot   String?
+  planNameSnapshot   String?
   requestedUsers     Int
   requestedMonths    Int
   unitPrice          Int
@@ -3137,11 +3143,13 @@ model PaymentRequest {
 
   workspace          Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   user               User      @relation(fields: [createdBy], references: [id])
+  requestedPlan      Plan?     @relation(fields: [requestedPlanId], references: [id])
   paymentSubmissions PaymentSubmission[]
   verifiedPayments   VerifiedPayment[]
 
   @@index([workspaceId])
   @@index([createdBy])
+  @@index([requestedPlanId])
   @@map("payment_requests")
 }
 
@@ -3174,6 +3182,9 @@ model VerifiedPayment {
   workspaceId        String
   paymentRequestId   String
   paymentSubmissionId String?
+  planId             String?
+  planCodeSnapshot   String?
+  planNameSnapshot   String?
   
   amount             Int
   currency           String
@@ -3201,9 +3212,11 @@ model VerifiedPayment {
   workspace          Workspace          @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   paymentRequest     PaymentRequest     @relation(fields: [paymentRequestId], references: [id], onDelete: Cascade)
   paymentSubmission  PaymentSubmission? @relation(fields: [paymentSubmissionId], references: [id], onDelete: Cascade)
+  plan               Plan?              @relation(fields: [planId], references: [id])
 
   @@index([workspaceId])
   @@index([paymentRequestId])
+  @@index([planId])
   @@map("verified_payments")
 }
 
@@ -3227,3 +3240,57 @@ model GraceRecord {
   @@index([workspaceId])
   @@map("grace_records")
 }
+
+model Plan {
+  id                 String           @id @default(cuid())
+  code               String           @unique
+  name               String
+  description        String?          @db.Text
+  pricePerUserMonth  Int
+  currency           String           @default("INR")
+  isActive           Boolean          @default(true)
+  isArchived         Boolean          @default(false)
+  sortOrder          Int              @default(0)
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  modules            PlanModule[]
+  workspaces         Workspace[]
+  paymentRequests    PaymentRequest[]
+  verifiedPayments   VerifiedPayment[]
+
+  @@map("plans")
+}
+
+model AppModule {
+  id                 String           @id @default(cuid())
+  key                String           @unique
+  name               String
+  description        String?          @db.Text
+  isActive           Boolean          @default(true)
+  sortOrder          Int              @default(0)
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  planModules        PlanModule[]
+
+  @@map("app_modules")
+}
+
+model PlanModule {
+  id                 String           @id @default(cuid())
+  planId             String
+  moduleId           String
+  enabled            Boolean          @default(true)
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  plan               Plan             @relation(fields: [planId], references: [id], onDelete: Cascade)
+  module             AppModule        @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  @@unique([planId, moduleId])
+  @@index([planId])
+  @@index([moduleId])
+  @@map("plan_modules")
+}
+

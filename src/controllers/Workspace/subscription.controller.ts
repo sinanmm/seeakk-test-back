@@ -2,6 +2,9 @@ import { Request, Response, NextFunction } from 'express';
 import prisma from '../../config/prisma';
 import logger from '../../utils/logger';
 import { getPaymentConfig } from '../../config/paymentConfig';
+import { ModuleEntitlementService } from '../../modules/billing/moduleEntitlement.service';
+import { getSeatUsage } from '../../modules/billing/seatUsage.service';
+import { evaluateCompanyAccess } from '../../modules/billing/companyAccess.service';
 
 export const getPendingPaymentRequest = async (
   req: Request,
@@ -17,6 +20,7 @@ export const getPendingPaymentRequest = async (
 
     const paymentRequest = await prisma.paymentRequest.findFirst({
       where: { workspaceId, status: 'PAYMENT_REQUIRED' },
+      include: { requestedPlan: true },
       orderBy: { createdAt: 'desc' },
     });
 
@@ -32,8 +36,8 @@ export const getPendingPaymentRequest = async (
     const paymentConfig = getPaymentConfig();
 
     const billingSettings = {
-      pricePerUserPerMonth: dbSettings?.pricePerUserPerMonth || paymentConfig.pricePerUserPerMonth,
-      currency: dbSettings?.currency || paymentConfig.currency,
+      pricePerUserPerMonth: paymentRequest.unitPrice || dbSettings?.pricePerUserPerMonth || paymentConfig.pricePerUserPerMonth,
+      currency: paymentRequest.currency || dbSettings?.currency || paymentConfig.currency,
       paymentReferencePrefix: dbSettings?.paymentReferencePrefix || paymentConfig.paymentReferencePrefix,
       upiId: paymentConfig.upiId, // Derived strictly from backend ENV (null if not configured)
       upiPayeeName: paymentConfig.upiPayeeName, // Derived strictly from backend ENV
@@ -145,7 +149,7 @@ export const createRenewalRequest = async (
       return;
     }
 
-    const { requestedUsers, requestedMonths } = req.body;
+    const { requestedUsers, requestedMonths, planId, planCode } = req.body;
     const numUsers = parseInt(requestedUsers);
     const numMonths = parseInt(requestedMonths);
 
@@ -157,6 +161,7 @@ export const createRenewalRequest = async (
     const workspace = await prisma.workspace.findUnique({
       where: { id: workspaceId },
       include: {
+        activePlan: true,
         _count: {
           select: { users: { where: { isActive: true, deletedAt: null } } },
         },
@@ -178,13 +183,32 @@ export const createRenewalRequest = async (
       return;
     }
 
+    // Resolve target plan
+    let selectedPlan: any = null;
+    if (planId) {
+      selectedPlan = await prisma.plan.findUnique({ where: { id: String(planId) } });
+    } else if (planCode) {
+      selectedPlan = await prisma.plan.findUnique({ where: { code: String(planCode).toUpperCase() } });
+    } else if (workspace.activePlan) {
+      selectedPlan = workspace.activePlan;
+    } else {
+      selectedPlan = await prisma.plan.findFirst({
+        where: { code: 'BASE', isActive: true, isArchived: false },
+      });
+    }
+
+    if (!selectedPlan || selectedPlan.isArchived) {
+      res.status(400).json({ success: false, message: 'Selected subscription plan is invalid or archived.' });
+      return;
+    }
+
     const paymentConfig = getPaymentConfig();
     const billingSettings = await prisma.platformBillingSetting.findFirst({
       orderBy: { createdAt: 'desc' },
     });
 
-    const unitPrice = billingSettings?.pricePerUserPerMonth || paymentConfig.pricePerUserPerMonth;
-    const currency = billingSettings?.currency || paymentConfig.currency;
+    const unitPrice = selectedPlan.pricePerUserMonth || billingSettings?.pricePerUserPerMonth || paymentConfig.pricePerUserPerMonth;
+    const currency = selectedPlan.currency || billingSettings?.currency || paymentConfig.currency;
     const prefix = billingSettings?.paymentReferencePrefix || paymentConfig.paymentReferencePrefix;
     const calculatedAmount = numUsers * numMonths * unitPrice;
     const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
@@ -194,6 +218,9 @@ export const createRenewalRequest = async (
     const paymentRequest = await prisma.paymentRequest.create({
       data: {
         workspaceId,
+        requestedPlanId: selectedPlan.id,
+        planCodeSnapshot: selectedPlan.code,
+        planNameSnapshot: selectedPlan.name,
         requestedUsers: numUsers,
         requestedMonths: numMonths,
         unitPrice,
@@ -217,6 +244,100 @@ export const createRenewalRequest = async (
     res.status(201).json({ success: true, paymentRequest });
   } catch (error: any) {
     logger.error('Error creating renewal request:', { error: error.message });
+    next(error);
+  }
+};
+
+export const getEntitlements = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    const workspaceId = req.user?.workspaceId;
+    if (!workspaceId) {
+      res.status(400).json({ success: false, message: 'Workspace ID missing' });
+      return;
+    }
+
+    const workspace = await prisma.workspace.findUnique({
+      where: { id: workspaceId },
+      include: { activePlan: true },
+    });
+
+    if (!workspace) {
+      res.status(404).json({ success: false, message: 'Workspace not found' });
+      return;
+    }
+
+    const [seatUsage, accessDecision, enabledModules] = await Promise.all([
+      getSeatUsage(workspaceId),
+      evaluateCompanyAccess(workspace),
+      ModuleEntitlementService.getEnabledModules(workspaceId),
+    ]);
+
+    const isOverLimit = workspace.approvedUserLimit !== null && seatUsage.activeUserCount > workspace.approvedUserLimit;
+
+    res.status(200).json({
+      success: true,
+      plan: workspace.activePlan
+        ? {
+            id: workspace.activePlan.id,
+            code: workspace.activePlan.code,
+            name: workspace.activePlan.name,
+            pricePerUserMonth: workspace.activePlan.pricePerUserMonth,
+            currency: workspace.activePlan.currency,
+          }
+        : null,
+      subscription: {
+        billingStatus: workspace.billingStatus || 'LEGACY',
+        approvedUserLimit: workspace.approvedUserLimit,
+        activeUserCount: seatUsage.activeUserCount,
+        availableSeats: seatUsage.availableUserCount,
+        isOverLimit,
+        accessFrom: workspace.accessFrom,
+        accessUntil: workspace.accessUntil,
+        effectiveStatus: accessDecision.reason,
+        entitlementSource: accessDecision.entitlementSource,
+      },
+      enabledModules,
+    });
+  } catch (error: any) {
+    logger.error('Error fetching workspace entitlements:', { error: error.message });
+    next(error);
+  }
+};
+
+export const getAvailablePlans = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    const plans = await prisma.plan.findMany({
+      where: { isActive: true, isArchived: false },
+      orderBy: { sortOrder: 'asc' },
+      include: {
+        modules: {
+          where: { enabled: true, module: { isActive: true } },
+          include: { module: { select: { key: true, name: true } } },
+        },
+      },
+    });
+
+    const items = plans.map((p) => ({
+      id: p.id,
+      code: p.code,
+      name: p.name,
+      description: p.description,
+      pricePerUserMonth: p.pricePerUserMonth,
+      currency: p.currency,
+      enabledModules: p.modules.map((m) => ({ key: m.module.key, name: m.module.name })),
+    }));
+
+    res.status(200).json({ success: true, items });
+  } catch (error: any) {
+    logger.error('Error fetching available plans:', { error: error.message });
     next(error);
   }
 };

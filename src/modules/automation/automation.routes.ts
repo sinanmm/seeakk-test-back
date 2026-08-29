@@ -1,27 +1,29 @@
 import { Router } from 'express';
 import { checkAnyPermission, protect } from '../../middlewares/authMiddleware';
+import { requireModule } from '../../middlewares/moduleGuard';
 import * as controller from './automation.controller';
 
 const router = Router();
 
+// Protect all automation routes with authentication and module entitlement
+router.use(protect);
+router.use(requireModule('AUTOMATIONS'));
+
 // Retrieve all workflows & metadata config (Read permissions)
 router.get(
   '/',
-  protect,
   checkAnyPermission(['AUTOMATION_VIEW', 'SYSTEM_CONFIG']),
   controller.listWorkflows
 );
 
 router.get(
   '/meta',
-  protect,
   checkAnyPermission(['AUTOMATION_VIEW', 'AUTOMATION_CREATE', 'AUTOMATION_EDIT', 'SYSTEM_CONFIG']),
   controller.getAutomationMeta
 );
 
 router.get(
   '/:id',
-  protect,
   checkAnyPermission(['AUTOMATION_VIEW', 'SYSTEM_CONFIG']),
   controller.getWorkflow
 );
@@ -29,7 +31,6 @@ router.get(
 // Create new workflows
 router.post(
   '/',
-  protect,
   checkAnyPermission(['AUTOMATION_CREATE', 'SYSTEM_CONFIG']),
   controller.createWorkflow
 );
@@ -37,7 +38,6 @@ router.post(
 // Update/Edit existing workflows
 router.put(
   '/:id',
-  protect,
   checkAnyPermission(['AUTOMATION_EDIT', 'SYSTEM_CONFIG']),
   controller.updateWorkflow
 );
@@ -45,7 +45,6 @@ router.put(
 // Delete workflows
 router.delete(
   '/:id',
-  protect,
   checkAnyPermission(['AUTOMATION_DELETE', 'SYSTEM_CONFIG']),
   controller.deleteWorkflow
 );
@@ -53,7 +52,6 @@ router.delete(
 // Toggle active/inactive status
 router.patch(
   '/:id/status',
-  protect,
   checkAnyPermission(['AUTOMATION_ACTIVATE', 'SYSTEM_CONFIG']),
   controller.toggleStatus
 );
@@ -61,14 +59,12 @@ router.patch(
 // Workflow Runs & executions logs
 router.get(
   '/:id/runs',
-  protect,
   checkAnyPermission(['AUTOMATION_VIEW_RUNS', 'SYSTEM_CONFIG']),
   controller.getWorkflowRuns
 );
 
 router.get(
   '/runs/:runId',
-  protect,
   checkAnyPermission(['AUTOMATION_VIEW_RUNS', 'SYSTEM_CONFIG']),
   controller.getWorkflowRunDetail
 );

@@ -35,7 +35,7 @@ export const verifySeatLimit = async (workspaceId: string, additionalSeats: numb
     select: { approvedUserLimit: true },
   });
 
-  if (workspace?.approvedUserLimit === null) {
+  if (!workspace || workspace.approvedUserLimit === null) {
     return true; // Unrestricted for legacy companies
   }
 

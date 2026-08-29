@@ -74,7 +74,7 @@ export const setupWorkspace = async (req: Request, res: Response, next: NextFunc
       return res.status(401).json({ message: 'Not authorized' });
     }
 
-    const { companyName, employeeCount, timeZone, language, currencyLocale, loadSampleData, logoUrl, requestedUsers, requestedMonths } = req.body;
+    const { companyName, employeeCount, timeZone, language, currencyLocale, loadSampleData, logoUrl, requestedUsers, requestedMonths, planId, planCode } = req.body;
 
     if (user.isOnboarded) {
       return res.status(400).json({ message: 'Workspace is already set up for this user.' });
@@ -91,6 +91,22 @@ export const setupWorkspace = async (req: Request, res: Response, next: NextFunc
     const branding = normalizeWorkspaceBrandingInput({ companyName, logoUrl });
     if ('error' in branding) {
       return res.status(400).json({ message: branding.error });
+    }
+
+    // Resolve requested plan from DB
+    let selectedPlan: any = null;
+    if (planId) {
+      selectedPlan = await prisma.plan.findUnique({ where: { id: String(planId) } });
+    } else if (planCode) {
+      selectedPlan = await prisma.plan.findUnique({ where: { code: String(planCode).toUpperCase() } });
+    } else {
+      selectedPlan = await prisma.plan.findFirst({
+        where: { code: 'BASE', isActive: true, isArchived: false },
+      });
+    }
+
+    if (!selectedPlan || selectedPlan.isArchived) {
+      return res.status(400).json({ message: 'Selected subscription plan is invalid or archived.' });
     }
 
     // 1. Create the workspace and link to the owner simultaneously
@@ -165,12 +181,12 @@ export const setupWorkspace = async (req: Request, res: Response, next: NextFunc
     // 4. Seed default master data for the new workspace
     await seedDefaultMasterData(newWorkspace.id, user.id);
 
-    // 5. Create Payment Request
+    // 5. Create Payment Request with Plan Snapshot
     const paymentConfig = getPaymentConfig();
-    let platformBilling = await prisma.platformBillingSetting.findFirst();
-    const unitPrice = platformBilling ? platformBilling.pricePerUserPerMonth : paymentConfig.pricePerUserPerMonth;
-    const currency = platformBilling ? platformBilling.currency : paymentConfig.currency;
-    const prefix = platformBilling ? platformBilling.paymentReferencePrefix : paymentConfig.paymentReferencePrefix;
+    const platformBilling = await prisma.platformBillingSetting.findFirst();
+    const unitPrice = selectedPlan.pricePerUserMonth || platformBilling?.pricePerUserPerMonth || paymentConfig.pricePerUserPerMonth;
+    const currency = selectedPlan.currency || platformBilling?.currency || paymentConfig.currency;
+    const prefix = platformBilling?.paymentReferencePrefix || paymentConfig.paymentReferencePrefix;
     const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
     const randomSuffix = Math.floor(1000 + Math.random() * 9000);
     const paymentReference = `${prefix}-${dateStr}-${randomSuffix}`;
@@ -179,6 +195,9 @@ export const setupWorkspace = async (req: Request, res: Response, next: NextFunc
     const paymentRequest = await prisma.paymentRequest.create({
       data: {
         workspaceId: newWorkspace.id,
+        requestedPlanId: selectedPlan.id,
+        planCodeSnapshot: selectedPlan.code,
+        planNameSnapshot: selectedPlan.name,
         requestedUsers: Number(requestedUsers),
         requestedMonths: Number(requestedMonths),
         unitPrice,
@@ -186,15 +205,16 @@ export const setupWorkspace = async (req: Request, res: Response, next: NextFunc
         calculatedAmount,
         paymentReference,
         status: 'PAYMENT_REQUIRED',
-        createdBy: user.id
-      }
+        createdBy: user.id,
+      },
     });
 
     logger.info('Workspace successfully configured', {
       workspaceId: newWorkspace.id,
       userId: user.id,
       action: 'workspace_setup',
-      paymentRequestId: paymentRequest.id
+      paymentRequestId: paymentRequest.id,
+      planCode: selectedPlan.code,
     });
 
     return res.status(201).json({

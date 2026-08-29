@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import multer from 'multer';
 import { checkAnyPermission, checkPermission, protect } from '../../middlewares/authMiddleware';
+import { requireModule } from '../../middlewares/moduleGuard';
 import * as sheetsController from './sheets.controller';
 
 const router = Router();
@@ -14,6 +15,7 @@ const upload = multer({
 });
 
 router.use(protect);
+router.use(requireModule('SHEETS'));
 
 router.get('/', checkPermission('SHEETS_VIEW'), sheetsController.listSheets);
 router.post('/', checkPermission('SHEETS_CREATE'), sheetsController.createSheet);

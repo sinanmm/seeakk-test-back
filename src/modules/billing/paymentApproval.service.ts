@@ -143,6 +143,9 @@ export class PaymentApprovalService {
           workspaceId: reqInTx.workspaceId,
           paymentRequestId: reqInTx.id,
           paymentSubmissionId: submissionInTx.id,
+          planId: reqInTx.requestedPlanId || null,
+          planCodeSnapshot: reqInTx.planCodeSnapshot || null,
+          planNameSnapshot: reqInTx.planNameSnapshot || null,
           amount: reqInTx.calculatedAmount,
           currency: reqInTx.currency,
           unitPriceSnapshot: reqInTx.unitPrice,
@@ -178,6 +181,7 @@ export class PaymentApprovalService {
         where: { id: reqInTx.workspaceId },
         data: {
           billingStatus: 'ACTIVE',
+          ...(reqInTx.requestedPlanId ? { activePlanId: reqInTx.requestedPlanId } : {}),
           approvedUserLimit: numLimit,
           accessFrom: startDate,
           accessUntil: endDate,
@@ -199,6 +203,8 @@ export class PaymentApprovalService {
       details: {
         amount: existingRequest.calculatedAmount,
         currency: existingRequest.currency,
+        planId: existingRequest.requestedPlanId,
+        planCode: existingRequest.planCodeSnapshot,
         approvedUserLimit: numLimit,
         accessFrom: startDate.toISOString(),
         accessUntil: endDate.toISOString(),
