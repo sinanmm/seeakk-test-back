@@ -195,14 +195,24 @@ export const saveCallOutcome = async (
       }
 
       targetStage = selectedSubstage.leadStage;
+    } else if (input.targetStageId) {
+      targetStage = await tx.leadStage.findFirst({
+        where: { id: input.targetStageId, workspaceId, deletedAt: null, status: 'ACTIVE' },
+      });
 
+      if (!targetStage) {
+        throw createError('Selected lead stage not found or inactive', 400);
+      }
+    }
+
+    if (targetStage) {
       const effectiveReasonId = input.lobReasonId || input.reasonId;
       const effectiveRemarks = input.lobRemarks;
       const effectiveExitRemarks = input.lobExitReason || input.lobReturnRemarks || input.lobRemarks;
       const isCurrentLOB = Boolean(lead.stage?.isLOB || lead.isLOB);
 
       // Check if stage transition is needed
-      if (targetStage && targetStage.id !== lead.stageId) {
+      if (targetStage.id !== lead.stageId) {
         if (targetStage.isLOB) {
           if (!effectiveReasonId) {
             throw createError('LOB reason is required when moving to an LOB stage', 400);
@@ -242,10 +252,12 @@ export const saveCallOutcome = async (
               requestedById: userId,
               assignedToId: lead.assignedToId || userId,
               status: 'PENDING',
-              comment: input.outcomeNotes || `Requested via Call Outcome (${selectedSubstage.name})`,
+              comment: input.outcomeNotes || `Requested via Call Outcome (${selectedSubstage?.name || targetStage.name})`,
               requestData: {
-                substageId: selectedSubstage.id,
-                substageName: selectedSubstage.name,
+                substageId: selectedSubstage?.id || null,
+                substageName: selectedSubstage?.name || null,
+                targetStageId: targetStage.id,
+                targetStageName: targetStage.name,
                 callSessionId: callSession.id,
                 reasonId: effectiveReasonId || null,
                 lobReasonId: effectiveReasonId || null,
@@ -273,7 +285,7 @@ export const saveCallOutcome = async (
         } else {
           // Handle stage rules if present
           if (input.stageRuleValues && input.stageRuleValues.length > 0) {
-            const inputsToSave = input.stageRuleValues.map((v) => ({
+            const inputsToSave = input.stageRuleValues.map((v: any) => ({
               leadId,
               ruleId: v.ruleId,
               value: v.value,
@@ -287,7 +299,7 @@ export const saveCallOutcome = async (
             where: { id: leadId },
             data: {
               stageId: targetStage.id,
-              substageId: selectedSubstage.id,
+              substageId: selectedSubstage?.id || null,
               stageEnteredAt: new Date(),
               isClosed: targetStage.isClosed,
               isLOB: targetStage.isLOB,
@@ -345,7 +357,7 @@ export const saveCallOutcome = async (
 
           isStageChanged = true;
         }
-      } else {
+      } else if (selectedSubstage) {
         // Stage remains same, just update substage
         await tx.lead.update({
           where: { id: leadId },

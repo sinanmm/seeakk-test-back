@@ -49,7 +49,7 @@ export const getSubstagesGroupedByStage = async (workspaceId: string) => {
       isClosed: true,
       substages: {
         where: { workspaceId, deletedAt: null, status: 'ACTIVE' },
-        orderBy: { sortOrder: 'asc' },
+        orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
       },
     },
   });
