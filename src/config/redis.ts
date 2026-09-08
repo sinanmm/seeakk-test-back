@@ -177,4 +177,20 @@ const disconnectRedis = async (): Promise<void> => {
   }
 };
 
+const sanitizePrefix = (prefix: string | undefined): string => {
+  if (!prefix) return '';
+  const cleaned = prefix.trim().replace(/:+$/, '');
+  return cleaned ? `${cleaned}:` : '';
+};
+
+export const getRedisKeyPrefix = (): string => {
+  return sanitizePrefix(process.env.REDIS_KEY_PREFIX);
+};
+
+export const getScopedRedisKey = (key: string): string => {
+  const prefix = getRedisKeyPrefix();
+  return prefix ? `${prefix}${key}` : key;
+};
+
 export { connectRedis, disconnectRedis, redisClient };
+

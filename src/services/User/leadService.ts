@@ -1,5 +1,5 @@
 import prisma from '../../config/prisma';
-import { redisClient } from '../../config/redis';
+import { getScopedRedisKey, redisClient } from '../../config/redis';
 import logger from '../../utils/logger';
 import { formatPhoneStr, cleanAndParseImportedPhone } from '../../utils/phoneUtils';
 import ExcelJS from 'exceljs';
@@ -1172,7 +1172,7 @@ const escapeCsv = (value: unknown): string => {
 };
 
 const buildLeadCacheKey = (workspaceId: string, query: ListLeadsQueryInput | ExportLeadsQueryInput, actor?: Actor): string =>
-  `leads:${workspaceId}:${actor ? `${actor.id}:${actor.roleId ?? 'no-role'}:` : ''}${JSON.stringify(query)}`;
+  `${getScopedRedisKey('leads')}:${workspaceId}:${actor ? `${actor.id}:${actor.roleId ?? 'no-role'}:` : ''}${JSON.stringify(query)}`;
 
 const isLeadVisibilityDebugEnabled = (): boolean => process.env.LEAD_VISIBILITY_DEBUG === 'true';
 
@@ -1239,7 +1239,7 @@ export const clearLeadCache = async (workspaceId: string): Promise<void> => {
 
   try {
     const keysToDelete: string[] = [];
-    const pattern = `leads:${workspaceId}:*`;
+    const pattern = `${getScopedRedisKey('leads')}:${workspaceId}:*`;
 
     // Try scan iterator first (best for perf)
     for await (const key of (redisClient as any).scanIterator({ MATCH: pattern, COUNT: 250 })) {

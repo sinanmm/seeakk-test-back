@@ -1,6 +1,6 @@
 import { Queue, Worker } from 'bullmq';
 import logger from '../../utils/logger';
-import { getBullMQConnection } from '../../config/bullmq';
+import { getBullMQConnection, getBullMQPrefix } from '../../config/bullmq';
 
 const redisUrl = process.env.REDIS_URL?.trim();
 
@@ -12,6 +12,7 @@ if (redisUrl) {
 
   holidayQueue = new Queue('holiday-queue', {
     connection: connection as any,
+    prefix: getBullMQPrefix(),
   });
 
   holidayWorker = new Worker(
@@ -25,7 +26,7 @@ if (redisUrl) {
         // Placeholder to iterate all active leads and recompute SLAs based on new holidays
       }
     },
-    { connection: connection as any },
+    { connection: connection as any, prefix: getBullMQPrefix() },
   );
 
   holidayWorker.on('completed', (job) => {

@@ -1,5 +1,5 @@
 import prisma from '../../config/prisma';
-import { redisClient } from '../../config/redis';
+import { getScopedRedisKey, redisClient } from '../../config/redis';
 import logger from '../../utils/logger';
 import { assertActiveLOBReason } from '../master/lob-reasons/lobReasons.service';
 import * as repository from './leadApprovals.repository';
@@ -31,7 +31,7 @@ const clearWorkspaceLeadCache = async (workspaceId: string): Promise<void> => {
 
   try {
     const keysToDelete: string[] = [];
-    const pattern = `leads:${workspaceId}:*`;
+    const pattern = `${getScopedRedisKey('leads')}:${workspaceId}:*`;
 
     for await (const key of (redisClient as any).scanIterator({ MATCH: pattern, COUNT: 250 })) {
       if (typeof key === 'string' && key.length > 0) {

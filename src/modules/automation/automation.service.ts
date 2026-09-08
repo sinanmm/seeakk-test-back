@@ -1,4 +1,5 @@
 import prisma from '../../config/prisma';
+import { getScopedRedisKey } from '../../config/redis';
 import logger from '../../utils/logger';
 import { emitUserEvent } from '../../realtime/socket';
 import { updateLead, createLead } from '../../services/User/leadService';
@@ -352,7 +353,7 @@ const executeActionStep = async (
                 const { getBullMQConnection } = await import('../../config/bullmq');
                 const redis = getBullMQConnection();
                 if (redis) {
-                  const counterKey = `workspace:${workspaceId}:workflow:roundrobin:count`;
+                  const counterKey = getScopedRedisKey(`workspace:${workspaceId}:workflow:roundrobin:count`);
                   const count = await (redis as any).incr(counterKey);
                   index = count % validPool.length;
                 } else {

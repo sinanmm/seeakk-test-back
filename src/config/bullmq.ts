@@ -54,7 +54,13 @@ export const getBullMQConfig = () => {
   };
 };
 
+export const getBullMQPrefix = (): string => {
+  const prefix = (process.env.REDIS_KEY_PREFIX || '').trim().replace(/:+$/, '');
+  return prefix ? `${prefix}:bull` : 'bull';
+};
+
 export const closeBullMQConnections = async () => {
+
   if (sharedRedisConnection) {
     await sharedRedisConnection.quit();
     sharedRedisConnection = null;

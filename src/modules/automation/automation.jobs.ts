@@ -1,6 +1,6 @@
 import { Queue, Worker } from 'bullmq';
 import logger from '../../utils/logger';
-import { getBullMQConnection } from '../../config/bullmq';
+import { getBullMQConnection, getBullMQPrefix } from '../../config/bullmq';
 import * as automationService from './automation.service';
 
 const redisUrl = process.env.REDIS_URL?.trim();
@@ -13,6 +13,7 @@ if (redisUrl) {
 
   automationQueue = new Queue('automation-engine', {
     connection: connection as any,
+    prefix: getBullMQPrefix(),
   });
 
   automationWorker = new Worker(
@@ -46,7 +47,7 @@ if (redisUrl) {
         throw err;
       }
     },
-    { connection: connection as any }
+    { connection: connection as any, prefix: getBullMQPrefix() }
   );
 
   automationWorker.on('completed', (job) => {
