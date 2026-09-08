@@ -228,14 +228,28 @@ app.get('/socket-test', (_req, res) => {
 // Readiness check
 app.get(['/readyz', '/health'], async (_req, res) => {
   try {
-    const dbInfo = await prisma.$queryRaw<Array<{ server_ip?: string; db_name?: string }>>`
-      SELECT inet_server_addr()::text as server_ip, current_database() as db_name
+    const dbInfo = await prisma.$queryRaw<Array<{
+      server_ip?: string;
+      db_name?: string;
+      postmaster_start?: string;
+      leads_count?: string;
+      isolation_lead_count?: string;
+    }>>`
+      SELECT 
+        inet_server_addr()::text as server_ip, 
+        current_database() as db_name,
+        pg_postmaster_start_time()::text as postmaster_start,
+        (SELECT count(*)::text FROM "leads") as leads_count,
+        (SELECT count(*)::text FROM "leads" WHERE name = 'TEST_ISOLATION_20260908') as isolation_lead_count
     `.catch(() => []);
     const redisReady = redisClient.isOpen;
     res.status(200).json({
       database: 'ok',
       dbServerIp: dbInfo[0]?.server_ip || null,
       dbName: dbInfo[0]?.db_name || null,
+      dbPostmasterStart: dbInfo[0]?.postmaster_start || null,
+      dbLeadsCount: dbInfo[0]?.leads_count || null,
+      dbIsolationLeadCount: dbInfo[0]?.isolation_lead_count || null,
       socket: 'ok',
       storage: 'ok',
       redis: redisReady ? 'ok' : 'down',
