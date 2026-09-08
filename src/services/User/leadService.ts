@@ -22,6 +22,7 @@ import type {
   UpdateLeadInput,
 } from '../../validations/leadValidation';
 import { touchFollowUpTodayCachesAfterLeadMutation } from './followupService';
+import { hasLeadProfileImage } from './leadProfileImageService';
 
 import { buildLeadChangesToTrack, trackFieldEdits } from '../../modules/admin/field-highlights/fieldHighlights.interceptor';
 
@@ -647,8 +648,14 @@ const mapLeadRecord = (lead: LeadIncludeRecord) => {
   const { followUps, ...rest } = lead;
   return {
     ...rest,
-    profileImageUrl: lead.profileImageUrl ?? null,
-    profileImageThumbnail: lead.profileImageThumbnail ?? null,
+    profileImageUrl:
+      lead.profileImageUrl && hasLeadProfileImage(lead.workspaceId, lead.id, 'full')
+        ? lead.profileImageUrl
+        : null,
+    profileImageThumbnail:
+      lead.profileImageThumbnail && hasLeadProfileImage(lead.workspaceId, lead.id, 'thumb')
+        ? lead.profileImageThumbnail
+        : null,
     profileImageUploadedAt: lead.profileImageUploadedAt ? lead.profileImageUploadedAt.toISOString() : null,
     profileImageUploadedById: lead.profileImageUploadedById ?? null,
     advanceAmount,

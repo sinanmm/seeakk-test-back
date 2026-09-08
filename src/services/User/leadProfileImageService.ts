@@ -1,4 +1,5 @@
 import fs from 'fs/promises';
+import fsSync from 'fs';
 import path from 'path';
 import sharp from 'sharp';
 import prisma from '../../config/prisma';
@@ -19,6 +20,39 @@ type StoredLeadProfileImage = {
 const ALLOWED_MIME_TYPES = new Set(['image/jpeg', 'image/jpg', 'image/png', 'image/webp']);
 const MAX_FINAL_BYTES = 1024 * 1024;
 const PROFILE_IMAGE_ROOT = path.resolve(process.cwd(), process.env.LEAD_PROFILE_IMAGE_DIR || 'uploads/leads/profile-images');
+
+// In-memory cache to avoid repeated filesystem existence checks
+const imageExistsCache = new Map<string, { exists: boolean; expiresAt: number }>();
+const CACHE_TTL_MS = 60_000;
+
+export const clearLeadProfileImageCache = (workspaceId: string, leadId: string) => {
+  imageExistsCache.delete(`${workspaceId}:${leadId}:full`);
+  imageExistsCache.delete(`${workspaceId}:${leadId}:thumb`);
+};
+
+export const hasLeadProfileImage = (
+  workspaceId: string,
+  leadId: string,
+  variant: 'full' | 'thumb',
+): boolean => {
+  const cacheKey = `${workspaceId}:${leadId}:${variant}`;
+  const now = Date.now();
+  const cached = imageExistsCache.get(cacheKey);
+  if (cached && now < cached.expiresAt) {
+    return cached.exists;
+  }
+
+  const filePath = leadImagePath(workspaceId, leadId, variant);
+  let exists = false;
+  try {
+    exists = fsSync.existsSync(filePath);
+  } catch {
+    exists = false;
+  }
+
+  imageExistsCache.set(cacheKey, { exists, expiresAt: now + CACHE_TTL_MS });
+  return exists;
+};
 
 const createServiceError = (message: string, statusCode: number): Error & { statusCode: number } => {
   const error = new Error(message) as Error & { statusCode: number };
@@ -154,6 +188,7 @@ export const uploadLeadProfileImage = async (
     });
   });
 
+  clearLeadProfileImageCache(workspaceId, leadId);
   await clearLeadCache(workspaceId);
   return getLeadById(workspaceId, leadId, actor);
 };
@@ -206,6 +241,7 @@ export const removeLeadProfileImage = async (
     });
   });
 
+  clearLeadProfileImageCache(workspaceId, leadId);
   await clearLeadCache(workspaceId);
   return getLeadById(workspaceId, leadId, actor);
 };
