@@ -892,27 +892,68 @@ export const refreshToken = async (req: Request, res: Response): Promise<any> =>
   });
 
   try {
-    const refreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
+    const clearRefreshCookie = () => {
+      res.clearCookie('refreshToken', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+      });
+    };
 
-    if (!refreshToken) {
+    const cookieToken = typeof req.cookies?.refreshToken === 'string' ? req.cookies.refreshToken.trim() : null;
+    const bodyToken = typeof req.body?.refreshToken === 'string' ? req.body.refreshToken.trim() : null;
+
+    const candidates: Array<{ token: string; source: 'cookie' | 'body' }> = [];
+    if (cookieToken) candidates.push({ token: cookieToken, source: 'cookie' });
+    if (bodyToken && bodyToken !== cookieToken) candidates.push({ token: bodyToken, source: 'body' });
+
+    if (candidates.length === 0) {
       logger.warn('Refresh token missing from request', { requestId, action: 'refresh_token_missing' });
       return res.status(400).json({ message: 'Refresh token is required' });
     }
 
-    let decoded: any;
-    try {
-      decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET as string);
-    } catch (error: any) {
-      logger.warn('Refresh token verification failed', {
-        requestId,
-        error: error.message,
-        action: 'refresh_token_verify_failed',
-      });
-      return res.status(401).json({ message: 'Invalid or expired refresh token' });
+    if (!(await waitForRedisReady(3000))) {
+      logger.warn('Refresh token rejected - Redis session store not ready', { requestId, action: 'refresh_redis_unready' });
+      return res.status(503).json({ message: 'Session service temporarily unavailable. Please try again shortly.' });
     }
 
-    const { userId, tokenId } = decoded;
-    const exp = decoded.exp ? new Date(decoded.exp * 1000).toISOString() : null;
+    let validToken: string | null = null;
+    let decodedPayload: any = null;
+
+    for (const candidate of candidates) {
+      try {
+        const decoded = jwt.verify(candidate.token, process.env.JWT_REFRESH_SECRET as string) as any;
+        const usedUserId = await getUsedRefreshUserId(decoded.tokenId);
+        if (usedUserId) {
+          logger.warn('Refresh candidate rejected - already rotated', {
+            requestId,
+            source: candidate.source,
+            tokenId: decoded.tokenId,
+            userId: decoded.userId,
+            action: 'refresh_candidate_already_rotated',
+          });
+          continue;
+        }
+        validToken = candidate.token;
+        decodedPayload = decoded;
+        break;
+      } catch (err: any) {
+        logger.warn('Refresh candidate verification failed', {
+          requestId,
+          source: candidate.source,
+          error: err.message,
+          action: 'refresh_candidate_verify_failed',
+        });
+      }
+    }
+
+    if (!validToken || !decodedPayload) {
+      clearRefreshCookie();
+      return res.status(401).json({ message: 'Invalid refresh token or already consumed' });
+    }
+
+    const { userId, tokenId } = decodedPayload;
+    const exp = decodedPayload.exp ? new Date(decodedPayload.exp * 1000).toISOString() : null;
 
     logger.info('Refresh token verified successfully', {
       requestId,
@@ -928,26 +969,11 @@ export const refreshToken = async (req: Request, res: Response): Promise<any> =>
       return res.status(200).json(JSON.parse(replayPayload));
     }
 
-    if (!(await waitForRedisReady(3000))) {
-      logger.warn('Refresh token rejected - Redis session store not ready', { requestId, userId, tokenId, action: 'refresh_redis_unready' });
-      return res.status(503).json({ message: 'Session service temporarily unavailable. Please try again shortly.' });
-    }
-
     const storedUserId = await getStoredRefreshUserId(tokenId);
-    const usedUserId = await getUsedRefreshUserId(tokenId);
-
-    if (usedUserId) {
-      if (usedUserId !== userId) {
-        logger.warn('Refresh token rejected - used token user mismatch', { requestId, userId, tokenId, action: 'refresh_token_rejected', reason: 'user_mismatch' });
-        return res.status(401).json({ message: 'Invalid refresh token or already consumed' });
-      }
-      logger.warn('Refresh token rejected - already rotated', { requestId, userId, tokenId, action: 'refresh_token_rejected', reason: 'already_rotated' });
-      return res.status(401).json({ message: 'Invalid refresh token or already consumed' });
-    }
-
     if (storedUserId) {
       if (storedUserId !== userId) {
         logger.warn('Refresh token rejected - stolen or mismatched session', { requestId, userId, tokenId, action: 'refresh_token_rejected', reason: 'stolen_or_mismatch' });
+        clearRefreshCookie();
         return res.status(401).json({ message: 'Invalid refresh token or already consumed' });
       }
       await revokeRefreshSession(tokenId);

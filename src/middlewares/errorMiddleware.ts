@@ -41,6 +41,11 @@ export const errorHandler = (err: any, req: Request, res: Response, next: NextFu
       : err.message || 'Invalid uploaded file.';
   }
 
+  if (err.name === 'NoSuchKey' || err.name === 'NotFound' || err.$metadata?.httpStatusCode === 404) {
+    statusCode = 404;
+    message = 'File not found in storage.';
+  }
+
   // Identify Prisma errors
   const isPrismaError = err.name && err.name.startsWith('PrismaClient');
 

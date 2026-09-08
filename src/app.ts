@@ -228,10 +228,14 @@ app.get('/socket-test', (_req, res) => {
 // Readiness check
 app.get(['/readyz', '/health'], async (_req, res) => {
   try {
-    await prisma.$queryRaw`SELECT 1`;
+    const dbInfo = await prisma.$queryRaw<Array<{ server_ip?: string; db_name?: string }>>`
+      SELECT inet_server_addr()::text as server_ip, current_database() as db_name
+    `.catch(() => []);
     const redisReady = redisClient.isOpen;
     res.status(200).json({
       database: 'ok',
+      dbServerIp: dbInfo[0]?.server_ip || null,
+      dbName: dbInfo[0]?.db_name || null,
       socket: 'ok',
       storage: 'ok',
       redis: redisReady ? 'ok' : 'down',

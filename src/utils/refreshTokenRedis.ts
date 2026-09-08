@@ -20,38 +20,50 @@ export const waitForRedisReady = async (maxWaitMs = 3000): Promise<boolean> => {
   return redisClient.isReady;
 };
 
+const REDIS_KEY_PREFIX = process.env.REDIS_KEY_PREFIX?.trim() || '';
+const scopedKey = (key: string): string => (REDIS_KEY_PREFIX ? `${REDIS_KEY_PREFIX}:${key}` : key);
+
 export const storeRefreshSession = async (tokenId: string, userId: string): Promise<void> => {
   if (!redisClient.isReady) return;
-  await redisClient.setEx(`refresh:${tokenId}`, REFRESH_SESSION_TTL_SEC, userId);
+  await redisClient.setEx(scopedKey(`refresh:${tokenId}`), REFRESH_SESSION_TTL_SEC, userId);
 };
 
 export const getRefreshReplay = async (tokenId: string): Promise<string | null> => {
   if (!redisClient.isReady) return null;
+  const primary = await redisClient.get(scopedKey(`refresh:replay:${tokenId}`));
+  if (primary || !REDIS_KEY_PREFIX) return primary;
   return redisClient.get(`refresh:replay:${tokenId}`);
 };
 
 export const cacheRefreshReplay = async (tokenId: string, payload: string): Promise<void> => {
   if (!redisClient.isReady) return;
-  await redisClient.setEx(`refresh:replay:${tokenId}`, REFRESH_REPLAY_TTL_SEC, payload);
+  await redisClient.setEx(scopedKey(`refresh:replay:${tokenId}`), REFRESH_REPLAY_TTL_SEC, payload);
 };
 
 export const getStoredRefreshUserId = async (tokenId: string): Promise<string | null> => {
   if (!redisClient.isReady) return null;
+  const primary = await redisClient.get(scopedKey(`refresh:${tokenId}`));
+  if (primary || !REDIS_KEY_PREFIX) return primary;
   return redisClient.get(`refresh:${tokenId}`);
 };
 
 export const revokeRefreshSession = async (tokenId: string): Promise<void> => {
   if (!redisClient.isReady) return;
-  await redisClient.del(`refresh:${tokenId}`);
+  await redisClient.del(scopedKey(`refresh:${tokenId}`));
+  if (REDIS_KEY_PREFIX) {
+    await redisClient.del(`refresh:${tokenId}`);
+  }
 };
 
 /** Marks a rotated refresh token as consumed so it cannot be replayed after the short replay window */
 export const markRefreshTokenUsed = async (tokenId: string, userId: string): Promise<void> => {
   if (!redisClient.isReady) return;
-  await redisClient.setEx(`refresh:used:${tokenId}`, REFRESH_SESSION_TTL_SEC, userId);
+  await redisClient.setEx(scopedKey(`refresh:used:${tokenId}`), REFRESH_SESSION_TTL_SEC, userId);
 };
 
 export const getUsedRefreshUserId = async (tokenId: string): Promise<string | null> => {
   if (!redisClient.isReady) return null;
+  const primary = await redisClient.get(scopedKey(`refresh:used:${tokenId}`));
+  if (primary || !REDIS_KEY_PREFIX) return primary;
   return redisClient.get(`refresh:used:${tokenId}`);
 };
