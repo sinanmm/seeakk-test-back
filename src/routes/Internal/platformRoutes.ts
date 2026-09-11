@@ -25,6 +25,7 @@ router.get('/companies', platformController.getCompanies);
 router.get('/companies/:id', platformController.getCompanyDetails);
 router.get('/companies/:id/users', platformController.getCompanyUsers);
 router.get('/companies/:id/entitlement', platformController.getCompanyEntitlement);
+router.post('/companies/:id/limit', platformController.updateCompanyLimit);
 
 // Company Controls: Grace, Lock, Suspend (Part 57, 58, 59)
 router.post('/companies/:id/grace', platformController.grantGrace);

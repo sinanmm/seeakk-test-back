@@ -1378,3 +1378,67 @@ export const getAuditLogs = async (req: Request, res: Response) => {
     return res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };
+
+/**
+ * Update Company User Seat Limit API
+ */
+export const updateCompanyLimit = async (req: Request, res: Response) => {
+  try {
+    const id = String(req.params.id || '').trim();
+    const { approvedUserLimit, reason, updatedBy = 'PLATFORM_OWNER' } = req.body;
+
+    const workspace = await prisma.workspace.findUnique({
+      where: { id },
+      select: { id: true, approvedUserLimit: true },
+    });
+
+    if (!workspace) {
+      return res.status(404).json({ success: false, message: 'Company not found' });
+    }
+
+    let parsedLimit: number | null = null;
+    if (approvedUserLimit !== null && approvedUserLimit !== undefined) {
+      const num = Number(approvedUserLimit);
+      if (!Number.isInteger(num) || num < 0) {
+        return res.status(400).json({ success: false, message: 'Approved user limit must be a non-negative integer or null.' });
+      }
+      parsedLimit = num;
+    }
+
+    const updated = await prisma.workspace.update({
+      where: { id },
+      data: { approvedUserLimit: parsedLimit },
+      select: { id: true, approvedUserLimit: true },
+    });
+
+    const seatUsage = await getSeatUsage(id);
+
+    await auditService.log({
+      action: 'COMPANY_LIMIT_UPDATED',
+      entityType: 'Workspace',
+      entityId: id,
+      workspaceId: id,
+      details: {
+        previousLimit: workspace.approvedUserLimit,
+        newLimit: parsedLimit,
+        reason,
+        updatedBy,
+      },
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Company user seat limit updated successfully.',
+      companyId: updated.id,
+      approvedUserLimit: updated.approvedUserLimit,
+      activeUserCount: seatUsage.activeUserCount,
+      availableSeats: seatUsage.availableUserCount,
+    });
+  } catch (error: any) {
+    logger.error('Error updating company limit:', { error: error.message });
+    const statusCode = error.statusCode || 500;
+    return res.status(statusCode).json({ success: false, message: error.message });
+  }
+};

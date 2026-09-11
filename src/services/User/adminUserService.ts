@@ -371,10 +371,19 @@ export const createUser = async (
 
   let user: any;
 
-  if (mustAssignTargetCycle) {
-    user = await prisma.$transaction(
-      async (tx: any) => {
-        const created = (await runCreate(tx)) as AdminUserRecord;
+  user = await prisma.$transaction(
+    async (tx: any) => {
+      // 1. Exclusive row-level lock on workspace to serialize concurrent user seat creations
+      await tx.$queryRaw`SELECT id FROM "workspaces" WHERE id = ${workspaceId} FOR UPDATE;`;
+
+      // 2. Authoritative seat verification immediately before creation
+      await verifySeatLimit(workspaceId, 1, tx);
+
+      // 3. Create or restore user
+      const created = (await runCreate(tx)) as AdminUserRecord;
+
+      // 4. Assign target cycle if specified
+      if (mustAssignTargetCycle) {
         await assignTargetCycleToUserWithClient(
           tx as unknown as AssignmentClient,
           workspaceId,
@@ -382,18 +391,12 @@ export const createUser = async (
           String(assignedTargetCycleId).trim(),
           assignedById,
         );
-        return created;
-      },
-      { maxWait: 10_000, timeout: 20_000 },
-    );
-  } else if (canRestoreSoftDeletedByEmail && existingEmail) {
-    user = await prisma.$transaction(
-      async (tx: any) => runCreate(tx),
-      { maxWait: 10_000, timeout: 20_000 },
-    );
-  } else {
-    user = await runCreate(prisma);
-  }
+      }
+
+      return created;
+    },
+    { maxWait: 10_000, timeout: 20_000 },
+  );
 
   if (assignedTargetCycleId !== undefined && !mustAssignTargetCycle) {
     await syncUserTargetCycleAssignment(
@@ -909,16 +912,28 @@ export const updateUserStatus = async (
     throw err;
   }
 
-  // If reactivating the user, check seat limits
+  // If reactivating the user, check seat limits with row-level lock
+  let updatedUser: any;
   if (input.isActive === true && !user.isActive) {
-    await verifySeatLimit(workspaceId, 1);
+    updatedUser = await prisma.$transaction(
+      async (tx: any) => {
+        await tx.$queryRaw`SELECT id FROM "workspaces" WHERE id = ${workspaceId} FOR UPDATE;`;
+        await verifySeatLimit(workspaceId, 1, tx);
+        return (tx as any).user.update({
+          where: { id },
+          data: { isActive: true },
+          select: { id: true, name: true, email: true, isActive: true, updatedAt: true },
+        });
+      },
+      { maxWait: 10_000, timeout: 20_000 },
+    );
+  } else {
+    updatedUser = await (prisma as any).user.update({
+      where: { id },
+      data: { isActive: input.isActive },
+      select: { id: true, name: true, email: true, isActive: true, updatedAt: true },
+    });
   }
-
-  const updatedUser = await (prisma as any).user.update({
-    where: { id },
-    data: { isActive: input.isActive },
-    select: { id: true, name: true, email: true, isActive: true, updatedAt: true },
-  });
 
   if (!input.isActive) {
     await invalidateUserSessions(id);

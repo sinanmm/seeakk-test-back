@@ -241,8 +241,14 @@ export const acceptInvite = async (input: {
   userId: string;
   passwordHash: string;
   acceptedAt: Date;
+  workspaceId?: string;
 }) => {
   return prisma.$transaction(async (tx: any) => {
+    if (input.workspaceId) {
+      await tx.$queryRaw`SELECT id FROM "workspaces" WHERE id = ${input.workspaceId} FOR UPDATE;`;
+      const { verifySeatLimit } = await import('../billing/seatUsage.service');
+      await verifySeatLimit(input.workspaceId, 1, tx);
+    }
     const marked = await tx.invite.updateMany({
       where: {
         id: input.inviteId,

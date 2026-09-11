@@ -311,6 +311,7 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
         userId: invite.user.id,
         passwordHash,
         acceptedAt,
+        workspaceId,
       });
 
       if (!user) {
