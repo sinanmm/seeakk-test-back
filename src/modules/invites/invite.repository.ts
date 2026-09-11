@@ -113,6 +113,11 @@ export const createInvitedUserWithInvite = async (input: {
   restoreUserId?: string | null;
 }) => {
   return prisma.$transaction(async (tx: any) => {
+    if (input.workspaceId) {
+      await tx.$queryRaw`SELECT id FROM "workspaces" WHERE id = ${input.workspaceId} FOR UPDATE;`;
+      const { verifySeatLimit } = await import('../billing/seatUsage.service');
+      await verifySeatLimit(input.workspaceId, 1, tx);
+    }
     let user;
 
     const baseData = {
@@ -244,10 +249,18 @@ export const acceptInvite = async (input: {
   workspaceId?: string;
 }) => {
   return prisma.$transaction(async (tx: any) => {
-    if (input.workspaceId) {
-      await tx.$queryRaw`SELECT id FROM "workspaces" WHERE id = ${input.workspaceId} FOR UPDATE;`;
+    let workspaceId = input.workspaceId;
+    if (!workspaceId) {
+      const inviteRec = await tx.invite.findUnique({
+        where: { id: input.inviteId },
+        select: { workspaceId: true },
+      });
+      workspaceId = inviteRec?.workspaceId;
+    }
+    if (workspaceId) {
+      await tx.$queryRaw`SELECT id FROM "workspaces" WHERE id = ${workspaceId} FOR UPDATE;`;
       const { verifySeatLimit } = await import('../billing/seatUsage.service');
-      await verifySeatLimit(input.workspaceId, 1, tx);
+      await verifySeatLimit(workspaceId, 1, tx);
     }
     const marked = await tx.invite.updateMany({
       where: {

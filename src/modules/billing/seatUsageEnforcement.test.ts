@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import prisma from '../../config/prisma';
 import { getSeatUsage, verifySeatLimit } from './seatUsage.service';
 import * as adminUserService from '../../services/User/adminUserService';
+import { inviteService } from '../invites/invite.service';
+import * as inviteRepository from '../invites/invite.repository';
 
 test('Seat Usage Enforcement Test Suite', async (t) => {
   // Helper to generate unique email
@@ -31,16 +33,22 @@ test('Seat Usage Enforcement Test Suite', async (t) => {
     },
   });
 
-  // Keep track of created user IDs for cleanup
+  // Keep track of created user IDs and second workspace for cleanup
   const createdUserIds: string[] = [ownerUser.id];
+  let workspace2: any = null;
+  let ownerUser2: any = null;
 
   const cleanup = async () => {
     try {
-      await prisma.graceRecord.deleteMany({ where: { workspaceId: workspace.id } });
-      await prisma.userLocationAssignment.deleteMany({ where: { workspaceId: workspace.id } });
-      await prisma.user.deleteMany({ where: { workspaceId: workspace.id } });
-      await prisma.workspace.delete({ where: { id: workspace.id } });
-      await prisma.user.delete({ where: { id: ownerUser.id } }).catch(() => {});
+      const wsIds = [workspace.id, workspace2?.id].filter(Boolean);
+      await prisma.graceRecord.deleteMany({ where: { workspaceId: { in: wsIds } } });
+      await prisma.userLocationAssignment.deleteMany({ where: { workspaceId: { in: wsIds } } });
+      await prisma.invite.deleteMany({ where: { workspaceId: { in: wsIds } } });
+      await prisma.user.deleteMany({ where: { workspaceId: { in: wsIds } } });
+      await prisma.role.deleteMany({ where: { workspaceId: { in: wsIds } } });
+      await prisma.workspace.deleteMany({ where: { id: { in: wsIds } } });
+      if (ownerUser?.id) await prisma.user.delete({ where: { id: ownerUser.id } }).catch(() => {});
+      if (ownerUser2?.id) await prisma.user.delete({ where: { id: ownerUser2.id } }).catch(() => {});
     } catch (e) {
       // Ignore cleanup error
     }
@@ -319,6 +327,179 @@ test('Seat Usage Enforcement Test Suite', async (t) => {
     usage = await getSeatUsage(workspace.id);
     assert.equal(usage.activeUserCount, 8);
     assert.equal(usage.availableUserCount, 0);
+
+    // 9. Invitation creation is rejected when seat limit is reached
+    // Create a role for invite testing
+    const testRole = await prisma.role.create({
+      data: {
+        name: 'Seat Test Role',
+        workspaceId: workspace.id,
+      },
+    });
+
+    await assert.rejects(
+      async () => {
+        await inviteService.createInvite(
+          {
+            name: 'Invite Overflow User',
+            email: getUniqueEmail('invite_overflow'),
+            roleId: testRole.id,
+          },
+          { id: ownerUser.id, workspaceId: workspace.id, name: 'Owner' }
+        );
+      },
+      (err: any) => {
+        assert.equal(err.statusCode, 400);
+        assert.equal(err.code, 'USER_LIMIT_REACHED');
+        return true;
+      }
+    );
+
+    // Direct repository invite creation is also blocked with row-level locking
+    await assert.rejects(
+      async () => {
+        await inviteRepository.createInvitedUserWithInvite({
+          workspaceId: workspace.id,
+          createdBy: ownerUser.id,
+          tokenHash: 'dummy_overflow_token_hash',
+          expiresAt: new Date(Date.now() + 86400000),
+          userData: {
+            name: 'Direct Repo Overflow',
+            email: getUniqueEmail('direct_overflow'),
+            roleId: testRole.id,
+          },
+        });
+      },
+      (err: any) => {
+        assert.equal(err.statusCode, 400);
+        assert.equal(err.code, 'USER_LIMIT_REACHED');
+        return true;
+      }
+    );
+
+    // 10. Invitation acceptance cannot bypass seat limit
+    // Increase limit to 9 so exactly 1 seat is available
+    await prisma.workspace.update({
+      where: { id: workspace.id },
+      data: { approvedUserLimit: 9 },
+    });
+    usage = await getSeatUsage(workspace.id);
+    assert.equal(usage.activeUserCount, 8);
+    assert.equal(usage.availableUserCount, 1);
+
+    // Create an invite while capacity allows
+    const validInviteResult = await inviteService.createInvite(
+      {
+        name: 'Pending Invitee',
+        email: getUniqueEmail('pending_invitee'),
+        roleId: testRole.id,
+      },
+      { id: ownerUser.id, workspaceId: workspace.id, name: 'Owner' }
+    );
+    assert.ok(validInviteResult.inviteLink);
+
+    // Extract token from invite link
+    const inviteUrl = new URL(validInviteResult.inviteLink!);
+    const rawToken = inviteUrl.searchParams.get('token')!;
+    assert.ok(rawToken);
+
+    // Fill the last available seat directly before invite is accepted
+    const user9 = await adminUserService.createUser(
+      {
+        name: 'User 9',
+        email: getUniqueEmail('user9'),
+        password: 'Password123!',
+      },
+      workspace.id,
+      ownerUser.id
+    );
+    assert.ok(user9.user.id);
+    createdUserIds.push(user9.user.id);
+
+    usage = await getSeatUsage(workspace.id);
+    assert.equal(usage.activeUserCount, 9);
+    assert.equal(usage.availableUserCount, 0);
+
+    // Now accepting the pending invite MUST fail because capacity is full
+    await assert.rejects(
+      async () => {
+        await inviteService.acceptInvite({
+          token: rawToken,
+          password: 'Password123!',
+        });
+      },
+      (err: any) => {
+        assert.equal(err.statusCode, 400);
+        assert.equal(err.code, 'USER_LIMIT_REACHED');
+        return true;
+      }
+    );
+
+    // 11. Different companies have independent limits
+    ownerUser2 = await prisma.user.create({
+      data: {
+        name: 'Owner User 2',
+        email: getUniqueEmail('owner2'),
+        password: 'dummyhashedpassword',
+        isActive: true,
+        isOnboarded: true,
+      },
+    });
+
+    workspace2 = await prisma.workspace.create({
+      data: {
+        companyName: 'Second Company',
+        employeeCount: '1-5',
+        ownerId: ownerUser2.id,
+        billingStatus: 'ACTIVE',
+        approvedUserLimit: 2,
+        accessUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      },
+    });
+
+    let usage2 = await getSeatUsage(workspace2.id);
+    assert.equal(usage2.effectiveUserLimit, 2);
+    assert.equal(usage2.activeUserCount, 0);
+    assert.equal(usage2.availableUserCount, 2);
+
+    // Workspace 1 remains unaffected at 9 users
+    usage = await getSeatUsage(workspace.id);
+    assert.equal(usage.activeUserCount, 9);
+    assert.equal(usage.availableUserCount, 0);
+
+    // Create 2 users in workspace 2
+    const ws2User1 = await adminUserService.createUser(
+      { name: 'WS2 User 1', email: getUniqueEmail('ws2_u1'), password: 'Password123!' },
+      workspace2.id,
+      ownerUser2.id
+    );
+    const ws2User2 = await adminUserService.createUser(
+      { name: 'WS2 User 2', email: getUniqueEmail('ws2_u2'), password: 'Password123!' },
+      workspace2.id,
+      ownerUser2.id
+    );
+    createdUserIds.push(ws2User1.user.id, ws2User2.user.id);
+
+    usage2 = await getSeatUsage(workspace2.id);
+    assert.equal(usage2.activeUserCount, 2);
+    assert.equal(usage2.availableUserCount, 0);
+
+    // 3rd user in workspace 2 must fail
+    await assert.rejects(
+      async () => {
+        await adminUserService.createUser(
+          { name: 'WS2 User 3', email: getUniqueEmail('ws2_u3'), password: 'Password123!' },
+          workspace2.id,
+          ownerUser2.id
+        );
+      },
+      (err: any) => {
+        assert.equal(err.statusCode, 400);
+        assert.equal(err.code, 'USER_LIMIT_REACHED');
+        assert.match(err.message, /maximum of 2 users/);
+        return true;
+      }
+    );
 
   } finally {
     await cleanup();

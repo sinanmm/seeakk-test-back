@@ -177,6 +177,10 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
 
       const workspace = await assertWorkspace(workspaceId);
 
+      if (deps.verifySeatLimit) {
+        await deps.verifySeatLimit(workspaceId, 1);
+      }
+
       const existingEmail = await deps.repository.findUserByEmail(input.email);
       const canRestoreSoftDeletedByEmail = Boolean(existingEmail && existingEmail.deletedAt);
       if (existingEmail && !canRestoreSoftDeletedByEmail) {
@@ -298,7 +302,7 @@ export const createInviteService = (deps: InviteServiceDependencies) => {
     async acceptInvite(input: AcceptInviteInput, context?: InviteActionContext) {
       const invite = await getValidatedInvite(input.token);
 
-      const workspaceId = invite.user?.workspaceId || invite.user?.workspace?.id;
+      const workspaceId = invite.workspaceId || invite.user?.workspaceId || invite.user?.workspace?.id;
       if (workspaceId && deps.verifySeatLimit) {
         await deps.verifySeatLimit(workspaceId, 1);
       }
