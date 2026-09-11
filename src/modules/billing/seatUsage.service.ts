@@ -75,6 +75,12 @@ export const getSeatUsage = async (workspaceId: string, tx?: any): Promise<SeatU
 
 export const verifySeatLimit = async (workspaceId: string, additionalSeats: number = 1, tx?: any): Promise<boolean> => {
   const client = tx || prisma;
+
+  // Acquire PostgreSQL row-level lock on workspace tuple to serialize concurrent seat-increasing operations
+  if (tx && typeof tx.$queryRaw === 'function') {
+    await tx.$queryRaw`SELECT id FROM "workspaces" WHERE id = ${workspaceId} FOR UPDATE;`;
+  }
+
   const usage = await getSeatUsage(workspaceId, client);
 
   // If effectiveUserLimit is null (unrestricted legacy company), allow

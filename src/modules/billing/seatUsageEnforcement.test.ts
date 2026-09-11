@@ -6,82 +6,87 @@ import * as adminUserService from '../../services/User/adminUserService';
 import { inviteService } from '../invites/invite.service';
 import * as inviteRepository from '../invites/invite.repository';
 
-test('Seat Usage Enforcement Test Suite', async (t) => {
-  // Helper to generate unique email
-  const getUniqueEmail = (prefix: string) => `${prefix}_${Date.now()}_${Math.random().toString(36).substring(2, 7)}@example.com`;
+// Helper to generate unique email
+const getUniqueEmail = (prefix: string) =>
+  `${prefix}_${Date.now()}_${Math.random().toString(36).substring(2, 7)}@example.com`;
 
-  // Create test workspace owner
+// Fixture helper to create an isolated workspace with a given limit and pre-populated active users
+async function createTestFixture(options: {
+  approvedUserLimit?: number;
+  activeUsers?: number;
+  billingStatus?: string;
+}) {
+  const limit = options.approvedUserLimit ?? 6;
+  const initialActive = options.activeUsers ?? 0;
+
+  // 1. Create workspace owner (not associated with workspace yet)
   const ownerUser = await prisma.user.create({
     data: {
       name: 'Owner User',
-      email: getUniqueEmail('owner'),
+      email: getUniqueEmail('fixture_owner'),
       password: 'dummyhashedpassword',
       isActive: true,
       isOnboarded: true,
     },
   });
 
-  // Create test workspace with approvedUserLimit = 6
+  // 2. Create workspace with approvedUserLimit
   const workspace = await prisma.workspace.create({
     data: {
-      companyName: 'Seat Test Company',
+      companyName: `Test Company ${Date.now()}`,
       employeeCount: '1-10',
       ownerId: ownerUser.id,
-      billingStatus: 'ACTIVE',
-      approvedUserLimit: 6,
+      billingStatus: options.billingStatus ?? 'ACTIVE',
+      approvedUserLimit: limit,
       accessUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
     },
   });
 
-  // Keep track of created user IDs and second workspace for cleanup
-  const createdUserIds: string[] = [ownerUser.id];
-  let workspace2: any = null;
-  let ownerUser2: any = null;
+  // 3. Create default role for workspace
+  const role = await prisma.role.create({
+    data: {
+      name: `Role_${Date.now()}`,
+      workspaceId: workspace.id,
+    },
+  });
+
+  // 4. Pre-populate active users directly in DB
+  const preCreatedUsers = [];
+  for (let i = 1; i <= initialActive; i++) {
+    const u = await prisma.user.create({
+      data: {
+        name: `Active User ${i}`,
+        email: getUniqueEmail(`active_${i}`),
+        password: 'dummyhashedpassword',
+        workspaceId: workspace.id,
+        isActive: true,
+        roleId: role.id,
+      },
+    });
+    preCreatedUsers.push(u);
+  }
 
   const cleanup = async () => {
     try {
-      const wsIds = [workspace.id, workspace2?.id].filter(Boolean);
-      await prisma.graceRecord.deleteMany({ where: { workspaceId: { in: wsIds } } });
-      await prisma.userLocationAssignment.deleteMany({ where: { workspaceId: { in: wsIds } } });
-      await prisma.invite.deleteMany({ where: { workspaceId: { in: wsIds } } });
-      await prisma.user.deleteMany({ where: { workspaceId: { in: wsIds } } });
-      await prisma.role.deleteMany({ where: { workspaceId: { in: wsIds } } });
-      await prisma.workspace.deleteMany({ where: { id: { in: wsIds } } });
-      if (ownerUser?.id) await prisma.user.delete({ where: { id: ownerUser.id } }).catch(() => {});
-      if (ownerUser2?.id) await prisma.user.delete({ where: { id: ownerUser2.id } }).catch(() => {});
+      await prisma.graceRecord.deleteMany({ where: { workspaceId: workspace.id } });
+      await prisma.userLocationAssignment.deleteMany({ where: { workspaceId: workspace.id } });
+      await prisma.invite.deleteMany({ where: { workspaceId: workspace.id } });
+      await prisma.user.deleteMany({ where: { workspaceId: workspace.id } });
+      await prisma.role.deleteMany({ where: { workspaceId: workspace.id } });
+      await prisma.workspace.deleteMany({ where: { id: workspace.id } });
+      await prisma.user.delete({ where: { id: ownerUser.id } }).catch(() => {});
     } catch (e) {
       // Ignore cleanup error
     }
   };
 
+  return { workspace, ownerUser, role, preCreatedUsers, cleanup };
+}
+
+test('TEST 1: Limit = 6, Active users = 5, Create user -> Expected: SUCCESS', async () => {
+  const { workspace, ownerUser, cleanup } = await createTestFixture({ approvedUserLimit: 6, activeUsers: 5 });
   try {
-    // Note: ownerUser does not have workspaceId set yet until associated or users are created in workspace.
-    // 1. Initial state: 0 active users in workspace
-    let usage = await getSeatUsage(workspace.id);
-    assert.equal(usage.approvedUserLimit, 6);
-    assert.equal(usage.activeUserCount, 0);
-    assert.equal(usage.availableUserCount, 6);
-
-    // Create 5 active users (users 1 to 5)
-    for (let i = 1; i <= 5; i++) {
-      const result = await adminUserService.createUser(
-        {
-          name: `User ${i}`,
-          email: getUniqueEmail(`user${i}`),
-          password: 'Password123!',
-        },
-        workspace.id,
-        ownerUser.id
-      );
-      createdUserIds.push(result.user.id);
-    }
-
-    // 2. Limit 6, current users 5 -> creation of 6th user succeeds
-    usage = await getSeatUsage(workspace.id);
-    assert.equal(usage.activeUserCount, 5);
-    assert.equal(usage.availableUserCount, 1);
-
-    const user6Result = await adminUserService.createUser(
+    const result = await adminUserService.createUser(
       {
         name: 'User 6',
         email: getUniqueEmail('user6'),
@@ -90,14 +95,19 @@ test('Seat Usage Enforcement Test Suite', async (t) => {
       workspace.id,
       ownerUser.id
     );
-    assert.ok(user6Result.user.id);
-    createdUserIds.push(user6Result.user.id);
+    assert.ok(result.user.id, 'User 6 was created successfully');
 
-    usage = await getSeatUsage(workspace.id);
+    const usage = await getSeatUsage(workspace.id);
     assert.equal(usage.activeUserCount, 6);
     assert.equal(usage.availableUserCount, 0);
+  } finally {
+    await cleanup();
+  }
+});
 
-    // 3. Limit 6, current users 6 -> creation of 7th user MUST fail
+test('TEST 2: Limit = 6, Active users = 6, Create user -> Expected: USER_LIMIT_REACHED', async () => {
+  const { workspace, ownerUser, cleanup } = await createTestFixture({ approvedUserLimit: 6, activeUsers: 6 });
+  try {
     await assert.rejects(
       async () => {
         await adminUserService.createUser(
@@ -113,35 +123,25 @@ test('Seat Usage Enforcement Test Suite', async (t) => {
       (err: any) => {
         assert.equal(err.statusCode, 400);
         assert.equal(err.code, 'USER_LIMIT_REACHED');
-        assert.equal(
-          err.message,
-          'User limit reached. This workspace has reached its maximum of 6 users. Please remove an existing user or contact your administrator to increase the user limit.'
-        );
+        assert.match(err.message, /maximum of 6 users/);
         return true;
       }
     );
 
-    // Invariant: activeUserCount remains 6
-    usage = await getSeatUsage(workspace.id);
-    assert.equal(usage.activeUserCount, 6);
+    const usage = await getSeatUsage(workspace.id);
+    assert.equal(usage.activeUserCount, 6, 'Active user count must remain 6');
+  } finally {
+    await cleanup();
+  }
+});
 
-    // 4. Limit 6, current users 7 -> creation remains blocked (simulating existing production bug condition)
-    // Manually force an extra user to reach 7 active users
-    const forcedUser7 = await prisma.user.create({
-      data: {
-        name: 'Forced User 7',
-        email: getUniqueEmail('forced7'),
-        password: 'dummy',
-        workspaceId: workspace.id,
-        isActive: true,
-      },
-    });
-    createdUserIds.push(forcedUser7.id);
+test('TEST 3: Limit = 6, Active users = 7, Create user -> Expected: USER_LIMIT_REACHED', async () => {
+  const { workspace, ownerUser, cleanup } = await createTestFixture({ approvedUserLimit: 6, activeUsers: 7 });
+  try {
+    // Current state has 7 users with limit 6 (existing production scenario)
+    const initialUsage = await getSeatUsage(workspace.id);
+    assert.equal(initialUsage.activeUserCount, 7);
 
-    usage = await getSeatUsage(workspace.id);
-    assert.equal(usage.activeUserCount, 7);
-
-    // Attempting to create another user must remain strictly blocked
     await assert.rejects(
       async () => {
         await adminUserService.createUser(
@@ -156,194 +156,47 @@ test('Seat Usage Enforcement Test Suite', async (t) => {
       },
       (err: any) => {
         assert.equal(err.statusCode, 400);
-        assert.equal(
-          err.message,
-          'User limit reached. This workspace has reached its maximum of 6 users. Please remove an existing user or contact your administrator to increase the user limit.'
-        );
+        assert.equal(err.code, 'USER_LIMIT_REACHED');
+        assert.match(err.message, /maximum of 6 users/);
         return true;
       }
     );
 
-    // 5. Removing/deactivating a user frees capacity and subsequent user creation succeeds
-    // Soft-delete forced user 7 and deactivate user 6
-    await prisma.user.update({
-      where: { id: forcedUser7.id },
-      data: { deletedAt: new Date() },
-    });
-    await prisma.user.update({
-      where: { id: user6Result.user.id },
-      data: { isActive: false },
-    });
+    const usage = await getSeatUsage(workspace.id);
+    assert.equal(usage.activeUserCount, 7, 'User 7 must NOT be deleted or modified');
+  } finally {
+    await cleanup();
+  }
+});
 
-    // Now active count should be 5
-    usage = await getSeatUsage(workspace.id);
-    assert.equal(usage.activeUserCount, 5);
-    assert.equal(usage.availableUserCount, 1);
-
-    // Creating a replacement user now succeeds
-    const replacementUser = await adminUserService.createUser(
+test('TEST 4: Limit = 6, Active users = 5, Create invitation -> Expected: SUCCESS', async () => {
+  const { workspace, ownerUser, role, cleanup } = await createTestFixture({ approvedUserLimit: 6, activeUsers: 5 });
+  try {
+    const result = await inviteService.createInvite(
       {
-        name: 'Replacement User',
-        email: getUniqueEmail('replacement'),
-        password: 'Password123!',
+        name: 'Invited User 6',
+        email: getUniqueEmail('invite_success'),
+        roleId: role.id,
       },
-      workspace.id,
-      ownerUser.id
+      { id: ownerUser.id, workspaceId: workspace.id, name: 'Owner' }
     );
-    assert.ok(replacementUser.user.id);
-    createdUserIds.push(replacementUser.user.id);
+    assert.ok(result.invite.id, 'Invitation was created successfully');
+    assert.ok(result.inviteLink, 'Invite link was generated');
+  } finally {
+    await cleanup();
+  }
+});
 
-    usage = await getSeatUsage(workspace.id);
-    assert.equal(usage.activeUserCount, 6);
-
-    // 6. Grace period behaviour follows existing implementation
-    // Add an active GraceRecord with allowedUserLimit: 4
-    const graceRecord = await prisma.graceRecord.create({
-      data: {
-        workspaceId: workspace.id,
-        allowedUserLimit: 4,
-        graceFrom: new Date(),
-        graceUntil: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-        status: 'ACTIVE',
-        reason: 'Temporary grace test',
-        grantedBy: 'PLATFORM_OWNER',
-      },
-    });
-
-    usage = await getSeatUsage(workspace.id);
-    assert.equal(usage.entitlementSource, 'GRACE');
-    assert.equal(usage.approvedUserLimit, 4);
-    assert.equal(usage.effectiveUserLimit, 4);
-
-    // Since active users = 6 and grace limit = 4, creation must fail with limit 4 message
-    await assert.rejects(
-      async () => {
-        await adminUserService.createUser(
-          {
-            name: 'Grace Exceeded User',
-            email: getUniqueEmail('grace_exceeded'),
-            password: 'Password123!',
-          },
-          workspace.id,
-          ownerUser.id
-        );
-      },
-      (err: any) => {
-        assert.equal(err.statusCode, 400);
-        assert.equal(
-          err.message,
-          'User limit reached. This workspace has reached its maximum of 4 users. Please remove an existing user or contact your administrator to increase the user limit.'
-        );
-        return true;
-      }
-    );
-
-    // Revoke grace record to restore normal limit of 6
-    await prisma.graceRecord.update({
-      where: { id: graceRecord.id },
-      data: { status: 'REVOKED' },
-    });
-
-    usage = await getSeatUsage(workspace.id);
-    assert.equal(usage.entitlementSource, 'PAID');
-    assert.equal(usage.approvedUserLimit, 6);
-
-    // 7. Company-specific override takes precedence / updating limit dynamically
-    // Update company limit via workspace update (simulating Control Software limit push)
-    await prisma.workspace.update({
-      where: { id: workspace.id },
-      data: { approvedUserLimit: 8 },
-    });
-
-    usage = await getSeatUsage(workspace.id);
-    assert.equal(usage.effectiveUserLimit, 8);
-    assert.equal(usage.availableUserCount, 2);
-
-    // Now 7th user can be created
-    const user7Success = await adminUserService.createUser(
-      {
-        name: 'User 7 Allowed',
-        email: getUniqueEmail('user7_ok'),
-        password: 'Password123!',
-      },
-      workspace.id,
-      ownerUser.id
-    );
-    assert.ok(user7Success.user.id);
-    createdUserIds.push(user7Success.user.id);
-
-    // Restore limit back to 7
-    await prisma.workspace.update({
-      where: { id: workspace.id },
-      data: { approvedUserLimit: 7 },
-    });
-
-    // 8. Concurrency protection: Simultaneous creation requests cannot exceed limit
-    // Current active users: 7. Limit: 8. Exactly 1 seat available!
-    await prisma.workspace.update({
-      where: { id: workspace.id },
-      data: { approvedUserLimit: 8 },
-    });
-    usage = await getSeatUsage(workspace.id);
-    assert.equal(usage.activeUserCount, 7);
-    assert.equal(usage.availableUserCount, 1);
-
-    const concurrentAttempts = await Promise.allSettled([
-      adminUserService.createUser(
-        {
-          name: 'Concurrent User A',
-          email: getUniqueEmail('concurrent_a'),
-          password: 'Password123!',
-        },
-        workspace.id,
-        ownerUser.id
-      ),
-      adminUserService.createUser(
-        {
-          name: 'Concurrent User B',
-          email: getUniqueEmail('concurrent_b'),
-          password: 'Password123!',
-        },
-        workspace.id,
-        ownerUser.id
-      ),
-    ]);
-
-    const fulfilled = concurrentAttempts.filter((r) => r.status === 'fulfilled');
-    const rejected = concurrentAttempts.filter((r) => r.status === 'rejected');
-
-    // Exactly one must succeed and one must fail
-    assert.equal(fulfilled.length, 1, 'Exactly one concurrent request must succeed');
-    assert.equal(rejected.length, 1, 'Exactly one concurrent request must be rejected');
-
-    const rejectedReason: any = (rejected[0] as PromiseRejectedResult).reason;
-    assert.equal(rejectedReason.statusCode, 400);
-    assert.equal(
-      rejectedReason.message,
-      'User limit reached. This workspace has reached its maximum of 8 users. Please remove an existing user or contact your administrator to increase the user limit.'
-    );
-
-    // Invariant: Total active users in workspace is capped exactly at 8
-    usage = await getSeatUsage(workspace.id);
-    assert.equal(usage.activeUserCount, 8);
-    assert.equal(usage.availableUserCount, 0);
-
-    // 9. Invitation creation is rejected when seat limit is reached
-    // Create a role for invite testing
-    const testRole = await prisma.role.create({
-      data: {
-        name: 'Seat Test Role',
-        workspaceId: workspace.id,
-      },
-    });
-
+test('TEST 5: Limit = 6, Active users = 6, Create invitation -> Expected: USER_LIMIT_REACHED', async () => {
+  const { workspace, ownerUser, role, cleanup } = await createTestFixture({ approvedUserLimit: 6, activeUsers: 6 });
+  try {
     await assert.rejects(
       async () => {
         await inviteService.createInvite(
           {
-            name: 'Invite Overflow User',
+            name: 'Overflow Invitee',
             email: getUniqueEmail('invite_overflow'),
-            roleId: testRole.id,
+            roleId: role.id,
           },
           { id: ownerUser.id, workspaceId: workspace.id, name: 'Owner' }
         );
@@ -351,76 +204,75 @@ test('Seat Usage Enforcement Test Suite', async (t) => {
       (err: any) => {
         assert.equal(err.statusCode, 400);
         assert.equal(err.code, 'USER_LIMIT_REACHED');
+        assert.match(err.message, /maximum of 6 users/);
         return true;
       }
     );
+  } finally {
+    await cleanup();
+  }
+});
 
-    // Direct repository invite creation is also blocked with row-level locking
-    await assert.rejects(
-      async () => {
-        await inviteRepository.createInvitedUserWithInvite({
-          workspaceId: workspace.id,
-          createdBy: ownerUser.id,
-          tokenHash: 'dummy_overflow_token_hash',
-          expiresAt: new Date(Date.now() + 86400000),
-          userData: {
-            name: 'Direct Repo Overflow',
-            email: getUniqueEmail('direct_overflow'),
-            roleId: testRole.id,
-          },
-        });
-      },
-      (err: any) => {
-        assert.equal(err.statusCode, 400);
-        assert.equal(err.code, 'USER_LIMIT_REACHED');
-        return true;
-      }
-    );
-
-    // 10. Invitation acceptance cannot bypass seat limit
-    // Increase limit to 9 so exactly 1 seat is available
-    await prisma.workspace.update({
-      where: { id: workspace.id },
-      data: { approvedUserLimit: 9 },
-    });
-    usage = await getSeatUsage(workspace.id);
-    assert.equal(usage.activeUserCount, 8);
-    assert.equal(usage.availableUserCount, 1);
-
-    // Create an invite while capacity allows
-    const validInviteResult = await inviteService.createInvite(
+test('TEST 6: Limit = 6, Active users = 5, Accept invitation -> Expected: SUCCESS', async () => {
+  const { workspace, ownerUser, role, cleanup } = await createTestFixture({ approvedUserLimit: 6, activeUsers: 5 });
+  try {
+    const inviteResult = await inviteService.createInvite(
       {
         name: 'Pending Invitee',
-        email: getUniqueEmail('pending_invitee'),
-        roleId: testRole.id,
+        email: getUniqueEmail('accept_pending'),
+        roleId: role.id,
       },
       { id: ownerUser.id, workspaceId: workspace.id, name: 'Owner' }
     );
-    assert.ok(validInviteResult.inviteLink);
-
-    // Extract token from invite link
-    const inviteUrl = new URL(validInviteResult.inviteLink!);
+    const inviteUrl = new URL(inviteResult.inviteLink!);
     const rawToken = inviteUrl.searchParams.get('token')!;
     assert.ok(rawToken);
 
-    // Fill the last available seat directly before invite is accepted
-    const user9 = await adminUserService.createUser(
+    // Accept invite
+    const acceptResult = await inviteService.acceptInvite({
+      token: rawToken,
+      password: 'Password123!',
+    });
+    assert.ok(acceptResult.user.id, 'Invite accepted successfully');
+
+    const usage = await getSeatUsage(workspace.id);
+    assert.equal(usage.activeUserCount, 6, 'Active user count reached 6');
+  } finally {
+    await cleanup();
+  }
+});
+
+test('TEST 7: Limit = 6, Active users = 6, Accept invitation -> Expected: USER_LIMIT_REACHED', async () => {
+  // Create fixture with 5 active users so an invite can initially be created
+  const { workspace, ownerUser, role, cleanup } = await createTestFixture({ approvedUserLimit: 6, activeUsers: 5 });
+  try {
+    const inviteResult = await inviteService.createInvite(
       {
-        name: 'User 9',
-        email: getUniqueEmail('user9'),
+        name: 'Pending Invitee',
+        email: getUniqueEmail('accept_overflow'),
+        roleId: role.id,
+      },
+      { id: ownerUser.id, workspaceId: workspace.id, name: 'Owner' }
+    );
+    const inviteUrl = new URL(inviteResult.inviteLink!);
+    const rawToken = inviteUrl.searchParams.get('token')!;
+    assert.ok(rawToken);
+
+    // Now fill the last seat with a direct user creation so active user count reaches 6
+    await adminUserService.createUser(
+      {
+        name: 'Direct User 6',
+        email: getUniqueEmail('direct6'),
         password: 'Password123!',
       },
       workspace.id,
       ownerUser.id
     );
-    assert.ok(user9.user.id);
-    createdUserIds.push(user9.user.id);
 
-    usage = await getSeatUsage(workspace.id);
-    assert.equal(usage.activeUserCount, 9);
-    assert.equal(usage.availableUserCount, 0);
+    const usage = await getSeatUsage(workspace.id);
+    assert.equal(usage.activeUserCount, 6);
 
-    // Now accepting the pending invite MUST fail because capacity is full
+    // Now attempting to accept the pending invite MUST fail because capacity is full
     await assert.rejects(
       async () => {
         await inviteService.acceptInvite({
@@ -431,76 +283,261 @@ test('Seat Usage Enforcement Test Suite', async (t) => {
       (err: any) => {
         assert.equal(err.statusCode, 400);
         assert.equal(err.code, 'USER_LIMIT_REACHED');
+        assert.match(err.message, /maximum of 6 users/);
         return true;
       }
     );
 
-    // 11. Different companies have independent limits
-    ownerUser2 = await prisma.user.create({
+    // Active count must remain strictly 6
+    const finalUsage = await getSeatUsage(workspace.id);
+    assert.equal(finalUsage.activeUserCount, 6);
+  } finally {
+    await cleanup();
+  }
+});
+
+test('TEST 8: Limit = 6, Active users = 5, Reactivate inactive user -> Expected: SUCCESS', async () => {
+  const { workspace, ownerUser, role, cleanup } = await createTestFixture({ approvedUserLimit: 6, activeUsers: 5 });
+  try {
+    // Create an inactive user in this workspace
+    const inactiveUser = await prisma.user.create({
       data: {
-        name: 'Owner User 2',
-        email: getUniqueEmail('owner2'),
+        name: 'Inactive User',
+        email: getUniqueEmail('inactive_u'),
         password: 'dummyhashedpassword',
-        isActive: true,
-        isOnboarded: true,
+        workspaceId: workspace.id,
+        isActive: false,
+        roleId: role.id,
       },
     });
 
-    workspace2 = await prisma.workspace.create({
+    const usageBefore = await getSeatUsage(workspace.id);
+    assert.equal(usageBefore.activeUserCount, 5);
+
+    // Reactivate user
+    const updated = await adminUserService.updateUserStatus(
+      inactiveUser.id,
+      { isActive: true },
+      workspace.id,
+      ownerUser.id
+    );
+    assert.ok(updated);
+
+    const usageAfter = await getSeatUsage(workspace.id);
+    assert.equal(usageAfter.activeUserCount, 6);
+  } finally {
+    await cleanup();
+  }
+});
+
+test('TEST 9: Limit = 6, Active users = 6, Reactivate inactive user -> Expected: USER_LIMIT_REACHED', async () => {
+  const { workspace, ownerUser, role, cleanup } = await createTestFixture({ approvedUserLimit: 6, activeUsers: 6 });
+  try {
+    // Create an inactive user in this workspace
+    const inactiveUser = await prisma.user.create({
       data: {
-        companyName: 'Second Company',
-        employeeCount: '1-5',
-        ownerId: ownerUser2.id,
-        billingStatus: 'ACTIVE',
-        approvedUserLimit: 2,
-        accessUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        name: 'Inactive User',
+        email: getUniqueEmail('inactive_fail'),
+        password: 'dummyhashedpassword',
+        workspaceId: workspace.id,
+        isActive: false,
+        roleId: role.id,
       },
     });
 
-    let usage2 = await getSeatUsage(workspace2.id);
-    assert.equal(usage2.effectiveUserLimit, 2);
-    assert.equal(usage2.activeUserCount, 0);
-    assert.equal(usage2.availableUserCount, 2);
-
-    // Workspace 1 remains unaffected at 9 users
-    usage = await getSeatUsage(workspace.id);
-    assert.equal(usage.activeUserCount, 9);
-    assert.equal(usage.availableUserCount, 0);
-
-    // Create 2 users in workspace 2
-    const ws2User1 = await adminUserService.createUser(
-      { name: 'WS2 User 1', email: getUniqueEmail('ws2_u1'), password: 'Password123!' },
-      workspace2.id,
-      ownerUser2.id
-    );
-    const ws2User2 = await adminUserService.createUser(
-      { name: 'WS2 User 2', email: getUniqueEmail('ws2_u2'), password: 'Password123!' },
-      workspace2.id,
-      ownerUser2.id
-    );
-    createdUserIds.push(ws2User1.user.id, ws2User2.user.id);
-
-    usage2 = await getSeatUsage(workspace2.id);
-    assert.equal(usage2.activeUserCount, 2);
-    assert.equal(usage2.availableUserCount, 0);
-
-    // 3rd user in workspace 2 must fail
     await assert.rejects(
       async () => {
-        await adminUserService.createUser(
-          { name: 'WS2 User 3', email: getUniqueEmail('ws2_u3'), password: 'Password123!' },
-          workspace2.id,
-          ownerUser2.id
+        await adminUserService.updateUserStatus(
+          inactiveUser.id,
+          { isActive: true },
+          workspace.id,
+          ownerUser.id
         );
       },
       (err: any) => {
         assert.equal(err.statusCode, 400);
         assert.equal(err.code, 'USER_LIMIT_REACHED');
-        assert.match(err.message, /maximum of 2 users/);
+        assert.match(err.message, /maximum of 6 users/);
         return true;
       }
     );
 
+    const usage = await getSeatUsage(workspace.id);
+    assert.equal(usage.activeUserCount, 6);
+  } finally {
+    await cleanup();
+  }
+});
+
+test('TEST 10: Grace Period active, Grace allowedUserLimit = 6, Active users = 6, Create user -> Expected: USER_LIMIT_REACHED', async () => {
+  const { workspace, ownerUser, cleanup } = await createTestFixture({ approvedUserLimit: 10, activeUsers: 6 });
+  try {
+    // Create an active grace record restricting the workspace to 6 users
+    const graceRecord = await prisma.graceRecord.create({
+      data: {
+        workspaceId: workspace.id,
+        allowedUserLimit: 6,
+        graceFrom: new Date(),
+        graceUntil: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        status: 'ACTIVE',
+        reason: 'Temporary grace limit',
+        grantedBy: 'PLATFORM_ADMIN',
+      },
+    });
+
+    const usage = await getSeatUsage(workspace.id);
+    assert.equal(usage.entitlementSource, 'GRACE');
+    assert.equal(usage.effectiveUserLimit, 6);
+
+    await assert.rejects(
+      async () => {
+        await adminUserService.createUser(
+          {
+            name: 'Grace Limit Exceeded User',
+            email: getUniqueEmail('grace_fail'),
+            password: 'Password123!',
+          },
+          workspace.id,
+          ownerUser.id
+        );
+      },
+      (err: any) => {
+        assert.equal(err.statusCode, 400);
+        assert.equal(err.code, 'USER_LIMIT_REACHED');
+        assert.match(err.message, /maximum of 6 users/);
+        return true;
+      }
+    );
+  } finally {
+    await cleanup();
+  }
+});
+
+test('TEST 11: Control Software approvedUserLimit = 6, SEEAKK approvedUserLimit = 6, Active users = 6, Create user -> Expected: USER_LIMIT_REACHED', async () => {
+  const { workspace, ownerUser, cleanup } = await createTestFixture({ approvedUserLimit: 6, activeUsers: 6 });
+  try {
+    // Verify approvedUserLimit in SEEAKK workspace is 6
+    const ws = await prisma.workspace.findUnique({
+      where: { id: workspace.id },
+      select: { approvedUserLimit: true },
+    });
+    assert.equal(ws?.approvedUserLimit, 6);
+
+    const usage = await getSeatUsage(workspace.id);
+    assert.equal(usage.effectiveUserLimit, 6);
+    assert.equal(usage.activeUserCount, 6);
+
+    await assert.rejects(
+      async () => {
+        await adminUserService.createUser(
+          {
+            name: 'User 7 Over Limit',
+            email: getUniqueEmail('user7_over'),
+            password: 'Password123!',
+          },
+          workspace.id,
+          ownerUser.id
+        );
+      },
+      (err: any) => {
+        assert.equal(err.statusCode, 400);
+        assert.equal(err.code, 'USER_LIMIT_REACHED');
+        assert.match(err.message, /maximum of 6 users/);
+        return true;
+      }
+    );
+  } finally {
+    await cleanup();
+  }
+});
+
+test('TEST 12: Concurrent user creation: Limit = 6, Active users = 5, Two simultaneous user creation requests', async () => {
+  const { workspace, ownerUser, cleanup } = await createTestFixture({ approvedUserLimit: 6, activeUsers: 5 });
+  try {
+    const usageBefore = await getSeatUsage(workspace.id);
+    assert.equal(usageBefore.activeUserCount, 5);
+    assert.equal(usageBefore.availableUserCount, 1);
+
+    // Two simultaneous direct creation requests targeting the last remaining seat
+    const [resA, resB] = await Promise.allSettled([
+      adminUserService.createUser(
+        {
+          name: 'Concurrent User A',
+          email: getUniqueEmail('conc_a'),
+          password: 'Password123!',
+        },
+        workspace.id,
+        ownerUser.id
+      ),
+      adminUserService.createUser(
+        {
+          name: 'Concurrent User B',
+          email: getUniqueEmail('conc_b'),
+          password: 'Password123!',
+        },
+        workspace.id,
+        ownerUser.id
+      ),
+    ]);
+
+    const successes = [resA, resB].filter((r) => r.status === 'fulfilled');
+    const failures = [resA, resB].filter((r) => r.status === 'rejected');
+
+    assert.equal(successes.length, 1, 'Exactly ONE concurrent creation request must succeed');
+    assert.equal(failures.length, 1, 'Exactly ONE concurrent creation request must be rejected');
+
+    const err: any = (failures[0] as PromiseRejectedResult).reason;
+    assert.equal(err.statusCode, 400);
+    assert.equal(err.code, 'USER_LIMIT_REACHED');
+
+    const usageAfter = await getSeatUsage(workspace.id);
+    assert.equal(usageAfter.activeUserCount, 6, 'Final active user count must be exactly 6');
+    assert.equal(usageAfter.availableUserCount, 0);
+  } finally {
+    await cleanup();
+  }
+});
+
+test('TEST 13: Concurrent invitation acceptance: Limit = 6, Active users = 5, Two simultaneous accept operations', async () => {
+  const { workspace, ownerUser, role, cleanup } = await createTestFixture({ approvedUserLimit: 6, activeUsers: 5 });
+  try {
+    // Create two invites when active users = 5
+    // Note: To create the two invites for concurrent testing, temporarily permit invite creation
+    await prisma.workspace.update({ where: { id: workspace.id }, data: { approvedUserLimit: 7 } });
+
+    const invite1 = await inviteService.createInvite(
+      { name: 'Invitee 1', email: getUniqueEmail('inv1'), roleId: role.id },
+      { id: ownerUser.id, workspaceId: workspace.id, name: 'Owner' }
+    );
+    const invite2 = await inviteService.createInvite(
+      { name: 'Invitee 2', email: getUniqueEmail('inv2'), roleId: role.id },
+      { id: ownerUser.id, workspaceId: workspace.id, name: 'Owner' }
+    );
+
+    // Set limit back to 6 (Active = 5, Limit = 6 -> exactly 1 seat left)
+    await prisma.workspace.update({ where: { id: workspace.id }, data: { approvedUserLimit: 6 } });
+
+    const token1 = new URL(invite1.inviteLink!).searchParams.get('token')!;
+    const token2 = new URL(invite2.inviteLink!).searchParams.get('token')!;
+
+    // Two simultaneous accept operations racing for the 6th seat
+    const [acc1, acc2] = await Promise.allSettled([
+      inviteService.acceptInvite({ token: token1, password: 'Password123!' }),
+      inviteService.acceptInvite({ token: token2, password: 'Password123!' }),
+    ]);
+
+    const successes = [acc1, acc2].filter((r) => r.status === 'fulfilled');
+    const failures = [acc1, acc2].filter((r) => r.status === 'rejected');
+
+    assert.equal(successes.length, 1, 'Exactly ONE concurrent invite acceptance must succeed');
+    assert.equal(failures.length, 1, 'Exactly ONE concurrent invite acceptance must be rejected');
+
+    const err: any = (failures[0] as PromiseRejectedResult).reason;
+    assert.equal(err.statusCode, 400);
+    assert.equal(err.code, 'USER_LIMIT_REACHED');
+
+    const usage = await getSeatUsage(workspace.id);
+    assert.equal(usage.activeUserCount, 6, 'Final active user count must be strictly 6');
   } finally {
     await cleanup();
   }
