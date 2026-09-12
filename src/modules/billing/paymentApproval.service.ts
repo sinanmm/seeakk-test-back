@@ -5,9 +5,9 @@ import { getSeatUsage } from './seatUsage.service';
 
 export interface ApprovePaymentInput {
   paymentRequestId: string;
-  approvedUserLimit: number;
-  accessFrom: Date | string;
-  accessUntil: Date | string;
+  approvedUserLimit?: number;
+  accessFrom?: Date | string;
+  accessUntil?: Date | string;
   remarks?: string;
   approvedBy?: string;
   auditContext?: { ipAddress?: string; userAgent?: string };
@@ -26,7 +26,7 @@ export class PaymentApprovalService {
    * Approves a payment request transactionally and idempotently.
    */
   static async approvePayment(input: ApprovePaymentInput) {
-    const { paymentRequestId, approvedUserLimit, accessFrom, accessUntil, remarks, approvedBy = 'PLATFORM_OWNER', auditContext } = input;
+    const { paymentRequestId, remarks, approvedBy = 'PLATFORM_OWNER', auditContext } = input;
 
     if (!paymentRequestId) {
       const err: any = new Error('Payment Request ID is required.');
@@ -34,26 +34,28 @@ export class PaymentApprovalService {
       throw err;
     }
 
-    const numLimit = Number(approvedUserLimit);
-    if (!Number.isInteger(numLimit) || numLimit <= 0) {
-      const err: any = new Error('Approved user limit must be a positive integer.');
-      err.statusCode = 400;
-      throw err;
+    if (input.approvedUserLimit !== undefined && input.approvedUserLimit !== null) {
+      const numLimit = Number(input.approvedUserLimit);
+      if (!Number.isInteger(numLimit) || numLimit <= 0) {
+        const err: any = new Error('Approved user limit must be a positive integer.');
+        err.statusCode = 400;
+        throw err;
+      }
     }
 
-    const startDate = new Date(accessFrom);
-    const endDate = new Date(accessUntil);
-
-    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
-      const err: any = new Error('Invalid access dates provided.');
-      err.statusCode = 400;
-      throw err;
-    }
-
-    if (endDate <= startDate) {
-      const err: any = new Error('Access Until date must be strictly after Access From date.');
-      err.statusCode = 400;
-      throw err;
+    if (input.accessFrom !== undefined && input.accessUntil !== undefined) {
+      const startDate = new Date(input.accessFrom);
+      const endDate = new Date(input.accessUntil);
+      if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+        const err: any = new Error('Invalid access dates provided.');
+        err.statusCode = 400;
+        throw err;
+      }
+      if (endDate <= startDate) {
+        const err: any = new Error('Access Until date must be strictly after Access From date.');
+        err.statusCode = 400;
+        throw err;
+      }
     }
 
     // Check payment request
@@ -69,6 +71,43 @@ export class PaymentApprovalService {
     if (!existingRequest) {
       const err: any = new Error('Payment request not found.');
       err.statusCode = 404;
+      throw err;
+    }
+
+    // Default or validate approvedUserLimit
+    let numLimit: number;
+    if (input.approvedUserLimit !== undefined && input.approvedUserLimit !== null) {
+      numLimit = Number(input.approvedUserLimit);
+    } else {
+      numLimit = existingRequest.requestedUsers;
+    }
+
+    if (!Number.isInteger(numLimit) || numLimit <= 0) {
+      const err: any = new Error('Approved user limit must be a positive integer.');
+      err.statusCode = 400;
+      throw err;
+    }
+
+    // Default or validate accessFrom and accessUntil
+    const startDate = input.accessFrom ? new Date(input.accessFrom) : new Date();
+    let endDate: Date;
+    if (input.accessUntil) {
+      endDate = new Date(input.accessUntil);
+    } else {
+      const months = existingRequest.requestedMonths && existingRequest.requestedMonths > 0 ? existingRequest.requestedMonths : 1;
+      endDate = new Date(startDate);
+      endDate.setMonth(endDate.getMonth() + months);
+    }
+
+    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+      const err: any = new Error('Invalid access dates provided.');
+      err.statusCode = 400;
+      throw err;
+    }
+
+    if (endDate <= startDate) {
+      const err: any = new Error('Access Until date must be strictly after Access From date.');
+      err.statusCode = 400;
       throw err;
     }
 

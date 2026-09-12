@@ -23,6 +23,7 @@ const ALLOWED_EXTENSIONS = new Set([
 
 const ALLOWED_MIME_TYPES = new Set([
   'image/jpeg',
+  'image/jpg',
   'image/png',
   'image/webp',
   'image/gif',

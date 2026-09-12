@@ -1094,6 +1094,14 @@ export const getPaymentProof = async (req: Request, res: Response) => {
     }
 
     const storageKey = paymentRequest.paymentSubmissions[0].proofStorageKey;
+    if (storageKey === 'OFFLINE_VERIFIED') {
+      return res.status(200).json({
+        success: true,
+        message: 'Payment verified offline or directly in Control Software without an attached screenshot.',
+        proofStorageKey: 'OFFLINE_VERIFIED',
+      });
+    }
+
     const uploadsDir = path.resolve(process.cwd(), 'uploads');
     const filePath = path.join(uploadsDir, path.basename(storageKey));
 

@@ -14,14 +14,28 @@ const upload = multer({
   fileFilter: (_req, file, cb) => {
     const result = validateUploadedFile(file);
     if (!result.valid) {
-      return cb(new Error(result.error || 'Invalid file type'));
+      const err: any = new Error(result.error || 'Invalid file type');
+      err.statusCode = 400;
+      return cb(err);
     }
     cb(null, true);
   },
 });
 
+const handleUpload = (req: any, res: any, next: any) => {
+  upload.single('file')(req, res, (err: any) => {
+    if (err) {
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(413).json({ success: false, message: 'File size exceeds maximum allowed limit of 10MB.' });
+      }
+      return res.status(400).json({ success: false, message: err.message || 'Invalid file upload.' });
+    }
+    next();
+  });
+};
+
 // Protect route with auth middleware and handle single file upload
-router.post('/', protect, upload.single('file'), uploadFile);
+router.post('/', protect, handleUpload, uploadFile);
 
 // Proxy route to stream uploaded files securely using validated storage keys
 router.get(/^\/(.+)$/, getFile);

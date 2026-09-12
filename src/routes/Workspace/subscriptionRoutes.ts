@@ -16,6 +16,21 @@ const router = Router();
 router.use(protect);
 
 router.get('/request', getPendingPaymentRequest);
+
+// Support POST /api/subscription/request for clients submitting payments or renewal requests
+router.post('/request', (req, res, next) => {
+  if (req.body?.utrNumber || req.body?.proofStorageKey || req.body?.paymentMethod) {
+    return submitPaymentProof(req, res, next);
+  }
+  if (req.body?.requestedUsers || req.body?.requestedMonths || req.body?.planId || req.body?.planCode) {
+    return createRenewalRequest(req, res, next);
+  }
+  return res.status(400).json({
+    success: false,
+    message: 'Invalid subscription request payload. Provide renewal parameters (requestedUsers, requestedMonths) or payment submission parameters (utrNumber, proofStorageKey).',
+  });
+});
+
 router.post('/submit', submitPaymentProof);
 router.post('/renew', createRenewalRequest);
 router.get('/entitlements', getEntitlements);
