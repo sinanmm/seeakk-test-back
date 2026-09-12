@@ -6,6 +6,7 @@ import { CompanyControlService } from '../../modules/billing/companyControl.serv
 import { evaluateCompanyAccess } from '../../modules/billing/companyAccess.service';
 import { getSeatUsage } from '../../modules/billing/seatUsage.service';
 import { ModuleEntitlementService } from '../../modules/billing/moduleEntitlement.service';
+import { UploadService } from '../../modules/upload/upload.service';
 import auditService from '../../services/Audit/auditService';
 import path from 'path';
 import fs from 'fs';
@@ -954,6 +955,7 @@ export const getPaymentRequests = async (req: Request, res: Response) => {
               remarks: sub.remarks,
               submittedAt: sub.submittedAt,
               proofAvailable: Boolean(sub.proofStorageKey),
+              proofStorageKey: sub.proofStorageKey || null,
             }
           : null,
         createdAt: r.createdAt,
@@ -1053,6 +1055,7 @@ export const getPaymentRequestDetails = async (req: Request, res: Response) => {
             paymentMethod: latestSubmission.paymentMethod,
             remarks: latestSubmission.remarks,
             proofAvailable: Boolean(latestSubmission.proofStorageKey),
+            proofStorageKey: latestSubmission.proofStorageKey || null,
             submittedBy: latestSubmission.user,
             submittedAt: latestSubmission.submittedAt,
           }
@@ -1098,10 +1101,41 @@ export const getPaymentProof = async (req: Request, res: Response) => {
       return res.sendFile(filePath);
     }
 
-    return res.status(200).json({
-      success: true,
-      proofStorageKey: storageKey,
-    });
+    try {
+      const fileData = await UploadService.getFileStream(storageKey);
+      if (fileData && fileData.stream) {
+        if (fileData.contentType) {
+          res.setHeader('Content-Type', fileData.contentType);
+        } else {
+          res.setHeader('Content-Type', 'image/png');
+        }
+        if (fileData.contentLength) {
+          res.setHeader('Content-Length', fileData.contentLength);
+        }
+        res.setHeader('Cache-Control', 'private, no-store, must-revalidate');
+        res.setHeader('Content-Disposition', 'inline');
+        return (fileData.stream as any).pipe(res);
+      }
+    } catch (streamErr: any) {
+      logger.warn('Failed to stream proof from storage driver, falling back to presigned URL', {
+        storageKey,
+        error: streamErr?.message,
+      });
+    }
+
+    try {
+      const presignedUrl = await UploadService.getPresignedUrl(storageKey);
+      return res.status(200).json({
+        success: true,
+        proofStorageKey: storageKey,
+        proofUrl: presignedUrl,
+      });
+    } catch {
+      return res.status(200).json({
+        success: true,
+        proofStorageKey: storageKey,
+      });
+    }
   } catch (error: any) {
     logger.error('Error serving payment proof:', { error: error.message });
     return res.status(500).json({ success: false, message: 'Internal server error' });

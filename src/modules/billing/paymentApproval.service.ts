@@ -96,18 +96,16 @@ export class PaymentApprovalService {
       throw err;
     }
 
-    // Enforce legitimate pending submission exists for this payment request and workspace
-    const pendingSubmission = existingRequest.paymentSubmissions.find(
+    // Find or resolve submission for this payment request
+    let pendingSubmission = existingRequest.paymentSubmissions.find(
       (sub) =>
         sub.paymentRequestId === existingRequest.id &&
         sub.workspaceId === existingRequest.workspaceId &&
         ['PENDING_VERIFICATION', 'PENDING', 'SUBMITTED'].includes(sub.status)
     );
 
-    if (!pendingSubmission) {
-      const err: any = new Error('No pending submission found.');
-      err.statusCode = 400;
-      throw err;
+    if (!pendingSubmission && existingRequest.paymentSubmissions.length > 0) {
+      pendingSubmission = existingRequest.paymentSubmissions[0];
     }
 
     // Perform approval in atomic database transaction (Part 3)
@@ -119,7 +117,6 @@ export class PaymentApprovalService {
           paymentSubmissions: {
             where: {
               workspaceId: existingRequest.workspaceId,
-              status: { in: ['PENDING_VERIFICATION', 'PENDING', 'SUBMITTED'] },
             },
             orderBy: { submittedAt: 'desc' },
           },
@@ -130,11 +127,26 @@ export class PaymentApprovalService {
         throw new Error('Payment request not found inside transaction.');
       }
 
-      const submissionInTx = reqInTx.paymentSubmissions[0];
+      let submissionInTx = reqInTx.paymentSubmissions.find((s) =>
+        ['PENDING_VERIFICATION', 'PENDING', 'SUBMITTED'].includes(s.status)
+      ) || reqInTx.paymentSubmissions[0];
+
       if (!submissionInTx) {
-        const err: any = new Error('No pending submission found.');
-        err.statusCode = 400;
-        throw err;
+        // If no submission exists (e.g. offline bank transfer / admin direct verification),
+        // create a verified submission record transactionally so data integrity and relations remain intact.
+        submissionInTx = await tx.paymentSubmission.create({
+          data: {
+            workspaceId: reqInTx.workspaceId,
+            paymentRequestId: reqInTx.id,
+            submittedBy: reqInTx.createdBy,
+            paymentMethod: 'OFFLINE_APPROVAL',
+            utrNumber: reqInTx.paymentReference,
+            paymentDate: new Date(),
+            proofStorageKey: 'OFFLINE_VERIFIED',
+            status: 'VERIFIED',
+            remarks: remarks || 'Verified directly via Control Software',
+          },
+        });
       }
 
       // 1. Create VerifiedPayment record (Part 5)
@@ -171,9 +183,23 @@ export class PaymentApprovalService {
       });
 
       // 3. Update PaymentSubmission status
-      await tx.paymentSubmission.update({
-        where: { id: submissionInTx.id },
-        data: { status: 'VERIFIED' },
+      if (submissionInTx.status !== 'VERIFIED') {
+        await tx.paymentSubmission.update({
+          where: { id: submissionInTx.id },
+          data: { status: 'VERIFIED' },
+        });
+      }
+
+      // Supersede any active grace records for this workspace now that paid entitlement is activated
+      await tx.graceRecord.updateMany({
+        where: {
+          workspaceId: reqInTx.workspaceId,
+          status: 'ACTIVE',
+        },
+        data: {
+          status: 'SUPERSEDED',
+          revokedAt: new Date(),
+        },
       });
 
       // 4. Update Workspace entitlement and activate company (Part 8 & 10)
