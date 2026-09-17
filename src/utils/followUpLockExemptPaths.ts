@@ -57,6 +57,16 @@ export const isHardcodedFollowUpLockResolutionRequest = (req: Request): boolean 
     'followup-extension-reasons',
     'weekly-off',
     'weekly_off',
+    'lead-sources',
+    'lead-stages',
+    'lead-substages',
+    'lead-life-cycles',
+    'lead-dynamics',
+    'lob-reasons',
+    'stage-rules',
+    '/products',
+    'meta/assignees',
+    'meta/stage-rules',
   ];
 
   if (alwaysAllowMarkers.some((marker) => haystack.includes(marker))) {
@@ -77,6 +87,15 @@ export const isHardcodedFollowUpLockResolutionRequest = (req: Request): boolean 
 
   if (['PATCH', 'POST'].includes(method) && haystack.includes('followup')) {
     if (haystack.includes('/snooze') || haystack.includes('/extend')) {
+      return true;
+    }
+  }
+
+  if (haystack.includes('/leads/')) {
+    const isExcludedLeadList = ['/leads/export', '/leads/closed', '/leads/bulk-assign', '/leads/import'].some(
+      (excluded) => haystack.includes(excluded),
+    );
+    if (!isExcludedLeadList) {
       return true;
     }
   }
@@ -112,7 +131,20 @@ export const FOLLOWUP_LOCK_RESOLUTION_PREFIXES = [
   '/api/followups/bulk-extend',
   '/api/followup-extension-reasons',
   '/api/holidays/weekly-off',
-  '/api/leads/meta/assignees',
+  '/api/leads/meta',
+  '/api/master/lead-sources',
+  '/api/lead-sources',
+  '/api/master/lead-stages',
+  '/api/lead-stages',
+  '/api/master/lead-substages',
+  '/api/lead-substages',
+  '/api/master/products',
+  '/api/products',
+  '/api/master/stage-rules',
+  '/api/stage-rules',
+  '/api/admin/lead-life-cycles',
+  '/api/lead-dynamics',
+  '/api/lob-reasons',
   '/api/admin/users',
   '/api/attendance/today',
   '/api/attendance/check-in',
@@ -150,6 +182,19 @@ export const FOLLOWUP_LOCK_RESOLUTION_SUFFIXES = [
   '/followup-extension-reasons',
   '/holidays/weekly-off',
   '/weekly-off',
+  '/master/lead-sources',
+  '/lead-sources',
+  '/master/lead-stages',
+  '/lead-stages',
+  '/master/lead-substages',
+  '/lead-substages',
+  '/master/products',
+  '/products',
+  '/master/stage-rules',
+  '/stage-rules',
+  '/admin/lead-life-cycles',
+  '/lead-dynamics',
+  '/lob-reasons',
   '/location-tracking',
 ] as const;
 
@@ -169,6 +214,14 @@ const RAW_RESOLUTION_MARKERS = [
   '/followups/bulk-extend',
   '/followup-extension-reasons',
   '/holidays/weekly-off',
+  'lead-sources',
+  'lead-stages',
+  'lead-substages',
+  'lead-life-cycles',
+  'lead-dynamics',
+  'lob-reasons',
+  'stage-rules',
+  'master/products',
   '/location-tracking',
 ] as const;
 
