@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import cors from 'cors';
 import morgan from 'morgan';
+import deviceRoutes from './routes/Device/deviceRoutes';
 import authRoutes from './routes/Auth/authRoutes';
 import workspaceRoutes from './routes/Workspace/workspaceRoutes';
 import subscriptionRoutes from './routes/Workspace/subscriptionRoutes';
@@ -275,6 +276,7 @@ app.use('/api', (_req, res, next) => {
 
 // Global rate limiting
 app.use('/api/', globalLimiter);
+app.use('/api/devices', deviceRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/workspace', workspaceRoutes);
 app.use('/api/subscription', subscriptionRoutes);

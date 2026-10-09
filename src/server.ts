@@ -80,6 +80,7 @@ const startServer = async () => {
       { startAttendanceJobs },
       { startTargetPerformanceJobs },
       _automationJobs,
+      _pushNotificationJobs,
     ] = await Promise.all([
       import('./app'),
       import('./config/prisma'),
@@ -90,6 +91,7 @@ const startServer = async () => {
       import('./modules/attendance/attendance.jobs'),
       import('./modules/targets/targetCron.jobs'),
       import('./modules/automation/automation.jobs'),
+      import('./modules/notifications/pushNotification.jobs'),
     ]);
 
     // Connect Redis

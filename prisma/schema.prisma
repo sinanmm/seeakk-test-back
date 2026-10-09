@@ -1638,21 +1638,29 @@ model AuditLog {
 }
 
 model Device {
-  id         String   @id @default(cuid())
-  deviceId   String
-  os         String?
-  browser    String?
-  deviceType String?
-  ipAddress  String?
-  lastActive DateTime @default(now())
+  id           String    @id @default(cuid())
+  deviceId     String
+  os           String?
+  browser      String?
+  deviceType   String?
+  ipAddress    String?
+  lastActive   DateTime  @default(now())
 
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId String
+  // Push notification fields
+  pushToken    String?
+  pushProvider String?   @default("EXPO")
+  pushEnabled  Boolean   @default(true)
+  appVersion   String?
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String
+
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   @@unique([userId, deviceId])
+  @@index([userId, pushEnabled])
+  @@index([pushToken])
   @@map("devices")
 }
 

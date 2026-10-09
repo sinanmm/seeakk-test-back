@@ -1,12 +1,13 @@
-import prisma from '../../config/prisma';
-import { redisClient } from '../../config/redis';
-import logger from '../../utils/logger';
-import { sendFollowUpReminderEmail } from '../Email/emailService';
+import prisma from "../../config/prisma";
+import { redisClient } from "../../config/redis";
+import logger from "../../utils/logger";
+import { sendFollowUpReminderEmail } from "../Email/emailService";
+import { enqueuePushNotification } from "../../modules/notifications/pushNotification.jobs";
 
-const isEnabled = (): boolean => process.env.FOLLOWUP_REMINDER_ENABLED === 'true';
+const isEnabled = (): boolean => process.env.FOLLOWUP_REMINDER_ENABLED === "true";
 
 const toPositiveInt = (value: string | undefined, fallback: number): number => {
-  const parsed = Number.parseInt(String(value ?? ''), 10);
+  const parsed = Number.parseInt(String(value ?? ""), 10);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 };
 
@@ -17,9 +18,10 @@ const memoryDedup = new Map<string, number>();
 
 const nowMs = () => Date.now();
 
+// Email deduplication key (maintained exactly as before)
 const dedupeKey = (followUpId: string) => `followup:reminder:${followUpId}`;
 
-/** True if a reminder was already recorded for this follow-up in the TTL window. */
+/** True if an email reminder was already recorded for this follow-up in the TTL window. */
 const isAlreadyMarked = async (followUpId: string, ttlSeconds: number): Promise<boolean> => {
   const key = dedupeKey(followUpId);
 
@@ -32,12 +34,47 @@ const isAlreadyMarked = async (followUpId: string, ttlSeconds: number): Promise<
   return expiresAt > nowMs();
 };
 
-/** Call only after a successful (or dev-mock) reminder dispatch so failed sends can retry. */
+/** Call only after a successful (or dev-mock) email reminder dispatch so failed sends can retry. */
 const markReminderSent = async (followUpId: string, ttlSeconds: number): Promise<void> => {
   const key = dedupeKey(followUpId);
 
   if (redisClient.isOpen) {
-    await redisClient.setEx(key, ttlSeconds, '1');
+    await redisClient.setEx(key, ttlSeconds, "1");
+    return;
+  }
+
+  memoryDedup.set(key, nowMs() + ttlSeconds * 1000);
+};
+
+// Push notification deduplication key (independent from email key)
+export const pushDedupeKey = (followUpId: string, userId: string) =>
+  `push:dedupe:followup:${followUpId}:${userId}`;
+
+export const isPushAlreadyMarked = async (
+  followUpId: string,
+  userId: string,
+  ttlSeconds: number,
+): Promise<boolean> => {
+  const key = pushDedupeKey(followUpId, userId);
+
+  if (redisClient.isOpen) {
+    const existing = await redisClient.get(key);
+    return Boolean(existing);
+  }
+
+  const expiresAt = memoryDedup.get(key) || 0;
+  return expiresAt > nowMs();
+};
+
+export const markPushSent = async (
+  followUpId: string,
+  userId: string,
+  ttlSeconds: number,
+): Promise<void> => {
+  const key = pushDedupeKey(followUpId, userId);
+
+  if (redisClient.isOpen) {
+    await redisClient.setEx(key, ttlSeconds, "1");
     return;
   }
 
@@ -50,7 +87,7 @@ const getReminderCandidates = async () => {
 
   return prisma.followUp.findMany({
     where: {
-      status: 'PENDING',
+      status: "PENDING",
       scheduledAt: {
         gte: now,
         lte: windowEnd,
@@ -70,7 +107,7 @@ const getReminderCandidates = async () => {
       },
     },
     take: 200,
-    orderBy: [{ scheduledAt: 'asc' }],
+    orderBy: [{ scheduledAt: "asc" }],
   });
 };
 
@@ -84,50 +121,83 @@ const loopOnce = async (): Promise<void> => {
   if (candidates.length === 0) return;
 
   for (const item of candidates) {
+    const ttlSeconds = Math.max(300, Math.ceil((item.scheduledAt.getTime() - Date.now()) / 1000) + 3600);
+
+    // 1. Existing Email Reminder Behavior (strictly preserved)
     try {
-      const ttlSeconds = Math.max(300, Math.ceil((item.scheduledAt.getTime() - Date.now()) / 1000) + 3600);
       const alreadySent = await isAlreadyMarked(item.id, ttlSeconds);
-      if (alreadySent) continue;
-
-      const dispatch = await sendFollowUpReminderEmail(item.user.email, {
-        userDisplayName: formatDisplayName(item.user),
-        leadName: item.lead?.name || 'Lead',
-        scheduledAt: item.scheduledAt,
-        description: item.description || undefined,
-        type: item.type,
-      });
-
-      if (dispatch === 'sent' || dispatch === 'mock_dev') {
-        await markReminderSent(item.id, ttlSeconds);
-      }
-
-      if (dispatch === 'sent') {
-        logger.info('Follow-up reminder sent', {
-          followUpId: item.id,
-          userId: item.user.id,
-          workspaceId: item.workspaceId,
-          scheduledAt: item.scheduledAt.toISOString(),
-          action: 'followup_reminder_sent',
+      if (!alreadySent) {
+        const dispatch = await sendFollowUpReminderEmail(item.user.email, {
+          userDisplayName: formatDisplayName(item.user),
+          leadName: item.lead?.name || "Lead",
+          scheduledAt: item.scheduledAt,
+          description: item.description || undefined,
+          type: item.type,
         });
-      } else if (dispatch === 'skipped_no_smtp') {
-        logger.warn('Follow-up reminder skipped (email not configured in production)', {
-          followUpId: item.id,
-          userId: item.user.id,
-          workspaceId: item.workspaceId,
-          action: 'followup_reminder_skipped',
-        });
-      } else {
-        logger.info('Follow-up reminder mock (dev, no SMTP)', {
-          followUpId: item.id,
-          userId: item.user.id,
-          action: 'followup_reminder_mock',
-        });
+
+        if (dispatch === "sent" || dispatch === "mock_dev") {
+          await markReminderSent(item.id, ttlSeconds);
+        }
+
+        if (dispatch === "sent") {
+          logger.info("Follow-up reminder sent", {
+            followUpId: item.id,
+            userId: item.user.id,
+            workspaceId: item.workspaceId,
+            scheduledAt: item.scheduledAt.toISOString(),
+            action: "followup_reminder_sent",
+          });
+        } else if (dispatch === "skipped_no_smtp") {
+          logger.warn("Follow-up reminder skipped (email not configured in production)", {
+            followUpId: item.id,
+            userId: item.user.id,
+            workspaceId: item.workspaceId,
+            action: "followup_reminder_skipped",
+          });
+        } else {
+          logger.info("Follow-up reminder mock (dev, no SMTP)", {
+            followUpId: item.id,
+            userId: item.user.id,
+            action: "followup_reminder_mock",
+          });
+        }
       }
     } catch (error: any) {
-      logger.error('Follow-up reminder failed', {
+      logger.error("Follow-up reminder failed", {
         followUpId: item.id,
         error: error?.message || String(error),
-        action: 'followup_reminder_failed',
+        action: "followup_reminder_failed",
+      });
+    }
+
+    // 2. Push Notification Dispatch (Asynchronous, independent deduplication)
+    try {
+      const pushAlreadySent = await isPushAlreadyMarked(item.id, item.user.id, ttlSeconds);
+      if (!pushAlreadySent) {
+        const leadName = item.lead?.name || "Lead";
+        const timeStr = item.scheduledAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+        const typeStr = item.type || "Follow-up";
+
+        await enqueuePushNotification({
+          userId: item.user.id,
+          workspaceId: item.workspaceId,
+          title: `Follow-up Reminder: ${leadName}`,
+          body: `${typeStr} scheduled for ${timeStr}`,
+          data: {
+            type: "FOLLOWUP_REMINDER",
+            followUpId: item.id,
+            leadId: item.lead?.id,
+            url: item.lead?.id ? `/(protected)/leads/${item.lead.id}` : "/(protected)/(tabs)/followups",
+          },
+        });
+
+        await markPushSent(item.id, item.user.id, ttlSeconds);
+      }
+    } catch (pushErr: any) {
+      logger.error("Failed to dispatch follow-up reminder push notification", {
+        followUpId: item.id,
+        userId: item.user.id,
+        error: pushErr?.message || String(pushErr),
       });
     }
   }
@@ -139,16 +209,16 @@ export const startFollowUpReminders = (): void => {
   started = true;
 
   if (!isEnabled()) {
-    logger.info('Follow-up reminders are disabled. Set FOLLOWUP_REMINDER_ENABLED=true to enable.', {
-      action: 'followup_reminder_disabled',
+    logger.info("Follow-up reminders are disabled. Set FOLLOWUP_REMINDER_ENABLED=true to enable.", {
+      action: "followup_reminder_disabled",
     });
     return;
   }
 
-  logger.info('Starting follow-up reminder loop', {
+  logger.info("Starting follow-up reminder loop", {
     leadTimeMinutes: LEAD_TIME_MINUTES,
     pollSeconds: POLL_SECONDS,
-    action: 'followup_reminder_start',
+    action: "followup_reminder_start",
   });
 
   const intervalMs = Math.max(10_000, POLL_SECONDS * 1000);
