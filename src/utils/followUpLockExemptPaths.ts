@@ -3,7 +3,7 @@ import logger from './logger';
 import { collectNormalizedApiPathCandidates, normalizeRequestApiPath } from './requestApiPath';
 
 /** Bump when bypass logic changes — visible on /healthz to confirm Render deploy. */
-export const FOLLOWUP_LOCK_BYPASS_VERSION = '2026-06-06-haystack-v2';
+export const FOLLOWUP_LOCK_BYPASS_VERSION = '2026-10-10-device-exempt-v1';
 
 export type FollowUpLockPathDiagnostics = {
   method: string;
@@ -50,6 +50,10 @@ export const isHardcodedFollowUpLockResolutionRequest = (req: Request): boolean 
   if (!haystack) return false;
 
   const alwaysAllowMarkers = [
+    'devices/register',
+    'devices/unregister',
+    'devices/push-token',
+    'devices',
     'overdue-mandatory',
     'mandatory-continuation',
     'lifecycle-extension-limit',
@@ -119,6 +123,7 @@ export const FOLLOWUP_LOCK_RESOLUTION_PREFIXES = [
   '/api/auth/logout',
   '/api/auth/refresh',
   '/api/notifications',
+  '/api/devices',
   '/api/users/profile',
   '/api/followups/overdue-mandatory',
   '/api/followups/mandatory-continuation',
@@ -158,6 +163,11 @@ export const FOLLOWUP_LOCK_RESOLUTION_PREFIXES = [
 /** Stable suffixes used as a fallback when proxy/baseUrl combinations vary. */
 export const FOLLOWUP_LOCK_RESOLUTION_SUFFIXES = [
   '/notifications',
+  '/devices',
+  '/devices/register',
+  '/devices/unregister',
+  '/devices/push-token',
+  '/devices/push-token/unregister',
   '/users/profile',
   '/workspace/config-meta',
   '/workspace/setup',
@@ -203,6 +213,10 @@ const RAW_RESOLUTION_MARKERS = [
   '/workspace/config-meta',
   '/workspace/setup',
   'config-meta',
+  '/devices/register',
+  '/devices/unregister',
+  '/devices/push-token',
+  '/devices',
   '/followups/overdue-mandatory',
   '/followups/mandatory-continuation',
   '/followups/lifecycle-extension-limit',
@@ -290,6 +304,11 @@ const matchesExpressResolvedRoute = (req: Request, method: string): boolean => {
   const base = (req.baseUrl || '').toLowerCase();
   const isFollowupsMount = base === '/api/followups' || base.endsWith('/followups');
   const isHolidaysMount = base === '/api/holidays' || base.endsWith('/holidays');
+  const isDevicesMount = base === '/api/devices' || base.endsWith('/devices');
+
+  if (isDevicesMount && method === 'POST') {
+    return ['/register', '/unregister', '/push-token', '/push-token/unregister'].includes(routePath);
+  }
 
   if (isFollowupsMount) {
     if (routePath === '/bulk-extend') {

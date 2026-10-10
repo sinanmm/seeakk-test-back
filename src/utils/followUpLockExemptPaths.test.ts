@@ -110,11 +110,40 @@ test('allows active extension reasons lookup during overdue resolution', () => {
   assert.equal(isFollowUpLockResolutionPath(mockReq('GET', '/api/followup-extension-reasons/active')), true);
 });
 
-test('blocks unrelated dashboard routes', () => {
+test('allows device push token registration and unregistration endpoints during follow-up locks', () => {
+  assert.equal(isFollowUpLockResolutionPath(mockReq('POST', '/api/devices/register')), true);
+  assert.equal(isFollowUpLockResolutionPath(mockReq('POST', '/api/devices/unregister')), true);
+  assert.equal(isFollowUpLockResolutionPath(mockReq('POST', '/api/devices/push-token')), true);
+  assert.equal(isFollowUpLockResolutionPath(mockReq('POST', '/api/devices/push-token/unregister')), true);
+
+  // Mounted router path
+  const mountedReq = {
+    method: 'POST',
+    originalUrl: '/register',
+    baseUrl: '/api/devices',
+    path: '/register',
+    url: '/register',
+    route: { path: '/register' },
+  } as Request;
+  assert.equal(isFollowUpLockResolutionPath(mountedReq), true);
+
+  const mountedUnregisterReq = {
+    method: 'POST',
+    originalUrl: '/unregister',
+    baseUrl: '/api/devices',
+    path: '/unregister',
+    url: '/unregister',
+    route: { path: '/unregister' },
+  } as Request;
+  assert.equal(isFollowUpLockResolutionPath(mountedUnregisterReq), true);
+});
+
+test('blocks unrelated dashboard and CRM routes', () => {
   assert.equal(isFollowUpLockResolutionPath(mockReq('GET', '/api/dashboard/summary')), false);
   assert.equal(isFollowUpLockResolutionPath(mockReq('GET', '/api/dashboard/revenue')), false);
   assert.equal(isFollowUpLockResolutionPath(mockReq('GET', '/api/leads')), false);
-  assert.equal(isFollowUpLockResolutionPath(mockReq('GET', '/api/lead-dynamics/active')), false);
+  assert.equal(isFollowUpLockResolutionPath(mockReq('GET', '/api/reports/calls')), false);
+  assert.equal(isFollowUpLockResolutionPath(mockReq('GET', '/api/targets')), false);
 });
 
 test('diagnoseFollowUpLockPath explains why weekly-off is allowed on mount-relative url', () => {
