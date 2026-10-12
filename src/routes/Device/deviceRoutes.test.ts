@@ -24,6 +24,8 @@ describe("Device Push Notification Registration Follow-Up Lock Bypass", () => {
   const originalWorkspaceFindFirst = prisma.workspace.findFirst;
   const originalDeviceUpdateMany = prisma.device.updateMany;
   const originalDeviceUpsert = prisma.device.upsert;
+  const originalDeviceFindMany = prisma.device.findMany;
+  const originalFollowUpFindFirst = (prisma as any).followUp?.findFirst;
   const originalGetOverdueState = overdueService.getOverdueMandatorySessionState;
   const originalGetMandatoryState = mandatoryService.getMandatoryFollowUpSessionState;
 
@@ -134,6 +136,10 @@ describe("Device Push Notification Registration Follow-Up Lock Bypass", () => {
     prisma.workspace.findFirst = originalWorkspaceFindFirst;
     prisma.device.updateMany = originalDeviceUpdateMany;
     prisma.device.upsert = originalDeviceUpsert;
+    prisma.device.findMany = originalDeviceFindMany;
+    if (originalFollowUpFindFirst && (prisma as any).followUp) {
+      (prisma as any).followUp.findFirst = originalFollowUpFindFirst;
+    }
     (overdueService as any).getOverdueMandatorySessionState = originalGetOverdueState;
     (mandatoryService as any).getMandatoryFollowUpSessionState = originalGetMandatoryState;
 
@@ -272,4 +278,53 @@ describe("Device Push Notification Registration Follow-Up Lock Bypass", () => {
     assert.equal(body.message, "You have overdue follow-ups. Complete or extend them before continuing.");
     assert.equal(body.overdueFollowupCount, 2);
   });
+
+  test("Test E: Diagnostic endpoint -> POST /api/devices/test-followup-push/:followUpId => Dispatches test push with channel seeakk-reminders-v2", async () => {
+    (prisma as any).followUp = {
+      findFirst: async () => ({
+        id: "fu_diag_123",
+        workspaceId: mockUser.workspaceId,
+        userId: mockUser.id,
+        type: "Phone Call",
+        scheduledAt: new Date(),
+        lead: { id: "lead_diag_456", name: "Diagnostic Lead" },
+        user: { id: mockUser.id, name: "Rep", email: mockUser.email },
+      }),
+    };
+
+    (prisma.device.findMany as any) = async () => [
+      {
+        id: "dev_diag_1",
+        deviceId: "phone_diag_1",
+        os: "android",
+        pushToken: "ExponentPushToken[xxxxxx_diag_token_123456]",
+        pushProvider: "EXPO",
+      },
+    ];
+
+    const response = await fetch(`${baseUrl}/api/devices/test-followup-push/fu_diag_123`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${validToken}`,
+      },
+    });
+
+    assert.equal(response.status, 200, `Expected 200 OK but received ${response.status}`);
+    const body = await response.json();
+    assert.equal(body.success, true);
+    assert.equal(body.diagnostic.channelId, "seeakk-reminders-v2");
+    assert.equal(body.diagnostic.followUpId, "fu_diag_123");
+    assert.equal(body.diagnostic.recipientUserId, mockUser.id);
+    assert.equal(body.diagnostic.targetDeviceCount, 1);
+    assert.equal(body.diagnostic.devices[0].tokenSuffix, "...23456]");
+  });
+
+  test("Test F: Diagnostic endpoint -> unauthenticated request => MUST return 401", async () => {
+    const response = await fetch(`${baseUrl}/api/devices/test-followup-push/fu_diag_123`, {
+      method: "POST",
+    });
+
+    assert.equal(response.status, 401, `Expected 401 Unauthorized but received ${response.status}`);
+  });
 });
+

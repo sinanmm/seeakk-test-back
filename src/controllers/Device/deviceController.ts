@@ -152,3 +152,131 @@ export const unregisterPushToken = async (req: Request, res: Response): Promise<
     return res.status(500).json({ message: "Internal server error unregistering push token." });
   }
 };
+
+/**
+ * Controlled diagnostic endpoint to test ONE specific follow-up reminder push notification
+ * end-to-end for the authenticated user and their active registered devices.
+ */
+export const testFollowupPush = async (req: Request, res: Response): Promise<any> => {
+  try {
+    const user = (req as any).user;
+    if (!user?.id || !user?.workspaceId) {
+      return res.status(401).json({ message: "Authentication required." });
+    }
+
+    const { followUpId } = req.params;
+    if (!followUpId || typeof followUpId !== "string" || followUpId.trim().length === 0) {
+      return res.status(400).json({ message: "followUpId parameter is required." });
+    }
+
+    const followUp = await prisma.followUp.findFirst({
+      where: {
+        id: followUpId.trim(),
+        workspaceId: user.workspaceId,
+      },
+      include: {
+        lead: { select: { id: true, name: true } },
+        user: { select: { id: true, name: true, email: true } },
+      },
+    });
+
+    if (!followUp) {
+      return res.status(404).json({ message: "Follow-up not found within user workspace." });
+    }
+
+    // Authorization: User must be assigned to the follow-up or be a workspace superadmin/admin
+    const isOwner = followUp.userId === user.id;
+    const isSuperAdmin = user.role?.name?.toLowerCase().trim() === "superadmin";
+    if (!isOwner && !isSuperAdmin) {
+      return res.status(403).json({ message: "Not authorized to trigger test notification for this follow-up." });
+    }
+
+    const devices = await prisma.device.findMany({
+      where: {
+        userId: followUp.userId,
+        pushEnabled: true,
+        pushToken: { not: null },
+      },
+      select: {
+        id: true,
+        deviceId: true,
+        os: true,
+        pushToken: true,
+        pushProvider: true,
+      },
+    });
+
+    if (devices.length === 0) {
+      return res.status(200).json({
+        success: false,
+        message: "No active push-enabled devices registered for the follow-up recipient.",
+        diagnostic: {
+          followUpId: followUp.id,
+          recipientUserId: followUp.userId,
+          deviceCount: 0,
+        },
+      });
+    }
+
+    const leadName = followUp.lead?.name || "Lead";
+    const timeStr = followUp.scheduledAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    const typeStr = followUp.type || "Follow-up";
+
+    const messages = devices
+      .filter((d) => Boolean(d.pushToken))
+      .map((d) => ({
+        to: d.pushToken!,
+        title: `Follow-up Reminder: ${leadName}`,
+        body: `${typeStr} scheduled for ${timeStr}`,
+        data: {
+          type: "FOLLOWUP_REMINDER",
+          followUpId: followUp.id,
+          leadId: followUp.lead?.id,
+          url: followUp.lead?.id ? `/(protected)/leads/${followUp.lead.id}` : "/(protected)/(tabs)/followups",
+          isDiagnosticTest: true,
+        },
+        sound: "default" as const,
+        channelId: "seeakk-reminders-v2",
+      }));
+
+    logger.info("[FollowupPush] Test diagnostic dispatch initiated", {
+      followUpId: followUp.id,
+      userId: followUp.userId,
+      workspaceId: user.workspaceId,
+      deviceCount: devices.length,
+      channelId: "seeakk-reminders-v2",
+    });
+
+    const result = await pushNotificationService.sendPushNotifications(messages);
+
+    return res.status(200).json({
+      success: true,
+      message: "Follow-up push notification test dispatched successfully.",
+      diagnostic: {
+        followUpId: followUp.id,
+        workspaceId: user.workspaceId,
+        recipientUserId: followUp.userId,
+        targetDeviceCount: devices.length,
+        channelId: "seeakk-reminders-v2",
+        devices: devices.map((d) => ({
+          deviceId: d.deviceId,
+          os: d.os,
+          tokenSuffix: d.pushToken ? `...${d.pushToken.slice(-6)}` : null,
+          pushProvider: d.pushProvider,
+        })),
+        sentCount: result.sentCount,
+        invalidCount: result.invalidTokens.length,
+        tickets: result.tickets.map((t) => ({
+          status: t.status,
+          id: t.status === "ok" ? t.id : undefined,
+          error: t.status === "error" ? t.details?.error : undefined,
+        })),
+      },
+    });
+  } catch (error: any) {
+    logger.error("[FollowupPush] Test diagnostic dispatch error", {
+      error: error?.message || String(error),
+    });
+    return res.status(500).json({ message: "Internal server error triggering test follow-up push." });
+  }
+};

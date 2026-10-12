@@ -42,17 +42,18 @@ if (redisUrl && !isTestEnv) {
     },
   });
 
-  pushNotificationWorker = new Worker(
+    pushNotificationWorker = new Worker(
     "push-notifications",
     async (job: Job<PushNotificationJobData>) => {
       const { userId, workspaceId, title, body, data } = job.data;
-      logger.info("[Push Worker] Processing push notification job", {
+      logger.info("[FollowupPush] Processing push notification job", {
         jobId: job.id,
         userId,
         workspaceId,
         type: data?.type,
         followUpId: data?.followUpId,
         leadId: data?.leadId,
+        channelId: "seeakk-reminders-v2",
       });
 
       // 1. Workspace isolation and active user verification
@@ -66,7 +67,7 @@ if (redisUrl && !isTestEnv) {
       });
 
       if (!user) {
-        logger.warn("[Push Worker] Recipient not found or outside workspace. Delivery aborted.", {
+        logger.warn("[FollowupPush] Recipient not found or outside workspace. Delivery aborted.", {
           userId,
           workspaceId,
           jobId: job.id,
@@ -75,7 +76,7 @@ if (redisUrl && !isTestEnv) {
       }
 
       if (!user.isActive) {
-        logger.info("[Push Worker] Recipient is inactive. Delivery skipped.", {
+        logger.info("[FollowupPush] Recipient is inactive. Delivery skipped.", {
           userId,
           isActive: user.isActive,
           jobId: job.id,
@@ -94,7 +95,7 @@ if (redisUrl && !isTestEnv) {
       });
 
       if (devices.length === 0) {
-        logger.info("[Push Worker] No active registered push tokens for user", {
+        logger.info("[FollowupPush] No active registered push tokens for user", {
           userId,
           jobId: job.id,
         });
@@ -110,12 +111,13 @@ if (redisUrl && !isTestEnv) {
           body,
           data,
           sound: "default",
+          channelId: "seeakk-reminders-v2",
         }));
 
       // 4. Dispatch via PushNotificationService
       const result = await pushNotificationService.sendPushNotifications(messages);
 
-      logger.info("[Push Worker] Push dispatch completed", {
+      logger.info("[FollowupPush] Push dispatch completed", {
         jobId: job.id,
         userId,
         targetDeviceCount: devices.length,

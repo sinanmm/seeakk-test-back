@@ -2,6 +2,8 @@ import { Expo, ExpoPushMessage, ExpoPushTicket } from "expo-server-sdk";
 import prisma from "../../config/prisma";
 import logger from "../../utils/logger";
 
+export const DEFAULT_ANDROID_CHANNEL_ID = "seeakk-reminders-v2";
+
 export interface PushMessagePayload {
   to: string;
   title: string;
@@ -9,6 +11,7 @@ export interface PushMessagePayload {
   data?: Record<string, unknown>;
   sound?: "default" | null;
   badge?: number;
+  channelId?: string;
 }
 
 export interface PushSendResult {
@@ -16,6 +19,11 @@ export interface PushSendResult {
   invalidTokens: string[];
   tickets: ExpoPushTicket[];
 }
+
+const safeTokenSuffix = (token?: string | null): string => {
+  if (!token || typeof token !== "string") return "unknown";
+  return token.length > 8 ? `...${token.slice(-6)}` : token;
+};
 
 class PushNotificationService {
   private expo: Expo;
@@ -53,12 +61,14 @@ class PushNotificationService {
           body: msg.body,
           data: msg.data || {},
           badge: msg.badge,
+          channelId: msg.channelId || DEFAULT_ANDROID_CHANNEL_ID,
         });
       } else if (String(msg.to).startsWith("dev_push_token_")) {
         // Safe dev-mock handling
-        logger.info("[PushNotificationService] Simulating push to development token", {
-          tokenPrefix: String(msg.to).substring(0, 15),
+        logger.info("[FollowupPush] Simulating push to development token", {
+          tokenSuffix: safeTokenSuffix(String(msg.to)),
           title: msg.title,
+          channelId: msg.channelId || DEFAULT_ANDROID_CHANNEL_ID,
         });
       } else {
         invalidTokens.push(msg.to);
@@ -73,29 +83,40 @@ class PushNotificationService {
 
     for (const chunk of chunks) {
       try {
+        logger.info("[FollowupPush] Dispatching push chunk to Expo", {
+          chunkSize: chunk.length,
+          channelId: DEFAULT_ANDROID_CHANNEL_ID,
+        });
+
         const tickets = await this.expo.sendPushNotificationsAsync(chunk);
         allTickets.push(...tickets);
 
         for (let i = 0; i < tickets.length; i++) {
           const ticket = tickets[i];
+          const targetToken = chunk[i]?.to;
+          const singleToken = typeof targetToken === "string" ? targetToken : (targetToken as string[])?.[0];
+
           if (ticket.status === "error") {
             const errorType = ticket.details?.error;
-            const targetToken = chunk[i]?.to;
-            const singleToken = typeof targetToken === "string" ? targetToken : (targetToken as string[])?.[0];
 
-            logger.warn("[PushNotificationService] Ticket delivery error", {
+            logger.warn("[FollowupPush] Ticket delivery error", {
               errorType,
               message: ticket.message,
-              token: singleToken ? singleToken.substring(0, 15) + "..." : "unknown",
+              tokenSuffix: safeTokenSuffix(singleToken),
             });
 
             if (errorType === "DeviceNotRegistered" && singleToken) {
               invalidTokens.push(singleToken);
             }
+          } else {
+            logger.info("[FollowupPush] Ticket delivery success", {
+              ticketId: ticket.id,
+              tokenSuffix: safeTokenSuffix(singleToken),
+            });
           }
         }
       } catch (error: any) {
-        logger.error("[PushNotificationService] Failed to send push batch chunk", {
+        logger.error("[FollowupPush] Failed to send push batch chunk", {
           error: error?.message || String(error),
         });
         throw error; // Let BullMQ retry on network/transient failures

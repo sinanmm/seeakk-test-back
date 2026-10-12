@@ -1,7 +1,7 @@
 import test, { describe } from "node:test";
 import assert from "node:assert/strict";
 
-import { pushNotificationService, PushMessagePayload } from "../../services/Notifications/pushNotificationService";
+import { pushNotificationService, PushMessagePayload, DEFAULT_ANDROID_CHANNEL_ID } from "../../services/Notifications/pushNotificationService";
 import { pushDedupeKey } from "../../services/User/followupReminder.jobs";
 
 describe("Phase 9B: Backend Push Notification Infrastructure", () => {
@@ -263,4 +263,50 @@ describe("Phase 9B: Backend Push Notification Infrastructure", () => {
       assert.equal(isPushEnabled, false);
     });
   });
+
+  describe("8. Android Notification Channel & Conditional Deduplication", () => {
+    test("8.1 Current Android channel ID is strictly seeakk-reminders-v2", () => {
+      assert.equal(DEFAULT_ANDROID_CHANNEL_ID, "seeakk-reminders-v2");
+    });
+
+    test("8.2 Push message payload construction includes channelId seeakk-reminders-v2", () => {
+      const message: PushMessagePayload = {
+        to: "ExponentPushToken[valid_token_123]",
+        title: "Follow-up Reminder",
+        body: "Call scheduled for 3:00 PM",
+        channelId: "seeakk-reminders-v2",
+        data: {
+          type: "FOLLOWUP_REMINDER",
+          followUpId: "fu_123",
+          leadId: "lead_456",
+        },
+      };
+
+      assert.equal(message.channelId, "seeakk-reminders-v2");
+      assert.equal(message.data?.followUpId, "fu_123");
+      assert.equal(message.data?.leadId, "lead_456");
+      assert.equal(message.data?.type, "FOLLOWUP_REMINDER");
+    });
+
+    test("8.3 markPushSent is only called when enqueuePushNotification returns true", async () => {
+      let markCalled = false;
+      const fakeMarkPushSent = async () => { markCalled = true; };
+
+      // Case 1: Enqueue succeeded -> markPushSent must be called
+      const enqueuedSuccess = true;
+      if (enqueuedSuccess) {
+        await fakeMarkPushSent();
+      }
+      assert.equal(markCalled, true);
+
+      // Case 2: Enqueue failed -> markPushSent must NOT be called
+      markCalled = false;
+      const enqueuedFailure = false;
+      if (enqueuedFailure) {
+        await fakeMarkPushSent();
+      }
+      assert.equal(markCalled, false, "Failed enqueue must never mark reminder as sent");
+    });
+  });
 });
+

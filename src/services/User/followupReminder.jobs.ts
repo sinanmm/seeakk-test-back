@@ -178,7 +178,7 @@ const loopOnce = async (): Promise<void> => {
         const timeStr = item.scheduledAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
         const typeStr = item.type || "Follow-up";
 
-        await enqueuePushNotification({
+        const enqueued = await enqueuePushNotification({
           userId: item.user.id,
           workspaceId: item.workspaceId,
           title: `Follow-up Reminder: ${leadName}`,
@@ -191,10 +191,25 @@ const loopOnce = async (): Promise<void> => {
           },
         });
 
-        await markPushSent(item.id, item.user.id, ttlSeconds);
+        if (enqueued) {
+          await markPushSent(item.id, item.user.id, ttlSeconds);
+          logger.info("[FollowupPush] Follow-up reminder push enqueued and marked", {
+            followUpId: item.id,
+            userId: item.user.id,
+            workspaceId: item.workspaceId,
+            action: "followup_push_enqueued",
+          });
+        } else {
+          logger.warn("[FollowupPush] Push enqueue returned false; reminder not marked as sent to allow retry", {
+            followUpId: item.id,
+            userId: item.user.id,
+            workspaceId: item.workspaceId,
+            action: "followup_push_enqueue_skipped",
+          });
+        }
       }
     } catch (pushErr: any) {
-      logger.error("Failed to dispatch follow-up reminder push notification", {
+      logger.error("[FollowupPush] Failed to dispatch follow-up reminder push notification", {
         followUpId: item.id,
         userId: item.user.id,
         error: pushErr?.message || String(pushErr),
