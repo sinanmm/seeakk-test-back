@@ -202,6 +202,33 @@ const appendLeadAnd = (where: Prisma.LeadWhereInput, condition: Prisma.LeadWhere
   ],
 });
 
+
+export const resolveRangeDates = (range?: DashboardRange, dateFrom?: string, dateTo?: string) => {
+  if (dateFrom || dateTo) {
+    return { dateFrom, dateTo };
+  }
+  const now = new Date();
+  if (range === '12m') {
+    return {
+      dateFrom: startOfMonth(addMonths(now, -11)).toISOString(),
+      dateTo: endOfDay(now).toISOString(),
+    };
+  }
+  if (range === '30d') {
+    return {
+      dateFrom: startOfDay(addDays(now, -29)).toISOString(),
+      dateTo: endOfDay(now).toISOString(),
+    };
+  }
+  if (range === '7d') {
+    return {
+      dateFrom: startOfDay(addDays(now, -6)).toISOString(),
+      dateTo: endOfDay(now).toISOString(),
+    };
+  }
+  return { dateFrom: undefined, dateTo: undefined };
+};
+
 const buildDateRangeWhere = (dateFrom?: string, dateTo?: string): Prisma.DateTimeFilter | undefined => {
   if (!dateFrom && !dateTo) return undefined;
   return {
@@ -218,7 +245,8 @@ const buildDashboardLeadFilters = (query: DashboardSummaryQueryInput | RevenueAn
   if (query.stageId) where.stageId = query.stageId;
   if (query.sourceId) where.sourceId = query.sourceId;
 
-  const createdAt = buildDateRangeWhere(query.dateFrom, query.dateTo);
+  const { dateFrom: effFrom, dateTo: effTo } = resolveRangeDates((query as any).range, query.dateFrom, query.dateTo);
+  const createdAt = buildDateRangeWhere(effFrom, effTo);
   if (createdAt) where.createdAt = createdAt;
 
   if (query.status === 'OPEN') {
@@ -569,17 +597,17 @@ export const getDashboardSummary = async (
 ) => {
   await ensureModuleReady();
 
-  const now = new Date();
-  const todayStart = startOfDay(now);
-  const todayEnd = endOfDay(now);
-  const yesterdayStart = startOfDay(addDays(now, -1));
-  const yesterdayEnd = endOfDay(addDays(now, -1));
-  const currentWeekStart = startOfWeek(now);
+  const { start: scheduleTodayStart, end: scheduleTodayEnd } = await getDayRangeForWorkspace(workspaceId);
+  const todayStart = scheduleTodayStart;
+  const todayEnd = scheduleTodayEnd;
+  const yesterdayStart = startOfDay(addDays(todayStart, -1));
+  const yesterdayEnd = endOfDay(addDays(todayStart, -1));
+  const currentWeekStart = startOfWeek(todayStart);
   const previousWeekStart = addDays(currentWeekStart, -7);
   const previousWeekEnd = endOfDay(addDays(currentWeekStart, -1));
-  const currentThirtyDayStart = startOfDay(addDays(now, -29));
-  const previousThirtyDayStart = startOfDay(addDays(now, -59));
-  const previousThirtyDayEnd = endOfDay(addDays(now, -30));
+  const currentThirtyDayStart = startOfDay(addDays(todayStart, -29));
+  const previousThirtyDayStart = startOfDay(addDays(todayStart, -59));
+  const previousThirtyDayEnd = endOfDay(addDays(todayStart, -30));
   const growthStartDate = getGrowthStartDate(query.range);
 
   let leadAccess: Prisma.LeadWhereInput = {};
@@ -612,7 +640,6 @@ export const getDashboardSummary = async (
     (activeUserWhere as Prisma.UserWhereInput).id = query.userId;
   }
 
-  const { start: scheduleTodayStart, end: scheduleTodayEnd } = await getDayRangeForWorkspace(workspaceId);
   const scheduleUserId = query.userId || actor.id;
 
   const results = await Promise.allSettled([
@@ -621,7 +648,35 @@ export const getDashboardSummary = async (
     dashboardRepository.countLeads(workspaceId, {}, scopedLeadAccess),
     dashboardRepository.countLeads(workspaceId, { createdAt: { gte: currentThirtyDayStart, lte: todayEnd } }, scopedLeadAccess),
     dashboardRepository.countLeads(workspaceId, { createdAt: { gte: previousThirtyDayStart, lte: previousThirtyDayEnd } }, scopedLeadAccess),
-    dashboardRepository.countLeads(workspaceId, { isClosed: true, isLOB: false }, scopedLeadAccess),
+    (() => {
+      const { dateFrom: closedFrom, dateTo: closedTo } = resolveRangeDates(query.range, query.dateFrom, query.dateTo);
+      if (closedFrom || closedTo) {
+        return dashboardRepository.countLeads(
+          workspaceId,
+          {
+            isClosed: true,
+            isLOB: false,
+            OR: [
+              {
+                closedAt: {
+                  ...(closedFrom ? { gte: startOfDay(new Date(closedFrom)) } : {}),
+                  ...(closedTo ? { lte: endOfDay(new Date(closedTo)) } : {}),
+                },
+              },
+              {
+                closedAt: null,
+                updatedAt: {
+                  ...(closedFrom ? { gte: startOfDay(new Date(closedFrom)) } : {}),
+                  ...(closedTo ? { lte: endOfDay(new Date(closedTo)) } : {}),
+                },
+              },
+            ],
+          },
+          leadAccess,
+        );
+      }
+      return dashboardRepository.countLeads(workspaceId, { isClosed: true, isLOB: false }, scopedLeadAccess);
+    })(),
     dashboardRepository.countLeads(
       workspaceId,
       {

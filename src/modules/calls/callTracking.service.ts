@@ -1,4 +1,6 @@
+import path from 'path';
 import prisma from '../../config/prisma';
+import logger from '../../utils/logger';
 import { formatPhoneStr } from '../../utils/phoneUtils';
 import type { InitiateCallInput, SaveCallOutcomeInput } from './callTracking.validation';
 
@@ -534,3 +536,246 @@ export const saveCallOutcome = async (
     };
   });
 };
+
+export const ALLOWED_AUDIO_EXTENSIONS = new Set(['.m4a', '.aac', '.amr', '.3gp', '.wav', '.mp3']);
+
+export const ALLOWED_AUDIO_MIMES = new Set([
+  'audio/mp4',
+  'audio/m4a',
+  'audio/x-m4a',
+  'audio/aac',
+  'audio/x-aac',
+  'audio/amr',
+  'audio/amr-wb',
+  'audio/3gpp',
+  'video/3gpp',
+  'audio/wav',
+  'audio/x-wav',
+  'audio/wave',
+  'audio/vnd.wave',
+  'audio/mpeg',
+  'audio/mp3',
+  'audio/x-mp3',
+]);
+
+export const validateAudioFile = (file: Express.Multer.File): { valid: boolean; error?: string; statusCode?: number } => {
+  if (!file) {
+    return { valid: false, error: 'Recording audio file is required.', statusCode: 400 };
+  }
+
+  if (!file.buffer || file.buffer.length === 0) {
+    return { valid: false, error: 'Empty audio file provided.', statusCode: 400 };
+  }
+
+  const maxSizeBytes = 50 * 1024 * 1024; // 50MB
+  if (file.size > maxSizeBytes) {
+    return { valid: false, error: 'File size exceeds maximum allowed limit of 50MB.', statusCode: 413 };
+  }
+
+  const ext = path.extname(file.originalname || '').toLowerCase();
+  if (!ext || !ALLOWED_AUDIO_EXTENSIONS.has(ext)) {
+    return {
+      valid: false,
+      error: `File extension '${ext}' is not supported for call recordings. Supported formats: .m4a, .aac, .amr, .3gp, .wav, .mp3`,
+      statusCode: 415,
+    };
+  }
+
+  const mime = (file.mimetype || '').toLowerCase().trim();
+  if (mime && mime !== 'application/octet-stream' && !ALLOWED_AUDIO_MIMES.has(mime)) {
+    return {
+      valid: false,
+      error: `MIME type '${mime}' is not supported for call recordings.`,
+      statusCode: 415,
+    };
+  }
+
+  if (file.buffer.length >= 4) {
+    const headerHex = file.buffer.slice(0, 4).toString('hex').toLowerCase();
+    if (headerHex.startsWith('4d5a') || headerHex.startsWith('7f454c46')) {
+      return { valid: false, error: 'Executable files are strictly prohibited.', statusCode: 400 };
+    }
+  }
+
+  return { valid: true };
+};
+
+export interface UploadCallRecordingInput {
+  workspaceId: string;
+  leadId: string;
+  userId: string;
+  callSessionId?: string | null;
+  duration?: number | null;
+  fileName?: string | null;
+  mimeType?: string | null;
+  file: Express.Multer.File;
+}
+
+export const uploadCallRecording = async (input: UploadCallRecordingInput) => {
+  const { workspaceId, leadId, userId, file } = input;
+
+  if (!workspaceId || !userId) {
+    throw createError('Unauthorized', 401);
+  }
+
+  const validation = validateAudioFile(file);
+  if (!validation.valid) {
+    throw createError(validation.error || 'Invalid audio file', validation.statusCode || 400);
+  }
+
+  const lead = await (prisma as any).lead.findFirst({
+    where: { id: leadId, workspaceId, deletedAt: null },
+    select: { id: true, name: true, phone: true, assignedToId: true },
+  });
+
+  if (!lead) {
+    throw createError('Lead not found or access denied', 404);
+  }
+
+  let callSession: any = null;
+  if (input.callSessionId) {
+    callSession = await (prisma as any).leadCallSession.findFirst({
+      where: {
+        id: input.callSessionId,
+        workspaceId,
+        leadId,
+      },
+    });
+
+    if (!callSession) {
+      throw createError('Call session not found for this lead and workspace', 404);
+    }
+  } else {
+    callSession = await (prisma as any).leadCallSession.findFirst({
+      where: {
+        workspaceId,
+        leadId,
+        initiatedById: userId,
+      },
+      orderBy: { initiatedAt: 'desc' },
+    });
+
+    if (!callSession) {
+      callSession = await (prisma as any).leadCallSession.findFirst({
+        where: { workspaceId, leadId },
+        orderBy: { initiatedAt: 'desc' },
+      });
+    }
+
+    if (!callSession) {
+      throw createError('No call session found for this lead', 404);
+    }
+  }
+
+  // Idempotency: if recording already attached to this session, return existing canonical record
+  if (callSession.recordingAvailable && callSession.recordingUrl) {
+    logger.info('Call recording already uploaded for session', {
+      callSessionId: callSession.id,
+      recordingUrl: callSession.recordingUrl,
+    });
+    return {
+      success: true,
+      message: 'Call recording is already uploaded and available.',
+      url: callSession.recordingUrl,
+      key: callSession.recordingUrl,
+      recordingId: callSession.id,
+      data: {
+        recordingId: callSession.id,
+        leadId: callSession.leadId,
+        callSessionId: callSession.id,
+        recordingAvailable: true,
+        recordingDuration: callSession.recordingDuration || input.duration || null,
+        recordingStatus: callSession.recordingStatus || 'READY',
+        url: callSession.recordingUrl,
+      },
+    };
+  }
+
+  // Persistent Wasabi storage upload
+  const { storage } = await import('../../lib/storage/storage.factory');
+  let uploadResult: { url: string; key: string };
+  try {
+    uploadResult = await storage.upload(file);
+  } catch (storageErr: any) {
+    logger.error('Persistent storage upload failed for call recording', {
+      callSessionId: callSession.id,
+      leadId,
+      error: storageErr?.message || String(storageErr),
+    });
+    throw createError('Failed to upload recording to persistent storage.', 500);
+  }
+
+  const storedUrl = uploadResult.url;
+  const storedKey = uploadResult.key;
+
+  const validDuration =
+    typeof input.duration === 'number' && !isNaN(input.duration) && input.duration > 0
+      ? Math.round(input.duration)
+      : null;
+
+  // Update lead_call_sessions
+  await (prisma as any).leadCallSession.update({
+    where: { id: callSession.id },
+    data: {
+      recordingAvailable: true,
+      recordingUrl: storedUrl,
+      recordingDuration: validDuration ?? callSession.duration ?? null,
+      recordingStatus: 'READY',
+      recordingDownloadedAt: new Date(),
+    },
+  });
+
+  // Idempotently log RECORDING_AVAILABLE activity
+  const existingActivities = await (prisma as any).leadActivity.findMany({
+    where: {
+      leadId,
+      workspaceId,
+      action: 'RECORDING_AVAILABLE',
+    },
+    take: 10,
+  });
+
+  const alreadyHasActivity = existingActivities.some(
+    (act: any) => act.metadata && act.metadata.callSessionId === callSession.id,
+  );
+
+  if (!alreadyHasActivity) {
+    await (prisma as any).leadActivity.create({
+      data: {
+        leadId,
+        performedById: userId,
+        workspaceId,
+        action: 'RECORDING_AVAILABLE',
+        metadata: {
+          callSessionId: callSession.id,
+          recordingUrl: storedUrl,
+          storageKey: storedKey,
+          duration: validDuration ?? callSession.duration ?? null,
+          provider: callSession.provider || 'DEVICE_DIALER',
+          recordingStatus: 'READY',
+          fileName: file.originalname,
+          mimeType: file.mimetype,
+          fileSize: file.size,
+        },
+      },
+    });
+  }
+
+  return {
+    success: true,
+    message: 'Call recording uploaded successfully',
+    url: storedUrl,
+    key: storedKey,
+    recordingId: callSession.id,
+    data: {
+      recordingId: callSession.id,
+      leadId: callSession.leadId,
+      callSessionId: callSession.id,
+      recordingAvailable: true,
+      recordingDuration: validDuration ?? callSession.duration ?? null,
+      recordingStatus: 'READY',
+      url: storedUrl,
+    },
+  };
+};
+

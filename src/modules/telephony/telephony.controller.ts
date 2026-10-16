@@ -114,7 +114,10 @@ export const getRecordingPlayback = async (req: Request, res: Response, next: Ne
     const sessionId = String(req.params.sessionId || '');
     const data = await telephonyService.getRecordingStreamOrUrl(workspaceId, userId, sessionId);
     return res.json({ success: true, data });
-  } catch (error) {
+  } catch (error: any) {
+    if (error?.statusCode) {
+      return res.status(error.statusCode).json({ success: false, message: error.message });
+    }
     next(error);
   }
 };

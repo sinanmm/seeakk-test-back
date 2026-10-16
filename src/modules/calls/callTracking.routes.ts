@@ -24,4 +24,11 @@ router.post(
   controller.saveCallOutcome,
 );
 
+router.post(
+  '/:leadId/calls/recording',
+  checkAnyPermission(['CALL_OUTCOMES_CREATE', 'LEADS_EDIT', 'LEADS_VIEW_ALL', 'LEADS_VIEW_TEAM', 'LEADS_VIEW_OWN']),
+  controller.uploadCallRecordingMiddleware,
+  controller.uploadCallRecording,
+);
+
 export default router;

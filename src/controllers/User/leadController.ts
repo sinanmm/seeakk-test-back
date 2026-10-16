@@ -1039,6 +1039,26 @@ export const getLeadHistory = async (req: Request, res: Response, next: NextFunc
             },
           ],
         });
+      } else if (log.action === 'RECORDING_AVAILABLE') {
+        const durationSec = log.metadata?.duration || log.metadata?.recordingDuration || 0;
+        const durationStr = durationSec
+          ? `${Math.floor(durationSec / 60)}m ${durationSec % 60}s`
+          : null;
+        timeline.push({
+          id: log.id,
+          eventType: 'RECORDING_AVAILABLE',
+          title: 'Call Recording Available',
+          description: durationStr
+            ? `Call recording available (${durationStr})`
+            : 'Call recording is available for playback',
+          timestamp: log.createdAt,
+          user: log.performedBy,
+          metadata: {
+            ...log.metadata,
+            recordingAvailable: true,
+            recordingStatus: log.metadata?.recordingStatus || 'READY',
+          },
+        });
       } else {
         timeline.push({
           id: log.id,

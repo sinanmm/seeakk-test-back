@@ -411,15 +411,41 @@ export const getRecordingStreamOrUrl = async (
   });
 
   if (!session) {
-    throw new Error('Call session not found or access denied.');
+    const error: any = new Error('Call session not found or access denied.');
+    error.statusCode = 404;
+    throw error;
   }
 
   if (!session.recordingAvailable || !session.recordingUrl) {
-    throw new Error('Call recording is not available for this call.');
+    const error: any = new Error('Call recording is not available for this call.');
+    error.statusCode = 404;
+    throw error;
+  }
+
+  let finalUrl = session.recordingUrl;
+  try {
+    const { storage } = await import('../../lib/storage/storage.factory');
+    if (storage.getPresignedUrl) {
+      let keyToSign = '';
+      if (finalUrl.startsWith('/api/upload/')) {
+        keyToSign = decodeURIComponent(finalUrl.replace('/api/upload/', '')).replace(/^\/+/, '');
+      } else if (!finalUrl.startsWith('http://') && !finalUrl.startsWith('https://')) {
+        keyToSign = finalUrl.replace(/^\/+/, '');
+      }
+      if (keyToSign) {
+        const presigned = await storage.getPresignedUrl(keyToSign);
+        if (presigned) {
+          finalUrl = presigned;
+        }
+      }
+    }
+  } catch {
+    // Non-fatal, fallback to session.recordingUrl
   }
 
   return {
-    url: session.recordingUrl,
+    url: finalUrl,
     recordingAvailable: true,
   };
 };
+

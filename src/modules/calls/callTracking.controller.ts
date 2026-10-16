@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
+import multer from 'multer';
 import * as service from './callTracking.service';
 import { initiateCallSchema, saveCallOutcomeSchema } from './callTracking.validation';
 import { emitWorkspaceEvent } from '../../realtime/socket';
@@ -88,3 +89,78 @@ export const saveCallOutcome = async (req: Request, res: Response, next: NextFun
     return res.status(statusCode).json({ success: false, message });
   }
 };
+
+const callRecordingMulter = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 50 * 1024 * 1024, // 50MB
+  },
+});
+
+export const uploadCallRecordingMiddleware = (req: Request, res: Response, next: NextFunction) => {
+  callRecordingMulter.single('file')(req, res, (err: any) => {
+    if (err) {
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(413).json({
+          success: false,
+          message: 'File size exceeds maximum allowed limit of 50MB.',
+        });
+      }
+      return res.status(400).json({
+        success: false,
+        message: err.message || 'Invalid file upload.',
+      });
+    }
+    next();
+  });
+};
+
+export const uploadCallRecording = async (req: Request, res: Response, next: NextFunction) => {
+  const workspaceId = getWorkspaceId(req, res);
+  if (!workspaceId) return;
+
+  const leadId = Array.isArray(req.params.leadId) ? req.params.leadId[0] : req.params.leadId;
+  const file = req.file;
+
+  if (!file) {
+    return res.status(400).json({
+      success: false,
+      message: 'Recording audio file is required.',
+    });
+  }
+
+  try {
+    const rawDuration = req.body?.duration ?? req.body?.recordingDuration;
+    const duration =
+      rawDuration !== undefined && rawDuration !== null && rawDuration !== ''
+        ? Number(rawDuration)
+        : null;
+
+    const result = await service.uploadCallRecording({
+      workspaceId,
+      leadId,
+      userId: req.user!.id,
+      callSessionId: req.body?.callSessionId || null,
+      duration: isNaN(duration as number) ? null : duration,
+      fileName: req.body?.fileName || file.originalname,
+      mimeType: req.body?.mimeType || file.mimetype,
+      file,
+    });
+
+    emitWorkspaceEvent(workspaceId, 'lead_updated', {
+      leadId,
+      action: 'recording_available',
+      callSessionId: result.data?.callSessionId,
+      recordingUrl: result.url,
+    });
+
+    return res.status(200).json(result);
+  } catch (error: any) {
+    const statusCode = error?.statusCode || 500;
+    return res.status(statusCode).json({
+      success: false,
+      message: error?.message || 'Failed to upload call recording.',
+    });
+  }
+};
+
