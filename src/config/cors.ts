@@ -156,8 +156,15 @@ export const requestTimeoutMiddleware = (req: Request, res: Response, next: Next
     return;
   }
 
-  const timeoutMs = Number.parseInt(String(process.env.REQUEST_TIMEOUT_MS || DEFAULT_REQUEST_TIMEOUT_MS), 10);
-  const budgetMs = Number.isFinite(timeoutMs) && timeoutMs > 0 ? timeoutMs : DEFAULT_REQUEST_TIMEOUT_MS;
+  const isUpload = req.path.includes('/calls/recording') || req.path.startsWith('/api/upload');
+  const defaultBudget = isUpload ? 120_000 : DEFAULT_REQUEST_TIMEOUT_MS;
+  const timeoutMs = Number.parseInt(String(process.env.REQUEST_TIMEOUT_MS || defaultBudget), 10);
+  const budgetMs =
+    Number.isFinite(timeoutMs) && timeoutMs > 0
+      ? isUpload
+        ? Math.max(timeoutMs, 120_000)
+        : timeoutMs
+      : defaultBudget;
 
   const timer = setTimeout(() => {
     if (res.headersSent) return;

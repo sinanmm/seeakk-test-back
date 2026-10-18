@@ -684,39 +684,21 @@ export const uploadCallRecording = async (input: UploadCallRecordingInput) => {
     throw createError('Lead not found or access denied', 404);
   }
 
-  let callSession: any = null;
-  if (input.callSessionId) {
-    callSession = await (prisma as any).leadCallSession.findFirst({
-      where: {
-        id: input.callSessionId,
-        workspaceId,
-        leadId,
-      },
-    });
+  const callSessionId = typeof input.callSessionId === 'string' ? input.callSessionId.trim() : '';
+  if (!callSessionId) {
+    throw createError('callSessionId is required to associate recording.', 400);
+  }
 
-    if (!callSession) {
-      throw createError('Call session not found for this lead and workspace', 404);
-    }
-  } else {
-    callSession = await (prisma as any).leadCallSession.findFirst({
-      where: {
-        workspaceId,
-        leadId,
-        initiatedById: userId,
-      },
-      orderBy: { initiatedAt: 'desc' },
-    });
+  const callSession = await (prisma as any).leadCallSession.findFirst({
+    where: {
+      id: callSessionId,
+      workspaceId,
+      leadId,
+    },
+  });
 
-    if (!callSession) {
-      callSession = await (prisma as any).leadCallSession.findFirst({
-        where: { workspaceId, leadId },
-        orderBy: { initiatedAt: 'desc' },
-      });
-    }
-
-    if (!callSession) {
-      throw createError('No call session found for this lead', 404);
-    }
+  if (!callSession) {
+    throw createError('Call session not found for this lead and workspace', 404);
   }
 
   // Authorization check: User A cannot upload to User B's call session
@@ -765,8 +747,14 @@ export const uploadCallRecording = async (input: UploadCallRecordingInput) => {
       callSessionId: callSession.id,
       recordingUrl: callSession.recordingUrl,
     });
+    const recordingDuration = callSession.recordingDuration || input.duration || null;
     return {
       success: true,
+      callSessionId: callSession.id,
+      leadId: callSession.leadId,
+      recordingAvailable: true,
+      recordingStatus: 'READY',
+      recordingDuration,
       message: 'Call recording is already uploaded and available.',
       url: callSession.recordingUrl,
       key: callSession.recordingUrl,
@@ -776,7 +764,7 @@ export const uploadCallRecording = async (input: UploadCallRecordingInput) => {
         leadId: callSession.leadId,
         callSessionId: callSession.id,
         recordingAvailable: true,
-        recordingDuration: callSession.recordingDuration || input.duration || null,
+        recordingDuration,
         recordingStatus: 'READY',
         url: callSession.recordingUrl,
       },
@@ -871,8 +859,14 @@ export const uploadCallRecording = async (input: UploadCallRecordingInput) => {
     }
   });
 
+  const recordingDuration = validDuration ?? callSession.duration ?? null;
   return {
     success: true,
+    callSessionId: callSession.id,
+    leadId: callSession.leadId,
+    recordingAvailable: true,
+    recordingStatus: 'READY',
+    recordingDuration,
     message: 'Call recording uploaded successfully',
     url: storageKey,
     key: storageKey,
@@ -882,7 +876,7 @@ export const uploadCallRecording = async (input: UploadCallRecordingInput) => {
       leadId: callSession.leadId,
       callSessionId: callSession.id,
       recordingAvailable: true,
-      recordingDuration: validDuration ?? callSession.duration ?? null,
+      recordingDuration,
       recordingStatus: 'READY',
       url: storageKey,
     },

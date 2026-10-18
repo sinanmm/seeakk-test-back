@@ -553,6 +553,138 @@ test('15. Deterministic object key format is collision-safe and sanitized', () =
   assert.equal(canonicalMime, 'audio/mp4');
 });
 
+test('16. Zero-byte audio file is rejected with 400', () => {
+  const zeroByteFile: any = {
+    originalname: 'empty.m4a',
+    mimetype: 'audio/mp4',
+    size: 0,
+    buffer: Buffer.alloc(0),
+  };
+  const result = validateAudioFile(zeroByteFile);
+  assert.equal(result.valid, false);
+  assert.equal(result.statusCode, 400);
+  assert.equal(result.error, 'Empty audio file provided.');
+});
+
+test('17. Missing callSessionId throws 400', async () => {
+  const realLead = await (prisma as any).lead.findFirst({
+    where: { deletedAt: null },
+    select: { id: true, workspaceId: true },
+  });
+  if (!realLead) return;
+
+  const realUser = await (prisma as any).user.findFirst({
+    where: { workspaceId: realLead.workspaceId, deletedAt: null },
+    select: { id: true },
+  });
+  if (!realUser) return;
+
+  const dummyFile: any = {
+    originalname: 'test.m4a',
+    mimetype: 'audio/mp4',
+    size: 512,
+    buffer: Buffer.from([0x00, 0x00, 0x00, 0x20, 0x66, 0x74, 0x79, 0x70]),
+  };
+
+  await assert.rejects(
+    async () => {
+      await uploadCallRecording({
+        workspaceId: realLead.workspaceId,
+        leadId: realLead.id,
+        userId: realUser.id,
+        callSessionId: '',
+        file: dummyFile,
+      });
+    },
+    (err: any) => err.statusCode === 400 && err.message.includes('callSessionId is required'),
+  );
+});
+
+test('18. Successful upload returns deterministic contract with top-level fields', async () => {
+  const realLead = await (prisma as any).lead.findFirst({
+    where: { deletedAt: null },
+    select: { id: true, workspaceId: true, phone: true },
+  });
+  if (!realLead) return;
+
+  const realUser = await (prisma as any).user.findFirst({
+    where: { workspaceId: realLead.workspaceId, deletedAt: null },
+    select: { id: true },
+  });
+  if (!realUser) return;
+
+  const session = await (prisma as any).leadCallSession.create({
+    data: {
+      workspaceId: realLead.workspaceId,
+      leadId: realLead.id,
+      initiatedById: realUser.id,
+      phoneNumberSnapshot: realLead.phone || '+919999999999',
+      sourceContext: 'ALL_LEADS',
+      localCallDate: '2026-10-18',
+      status: 'COMPLETED',
+      provider: 'DEVICE_DIALER',
+      recordingAvailable: false,
+    },
+  });
+
+  const fixturePath = path.join(__dirname, 'fixtures', 'Call recording +918606300137_261016_223731.m4a');
+  const buffer = fs.readFileSync(fixturePath);
+  const audioFile: any = {
+    originalname: 'Call recording +918606300137_261016_223731.m4a',
+    mimetype: 'audio/mp4',
+    size: buffer.length,
+    buffer,
+  };
+
+  try {
+    const res = await uploadCallRecording({
+      workspaceId: realLead.workspaceId,
+      leadId: realLead.id,
+      userId: realUser.id,
+      callSessionId: session.id,
+      fileName: 'Call recording +918606300137_261016_223731.m4a',
+      mimeType: 'audio/mp4',
+      duration: 41,
+      file: audioFile,
+    });
+
+    assert.equal(res.success, true);
+    assert.equal(res.callSessionId, session.id);
+    assert.equal(res.leadId, realLead.id);
+    assert.equal(res.recordingAvailable, true);
+    assert.equal(res.recordingStatus, 'READY');
+    assert.equal(res.recordingDuration, 41);
+
+    // Also idempotent retry contract
+    const retryRes = await uploadCallRecording({
+      workspaceId: realLead.workspaceId,
+      leadId: realLead.id,
+      userId: realUser.id,
+      callSessionId: session.id,
+      file: audioFile,
+    });
+
+    assert.equal(retryRes.success, true);
+    assert.equal(retryRes.callSessionId, session.id);
+    assert.equal(retryRes.leadId, realLead.id);
+    assert.equal(retryRes.recordingAvailable, true);
+    assert.equal(retryRes.recordingStatus, 'READY');
+    assert.equal(retryRes.recordingDuration, 41);
+  } finally {
+    await (prisma as any).leadActivity.deleteMany({
+      where: {
+        leadId: realLead.id,
+        workspaceId: realLead.workspaceId,
+        action: 'RECORDING_AVAILABLE',
+        metadata: { path: ['callSessionId'], equals: session.id },
+      },
+    }).catch(() => {});
+    await (prisma as any).leadCallSession.delete({
+      where: { id: session.id },
+    }).catch(() => {});
+  }
+});
+
 test.after(async () => {
   try {
     const { redisClient } = await import('../../config/redis');
@@ -563,3 +695,4 @@ test.after(async () => {
   await prisma.$disconnect().catch(() => {});
   setTimeout(() => process.exit(0), 500).unref();
 });
+
