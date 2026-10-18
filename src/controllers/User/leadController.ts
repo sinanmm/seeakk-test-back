@@ -883,6 +883,7 @@ export const getLeadHistory = async (req: Request, res: Response, next: NextFunc
       advancePayments,
       lobLogs,
       dynamicFields,
+      callSessions,
     ] = await Promise.all([
       prisma.auditLog.findMany({ where: { entityType: 'Lead', entityId: id, workspaceId } }),
       prisma.leadActivity.findMany({ where: { leadId: id, workspaceId }, include: { performedBy: { select: { name: true, email: true } } } }),
@@ -891,7 +892,23 @@ export const getLeadHistory = async (req: Request, res: Response, next: NextFunc
       (prisma as any).advancePayment.findMany({ where: { leadId: id, workspaceId }, include: { requestedBy: { select: { name: true } }, approvedBy: { select: { name: true } }, rejectedBy: { select: { name: true } } } }),
       prisma.leadLOBLog.findMany({ where: { leadId: id, workspaceId } }),
       prisma.leadDynamicField.findMany({ where: { workspaceId } }),
+      (prisma as any).leadCallSession.findMany({
+        where: { leadId: id, workspaceId },
+        select: {
+          id: true,
+          recordingAvailable: true,
+          recordingStatus: true,
+          recordingDuration: true,
+          recordingUrl: true,
+          provider: true,
+        },
+      }),
     ]);
+
+    const sessionMap = new Map<string, any>();
+    if (Array.isArray(callSessions)) {
+      callSessions.forEach((s: any) => sessionMap.set(s.id, s));
+    }
 
     // Build dynamic field CUID -> label map
     const dynamicFieldLabelMap: Record<string, string> = {};
@@ -1039,8 +1056,30 @@ export const getLeadHistory = async (req: Request, res: Response, next: NextFunc
             },
           ],
         });
+      } else if (log.action === 'CALL_OUTCOME_SUBMITTED') {
+        const session = log.metadata?.callSessionId ? sessionMap.get(log.metadata.callSessionId) : null;
+        const enrichedMetadata = {
+          ...log.metadata,
+          callSessionId: log.metadata?.callSessionId,
+          recordingAvailable: Boolean(session?.recordingAvailable),
+          recordingStatus: session?.recordingStatus || (session?.recordingAvailable ? 'READY' : null),
+          recordingDuration: session?.recordingDuration ?? null,
+          duration: session?.recordingDuration ?? log.metadata?.duration ?? null,
+          provider: session?.provider || log.metadata?.provider || 'DEVICE_DIALER',
+          recordingUrl: undefined,
+        };
+        timeline.push({
+          id: log.id,
+          eventType: 'CALL_OUTCOME_SUBMITTED',
+          title: 'CALL OUTCOME SUBMITTED',
+          description: `Call outcome recorded: ${log.metadata?.connectionStatus || 'Outcome submitted'}`,
+          timestamp: log.createdAt,
+          user: log.performedBy,
+          metadata: enrichedMetadata,
+        });
       } else if (log.action === 'RECORDING_AVAILABLE') {
-        const durationSec = log.metadata?.duration || log.metadata?.recordingDuration || 0;
+        const session = log.metadata?.callSessionId ? sessionMap.get(log.metadata.callSessionId) : null;
+        const durationSec = session?.recordingDuration || log.metadata?.duration || log.metadata?.recordingDuration || 0;
         const durationStr = durationSec
           ? `${Math.floor(durationSec / 60)}m ${durationSec % 60}s`
           : null;
@@ -1055,8 +1094,15 @@ export const getLeadHistory = async (req: Request, res: Response, next: NextFunc
           user: log.performedBy,
           metadata: {
             ...log.metadata,
+            callSessionId: log.metadata?.callSessionId,
             recordingAvailable: true,
-            recordingStatus: log.metadata?.recordingStatus || 'READY',
+            recordingStatus: session?.recordingStatus || log.metadata?.recordingStatus || 'READY',
+            recordingDuration: durationSec || null,
+            duration: durationSec || null,
+            displayName: log.metadata?.displayName || log.metadata?.fileName || 'Call Recording',
+            fileName: log.metadata?.fileName || null,
+            provider: session?.provider || log.metadata?.provider || 'DEVICE_DIALER',
+            recordingUrl: undefined,
           },
         });
       } else {

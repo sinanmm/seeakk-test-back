@@ -400,14 +400,18 @@ export const processWebhook = async (
   return { success: true, message: 'Call event processed idempotently.' };
 };
 
-export const getRecordingStreamOrUrl = async (
+export const verifyRecordingAccess = async (
   workspaceId: string,
   userId: string,
   sessionId: string,
-): Promise<{ url: string; recordingAvailable: boolean }> => {
+) => {
   const session = await (prisma as any).leadCallSession.findFirst({
     where: { id: sessionId, workspaceId },
-    select: { id: true, recordingAvailable: true, recordingUrl: true },
+    include: {
+      lead: {
+        select: { id: true, name: true, assignedToId: true, workspaceId: true },
+      },
+    },
   });
 
   if (!session) {
@@ -416,6 +420,91 @@ export const getRecordingStreamOrUrl = async (
     throw error;
   }
 
+  // Verify User Authorization ("User A cannot play User B's recording")
+  const isInitiator = session.initiatedById === userId;
+  const isLeadAssignee = session.lead?.assignedToId === userId || session.assignedUserId === userId;
+
+  if (!isInitiator && !isLeadAssignee) {
+    const user = await (prisma as any).user.findUnique({
+      where: { id: userId },
+      include: {
+        role: {
+          include: {
+            permissions: { include: { permission: true } },
+          },
+        },
+      },
+    });
+
+    const roleName = (user?.role?.name || '').toLowerCase();
+    const permissions: string[] = (user?.role?.permissions || []).map((rp: any) => rp.permission?.key);
+    const isSuperAdmin =
+      roleName === 'superadmin' ||
+      roleName === 'admin' ||
+      permissions.includes('*') ||
+      permissions.includes('SUPERADMIN') ||
+      permissions.includes('SYSTEM_CONFIG');
+
+    const workspace = await (prisma as any).workspace.findUnique({
+      where: { id: workspaceId },
+      select: { ownerId: true },
+    });
+    const isOwner = workspace?.ownerId === userId;
+
+    const hasViewAll =
+      permissions.includes('LEADS_VIEW_ALL') ||
+      permissions.includes('CALL_OUTCOMES_VIEW');
+
+    let isTeamAllowed = false;
+    if (permissions.includes('LEADS_VIEW_TEAM')) {
+      try {
+        const leadsRepository = await import('../leads/leads.repository');
+        const teamUserIds = await leadsRepository.getRecursiveTeamUserIds(workspaceId, userId);
+        const teamSet = new Set(teamUserIds);
+        if (
+          (session.initiatedById && teamSet.has(session.initiatedById)) ||
+          (session.lead?.assignedToId && teamSet.has(session.lead.assignedToId))
+        ) {
+          isTeamAllowed = true;
+        }
+      } catch {
+        // Fallback if repository fails
+      }
+    }
+
+    if (!isSuperAdmin && !isOwner && !hasViewAll && !isTeamAllowed) {
+      const error: any = new Error('Forbidden: You are not authorized to access this call recording.');
+      error.statusCode = 403;
+      throw error;
+    }
+  }
+
+  return session;
+};
+
+export const extractStorageKeyFromRecordingUrl = (url: string): string => {
+  if (!url) return '';
+  let clean = url.trim();
+  if (clean.startsWith('/api/upload/')) {
+    clean = decodeURIComponent(clean.replace('/api/upload/', ''));
+  }
+  return clean.replace(/^\/+/, '');
+};
+
+export const getRecordingStreamOrUrl = async (
+  workspaceId: string,
+  userId: string,
+  sessionId: string,
+): Promise<{
+  url: string;
+  streamUrl?: string;
+  recordingAvailable: boolean;
+  recordingStatus?: string;
+  duration?: number | null;
+  displayName?: string;
+}> => {
+  const session = await verifyRecordingAccess(workspaceId, userId, sessionId);
+
   if (!session.recordingAvailable || !session.recordingUrl) {
     const error: any = new Error('Call recording is not available for this call.');
     error.statusCode = 404;
@@ -423,29 +512,99 @@ export const getRecordingStreamOrUrl = async (
   }
 
   let finalUrl = session.recordingUrl;
+  const storageKey = extractStorageKeyFromRecordingUrl(session.recordingUrl);
+
   try {
     const { storage } = await import('../../lib/storage/storage.factory');
-    if (storage.getPresignedUrl) {
-      let keyToSign = '';
-      if (finalUrl.startsWith('/api/upload/')) {
-        keyToSign = decodeURIComponent(finalUrl.replace('/api/upload/', '')).replace(/^\/+/, '');
-      } else if (!finalUrl.startsWith('http://') && !finalUrl.startsWith('https://')) {
-        keyToSign = finalUrl.replace(/^\/+/, '');
-      }
-      if (keyToSign) {
-        const presigned = await storage.getPresignedUrl(keyToSign);
-        if (presigned) {
-          finalUrl = presigned;
-        }
+    if (storage.getPresignedUrl && storageKey) {
+      const presigned = await storage.getPresignedUrl(storageKey);
+      if (presigned) {
+        finalUrl = presigned;
       }
     }
-  } catch {
-    // Non-fatal, fallback to session.recordingUrl
+  } catch (err: any) {
+    logger.warn('Failed to generate presigned URL for recording, falling back to recordingUrl', {
+      sessionId,
+      error: err?.message,
+    });
   }
 
   return {
     url: finalUrl,
+    streamUrl: `/api/telephony/recordings/${sessionId}/stream`,
     recordingAvailable: true,
+    recordingStatus: session.recordingStatus || 'READY',
+    duration: session.recordingDuration || session.duration || null,
+    displayName: session.lead?.name ? `Recording - ${session.lead.name}` : 'Call Recording',
+  };
+};
+
+export const streamRecording = async (
+  workspaceId: string,
+  userId: string,
+  sessionId: string,
+  range?: string,
+) => {
+  const session = await verifyRecordingAccess(workspaceId, userId, sessionId);
+
+  if (!session.recordingAvailable || !session.recordingUrl) {
+    const error: any = new Error('Call recording is not available for this call.');
+    error.statusCode = 404;
+    throw error;
+  }
+
+  const storageKey = extractStorageKeyFromRecordingUrl(session.recordingUrl);
+  const { storage } = await import('../../lib/storage/storage.factory');
+
+  if (!storage.getFileStream) {
+    const error: any = new Error('Storage streaming is not supported by driver.');
+    error.statusCode = 500;
+    throw error;
+  }
+
+  return await storage.getFileStream(storageKey, range);
+};
+
+export const getRecordingDiagnostic = async (
+  workspaceId: string,
+  userId: string,
+  sessionId: string,
+) => {
+  const session = await verifyRecordingAccess(workspaceId, userId, sessionId);
+
+  const storageKey = extractStorageKeyFromRecordingUrl(session.recordingUrl || '');
+  let wasabiObjectExists = false;
+  let wasabiObjectSize: number | undefined;
+  let wasabiContentType: string | undefined;
+
+  if (storageKey) {
+    try {
+      const { storage } = await import('../../lib/storage/storage.factory');
+      if (typeof (storage as any).getObjectMetadata === 'function') {
+        const meta = await (storage as any).getObjectMetadata(storageKey);
+        wasabiObjectExists = Boolean(meta.exists);
+        wasabiObjectSize = meta.size;
+        wasabiContentType = meta.contentType;
+      }
+    } catch {
+      wasabiObjectExists = false;
+    }
+  }
+
+  return {
+    callSessionId: session.id,
+    leadId: session.leadId,
+    workspaceId: session.workspaceId,
+    initiatedById: session.initiatedById,
+    assignedUserId: session.assignedUserId,
+    recordingAvailable: session.recordingAvailable,
+    recordingStatus: session.recordingStatus || 'UNKNOWN',
+    recordingDuration: session.recordingDuration,
+    storageKey,
+    wasabiObjectExists,
+    wasabiObjectSize,
+    wasabiContentType,
+    playbackReady: Boolean(session.recordingAvailable && wasabiObjectExists),
   };
 };
 

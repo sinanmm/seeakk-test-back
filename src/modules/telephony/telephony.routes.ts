@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { protect } from '../../middlewares/authMiddleware';
+import { protect, checkAnyPermission } from '../../middlewares/authMiddleware';
 import { requireModule } from '../../middlewares/moduleGuard';
 import * as telephonyController from './telephony.controller';
 
@@ -19,7 +19,47 @@ router.get('/providers/:providerKey/agents', protect, requireModule('TELEPHONY')
 router.get('/user-mappings', protect, requireModule('TELEPHONY'), telephonyController.getUserMappings);
 router.put('/user-mappings', protect, requireModule('TELEPHONY'), telephonyController.saveUserMapping);
 
-// Protected Audio Playback & Streaming Endpoint
-router.get('/recordings/:sessionId/play', protect, requireModule('TELEPHONY'), telephonyController.getRecordingPlayback);
+// Protected Audio Playback, Streaming & Diagnostic Endpoints
+router.get(
+  '/recordings/:sessionId/play',
+  protect,
+  checkAnyPermission([
+    'CALL_OUTCOMES_VIEW',
+    'CALL_OUTCOMES_CREATE',
+    'LEADS_VIEW_ALL',
+    'LEADS_VIEW_TEAM',
+    'LEADS_VIEW_OWN',
+    'LEADS_EDIT',
+  ]),
+  telephonyController.getRecordingPlayback,
+);
+
+router.get(
+  '/recordings/:sessionId/stream',
+  protect,
+  checkAnyPermission([
+    'CALL_OUTCOMES_VIEW',
+    'CALL_OUTCOMES_CREATE',
+    'LEADS_VIEW_ALL',
+    'LEADS_VIEW_TEAM',
+    'LEADS_VIEW_OWN',
+    'LEADS_EDIT',
+  ]),
+  telephonyController.getRecordingStream,
+);
+
+router.get(
+  '/recordings/:sessionId/diagnostic',
+  protect,
+  checkAnyPermission([
+    'CALL_OUTCOMES_VIEW',
+    'CALL_OUTCOMES_CREATE',
+    'LEADS_VIEW_ALL',
+    'LEADS_VIEW_TEAM',
+    'LEADS_VIEW_OWN',
+    'LEADS_EDIT',
+  ]),
+  telephonyController.getRecordingDiagnostic,
+);
 
 export default router;

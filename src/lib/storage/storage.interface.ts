@@ -15,11 +15,38 @@ export interface StorageInterface {
   getPublicUrl(key: string): string;
 
   /**
+   * Upload a call recording securely with custom key and content type.
+   */
+  uploadRecording?(
+    fileBuffer: Buffer,
+    key: string,
+    mimeType: string,
+  ): Promise<{ key: string }>;
+
+  /**
    * Get a presigned URL for secure access.
    */
-  getPresignedUrl?(key: string): Promise<string>;
+  getPresignedUrl?(key: string, expiresInSeconds?: number): Promise<string>;
+
   /**
-   * Get a readable stream for a file.
+   * Inspect object metadata in storage.
    */
-  getFileStream?(key: string): Promise<{ stream: any; contentType?: string; contentLength?: number }>;
+  getObjectMetadata?(
+    key: string,
+  ): Promise<{ exists: boolean; size?: number; contentType?: string; etag?: string }>;
+
+  /**
+   * Get a readable stream for a file, optionally for an HTTP byte range.
+   */
+  getFileStream?(
+    key: string,
+    range?: string,
+  ): Promise<{
+    stream: any;
+    contentType?: string;
+    contentLength?: number;
+    contentRange?: string;
+    acceptRanges?: string;
+    statusCode?: number;
+  }>;
 }

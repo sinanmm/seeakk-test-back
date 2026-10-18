@@ -37,15 +37,30 @@ export const getFile = async (req: Request, res: Response, next: NextFunction): 
       return;
     }
 
-    const { stream, contentType, contentLength } = await UploadService.getFileStream(key);
-    if (contentType) res.setHeader('Content-Type', contentType);
-    if (contentLength) res.setHeader('Content-Length', contentLength);
+    const rangeHeader = req.headers.range;
+    const { stream, contentType, contentLength, contentRange, acceptRanges, statusCode } =
+      await UploadService.getFileStream(key, rangeHeader);
 
-    // Support caching for static images
+    if (contentType) res.setHeader('Content-Type', contentType);
+    if (contentLength !== undefined && contentLength !== null) {
+      res.setHeader('Content-Length', contentLength);
+    }
+    if (acceptRanges) res.setHeader('Accept-Ranges', acceptRanges);
+    if (contentRange) res.setHeader('Content-Range', contentRange);
+
+    // Support caching for static assets
     res.setHeader('Cache-Control', 'private, max-age=86400');
 
+    if (statusCode && statusCode === 206) {
+      res.status(206);
+    }
+
     (stream as any).pipe(res);
-  } catch (error) {
+  } catch (error: any) {
+    if (error?.$metadata?.httpStatusCode === 416 || error?.name === 'RangeNotSatisfiable') {
+      res.status(416).setHeader('Content-Range', 'bytes */*').end();
+      return;
+    }
     next(error);
   }
 };

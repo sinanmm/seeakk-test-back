@@ -1,4 +1,5 @@
 import path from 'path';
+import crypto from 'crypto';
 import prisma from '../../config/prisma';
 import logger from '../../utils/logger';
 import { formatPhoneStr } from '../../utils/phoneUtils';
@@ -558,6 +559,54 @@ export const ALLOWED_AUDIO_MIMES = new Set([
   'audio/x-mp3',
 ]);
 
+export const getCanonicalAudioMime = (ext: string, suppliedMime?: string | null): string => {
+  const cleanExt = ext.toLowerCase();
+  const map: Record<string, string> = {
+    '.m4a': 'audio/mp4',
+    '.aac': 'audio/aac',
+    '.amr': 'audio/amr',
+    '.3gp': 'audio/3gpp',
+    '.wav': 'audio/wav',
+    '.mp3': 'audio/mpeg',
+  };
+
+  const known = map[cleanExt];
+  if (known) {
+    if (!suppliedMime || suppliedMime === 'application/octet-stream') {
+      return known;
+    }
+    const cleanMime = suppliedMime.toLowerCase().trim();
+    if (ALLOWED_AUDIO_MIMES.has(cleanMime)) {
+      return cleanMime;
+    }
+    return known;
+  }
+  return suppliedMime || 'application/octet-stream';
+};
+
+export const buildRecordingStorageKey = (
+  workspaceId: string,
+  leadId: string,
+  callSessionId: string,
+  extension: string,
+): string => {
+  const recordingsPrefix = (
+    process.env.WASABI_RECORDINGS_PREFIX ||
+    `${process.env.WASABI_ROOT_PREFIX || 'Seeak App Data/'}recordings/`
+  ).replace(/^\/+/, '');
+
+  // Sanitize extension: must be in allowed list, remove dangerous chars
+  const sanitizedExt = extension.toLowerCase().replace(/[^a-z0-9.]/g, '');
+  const cleanExt = sanitizedExt.startsWith('.') ? sanitizedExt : `.${sanitizedExt}`;
+
+  // Sanitize parts to prevent any path traversal
+  const cleanWorkspace = workspaceId.replace(/[^a-zA-Z0-9_-]/g, '');
+  const cleanLead = leadId.replace(/[^a-zA-Z0-9_-]/g, '');
+  const cleanSession = callSessionId.replace(/[^a-zA-Z0-9_-]/g, '');
+
+  return `${recordingsPrefix}${cleanWorkspace}/${cleanLead}/${cleanSession}/recording${cleanExt}`;
+};
+
 export const validateAudioFile = (file: Express.Multer.File): { valid: boolean; error?: string; statusCode?: number } => {
   if (!file) {
     return { valid: false, error: 'Recording audio file is required.', statusCode: 400 };
@@ -623,6 +672,9 @@ export const uploadCallRecording = async (input: UploadCallRecordingInput) => {
     throw createError(validation.error || 'Invalid audio file', validation.statusCode || 400);
   }
 
+  const ext = path.extname(file.originalname || '').toLowerCase();
+  const canonicalMime = getCanonicalAudioMime(ext, input.mimeType || file.mimetype);
+
   const lead = await (prisma as any).lead.findFirst({
     where: { id: leadId, workspaceId, deletedAt: null },
     select: { id: true, name: true, phone: true, assignedToId: true },
@@ -667,8 +719,48 @@ export const uploadCallRecording = async (input: UploadCallRecordingInput) => {
     }
   }
 
-  // Idempotency: if recording already attached to this session, return existing canonical record
-  if (callSession.recordingAvailable && callSession.recordingUrl) {
+  // Authorization check: User A cannot upload to User B's call session
+  const isInitiator = callSession.initiatedById === userId;
+  if (!isInitiator) {
+    const user = await (prisma as any).user.findUnique({
+      where: { id: userId },
+      include: {
+        role: {
+          include: {
+            permissions: { include: { permission: true } },
+          },
+        },
+      },
+    });
+
+    const roleName = (user?.role?.name || '').toLowerCase();
+    const permissions = (user?.role?.permissions || []).map((rp: any) => rp.permission?.key);
+    const isSuperAdmin =
+      roleName === 'superadmin' ||
+      roleName === 'admin' ||
+      permissions.includes('*') ||
+      permissions.includes('SUPERADMIN') ||
+      permissions.includes('SYSTEM_CONFIG');
+
+    const workspace = await (prisma as any).workspace.findUnique({
+      where: { id: workspaceId },
+      select: { ownerId: true },
+    });
+    const isOwner = workspace?.ownerId === userId;
+
+    if (!isSuperAdmin && !isOwner) {
+      throw createError(
+        'Forbidden: You are not authorized to upload a recording for this call session.',
+        403,
+      );
+    }
+  }
+
+  // Idempotency: calculate file SHA-256 hash
+  const fileHash = crypto.createHash('sha256').update(file.buffer).digest('hex');
+
+  // If recording is already attached to this session and READY, return existing canonical record
+  if (callSession.recordingAvailable && callSession.recordingUrl && callSession.recordingStatus === 'READY') {
     logger.info('Call recording already uploaded for session', {
       callSessionId: callSession.id,
       recordingUrl: callSession.recordingUrl,
@@ -685,17 +777,24 @@ export const uploadCallRecording = async (input: UploadCallRecordingInput) => {
         callSessionId: callSession.id,
         recordingAvailable: true,
         recordingDuration: callSession.recordingDuration || input.duration || null,
-        recordingStatus: callSession.recordingStatus || 'READY',
+        recordingStatus: 'READY',
         url: callSession.recordingUrl,
       },
     };
   }
 
-  // Persistent Wasabi storage upload
+  // Build deterministic collision-safe object key:
+  // <prefix>/<workspace>/<lead>/<callSession>/recording.<extension>
+  const storageKey = buildRecordingStorageKey(workspaceId, leadId, callSession.id, ext);
+
+  // Persistent Wasabi storage upload with private permissions
   const { storage } = await import('../../lib/storage/storage.factory');
-  let uploadResult: { url: string; key: string };
   try {
-    uploadResult = await storage.upload(file);
+    if (typeof (storage as any).uploadRecording === 'function') {
+      await (storage as any).uploadRecording(file.buffer, storageKey, canonicalMime);
+    } else {
+      await storage.upload(file);
+    }
   } catch (storageErr: any) {
     logger.error('Persistent storage upload failed for call recording', {
       callSessionId: callSession.id,
@@ -705,67 +804,78 @@ export const uploadCallRecording = async (input: UploadCallRecordingInput) => {
     throw createError('Failed to upload recording to persistent storage.', 500);
   }
 
-  const storedUrl = uploadResult.url;
-  const storedKey = uploadResult.key;
-
   const validDuration =
     typeof input.duration === 'number' && !isNaN(input.duration) && input.duration > 0
       ? Math.round(input.duration)
       : null;
 
-  // Update lead_call_sessions
-  await (prisma as any).leadCallSession.update({
-    where: { id: callSession.id },
-    data: {
-      recordingAvailable: true,
-      recordingUrl: storedUrl,
-      recordingDuration: validDuration ?? callSession.duration ?? null,
-      recordingStatus: 'READY',
-      recordingDownloadedAt: new Date(),
-    },
-  });
-
-  // Idempotently log RECORDING_AVAILABLE activity
-  const existingActivities = await (prisma as any).leadActivity.findMany({
-    where: {
-      leadId,
-      workspaceId,
-      action: 'RECORDING_AVAILABLE',
-    },
-    take: 10,
-  });
-
-  const alreadyHasActivity = existingActivities.some(
-    (act: any) => act.metadata && act.metadata.callSessionId === callSession.id,
-  );
-
-  if (!alreadyHasActivity) {
-    await (prisma as any).leadActivity.create({
+  // Transactionally update database: lead_call_sessions and leadActivity
+  await (prisma as any).$transaction(async (tx: any) => {
+    await tx.leadCallSession.update({
+      where: { id: callSession.id },
       data: {
-        leadId,
-        performedById: userId,
-        workspaceId,
-        action: 'RECORDING_AVAILABLE',
-        metadata: {
-          callSessionId: callSession.id,
-          recordingUrl: storedUrl,
-          storageKey: storedKey,
-          duration: validDuration ?? callSession.duration ?? null,
-          provider: callSession.provider || 'DEVICE_DIALER',
-          recordingStatus: 'READY',
-          fileName: file.originalname,
-          mimeType: file.mimetype,
-          fileSize: file.size,
-        },
+        recordingAvailable: true,
+        recordingUrl: storageKey,
+        recordingDuration: validDuration ?? callSession.duration ?? null,
+        recordingStatus: 'READY',
+        recordingDownloadedAt: new Date(),
       },
     });
-  }
+
+    const existingActivities = await tx.leadActivity.findMany({
+      where: {
+        leadId,
+        workspaceId,
+        action: 'RECORDING_AVAILABLE',
+      },
+      take: 20,
+    });
+
+    const matchingActivity = existingActivities.find(
+      (act: any) => act.metadata && act.metadata.callSessionId === callSession.id,
+    );
+
+    const activityMetadata = {
+      callSessionId: callSession.id,
+      storageKey,
+      fileHash,
+      fileName: input.fileName || file.originalname,
+      displayName: input.fileName || file.originalname,
+      mimeType: canonicalMime,
+      fileSize: file.size,
+      duration: validDuration ?? callSession.duration ?? null,
+      recordingDuration: validDuration ?? callSession.duration ?? null,
+      provider: callSession.provider || 'DEVICE_DIALER',
+      recordingAvailable: true,
+      recordingStatus: 'READY',
+    };
+
+    if (matchingActivity) {
+      await tx.leadActivity.update({
+        where: { id: matchingActivity.id },
+        data: {
+          performedById: userId,
+          metadata: activityMetadata,
+        },
+      });
+    } else {
+      await tx.leadActivity.create({
+        data: {
+          leadId,
+          performedById: userId,
+          workspaceId,
+          action: 'RECORDING_AVAILABLE',
+          metadata: activityMetadata,
+        },
+      });
+    }
+  });
 
   return {
     success: true,
     message: 'Call recording uploaded successfully',
-    url: storedUrl,
-    key: storedKey,
+    url: storageKey,
+    key: storageKey,
     recordingId: callSession.id,
     data: {
       recordingId: callSession.id,
@@ -774,7 +884,7 @@ export const uploadCallRecording = async (input: UploadCallRecordingInput) => {
       recordingAvailable: true,
       recordingDuration: validDuration ?? callSession.duration ?? null,
       recordingStatus: 'READY',
-      url: storedUrl,
+      url: storageKey,
     },
   };
 };
