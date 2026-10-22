@@ -144,6 +144,7 @@ export const uploadCallRecording = async (req: Request, res: Response, next: Nex
       duration: isNaN(duration as number) ? null : duration,
       fileName: req.body?.fileName || file.originalname,
       mimeType: req.body?.mimeType || file.mimetype,
+      direction: req.body?.direction || null,
       file,
     });
 

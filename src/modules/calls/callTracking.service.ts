@@ -5,6 +5,11 @@ import logger from '../../utils/logger';
 import { formatPhoneStr } from '../../utils/phoneUtils';
 import type { InitiateCallInput, SaveCallOutcomeInput } from './callTracking.validation';
 
+export const computeAdvisoryLockKey = (scope: string, id: string): bigint => {
+  const hash = crypto.createHash('sha256').update(scope + ':' + id).digest('hex');
+  return Buffer.from(hash.slice(0, 16), 'hex').readBigInt64BE();
+};
+
 const createError = (message: string, statusCode: number) => {
   const error = new Error(message) as Error & { statusCode: number };
   error.statusCode = statusCode;
@@ -657,6 +662,7 @@ export interface UploadCallRecordingInput {
   duration?: number | null;
   fileName?: string | null;
   mimeType?: string | null;
+  direction?: string | null;
   file: Express.Multer.File;
 }
 
@@ -685,54 +691,67 @@ export const uploadCallRecording = async (input: UploadCallRecordingInput) => {
   }
 
   const callSessionId = typeof input.callSessionId === 'string' ? input.callSessionId.trim() : '';
-  if (!callSessionId) {
-    throw createError('callSessionId is required to associate recording.', 400);
-  }
+  let callSession: any = null;
 
-  const callSession = await (prisma as any).leadCallSession.findFirst({
-    where: {
-      id: callSessionId,
-      workspaceId,
-      leadId,
-    },
-  });
-
-  if (!callSession) {
-    throw createError('Call session not found for this lead and workspace', 404);
-  }
-
-  // Authorization check: User A cannot upload to User B's call session
-  const isInitiator = callSession.initiatedById === userId;
-  if (!isInitiator) {
-    const user = await (prisma as any).user.findUnique({
-      where: { id: userId },
-      include: {
-        role: {
-          include: {
-            permissions: { include: { permission: true } },
-          },
-        },
+  if (callSessionId) {
+    callSession = await (prisma as any).leadCallSession.findFirst({
+      where: {
+        id: callSessionId,
+        workspaceId,
+        leadId,
       },
     });
 
-    const roleName = (user?.role?.name || '').toLowerCase();
-    const permissions = (user?.role?.permissions || []).map((rp: any) => rp.permission?.key);
-    const isSuperAdmin =
-      roleName === 'superadmin' ||
-      roleName === 'admin' ||
-      permissions.includes('*') ||
-      permissions.includes('SUPERADMIN') ||
-      permissions.includes('SYSTEM_CONFIG');
+    if (!callSession) {
+      throw createError('Call session not found for this lead and workspace', 404);
+    }
 
-    const workspace = await (prisma as any).workspace.findUnique({
-      where: { id: workspaceId },
-      select: { ownerId: true },
+    // Authorization check: User A cannot upload to User B's call session
+    const isInitiator = callSession.initiatedById === userId;
+    if (!isInitiator) {
+      const user = await (prisma as any).user.findUnique({
+        where: { id: userId },
+        include: {
+          role: {
+            include: {
+              permissions: { include: { permission: true } },
+            },
+          },
+        },
+      });
+
+      const roleName = (user?.role?.name || '').toLowerCase();
+      const permissions = (user?.role?.permissions || []).map((rp: any) => rp.permission?.key);
+      const isSuperAdmin =
+        roleName === 'superadmin' ||
+        roleName === 'admin' ||
+        permissions.includes('*') ||
+        permissions.includes('SUPERADMIN') ||
+        permissions.includes('SYSTEM_CONFIG');
+
+      const workspace = await (prisma as any).workspace.findUnique({
+        where: { id: workspaceId },
+        select: { ownerId: true },
+      });
+      const isOwner = workspace?.ownerId === userId;
+
+      if (!isSuperAdmin && !isOwner) {
+        throw createError(
+          'Forbidden: You are not authorized to upload a recording for this call session.',
+          403,
+        );
+      }
+    }
+  } else {
+    // Sessionless / incoming recording: verify user belongs to the authorized workspace
+    const userInWorkspace = await (prisma as any).user.findFirst({
+      where: { id: userId, workspaceId, deletedAt: null },
+      select: { id: true, workspaceId: true },
     });
-    const isOwner = workspace?.ownerId === userId;
 
-    if (!isSuperAdmin && !isOwner) {
+    if (!userInWorkspace) {
       throw createError(
-        'Forbidden: You are not authorized to upload a recording for this call session.',
+        'Forbidden: You are not authorized to associate a recording with this lead.',
         403,
       );
     }
@@ -741,8 +760,8 @@ export const uploadCallRecording = async (input: UploadCallRecordingInput) => {
   // Idempotency: calculate file SHA-256 hash
   const fileHash = crypto.createHash('sha256').update(file.buffer).digest('hex');
 
-  // If recording is already attached to this session and READY, return existing canonical record
-  if (callSession.recordingAvailable && callSession.recordingUrl && callSession.recordingStatus === 'READY') {
+  // If session exists and recording is already attached and READY, return existing canonical record
+  if (callSession && callSession.recordingAvailable && callSession.recordingUrl && callSession.recordingStatus === 'READY') {
     logger.info('Call recording already uploaded for session', {
       callSessionId: callSession.id,
       recordingUrl: callSession.recordingUrl,
@@ -771,11 +790,308 @@ export const uploadCallRecording = async (input: UploadCallRecordingInput) => {
     };
   }
 
-  // Build deterministic collision-safe object key:
-  // <prefix>/<workspace>/<lead>/<callSession>/recording.<extension>
-  const storageKey = buildRecordingStorageKey(workspaceId, leadId, callSession.id, ext);
+  const validDuration =
+    typeof input.duration === 'number' && !isNaN(input.duration) && input.duration > 0
+      ? Math.round(input.duration)
+      : null;
 
-  // Persistent Wasabi storage upload with private permissions
+  // If callSession is provided (outgoing call workflow), perform Wasabi upload and tx update
+  if (callSession) {
+    // Build deterministic collision-safe object key:
+    // <prefix>/<workspace>/<lead>/<callSession>/recording.<extension>
+    const storageKey = buildRecordingStorageKey(workspaceId, leadId, callSession.id, ext);
+
+    // Persistent Wasabi storage upload with private permissions
+    const { storage } = await import('../../lib/storage/storage.factory');
+    try {
+      if (typeof (storage as any).uploadRecording === 'function') {
+        await (storage as any).uploadRecording(file.buffer, storageKey, canonicalMime);
+      } else {
+        await storage.upload(file);
+      }
+    } catch (storageErr: any) {
+      logger.error('Persistent storage upload failed for call recording', {
+        callSessionId: callSession.id,
+        leadId,
+        error: storageErr?.message || String(storageErr),
+      });
+      throw createError('Failed to upload recording to persistent storage.', 500);
+    }
+
+    // Transactionally update database: lead_call_sessions and leadActivity
+    await (prisma as any).$transaction(async (tx: any) => {
+      await tx.leadCallSession.update({
+        where: { id: callSession.id },
+        data: {
+          recordingAvailable: true,
+          recordingUrl: storageKey,
+          recordingDuration: validDuration ?? callSession.duration ?? null,
+          recordingStatus: 'READY',
+          recordingDownloadedAt: new Date(),
+        },
+      });
+
+      const existingActivities = await tx.leadActivity.findMany({
+        where: {
+          leadId,
+          workspaceId,
+          action: 'RECORDING_AVAILABLE',
+        },
+        take: 20,
+      });
+
+      const matchingActivity = existingActivities.find(
+        (act: any) =>
+          act.metadata &&
+          (act.metadata.callSessionId === callSession.id ||
+            (fileHash && act.metadata.fileHash === fileHash)),
+      );
+
+      const activityMetadata = {
+        callSessionId: callSession.id,
+        storageKey,
+        recordingUrl: storageKey,
+        fileHash,
+        fileName: input.fileName || file.originalname,
+        displayName: input.fileName || file.originalname,
+        mimeType: canonicalMime,
+        fileSize: file.size,
+        duration: validDuration ?? callSession.duration ?? null,
+        recordingDuration: validDuration ?? callSession.duration ?? null,
+        provider: callSession.provider || 'DEVICE_DIALER',
+        direction: input.direction || (callSession.direction === 'INBOUND' ? 'INCOMING' : callSession.direction === 'OUTBOUND' ? 'OUTGOING' : 'UNKNOWN'),
+        recordingAvailable: true,
+        recordingStatus: 'READY',
+      };
+
+      if (matchingActivity) {
+        await tx.leadActivity.update({
+          where: { id: matchingActivity.id },
+          data: {
+            performedById: userId,
+            metadata: activityMetadata,
+          },
+        });
+      } else {
+        await tx.leadActivity.create({
+          data: {
+            leadId,
+            performedById: userId,
+            workspaceId,
+            action: 'RECORDING_AVAILABLE',
+            metadata: activityMetadata,
+          },
+        });
+      }
+    });
+
+    const recordingDuration = validDuration ?? callSession.duration ?? null;
+    return {
+      success: true,
+      callSessionId: callSession.id,
+      leadId,
+      recordingAvailable: true,
+      recordingStatus: 'READY',
+      recordingDuration,
+      message: 'Call recording uploaded and associated successfully.',
+      url: storageKey,
+      key: storageKey,
+      recordingId: callSession.id,
+      data: {
+        recordingId: callSession.id,
+        leadId,
+        callSessionId: callSession.id,
+        recordingAvailable: true,
+        recordingDuration,
+        recordingStatus: 'READY',
+        url: storageKey,
+      },
+    };
+  }
+
+  // Sessionless incoming recording: Safe 2-phase reservation & finalization
+  // Phase 1: Short DB transaction (Reservation & Duplicate Check)
+  const lockKey = computeAdvisoryLockKey('rec_sessionless', leadId + ':' + fileHash);
+  const rawDirection = String(input.direction || '').toUpperCase();
+  const dbDirection =
+    rawDirection === 'INCOMING' ? 'INBOUND' : rawDirection === 'OUTGOING' ? 'OUTBOUND' : 'UNKNOWN';
+
+  type ReservationResult =
+    | { type: 'COMPLETED'; result: any }
+    | { type: 'RESERVED'; session: any; isNew: boolean };
+
+  const reservation: ReservationResult = await (prisma as any).$transaction(async (tx: any) => {
+    if (typeof tx.$executeRaw === 'function') {
+      try {
+        await tx.$executeRaw`SELECT pg_advisory_xact_lock(${lockKey});`;
+      } catch (lockErr) {
+        logger.warn('Advisory lock not acquired, falling back to transaction isolation', { lockErr });
+      }
+    }
+
+    // 1. Check if a completed RECORDING_AVAILABLE activity already exists for this lead + fileHash
+    const existingActivity = await tx.leadActivity.findFirst({
+      where: {
+        leadId,
+        workspaceId,
+        action: 'RECORDING_AVAILABLE',
+        metadata: {
+          path: ['fileHash'],
+          equals: fileHash,
+        },
+      },
+    });
+
+    if (existingActivity && (existingActivity.metadata?.storageKey || existingActivity.metadata?.recordingUrl)) {
+      const existingSessionId = existingActivity.metadata?.callSessionId || null;
+      const existingUrl = existingActivity.metadata?.recordingUrl || existingActivity.metadata?.storageKey;
+      const existingDur = existingActivity.metadata?.duration || input.duration || null;
+      logger.info('Call recording already uploaded and ready (activity match)', {
+        leadId,
+        fileHash,
+        storageKey: existingUrl,
+      });
+      return {
+        type: 'COMPLETED',
+        result: {
+          success: true,
+          callSessionId: existingSessionId,
+          leadId,
+          recordingAvailable: true,
+          recordingStatus: 'READY',
+          recordingDuration: existingDur,
+          message: 'Call recording is already uploaded and available.',
+          url: existingUrl,
+          key: existingUrl,
+          recordingId: existingSessionId || existingActivity.id,
+          data: {
+            recordingId: existingSessionId || existingActivity.id,
+            leadId,
+            callSessionId: existingSessionId,
+            recordingAvailable: true,
+            recordingDuration: existingDur,
+            recordingStatus: 'READY',
+            url: existingUrl,
+          },
+        },
+      };
+    }
+
+    // 2. Check if an existing session is already attached and READY with this storageKey or matching fileHash
+    // Find candidate session with sourceContext RECORDING_IMPORT
+    const existingReadySession = await tx.leadCallSession.findFirst({
+      where: {
+        leadId,
+        workspaceId,
+        sourceContext: 'RECORDING_IMPORT',
+        recordingStatus: 'READY',
+        recordingAvailable: true,
+
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (existingReadySession && existingReadySession.recordingUrl) {
+      // Check if this ready session's activity or storage key matches
+      const existingActForSession = await tx.leadActivity.findFirst({
+        where: {
+          leadId,
+          workspaceId,
+          action: 'RECORDING_AVAILABLE',
+          metadata: {
+            path: ['callSessionId'],
+            equals: existingReadySession.id,
+          },
+        },
+      });
+
+      if (existingActForSession && existingActForSession.metadata?.fileHash === fileHash) {
+        const existingUrl = existingReadySession.recordingUrl;
+        const existingDur = existingReadySession.recordingDuration || input.duration || null;
+        return {
+          type: 'COMPLETED',
+          result: {
+            success: true,
+            callSessionId: existingReadySession.id,
+            leadId,
+            recordingAvailable: true,
+            recordingStatus: 'READY',
+            recordingDuration: existingDur,
+            message: 'Call recording is already uploaded and available.',
+            url: existingUrl,
+            key: existingUrl,
+            recordingId: existingReadySession.id,
+            data: {
+              recordingId: existingReadySession.id,
+              leadId,
+              callSessionId: existingReadySession.id,
+              recordingAvailable: true,
+              recordingDuration: existingDur,
+              recordingStatus: 'READY',
+              url: existingUrl,
+            },
+          },
+        };
+      }
+    }
+
+    // 3. Check for existing PENDING or FAILED reservation session to reuse
+    const pendingSession = await tx.leadCallSession.findFirst({
+      where: {
+        leadId,
+        workspaceId,
+        sourceContext: 'RECORDING_IMPORT',
+        recordingStatus: { in: ['PENDING', 'FAILED'] },
+
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (pendingSession) {
+      // Re-use existing reservation
+      return {
+        type: 'RESERVED',
+        session: pendingSession,
+        isNew: false,
+      };
+    }
+
+    // 4. Create new reserved LeadCallSession with status PENDING
+    const newSession = await tx.leadCallSession.create({
+      data: {
+        workspaceId,
+        leadId,
+        initiatedById: userId,
+        assignedUserId: lead.assignedToId || null,
+        phoneNumberSnapshot: lead.phone || '+910000000000',
+        sourceContext: 'RECORDING_IMPORT',
+        localCallDate: new Date().toISOString().slice(0, 10),
+        status: 'COMPLETED',
+        provider: 'DEVICE_DIALER',
+        direction: dbDirection,
+        duration: validDuration,
+        recordingDuration: validDuration,
+        recordingAvailable: false,
+        recordingStatus: 'PENDING',
+      },
+    });
+
+    return {
+      type: 'RESERVED',
+      session: newSession,
+      isNew: true,
+    };
+  }, { timeout: 10000 });
+
+  // If already completed and ready, return canonical result immediately (no Wasabi upload)
+  if (reservation.type === 'COMPLETED') {
+    return reservation.result;
+  }
+
+  const activeSession = reservation.session;
+  const storageKey = buildRecordingStorageKey(workspaceId, leadId, activeSession.id, ext);
+
+  // Phase 2: Perform storage upload OUTSIDE the database transaction
   const { storage } = await import('../../lib/storage/storage.factory');
   try {
     if (typeof (storage as any).uploadRecording === 'function') {
@@ -784,32 +1100,43 @@ export const uploadCallRecording = async (input: UploadCallRecordingInput) => {
       await storage.upload(file);
     }
   } catch (storageErr: any) {
-    logger.error('Persistent storage upload failed for call recording', {
-      callSessionId: callSession.id,
+    logger.error('Persistent storage upload failed for sessionless recording', {
+      callSessionId: activeSession.id,
       leadId,
       error: storageErr?.message || String(storageErr),
     });
+
+    // Mark session as FAILED so it can be safely retried later
+    await (prisma as any).leadCallSession.update({
+      where: { id: activeSession.id },
+      data: { recordingStatus: 'FAILED' },
+    }).catch(() => {});
+
     throw createError('Failed to upload recording to persistent storage.', 500);
   }
 
-  const validDuration =
-    typeof input.duration === 'number' && !isNaN(input.duration) && input.duration > 0
-      ? Math.round(input.duration)
-      : null;
-
-  // Transactionally update database: lead_call_sessions and leadActivity
+  // Phase 3: Short DB transaction (Finalization & Timeline Activity)
   await (prisma as any).$transaction(async (tx: any) => {
+    // Acquire lock briefly during finalization to serialize concurrent completions
+    if (typeof tx.$executeRaw === 'function') {
+      try {
+        await tx.$executeRaw`SELECT pg_advisory_xact_lock(${lockKey});`;
+      } catch (lockErr) {}
+    }
+
+    // Update session to READY
     await tx.leadCallSession.update({
-      where: { id: callSession.id },
+      where: { id: activeSession.id },
       data: {
         recordingAvailable: true,
         recordingUrl: storageKey,
-        recordingDuration: validDuration ?? callSession.duration ?? null,
+        recordingDuration: validDuration ?? activeSession.duration ?? null,
         recordingStatus: 'READY',
         recordingDownloadedAt: new Date(),
       },
     });
 
+    // Check if activity already exists for this lead + fileHash or callSessionId
     const existingActivities = await tx.leadActivity.findMany({
       where: {
         leadId,
@@ -820,20 +1147,25 @@ export const uploadCallRecording = async (input: UploadCallRecordingInput) => {
     });
 
     const matchingActivity = existingActivities.find(
-      (act: any) => act.metadata && act.metadata.callSessionId === callSession.id,
+      (act: any) =>
+        act.metadata &&
+        (act.metadata.callSessionId === activeSession.id ||
+          (fileHash && act.metadata.fileHash === fileHash)),
     );
 
     const activityMetadata = {
-      callSessionId: callSession.id,
+      callSessionId: activeSession.id,
       storageKey,
+      recordingUrl: storageKey,
       fileHash,
       fileName: input.fileName || file.originalname,
       displayName: input.fileName || file.originalname,
       mimeType: canonicalMime,
       fileSize: file.size,
-      duration: validDuration ?? callSession.duration ?? null,
-      recordingDuration: validDuration ?? callSession.duration ?? null,
-      provider: callSession.provider || 'DEVICE_DIALER',
+      duration: validDuration ?? activeSession.duration ?? null,
+      recordingDuration: validDuration ?? activeSession.duration ?? null,
+      provider: 'DEVICE_DIALER',
+      direction: input.direction || (dbDirection === 'INBOUND' ? 'INCOMING' : dbDirection === 'OUTBOUND' ? 'OUTGOING' : 'UNKNOWN'),
       recordingAvailable: true,
       recordingStatus: 'READY',
     };
@@ -857,29 +1189,28 @@ export const uploadCallRecording = async (input: UploadCallRecordingInput) => {
         },
       });
     }
-  });
+  }, { timeout: 10000 });
 
-  const recordingDuration = validDuration ?? callSession.duration ?? null;
+  const finalDuration = validDuration ?? activeSession.duration ?? null;
   return {
     success: true,
-    callSessionId: callSession.id,
-    leadId: callSession.leadId,
+    callSessionId: activeSession.id,
+    leadId,
     recordingAvailable: true,
     recordingStatus: 'READY',
-    recordingDuration,
-    message: 'Call recording uploaded successfully',
+    recordingDuration: finalDuration,
+    message: 'Call recording uploaded and associated successfully.',
     url: storageKey,
     key: storageKey,
-    recordingId: callSession.id,
+    recordingId: activeSession.id,
     data: {
-      recordingId: callSession.id,
-      leadId: callSession.leadId,
-      callSessionId: callSession.id,
+      recordingId: activeSession.id,
+      leadId,
+      callSessionId: activeSession.id,
       recordingAvailable: true,
-      recordingDuration,
+      recordingDuration: finalDuration,
       recordingStatus: 'READY',
       url: storageKey,
     },
   };
 };
-

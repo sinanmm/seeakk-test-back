@@ -566,10 +566,10 @@ test('16. Zero-byte audio file is rejected with 400', () => {
   assert.equal(result.error, 'Empty audio file provided.');
 });
 
-test('17. Missing callSessionId throws 400', async () => {
+test('17. Missing callSessionId creates authentic incoming/sessionless call session and uploads successfully', async () => {
   const realLead = await (prisma as any).lead.findFirst({
     where: { deletedAt: null },
-    select: { id: true, workspaceId: true },
+    select: { id: true, workspaceId: true, phone: true },
   });
   if (!realLead) return;
 
@@ -579,25 +579,81 @@ test('17. Missing callSessionId throws 400', async () => {
   });
   if (!realUser) return;
 
-  const dummyFile: any = {
-    originalname: 'test.m4a',
+  const fixturePath = path.join(__dirname, 'fixtures', 'Call recording +918606300137_261016_223731.m4a');
+  const buffer = fs.readFileSync(fixturePath);
+  const audioFile: any = {
+    originalname: 'Call recording +918606300137_261016_223731.m4a',
     mimetype: 'audio/mp4',
-    size: 512,
-    buffer: Buffer.from([0x00, 0x00, 0x00, 0x20, 0x66, 0x74, 0x79, 0x70]),
+    size: buffer.length,
+    buffer,
   };
 
-  await assert.rejects(
-    async () => {
-      await uploadCallRecording({
-        workspaceId: realLead.workspaceId,
+  let createdSessionId: string | null = null;
+  try {
+    const res = await uploadCallRecording({
+      workspaceId: realLead.workspaceId,
+      leadId: realLead.id,
+      userId: realUser.id,
+      callSessionId: null,
+      direction: 'INCOMING',
+      fileName: 'Call recording +918606300137_261016_223731.m4a',
+      mimeType: 'audio/mp4',
+      duration: 35,
+      file: audioFile,
+    });
+
+    assert.equal(res.success, true);
+    assert.ok(res.callSessionId, 'Must generate and return authentic callSessionId');
+    assert.equal(res.leadId, realLead.id);
+    assert.equal(res.recordingAvailable, true);
+    assert.equal(res.recordingStatus, 'READY');
+    assert.equal(res.recordingDuration, 35);
+    createdSessionId = res.callSessionId;
+
+    const dbSession = await (prisma as any).leadCallSession.findUnique({
+      where: { id: res.callSessionId },
+    });
+    assert.ok(dbSession, 'Database callSession must exist');
+    assert.equal(dbSession.direction, 'INBOUND');
+    assert.equal(dbSession.provider, 'DEVICE_DIALER');
+    assert.equal(dbSession.recordingAvailable, true);
+
+    const activity = await (prisma as any).leadActivity.findFirst({
+      where: {
         leadId: realLead.id,
-        userId: realUser.id,
-        callSessionId: '',
-        file: dummyFile,
-      });
-    },
-    (err: any) => err.statusCode === 400 && err.message.includes('callSessionId is required'),
-  );
+        workspaceId: realLead.workspaceId,
+        action: 'RECORDING_AVAILABLE',
+        metadata: { path: ['callSessionId'], equals: res.callSessionId },
+      },
+    });
+    assert.ok(activity, 'RECORDING_AVAILABLE activity must be generated');
+    assert.equal(activity.metadata?.direction, 'INCOMING');
+
+    // Idempotent retry of same sessionless file returns existing record
+    const retryRes = await uploadCallRecording({
+      workspaceId: realLead.workspaceId,
+      leadId: realLead.id,
+      userId: realUser.id,
+      callSessionId: null,
+      file: audioFile,
+    });
+    assert.equal(retryRes.success, true);
+    assert.equal(retryRes.callSessionId, createdSessionId);
+  } finally {
+    if (createdSessionId) {
+      await (prisma as any).leadActivity.deleteMany({
+        where: {
+          leadId: realLead.id,
+          workspaceId: realLead.workspaceId,
+          action: 'RECORDING_AVAILABLE',
+          metadata: { path: ['callSessionId'], equals: createdSessionId },
+        },
+      }).catch(() => {});
+      await (prisma as any).leadCallSession.delete({
+        where: { id: createdSessionId },
+      }).catch(() => {});
+    }
+  }
 });
 
 test('18. Successful upload returns deterministic contract with top-level fields', async () => {
@@ -682,6 +738,245 @@ test('18. Successful upload returns deterministic contract with top-level fields
     await (prisma as any).leadCallSession.delete({
       where: { id: session.id },
     }).catch(() => {});
+  }
+});
+
+
+test('19. Genuinely concurrent identical sessionless uploads result in exactly one logical recording', async () => {
+  const realLead = await (prisma as any).lead.findFirst({
+    where: { deletedAt: null },
+    select: { id: true, workspaceId: true, phone: true },
+  });
+  if (!realLead) return;
+
+  const realUser = await (prisma as any).user.findFirst({
+    where: { workspaceId: realLead.workspaceId, deletedAt: null },
+    select: { id: true },
+  });
+  if (!realUser) return;
+
+  const fixturePath = path.join(__dirname, 'fixtures', 'Call recording +918606300137_261016_223731.m4a');
+  const buffer = fs.readFileSync(fixturePath);
+
+  // Send 3 genuinely concurrent identical uploads
+  const uploadPromises = [1, 2, 3].map((idx) =>
+    uploadCallRecording({
+      workspaceId: realLead.workspaceId,
+      leadId: realLead.id,
+      userId: realUser.id,
+      callSessionId: null,
+      direction: 'INCOMING',
+      fileName: 'Call recording +918606300137_261016_223731.m4a',
+      mimeType: 'audio/mp4',
+      duration: 35,
+      file: {
+        originalname: 'Call recording +918606300137_261016_223731.m4a',
+        mimetype: 'audio/mp4',
+        size: buffer.length,
+        buffer,
+      } as any,
+    })
+  );
+
+  const results = await Promise.all(uploadPromises);
+
+  // All 3 concurrent calls must succeed
+  for (const res of results) {
+    assert.equal(res.success, true);
+    assert.equal(res.leadId, realLead.id);
+    assert.equal(res.recordingAvailable, true);
+    assert.equal(res.recordingStatus, 'READY');
+  }
+
+  // All 3 calls must return the exact same canonical callSessionId and storageKey / url
+  const canonicalSessionId = results[0].callSessionId;
+  assert.ok(canonicalSessionId, 'Must have a valid canonical session ID');
+  assert.equal(results[1].callSessionId, canonicalSessionId, 'Concurrent call 2 must share canonicalSessionId');
+  assert.equal(results[2].callSessionId, canonicalSessionId, 'Concurrent call 3 must share canonicalSessionId');
+  assert.equal(results[1].url, results[0].url, 'Concurrent call 2 must share url');
+  assert.equal(results[2].url, results[0].url, 'Concurrent call 3 must share url');
+
+  // Verify database has exactly 1 RECORDING_AVAILABLE activity for this fileHash on this lead
+  const activities = await (prisma as any).leadActivity.findMany({
+    where: {
+      leadId: realLead.id,
+      workspaceId: realLead.workspaceId,
+      action: 'RECORDING_AVAILABLE',
+      metadata: { path: ['callSessionId'], equals: canonicalSessionId },
+    },
+  });
+  assert.equal(activities.length, 1, 'Exactly one Lead History RECORDING_AVAILABLE event must exist');
+
+  // Cleanup
+  await (prisma as any).leadActivity.deleteMany({
+    where: {
+      leadId: realLead.id,
+      workspaceId: realLead.workspaceId,
+      action: 'RECORDING_AVAILABLE',
+      metadata: { path: ['callSessionId'], equals: canonicalSessionId },
+    },
+  }).catch(() => {});
+  await (prisma as any).leadCallSession.delete({
+    where: { id: canonicalSessionId },
+  }).catch(() => {});
+});
+
+
+test('20. Safe retry recovery: reuses PENDING or FAILED reservation session without duplicate', async () => {
+  const realLead = await (prisma as any).lead.findFirst({
+    where: { deletedAt: null },
+    select: { id: true, workspaceId: true, phone: true },
+  });
+  if (!realLead) return;
+
+  const realUser = await (prisma as any).user.findFirst({
+    where: { workspaceId: realLead.workspaceId, deletedAt: null },
+    select: { id: true },
+  });
+  if (!realUser) return;
+
+  // Simulate a previous aborted upload that left a session in PENDING state
+  const abortedSession = await (prisma as any).leadCallSession.create({
+    data: {
+      workspaceId: realLead.workspaceId,
+      leadId: realLead.id,
+      initiatedById: realUser.id,
+      phoneNumberSnapshot: realLead.phone || '+910000000000',
+      sourceContext: 'RECORDING_IMPORT',
+      localCallDate: '2026-10-22',
+      status: 'COMPLETED',
+      provider: 'DEVICE_DIALER',
+      direction: 'INBOUND',
+      recordingAvailable: false,
+      recordingStatus: 'PENDING',
+    },
+  });
+
+  const fixturePath = path.join(__dirname, 'fixtures', 'Call recording +918606300137_261016_223731.m4a');
+  const buffer = fs.readFileSync(fixturePath);
+
+  try {
+    // Attempt upload - should reuse the pending session instead of creating a second one
+    const res = await uploadCallRecording({
+      workspaceId: realLead.workspaceId,
+      leadId: realLead.id,
+      userId: realUser.id,
+      callSessionId: null,
+      direction: 'INCOMING',
+      fileName: 'Call recording +918606300137_261016_223731.m4a',
+      mimeType: 'audio/mp4',
+      duration: 35,
+      file: {
+        originalname: 'Call recording +918606300137_261016_223731.m4a',
+        mimetype: 'audio/mp4',
+        size: buffer.length,
+        buffer,
+      } as any,
+    });
+
+    assert.equal(res.success, true);
+    assert.equal(res.callSessionId, abortedSession.id, 'Must reuse the aborted reservation session');
+    assert.equal(res.recordingStatus, 'READY');
+
+    // Confirm session is now READY in database
+    const updated = await (prisma as any).leadCallSession.findUnique({
+      where: { id: abortedSession.id },
+    });
+    assert.equal(updated.recordingStatus, 'READY');
+    assert.equal(updated.recordingAvailable, true);
+  } finally {
+    await (prisma as any).leadActivity.deleteMany({
+      where: {
+        leadId: realLead.id,
+        workspaceId: realLead.workspaceId,
+        action: 'RECORDING_AVAILABLE',
+        metadata: { path: ['callSessionId'], equals: abortedSession.id },
+      },
+    }).catch(() => {});
+    await (prisma as any).leadCallSession.delete({
+      where: { id: abortedSession.id },
+    }).catch(() => {});
+  }
+});
+
+test('21. Two distinct calls with different audio bytes remain completely separate', async () => {
+  const realLead = await (prisma as any).lead.findFirst({
+    where: { deletedAt: null },
+    select: { id: true, workspaceId: true, phone: true },
+  });
+  if (!realLead) return;
+
+  const realUser = await (prisma as any).user.findFirst({
+    where: { workspaceId: realLead.workspaceId, deletedAt: null },
+    select: { id: true },
+  });
+  if (!realUser) return;
+
+  const fixturePath = path.join(__dirname, 'fixtures', 'Call recording +918606300137_261016_223731.m4a');
+  const buffer1 = fs.readFileSync(fixturePath);
+  // Modify 1 byte to produce a distinct valid audio file with distinct hash
+  const buffer2 = Buffer.from(buffer1);
+  buffer2[buffer2.length - 1] = (buffer2[buffer2.length - 1] ^ 0xff);
+
+  let session1Id: string | null = null;
+  let session2Id: string | null = null;
+
+  try {
+    const res1 = await uploadCallRecording({
+      workspaceId: realLead.workspaceId,
+      leadId: realLead.id,
+      userId: realUser.id,
+      callSessionId: null,
+      direction: 'INCOMING',
+      fileName: 'Call_1.m4a',
+      mimeType: 'audio/mp4',
+      duration: 30,
+      file: {
+        originalname: 'Call_1.m4a',
+        mimetype: 'audio/mp4',
+        size: buffer1.length,
+        buffer: buffer1,
+      } as any,
+    });
+    session1Id = res1.callSessionId;
+
+    const res2 = await uploadCallRecording({
+      workspaceId: realLead.workspaceId,
+      leadId: realLead.id,
+      userId: realUser.id,
+      callSessionId: null,
+      direction: 'INCOMING',
+      fileName: 'Call_2.m4a',
+      mimeType: 'audio/mp4',
+      duration: 45,
+      file: {
+        originalname: 'Call_2.m4a',
+        mimetype: 'audio/mp4',
+        size: buffer2.length,
+        buffer: buffer2,
+      } as any,
+    });
+    session2Id = res2.callSessionId;
+
+    assert.notEqual(session1Id, session2Id, 'Distinct calls must have distinct session IDs');
+    assert.notEqual(res1.url, res2.url, 'Distinct calls must have distinct storage keys');
+  } finally {
+    if (session1Id) {
+      await (prisma as any).leadActivity.deleteMany({
+        where: { metadata: { path: ['callSessionId'], equals: session1Id } },
+      }).catch(() => {});
+      await (prisma as any).leadCallSession.delete({
+        where: { id: session1Id },
+      }).catch(() => {});
+    }
+    if (session2Id) {
+      await (prisma as any).leadActivity.deleteMany({
+        where: { metadata: { path: ['callSessionId'], equals: session2Id } },
+      }).catch(() => {});
+      await (prisma as any).leadCallSession.delete({
+        where: { id: session2Id },
+      }).catch(() => {});
+    }
   }
 });
 
