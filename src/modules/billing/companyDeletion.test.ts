@@ -305,4 +305,152 @@ test('Company & Workspace Deletion - Backend Integration Suite', async (t) => {
     }
   });
 
+  await t.test('7. Foreign-Key Restrict & Cross-Workspace Reference Resolution: Safely unlinks cross-tenant stage approvals and preserves multi-workspace owners', async () => {
+    const timestamp = Date.now();
+    const rand = crypto.randomBytes(3).toString('hex');
+
+    // User who owns Workspace Y and is a member in Workspace X
+    const sharedOwnerY = await prisma.user.create({
+      data: {
+        name: 'Shared Owner Y',
+        email: `shared_owner_${timestamp}_${rand}@example.com`,
+        password: 'hashedpassword123',
+        isActive: true,
+      },
+    });
+
+    const workspaceY = await prisma.workspace.create({
+      data: {
+        companyName: `Workspace Y ${timestamp}`,
+        ownerId: sharedOwnerY.id,
+        employeeCount: '1-10',
+        billingStatus: 'ACTIVE',
+      },
+    });
+
+    const leadY = await prisma.lead.create({
+      data: {
+        workspaceId: workspaceY.id,
+        name: 'Lead Y',
+        phone: '+919999900010',
+        createdById: sharedOwnerY.id,
+      },
+    });
+
+    // Workspace X (Target for deletion)
+    const ownerX = await prisma.user.create({
+      data: {
+        name: 'Owner X',
+        email: `owner_x_${timestamp}_${rand}@example.com`,
+        password: 'hashedpassword123',
+        isActive: true,
+      },
+    });
+
+    const workspaceX = await prisma.workspace.create({
+      data: {
+        companyName: `Workspace X ${timestamp}`,
+        ownerId: ownerX.id,
+        employeeCount: '1-10',
+        billingStatus: 'ACTIVE',
+      },
+    });
+
+    await prisma.user.update({
+      where: { id: ownerX.id },
+      data: { workspaceId: workspaceX.id },
+    });
+
+    // Add sharedOwnerY as member of Workspace X
+    await prisma.user.update({
+      where: { id: sharedOwnerY.id },
+      data: { workspaceId: workspaceX.id },
+    });
+
+    const stageX = await prisma.leadStage.create({
+      data: {
+        workspaceId: workspaceX.id,
+        name: 'New Stage X',
+        color: '#10b981',
+        order: 1,
+        createdBy: ownerX.id,
+      },
+    });
+
+    const lobReasonX = await prisma.lOBReason.create({
+      data: {
+        workspaceId: workspaceX.id,
+        name: 'LOB Reason X',
+        createdById: ownerX.id,
+      },
+    });
+
+    const leadX = await prisma.lead.create({
+      data: {
+        workspaceId: workspaceX.id,
+        name: 'Lead X',
+        phone: '+919999900011',
+        createdById: ownerX.id,
+        stageId: stageX.id,
+      },
+    });
+
+    await prisma.leadLOBLog.create({
+      data: {
+        workspaceId: workspaceX.id,
+        leadId: leadX.id,
+        reasonId: lobReasonX.id,
+        changedById: ownerX.id,
+      },
+    });
+
+    // Crucial: Approval in Workspace Y referencing stageX of Workspace X (RESTRICT constraint)
+    const approvalInWorkspaceY = await prisma.leadStageApproval.create({
+      data: {
+        workspaceId: workspaceY.id,
+        leadId: leadY.id,
+        fromStageId: stageX.id,
+        type: 'STAGE_CHANGE',
+        requestedById: sharedOwnerY.id,
+        status: 'PENDING',
+      },
+    });
+
+    try {
+      // Perform deletion of Workspace X
+      const result = await CompanyControlService.deleteCompanyAndWorkspace(workspaceX.id, 'TEST_ADMIN');
+      assert.equal(result.success, true);
+      assert.equal(result.deletedWorkspaceId, workspaceX.id);
+
+      // Verify Workspace X is deleted
+      const checkWsX = await prisma.workspace.findUnique({ where: { id: workspaceX.id } });
+      assert.equal(checkWsX, null, 'Workspace X must be deleted');
+
+      // Verify Workspace Y and its lead are untouched
+      const checkWsY = await prisma.workspace.findUnique({ where: { id: workspaceY.id } });
+      assert.ok(checkWsY, 'Workspace Y must remain intact');
+
+      // Verify approval in Workspace Y had fromStageId unlinked to null without error
+      const checkApprovalY = await prisma.leadStageApproval.findUnique({
+        where: { id: approvalInWorkspaceY.id },
+      });
+      assert.ok(checkApprovalY, 'Approval in Workspace Y must still exist');
+      assert.equal(checkApprovalY.fromStageId, null, 'fromStageId must be unlinked to null');
+
+      // Verify sharedOwnerY is preserved because they own Workspace Y
+      const checkSharedOwnerY = await prisma.user.findUnique({ where: { id: sharedOwnerY.id } });
+      assert.ok(checkSharedOwnerY, 'Shared owner of Workspace Y must not be deleted');
+
+      // Verify single-tenant ownerX is deleted
+      const checkOwnerX = await prisma.user.findUnique({ where: { id: ownerX.id } });
+      assert.equal(checkOwnerX, null, 'Owner X must be deleted');
+    } finally {
+      // Cleanup Workspace Y
+      try {
+        await CompanyControlService.deleteCompanyAndWorkspace(workspaceY.id, 'TEST_ADMIN');
+      } catch (e) {}
+    }
+  });
+
 });
+

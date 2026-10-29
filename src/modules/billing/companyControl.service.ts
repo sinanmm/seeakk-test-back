@@ -376,6 +376,42 @@ export class CompanyControlService {
     try {
       await prisma.$transaction(
         async (tx) => {
+          // STEP 0: Resolve stages of this workspace and unlink any external/internal stage approvals
+          // that reference these stages (e.g. from historical stage selections or cross-workspace references)
+          // because lead_stage_approvals.fromStageId / toStageId have RESTRICT foreign keys.
+          const stages = await tx.leadStage.findMany({
+            where: { workspaceId: cleanWorkspaceId },
+            select: { id: true },
+          });
+          const stageIds = stages.map((s) => s.id);
+
+          if (stageIds.length > 0) {
+            await tx.leadStageApproval.updateMany({
+              where: { fromStageId: { in: stageIds } },
+              data: { fromStageId: null },
+            });
+            await tx.leadStageApproval.updateMany({
+              where: { toStageId: { in: stageIds } },
+              data: { toStageId: null },
+            });
+          }
+
+          if (userIds.length > 0) {
+            await tx.leadStageApproval.updateMany({
+              where: {
+                OR: [
+                  { requestedById: { in: userIds } },
+                  { assignedToId: { in: userIds } },
+                  { approvedById: { in: userIds } },
+                ],
+              },
+              data: {
+                assignedToId: null,
+                approvedById: null,
+              },
+            });
+          }
+
           // BATCH 1: Independent child and leaf records
           await Promise.all([
             // Telephony & Meta Integrations
@@ -414,6 +450,7 @@ export class CompanyControlService {
             tx.leadStageApproval.deleteMany({ where: { workspaceId: cleanWorkspaceId } }),
             tx.leadStageHistory.deleteMany({ where: { workspaceId: cleanWorkspaceId } }),
             tx.leadProduct.deleteMany({ where: { workspaceId: cleanWorkspaceId } }),
+            tx.leadLOBLog.deleteMany({ where: { workspaceId: cleanWorkspaceId } }),
             tx.followupActivityLog.deleteMany({ where: { followUp: { workspaceId: cleanWorkspaceId } } }),
             tx.followUp.deleteMany({ where: { workspaceId: cleanWorkspaceId } }),
 
@@ -443,6 +480,15 @@ export class CompanyControlService {
               tx.userLocationAssignment.deleteMany({ where: { userId: { in: userIds } } }),
             ] : []),
 
+            // Attendance unlinked records
+            tx.attendanceAuditLog.deleteMany({ where: { workspaceId: cleanWorkspaceId } }),
+            tx.attendanceWarning.deleteMany({ where: { workspaceId: cleanWorkspaceId } }),
+            tx.attendanceSetting.deleteMany({ where: { workspaceId: cleanWorkspaceId } }),
+            tx.attendanceNetwork.deleteMany({ where: { workspaceId: cleanWorkspaceId } }),
+            tx.attendanceNotification.deleteMany({ where: { workspaceId: cleanWorkspaceId } }),
+            tx.attendanceOfficeLocation.deleteMany({ where: { workspaceId: cleanWorkspaceId } }),
+            tx.targetFollowupLog.deleteMany({ where: { workspaceId: cleanWorkspaceId } }),
+
             // Billing, Salaries & Finance
             tx.verifiedPayment.deleteMany({ where: { workspaceId: cleanWorkspaceId } }),
             tx.paymentSubmission.deleteMany({ where: { workspaceId: cleanWorkspaceId } }),
@@ -466,7 +512,6 @@ export class CompanyControlService {
             tx.sheet.deleteMany({ where: { workspaceId: cleanWorkspaceId } }),
             tx.reportLog.deleteMany({ where: { workspaceId: cleanWorkspaceId } }),
             tx.report.deleteMany({ where: { workspaceId: cleanWorkspaceId } }),
-            tx.reportType.deleteMany({ where: { workspaceId: cleanWorkspaceId } }),
             tx.importJob.deleteMany({ where: { workspaceId: cleanWorkspaceId } }),
             tx.invite.deleteMany({ where: { workspaceId: cleanWorkspaceId } }),
             tx.holidaySyncLog.deleteMany({ where: { workspaceId: cleanWorkspaceId } }),
@@ -474,11 +519,25 @@ export class CompanyControlService {
           ]);
 
           // BATCH 2: CRM Core Models & Dependent Master Records
+          // Delete leads first
           await tx.lead.deleteMany({ where: { workspaceId: cleanWorkspaceId } });
+
+          // Delete dynamic field children before dynamic fields (to prevent RESTRICT on lead_dynamic_values)
+          await tx.leadDynamicValue.deleteMany({ where: { field: { workspaceId: cleanWorkspaceId } } });
+          await tx.leadDynamicOption.deleteMany({ where: { field: { workspaceId: cleanWorkspaceId } } });
+
+          // Delete role permissions before roles (to prevent RESTRICT on role_permissions)
+          await tx.rolePermission.deleteMany({ where: { role: { workspaceId: cleanWorkspaceId } } });
+
+          // Delete report types after reports have been deleted
+          await tx.reportType.deleteMany({ where: { workspaceId: cleanWorkspaceId } });
+
+          // Delete remaining core models and masters
           await Promise.all([
             tx.leadSubstage.deleteMany({ where: { workspaceId: cleanWorkspaceId } }),
             tx.stageRule.deleteMany({ where: { workspaceId: cleanWorkspaceId } }),
             tx.leadStage.deleteMany({ where: { workspaceId: cleanWorkspaceId } }),
+            tx.leadLifeCycleTransition.deleteMany({ where: { workspaceId: cleanWorkspaceId } }),
             tx.leadLifeCycle.deleteMany({ where: { workspaceId: cleanWorkspaceId } }),
             tx.leadDynamicField.deleteMany({ where: { workspaceId: cleanWorkspaceId } }),
             tx.leadSource.deleteMany({ where: { workspaceId: cleanWorkspaceId } }),
@@ -490,7 +549,6 @@ export class CompanyControlService {
             tx.country.deleteMany({ where: { workspaceId: cleanWorkspaceId } }),
             tx.office.deleteMany({ where: { workspaceId: cleanWorkspaceId } }),
             tx.department.deleteMany({ where: { workspaceId: cleanWorkspaceId } }),
-            tx.rolePermission.deleteMany({ where: { role: { workspaceId: cleanWorkspaceId } } }),
             tx.role.deleteMany({ where: { workspaceId: cleanWorkspaceId } }),
           ]);
 
@@ -516,31 +574,45 @@ export class CompanyControlService {
           // Delete the Workspace itself
           await tx.workspace.delete({ where: { id: cleanWorkspaceId } });
 
-          // Delete the workspace Users
+          // Identify users who own other active workspaces to preserve them
+          let usersToDelete = userIds;
           if (userIds.length > 0) {
-            await tx.user.deleteMany({ where: { id: { in: userIds } } });
+            const otherOwnedWorkspaces = await tx.workspace.findMany({
+              where: { ownerId: { in: userIds }, id: { not: cleanWorkspaceId } },
+              select: { ownerId: true },
+            });
+            const protectedOwnerIds = new Set(otherOwnedWorkspaces.map((w) => w.ownerId));
+            usersToDelete = userIds.filter((id) => !protectedOwnerIds.has(id));
+
+            if (usersToDelete.length > 0) {
+              await tx.user.deleteMany({ where: { id: { in: usersToDelete } } });
+            }
           }
         },
         { maxWait: 15000, timeout: 60000 }
       );
     } catch (dbErr: any) {
+      const errorDetail = dbErr?.meta?.message || dbErr?.message || String(dbErr);
       logger.error('Database transaction failed during workspace deletion - rolled back', {
         workspaceId: cleanWorkspaceId,
-        error: dbErr?.message || String(dbErr),
+        code: dbErr?.code,
+        meta: dbErr?.meta,
+        error: errorDetail,
       });
       try {
         await prisma.workspace.update({
           where: { id: cleanWorkspaceId },
           data: {
             billingStatus: workspace.billingStatus || 'ACTIVE',
-            lockReason: 'Database deletion transaction failed',
+            lockReason: `Database deletion transaction failed: ${dbErr?.code || 'ERROR'}`,
           },
         });
       } catch (revertErr) {
         // If workspace was already deleted, ignore
       }
-      const err: any = new Error('Database transaction failed during tenant deletion.');
+      const err: any = new Error(`Database transaction failed during tenant deletion: ${errorDetail}`);
       err.statusCode = 500;
+      err.originalError = dbErr;
       throw err;
     }
 
