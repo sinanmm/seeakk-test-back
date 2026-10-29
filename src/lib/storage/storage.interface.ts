@@ -36,6 +36,14 @@ export interface StorageInterface {
   ): Promise<{ exists: boolean; size?: number; contentType?: string; etag?: string }>;
 
   /**
+   * Delete all call recording objects stored in Wasabi belonging to a specific workspace.
+   */
+  deleteWorkspaceRecordings?(
+    workspaceId: string,
+    additionalKeys?: string[],
+  ): Promise<{ deletedCount: number; keys: string[] }>;
+
+  /**
    * Get a readable stream for a file, optionally for an HTTP byte range.
    */
   getFileStream?(

@@ -34,6 +34,7 @@ router.post('/companies/:id/lock', platformController.lockCompany);
 router.post('/companies/:id/unlock', platformController.unlockCompany);
 router.post('/companies/:id/suspend', platformController.suspendCompany);
 router.post('/companies/:id/unsuspend', platformController.unsuspendCompany);
+router.delete('/companies/:id', platformController.deleteCompany);
 
 // Payment Requests Management (Part 52, 53, 54, 55, 56 & Control)
 router.get('/payment-requests', platformController.getPaymentRequests);

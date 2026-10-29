@@ -2,6 +2,8 @@ import {
   S3Client,
   PutObjectCommand,
   DeleteObjectCommand,
+  DeleteObjectsCommand,
+  ListObjectsV2Command,
   GetObjectCommand,
   HeadObjectCommand,
 } from '@aws-sdk/client-s3';
@@ -162,5 +164,87 @@ export class WasabiStorage implements StorageInterface {
       acceptRanges: response.AcceptRanges || 'bytes',
       statusCode: range && response.ContentRange ? 206 : 200,
     };
+  }
+
+  /**
+   * Deletes all call recording objects in Wasabi belonging to a specific workspace.
+   * Scoped strictly to the workspace prefix: <WASABI_ROOT_PREFIX>recordings/<workspaceId>/
+   * Plus any explicitly referenced recording keys for that workspace.
+   * Never deletes across workspaces or the root bucket.
+   */
+  async deleteWorkspaceRecordings(
+    workspaceId: string,
+    additionalKeys: string[] = [],
+  ): Promise<{ deletedCount: number; keys: string[] }> {
+    const cleanWorkspace = (workspaceId || "").trim().replace(/[^a-zA-Z0-9_-]/g, "");
+    if (!cleanWorkspace) {
+      throw new Error("Invalid workspaceId for Wasabi recordings deletion: must be non-empty.");
+    }
+
+    const recordingsPrefix = (
+      process.env.WASABI_RECORDINGS_PREFIX ||
+      `${process.env.WASABI_ROOT_PREFIX || "Seeak App Data/"}recordings/`
+    ).replace(/^\/+/, "");
+
+    const targetPrefix = `${recordingsPrefix}${cleanWorkspace}/`;
+    const keysToDeleteSet = new Set<string>();
+
+    // 1. List all objects matching prefix
+    let continuationToken: string | undefined = undefined;
+    do {
+      const listCommand: ListObjectsV2Command = new ListObjectsV2Command({
+        Bucket: this.bucket,
+        Prefix: targetPrefix,
+        ContinuationToken: continuationToken,
+      });
+      const listRes = await this.client.send(listCommand);
+
+      if (listRes.Contents && listRes.Contents.length > 0) {
+        for (const obj of listRes.Contents) {
+          if (obj.Key && obj.Key.startsWith(targetPrefix)) {
+            keysToDeleteSet.add(obj.Key);
+          }
+        }
+      }
+      continuationToken = listRes.IsTruncated ? listRes.NextContinuationToken : undefined;
+    } while (continuationToken);
+
+    // 2. Add additionalKeys confirmed to belong strictly to this workspace
+    for (const rawKey of additionalKeys) {
+      if (!rawKey) continue;
+      let cleanKey = rawKey;
+      if (cleanKey.startsWith("/api/upload/")) {
+        cleanKey = decodeURIComponent(cleanKey.replace("/api/upload/", ""));
+      }
+      cleanKey = cleanKey.startsWith("/") ? cleanKey.slice(1) : cleanKey;
+
+      if (cleanKey.includes(`/${cleanWorkspace}/`) || cleanKey.startsWith(targetPrefix)) {
+        keysToDeleteSet.add(cleanKey);
+      }
+    }
+
+    const allKeys = Array.from(keysToDeleteSet);
+    if (allKeys.length === 0) {
+      return { deletedCount: 0, keys: [] };
+    }
+
+    // 3. Batch delete in chunks of 1000
+    for (let i = 0; i < allKeys.length; i += 1000) {
+      const chunk = allKeys.slice(i, i + 1000);
+      const delCommand: DeleteObjectsCommand = new DeleteObjectsCommand({
+        Bucket: this.bucket,
+        Delete: {
+          Objects: chunk.map((Key) => ({ Key })),
+          Quiet: true,
+        },
+      });
+      const delRes = await this.client.send(delCommand);
+      if (delRes.Errors && delRes.Errors.length > 0) {
+        const errDetails = delRes.Errors.map((e) => `${e.Key}: ${e.Message || e.Code}`).join(", ");
+        throw new Error(`Failed to delete Wasabi recording objects for workspace ${cleanWorkspace}: ${errDetails}`);
+      }
+    }
+
+    return { deletedCount: allKeys.length, keys: allKeys };
   }
 }

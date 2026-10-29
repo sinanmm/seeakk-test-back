@@ -1484,3 +1484,31 @@ export const updateCompanyLimit = async (req: Request, res: Response) => {
     return res.status(statusCode).json({ success: false, message: error.message });
   }
 };
+
+/**
+ * Permanently Delete Company & Workspace API
+ */
+export const deleteCompany = async (req: Request, res: Response) => {
+  try {
+    const id = String(req.params.id || "").trim();
+    if (!id) {
+      return res.status(400).json({ success: false, message: "Workspace ID is required." });
+    }
+
+    const actorAdminId =
+      (req as any).user?.id ||
+      (req.headers["x-actor-user-id"] as string) ||
+      "CONTROL_ADMIN";
+
+    const result = await CompanyControlService.deleteCompanyAndWorkspace(id, actorAdminId, {
+      ipAddress: req.ip,
+      userAgent: req.headers["user-agent"],
+    });
+
+    return res.status(200).json(result);
+  } catch (error: any) {
+    logger.error("Error in deleteCompany API:", { error: error.message });
+    const statusCode = error.statusCode || 500;
+    return res.status(statusCode).json({ success: false, message: error.message });
+  }
+};

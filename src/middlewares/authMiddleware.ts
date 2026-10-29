@@ -255,7 +255,7 @@ export const protect = async (req: Request, res: Response, next: NextFunction): 
       req.path === '/setup' ||
       req.path === '/config-meta';
 
-    if (!user.workspaceId && !isWorkspaceOnboardingPath) {
+    if ((!user.workspaceId || !user.workspace) && !isWorkspaceOnboardingPath) {
       logger.warn('Access denied. User workspace missing.', { userId: user.id, action: 'auth_missing_workspace', reason: 'Workspace missing' });
       applyCorsHeadersIfAllowed(req, res);
       return res.status(403).json({ message: 'User account is not associated with an active workspace.', reason: 'Workspace missing' });

@@ -546,6 +546,20 @@ export const login = async (req: Request, res: Response): Promise<any> => {
     }
     user = await hydrateAuthenticatedUser(user);
 
+    if (user.workspaceId && !user.workspace) {
+      logger.warn('Login blocked - associated workspace no longer exists', {
+        userId: user.id,
+        workspaceId: user.workspaceId,
+        action: 'login_workspace_deleted',
+      });
+      return res.status(403).json(
+        authErrorPayload(
+          AUTH_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          'The workspace associated with this account has been permanently deleted or is no longer accessible.',
+        ),
+      );
+    }
+
     if (!isRoleScopedToUserWorkspace(user)) {
       logger.error('Login blocked because role is linked to a different workspace', {
         userId: user.id,
@@ -749,6 +763,20 @@ export const googleLogin = async (req: Request, res: Response): Promise<any> => 
       return res.status(401).json({ message: 'Invalid credentials' });
     }
     user = await hydrateAuthenticatedUser(user);
+
+    if (user.workspaceId && !user.workspace) {
+      logger.warn('Google login blocked - associated workspace no longer exists', {
+        userId: user.id,
+        workspaceId: user.workspaceId,
+        action: 'google_login_workspace_deleted',
+      });
+      return res.status(403).json(
+        authErrorPayload(
+          AUTH_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          'The workspace associated with this account has been permanently deleted or is no longer accessible.',
+        ),
+      );
+    }
 
     if (!user.isActive) {
       return res.status(403).json({ message: 'Account is inactive' });
@@ -1022,6 +1050,19 @@ export const refreshToken = async (req: Request, res: Response): Promise<any> =>
       return res.status(403).json({ message: 'User not found or inactive' });
     }
     user = await hydrateAuthenticatedUser(user);
+
+    if (user.workspaceId && !user.workspace) {
+      clearRefreshCookie();
+      logger.warn('Refresh token rejected - associated workspace no longer exists', {
+        requestId,
+        userId,
+        workspaceId: user.workspaceId,
+        action: 'refresh_workspace_deleted',
+      });
+      return res.status(403).json({
+        message: 'The workspace associated with this account has been permanently deleted.',
+      });
+    }
 
     if (!isRoleScopedToUserWorkspace(user)) {
       logger.warn('Refresh token rejected - user role not valid for workspace', { requestId, userId, tokenId, action: 'refresh_workspace_invalid' });
