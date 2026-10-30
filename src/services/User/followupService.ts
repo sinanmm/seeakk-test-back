@@ -19,6 +19,7 @@ import {
 } from './followupOverduePersistence.service';
 import { buildStageCalendarIndex } from './leadStageCalendar.util';
 import logger from '../../utils/logger';
+import { resolveWorkspaceTimezone } from '../../utils/timezoneContext';
 import type {
   CalendarQueryInput,
   CalendarView,
@@ -532,16 +533,7 @@ const buildReminderInclude = {
 } as const;
 
 export const getWorkspaceTimeZone = async (workspaceId: string): Promise<string> => {
-  const workspace = await prisma.workspace.findUnique({
-    where: { id: workspaceId },
-    select: { timeZone: true },
-  });
-
-  if (workspace?.timeZone && moment.tz.zone(workspace.timeZone)) {
-    return workspace.timeZone;
-  }
-
-  return 'UTC';
+  return resolveWorkspaceTimezone(workspaceId);
 };
 
 export const getDayRangeForWorkspace = async (workspaceId: string, date = new Date()) => {

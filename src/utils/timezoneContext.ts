@@ -1,35 +1,69 @@
 import moment from 'moment-timezone';
 import prisma from '../config/prisma';
 
-const DEFAULT_TIMEZONE = 'Asia/Kolkata';
+export const DEFAULT_TIMEZONE = 'Asia/Kolkata';
+
+/**
+ * Identify if a timezone name or workspace configuration represents India Standard Time
+ */
+export const isIndianTimezoneOrWorkspace = (
+  timeZone?: string | null,
+  currencyLocale?: string | null,
+): boolean => {
+  if (!timeZone || !timeZone.trim()) return currencyLocale === 'INR';
+  const tz = timeZone.trim();
+  if (tz === 'Asia/Kolkata' || tz === 'Asia/Calcutta') return true;
+  // Indian ocean island territories mistakenly selected in place of India Standard Time
+  if (
+    tz === 'Indian/Chagos' ||
+    tz === 'Indian/Christmas' ||
+    tz === 'Indian/Mahe' ||
+    tz === 'Indian/Cocos' ||
+    tz === 'Indian/Kerguelen'
+  ) {
+    return true;
+  }
+  if (currencyLocale === 'INR' && (tz === 'UTC' || tz.startsWith('Indian/'))) {
+    return true;
+  }
+  return false;
+};
+
+/**
+ * Normalize an IANA timezone identifier with Indian workspace and regional fallback rules.
+ */
+export const normalizeTimezone = (
+  timeZone?: string | null,
+  currencyLocale?: string | null,
+): string => {
+  if (isIndianTimezoneOrWorkspace(timeZone, currencyLocale)) {
+    return 'Asia/Kolkata';
+  }
+  if (timeZone && timeZone.trim() && moment.tz.zone(timeZone.trim())) {
+    return timeZone.trim();
+  }
+  if (currencyLocale === 'AED') return 'Asia/Dubai';
+  if (currencyLocale === 'QAR') return 'Asia/Qatar';
+  return DEFAULT_TIMEZONE;
+};
 
 /**
  * Resolve the applicable IANA timezone string for a given workspace/user context.
- * Hierarchy: User Timezone -> Workspace Timezone -> Default ('Asia/Kolkata')
+ * Hierarchy: Workspace Timezone (normalized) -> Default ('Asia/Kolkata')
  */
 export const resolveWorkspaceTimezone = async (
   workspaceId: string,
   userId?: string,
 ): Promise<string> => {
   try {
-    if (userId) {
-      const user = await prisma.user.findUnique({
-        where: { id: userId },
-        select: { timeZone: true } as any,
-      });
-      if (user && (user as any).timeZone && moment.tz.zone((user as any).timeZone)) {
-        return (user as any).timeZone;
-      }
-    }
-
     if (workspaceId) {
       const workspace = await prisma.workspace.findUnique({
         where: { id: workspaceId },
-        select: { timeZone: true },
+        select: { timeZone: true, currencyLocale: true },
       });
 
-      if (workspace?.timeZone && moment.tz.zone(workspace.timeZone)) {
-        return workspace.timeZone;
+      if (workspace) {
+        return normalizeTimezone(workspace.timeZone, workspace.currencyLocale);
       }
     }
   } catch {

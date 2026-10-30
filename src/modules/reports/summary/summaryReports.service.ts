@@ -2,6 +2,7 @@ import prisma from '../../../config/prisma';
 import { Prisma } from '@prisma/client';
 import moment from 'moment-timezone';
 import { getWorkspaceTimeZone } from '../../../services/User/followupService';
+import { formatTimeInTimezone, resolveWorkspaceTimezone } from '../../../utils/timezoneContext';
 
 const db = prisma as any;
 
@@ -243,10 +244,12 @@ export const getAttendanceSummary = async (filters: SummaryFilterDto) => {
   const limit = Number(filters.limit) || 20;
 
   const where: any = { workspaceId: filters.workspaceId };
+  const timeZone = await resolveWorkspaceTimezone(filters.workspaceId);
+
   if (filters.startDate && filters.endDate) {
     where.date = {
-      gte: moment.utc(filters.startDate).toDate(),
-      lte: moment.utc(filters.endDate).toDate(),
+      gte: moment.tz(filters.startDate, timeZone).startOf('day').toDate(),
+      lte: moment.tz(filters.endDate, timeZone).endOf('day').toDate(),
     };
   }
   const userFilter = await getEffectiveUserFilter(filters);
@@ -277,6 +280,11 @@ export const getAttendanceSummary = async (filters: SummaryFilterDto) => {
   const recordsWithApprover = attendance.map((r: any) => ({
     ...r,
     approvedByName: r.approvedBy ? approverMap.get(r.approvedBy) || 'Unknown' : null,
+    checkInTime: r.checkInTime ? formatTimeInTimezone(r.checkInTime, timeZone) : null,
+    checkOutTime: r.checkOutTime ? formatTimeInTimezone(r.checkOutTime, timeZone) : null,
+    rawCheckInTime: r.checkInTime,
+    rawCheckOutTime: r.checkOutTime,
+    timeZone,
   }));
 
   const total = await db.attendanceRecord.count({ where });
