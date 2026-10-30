@@ -4,6 +4,7 @@ import { protect } from '../../middlewares/authMiddleware';
 import { checkUserLock } from '../../middlewares/lockMiddleware';
 import * as leadController from '../../controllers/User/leadController';
 import { fieldHighlightController } from '../../modules/admin/field-highlights/fieldHighlights.controller';
+import { leadAssignmentLimiter } from '../../middlewares/rateLimiter';
 
 const router = Router();
 const profileImageUpload = multer({
@@ -44,12 +45,17 @@ router.get('/:id', leadController.getLeadById);
 router.get('/:id/history', leadController.getLeadHistory);
 router.get('/:id/remarks', leadController.getLeadRemarks);
 router.get('/:id/field-edits', fieldHighlightController.getLeadEdits.bind(fieldHighlightController));
-router.patch('/bulk', leadController.bulkUpdateLeads);
-router.put('/:id', leadController.updateLead);
+router.patch('/bulk', leadAssignmentLimiter, leadController.bulkUpdateLeads);
+router.put('/:id', (req, res, next) => {
+  if (req.body?.assignedToId !== undefined) {
+    return leadAssignmentLimiter(req, res, next);
+  }
+  return next();
+}, leadController.updateLead);
 router.patch('/:id/star', leadController.toggleLeadStar);
 router.patch('/:id/stage', leadController.changeStage);
 router.patch('/:id/sla/extend', leadController.extendLeadSla);
-router.patch('/:id/assign', leadController.assignLead);
+router.patch('/:id/assign', leadAssignmentLimiter, leadController.assignLead);
 router.delete('/bulk', leadController.bulkDeleteLeads);
 router.delete('/:id/permanent', leadController.permanentlyDeleteLead);
 router.delete('/:id', leadController.deleteLead);
