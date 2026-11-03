@@ -56,14 +56,30 @@ const getEffectiveUserFilter = async (filters: SummaryFilterDto) => {
 };
 
 const getDateFilter = async (workspaceId: string, startDate?: string, endDate?: string) => {
-  if (startDate && endDate) {
+  if (startDate || endDate) {
     const tz = await getWorkspaceTimeZone(workspaceId);
-    return {
-      gte: moment.tz(startDate, tz).startOf('day').toDate(),
-      lte: moment.tz(endDate, tz).endOf('day').toDate(),
-    };
+    const filter: any = {};
+    if (startDate) {
+      filter.gte = moment.tz(startDate, tz).startOf('day').toDate();
+    }
+    if (endDate) {
+      filter.lte = moment.tz(endDate, tz).endOf('day').toDate();
+    }
+    return filter;
   }
   return undefined;
+};
+
+const parseCalendarDateForDb = (dateInput?: string, timeZone = 'Asia/Kolkata'): Date | undefined => {
+  if (!dateInput) return undefined;
+  let dateStr: string;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateInput)) {
+    dateStr = dateInput;
+  } else {
+    const m = moment.tz(dateInput, timeZone);
+    dateStr = m.isValid() ? m.format('YYYY-MM-DD') : dateInput.slice(0, 10);
+  }
+  return new Date(`${dateStr}T00:00:00.000Z`);
 };
 
 // Activity Timeline
@@ -246,11 +262,13 @@ export const getAttendanceSummary = async (filters: SummaryFilterDto) => {
   const where: any = { workspaceId: filters.workspaceId };
   const timeZone = await resolveWorkspaceTimezone(filters.workspaceId);
 
-  if (filters.startDate && filters.endDate) {
-    where.date = {
-      gte: moment.tz(filters.startDate, timeZone).startOf('day').toDate(),
-      lte: moment.tz(filters.endDate, timeZone).endOf('day').toDate(),
-    };
+  const startDbDate = parseCalendarDateForDb(filters.startDate, timeZone);
+  const endDbDate = parseCalendarDateForDb(filters.endDate, timeZone);
+
+  if (startDbDate || endDbDate) {
+    where.date = {};
+    if (startDbDate) where.date.gte = startDbDate;
+    if (endDbDate) where.date.lte = endDbDate;
   }
   const userFilter = await getEffectiveUserFilter(filters);
   if (userFilter) where.userId = userFilter;
