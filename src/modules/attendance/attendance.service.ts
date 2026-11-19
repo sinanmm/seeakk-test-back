@@ -254,6 +254,10 @@ const resolveExpectedAttendanceTimes = async (workspaceId: string, userId: strin
       (userSchedule?.checkOutTime && String(userSchedule.checkOutTime).trim()) ||
       (userSetting?.expectedCheckOutTime && String(userSetting.expectedCheckOutTime).trim()) ||
       DEFAULT_EXPECTED_CHECK_OUT_TIME,
+    gracePeriod:
+      typeof userSchedule?.gracePeriod === 'number'
+        ? userSchedule.gracePeriod
+        : 15,
   };
 };
 
@@ -441,14 +445,19 @@ export const markAttendance = async (userId: string, workspaceId: string, payloa
   const checkInTime = payload.checkInTime ? new Date(payload.checkInTime) : new Date();
   const actualCheckInMinutes = dateToMinutes(checkInTime, timeZone);
   const expectedCheckInMinutes = timeStringToMinutes(expectedTiming.expectedCheckInTime);
-  const lateMinutes =
+  const effectiveGracePeriod = expectedTiming.gracePeriod ?? 15;
+  let lateMinutes = 0;
+  if (
     !isHoliday &&
     !isWeeklyOff &&
     actualCheckInMinutes != null &&
-    expectedCheckInMinutes != null &&
-    actualCheckInMinutes > expectedCheckInMinutes
-      ? actualCheckInMinutes - expectedCheckInMinutes
-      : 0;
+    expectedCheckInMinutes != null
+  ) {
+    const diffInMinutes = actualCheckInMinutes - expectedCheckInMinutes;
+    if (diffInMinutes > effectiveGracePeriod) {
+      lateMinutes = diffInMinutes;
+    }
+  }
 
   let warningCount = 0;
 
@@ -526,17 +535,17 @@ export const markAttendance = async (userId: string, workspaceId: string, payloa
 
   const record = existingRecord
     ? await prisma.attendanceRecord.update({
-        where: { id: existingRecord.id },
-        data: commonRecordData,
-      })
+      where: { id: existingRecord.id },
+      data: commonRecordData,
+    })
     : await prisma.attendanceRecord.create({
-        data: {
-          userId,
-          workspaceId,
-          date: dateObj,
-          ...commonRecordData,
-        },
-      });
+      data: {
+        userId,
+        workspaceId,
+        date: dateObj,
+        ...commonRecordData,
+      },
+    });
 
   await prisma.attendanceAuditLog.create({
     data: {
@@ -1329,9 +1338,9 @@ export const getApprovalHistory = async (workspaceId: string) => {
   ) as string[];
   const actors = actorIds.length
     ? await prisma.user.findMany({
-        where: { id: { in: actorIds } },
-        select: { id: true, name: true },
-      })
+      where: { id: { in: actorIds } },
+      select: { id: true, name: true },
+    })
     : [];
   const actorMap = new Map(actors.map((actor) => [actor.id, actor.name]));
 
@@ -1429,7 +1438,7 @@ export const getAdminStats = async (workspaceId: string) => {
   const totalAbsent = Math.max(
     0,
     activeUserCount -
-      userSubmittedRecords.filter((r) => ['APPROVED', 'PENDING', 'PENDING_APPROVAL', 'CLARIFICATION_REQUESTED'].includes(r.approvalStatus)).length,
+    userSubmittedRecords.filter((r) => ['APPROVED', 'PENDING', 'PENDING_APPROVAL', 'CLARIFICATION_REQUESTED'].includes(r.approvalStatus)).length,
   );
   const totalHolidays = records.filter((r) => r.isHoliday).length;
 

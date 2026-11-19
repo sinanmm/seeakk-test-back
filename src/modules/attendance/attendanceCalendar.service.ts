@@ -362,22 +362,30 @@ export const getAttendanceCalendarData = async (
     logger.info('[Attendance Calendar] LeaveRequest table check passed');
   }
 
-  // 5. Fetch User Attendance Schedule and User Timing Settings
+  // 5. Fetch User Attendance Schedule, User Timing Settings, and Workspace Settings
   let scheduleGracePeriod = 15;
   let scheduleCheckInTime: string | null = null;
   let scheduleCheckOutTime: string | null = null;
   let userSettingCheckInTime: string | null = null;
   let userSettingCheckOutTime: string | null = null;
+  let wsDefaultCheckIn = '09:00';
 
   try {
-    const [userSchedule, userSetting]: [any, any] = await Promise.all([
+    const [userSchedule, userSetting, wsSetting]: [any, any, any] = await Promise.all([
       (prisma as any).attendanceSchedule.findUnique({
         where: { userId: targetUserId },
       }).catch(() => null),
       (prisma as any).attendanceUserSetting.findUnique({
         where: { userId: targetUserId },
       }).catch(() => null),
+      prisma.attendanceSetting.findUnique({
+        where: { workspaceId },
+      }).catch(() => null),
     ]);
+
+    if (wsSetting?.attendanceStartTime && typeof wsSetting.attendanceStartTime === 'string') {
+      wsDefaultCheckIn = wsSetting.attendanceStartTime.trim();
+    }
 
     if (userSchedule) {
       scheduleGracePeriod = typeof userSchedule.gracePeriod === 'number' ? userSchedule.gracePeriod : 15;
@@ -502,30 +510,31 @@ export const getAttendanceCalendarData = async (
         ipStatus = 'N/A';
       }
 
-      // Scheduled check-out and check-in times with strict precedence:
+      // Scheduled check-out and check-in times with authoritative employee schedule precedence:
       // Check-Out Precedence:
-      // 1. rec.expectedCheckOutTime
-      // 2. AttendanceSchedule.checkOutTime
-      // 3. attendanceUserSetting.expectedCheckOutTime
+      // 1. AttendanceSchedule.checkOutTime (authoritative configured schedule for employee)
+      // 2. attendanceUserSetting.expectedCheckOutTime (legacy user setting)
+      // 3. rec.expectedCheckOutTime (record snapshot override)
       // 4. Default fallback: '18:00'
       const rawCheckOutTime =
-        (rec.expectedCheckOutTime && String(rec.expectedCheckOutTime).trim()) ||
         scheduleCheckOutTime ||
         userSettingCheckOutTime ||
+        (rec.expectedCheckOutTime && String(rec.expectedCheckOutTime).trim()) ||
         '18:00';
       const effectiveCheckOutTime = rawCheckOutTime.includes(':')
         ? rawCheckOutTime.split(':').slice(0, 2).map((s: string) => s.padStart(2, '0')).join(':')
         : '18:00';
 
       // Check-In Precedence:
-      // 1. rec.expectedCheckInTime
-      // 2. AttendanceSchedule.checkInTime
-      // 3. attendanceUserSetting.expectedCheckInTime
-      // 4. Default fallback: '09:00'
+      // 1. AttendanceSchedule.checkInTime (authoritative configured schedule for employee)
+      // 2. attendanceUserSetting.expectedCheckInTime (legacy user setting)
+      // 3. rec.expectedCheckInTime (record snapshot override)
+      // 4. Workspace setting / Default fallback: wsDefaultCheckIn || '09:00'
       const rawCheckInTime =
-        (rec.expectedCheckInTime && String(rec.expectedCheckInTime).trim()) ||
         scheduleCheckInTime ||
         userSettingCheckInTime ||
+        (rec.expectedCheckInTime && String(rec.expectedCheckInTime).trim()) ||
+        wsDefaultCheckIn ||
         '09:00';
       const effectiveCheckInTime = rawCheckInTime.includes(':')
         ? rawCheckInTime.split(':').slice(0, 2).map((s: string) => s.padStart(2, '0')).join(':')
@@ -669,10 +678,10 @@ export const getAttendanceCalendarData = async (
       pendingTasks,
       leaveDetails: activeLeave
         ? {
-            leaveType: activeLeave.leaveType || 'Leave',
-            reason: activeLeave.reason || 'Approved Leave',
-            approvalStatus: activeLeave.approvalStatus || 'APPROVED',
-          }
+          leaveType: activeLeave.leaveType || 'Leave',
+          reason: activeLeave.reason || 'Approved Leave',
+          approvalStatus: activeLeave.approvalStatus || 'APPROVED',
+        }
         : null,
       holidayDetails: holidayCheck ? { name: holidayCheck.name } : null,
       recordId,
