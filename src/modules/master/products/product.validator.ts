@@ -7,6 +7,23 @@ const productNameSchema = z.string().trim().min(1, 'Product name is required').m
 const optionalTextSchema = (label: string, max = 255) =>
   z.preprocess(emptyStringToUndefined, z.string().trim().max(max, `${label} is too long`).optional());
 
+const stringListSchema = (label: string, maxItemLength = 120) =>
+  z.preprocess(
+    (val) => {
+      if (val === undefined) return undefined;
+      if (Array.isArray(val)) {
+        return val
+          .map((item) => (typeof item === 'string' ? item.trim() : ''))
+          .filter((item) => item.length > 0);
+      }
+      if (typeof val === 'string' && val.trim().length > 0) {
+        return [val.trim()];
+      }
+      return [];
+    },
+    z.array(z.string().max(maxItemLength, `${label} value is too long`)).optional(),
+  );
+
 export const productStatusSchema = z.enum(['ACTIVE', 'INACTIVE']);
 
 const unitPriceSchema = z.coerce
@@ -17,6 +34,8 @@ export const createProductSchema = z.object({
   name: productNameSchema,
   code: optionalTextSchema('Product code', 80),
   category: optionalTextSchema('Category', 120),
+  categories: stringListSchema('Category').default([]),
+  types: stringListSchema('Type').default([]),
   description: optionalTextSchema('Description', 1000),
   unitPrice: unitPriceSchema,
   status: productStatusSchema.default('ACTIVE'),

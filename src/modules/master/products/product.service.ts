@@ -51,6 +51,10 @@ const mapProduct = (product: any) => ({
   name: product.name,
   code: product.code,
   category: product.category,
+  categories: Array.isArray(product.categories) && product.categories.length > 0
+    ? product.categories
+    : (product.category ? [product.category] : []),
+  types: Array.isArray(product.types) ? product.types : [],
   description: product.description,
   unitPrice: product.unitPrice,
   status: product.status,
@@ -81,12 +85,22 @@ export const createProduct = async (workspaceId: string, input: CreateProductInp
   const name = normalizeName(input.name);
   await assertUniqueName(workspaceId, name);
 
+  const rawCategories = Array.isArray(input.categories) ? input.categories : [];
+  const combinedCategories = rawCategories.length > 0
+    ? rawCategories
+    : (input.category?.trim() ? [input.category.trim()] : []);
+  const sanitizedCategories = Array.from(new Set(combinedCategories.map((c) => c.trim()).filter(Boolean)));
+  const sanitizedTypes = Array.from(new Set((input.types || []).map((t) => t.trim()).filter(Boolean)));
+  const primaryCategory = sanitizedCategories[0] || input.category?.trim() || null;
+
   const created = await productDelegate.create({
     data: {
       workspaceId,
       name,
       code: input.code?.trim() || null,
-      category: input.category?.trim() || null,
+      category: primaryCategory,
+      categories: sanitizedCategories,
+      types: sanitizedTypes,
       description: input.description?.trim() || null,
       unitPrice: input.unitPrice,
       status: input.status,
@@ -111,6 +125,8 @@ export const listProducts = async (workspaceId: string, query: ListProductsQuery
             { name: { contains: query.search, mode: 'insensitive' } },
             { code: { contains: query.search, mode: 'insensitive' } },
             { category: { contains: query.search, mode: 'insensitive' } },
+            { types: { has: query.search } },
+            { categories: { has: query.search } },
           ],
         }
       : {}),
@@ -173,12 +189,30 @@ export const updateProduct = async (workspaceId: string, id: string, input: Upda
     await assertUniqueName(workspaceId, nextName, id);
   }
 
+  let nextCategories: string[] | undefined = undefined;
+  if (input.categories !== undefined) {
+    nextCategories = Array.from(new Set(input.categories.map((c) => c.trim()).filter(Boolean)));
+  } else if (input.category !== undefined) {
+    nextCategories = input.category?.trim() ? [input.category.trim()] : [];
+  }
+
+  let nextTypes: string[] | undefined = undefined;
+  if (input.types !== undefined) {
+    nextTypes = Array.from(new Set(input.types.map((t) => t.trim()).filter(Boolean)));
+  }
+
+  const nextCategory = nextCategories !== undefined
+    ? (nextCategories[0] || null)
+    : (input.category !== undefined ? (input.category?.trim() || null) : undefined);
+
   const updated = await productDelegate.update({
     where: { id },
     data: {
       ...(nextName !== undefined ? { name: nextName } : {}),
       ...(input.code !== undefined ? { code: input.code?.trim() || null } : {}),
-      ...(input.category !== undefined ? { category: input.category?.trim() || null } : {}),
+      ...(nextCategory !== undefined ? { category: nextCategory } : {}),
+      ...(nextCategories !== undefined ? { categories: nextCategories } : {}),
+      ...(nextTypes !== undefined ? { types: nextTypes } : {}),
       ...(input.description !== undefined ? { description: input.description?.trim() || null } : {}),
       ...(input.unitPrice !== undefined ? { unitPrice: input.unitPrice } : {}),
       ...(input.status !== undefined ? { status: input.status } : {}),

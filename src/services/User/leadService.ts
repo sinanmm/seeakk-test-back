@@ -206,6 +206,8 @@ type LeadIncludeRecord = {
     productId: string | null;
     productName: string;
     productCode: string | null;
+    type?: string | null;
+    category?: string | null;
     unitPrice: number;
     quantity: number;
     lineTotal: number;
@@ -358,6 +360,8 @@ const leadRelationSelect = {
       productId: true,
       productName: true,
       productCode: true,
+      type: true,
+      category: true,
       unitPrice: true,
       quantity: true,
       lineTotal: true,
@@ -720,11 +724,18 @@ const normalizeLeadRemarks = (value: string | null | undefined): string | null |
   return trimmed.length > 0 ? trimmed : null;
 };
 
-type LeadProductInput = { productId: string; quantity: number };
+type LeadProductInput = {
+  productId: string;
+  quantity: number;
+  type?: string | null;
+  category?: string | null;
+};
 type LeadProductSnapshot = {
   productId: string;
   productName: string;
   productCode: string | null;
+  type: string | null;
+  category: string | null;
   unitPrice: number;
   quantity: number;
   lineTotal: number;
@@ -735,6 +746,9 @@ type ProductSnapshotSource = {
   name: string;
   code: string | null;
   unitPrice: number;
+  types: string[];
+  categories: string[];
+  category: string | null;
 };
 
 const resolveLeadProductSnapshots = async (
@@ -748,6 +762,8 @@ const resolveLeadProductSnapshots = async (
   const normalized = products.map((item) => ({
     productId: item.productId.trim(),
     quantity: Math.max(1, Math.trunc(Number(item.quantity) || 1)),
+    type: item.type?.trim() || null,
+    category: item.category?.trim() || null,
   }));
   const ids = Array.from(new Set(normalized.map((item) => item.productId)));
   const productRows = await tx.product.findMany({
@@ -762,10 +778,13 @@ const resolveLeadProductSnapshots = async (
       name: true,
       code: true,
       unitPrice: true,
+      types: true,
+      categories: true,
+      category: true,
     },
   });
   const productById = new Map<string, ProductSnapshotSource>(
-    productRows.map((item: ProductSnapshotSource) => [item.id, item]),
+    productRows.map((item: any) => [item.id, item]),
   );
 
   return normalized.map((item) => {
@@ -773,12 +792,40 @@ const resolveLeadProductSnapshots = async (
     if (!product) {
       throw createServiceError('One or more selected products are inactive or unavailable.', 422);
     }
+
+    // Validate type if supplied and product has configured types
+    if (item.type && Array.isArray(product.types) && product.types.length > 0) {
+      const match = product.types.some((t) => t.trim().toLowerCase() === item.type!.toLowerCase());
+      if (!match) {
+        throw createServiceError(
+          `Selected type "${item.type}" is not configured for product "${product.name}".`,
+          422,
+        );
+      }
+    }
+
+    // Validate category if supplied and product has configured categories
+    const availableCategories = Array.isArray(product.categories) && product.categories.length > 0
+      ? product.categories
+      : (product.category ? [product.category] : []);
+    if (item.category && availableCategories.length > 0) {
+      const match = availableCategories.some((c) => c.trim().toLowerCase() === item.category!.toLowerCase());
+      if (!match) {
+        throw createServiceError(
+          `Selected category "${item.category}" is not configured for product "${product.name}".`,
+          422,
+        );
+      }
+    }
+
     const unitPrice = Number(product.unitPrice || 0);
     const lineTotal = unitPrice * item.quantity;
     return {
       productId: product.id,
       productName: product.name,
       productCode: product.code || null,
+      type: item.type || null,
+      category: item.category || null,
       unitPrice,
       quantity: item.quantity,
       lineTotal,
@@ -803,6 +850,9 @@ const replaceLeadProducts = async (
     select: {
       productId: true,
       productName: true,
+      productCode: true,
+      type: true,
+      category: true,
       quantity: true,
       unitPrice: true,
       lineTotal: true,
@@ -818,6 +868,8 @@ const replaceLeadProducts = async (
         productId: item.productId,
         productName: item.productName,
         productCode: item.productCode,
+        type: item.type,
+        category: item.category,
         unitPrice: item.unitPrice,
         quantity: item.quantity,
         lineTotal: item.lineTotal,
@@ -3472,7 +3524,13 @@ const buildLeadExportCsvRow = (
     (lead.advancePayments?.reduce((sum: number, p: any) => sum + (p.amount || 0), 0) || 0)
   );
   const balanceAmount = Math.max(0, totalAmount - advanceAmount);
-  const productsStr = lead.products?.map((p: any) => `${p.productName || 'Product'} × ${p.quantity || 1}`).join('; ') || '';
+  const productsStr = lead.products?.map((p: any) => {
+    const meta: string[] = [];
+    if (p.type) meta.push(`Type: ${p.type}`);
+    if (p.category) meta.push(`Cat: ${p.category}`);
+    const metaStr = meta.length > 0 ? ` (${meta.join(', ')})` : '';
+    return `${p.productName || 'Product'}${metaStr} × ${p.quantity || 1}`;
+  }).join('; ') || '';
 
   return [
     slNo,
@@ -3776,7 +3834,13 @@ export const exportLeadsXlsx = async (
         (lead.advancePayments?.reduce((sum: number, p: any) => sum + (p.amount || 0), 0) || 0)
       );
       const balanceAmount = Math.max(0, totalAmount - advanceAmount);
-      const productsStr = lead.products?.map((p: any) => `${p.productName || 'Product'} × ${p.quantity || 1}`).join('; ') || '';
+      const productsStr = lead.products?.map((p: any) => {
+    const meta: string[] = [];
+    if (p.type) meta.push(`Type: ${p.type}`);
+    if (p.category) meta.push(`Cat: ${p.category}`);
+    const metaStr = meta.length > 0 ? ` (${meta.join(', ')})` : '';
+    return `${p.productName || 'Product'}${metaStr} × ${p.quantity || 1}`;
+  }).join('; ') || '';
       
       const fullRow = [
         slNoCounter++,
