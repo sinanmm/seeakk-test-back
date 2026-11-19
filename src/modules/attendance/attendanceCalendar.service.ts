@@ -78,7 +78,8 @@ export interface AttendanceCalendarResponse {
   days: CalendarDayDetail[];
 }
 
-import { resolveWorkspaceTimezone, formatTimeInTimezone } from '../../utils/timezoneContext';
+import moment from 'moment-timezone';
+import { resolveWorkspaceTimezone, formatTimeInTimezone, formatDateInTimezone } from '../../utils/timezoneContext';
 
 /** Helper to convert JS Date / string to YYYY-MM-DD */
 const formatDateStr = (date: Date | string): string => {
@@ -361,19 +362,40 @@ export const getAttendanceCalendarData = async (
     logger.info('[Attendance Calendar] LeaveRequest table check passed');
   }
 
-  // 5. Fetch User Attendance Schedule for timing thresholds
+  // 5. Fetch User Attendance Schedule and User Timing Settings
   let scheduleGracePeriod = 15;
-  let scheduleCheckInTime = '09:00';
-  let scheduleCheckOutTime = '18:00';
+  let scheduleCheckInTime: string | null = null;
+  let scheduleCheckOutTime: string | null = null;
+  let userSettingCheckInTime: string | null = null;
+  let userSettingCheckOutTime: string | null = null;
 
   try {
-    const userSchedule: any = await (prisma as any).attendanceSchedule.findUnique({
-      where: { userId: targetUserId },
-    });
+    const [userSchedule, userSetting]: [any, any] = await Promise.all([
+      (prisma as any).attendanceSchedule.findUnique({
+        where: { userId: targetUserId },
+      }).catch(() => null),
+      (prisma as any).attendanceUserSetting.findUnique({
+        where: { userId: targetUserId },
+      }).catch(() => null),
+    ]);
+
     if (userSchedule) {
-      scheduleGracePeriod = userSchedule.gracePeriod ?? 15;
-      if (userSchedule.checkInTime) scheduleCheckInTime = userSchedule.checkInTime;
-      if (userSchedule.checkOutTime) scheduleCheckOutTime = userSchedule.checkOutTime;
+      scheduleGracePeriod = typeof userSchedule.gracePeriod === 'number' ? userSchedule.gracePeriod : 15;
+      if (userSchedule.checkInTime && typeof userSchedule.checkInTime === 'string') {
+        scheduleCheckInTime = userSchedule.checkInTime.trim();
+      }
+      if (userSchedule.checkOutTime && typeof userSchedule.checkOutTime === 'string') {
+        scheduleCheckOutTime = userSchedule.checkOutTime.trim();
+      }
+    }
+
+    if (userSetting) {
+      if (userSetting.expectedCheckInTime && typeof userSetting.expectedCheckInTime === 'string') {
+        userSettingCheckInTime = userSetting.expectedCheckInTime.trim();
+      }
+      if (userSetting.expectedCheckOutTime && typeof userSetting.expectedCheckOutTime === 'string') {
+        userSettingCheckOutTime = userSetting.expectedCheckOutTime.trim();
+      }
     }
   } catch (e) {
     // default threshold applies
@@ -381,7 +403,7 @@ export const getAttendanceCalendarData = async (
 
   // Build Day by Day calendar list
   const days: CalendarDayDetail[] = [];
-  const todayStr = formatDateStr(new Date());
+  const todayStr = formatDateInTimezone(new Date(), timeZone);
 
   let totalPresentCount = 0;
   let totalAbsentCount = 0;
@@ -480,31 +502,88 @@ export const getAttendanceCalendarData = async (
         ipStatus = 'N/A';
       }
 
-      // Calculate late & early checkout minutes if applicable
-      if (rec.checkInTime) {
-        const cIn = new Date(rec.checkInTime);
-        const [schH, schM] = scheduleCheckInTime.split(':').map(Number);
-        const expectedCheckIn = new Date(cIn.getFullYear(), cIn.getMonth(), cIn.getDate(), schH, schM, 0);
-        const diffMins = Math.floor((cIn.getTime() - expectedCheckIn.getTime()) / (1000 * 60));
-        if (diffMins > scheduleGracePeriod) {
-          lateMinutes = diffMins;
-        }
+      // Scheduled check-out and check-in times with strict precedence:
+      // Check-Out Precedence:
+      // 1. rec.expectedCheckOutTime
+      // 2. AttendanceSchedule.checkOutTime
+      // 3. attendanceUserSetting.expectedCheckOutTime
+      // 4. Default fallback: '18:00'
+      const rawCheckOutTime =
+        (rec.expectedCheckOutTime && String(rec.expectedCheckOutTime).trim()) ||
+        scheduleCheckOutTime ||
+        userSettingCheckOutTime ||
+        '18:00';
+      const effectiveCheckOutTime = rawCheckOutTime.includes(':')
+        ? rawCheckOutTime.split(':').slice(0, 2).map((s: string) => s.padStart(2, '0')).join(':')
+        : '18:00';
 
-        checkInMinutesSum += cIn.getHours() * 60 + cIn.getMinutes();
-        checkInCount++;
+      // Check-In Precedence:
+      // 1. rec.expectedCheckInTime
+      // 2. AttendanceSchedule.checkInTime
+      // 3. attendanceUserSetting.expectedCheckInTime
+      // 4. Default fallback: '09:00'
+      const rawCheckInTime =
+        (rec.expectedCheckInTime && String(rec.expectedCheckInTime).trim()) ||
+        scheduleCheckInTime ||
+        userSettingCheckInTime ||
+        '09:00';
+      const effectiveCheckInTime = rawCheckInTime.includes(':')
+        ? rawCheckInTime.split(':').slice(0, 2).map((s: string) => s.padStart(2, '0')).join(':')
+        : '09:00';
+
+      // Calculate late & early checkout minutes in workspace timezone
+      if (rec.checkInTime) {
+        const actualCheckInMoment = moment(rec.checkInTime).tz(timeZone);
+        if (actualCheckInMoment.isValid()) {
+          const scheduledCheckInMoment = moment.tz(
+            `${dateStr} ${effectiveCheckInTime}`,
+            'YYYY-MM-DD HH:mm',
+            timeZone,
+          );
+          if (scheduledCheckInMoment.isValid()) {
+            const diffInMins = Math.floor(
+              (actualCheckInMoment.valueOf() - scheduledCheckInMoment.valueOf()) / 60000,
+            );
+            if (diffInMins > scheduleGracePeriod) {
+              lateMinutes = diffInMins;
+            }
+          }
+
+          checkInMinutesSum += actualCheckInMoment.hours() * 60 + actualCheckInMoment.minutes();
+          checkInCount++;
+        }
       }
 
       if (rec.checkOutTime) {
-        const cOut = new Date(rec.checkOutTime);
-        const [schOutH, schOutM] = scheduleCheckOutTime.split(':').map(Number);
-        const expectedCheckOut = new Date(cOut.getFullYear(), cOut.getMonth(), cOut.getDate(), schOutH, schOutM, 0);
-        const diffOutMins = Math.floor((expectedCheckOut.getTime() - cOut.getTime()) / (1000 * 60));
-        if (diffOutMins > 0) {
-          earlyCheckoutMinutes = diffOutMins;
-        }
+        const actualCheckOutMoment = moment(rec.checkOutTime).tz(timeZone);
+        if (actualCheckOutMoment.isValid()) {
+          let scheduledCheckOutMoment = moment.tz(
+            `${dateStr} ${effectiveCheckOutTime}`,
+            'YYYY-MM-DD HH:mm',
+            timeZone,
+          );
 
-        checkOutMinutesSum += cOut.getHours() * 60 + cOut.getMinutes();
-        checkOutCount++;
+          // Handle overnight shifts: if scheduled checkOutTime is earlier in the day than scheduled checkInTime
+          // (e.g. checkin at 20:00, checkout at 05:00 next day)
+          const [schInH = 9, schInM = 0] = effectiveCheckInTime.split(':').map(Number);
+          const [schOutH = 18, schOutM = 0] = effectiveCheckOutTime.split(':').map(Number);
+          if (schOutH * 60 + schOutM < schInH * 60 + schInM) {
+            scheduledCheckOutMoment = scheduledCheckOutMoment.add(1, 'day');
+          }
+
+          if (scheduledCheckOutMoment.isValid()) {
+            // diffOutMins > 0 means actual checkout was earlier than scheduled checkout
+            const diffOutMins = Math.floor(
+              (scheduledCheckOutMoment.valueOf() - actualCheckOutMoment.valueOf()) / 60000,
+            );
+            if (diffOutMins > 0) {
+              earlyCheckoutMinutes = diffOutMins;
+            }
+          }
+
+          checkOutMinutesSum += actualCheckOutMoment.hours() * 60 + actualCheckOutMoment.minutes();
+          checkOutCount++;
+        }
       }
 
       sumWorkingHours += workingHours;

@@ -235,18 +235,25 @@ const resolveCheckoutPopupRequirement = (record: any, expectedCheckOutTime?: str
 };
 
 const resolveExpectedAttendanceTimes = async (workspaceId: string, userId: string) => {
-  const [settings, userSetting] = await Promise.all([
+  const [settings, userSetting, userSchedule] = await Promise.all([
     getSettings(workspaceId),
-    (prisma as any).attendanceUserSetting.findUnique({ where: { userId } }),
+    (prisma as any).attendanceUserSetting.findUnique({ where: { userId } }).catch(() => null),
+    (prisma as any).attendanceSchedule.findUnique({ where: { userId } }).catch(() => null),
   ]);
 
   return {
     settings,
     userSetting,
+    userSchedule,
     expectedCheckInTime:
-      userSetting?.expectedCheckInTime || settings.attendanceStartTime || DEFAULT_EXPECTED_CHECK_IN_TIME,
+      (userSchedule?.checkInTime && String(userSchedule.checkInTime).trim()) ||
+      (userSetting?.expectedCheckInTime && String(userSetting.expectedCheckInTime).trim()) ||
+      settings.attendanceStartTime ||
+      DEFAULT_EXPECTED_CHECK_IN_TIME,
     expectedCheckOutTime:
-      userSetting?.expectedCheckOutTime || DEFAULT_EXPECTED_CHECK_OUT_TIME,
+      (userSchedule?.checkOutTime && String(userSchedule.checkOutTime).trim()) ||
+      (userSetting?.expectedCheckOutTime && String(userSetting.expectedCheckOutTime).trim()) ||
+      DEFAULT_EXPECTED_CHECK_OUT_TIME,
   };
 };
 
