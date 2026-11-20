@@ -360,6 +360,7 @@ const leadRelationSelect = {
       productId: true,
       productName: true,
       productCode: true,
+      typeId: true,
       type: true,
       category: true,
       unitPrice: true,
@@ -727,13 +728,16 @@ const normalizeLeadRemarks = (value: string | null | undefined): string | null |
 type LeadProductInput = {
   productId: string;
   quantity: number;
+  typeId?: string | null;
   type?: string | null;
   category?: string | null;
+  unitPrice?: number | null;
 };
 type LeadProductSnapshot = {
   productId: string;
   productName: string;
   productCode: string | null;
+  typeId: string | null;
   type: string | null;
   category: string | null;
   unitPrice: number;
@@ -747,6 +751,13 @@ type ProductSnapshotSource = {
   code: string | null;
   unitPrice: number;
   types: string[];
+  typeOptions?: Array<{
+    id: string;
+    name: string;
+    unitPrice: number;
+    status: 'ACTIVE' | 'INACTIVE';
+    isDefault?: boolean;
+  }>;
   categories: string[];
   category: string | null;
 };
@@ -762,8 +773,10 @@ const resolveLeadProductSnapshots = async (
   const normalized = products.map((item) => ({
     productId: item.productId.trim(),
     quantity: Math.max(1, Math.trunc(Number(item.quantity) || 1)),
+    typeId: item.typeId?.trim() || null,
     type: item.type?.trim() || null,
     category: item.category?.trim() || null,
+    unitPrice: item.unitPrice !== undefined && item.unitPrice !== null ? Number(item.unitPrice) : undefined,
   }));
   const ids = Array.from(new Set(normalized.map((item) => item.productId)));
   const productRows = await tx.product.findMany({
@@ -779,6 +792,7 @@ const resolveLeadProductSnapshots = async (
       code: true,
       unitPrice: true,
       types: true,
+      typeOptions: true,
       categories: true,
       category: true,
     },
@@ -793,8 +807,37 @@ const resolveLeadProductSnapshots = async (
       throw createServiceError('One or more selected products are inactive or unavailable.', 422);
     }
 
-    // Validate type if supplied and product has configured types
-    if (item.type && Array.isArray(product.types) && product.types.length > 0) {
+    const typeOptionsList: Array<any> = Array.isArray(product.typeOptions) ? product.typeOptions : [];
+
+    let matchedTypeOption: any = null;
+    let resolvedTypeId: string | null = item.typeId || null;
+    let resolvedTypeName: string | null = item.type || null;
+
+    if (typeOptionsList.length > 0) {
+      if (item.typeId) {
+        matchedTypeOption = typeOptionsList.find((opt) => opt.id === item.typeId);
+      }
+      if (!matchedTypeOption && item.type) {
+        matchedTypeOption = typeOptionsList.find(
+          (opt) => opt.name?.trim().toLowerCase() === item.type!.trim().toLowerCase(),
+        );
+      }
+
+      if (matchedTypeOption) {
+        resolvedTypeId = matchedTypeOption.id || null;
+        resolvedTypeName = matchedTypeOption.name;
+      } else if (item.type) {
+        const legacyMatch = Array.isArray(product.types) && product.types.some(
+          (t) => t.trim().toLowerCase() === item.type!.toLowerCase(),
+        );
+        if (!legacyMatch) {
+          throw createServiceError(
+            `Selected type "${item.type}" is not configured for product "${product.name}".`,
+            422,
+          );
+        }
+      }
+    } else if (item.type && Array.isArray(product.types) && product.types.length > 0) {
       const match = product.types.some((t) => t.trim().toLowerCase() === item.type!.toLowerCase());
       if (!match) {
         throw createServiceError(
@@ -818,13 +861,22 @@ const resolveLeadProductSnapshots = async (
       }
     }
 
-    const unitPrice = Number(product.unitPrice || 0);
+    let unitPrice: number;
+    if (matchedTypeOption && matchedTypeOption.unitPrice !== undefined && matchedTypeOption.unitPrice !== null) {
+      unitPrice = Number(matchedTypeOption.unitPrice);
+    } else if (item.unitPrice !== undefined && !Number.isNaN(item.unitPrice) && item.unitPrice >= 0) {
+      unitPrice = item.unitPrice;
+    } else {
+      unitPrice = Number(product.unitPrice || 0);
+    }
+
     const lineTotal = unitPrice * item.quantity;
     return {
       productId: product.id,
       productName: product.name,
       productCode: product.code || null,
-      type: item.type || null,
+      typeId: resolvedTypeId,
+      type: resolvedTypeName,
       category: item.category || null,
       unitPrice,
       quantity: item.quantity,
@@ -851,6 +903,7 @@ const replaceLeadProducts = async (
       productId: true,
       productName: true,
       productCode: true,
+      typeId: true,
       type: true,
       category: true,
       quantity: true,
@@ -868,6 +921,7 @@ const replaceLeadProducts = async (
         productId: item.productId,
         productName: item.productName,
         productCode: item.productCode,
+        typeId: item.typeId,
         type: item.type,
         category: item.category,
         unitPrice: item.unitPrice,

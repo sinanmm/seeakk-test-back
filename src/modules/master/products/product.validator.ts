@@ -26,9 +26,21 @@ const stringListSchema = (label: string, maxItemLength = 120) =>
 
 export const productStatusSchema = z.enum(['ACTIVE', 'INACTIVE']);
 
+export const productTypeOptionSchema = z.object({
+  id: z.string().trim().optional(),
+  name: z.string().trim().min(1, 'Type name is required').max(120, 'Type name is too long'),
+  unitPrice: z.coerce
+    .number({ message: 'Unit price must be a valid number' })
+    .nonnegative('Unit price must be non-negative'),
+  status: productStatusSchema.default('ACTIVE'),
+  isDefault: z.coerce.boolean().default(false),
+});
+
+export type ProductTypeOption = z.infer<typeof productTypeOptionSchema>;
+
 const unitPriceSchema = z.coerce
   .number({ message: 'Unit price must be a valid number' })
-  .positive('Unit price must be greater than zero');
+  .nonnegative('Unit price must be non-negative');
 
 export const createProductSchema = z.object({
   name: productNameSchema,
@@ -36,8 +48,9 @@ export const createProductSchema = z.object({
   category: optionalTextSchema('Category', 120),
   categories: stringListSchema('Category').default([]),
   types: stringListSchema('Type').default([]),
+  typeOptions: z.array(productTypeOptionSchema).optional().default([]),
   description: optionalTextSchema('Description', 1000),
-  unitPrice: unitPriceSchema,
+  unitPrice: unitPriceSchema.optional().default(0),
   status: productStatusSchema.default('ACTIVE'),
 });
 

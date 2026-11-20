@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import type { Prisma } from '@prisma/client';
 import prisma from '../../../config/prisma';
 import { redisClient } from '../../../config/redis';
@@ -55,6 +56,7 @@ const mapProduct = (product: any) => ({
     ? product.categories
     : (product.category ? [product.category] : []),
   types: Array.isArray(product.types) ? product.types : [],
+  typeOptions: Array.isArray(product.typeOptions) ? product.typeOptions : [],
   description: product.description,
   unitPrice: product.unitPrice,
   status: product.status,
@@ -62,6 +64,84 @@ const mapProduct = (product: any) => ({
   createdAt: product.createdAt,
   updatedAt: product.updatedAt,
 });
+
+const sanitizeTypeOptions = (
+  rawOptions?: Array<{ id?: string; name: string; unitPrice: number; status?: string; isDefault?: boolean }>,
+  rawTypes?: string[],
+  fallbackUnitPrice: number = 0,
+) => {
+  if (!rawOptions || rawOptions.length === 0) {
+    if (Array.isArray(rawTypes) && rawTypes.length > 0) {
+      const uniqueNames = Array.from(new Set(rawTypes.map((t) => t.trim()).filter(Boolean)));
+      const options = uniqueNames.map((name, idx) => ({
+        id: randomUUID(),
+        name,
+        unitPrice: Math.max(0, fallbackUnitPrice),
+        status: 'ACTIVE' as const,
+        isDefault: idx === 0,
+      }));
+      return {
+        typeOptions: options,
+        types: uniqueNames,
+        baselineUnitPrice: options.length > 0 ? options[0].unitPrice : fallbackUnitPrice,
+      };
+    }
+    return {
+      typeOptions: [],
+      types: [],
+      baselineUnitPrice: fallbackUnitPrice,
+    };
+  }
+
+  const seenNames = new Set<string>();
+  const sanitized = rawOptions
+    .map((item) => {
+      const name = item.name ? item.name.trim().replace(/\s+/g, ' ') : '';
+      if (!name) return null;
+      const lower = name.toLowerCase();
+      if (seenNames.has(lower)) {
+        throw createServiceError(`Duplicate type name "${name}". Each type must have a unique name.`, 400);
+      }
+      seenNames.add(lower);
+
+      const price = Math.max(0, Number(item.unitPrice) || 0);
+      return {
+        id: item.id && typeof item.id === 'string' && item.id.trim() ? item.id.trim() : randomUUID(),
+        name,
+        unitPrice: price,
+        status: item.status === 'INACTIVE' ? 'INACTIVE' : 'ACTIVE',
+        isDefault: Boolean(item.isDefault),
+      };
+    })
+    .filter(Boolean) as Array<{
+      id: string;
+      name: string;
+      unitPrice: number;
+      status: 'ACTIVE' | 'INACTIVE';
+      isDefault: boolean;
+    }>;
+
+  if (sanitized.length > 0) {
+    const defaultIndex = sanitized.findIndex((t) => t.isDefault);
+    if (defaultIndex === -1) {
+      sanitized[0].isDefault = true;
+    } else {
+      sanitized.forEach((t, i) => {
+        t.isDefault = i === defaultIndex;
+      });
+    }
+  }
+
+  const types = sanitized.map((t) => t.name);
+  const defaultOption = sanitized.find((t) => t.isDefault) || sanitized[0];
+  const baselineUnitPrice = defaultOption ? defaultOption.unitPrice : fallbackUnitPrice;
+
+  return {
+    typeOptions: sanitized,
+    types,
+    baselineUnitPrice,
+  };
+};
 
 const assertUniqueName = async (workspaceId: string, name: string, productId?: string) => {
   const existing = await productDelegate.findFirst({
@@ -90,8 +170,13 @@ export const createProduct = async (workspaceId: string, input: CreateProductInp
     ? rawCategories
     : (input.category?.trim() ? [input.category.trim()] : []);
   const sanitizedCategories = Array.from(new Set(combinedCategories.map((c) => c.trim()).filter(Boolean)));
-  const sanitizedTypes = Array.from(new Set((input.types || []).map((t) => t.trim()).filter(Boolean)));
   const primaryCategory = sanitizedCategories[0] || input.category?.trim() || null;
+
+  const { typeOptions, types, baselineUnitPrice } = sanitizeTypeOptions(
+    input.typeOptions,
+    input.types,
+    input.unitPrice !== undefined ? Math.max(0, Number(input.unitPrice)) : 0,
+  );
 
   const created = await productDelegate.create({
     data: {
@@ -100,9 +185,10 @@ export const createProduct = async (workspaceId: string, input: CreateProductInp
       code: input.code?.trim() || null,
       category: primaryCategory,
       categories: sanitizedCategories,
-      types: sanitizedTypes,
+      types,
+      typeOptions,
       description: input.description?.trim() || null,
-      unitPrice: input.unitPrice,
+      unitPrice: baselineUnitPrice,
       status: input.status,
       createdById,
     },
@@ -196,9 +282,36 @@ export const updateProduct = async (workspaceId: string, id: string, input: Upda
     nextCategories = input.category?.trim() ? [input.category.trim()] : [];
   }
 
-  let nextTypes: string[] | undefined = undefined;
-  if (input.types !== undefined) {
-    nextTypes = Array.from(new Set(input.types.map((t) => t.trim()).filter(Boolean)));
+  let typeDataToUpdate: {
+    types?: string[];
+    typeOptions?: any;
+    unitPrice?: number;
+  } = {};
+
+  if (input.typeOptions !== undefined) {
+    const { typeOptions, types, baselineUnitPrice } = sanitizeTypeOptions(
+      input.typeOptions,
+      input.types,
+      input.unitPrice !== undefined ? Math.max(0, Number(input.unitPrice)) : Number(existing.unitPrice || 0),
+    );
+    typeDataToUpdate = {
+      typeOptions,
+      types,
+      unitPrice: baselineUnitPrice,
+    };
+  } else if (input.types !== undefined) {
+    const { typeOptions, types, baselineUnitPrice } = sanitizeTypeOptions(
+      undefined,
+      input.types,
+      input.unitPrice !== undefined ? Math.max(0, Number(input.unitPrice)) : Number(existing.unitPrice || 0),
+    );
+    typeDataToUpdate = {
+      typeOptions,
+      types,
+      unitPrice: baselineUnitPrice,
+    };
+  } else if (input.unitPrice !== undefined) {
+    typeDataToUpdate.unitPrice = Math.max(0, Number(input.unitPrice));
   }
 
   const nextCategory = nextCategories !== undefined
@@ -212,9 +325,8 @@ export const updateProduct = async (workspaceId: string, id: string, input: Upda
       ...(input.code !== undefined ? { code: input.code?.trim() || null } : {}),
       ...(nextCategory !== undefined ? { category: nextCategory } : {}),
       ...(nextCategories !== undefined ? { categories: nextCategories } : {}),
-      ...(nextTypes !== undefined ? { types: nextTypes } : {}),
+      ...typeDataToUpdate,
       ...(input.description !== undefined ? { description: input.description?.trim() || null } : {}),
-      ...(input.unitPrice !== undefined ? { unitPrice: input.unitPrice } : {}),
       ...(input.status !== undefined ? { status: input.status } : {}),
     },
   });

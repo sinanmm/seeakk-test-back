@@ -960,6 +960,7 @@ model Product {
   category    String?
   categories  String[]      @default([])
   types       String[]      @default([])
+  typeOptions Json?         @default("[]")
   description String?
   unitPrice   Float
   status      ProductStatus @default(ACTIVE)
@@ -987,6 +988,7 @@ model LeadProduct {
   productName String
   productCode String?
   type        String?
+  typeId      String?
   category    String?
   unitPrice   Float
   quantity    Int

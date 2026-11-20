@@ -110,8 +110,10 @@ const leadDynamicValueEntrySchema = z.object({
 const leadProductEntrySchema = z.object({
   productId: z.string().trim().min(1, 'productId is required').max(191, 'Invalid productId'),
   quantity: z.coerce.number().int('Quantity must be a whole number').min(1, 'Quantity must be at least 1'),
+  typeId: z.preprocess(emptyStringToUndefined, z.string().trim().max(120, 'Product typeId is too long').nullable().optional()),
   type: z.preprocess(emptyStringToUndefined, z.string().trim().max(120, 'Product type is too long').nullable().optional()),
   category: z.preprocess(emptyStringToUndefined, z.string().trim().max(120, 'Product category is too long').nullable().optional()),
+  unitPrice: z.coerce.number().nonnegative('Unit price must be non-negative').optional(),
 });
 
 export const createLeadSchema = z.object({
