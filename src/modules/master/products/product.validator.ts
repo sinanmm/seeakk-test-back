@@ -34,6 +34,21 @@ export const productTypeOptionSchema = z.object({
     .nonnegative('Unit price must be non-negative'),
   status: productStatusSchema.default('ACTIVE'),
   isDefault: z.coerce.boolean().default(false),
+  categories: z.preprocess(
+    (val) => {
+      if (val === undefined || val === null) return [];
+      if (Array.isArray(val)) {
+        return val
+          .map((item) => (typeof item === 'string' ? item.trim() : ''))
+          .filter((item) => item.length > 0);
+      }
+      if (typeof val === 'string' && val.trim().length > 0) {
+        return [val.trim()];
+      }
+      return [];
+    },
+    z.array(z.string().max(120, 'Category value is too long')).optional().default([]),
+  ),
 });
 
 export type ProductTypeOption = z.infer<typeof productTypeOptionSchema>;

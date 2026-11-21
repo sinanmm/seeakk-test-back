@@ -56,7 +56,16 @@ const mapProduct = (product: any) => ({
     ? product.categories
     : (product.category ? [product.category] : []),
   types: Array.isArray(product.types) ? product.types : [],
-  typeOptions: Array.isArray(product.typeOptions) ? product.typeOptions : [],
+  typeOptions: Array.isArray(product.typeOptions)
+    ? product.typeOptions.map((t: any) => ({
+        id: t.id,
+        name: t.name,
+        unitPrice: t.unitPrice,
+        status: t.status,
+        isDefault: t.isDefault,
+        categories: Array.isArray(t.categories) ? t.categories : [],
+      }))
+    : [],
   description: product.description,
   unitPrice: product.unitPrice,
   status: product.status,
@@ -66,7 +75,14 @@ const mapProduct = (product: any) => ({
 });
 
 const sanitizeTypeOptions = (
-  rawOptions?: Array<{ id?: string; name: string; unitPrice: number; status?: string; isDefault?: boolean }>,
+  rawOptions?: Array<{
+    id?: string;
+    name: string;
+    unitPrice: number;
+    status?: string;
+    isDefault?: boolean;
+    categories?: string[];
+  }>,
   rawTypes?: string[],
   fallbackUnitPrice: number = 0,
 ) => {
@@ -79,17 +95,20 @@ const sanitizeTypeOptions = (
         unitPrice: Math.max(0, fallbackUnitPrice),
         status: 'ACTIVE' as const,
         isDefault: idx === 0,
+        categories: [] as string[],
       }));
       return {
         typeOptions: options,
         types: uniqueNames,
         baselineUnitPrice: options.length > 0 ? options[0].unitPrice : fallbackUnitPrice,
+        allTypeCategories: [] as string[],
       };
     }
     return {
       typeOptions: [],
       types: [],
       baselineUnitPrice: fallbackUnitPrice,
+      allTypeCategories: [] as string[],
     };
   }
 
@@ -105,12 +124,22 @@ const sanitizeTypeOptions = (
       seenNames.add(lower);
 
       const price = Math.max(0, Number(item.unitPrice) || 0);
+      const rawCats = Array.isArray(item.categories) ? item.categories : [];
+      const categories = Array.from(
+        new Set(
+          rawCats
+            .map((c) => (typeof c === 'string' ? c.trim().replace(/\s+/g, ' ') : ''))
+            .filter(Boolean),
+        ),
+      );
+
       return {
         id: item.id && typeof item.id === 'string' && item.id.trim() ? item.id.trim() : randomUUID(),
         name,
         unitPrice: price,
         status: item.status === 'INACTIVE' ? 'INACTIVE' : 'ACTIVE',
         isDefault: Boolean(item.isDefault),
+        categories,
       };
     })
     .filter(Boolean) as Array<{
@@ -119,6 +148,7 @@ const sanitizeTypeOptions = (
       unitPrice: number;
       status: 'ACTIVE' | 'INACTIVE';
       isDefault: boolean;
+      categories: string[];
     }>;
 
   if (sanitized.length > 0) {
@@ -135,11 +165,13 @@ const sanitizeTypeOptions = (
   const types = sanitized.map((t) => t.name);
   const defaultOption = sanitized.find((t) => t.isDefault) || sanitized[0];
   const baselineUnitPrice = defaultOption ? defaultOption.unitPrice : fallbackUnitPrice;
+  const allTypeCategories = Array.from(new Set(sanitized.flatMap((t) => t.categories || [])));
 
   return {
     typeOptions: sanitized,
     types,
     baselineUnitPrice,
+    allTypeCategories,
   };
 };
 
@@ -165,18 +197,20 @@ export const createProduct = async (workspaceId: string, input: CreateProductInp
   const name = normalizeName(input.name);
   await assertUniqueName(workspaceId, name);
 
-  const rawCategories = Array.isArray(input.categories) ? input.categories : [];
-  const combinedCategories = rawCategories.length > 0
-    ? rawCategories
-    : (input.category?.trim() ? [input.category.trim()] : []);
-  const sanitizedCategories = Array.from(new Set(combinedCategories.map((c) => c.trim()).filter(Boolean)));
-  const primaryCategory = sanitizedCategories[0] || input.category?.trim() || null;
-
-  const { typeOptions, types, baselineUnitPrice } = sanitizeTypeOptions(
+  const { typeOptions, types, baselineUnitPrice, allTypeCategories } = sanitizeTypeOptions(
     input.typeOptions,
     input.types,
     input.unitPrice !== undefined ? Math.max(0, Number(input.unitPrice)) : 0,
   );
+
+  const rawCategories = Array.isArray(input.categories) ? input.categories : [];
+  const combinedCategories = [
+    ...allTypeCategories,
+    ...rawCategories,
+    ...(input.category?.trim() ? [input.category.trim()] : []),
+  ];
+  const sanitizedCategories = Array.from(new Set(combinedCategories.map((c) => c.trim()).filter(Boolean)));
+  const primaryCategory = sanitizedCategories[0] || input.category?.trim() || null;
 
   const created = await productDelegate.create({
     data: {
@@ -207,14 +241,14 @@ export const listProducts = async (workspaceId: string, query: ListProductsQuery
     ...(query.status ? { status: query.status } : {}),
     ...(query.search
       ? {
-          OR: [
-            { name: { contains: query.search, mode: 'insensitive' } },
-            { code: { contains: query.search, mode: 'insensitive' } },
-            { category: { contains: query.search, mode: 'insensitive' } },
-            { types: { has: query.search } },
-            { categories: { has: query.search } },
-          ],
-        }
+        OR: [
+          { name: { contains: query.search, mode: 'insensitive' } },
+          { code: { contains: query.search, mode: 'insensitive' } },
+          { category: { contains: query.search, mode: 'insensitive' } },
+          { types: { has: query.search } },
+          { categories: { has: query.search } },
+        ],
+      }
       : {}),
   };
 
@@ -275,21 +309,15 @@ export const updateProduct = async (workspaceId: string, id: string, input: Upda
     await assertUniqueName(workspaceId, nextName, id);
   }
 
-  let nextCategories: string[] | undefined = undefined;
-  if (input.categories !== undefined) {
-    nextCategories = Array.from(new Set(input.categories.map((c) => c.trim()).filter(Boolean)));
-  } else if (input.category !== undefined) {
-    nextCategories = input.category?.trim() ? [input.category.trim()] : [];
-  }
-
   let typeDataToUpdate: {
     types?: string[];
     typeOptions?: any;
     unitPrice?: number;
   } = {};
+  let allTypeCategories: string[] = [];
 
   if (input.typeOptions !== undefined) {
-    const { typeOptions, types, baselineUnitPrice } = sanitizeTypeOptions(
+    const { typeOptions, types, baselineUnitPrice, allTypeCategories: extractedCats } = sanitizeTypeOptions(
       input.typeOptions,
       input.types,
       input.unitPrice !== undefined ? Math.max(0, Number(input.unitPrice)) : Number(existing.unitPrice || 0),
@@ -299,8 +327,9 @@ export const updateProduct = async (workspaceId: string, id: string, input: Upda
       types,
       unitPrice: baselineUnitPrice,
     };
+    allTypeCategories = extractedCats;
   } else if (input.types !== undefined) {
-    const { typeOptions, types, baselineUnitPrice } = sanitizeTypeOptions(
+    const { typeOptions, types, baselineUnitPrice, allTypeCategories: extractedCats } = sanitizeTypeOptions(
       undefined,
       input.types,
       input.unitPrice !== undefined ? Math.max(0, Number(input.unitPrice)) : Number(existing.unitPrice || 0),
@@ -310,8 +339,19 @@ export const updateProduct = async (workspaceId: string, id: string, input: Upda
       types,
       unitPrice: baselineUnitPrice,
     };
+    allTypeCategories = extractedCats;
   } else if (input.unitPrice !== undefined) {
     typeDataToUpdate.unitPrice = Math.max(0, Number(input.unitPrice));
+  }
+
+  let nextCategories: string[] | undefined = undefined;
+  if (input.categories !== undefined) {
+    nextCategories = Array.from(new Set(input.categories.map((c) => c.trim()).filter(Boolean)));
+  } else if (input.category !== undefined) {
+    nextCategories = input.category?.trim() ? [input.category.trim()] : [];
+  } else if (input.typeOptions !== undefined && allTypeCategories.length > 0) {
+    const existingCats = Array.isArray(existing.categories) ? existing.categories : [];
+    nextCategories = Array.from(new Set([...existingCats, ...allTypeCategories]));
   }
 
   const nextCategory = nextCategories !== undefined

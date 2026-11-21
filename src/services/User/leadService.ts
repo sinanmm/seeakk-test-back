@@ -426,12 +426,12 @@ const hasGeneratedDelegates = (): boolean => {
   const leadStar = (prisma as any).leadStar;
   return Boolean(
     lead?.findFirst &&
-      lead?.findMany &&
-      lead?.create &&
-      lead?.update &&
-      followUp?.create &&
-      leadStar?.findMany &&
-      leadStar?.upsert,
+    lead?.findMany &&
+    lead?.create &&
+    lead?.update &&
+    followUp?.create &&
+    leadStar?.findMany &&
+    leadStar?.upsert,
   );
 };
 
@@ -537,8 +537,8 @@ const ensureLeadsColumnsMatchPrismaModel = async (): Promise<void> => {
 
     throw createServiceError(
       `Leads module is not ready: table "leads" is missing column(s): ${missing.join(', ')}.` +
-        ' On the server that uses this DATABASE_URL, run `npx prisma migrate deploy`, then restart the API.' +
-        companyHint,
+      ' On the server that uses this DATABASE_URL, run `npx prisma migrate deploy`, then restart the API.' +
+      companyHint,
       503,
     );
   }
@@ -620,17 +620,17 @@ const extractLastRemark = (lead: any): string | null => {
   let remarks: Array<{ text: string; date: number }> = [];
 
   if (lead.remarks) remarks.push({ text: lead.remarks, date: lead.updatedAt?.getTime() || 0 });
-  
+
   if (lead.remarksList?.[0]?.text) {
     remarks.push({ text: lead.remarksList[0].text, date: lead.remarksList[0].createdAt.getTime() });
   }
-  
+
   if (lead.lobLogs?.[0]) {
     const log = lead.lobLogs[0];
     const text = log.remarks || log.reason?.name || 'LOB Return';
     remarks.push({ text: `LOB Return: ${text}`, date: log.createdAt?.getTime() || log.changedAt?.getTime() || 0 });
   }
-  
+
 
 
   if (lead.activities?.[0]) {
@@ -679,42 +679,42 @@ const mapLeadRecord = (lead: LeadIncludeRecord) => {
     createdAt: lead.createdAt.toISOString(),
     updatedAt: lead.updatedAt.toISOString(),
     followUpDescription: resolveLatestFollowUpDescription(lead),
-  slaState: (() => {
-    if (!lead.stageExpiresAt || !lead.slaAction || lead.isClosed || lead.isLOB) return null;
-    const now = Date.now();
-    const expiresAt = lead.stageExpiresAt.getTime();
-    if (expiresAt <= now) return 'EXPIRED' as const;
-    if (lead.slaWarningDays !== null && lead.slaWarningDays !== undefined) {
-      const warningAt = expiresAt - lead.slaWarningDays * 24 * 60 * 60 * 1000;
-      if (warningAt <= now) return 'WARNING' as const;
-    }
-    return 'ON_TRACK' as const;
-  })(),
-  assignedTo: lead.assignedTo
-    ? {
+    slaState: (() => {
+      if (!lead.stageExpiresAt || !lead.slaAction || lead.isClosed || lead.isLOB) return null;
+      const now = Date.now();
+      const expiresAt = lead.stageExpiresAt.getTime();
+      if (expiresAt <= now) return 'EXPIRED' as const;
+      if (lead.slaWarningDays !== null && lead.slaWarningDays !== undefined) {
+        const warningAt = expiresAt - lead.slaWarningDays * 24 * 60 * 60 * 1000;
+        if (warningAt <= now) return 'WARNING' as const;
+      }
+      return 'ON_TRACK' as const;
+    })(),
+    assignedTo: lead.assignedTo
+      ? {
         ...lead.assignedTo,
         displayName: resolveDisplayName(lead.assignedTo),
       }
-    : null,
-  createdBy: {
-    ...lead.createdBy,
-    displayName: resolveDisplayName(lead.createdBy),
-  },
-  closedBy: lead.closedBy
-    ? {
+      : null,
+    createdBy: {
+      ...lead.createdBy,
+      displayName: resolveDisplayName(lead.createdBy),
+    },
+    closedBy: lead.closedBy
+      ? {
         ...lead.closedBy,
         displayName: resolveDisplayName(lead.closedBy),
       }
-    : null,
-  lobLogs: ((lead as any).lobLogs || []).map((item: any) => ({
-    ...item,
-    changedAt: item.changedAt.toISOString(),
-  })),
-  products: ((lead as any).products || []).map((item: any) => ({
-    ...item,
-    createdAt: item.createdAt.toISOString(),
-    updatedAt: item.updatedAt.toISOString(),
-  })),
+      : null,
+    lobLogs: ((lead as any).lobLogs || []).map((item: any) => ({
+      ...item,
+      changedAt: item.changedAt.toISOString(),
+    })),
+    products: ((lead as any).products || []).map((item: any) => ({
+      ...item,
+      createdAt: item.createdAt.toISOString(),
+      updatedAt: item.updatedAt.toISOString(),
+    })),
   };
 };
 
@@ -757,6 +757,7 @@ type ProductSnapshotSource = {
     unitPrice: number;
     status: 'ACTIVE' | 'INACTIVE';
     isDefault?: boolean;
+    categories?: string[];
   }>;
   categories: string[];
   category: string | null;
@@ -826,6 +827,12 @@ const resolveLeadProductSnapshots = async (
       if (matchedTypeOption) {
         resolvedTypeId = matchedTypeOption.id || null;
         resolvedTypeName = matchedTypeOption.name;
+        if (matchedTypeOption.status === 'INACTIVE') {
+          throw createServiceError(
+            `Selected type "${matchedTypeOption.name}" is inactive for product "${product.name}".`,
+            422,
+          );
+        }
       } else if (item.type) {
         const legacyMatch = Array.isArray(product.types) && product.types.some(
           (t) => t.trim().toLowerCase() === item.type!.toLowerCase(),
@@ -847,17 +854,32 @@ const resolveLeadProductSnapshots = async (
       }
     }
 
-    // Validate category if supplied and product has configured categories
-    const availableCategories = Array.isArray(product.categories) && product.categories.length > 0
-      ? product.categories
-      : (product.category ? [product.category] : []);
-    if (item.category && availableCategories.length > 0) {
-      const match = availableCategories.some((c) => c.trim().toLowerCase() === item.category!.toLowerCase());
-      if (!match) {
-        throw createServiceError(
-          `Selected category "${item.category}" is not configured for product "${product.name}".`,
-          422,
+    // Validate category: Type-specific validation if type has categories, fallback to product-level categories
+    if (item.category) {
+      const trimmedCategory = item.category.trim();
+      if (matchedTypeOption && Array.isArray(matchedTypeOption.categories) && matchedTypeOption.categories.length > 0) {
+        const match = matchedTypeOption.categories.some(
+          (c: string) => c.trim().toLowerCase() === trimmedCategory.toLowerCase(),
         );
+        if (!match) {
+          throw createServiceError(
+            `Selected category "${item.category}" is not configured for type "${matchedTypeOption.name}".`,
+            422,
+          );
+        }
+      } else {
+        const availableCategories = Array.isArray(product.categories) && product.categories.length > 0
+          ? product.categories
+          : (product.category ? [product.category] : []);
+        if (availableCategories.length > 0) {
+          const match = availableCategories.some((c: string) => c.trim().toLowerCase() === trimmedCategory.toLowerCase());
+          if (!match) {
+            throw createServiceError(
+              `Selected category "${item.category}" is not configured for product "${product.name}".`,
+              422,
+            );
+          }
+        }
       }
     }
 
@@ -1372,7 +1394,7 @@ export const clearLeadCache = async (workspaceId: string): Promise<void> => {
         await redisClient.del(batch);
       }
     }
-    
+
     // Tiny delay to allow Redis deletions to fully propagate
     await new Promise((resolve) => setTimeout(resolve, 50));
   } catch (error) {
@@ -1534,13 +1556,13 @@ const addDays = (base: Date, days: number): Date => new Date(base.getTime() + da
 const resolveLifecycleTransition = (
   lifecycle?:
     | {
-        transitions?: Array<{
-          numberOfDays: number;
-          expiryAction: SlaAction;
-          warningDays: number;
-          fromStageId?: string | null;
-        }>;
-      }
+      transitions?: Array<{
+        numberOfDays: number;
+        expiryAction: SlaAction;
+        warningDays: number;
+        fromStageId?: string | null;
+      }>;
+    }
     | null,
   stageId?: string | null,
 ): {
@@ -1563,13 +1585,13 @@ const resolveLifecycleTransition = (
 const buildLeadSlaSnapshot = async (
   lifecycle?:
     | {
-        transitions?: Array<{
-          fromStageId?: string | null;
-          numberOfDays: number;
-          expiryAction: SlaAction;
-          warningDays: number;
-        }>;
-      }
+      transitions?: Array<{
+        fromStageId?: string | null;
+        numberOfDays: number;
+        expiryAction: SlaAction;
+        warningDays: number;
+      }>;
+    }
     | null,
   stageId?: string | null,
   fromDate = new Date(),
@@ -1611,7 +1633,7 @@ const getLobStageForWorkspace = async (_workspaceId: string) =>
       workspaceId: _workspaceId,
       deletedAt: null,
       status: 'ACTIVE',
-      OR: [{ isLOB: true }, { name: { equals: 'LOB'} }],
+      OR: [{ isLOB: true }, { name: { equals: 'LOB' } }],
     },
     orderBy: [{ order: 'asc' }, { createdAt: 'asc' }],
     select: {
@@ -1650,8 +1672,8 @@ const getNewStageForWorkspace = async (_workspaceId: string) =>
       isLOB: false,
       isClosed: false,
       OR: [
-        { name: { equals: 'new'} },
-        { name: { equals: 'new lead'} },
+        { name: { equals: 'new' } },
+        { name: { equals: 'new lead' } },
       ],
     },
     orderBy: [{ order: 'asc' }, { createdAt: 'asc' }],
@@ -2115,19 +2137,19 @@ const buildListWhere = async (
     const dynamicLeadIds = Array.from(new Set(dynamicMatches.map((item: { leadId: string }) => item.leadId)));
     const searchCond = {
       OR: [
-        { name: { contains: query.search, mode: 'insensitive'} },
-        { email: { contains: query.search, mode: 'insensitive'} },
-        { phone: { contains: query.search, mode: 'insensitive'} },
-        { companyName: { contains: query.search, mode: 'insensitive'} },
+        { name: { contains: query.search, mode: 'insensitive' } },
+        { email: { contains: query.search, mode: 'insensitive' } },
+        { phone: { contains: query.search, mode: 'insensitive' } },
+        { companyName: { contains: query.search, mode: 'insensitive' } },
 
-        { remarks: { contains: query.search, mode: 'insensitive'} },
+        { remarks: { contains: query.search, mode: 'insensitive' } },
         { remarksList: { some: { text: { contains: query.search, mode: 'insensitive' } } } },
-        { lobLogs: { some: { OR: [ { remarks: { contains: query.search, mode: 'insensitive' } }, { reason: { name: { contains: query.search, mode: 'insensitive' } } } ] } } },
+        { lobLogs: { some: { OR: [{ remarks: { contains: query.search, mode: 'insensitive' } }, { reason: { name: { contains: query.search, mode: 'insensitive' } } }] } } },
 
 
-        { assignedTo: { name: { contains: query.search, mode: 'insensitive'} } },
-        { source: { name: { contains: query.search, mode: 'insensitive'} } },
-        { stage: { name: { contains: query.search, mode: 'insensitive'} } },
+        { assignedTo: { name: { contains: query.search, mode: 'insensitive' } } },
+        { source: { name: { contains: query.search, mode: 'insensitive' } } },
+        { stage: { name: { contains: query.search, mode: 'insensitive' } } },
         ...(dynamicLeadIds.length > 0 ? [{ id: { in: dynamicLeadIds } }] : []),
       ],
     };
@@ -2167,7 +2189,7 @@ const buildListWhere = async (
         },
       },
     ];
-  } else  if (query.status === 'LOB') {
+  } else if (query.status === 'LOB') {
     where.isLOB = true;
   } else if (query.status === 'ACTIVE') {
     where.isClosed = false;
@@ -2306,9 +2328,9 @@ export const createLead = async (
   const shouldAutoAssignStage = !input.skipAutoStageAssignment || Boolean(input.stageId);
   const stage = shouldAutoAssignStage
     ? (await resolveStage(workspaceId, input.stageId)) ||
-      (await getNewStageForWorkspace(workspaceId)) ||
-      (await getDefaultStageForWorkspace(workspaceId)) ||
-      null
+    (await getNewStageForWorkspace(workspaceId)) ||
+    (await getDefaultStageForWorkspace(workspaceId)) ||
+    null
     : null;
   const lifecycle = await resolveLifecycle(workspaceId, input.lifecycleId);
   const source = await resolveSource(workspaceId, input.sourceId);
@@ -2441,8 +2463,8 @@ export const createLead = async (
             reason: inputReason?.trim() || (productTotal !== undefined && Math.abs(resolvedTotalAmount - productTotal) > 0.01
               ? 'Manual price adjustment applied on creation.'
               : productSnapshots !== undefined
-              ? 'Initial amount calculated from selected products.'
-              : 'Initial amount set on lead creation.'),
+                ? 'Initial amount calculated from selected products.'
+                : 'Initial amount set on lead creation.'),
           },
         });
         logger.info('[Diagnostic] Payment information saved', { leadId: lead.id, totalAmount: resolvedTotalAmount });
@@ -2731,7 +2753,7 @@ export const updateLead = async (
   logger.info('Lead Update Started', { workspaceId, leadId: id, actorId: actor.id });
 
   const existing = await getLeadScoped(workspaceId, id, actor);
-  
+
   const existingDynamicValues = await (prisma as any).leadDynamicValue.findMany({
     where: { leadId: id }
   });
@@ -2807,7 +2829,7 @@ export const updateLead = async (
     } else {
       const executionRules = await getActiveStageRulesForExecution(workspaceId, stage.id);
       const ruleNameById = new Map(executionRules.map((rule) => [rule.id, rule.name]));
-      
+
       let lobReasonName: string | null = null;
       if (input.reasonId) {
         const lobReasonRecord = await (prisma as any).lOBReason.findFirst({
@@ -2838,14 +2860,14 @@ export const updateLead = async (
             stageRuleValues: [],
             ...(stage.isLOB && existing.stageId
               ? {
-                  previousStageId: existing.stageId,
-                  previousStageName: existing.stage?.name ?? null,
-                }
+                previousStageId: existing.stageId,
+                previousStageName: existing.stage?.name ?? null,
+              }
               : {}),
           },
         },
       );
-      
+
       input.stageId = undefined;
     }
   }
@@ -2888,19 +2910,19 @@ export const updateLead = async (
   }
   const closureData = input.stageId !== undefined
     ? buildClosureUpdateData(stage as any, actor.id, {
-        isClosed: existing.isClosed,
-        closedAt: existing.closedAt,
-        closedById: existing.closedById,
-        generatedRevenue: existing.generatedRevenue,
-        closureType: existing.closureType as any,
-      })
+      isClosed: existing.isClosed,
+      closedAt: existing.closedAt,
+      closedById: existing.closedById,
+      generatedRevenue: existing.generatedRevenue,
+      closureType: existing.closureType as any,
+    })
     : {
-        isClosed: existing.isClosed,
-        closedAt: existing.closedAt,
-        closedById: existing.closedById,
-        closureType: existing.closureType as any,
-        generatedRevenue: existing.generatedRevenue,
-      };
+      isClosed: existing.isClosed,
+      closedAt: existing.closedAt,
+      closedById: existing.closedById,
+      closureType: existing.closureType as any,
+      generatedRevenue: existing.generatedRevenue,
+    };
   const nextStageId = stage?.id || null;
   const nextLifecycleId = lifecycle?.id || null;
   const nextLifecycleForSla =
@@ -2909,14 +2931,14 @@ export const updateLead = async (
       : null;
   const slaSnapshot = shouldRefreshSla(existing, nextStageId, nextLifecycleId)
     ? (isLobStage(stage) || isClosedWonStage(stage)
-        ? emptySlaSnapshot()
-        : await buildLeadSlaSnapshot(nextLifecycleForSla, nextStageId))
+      ? emptySlaSnapshot()
+      : await buildLeadSlaSnapshot(nextLifecycleForSla, nextStageId))
     : {
-        stageEnteredAt: existing.stageEnteredAt,
-        stageExpiresAt: existing.stageExpiresAt,
-        slaAction: existing.slaAction,
-        slaWarningDays: existing.slaWarningDays,
-      };
+      stageEnteredAt: existing.stageEnteredAt,
+      stageExpiresAt: existing.stageExpiresAt,
+      slaAction: existing.slaAction,
+      slaWarningDays: existing.slaWarningDays,
+    };
 
   const updatedLeadId = await prisma.$transaction(async (tx: any) => {
     const productSnapshots = await resolveLeadProductSnapshots(tx, workspaceId, (input as any).products);
@@ -2952,31 +2974,31 @@ export const updateLead = async (
         ...(input.nextFollowUpAt !== undefined ? { nextFollowUpAt } : {}),
         ...(shouldRefreshSla(existing, nextStageId, nextLifecycleId)
           ? {
-              stageEnteredAt: slaSnapshot.stageEnteredAt,
-              stageExpiresAt: slaSnapshot.stageExpiresAt,
-              slaAction: slaSnapshot.slaAction,
-              slaWarningDays: slaSnapshot.slaWarningDays,
-            }
+            stageEnteredAt: slaSnapshot.stageEnteredAt,
+            stageExpiresAt: slaSnapshot.stageExpiresAt,
+            slaAction: slaSnapshot.slaAction,
+            slaWarningDays: slaSnapshot.slaWarningDays,
+          }
           : {}),
         ...(input.isClosed !== undefined ? { isClosed: input.isClosed } : {}),
         ...(stage
           ? (() => {
-              const outcomeFlags = buildLeadOutcomeFlagsFromStage(stage, actor.id, {
-                isClosed: closureData.isClosed,
-                closedAt: closureData.closedAt,
-                closedById: closureData.closedById,
-                closureType: closureData.closureType,
-                generatedRevenue: closureData.generatedRevenue,
-              });
-              return {
-                isLOB: outcomeFlags.isLOB,
-                isClosed: outcomeFlags.isClosed,
-                closedAt: outcomeFlags.closedAt,
-                closedById: outcomeFlags.closedById,
-                closureType: outcomeFlags.closureType,
-                generatedRevenue: outcomeFlags.generatedRevenue,
-              };
-            })()
+            const outcomeFlags = buildLeadOutcomeFlagsFromStage(stage, actor.id, {
+              isClosed: closureData.isClosed,
+              closedAt: closureData.closedAt,
+              closedById: closureData.closedById,
+              closureType: closureData.closureType,
+              generatedRevenue: closureData.generatedRevenue,
+            });
+            return {
+              isLOB: outcomeFlags.isLOB,
+              isClosed: outcomeFlags.isClosed,
+              closedAt: outcomeFlags.closedAt,
+              closedById: outcomeFlags.closedById,
+              closureType: outcomeFlags.closureType,
+              generatedRevenue: outcomeFlags.generatedRevenue,
+            };
+          })()
           : {}),
       },
     });
@@ -2997,7 +3019,7 @@ export const updateLead = async (
     if (productSnapshots !== undefined) {
       await replaceLeadProducts(tx, workspaceId, id, actor.id, productSnapshots);
     }
-    
+
     await trackFieldEdits(tx, workspaceId, id, actor.id, changesToTrack, input.remarks || undefined);
 
     if (resolvedTotalAmount !== undefined && Math.abs(Number(resolvedTotalAmount) - Number(existing.totalAmount || 0)) > 0.01) {
@@ -3089,9 +3111,9 @@ export const updateLead = async (
             ...(input.nextFollowUpType !== undefined ? { type: normalizeFollowUpType(input.nextFollowUpType) } : {}),
             ...(input.followUpDescription !== undefined
               ? {
-                  description:
-                    input.followUpDescription?.trim() || 'Auto-created from lead workflow',
-                }
+                description:
+                  input.followUpDescription?.trim() || 'Auto-created from lead workflow',
+              }
               : {}),
           },
         });
@@ -3300,46 +3322,46 @@ export const changeStage = async (
           targetStage: targetStage.name,
         });
       } else {
-      const executionRules = await getActiveStageRulesForExecution(workspaceId, targetStage.id);
-      const ruleNameById = new Map(executionRules.map((rule) => [rule.id, rule.name]));
-      const stageRuleValuesForRequest = (input.stageRuleValues ?? []).map((entry) => ({
-        ruleId: entry.ruleId,
-        value: entry.value,
-        ruleName: ruleNameById.get(entry.ruleId) || entry.ruleId,
-      }));
+        const executionRules = await getActiveStageRulesForExecution(workspaceId, targetStage.id);
+        const ruleNameById = new Map(executionRules.map((rule) => [rule.id, rule.name]));
+        const stageRuleValuesForRequest = (input.stageRuleValues ?? []).map((entry) => ({
+          ruleId: entry.ruleId,
+          value: entry.value,
+          ruleName: ruleNameById.get(entry.ruleId) || entry.ruleId,
+        }));
 
-      const result = await leadApprovalService.createLeadApproval(
-        workspaceId,
-        { id: actor.id, roleId: actor.roleId ?? null, role: actor.role },
-        {
-          leadId: id,
-          fromStageId: existing.stageId!,
-          toStageId: targetStage.id,
-          requestData: {
-            reasonId: input.reasonId ?? null,
-            remarks: input.remarks ?? null,
-            nextFollowUpAt: input.nextFollowUpAt ? input.nextFollowUpAt.toISOString() : null,
-            nextFollowUpType: input.nextFollowUpType ?? null,
-            followUpDescription: input.followUpDescription ?? null,
-            stageRuleValues: stageRuleValuesForRequest,
-            ...(targetStage.isLOB && existing.stageId
-              ? {
+        const result = await leadApprovalService.createLeadApproval(
+          workspaceId,
+          { id: actor.id, roleId: actor.roleId ?? null, role: actor.role },
+          {
+            leadId: id,
+            fromStageId: existing.stageId!,
+            toStageId: targetStage.id,
+            requestData: {
+              reasonId: input.reasonId ?? null,
+              remarks: input.remarks ?? null,
+              nextFollowUpAt: input.nextFollowUpAt ? input.nextFollowUpAt.toISOString() : null,
+              nextFollowUpType: input.nextFollowUpType ?? null,
+              followUpDescription: input.followUpDescription ?? null,
+              stageRuleValues: stageRuleValuesForRequest,
+              ...(targetStage.isLOB && existing.stageId
+                ? {
                   previousStageId: existing.stageId,
                   previousStageName: existing.stage?.name ?? null,
                 }
-              : {}),
+                : {}),
+            },
           },
-        },
-      );
+        );
 
-      return {
-        approvalRequired: true,
-        lead: result.lead,
-        approval: result.approval,
-      };
+        return {
+          approvalRequired: true,
+          lead: result.lead,
+          approval: result.approval,
+        };
+      }
     }
   }
-}
 
   const updatedLead = await updateLead(workspaceId, actor, id, {
     stageId: input.stageId,
@@ -3545,9 +3567,9 @@ export const bulkDeleteLeads = async (workspaceId: string, ids: string[], perman
           deletedAt: new Date(),
         },
       });
-    }, { 
+    }, {
       // Increase timeout to 30s to be safe for large batches
-      timeout: 30000 
+      timeout: 30000
     });
   } else {
     // Standard archiving is fast with updateMany
@@ -3574,7 +3596,7 @@ const buildLeadExportCsvRow = (
   const dynamicValueByFieldId = new Map(dynamicValues.map((entry) => [entry.fieldId, entry.value]));
   const totalAmount = lead.totalAmount !== null && lead.totalAmount !== undefined ? Number(lead.totalAmount) : 0;
   const advanceAmount = Number(
-    (lead as any).advanceAmount ?? 
+    (lead as any).advanceAmount ??
     (lead.advancePayments?.reduce((sum: number, p: any) => sum + (p.amount || 0), 0) || 0)
   );
   const balanceAmount = Math.max(0, totalAmount - advanceAmount);
@@ -3695,7 +3717,7 @@ export const exportLeads = async (
     reqFields = Array.isArray(query.fields) ? query.fields : (query.fields as string).split(',');
   }
 
-  const keepIndices = reqFields.length > 0 
+  const keepIndices = reqFields.length > 0
     ? reqFields.map(id => allFieldIds.indexOf(id)).filter(i => i !== -1)
     : allFieldIds.map((_, i) => i);
 
@@ -3707,7 +3729,7 @@ export const exportLeads = async (
   let cursorId: string | undefined;
   let slNoCounter = 1;
 
-  for (;;) {
+  for (; ;) {
     const batch = (await (prisma as any).lead.findMany({
       where,
       take: EXPORT_BATCH,
@@ -3822,7 +3844,7 @@ export const exportLeadsXlsx = async (
     reqFields = Array.isArray(query.fields) ? query.fields : (query.fields as string).split(',');
   }
 
-  const keepIndices = reqFields.length > 0 
+  const keepIndices = reqFields.length > 0
     ? reqFields.map(id => allFieldIds.indexOf(id)).filter(i => i !== -1)
     : allFieldIds.map((_, i) => i);
 
@@ -3862,7 +3884,7 @@ export const exportLeadsXlsx = async (
     return m.format(includeTime ? 'DD-MMM-YYYY hh:mm A' : 'DD-MMM-YYYY');
   };
 
-  for (;;) {
+  for (; ;) {
     const batch = (await (prisma as any).lead.findMany({
       where,
       take: EXPORT_BATCH,
@@ -3881,21 +3903,21 @@ export const exportLeadsXlsx = async (
       const dynamicValueByFieldId = new Map(
         (dynamicValueMap.get(lead.id) || []).map((entry) => [entry.fieldId, entry.value])
       );
-      
+
       const totalAmount = lead.totalAmount !== null ? Number(lead.totalAmount) : 0;
       const advanceAmount = Number(
-        (lead as any).advanceAmount ?? 
+        (lead as any).advanceAmount ??
         (lead.advancePayments?.reduce((sum: number, p: any) => sum + (p.amount || 0), 0) || 0)
       );
       const balanceAmount = Math.max(0, totalAmount - advanceAmount);
       const productsStr = lead.products?.map((p: any) => {
-    const meta: string[] = [];
-    if (p.type) meta.push(`Type: ${p.type}`);
-    if (p.category) meta.push(`Cat: ${p.category}`);
-    const metaStr = meta.length > 0 ? ` (${meta.join(', ')})` : '';
-    return `${p.productName || 'Product'}${metaStr} × ${p.quantity || 1}`;
-  }).join('; ') || '';
-      
+        const meta: string[] = [];
+        if (p.type) meta.push(`Type: ${p.type}`);
+        if (p.category) meta.push(`Cat: ${p.category}`);
+        const metaStr = meta.length > 0 ? ` (${meta.join(', ')})` : '';
+        return `${p.productName || 'Product'}${metaStr} × ${p.quantity || 1}`;
+      }).join('; ') || '';
+
       const fullRow = [
         slNoCounter++,
         lead.name,
@@ -3930,13 +3952,13 @@ export const exportLeadsXlsx = async (
 
       const stageFullIndex = allFieldIds.indexOf('stage');
       const stageExportIndex = keepIndices.indexOf(stageFullIndex);
-      
+
       if (stageExportIndex !== -1 && lead.stage?.color) {
         const cell = newRow.getCell(stageExportIndex + 1);
         const hexColor = lead.stage.color.replace('#', '');
-        cell.font = { 
-          color: { argb: 'FF' + hexColor }, 
-          bold: true 
+        cell.font = {
+          color: { argb: 'FF' + hexColor },
+          bold: true
         };
       }
     }
