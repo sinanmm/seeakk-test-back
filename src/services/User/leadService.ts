@@ -854,11 +854,14 @@ const resolveLeadProductSnapshots = async (
       }
     }
 
-    // Validate category: Type-specific validation if type has categories, fallback to product-level categories
+    // Validate category: Type-specific validation if type option exists, fallback to product-level categories for legacy products
     if (item.category) {
       const trimmedCategory = item.category.trim();
-      if (matchedTypeOption && Array.isArray(matchedTypeOption.categories) && matchedTypeOption.categories.length > 0) {
-        const match = matchedTypeOption.categories.some(
+      if (matchedTypeOption) {
+        const typeCategories: string[] = Array.isArray(matchedTypeOption.categories)
+          ? matchedTypeOption.categories
+          : [];
+        const match = typeCategories.some(
           (c: string) => c.trim().toLowerCase() === trimmedCategory.toLowerCase(),
         );
         if (!match) {
